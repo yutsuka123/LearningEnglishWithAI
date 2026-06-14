@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS words (
     example       TEXT    DEFAULT '',
     mastery       INTEGER NOT NULL DEFAULT 0,   -- 0..100
     last_studied  TEXT,                          -- ISO date
+    level         TEXT    DEFAULT '',            -- 600/700/800 等
+    domain        TEXT    DEFAULT '',            -- 宗教/文学/口語/IT 等
     times_asked   INTEGER NOT NULL DEFAULT 0,
     times_correct INTEGER NOT NULL DEFAULT 0,
     -- Per-direction counters (英→日 / 日→英) for accuracy display.
@@ -304,10 +306,20 @@ def _seed_words(conn: sqlite3.Connection) -> None:
         )
 
 
+def _migrate(conn: sqlite3.Connection) -> None:
+    """Add columns introduced after the first release (idempotent)."""
+    cols = {r["name"] for r in conn.execute("PRAGMA table_info(words)")}
+    if "level" not in cols:
+        conn.execute("ALTER TABLE words ADD COLUMN level TEXT DEFAULT ''")
+    if "domain" not in cols:
+        conn.execute("ALTER TABLE words ADD COLUMN domain TEXT DEFAULT ''")
+
+
 def init_db() -> None:
     """Create the schema and seed reference data. Safe to call repeatedly."""
     with db() as conn:
         conn.executescript(SCHEMA)
+        _migrate(conn)
         _seed_categories(conn)
         _seed_listening(conn)
         _seed_words(conn)
