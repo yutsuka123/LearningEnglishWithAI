@@ -1,0 +1,14 @@
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+# Pragmatic defaults; allow slightly longer lines for SQL/Japanese strings.
+ignore = ["E501"]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+
+[tool.black]
+line-length = 88

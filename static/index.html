@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>English Learning with AI</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <aside class="sidebar">
+      <div class="brand">📘 English<br />Learning AI</div>
+      <nav id="nav"></nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="micCmd" class="mic-cmd" title="音声で操作">🎙️ 操作</button>
+          <span id="cmdStatus" class="cmd-status"></span>
+        </div>
+        <div class="topbar-right">
+          <label class="toggle">
+            入力:
+            <select id="inputMode">
+              <option value="text">⌨️ 文字</option>
+              <option value="voice">🎤 音声</option>
+            </select>
+          </label>
+          <span class="cost" id="costBadge" title="API使用量・推定費用">
+            💰 …
+          </span>
+          <span class="ai-state" id="aiState"></span>
+        </div>
+      </header>
+
+      <section id="view" class="view"></section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>
