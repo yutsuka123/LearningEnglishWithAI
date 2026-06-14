@@ -328,6 +328,7 @@ class GenItemsIn(BaseModel):
     kind: str = "word"   # 'word' | 'phrase'
     count: int = 10
     focus: str = ""      # テーマ・苦手分野など
+    domain: str = ""     # 単語に付ける分野タグ（宗教/文学/IT 等・任意）
 
 
 @router.post("/generate-items")
@@ -370,7 +371,7 @@ def generate_items(payload: GenItemsIn):
     if not items:
         return {"ok": False, "error": "生成結果を解釈できませんでした。"}
 
-    added, skipped = _insert_generated(payload.kind, items)
+    added, skipped = _insert_generated(payload.kind, items, payload.domain)
     return {"ok": True, "added": added, "skipped": skipped, "model": qmodel}
 
 
@@ -386,9 +387,12 @@ def _parse_json_array(text: str) -> list:
         return []
 
 
-def _insert_generated(kind: str, items: list) -> tuple[list, int]:
+def _insert_generated(
+    kind: str, items: list, domain: str = ""
+) -> tuple[list, int]:
     added: list[dict] = []
     skipped = 0
+    domain = (domain or "").strip()
     with db() as conn:
         if kind == "phrase":
             existing = {
@@ -419,11 +423,14 @@ def _insert_generated(kind: str, items: list) -> tuple[list, int]:
                 if not en or not ja or en.lower() in existing:
                     skipped += 1
                     continue
+                # AIがdomain/levelを返せばそれを優先、無ければ引数domain。
+                dm = str(it.get("domain", "")).strip() or domain
+                lv = str(it.get("level", "")).strip()
                 conn.execute(
                     "INSERT INTO words (english, japanese, part_of_speech, "
-                    "example) VALUES (?, ?, ?, ?)",
+                    "example, domain, level) VALUES (?, ?, ?, ?, ?, ?)",
                     (en, ja, str(it.get("pos", "")).strip(),
-                     str(it.get("example", "")).strip()),
+                     str(it.get("example", "")).strip(), dm, lv),
                 )
                 existing.add(en.lower())
                 added.append({"english": en, "japanese": ja})

@@ -191,10 +191,26 @@ TTS_VOICES = [
 _TTS_USD_PER_1K_CHARS = 0.015
 
 
+def _tts_cache_path(model: str, voice: str, text: str):
+    import hashlib
+
+    from ..config import paths
+
+    key = f"{model}|{voice}|{text}".encode("utf-8")
+    digest = hashlib.sha256(key).hexdigest()[:32]
+    cache_dir = paths.data_dir / "tts_cache"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    return cache_dir / f"{digest}.mp3"
+
+
 def synthesize_speech(
     text: str, voice: str = "alloy"
 ) -> tuple[bytes | None, str | None]:
-    """Return (audio_mp3_bytes, error). Uses OpenAI's natural TTS voices."""
+    """Return (audio_mp3_bytes, error). Uses OpenAI's natural TTS voices.
+
+    Audio is cached on disk by (model, voice, text); a cache hit costs nothing
+    and makes repeated playback free (ユーザー要望: 再生のたびの課金を避ける)。
+    """
     client, settings = _client()
     if client is None:
         if not settings.ai_enabled:
@@ -202,6 +218,11 @@ def synthesize_speech(
         return None, "OpenAI クライアントを初期化できませんでした。"
     if voice not in TTS_VOICES:
         voice = "alloy"
+
+    cache = _tts_cache_path(settings.tts_model, voice, text[:4000])
+    if cache.exists():
+        return cache.read_bytes(), None  # cache hit → no API call, no cost
+
     try:
         resp = client.audio.speech.create(
             model=settings.tts_model,
@@ -210,6 +231,10 @@ def synthesize_speech(
             response_format="mp3",
         )
         audio = resp.read() if hasattr(resp, "read") else resp.content
+        try:
+            cache.write_bytes(audio)
+        except Exception:  # caching is best-effort
+            pass
         cost = len(text) / 1000 * _TTS_USD_PER_1K_CHARS
         with db() as conn:
             conn.execute(

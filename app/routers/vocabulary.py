@@ -126,16 +126,23 @@ def _parse_word_list(text: str) -> list[tuple[str, str]]:
             continue
         parts = re.split(r"\t|,|，|\s{2,}", s, maxsplit=1)
         if len(parts) == 2 and is_en(parts[0]) and is_ja(parts[1]):
+            if cur:
+                pairs.append((cur, ""))
+                cur = None
             pairs.append((parts[0].strip(), parts[1].strip()))
-            cur = None
             continue
         if s.isdigit() or s.startswith("+") or s == "0":
             continue
         if is_en(s):
+            # 直前の英語に訳が無ければ英語のみで確定（訳はAIが生成）。
+            if cur:
+                pairs.append((cur, ""))
             cur = s.strip()
         elif is_ja(s) and cur:
             pairs.append((cur, s.strip()))
             cur = None
+    if cur:
+        pairs.append((cur, ""))
     return pairs
 
 
@@ -164,12 +171,17 @@ def _ai_fill(pairs: list[tuple[str, str]]) -> dict:
         listing = "\n".join(f"{e} | {j}" for e, j in batch)
         system = (
             "英単語学習データを作ります。各語について正確で簡潔な日本語訳・"
-            "品詞・自然な英語例文を作成。訳ヒントが不正確なら正しい訳に直す。"
-            "TOEIC 600〜800レベル。JSON配列のみ出力: "
-            '[{"english":"..","japanese":"..","pos":"品詞","example":".."}]'
+            "品詞・自然な英語例文・分野(domain)・難易度(level)を作成。"
+            "訳ヒントが不正確なら正しい訳に直す。"
+            "domain は 宗教/文学/歴史/口語/IT/ビジネス/ニュース/医療/旅行/法律/"
+            "科学/教養 のいずれか、一般的な語なら空文字。"
+            "level は TOEIC目安で 600/700/800 のいずれか。"
+            "JSON配列のみ出力: "
+            '[{"english":"..","japanese":"..","pos":"品詞","example":"..",'
+            '"domain":"..","level":".."}]'
         )
         user = f"語(英語 | 訳ヒント):\n{listing}"
-        r = ai.chat(system, user, temperature=0.3, max_tokens=2000,
+        r = ai.chat(system, user, temperature=0.3, max_tokens=2400,
                     feature="import", model=model)
         if r.ok:
             for it in _json_array(r.text):
@@ -179,6 +191,8 @@ def _ai_fill(pairs: list[tuple[str, str]]) -> dict:
                         "japanese": str(it.get("japanese", "")).strip(),
                         "pos": str(it.get("pos", "")).strip(),
                         "example": str(it.get("example", "")).strip(),
+                        "domain": str(it.get("domain", "")).strip(),
+                        "level": str(it.get("level", "")).strip(),
                     }
     return out
 
@@ -214,11 +228,13 @@ def import_words(payload: ImportIn):
             f.get("japanese") or ja,
             f.get("pos", ""),
             f.get("example", ""),
+            f.get("domain", ""),
+            f.get("level", ""),
         ))
     with db() as conn:
         conn.executemany(
-            "INSERT INTO words (english, japanese, part_of_speech, example) "
-            "VALUES (?, ?, ?, ?)",
+            "INSERT INTO words (english, japanese, part_of_speech, example, "
+            "domain, level) VALUES (?, ?, ?, ?, ?, ?)",
             rows,
         )
     return {
@@ -228,6 +244,61 @@ def import_words(payload: ImportIn):
         "skipped": len(pairs) - len(rows),
         "examples": sum(1 for r in rows if r[3]),
     }
+
+
+@router.post("/retag")
+def retag(batch: int = 30):
+    """分野(domain)・レベル(level)が未設定の単語をAIで分類して付与。
+    1回で batch 件処理し、残数を返す（スクリプトで繰り返し呼ぶ想定）。"""
+    from ..config import load_settings
+    from ..services import ai
+
+    if not ai.is_enabled():
+        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT id, english, japanese FROM words "
+            "WHERE COALESCE(domain,'')='' AND COALESCE(level,'')='' "
+            "LIMIT ?",
+            (batch,),
+        ).fetchall()
+        remaining = conn.execute(
+            "SELECT COUNT(*) AS c FROM words "
+            "WHERE COALESCE(domain,'')='' AND COALESCE(level,'')=''"
+        ).fetchone()["c"]
+    if not rows:
+        return {"ok": True, "tagged": 0, "remaining": 0}
+
+    listing = "\n".join(f"{r['id']}\t{r['english']}\t{r['japanese']}"
+                        for r in rows)
+    system = (
+        "各英単語に分野(domain)と難易度(level)を付けます。"
+        "domain は 宗教/文学/歴史/口語/IT/ビジネス/ニュース/医療/旅行/法律/"
+        "科学/教養 のいずれか。一般的でどれにも当てはまらなければ空文字。"
+        "level は TOEIC目安で 600/700/800。"
+        'JSON配列のみ: [{"id":1,"domain":"..","level":".."}]'
+    )
+    result = ai.chat(
+        system, f"id\\t英語\\t訳:\n{listing}",
+        temperature=0, max_tokens=1500,
+        feature="retag", model=load_settings().quality_model,
+    )
+    if not result.ok:
+        return {"ok": False, "error": result.error}
+    tagged = 0
+    with db() as conn:
+        for it in _json_array(result.text):
+            try:
+                wid = int(it.get("id"))
+            except (TypeError, ValueError):
+                continue
+            conn.execute(
+                "UPDATE words SET domain = ?, level = ? WHERE id = ?",
+                (str(it.get("domain", "")).strip(),
+                 str(it.get("level", "")).strip() or "600", wid),
+            )
+            tagged += 1
+    return {"ok": True, "tagged": tagged, "remaining": max(0, remaining - tagged)}
 
 
 @router.get("/stats")

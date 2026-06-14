@@ -297,24 +297,33 @@ export async function vocab(root) {
     <div class="card">
       <h2>単語一覧 (${words.length})</h2>
       <table><thead><tr>
-        <th>英語</th><th>日本語</th><th>習熟度</th><th>正答率</th>
-        <th>次回復習</th><th></th></tr></thead>
+        <th></th><th>英語</th><th>日本語</th><th>Lv</th><th>分野</th>
+        <th>習熟度</th><th>正答率</th><th></th></tr></thead>
         <tbody id="rows"></tbody></table>
     </div>`;
 
   const rows = root.querySelector("#rows");
   words.forEach((w) => {
     const tr = el(`<tr>
+      <td><button class="btn ghost" title="再生" style="padding:2px 8px"
+        data-play="1">🔊</button></td>
       <td>${escapeHtml(w.english)}</td>
       <td>${escapeHtml(w.japanese)}</td>
-      <td style="min-width:90px">
+      <td class="muted">${w.level || ""}</td>
+      <td>${w.domain ? `<span class="pill">${escapeHtml(w.domain)}</span>`
+        : ""}</td>
+      <td style="min-width:80px">
         <div class="bar"><span style="width:${w.mastery}%"></span></div>
         <small class="muted">${w.mastery}</small></td>
       <td>${w.accuracy == null ? "—" : w.accuracy + "%"}</td>
-      <td class="muted">${w.next_review || "未"}</td>
-      <td><button class="btn ghost" data-id="${w.id}">削除</button></td>
+      <td><button class="btn ghost" data-del="1"
+        style="padding:2px 8px">削除</button></td>
     </tr>`);
-    tr.querySelector("button").addEventListener("click", async () => {
+    tr.querySelector("[data-play]").addEventListener("click", () => {
+      const t = w.example ? `${w.english}. ${w.example}` : w.english;
+      speech.speak(t);  // MP3キャッシュ済みなら2回目以降は無料
+    });
+    tr.querySelector("[data-del]").addEventListener("click", async () => {
       await api.del("/api/words/" + w.id); go("vocab");
     });
     rows.appendChild(tr);
