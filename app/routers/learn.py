@@ -537,14 +537,18 @@ def session_save(payload: SessionEndIn):
 
 
 @router.get("/daily")
-def daily_session(words: int = 10, phrases: int = 10):
+def daily_session(
+    words: int = 10, phrases: int = 10, include_banned: bool = False
+):
     """Build a ~10-minute daily plan: vocab + mini-phrases + reading + writing.
 
     Up to 10 words and 10 phrases per session (learner's cap). Items are
     chosen by the forgetting-curve scheduler (due items first). Returns the
-    concrete items so the client can run the fast part without AI calls."""
+    concrete items so the client can run the fast part without AI calls.
+    禁止用語は ``include_banned`` が真でない限り出題しない。"""
     n_words = max(1, min(words, 10))
     n_phrases = max(1, min(phrases, 10))
+    ban = not include_banned
 
     with db() as conn:
         words_list = [
@@ -555,10 +559,12 @@ def daily_session(words: int = 10, phrases: int = 10):
                 "example": r["example"],
                 "mastery": r["mastery"],
             }
-            for r in select_for_review(conn, table="words", limit=n_words)
+            for r in select_for_review(
+                conn, table="words", limit=n_words, exclude_banned=ban
+            )
         ]
         phrase_rows = select_for_review(
-            conn, table="phrases", limit=n_phrases
+            conn, table="phrases", limit=n_phrases, exclude_banned=ban
         )
         phrases_list = [dict(r) for r in phrase_rows]
 

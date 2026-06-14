@@ -58,18 +58,29 @@ def _next_review_date(level: int) -> str:
 # Selection (forgetting curve aware)
 # ---------------------------------------------------------------------------
 
+def banned_filter(table: str) -> str:
+    """SQL fragment (no leading AND) selecting only NON-banned rows.
+    Banned = words.domain '禁止用語' / phrases.scene starting with '禁止'."""
+    if table == "phrases":
+        return "COALESCE(scene, '') NOT LIKE '禁止%'"
+    return "COALESCE(domain, '') <> '禁止用語'"
+
+
 def select_for_review(
     conn: sqlite3.Connection,
     table: str = "words",
     limit: int = 10,
+    exclude_banned: bool = False,
 ) -> list[sqlite3.Row]:
     """Pick up to ``limit`` items, prioritising due ones, then weighting the
-    rest by (100 - mastery)."""
+    rest by (100 - mastery). When ``exclude_banned`` is set, 禁止用語 items are
+    never selected for quizzes/daily."""
     today = date.today().isoformat()
+    ban = f" AND {banned_filter(table)}" if exclude_banned else ""
     # Due items first (never reviewed -> next_review IS NULL counts as due).
     due = conn.execute(
         f"SELECT * FROM {table} "
-        "WHERE next_review IS NULL OR next_review <= ? "
+        f"WHERE (next_review IS NULL OR next_review <= ?){ban} "
         "ORDER BY mastery ASC, next_review ASC",
         (today,),
     ).fetchall()
@@ -81,9 +92,10 @@ def select_for_review(
     # Fill remaining slots with not-yet-due items, weighted by 100 - mastery.
     remaining = limit - len(chosen)
     chosen_ids = {r["id"] for r in chosen}
+    where = f" WHERE {banned_filter(table)}" if exclude_banned else ""
     rest = [
         r
-        for r in conn.execute(f"SELECT * FROM {table}").fetchall()
+        for r in conn.execute(f"SELECT * FROM {table}{where}").fetchall()
         if r["id"] not in chosen_ids
     ]
     chosen += _weighted_sample(rest, remaining)
@@ -112,9 +124,12 @@ def _weighted_sample(rows: list[sqlite3.Row], k: int) -> list[sqlite3.Row]:
 
 # Backwards-compatible alias used elsewhere.
 def pick_weighted(
-    conn: sqlite3.Connection, limit: int = 10, table: str = "words"
+    conn: sqlite3.Connection, limit: int = 10, table: str = "words",
+    exclude_banned: bool = False,
 ) -> list[sqlite3.Row]:
-    return select_for_review(conn, table=table, limit=limit)
+    return select_for_review(
+        conn, table=table, limit=limit, exclude_banned=exclude_banned
+    )
 
 
 # ---------------------------------------------------------------------------

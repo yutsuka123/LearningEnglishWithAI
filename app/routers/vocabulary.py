@@ -28,16 +28,65 @@ def _word_dict(row) -> dict:
     return d
 
 
+BANNED_DOMAIN = "禁止用語"
+
+
 @router.get("")
-def list_words(sort: str = "mastery"):
+def list_words(
+    sort: str = "mastery",
+    domain: str | None = None,
+    level: str | None = None,
+    include_banned: bool = False,
+):
     order = {
         "mastery": "mastery ASC, last_studied ASC",
         "english": "english COLLATE NOCASE ASC",
         "recent": "last_studied DESC",
-    }.get(sort, "mastery ASC")
+        "level": "level ASC, english COLLATE NOCASE ASC",
+        "domain": "domain ASC, english COLLATE NOCASE ASC",
+        "accuracy": (
+            "CASE WHEN times_asked > 0 "
+            "THEN times_correct * 1.0 / times_asked ELSE -1 END DESC"
+        ),
+    }.get(sort, "mastery ASC, last_studied ASC")
+    where: list[str] = []
+    params: list = []
+    if domain:
+        where.append("COALESCE(domain, '') = ?")
+        params.append(domain)
+    if level:
+        where.append("COALESCE(level, '') = ?")
+        params.append(level)
+    if not include_banned:
+        where.append("COALESCE(domain, '') <> ?")
+        params.append(BANNED_DOMAIN)
+    clause = (" WHERE " + " AND ".join(where)) if where else ""
     with db() as conn:
-        rows = conn.execute(f"SELECT * FROM words ORDER BY {order}").fetchall()
+        rows = conn.execute(
+            f"SELECT * FROM words{clause} ORDER BY {order}", params
+        ).fetchall()
         return [_word_dict(r) for r in rows]
+
+
+@router.get("/facets")
+def facets():
+    """フィルタUI用の分野(domain)・レベル(level)の選択肢一覧。"""
+    with db() as conn:
+        domains = [
+            r["domain"] for r in conn.execute(
+                "SELECT DISTINCT domain FROM words "
+                "WHERE COALESCE(domain, '') <> '' ORDER BY domain"
+            ).fetchall()
+        ]
+        # 禁止用語は通常フィルタには出さない（表示トグルで明示的に出す）。
+        domains = [d for d in domains if d != BANNED_DOMAIN]
+        levels = [
+            r["level"] for r in conn.execute(
+                "SELECT DISTINCT level FROM words "
+                "WHERE COALESCE(level, '') <> '' ORDER BY level"
+            ).fetchall()
+        ]
+    return {"domains": domains, "levels": levels}
 
 
 @router.post("", status_code=201)
@@ -80,10 +129,12 @@ def delete_word(word_id: int):
 
 
 @router.get("/quiz")
-def quiz(limit: int = 10):
+def quiz(limit: int = 10, include_banned: bool = False):
     """Return a weighted set of words to quiz (probability ∝ 100 - mastery)."""
     with db() as conn:
-        rows = pick_weighted(conn, limit=limit)
+        rows = pick_weighted(
+            conn, limit=limit, exclude_banned=not include_banned
+        )
         return [_word_dict(r) for r in rows]
 
 

@@ -143,6 +143,30 @@ export async function say(text, opts = {}) {
   }
 }
 
+// Speak text with a SPECIFIC OpenAI voice (used by the 男声/女声 play buttons
+// in the word & phrase lists). Falls back to the browser voice when natural
+// TTS is off or the call fails. Mirrors say()/previewOpenAIVoice().
+export async function sayWithVoice(text, voice, opts = {}) {
+  if (!text) return;
+  if (!(isNatural() && aiEnabled)) { browserSpeak(text, opts); return; }
+  try {
+    const res = await fetch("/api/learn/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, voice }),
+    });
+    if (!res.ok) throw new Error("tts failed");
+    const blob = await res.blob();
+    stopSpeaking();
+    audioEl = new Audio(URL.createObjectURL(blob));
+    audioEl.playbackRate = opts.rate || 1;
+    await audioEl.play();
+    if (usageCb) usageCb();
+  } catch (e) {
+    browserSpeak(text, opts); // graceful fallback
+  }
+}
+
 // Speak with a specific OpenAI voice (for the settings preview button).
 // Returns { ok, error } so the UI can show the real reason on failure.
 export async function previewOpenAIVoice(voice, text) {
