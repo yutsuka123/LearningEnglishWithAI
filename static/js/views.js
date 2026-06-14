@@ -566,18 +566,22 @@ export async function conversation(root) {
     body.textContent = text;
     if (role === "ai") {
       const tools = el(`<div class="row" style="margin-top:6px"></div>`);
-      const jp = el(`<button class="btn ghost" style="padding:2px 8px">🌐 日本語訳</button>`);
-      const say = el(`<button class="btn ghost" style="padding:2px 8px">🔊 英語</button>`);
-      const tr = el(`<div class="md muted" style="margin-top:4px"></div>`);
+      const jp = el(`<button class="btn secondary">🌐 日本語訳を表示</button>`);
+      const say = el(`<button class="btn ghost">🔊 読み上げ</button>`);
+      const tr = el(`<div class="md" style="margin-top:6px;
+        border-left:3px solid var(--accent);padding-left:8px"></div>`);
       jp.addEventListener("click", async () => {
-        const en = enText(body.textContent);
+        // 英文を訳す。英語が取れなければ本文全体を訳す。
+        const en = enText(body.textContent) || body.textContent;
         if (!en.trim()) return;
         tr.textContent = "翻訳中…";
         const r = await api.post("/api/learn/translate", { text: en });
-        tr.innerHTML = r.ok ? md(r.text) : escapeHtml(r.error);
+        tr.innerHTML = r.ok
+          ? "🌐 " + md(r.text) : escapeHtml(r.error || "翻訳失敗");
         refreshCost();
       });
-      say.addEventListener("click", () => speech.speak(enText(body.textContent)));
+      say.addEventListener("click", () =>
+        speech.speak(enText(body.textContent) || body.textContent));
       tools.append(jp, say);
       m.append(tools, tr);
     }
