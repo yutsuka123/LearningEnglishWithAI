@@ -77,3 +77,4 @@ class MemoryUpdateIn(BaseModel):
 class SettingsIn(BaseModel):
     openai_api_key: str | None = None
     openai_model: str | None = None
+    openai_quality_model: str | None = None

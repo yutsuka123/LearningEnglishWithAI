@@ -17,8 +17,10 @@ from ..schemas import (
     SessionEndIn,
     WritingFeedbackIn,
 )
+from ..config import load_settings
 from ..services import ai, persistence
 from ..services.context_builder import build_context
+from ..services.metrics import toeic_estimate, word_buckets
 from ..services.spaced_repetition import select_for_review
 
 router = APIRouter(prefix="/api/learn", tags=["learn"])
@@ -86,13 +88,29 @@ def list_materials(area: str | None = None, limit: int = 20):
         return [dict(r) for r in rows]
 
 
+def _is_free_mode(payload: ConversationIn) -> bool:
+    return payload.grp == "自由会話"
+
+
 def _conversation_prompts(payload: ConversationIn) -> tuple[str, str]:
-    system = (
-        "あなたは親切な英会話パートナー兼コーチです。" + _LEVEL_NOTE +
-        f" シーン: {payload.grp} / {payload.topic}。"
-        " 自然な英語で短めに返答し、最後に【コーチ】として、学習者の文の"
-        "良い点と直すべき点を日本語で1〜2行添えてください。"
-    )
+    if _is_free_mode(payload):
+        system = (
+            "あなたは万能の英語学習チューターです。" + _LEVEL_NOTE +
+            " 学習者は英語でも日本語でも話します。日本語で話しかけられても"
+            "歓迎し、英語学習に橋渡ししてください。要望に応じて何でも対応する: "
+            "単語クイズ、フレーズ練習、リスニング(英文を読み上げ用に提示)、"
+            "ライティング添削、文法説明、ロールプレイなど。"
+            " まず自然な英語で短く応答し、必要なら日本語で簡潔に補足/解説。"
+            "学習者が『わからない』と言ったら、やさしく答えやヒントを示す。"
+            "毎回さりげなく次の一歩を促してください。"
+        )
+    else:
+        system = (
+            "あなたは親切な英会話パートナー兼コーチです。" + _LEVEL_NOTE +
+            f" シーン: {payload.grp} / {payload.topic}。"
+            " 自然な英語で短めに返答し、最後に【コーチ】として、学習者の文の"
+            "良い点と直すべき点を日本語で1〜2行添えてください。"
+        )
     window = payload.history[-6:]
     transcript = "\n".join(
         f"{m.get('role')}: {m.get('content')}" for m in window
@@ -104,12 +122,23 @@ def _conversation_prompts(payload: ConversationIn) -> tuple[str, str]:
     return system, user
 
 
+def _log_conversation(role: str, content: str, mode: str) -> None:
+    if not content.strip():
+        return
+    with db() as conn:
+        conn.execute(
+            "INSERT INTO conversation_log (role, content, mode) "
+            "VALUES (?, ?, ?)",
+            (role, content.strip(), mode),
+        )
+
+
 @router.post("/conversation")
 def conversation(payload: ConversationIn):
     """Non-streaming conversation turn (used as a fallback)."""
     system, user = _conversation_prompts(payload)
     result = ai.chat(
-        system, user, temperature=0.8, max_tokens=600, feature="conversation"
+        system, user, temperature=0.8, max_tokens=700, feature="conversation"
     )
     return {"ok": result.ok, "reply": result.text, "error": result.error}
 
@@ -118,14 +147,209 @@ def conversation(payload: ConversationIn):
 def conversation_stream(payload: ConversationIn):
     """Streamed conversation turn for responsiveness (text/plain chunks)."""
     system, user = _conversation_prompts(payload)
+    mode = "free" if _is_free_mode(payload) else (payload.topic or payload.grp)
 
     def gen():
-        yield from ai.chat_stream(
+        # Log the learner's message (real production for level judging).
+        if payload.message and not payload.message.startswith("("):
+            _log_conversation("user", payload.message, mode)
+        full = []
+        for chunk in ai.chat_stream(
             system, user, temperature=0.8,
-            max_tokens=600, feature="conversation",
-        )
+            max_tokens=700, feature="conversation",
+        ):
+            full.append(chunk)
+            yield chunk
+        _log_conversation("assistant", "".join(full), mode)
 
     return StreamingResponse(gen(), media_type="text/plain; charset=utf-8")
+
+
+@router.get("/assess")
+def assess():
+    """学習データから現在のレベルをAIが判定（品質モデルを使用）。"""
+    with db() as conn:
+        wb = word_buckets(conn, "words")
+        pb = word_buckets(conn, "phrases")
+        studied = conn.execute(
+            "SELECT english, japanese, times_asked, times_correct, "
+            "ok_en2ja, ask_en2ja, ok_ja2en, ask_ja2en "
+            "FROM words WHERE times_asked > 0 ORDER BY times_asked DESC"
+        ).fetchall()
+        convo = conn.execute(
+            "SELECT content FROM conversation_log "
+            "WHERE role = 'user' ORDER BY id DESC LIMIT 20"
+        ).fetchall()
+
+    total = wb["total"] + pb["total"]
+    mastered = wb["mastered"] + pb["mastered"]
+    avg = 0.0
+    if total:
+        avg = (wb["avg_mastery"] * wb["total"]
+               + pb["avg_mastery"] * pb["total"]) / total
+    est = toeic_estimate(avg, mastered, total)
+
+    base = {
+        "toeic_estimate": est,
+        "studied_words": len(studied),
+        "words": wb,
+        "phrases": pb,
+    }
+    if not ai.is_enabled():
+        base["ok"] = False
+        base["error"] = "OPENAI_API_KEY が未設定です。"
+        return base
+    if not studied and not convo:
+        base["ok"] = False
+        base["error"] = "まだ学習データがありません。クイズや会話をしてください。"
+        return base
+
+    lines = []
+    for w in studied:
+        acc = round(w["times_correct"] / w["times_asked"] * 100)
+        lines.append(
+            f"{w['english']}({w['japanese']}): 正答{acc}% "
+            f"英→日 {w['ok_en2ja']}/{w['ask_en2ja']} "
+            f"日→英 {w['ok_ja2en']}/{w['ask_ja2en']}"
+        )
+    convo_block = ""
+    if convo:
+        utterances = "\n".join(f"- {c['content'][:160]}" for c in convo)
+        convo_block = (
+            "\n\n## 自由会話での学習者の発話（産出力の参考）\n" + utterances
+        )
+    system = (
+        "あなたは経験豊富なTOEIC講師です。学習者の単語テスト結果"
+        "と自由会話での発話から現在の実力を診断してください。"
+        "会話の発話は文法・語彙・自然さの観点でも見てください。"
+        "出力はMarkdownで、次の見出し: "
+        "### 推定レベル(TOEICレンジ) / ### 強み / ### 弱み / "
+        "### 次に強化すべき点 / ### おすすめ学習法。"
+        "データが少ない場合はその旨も明記し、断定しすぎないこと。"
+    )
+    user = (
+        f"{build_context()}\n\n## 単語テスト結果（{len(studied)}語）\n"
+        + ("\n".join(lines) or "（まだなし）")
+        + convo_block
+        + f"\n\n## 参考: データ上のTOEIC目安 {est}点 / "
+        f"平均習熟度 {round(avg, 1)} / 習得 {mastered}語"
+    )
+    qmodel = load_settings().quality_model
+    result = ai.chat(
+        system, user, temperature=0.4, max_tokens=1100,
+        feature="assess", model=qmodel,
+    )
+    base["ok"] = result.ok
+    base["assessment"] = result.text
+    base["error"] = result.error
+    base["model"] = qmodel
+    return base
+
+
+class GenItemsIn(BaseModel):
+    kind: str = "word"   # 'word' | 'phrase'
+    count: int = 10
+    focus: str = ""      # テーマ・苦手分野など
+
+
+@router.post("/generate-items")
+def generate_items(payload: GenItemsIn):
+    """AIで単語/フレーズを生成してDBに追加（品質モデルを使用・重複は除外）。"""
+    if not ai.is_enabled():
+        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+    n = max(1, min(payload.count, 30))
+    focus = payload.focus.strip() or "日常〜ビジネス・IT"
+    qmodel = load_settings().quality_model
+
+    if payload.kind == "phrase":
+        system = (
+            "英語学習用の実用フレーズをJSON配列のみで出力します。" + _LEVEL_NOTE
+            + ' 形式: [{"english":"...","japanese":"...","scene":"..."}]'
+        )
+        user = (
+            f"{build_context()}\n\nテーマ/場面: {focus}\n"
+            f"そこで本当に使う自然なフレーズを{n}個。JSON配列のみ。"
+        )
+    else:
+        system = (
+            "英単語をJSON配列のみで出力します。" + _LEVEL_NOTE
+            + ' 形式: [{"english":"...","japanese":"...",'
+            '"pos":"品詞","example":"英語例文"}]'
+        )
+        user = (
+            f"{build_context()}\n\nテーマ/苦手分野: {focus}\n"
+            f"学習者の弱点補強に役立つ単語を{n}個。JSON配列のみ。"
+        )
+
+    result = ai.chat(
+        system, user, temperature=0.5, max_tokens=1800,
+        feature="gen_items", model=qmodel,
+    )
+    if not result.ok:
+        return {"ok": False, "error": result.error}
+
+    items = _parse_json_array(result.text)
+    if not items:
+        return {"ok": False, "error": "生成結果を解釈できませんでした。"}
+
+    added, skipped = _insert_generated(payload.kind, items)
+    return {"ok": True, "added": added, "skipped": skipped, "model": qmodel}
+
+
+def _parse_json_array(text: str) -> list:
+    raw = text.strip()
+    start, end = raw.find("["), raw.rfind("]")
+    if start == -1 or end == -1:
+        return []
+    try:
+        data = json.loads(raw[start:end + 1])
+        return data if isinstance(data, list) else []
+    except (json.JSONDecodeError, ValueError):
+        return []
+
+
+def _insert_generated(kind: str, items: list) -> tuple[list, int]:
+    added: list[dict] = []
+    skipped = 0
+    with db() as conn:
+        if kind == "phrase":
+            existing = {
+                r["english"].lower()
+                for r in conn.execute("SELECT english FROM phrases").fetchall()
+            }
+            for it in items:
+                en = str(it.get("english", "")).strip()
+                ja = str(it.get("japanese", "")).strip()
+                if not en or not ja or en.lower() in existing:
+                    skipped += 1
+                    continue
+                conn.execute(
+                    "INSERT INTO phrases (english, japanese, scene) "
+                    "VALUES (?, ?, ?)",
+                    (en, ja, str(it.get("scene", "")).strip()),
+                )
+                existing.add(en.lower())
+                added.append({"english": en, "japanese": ja})
+        else:
+            existing = {
+                r["english"].lower()
+                for r in conn.execute("SELECT english FROM words").fetchall()
+            }
+            for it in items:
+                en = str(it.get("english", "")).strip()
+                ja = str(it.get("japanese", "")).strip()
+                if not en or not ja or en.lower() in existing:
+                    skipped += 1
+                    continue
+                conn.execute(
+                    "INSERT INTO words (english, japanese, part_of_speech, "
+                    "example) VALUES (?, ?, ?, ?)",
+                    (en, ja, str(it.get("pos", "")).strip(),
+                     str(it.get("example", "")).strip()),
+                )
+                existing.add(en.lower())
+                added.append({"english": en, "japanese": ja})
+    return added, skipped
 
 
 class TtsIn(BaseModel):

@@ -36,6 +36,7 @@ def get_settings():
     return {
         "ai_enabled": s.ai_enabled,
         "model": s.openai_model,
+        "quality_model": s.quality_model,
         "api_key_masked": masked,
         "host": s.host,
         "port": s.port,
@@ -63,6 +64,8 @@ def update_settings(payload: SettingsIn):
         updates["OPENAI_API_KEY"] = payload.openai_api_key.strip()
     if payload.openai_model is not None and payload.openai_model.strip():
         updates["OPENAI_MODEL"] = payload.openai_model.strip()
+    if payload.openai_quality_model is not None:
+        updates["OPENAI_QUALITY_MODEL"] = payload.openai_quality_model.strip()
     if updates:
         _write_env(updates)
     # Re-read so the response reflects the new state immediately.

@@ -64,6 +64,7 @@ class Settings:
     port: int
     nickname: str
     tts_model: str
+    quality_model: str  # 判定・教材生成など品質重視の処理に使うモデル
     usd_jpy_rate: float
     usd_jpy_as_of: str
 
@@ -91,6 +92,8 @@ def load_settings() -> Settings:
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini").strip()
     host = os.getenv("HOST", "127.0.0.1").strip()
     tts = os.getenv("OPENAI_TTS_MODEL", "gpt-4o-mini-tts").strip()
+    # 品質重視の処理用。未設定なら通常モデルにフォールバック。
+    quality = os.getenv("OPENAI_QUALITY_MODEL", "").strip()
     rate = _parse_float(os.getenv("USD_JPY_RATE", ""), DEFAULT_USD_JPY)
     as_of = os.getenv("USD_JPY_AS_OF", "").strip() or DEFAULT_USD_JPY_AS_OF
     return Settings(
@@ -100,6 +103,7 @@ def load_settings() -> Settings:
         port=int(os.getenv("PORT", "8000")),
         nickname=os.getenv("USER_NICKNAME", "").strip(),
         tts_model=tts or "gpt-4o-mini-tts",
+        quality_model=quality or (model or "gpt-4o-mini"),
         usd_jpy_rate=rate,
         usd_jpy_as_of=as_of,
     )

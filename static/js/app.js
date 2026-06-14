@@ -24,6 +24,7 @@ const TABS = [
   ["listening", "🎧 リスニング"],
   ["news", "📰 ニュース"],
   ["literature", "📜 文学"],
+  ["assess", "🎯 判定・教材"],
   ["history", "📚 学習履歴"],
   ["settings", "⚙️ 設定"],
 ];
@@ -90,6 +91,7 @@ const ROUTES = {
   listening: views.listening,
   news: views.news,
   literature: views.literature,
+  assess: views.assess,
   history: views.history,
   settings: views.settings,
 };

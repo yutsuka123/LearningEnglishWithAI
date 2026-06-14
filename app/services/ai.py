@@ -88,9 +88,12 @@ def chat(
     temperature: float = 0.7,
     max_tokens: int = 1200,
     feature: str = "",
+    model: str | None = None,
 ) -> AIResult:
     """Single-turn chat completion. Stateless by design — we never rely on
-    server-side chat history; all context is passed in explicitly."""
+    server-side chat history; all context is passed in explicitly.
+
+    ``model`` overrides the configured chat model (used for判定/教材生成)."""
     client, settings = _client()
     if client is None:
         if not settings.ai_enabled:
@@ -103,9 +106,10 @@ def chat(
             ok=False, text="", error="OpenAI クライアントを初期化できませんでした。"
         )
 
+    use_model = model or settings.openai_model
     try:
         resp = client.chat.completions.create(
-            model=settings.openai_model,
+            model=use_model,
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
@@ -116,7 +120,7 @@ def chat(
         usage = resp.usage
         ptok = getattr(usage, "prompt_tokens", 0) or 0
         otok = getattr(usage, "completion_tokens", 0) or 0
-        cost = _record_usage(settings.openai_model, ptok, otok, feature)
+        cost = _record_usage(use_model, ptok, otok, feature)
         return AIResult(
             ok=True,
             text=resp.choices[0].message.content or "",

@@ -54,6 +54,31 @@ function aiBadgeNote() {
     : `<p class="muted">⚠️ AI未設定のため、この機能は設定でAPIキーを登録すると使えます。</p>`;
 }
 
+// Keep mostly-English lines (skip Japanese-only lines & markdown headers) so
+// read-aloud sounds natural. Falls back to the whole text if nothing matches.
+function englishOnly(text) {
+  const lines = (text || "").split("\n")
+    .map((l) => l.replace(/^[#>*\-\d.]+\s*/, "").trim())
+    .filter((l) => l);
+  const en = lines.filter((l) => {
+    const ascii = (l.match(/[A-Za-z]/g) || []).length;
+    const jp = (l.match(/[぀-ヿ一-鿿]/g) || []).length;
+    return ascii >= 8 && ascii > jp;
+  });
+  return (en.length ? en.join(" ") : text).slice(0, 3500);
+}
+
+// A reusable 🔊読み上げ / ⏹停止 control bar for generated material.
+function readAloudBar(getText) {
+  const bar = el(`<div class="row mt"></div>`);
+  const play = el(`<button class="btn ghost">🔊 英文を読み上げ</button>`);
+  const stop = el(`<button class="btn ghost">⏹ 停止</button>`);
+  play.addEventListener("click", () => speech.speak(englishOnly(getText())));
+  stop.addEventListener("click", () => speech.stopSpeaking());
+  bar.append(play, stop);
+  return bar;
+}
+
 // --- Dashboard --------------------------------------------------------------
 
 export async function dashboard(root) {
@@ -403,10 +428,12 @@ function materialView(title, sub, area, fields) {
         instruction: root.querySelector("#inst").value,
       });
       if (!r.ok) { out.textContent = r.error; return; }
-      out.innerHTML = md(r.body);
-      const say = el(`<button class="btn ghost mt">🔊 読み上げ</button>`);
-      say.addEventListener("click", () => speech.speak(r.body));
-      out.appendChild(say);
+      out.innerHTML = "";
+      out.appendChild(readAloudBar(() => r.body)); // controls at top
+      const body = el(`<div class="md mt"></div>`);
+      body.innerHTML = md(r.body);
+      out.appendChild(body);
+      out.appendChild(readAloudBar(() => r.body)); // and at bottom
       refreshCost();
     });
   };
@@ -469,13 +496,15 @@ export async function conversation(root) {
   const voice = speech.pickRoundVoice();
   root.innerHTML = `
     <h1>英会話</h1>
-    <p class="sub">AIの声: <b>${voice || "未取得"}</b>（毎回ランダム）</p>
+    <p class="sub">AIの声: <b id="voiceName">${voice || "未取得"}</b>
+      <button class="btn ghost" id="changeVoice"
+        style="padding:2px 8px">🔁 声を変える</button></p>
     ${aiBadgeNote()}
     <div class="card">
       <div class="row">
         <select id="mode">
           <option value="scene">🎬 シーン会話</option>
-          <option value="free">💬 自由会話</option>
+          <option value="free">💬 自由会話(なんでも相談)</option>
         </select>
         <span id="sceneSel" class="row">
           <select id="grp">${grps.map((g) =>
@@ -486,6 +515,9 @@ export async function conversation(root) {
           AI返答を読み上げ</label>
         <button class="btn secondary" id="start">AIから始める</button>
       </div>
+      <p id="freeHelp" class="muted" style="display:none">
+        日本語でもOK。単語・フレーズ・リスニング・ライティング、何でも相談できます。
+        「録音」で話し、「わからない」で答えを教えてもらえます。</p>
       <div class="chat" id="chat"></div>
       <div id="inputArea" class="mt"></div>
     </div>`;
@@ -500,8 +532,19 @@ export async function conversation(root) {
   };
   root.querySelector("#grp").addEventListener("change", fillTopics);
   fillTopics();
+  const buildInput = () => renderInput();
   modeSel.addEventListener("change", () => {
-    sceneSel.style.display = modeSel.value === "free" ? "none" : "";
+    const free = modeSel.value === "free";
+    sceneSel.style.display = free ? "none" : "";
+    root.querySelector("#freeHelp").style.display = free ? "" : "none";
+    buildInput();
+  });
+
+  // 声を変えるボタン: 別の声をランダムに選び直して表示。
+  root.querySelector("#changeVoice").addEventListener("click", () => {
+    const v = speech.pickRoundVoice();
+    root.querySelector("#voiceName").textContent = v || "なし";
+    toast("声: " + (v || "なし"));
   });
 
   function scene() {
@@ -556,9 +599,58 @@ export async function conversation(root) {
 
   root.querySelector("#start").addEventListener("click", () => send("", true));
 
+  // Custom input bar: input language, record toggle, わからない, send, auto.
   const inputArea = root.querySelector("#inputArea");
-  inputArea.appendChild(answerInput((t) => send(t),
-    { lang: "en-US", placeholder: "英語で話しかける" }));
+  function renderInput() {
+    const free = modeSel.value === "free";
+    inputArea.innerHTML = "";
+    const ta = el(`<textarea placeholder="${free
+      ? "英語でも日本語でもOK" : "英語で話しかける"}"></textarea>`);
+    const bar = el(`<div class="row mt"></div>`);
+    const langSel = el(`<select title="音声入力の言語">
+      <option value="en-US">🎤 英語</option>
+      <option value="ja-JP" ${free ? "" : ""}>🎤 日本語</option></select>`);
+    const mic = el(`<button class="btn good">🎤 録音</button>`);
+    const dk = el(`<button class="btn ghost">🤔 わからない</button>`);
+    const sendBtn = el(`<button class="btn">✓ 送信</button>`);
+    const auto = el(`<label class="toggle"><input type="checkbox" id="cAuto"
+      ${speech.isVoiceAutoSubmit() ? "checked" : ""}/> 録音後に自動送信</label>`);
+
+    sendBtn.addEventListener("click", () => {
+      const t = ta.value; ta.value = ""; send(t);
+    });
+    dk.addEventListener("click", () => {
+      send(free ? "わかりません。やさしく教えてください。"
+        : "I don't know. Could you tell me the answer?");
+    });
+    auto.querySelector("input").addEventListener("change", (e) =>
+      speech.setVoiceAutoSubmit(e.target.checked));
+
+    let recorder = null;
+    let recording = false;
+    mic.addEventListener("click", async () => {
+      if (!recording) {
+        try {
+          recorder = speech.createRecorder(langSel.value);
+          recorder.start(); recording = true;
+          mic.textContent = "⏹ 停止"; mic.classList.replace("good", "bad");
+        } catch (e) { toast(e.message); }
+      } else {
+        recording = false; mic.disabled = true; mic.textContent = "認識中…";
+        const said = await recorder.stop();
+        ta.value = said;
+        mic.disabled = false; mic.textContent = "🎤 録音";
+        mic.classList.replace("bad", "good");
+        if (said.trim() && speech.isVoiceAutoSubmit()) {
+          ta.value = ""; send(said);
+        }
+      }
+    });
+
+    bar.append(langSel, mic, dk, sendBtn, auto);
+    inputArea.append(ta, bar);
+  }
+  renderInput();
 }
 
 // --- Listening --------------------------------------------------------------
@@ -610,6 +702,93 @@ export async function listening(root) {
       weak_areas: root.querySelector("#weak").value,
     });
     toast("記録しました"); go("listening");
+  });
+}
+
+// --- Assessment + material generation --------------------------------------
+
+export async function assess(root) {
+  const p = await api.get("/api/system/progress");
+  const w = p.words;
+  root.innerHTML = `
+    <h1>判定・教材作成</h1>
+    <p class="sub">好きなタイミングで実力を判定し、苦手に合わせて教材を追加できます。</p>
+
+    <div class="card">
+      <h2>🎯 レベル判定</h2>
+      <div class="grid cols-3">
+        <div class="stat"><div class="num">${p.toeic_estimate}</div>
+          <div class="lbl">TOEIC換算(目安)</div></div>
+        <div class="stat"><div class="num">${w.studied}</div>
+          <div class="lbl">学習済み単語</div></div>
+        <div class="stat"><div class="num">${w.mastered}</div>
+          <div class="lbl">習得(80+)</div></div>
+      </div>
+      ${aiBadgeNote()}
+      <div class="row mt">
+        <button class="btn" id="run" ${state.aiEnabled ? "" : "disabled"}>
+          AIで判定実施</button>
+        <button class="btn secondary" id="saveMem" style="display:none">
+          判定をmemoryに保存</button>
+      </div>
+      <div id="out" class="md mt"></div>
+    </div>
+
+    <div class="card">
+      <h2>📚 追加教材を作成</h2>
+      <p class="muted">AIが今のレベル・苦手に合わせて単語/フレーズを生成し、
+        そのままDBに追加します（重複は自動でスキップ）。</p>
+      <div class="row">
+        <select id="kind">
+          <option value="word">英単語</option>
+          <option value="phrase">フレーズ</option>
+        </select>
+        <select id="count">
+          <option>10</option><option>20</option><option>30</option>
+        </select>
+        <input id="focus" placeholder="テーマ・苦手分野(任意 例: IT会議, 旅行)"
+          style="width:300px" />
+        <button class="btn good" id="gen" ${state.aiEnabled ? "" : "disabled"}>
+          生成して追加</button>
+      </div>
+      <div id="genOut" class="md mt"></div>
+    </div>`;
+
+  let lastAssessment = "";
+  root.querySelector("#run").addEventListener("click", async () => {
+    const out = root.querySelector("#out");
+    out.textContent = "判定中…（品質モデルを使用）";
+    const r = await api.get("/api/learn/assess");
+    if (!r.ok) { out.textContent = r.error || "判定できませんでした"; refreshCost(); return; }
+    lastAssessment = r.assessment;
+    out.innerHTML = md(r.assessment) +
+      `<p class="muted">使用モデル: ${r.model || "-"} / 学習済み ${r.studied_words}語</p>`;
+    root.querySelector("#saveMem").style.display = "";
+    refreshCost();
+  });
+
+  root.querySelector("#saveMem").addEventListener("click", async () => {
+    const cur = (await api.get("/api/system/memory")).content;
+    const stamp = "\n\n## AI判定メモ\n" + lastAssessment + "\n";
+    await api.put("/api/system/memory", { content: cur + stamp });
+    toast("memory.md に保存しました");
+  });
+
+  root.querySelector("#gen").addEventListener("click", async () => {
+    const out = root.querySelector("#genOut");
+    out.textContent = "生成中…（品質モデルを使用）";
+    const r = await api.post("/api/learn/generate-items", {
+      kind: root.querySelector("#kind").value,
+      count: parseInt(root.querySelector("#count").value),
+      focus: root.querySelector("#focus").value,
+    });
+    if (!r.ok) { out.textContent = r.error || "生成失敗"; refreshCost(); return; }
+    const list = r.added.map((x) =>
+      `- ${escapeHtml(x.english)} — ${escapeHtml(x.japanese)}`).join("\n");
+    out.innerHTML = md(
+      `**${r.added.length}件 追加**（重複スキップ ${r.skipped}件 / モデル ${r.model}）\n\n`
+      + (list || "（追加なし）"));
+    refreshCost();
   });
 }
 
@@ -692,6 +871,13 @@ export async function settings(root) {
           `<option ${m === s.model ? "selected" : ""}>${m}</option>`).join("")}</select>
         <button class="btn good" id="save">保存</button>
       </div>
+      <div class="row mt">
+        <label class="toggle">判定・教材用モデル(高品質)</label>
+        <input id="qmodel" placeholder="例: gpt-4o（空欄なら通常モデル）"
+          value="${escapeHtml(s.quality_model || "")}" style="width:280px" />
+      </div>
+      <p class="muted">通常の会話/クイズは上の安価なモデル、判定・教材作成だけ
+        この高品質モデルを使います。お使いのアカウントで有効なモデル名を入力。</p>
       <p class="muted">ニックネームや個人情報は .env の USER_NICKNAME に記載してください
         （git管理ファイルには保存しません）。</p>
     </div>
@@ -731,7 +917,10 @@ export async function settings(root) {
     </div>`;
 
   root.querySelector("#save").addEventListener("click", async () => {
-    const body = { openai_model: root.querySelector("#model").value };
+    const body = {
+      openai_model: root.querySelector("#model").value,
+      openai_quality_model: root.querySelector("#qmodel").value,
+    };
     const key = root.querySelector("#key").value.trim();
     if (key) body.openai_api_key = key;
     await api.put("/api/system/settings", body);
