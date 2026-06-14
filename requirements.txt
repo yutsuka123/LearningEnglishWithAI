@@ -9,5 +9,8 @@ pydantic>=2.11
 # Environment / config
 python-dotenv>=1.0
 
+# Audio upload (speech-to-text endpoint) — required by FastAPI for File()
+python-multipart>=0.0.9
+
 # OpenAI (optional at runtime — app works without a key)
 openai>=1.59

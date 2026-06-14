@@ -172,10 +172,11 @@ export function quizRunner(config) {
       <p class="muted">あなたの答え: ${answer || "（なし）"}</p>
       <p class="quiz-answer">正解: ${correctText}</p>
       <p class="muted">${item.english} — ${item.japanese}</p>
-      ${item.example ? `<p class="muted">例: ${item.example}</p>` : ""}
+      <div id="exArea" class="mt"></div>
       <p>${auto ? "✅ 自動判定: 正解" : "❌ 自動判定: 不正解"}（必要なら修正）</p>
       <div class="row center" style="justify-content:center"></div>`;
     speech.speak(item.english);
+    renderExample(area.querySelector("#exArea"), item);
     const row = area.querySelector(".row");
     const ok = el(`<button class="btn good">⭕ 正解</button>`);
     const vague = el(`<button class="btn" style="background:var(--warn);color:#3a2600">🤔 うろ覚え</button>`);
@@ -186,6 +187,51 @@ export function quizRunner(config) {
     ng.addEventListener("click", () => record(item, direction, "wrong"));
     skip.addEventListener("click", () => { skippedCount++; idx++; render(); });
     row.append(ok, vague, ng, skip);
+  }
+
+  function renderExample(box, item) {
+    // 例文（フレーズ）＋読み上げ＋日本語訳。例文が無ければAIで生成。
+    const phrase = (item.example || "").trim();
+    box.innerHTML = "";
+    const line = el(`<p class="muted">${phrase
+      ? "例文: " + phrase : "（例文なし）"}</p>`);
+    const tools = el(`<div class="row center" style="justify-content:center"></div>`);
+    const say = el(`<button class="btn ghost">🔊 例文を聞く</button>`);
+    const jp = el(`<button class="btn ghost">🌐 例文の訳</button>`);
+    const gen = el(`<button class="btn ghost">📝 例文を作る</button>`);
+    const tr = el(`<p class="muted"></p>`);
+
+    const speakable = () => line.dataset.en || phrase;
+    say.addEventListener("click", () => {
+      const t = speakable(); if (t) speech.speak(t);
+    });
+    jp.addEventListener("click", async () => {
+      const t = speakable(); if (!t) return;
+      tr.textContent = "翻訳中…";
+      try {
+        const r = await api.post("/api/learn/translate", { text: t });
+        tr.textContent = r.ok ? "訳: " + r.text : (r.error || "失敗");
+      } catch (e) { tr.textContent = "失敗"; }
+    });
+    gen.addEventListener("click", async () => {
+      line.textContent = "例文を生成中…";
+      try {
+        const r = await api.post("/api/learn/example",
+          { word: item.english });
+        if (r.ok && r.english) {
+          line.textContent = "例文: " + r.english;
+          line.dataset.en = r.english;
+          if (r.japanese) tr.textContent = "訳: " + r.japanese;
+          tools.append(say, jp);
+          gen.remove();
+        } else { line.textContent = r.error || "生成失敗"; }
+      } catch (e) { line.textContent = "生成失敗"; }
+    });
+
+    box.append(line);
+    if (phrase) { tools.append(say, jp); }
+    else { tools.append(gen); }
+    box.append(tools, tr);
   }
 
   async function record(item, direction, result) {

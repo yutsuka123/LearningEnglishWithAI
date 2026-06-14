@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 from datetime import date
 
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, File, Response, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
@@ -163,6 +163,80 @@ def conversation_stream(payload: ConversationIn):
         _log_conversation("assistant", "".join(full), mode)
 
     return StreamingResponse(gen(), media_type="text/plain; charset=utf-8")
+
+
+class TranslateIn(BaseModel):
+    text: str
+
+
+@router.post("/translate")
+def translate(payload: TranslateIn):
+    """英文を日本語に訳す（会話の「日本語訳を表示」用）。"""
+    if not ai.is_enabled():
+        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+    system = "次の英文を自然な日本語に訳してください。訳文のみ出力。"
+    result = ai.chat(
+        system, payload.text, temperature=0.2,
+        max_tokens=600, feature="translate",
+    )
+    return {"ok": result.ok, "text": result.text, "error": result.error}
+
+
+class ExampleIn(BaseModel):
+    word: str
+
+
+@router.post("/example")
+def example_sentence(payload: ExampleIn):
+    """単語を使った例文を1つ生成（英文＋日本語訳）。"""
+    if not ai.is_enabled():
+        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+    system = (
+        "英単語を使った短い例文を1つ作ります。" + _LEVEL_NOTE +
+        ' JSONのみ出力: {"english":"...","japanese":"...訳..."}'
+    )
+    result = ai.chat(
+        system, f'単語: "{payload.word}"',
+        temperature=0.5, max_tokens=200, feature="example",
+    )
+    if not result.ok:
+        return {"ok": False, "error": result.error}
+    raw = result.text.strip()
+    s, e = raw.find("{"), raw.rfind("}")
+    try:
+        data = json.loads(raw[s:e + 1]) if s != -1 else {}
+    except (json.JSONDecodeError, ValueError):
+        data = {}
+    return {
+        "ok": True,
+        "english": str(data.get("english", "")).strip(),
+        "japanese": str(data.get("japanese", "")).strip(),
+    }
+
+
+@router.post("/reply-examples")
+def reply_examples(payload: ConversationIn):
+    """直近のAI発話に対する「返答例」を生成（答えに困ったとき用）。"""
+    if not ai.is_enabled():
+        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+    window = payload.history[-6:]
+    transcript = "\n".join(
+        f"{m.get('role')}: {m.get('content')}" for m in window
+    )
+    system = (
+        "あなたは英会話コーチです。" + _LEVEL_NOTE +
+        " 直近のAIの発話に対して、学習者が言える自然な返答例を3つ、"
+        "英語＋日本語訳つきでMarkdownの箇条書きで示してください。短く実用的に。"
+    )
+    user = (
+        f"## これまでの会話\n{transcript}\n\n"
+        "学習者が次に言える英語の返答例を3つ提案してください。"
+    )
+    result = ai.chat(
+        system, user, temperature=0.7,
+        max_tokens=500, feature="reply_examples",
+    )
+    return {"ok": result.ok, "text": result.text, "error": result.error}
 
 
 @router.get("/assess")
@@ -355,6 +429,16 @@ def _insert_generated(kind: str, items: list) -> tuple[list, int]:
 class TtsIn(BaseModel):
     text: str
     voice: str = "alloy"
+
+
+@router.post("/transcribe")
+async def transcribe(file: UploadFile = File(...)):
+    """音声→テキスト（言語自動判定）。英会話の音声入力に使用。"""
+    audio = await file.read()
+    text, error = ai.transcribe(audio, file.filename or "audio.webm")
+    if error:
+        return {"ok": False, "error": error}
+    return {"ok": True, "text": text}
 
 
 @router.post("/tts")
