@@ -557,6 +557,12 @@ export async function conversation(root) {
   const chat = root.querySelector("#chat");
   const history = [];
   const enText = (t) => englishOnly((t || "").split("【コーチ")[0]);
+  // コーチの改善後の英文例（【例】以降の1文）を取り出す。
+  const coachExample = (t) => {
+    const i = (t || "").indexOf("【例】");
+    if (i === -1) return "";
+    return (t.slice(i + 3).split("\n")[0] || "").trim();
+  };
 
   function addMsg(role, text) {
     const m = el(`<div class="msg ${role}">
@@ -568,6 +574,7 @@ export async function conversation(root) {
       const tools = el(`<div class="row" style="margin-top:6px"></div>`);
       const jp = el(`<button class="btn secondary">🌐 日本語訳を表示</button>`);
       const say = el(`<button class="btn ghost">🔊 読み上げ</button>`);
+      const sayEx = el(`<button class="btn ghost">🔊 添削例を読む</button>`);
       const tr = el(`<div class="md" style="margin-top:6px;
         border-left:3px solid var(--accent);padding-left:8px"></div>`);
       jp.addEventListener("click", async () => {
@@ -582,7 +589,11 @@ export async function conversation(root) {
       });
       say.addEventListener("click", () =>
         speech.speak(enText(body.textContent) || body.textContent));
-      tools.append(jp, say);
+      sayEx.addEventListener("click", () => {
+        const ex = coachExample(body.textContent);
+        if (ex) speech.speak(ex); else toast("添削例がありません");
+      });
+      tools.append(jp, say, sayEx);
       m.append(tools, tr);
     }
     chat.appendChild(m); chat.scrollTop = chat.scrollHeight;
