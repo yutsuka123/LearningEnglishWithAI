@@ -556,13 +556,40 @@ export async function conversation(root) {
 
   const chat = root.querySelector("#chat");
   const history = [];
+  const enText = (t) => englishOnly((t || "").split("【コーチ")[0]);
+
   function addMsg(role, text) {
     const m = el(`<div class="msg ${role}">
       <div class="who">${role === "user" ? "あなた" : "AI"}</div>
       <div class="body"></div></div>`);
-    m.querySelector(".body").textContent = text;
+    const body = m.querySelector(".body");
+    body.textContent = text;
+    if (role === "ai") {
+      const tools = el(`<div class="row" style="margin-top:6px"></div>`);
+      const jp = el(`<button class="btn ghost" style="padding:2px 8px">🌐 日本語訳</button>`);
+      const say = el(`<button class="btn ghost" style="padding:2px 8px">🔊 英語</button>`);
+      const tr = el(`<div class="md muted" style="margin-top:4px"></div>`);
+      jp.addEventListener("click", async () => {
+        const en = enText(body.textContent);
+        if (!en.trim()) return;
+        tr.textContent = "翻訳中…";
+        const r = await api.post("/api/learn/translate", { text: en });
+        tr.innerHTML = r.ok ? md(r.text) : escapeHtml(r.error);
+        refreshCost();
+      });
+      say.addEventListener("click", () => speech.speak(enText(body.textContent)));
+      tools.append(jp, say);
+      m.append(tools, tr);
+    }
     chat.appendChild(m); chat.scrollTop = chat.scrollHeight;
-    return m.querySelector(".body");
+    return body;
+  }
+
+  function addHelper(label, text) {
+    const m = el(`<div class="msg ai" style="background:var(--panel)">
+      <div class="who">${label}</div><div class="md"></div></div>`);
+    m.querySelector(".md").innerHTML = md(text);
+    chat.appendChild(m); chat.scrollTop = chat.scrollHeight;
   }
 
   // message can be a user turn, or an AI-initiated opener (kickoff=true).
@@ -608,11 +635,14 @@ export async function conversation(root) {
     const ta = el(`<textarea placeholder="${free
       ? "英語でも日本語でもOK" : "英語で話しかける"}"></textarea>`);
     const bar = el(`<div class="row mt"></div>`);
+    const aiStt = speech.aiSttSupported() && state.aiEnabled;
     const langSel = el(`<select title="音声入力の言語">
+      ${aiStt ? '<option value="auto">🎤 自動(AI・高精度)</option>' : ""}
       <option value="en-US">🎤 英語</option>
-      <option value="ja-JP" ${free ? "" : ""}>🎤 日本語</option></select>`);
+      <option value="ja-JP">🎤 日本語</option></select>`);
     const mic = el(`<button class="btn good">🎤 録音</button>`);
     const dk = el(`<button class="btn ghost">🤔 わからない</button>`);
+    const ex = el(`<button class="btn ghost">💡 返答例</button>`);
     const sendBtn = el(`<button class="btn">✓ 送信</button>`);
     const auto = el(`<label class="toggle"><input type="checkbox" id="cAuto"
       ${speech.isVoiceAutoSubmit() ? "checked" : ""}/> 録音後に自動送信</label>`);
@@ -632,7 +662,9 @@ export async function conversation(root) {
     mic.addEventListener("click", async () => {
       if (!recording) {
         try {
-          recorder = speech.createRecorder(langSel.value);
+          recorder = langSel.value === "auto"
+            ? await speech.createAIRecorder()
+            : speech.createRecorder(langSel.value);
           recorder.start(); recording = true;
           mic.textContent = "⏹ 停止"; mic.classList.replace("good", "bad");
         } catch (e) { toast(e.message); }
@@ -648,7 +680,19 @@ export async function conversation(root) {
       }
     });
 
-    bar.append(langSel, mic, dk, sendBtn, auto);
+    // 返答例: 直近のAI発話に対して、どう答えればよいか例を表示。
+    ex.addEventListener("click", async () => {
+      if (!state.aiEnabled) { toast("AI未設定です"); return; }
+      toast("返答例を生成中…");
+      const s = scene();
+      const r = await api.post("/api/learn/reply-examples", {
+        grp: s.grp, topic: s.topic, history, message: "",
+      });
+      if (r.ok) addHelper("💡 返答例", r.text);
+      refreshCost();
+    });
+
+    bar.append(langSel, mic, dk, ex, sendBtn, auto);
     inputArea.append(ta, bar);
   }
   renderInput();

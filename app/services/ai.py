@@ -225,6 +225,42 @@ def synthesize_speech(
         return None, f"音声合成に失敗しました: {exc}"
 
 
+def transcribe(
+    audio_bytes: bytes, filename: str = "audio.webm"
+) -> tuple[str | None, str | None]:
+    """Speech-to-text via OpenAI (auto language detection). Returns
+    (text, error). Much more accurate than the browser recognizer for
+    non-native English."""
+    import io
+
+    client, settings = _client()
+    if client is None:
+        if not settings.ai_enabled:
+            return None, "OPENAI_API_KEY が未設定です。"
+        return None, "OpenAI クライアントを初期化できませんでした。"
+    try:
+        f = io.BytesIO(audio_bytes)
+        f.name = filename
+        resp = client.audio.transcriptions.create(
+            model="whisper-1",
+            file=f,
+        )
+        # whisper-1 ≈ $0.006/min。長さ不明のため概算（音声バイト数から推定）。
+        minutes = max(len(audio_bytes) / (16000 * 60), 0.05)
+        cost = minutes * 0.006
+        with db() as conn:
+            conn.execute(
+                "INSERT INTO ai_usage "
+                "(model, prompt_tokens, output_tokens, cost_usd, feature) "
+                "VALUES ('whisper-1', 0, 0, ?, 'stt')",
+                (cost,),
+            )
+        return resp.text, None
+    except Exception as exc:
+        log.error("STT 失敗: %s", exc)
+        return None, f"文字起こしに失敗しました: {exc}"
+
+
 def usage_summary() -> dict:
     """Return total + recent API usage and estimated cost for the UI."""
     with db() as conn:

@@ -219,6 +219,44 @@ export function listenOnce(lang = "en-US") {
   });
 }
 
+// AI recorder: records mic audio and transcribes via the backend (Whisper),
+// which AUTO-DETECTS the language and handles non-native English far better
+// than the browser recognizer. Same {start, stop()->text} shape.
+export function aiSttSupported() {
+  return !!(navigator.mediaDevices && window.MediaRecorder);
+}
+
+export async function createAIRecorder() {
+  if (!aiSttSupported()) throw new Error("録音に未対応のブラウザです");
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const chunks = [];
+  const mr = new MediaRecorder(stream);
+  mr.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+  mr.start();
+  return {
+    start() { /* already recording */ },
+    stop() {
+      return new Promise((resolve) => {
+        mr.onstop = async () => {
+          stream.getTracks().forEach((t) => t.stop());
+          const blob = new Blob(chunks, { type: mr.mimeType || "audio/webm" });
+          try {
+            const fd = new FormData();
+            fd.append("file", blob, "audio.webm");
+            const res = await fetch("/api/learn/transcribe", {
+              method: "POST", body: fd,
+            });
+            const d = await res.json();
+            if (usageCb) usageCb();
+            resolve(d && d.ok ? (d.text || "") : "");
+          } catch (e) { resolve(""); }
+        };
+        try { mr.stop(); } catch (e) { resolve(""); }
+      });
+    },
+  };
+}
+
 // Toggle-style recorder: start() begins continuous recording, stop() ends it
 // and resolves with the recognized text. Robust against onend not firing.
 export function createRecorder(lang = "en-US") {
