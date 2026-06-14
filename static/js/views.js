@@ -281,6 +281,20 @@ export async function vocab(root) {
       </div>
     </div>
     <div class="card">
+      <h2>一括インポート</h2>
+      <p class="muted">「英単語 [タブ/カンマ] 日本語」を1行ずつ貼り付け。
+        番号付きの一覧でもOK。AIが訳を精査し例文を自動生成します。</p>
+      <textarea id="bulk" style="min-height:120px"
+        placeholder="例:\ncompany\t会社\nseveral\tいくつかの"></textarea>
+      <div class="row mt">
+        <label class="toggle"><input type="checkbox" id="genEx" checked />
+          例文をAI生成・訳を精査（要API）</label>
+        <button class="btn" id="imp" ${state.aiEnabled ? "" : ""}>
+          インポート</button>
+      </div>
+      <div id="impOut" class="muted mt"></div>
+    </div>
+    <div class="card">
       <h2>単語一覧 (${words.length})</h2>
       <table><thead><tr>
         <th>英語</th><th>日本語</th><th>習熟度</th><th>正答率</th>
@@ -316,6 +330,24 @@ export async function vocab(root) {
       example: root.querySelector("#ex").value,
     });
     go("vocab");
+  });
+
+  root.querySelector("#imp").addEventListener("click", async () => {
+    const text = root.querySelector("#bulk").value;
+    if (!text.trim()) { toast("貼り付けてください"); return; }
+    const out = root.querySelector("#impOut");
+    out.textContent = "インポート中…（AI生成は数十秒かかることがあります）";
+    try {
+      const r = await api.post("/api/words/import", {
+        text,
+        generate_examples: root.querySelector("#genEx").checked,
+      });
+      out.textContent =
+        `解析 ${r.parsed} / 追加 ${r.added} / 重複スキップ ${r.skipped}`
+        + ` / 例文生成 ${r.examples}`;
+      refreshCost();
+      setTimeout(() => go("vocab"), 1500);
+    } catch (e) { out.textContent = "失敗: " + e.message; }
   });
 
   root.querySelector("#quiz").addEventListener("click", async () => {
