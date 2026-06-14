@@ -41,13 +41,25 @@ export function quizRunner(config) {
   const endpoint = kind === "word"
     ? "/api/words/attempt" : "/api/phrases/attempt";
 
-  // Build the question queue: both directions per item, shuffled per item.
-  const queue = [];
+  // Build the question queue so the two directions of the SAME item are well
+  // separated: first half = one direction per item, second half = the other.
+  // Each half is shuffled independently. → 同じ単語の和英/英和が連続しない。
+  const shuffle = (arr) => {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+  const firstHalf = [];
+  const secondHalf = [];
   items.forEach((it) => {
     const dirs = Math.random() < 0.5
       ? ["en2ja", "ja2en"] : ["ja2en", "en2ja"];
-    dirs.forEach((d) => queue.push({ item: it, direction: d }));
+    firstHalf.push({ item: it, direction: dirs[0] });
+    secondHalf.push({ item: it, direction: dirs[1] });
   });
+  const queue = [...shuffle(firstHalf), ...shuffle(secondHalf)];
 
   let idx = 0;
   let correctCount = 0;
