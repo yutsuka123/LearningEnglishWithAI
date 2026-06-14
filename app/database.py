@@ -281,14 +281,21 @@ def _seed_listening(conn: sqlite3.Connection) -> None:
 
 def _seed_words(conn: sqlite3.Connection) -> None:
     """Top-up: insert any seed word whose English isn't already present.
-    Lets us grow the seed list over time without duplicating existing rows."""
+    De-duplicates against the DB AND within the combined list (case-insensitive)
+    so the seed can grow over time without creating duplicate rows."""
     from .seed_data import WORDS
+    from .seed_toeic import TOEIC_WORDS
 
-    existing = {
+    seen = {
         r["english"].lower()
         for r in conn.execute("SELECT english FROM words").fetchall()
     }
-    new_rows = [w for w in WORDS if w[0].lower() not in existing]
+    new_rows = []
+    for w in [*WORDS, *TOEIC_WORDS]:
+        key = w[0].strip().lower()
+        if key and key not in seen:
+            seen.add(key)
+            new_rows.append(w)
     if new_rows:
         conn.executemany(
             "INSERT INTO words (english, japanese, part_of_speech, example) "
