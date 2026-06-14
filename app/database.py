@@ -1,0 +1,293 @@
+"""SQLite database: connection management, schema, and seed data.
+
+Uses the Python standard-library ``sqlite3`` module (no native build step),
+so it works identically on Windows and macOS. The database file lives under
+the data directory defined in :mod:`app.config`.
+"""
+
+from __future__ import annotations
+
+import sqlite3
+from contextlib import contextmanager
+from datetime import date
+from typing import Iterator
+
+from .config import paths
+
+# ---------------------------------------------------------------------------
+# Schema
+# ---------------------------------------------------------------------------
+
+SCHEMA = """
+CREATE TABLE IF NOT EXISTS words (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    english       TEXT    NOT NULL,
+    japanese      TEXT    NOT NULL,
+    part_of_speech TEXT   DEFAULT '',
+    example       TEXT    DEFAULT '',
+    mastery       INTEGER NOT NULL DEFAULT 0,   -- 0..100
+    last_studied  TEXT,                          -- ISO date
+    times_asked   INTEGER NOT NULL DEFAULT 0,
+    times_correct INTEGER NOT NULL DEFAULT 0,
+    -- Per-direction counters (英→日 / 日→英) for accuracy display.
+    ask_en2ja     INTEGER NOT NULL DEFAULT 0,
+    ok_en2ja      INTEGER NOT NULL DEFAULT 0,
+    ask_ja2en     INTEGER NOT NULL DEFAULT 0,
+    ok_ja2en      INTEGER NOT NULL DEFAULT 0,
+    -- Forgetting-curve schedule (Leitner-style box + due date).
+    review_level  INTEGER NOT NULL DEFAULT 0,
+    next_review   TEXT,                          -- ISO date when due again
+    created_at    TEXT    NOT NULL DEFAULT (date('now'))
+);
+
+-- Per-attempt log so we can award +5 only when BOTH directions are correct.
+CREATE TABLE IF NOT EXISTS word_attempts (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    word_id   INTEGER NOT NULL REFERENCES words(id) ON DELETE CASCADE,
+    direction TEXT    NOT NULL,                  -- 'ja2en' | 'en2ja'
+    correct   INTEGER NOT NULL,                  -- 0 | 1
+    created_at TEXT   NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Generic mastery-tracked categories for 会話/リーディング/ライティング/文学.
+CREATE TABLE IF NOT EXISTS categories (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    area         TEXT    NOT NULL,   -- conversation/reading/writing/literature
+    grp          TEXT    DEFAULT '', -- 日常会話 / ビジネス / IT / 旅行 ...
+    name         TEXT    NOT NULL,
+    mastery      INTEGER NOT NULL DEFAULT 0,
+    last_studied TEXT,
+    study_count  INTEGER NOT NULL DEFAULT 0,
+    UNIQUE(area, grp, name)
+);
+
+-- Listening has extra fields (accent, weak areas, comprehension).
+CREATE TABLE IF NOT EXISTS listening_topics (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    source        TEXT NOT NULL,    -- 映画/ドラマ/YouTube/ニュース
+    accent        TEXT DEFAULT '',  -- アメリカ英語 / イギリス英語
+    comprehension INTEGER NOT NULL DEFAULT 0,  -- 0..100
+    weak_areas    TEXT DEFAULT '',
+    study_count   INTEGER NOT NULL DEFAULT 0,
+    last_studied  TEXT,
+    UNIQUE(source, accent)
+);
+
+-- Generated study materials (news / literature / reading passages, etc.).
+CREATE TABLE IF NOT EXISTS materials (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    area        TEXT NOT NULL,      -- 'news' | 'reading' | 'literature' | ...
+    field       TEXT DEFAULT '',    -- 経済/AI/IT/軍事/政治/文化 or category
+    title       TEXT NOT NULL,
+    body        TEXT NOT NULL,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- One row per study session (the daily 学習履歴).
+CREATE TABLE IF NOT EXISTS study_sessions (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    study_date   TEXT NOT NULL DEFAULT (date('now')),
+    content      TEXT DEFAULT '',   -- 今日学んだ内容
+    accuracy     INTEGER,           -- 0..100, nullable
+    weak_points  TEXT DEFAULT '',
+    next_topic   TEXT DEFAULT '',
+    new_words    TEXT DEFAULT '',
+    created_at   TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Mini-phrases (ミニフレーズ): short useful expressions, mastery-tracked
+-- the same way as words (both directions + forgetting curve).
+CREATE TABLE IF NOT EXISTS phrases (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    english      TEXT NOT NULL,
+    japanese     TEXT NOT NULL,
+    scene        TEXT DEFAULT '',   -- 日常 / 映画 / ニュース ...
+    mastery      INTEGER NOT NULL DEFAULT 0,
+    last_studied TEXT,
+    study_count  INTEGER NOT NULL DEFAULT 0,
+    times_asked   INTEGER NOT NULL DEFAULT 0,
+    times_correct INTEGER NOT NULL DEFAULT 0,
+    ask_en2ja     INTEGER NOT NULL DEFAULT 0,
+    ok_en2ja      INTEGER NOT NULL DEFAULT 0,
+    ask_ja2en     INTEGER NOT NULL DEFAULT 0,
+    ok_ja2en      INTEGER NOT NULL DEFAULT 0,
+    review_level  INTEGER NOT NULL DEFAULT 0,
+    next_review   TEXT
+);
+
+CREATE TABLE IF NOT EXISTS phrase_attempts (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    phrase_id  INTEGER NOT NULL REFERENCES phrases(id) ON DELETE CASCADE,
+    direction  TEXT    NOT NULL,
+    correct    INTEGER NOT NULL,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+-- AI token usage + estimated cost, one row per call (§ usage/cost display).
+CREATE TABLE IF NOT EXISTS ai_usage (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    model         TEXT NOT NULL,
+    prompt_tokens INTEGER NOT NULL DEFAULT 0,
+    output_tokens INTEGER NOT NULL DEFAULT 0,
+    cost_usd      REAL NOT NULL DEFAULT 0,
+    feature       TEXT DEFAULT '',
+    created_at    TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Key/value store: monthly-decay bookkeeping, API key override, etc.
+CREATE TABLE IF NOT EXISTS app_state (
+    key   TEXT PRIMARY KEY,
+    value TEXT
+);
+"""
+
+def _seed_phrases(conn: sqlite3.Connection) -> None:
+    from .seed_data import PHRASES
+
+    count = conn.execute("SELECT COUNT(*) AS c FROM phrases").fetchone()["c"]
+    if count == 0:
+        conn.executemany(
+            "INSERT INTO phrases (english, japanese, scene) VALUES (?, ?, ?)",
+            PHRASES,
+        )
+
+
+def get_connection() -> sqlite3.Connection:
+    """Open a connection with sensible defaults (FK on, row dicts, WAL)."""
+    paths.ensure()
+    conn = sqlite3.connect(paths.db_file)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
+    conn.execute("PRAGMA journal_mode = WAL")
+    return conn
+
+
+@contextmanager
+def db() -> Iterator[sqlite3.Connection]:
+    """Connection that commits on success and rolls back on error."""
+    conn = get_connection()
+    try:
+        yield conn
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# Seed data (categories from the requirements doc)
+# ---------------------------------------------------------------------------
+
+CONVERSATION_SEED = {
+    "日常会話": [
+        "挨拶", "買い物", "スーパー", "レストランの注文", "道案内",
+        "電車", "ご近所さんとの会話",
+    ],
+    "外国人対応": [
+        "道を聞かれたとき", "通してください", "聞き取れないとき",
+        "ゆっくり話してほしい", "順路の説明", "写真を頼まれる",
+    ],
+    "旅行・出入国": [
+        "入出国・税関", "空港", "ホテル", "観光", "両替・買い物",
+    ],
+    "ビジネス": [
+        "一般会議", "プレゼン", "メール", "チャット", "電話", "雑談",
+    ],
+    "IT・開発": [
+        "ソフトウェア開発", "組み込み開発", "ビルド", "ビルドエラー",
+        "デバッグ", "開発会議", "AI", "API", "IT用語",
+    ],
+    "専門用語": [
+        "機械系用語", "AI系用語", "AIへの指示で使う英語",
+    ],
+    "試験・進学": [
+        "TOEIC頻出 (500-800)", "留学に必要な英語", "面接",
+    ],
+}
+
+READING_SEED = {
+    "一般": ["日常文書", "新聞", "雑誌"],
+    "ビジネス": ["メール", "問い合わせ"],
+    "IT": ["技術文書", "API仕様書", "エラーメッセージ", "ビルドログ"],
+    "教養": ["歴史", "文化", "エンタメ", "科学"],
+}
+
+# News fields (topics + regions) the learner asked for.
+NEWS_FIELDS = [
+    "政治", "経済", "エンタメ", "軍事", "AI", "IT", "文化", "科学",
+    "米国", "英国", "日本", "中国", "香港", "豪州", "ドイツ", "フランス",
+]
+
+# Accents to compare / practise (米語と英語 ほか).
+ACCENTS = ["アメリカ英語", "イギリス英語", "オーストラリア英語"]
+
+WRITING_SEED = {
+    "": ["日常文章", "ビジネスメール", "IT文書", "技術仕様書"],
+}
+
+LITERATURE_SEED = {
+    "": ["Shakespeare", "英文学", "古典文学"],
+}
+
+LISTENING_SEED = [
+    ("映画", "アメリカ英語"),
+    ("映画", "イギリス英語"),
+    ("ドラマ", "アメリカ英語"),
+    ("ドラマ", "イギリス英語"),
+    ("YouTube", "アメリカ英語"),
+    ("ニュース", "アメリカ英語"),
+    ("ニュース", "イギリス英語"),
+]
+
+def _seed_categories(conn: sqlite3.Connection) -> None:
+    rows: list[tuple[str, str, str]] = []
+    for grp, names in CONVERSATION_SEED.items():
+        rows += [("conversation", grp, n) for n in names]
+    for grp, names in READING_SEED.items():
+        rows += [("reading", grp, n) for n in names]
+    for grp, names in WRITING_SEED.items():
+        rows += [("writing", grp, n) for n in names]
+    for grp, names in LITERATURE_SEED.items():
+        rows += [("literature", grp, n) for n in names]
+    conn.executemany(
+        "INSERT OR IGNORE INTO categories (area, grp, name) VALUES (?, ?, ?)",
+        rows,
+    )
+
+
+def _seed_listening(conn: sqlite3.Connection) -> None:
+    conn.executemany(
+        "INSERT OR IGNORE INTO listening_topics (source, accent) "
+        "VALUES (?, ?)",
+        LISTENING_SEED,
+    )
+
+
+def _seed_words(conn: sqlite3.Connection) -> None:
+    from .seed_data import WORDS
+
+    count = conn.execute("SELECT COUNT(*) AS c FROM words").fetchone()["c"]
+    if count == 0:
+        conn.executemany(
+            "INSERT INTO words (english, japanese, part_of_speech, example) "
+            "VALUES (?, ?, ?, ?)",
+            WORDS,
+        )
+
+
+def init_db() -> None:
+    """Create the schema and seed reference data. Safe to call repeatedly."""
+    with db() as conn:
+        conn.executescript(SCHEMA)
+        _seed_categories(conn)
+        _seed_listening(conn)
+        _seed_words(conn)
+        _seed_phrases(conn)
+        # Record install date for monthly-decay bookkeeping.
+        conn.execute(
+            "INSERT OR IGNORE INTO app_state (key, value) VALUES "
+            "('last_decay_month', ?)",
+            (date.today().strftime("%Y-%m"),),
+        )

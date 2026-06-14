@@ -1,0 +1,13 @@
+# Web framework. Unpinned upper bound so a wheel matching your Python
+# version is selected (e.g. Python 3.14 needs recent pydantic-core wheels).
+fastapi>=0.115
+uvicorn[standard]>=0.34
+
+# Data validation (FastAPI dependency; pin floor for v2 API).
+pydantic>=2.11
+
+# Environment / config
+python-dotenv>=1.0
+
+# OpenAI (optional at runtime — app works without a key)
+openai>=1.59

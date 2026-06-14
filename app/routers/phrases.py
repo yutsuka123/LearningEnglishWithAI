@@ -1,0 +1,114 @@
+"""Mini-phrase (ミニフレーズ) management + quiz.
+
+Phrases are practised exactly like words: both directions (英→日 / 日→英),
+per-direction accuracy, and a forgetting-curve schedule.
+"""
+
+from __future__ import annotations
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
+
+from ..database import db
+from ..services.spaced_repetition import (
+    record_attempt,
+    selection_weight,
+    select_for_review,
+)
+
+router = APIRouter(prefix="/api/phrases", tags=["phrases"])
+
+
+class PhraseCreate(BaseModel):
+    english: str = Field(min_length=1)
+    japanese: str = Field(min_length=1)
+    scene: str = ""
+
+
+class PhraseAttempt(BaseModel):
+    phrase_id: int
+    direction: str  # 'ja2en' | 'en2ja'
+    correct: bool
+
+
+def _phrase_dict(row) -> dict:
+    d = dict(row)
+    d["selection_priority"] = selection_weight(d["mastery"])
+    d["accuracy"] = (
+        round(d["times_correct"] / d["times_asked"] * 100)
+        if d["times_asked"]
+        else None
+    )
+    return d
+
+
+@router.get("")
+def list_phrases(scene: str | None = None):
+    with db() as conn:
+        if scene:
+            rows = conn.execute(
+                "SELECT * FROM phrases WHERE scene = ? "
+                "ORDER BY mastery ASC, last_studied ASC",
+                (scene,),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM phrases ORDER BY mastery ASC, last_studied ASC"
+            ).fetchall()
+        return [_phrase_dict(r) for r in rows]
+
+
+@router.get("/scenes")
+def list_scenes():
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT DISTINCT scene FROM phrases WHERE scene <> '' "
+            "ORDER BY scene"
+        ).fetchall()
+        return [r["scene"] for r in rows]
+
+
+@router.post("", status_code=201)
+def create_phrase(payload: PhraseCreate):
+    with db() as conn:
+        cur = conn.execute(
+            "INSERT INTO phrases (english, japanese, scene) VALUES (?, ?, ?)",
+            (payload.english, payload.japanese, payload.scene),
+        )
+        row = conn.execute(
+            "SELECT * FROM phrases WHERE id = ?", (cur.lastrowid,)
+        ).fetchone()
+        return _phrase_dict(row)
+
+
+@router.delete("/{phrase_id}", status_code=204)
+def delete_phrase(phrase_id: int):
+    with db() as conn:
+        cur = conn.execute("DELETE FROM phrases WHERE id = ?", (phrase_id,))
+        if cur.rowcount == 0:
+            raise HTTPException(404, "フレーズが見つかりません")
+
+
+@router.get("/quiz")
+def quiz(limit: int = 10):
+    with db() as conn:
+        rows = select_for_review(conn, table="phrases", limit=limit)
+        return [_phrase_dict(r) for r in rows]
+
+
+@router.post("/attempt")
+def attempt(payload: PhraseAttempt):
+    with db() as conn:
+        try:
+            result = record_attempt(
+                conn,
+                payload.phrase_id,
+                payload.direction,
+                payload.correct,
+                table="phrases",
+                attempts_table="phrase_attempts",
+                id_column="phrase_id",
+            )
+        except ValueError as exc:
+            raise HTTPException(400, str(exc))
+        return result
