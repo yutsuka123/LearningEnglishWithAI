@@ -25,6 +25,7 @@ class AttemptIn(BaseModel):
     word_id: int
     direction: str  # 'ja2en' | 'en2ja'
     correct: bool
+    result: str | None = None  # 'correct' | 'vague' | 'wrong'
 
 
 # --- Categories (conversation / reading / writing / literature) --------------

@@ -87,7 +87,8 @@ def attempt(payload: AttemptIn):
     with db() as conn:
         try:
             result = record_attempt(
-                conn, payload.word_id, payload.direction, payload.correct
+                conn, payload.word_id, payload.direction, payload.correct,
+                result=payload.result,
             )
         except ValueError as exc:
             raise HTTPException(400, str(exc))

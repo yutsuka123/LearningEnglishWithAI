@@ -178,17 +178,20 @@ export function quizRunner(config) {
     speech.speak(item.english);
     const row = area.querySelector(".row");
     const ok = el(`<button class="btn good">⭕ 正解</button>`);
+    const vague = el(`<button class="btn" style="background:var(--warn);color:#3a2600">🤔 うろ覚え</button>`);
     const ng = el(`<button class="btn bad">❌ 不正解</button>`);
     const skip = el(`<button class="btn ghost">🚫 ノーカウント</button>`);
-    ok.addEventListener("click", () => record(item, direction, true));
-    ng.addEventListener("click", () => record(item, direction, false));
+    ok.addEventListener("click", () => record(item, direction, "correct"));
+    vague.addEventListener("click", () => record(item, direction, "vague"));
+    ng.addEventListener("click", () => record(item, direction, "wrong"));
     skip.addEventListener("click", () => { skippedCount++; idx++; render(); });
-    row.append(ok, ng, skip);
+    row.append(ok, vague, ng, skip);
   }
 
-  async function record(item, direction, correct) {
+  async function record(item, direction, result) {
     try {
-      const body = { [idField]: item.id, direction, correct };
+      const correct = result === "correct";
+      const body = { [idField]: item.id, direction, correct, result };
       const r = await api.post(endpoint, body);
       if (correct) correctCount++;
       if (r && r.bonus_awarded) {
