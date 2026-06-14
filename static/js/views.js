@@ -592,7 +592,8 @@ export async function conversation(root) {
     }
     history.push({ role: "assistant", content: full });
     if (root.querySelector("#autoTts").checked && state.aiEnabled) {
-      speech.speak(full);
+      // 【コーチ】以降と日本語は読み上げない（英語部分のみ）。
+      speech.speak(englishOnly(full.split("【コーチ")[0]));
     }
     refreshCost();
   }
