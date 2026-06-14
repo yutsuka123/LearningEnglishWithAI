@@ -3,10 +3,15 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 
 from ..database import db
 from ..schemas import AttemptIn, WordCreate, WordUpdate
-from ..services.spaced_repetition import pick_weighted, record_attempt, selection_weight
+from ..services.spaced_repetition import (
+    pick_weighted,
+    record_attempt,
+    selection_weight,
+)
 
 router = APIRouter(prefix="/api/words", tags=["vocabulary"])
 
@@ -93,6 +98,136 @@ def attempt(payload: AttemptIn):
         except ValueError as exc:
             raise HTTPException(400, str(exc))
         return result
+
+
+class ImportIn(BaseModel):
+    text: str
+    generate_examples: bool = True
+
+
+def _parse_word_list(text: str) -> list[tuple[str, str]]:
+    """貼り付けたテキストから (英単語, 日本語) を抽出。タブ/カンマ区切りでも、
+    『英語の行→日本語の行』が交互に並ぶ形式でも解析する。番号や記号は無視。"""
+    import re
+    import unicodedata
+
+    def is_en(s: str) -> bool:
+        return bool(re.search(r"[A-Za-z]", s)) and not re.search(
+            r"[ぁ-んァ-ヶ一-鿿]", s)
+
+    def is_ja(s: str) -> bool:
+        return bool(re.search(r"[ぁ-んァ-ヶ一-鿿ー〜、。・]", s))
+
+    pairs: list[tuple[str, str]] = []
+    cur: str | None = None
+    for raw in text.splitlines():
+        s = unicodedata.normalize("NFKC", raw).strip()
+        if not s:
+            continue
+        parts = re.split(r"\t|,|，|\s{2,}", s, maxsplit=1)
+        if len(parts) == 2 and is_en(parts[0]) and is_ja(parts[1]):
+            pairs.append((parts[0].strip(), parts[1].strip()))
+            cur = None
+            continue
+        if s.isdigit() or s.startswith("+") or s == "0":
+            continue
+        if is_en(s):
+            cur = s.strip()
+        elif is_ja(s) and cur:
+            pairs.append((cur, s.strip()))
+            cur = None
+    return pairs
+
+
+def _json_array(text: str) -> list:
+    import json
+    raw = text.strip()
+    a, b = raw.find("["), raw.rfind("]")
+    if a == -1 or b == -1:
+        return []
+    try:
+        data = json.loads(raw[a:b + 1])
+        return data if isinstance(data, list) else []
+    except (json.JSONDecodeError, ValueError):
+        return []
+
+
+def _ai_fill(pairs: list[tuple[str, str]]) -> dict:
+    """AIで各語の正確な訳・品詞・例文を生成（訳ヒントが誤りなら修正）。"""
+    from ..config import load_settings
+    from ..services import ai
+
+    model = load_settings().quality_model
+    out: dict[str, dict] = {}
+    for i in range(0, len(pairs), 20):
+        batch = pairs[i:i + 20]
+        listing = "\n".join(f"{e} | {j}" for e, j in batch)
+        system = (
+            "英単語学習データを作ります。各語について正確で簡潔な日本語訳・"
+            "品詞・自然な英語例文を作成。訳ヒントが不正確なら正しい訳に直す。"
+            "TOEIC 600〜800レベル。JSON配列のみ出力: "
+            '[{"english":"..","japanese":"..","pos":"品詞","example":".."}]'
+        )
+        user = f"語(英語 | 訳ヒント):\n{listing}"
+        r = ai.chat(system, user, temperature=0.3, max_tokens=2000,
+                    feature="import", model=model)
+        if r.ok:
+            for it in _json_array(r.text):
+                en = str(it.get("english", "")).strip()
+                if en:
+                    out[en.lower()] = {
+                        "japanese": str(it.get("japanese", "")).strip(),
+                        "pos": str(it.get("pos", "")).strip(),
+                        "example": str(it.get("example", "")).strip(),
+                    }
+    return out
+
+
+@router.post("/import")
+def import_words(payload: ImportIn):
+    from ..services import ai
+
+    pairs = _parse_word_list(payload.text)
+    with db() as conn:
+        existing = {
+            r["english"].lower()
+            for r in conn.execute("SELECT english FROM words").fetchall()
+        }
+    new: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for en, ja in pairs:
+        k = en.lower()
+        if k in existing or k in seen:
+            continue
+        seen.add(k)
+        new.append((en, ja))
+
+    filled = {}
+    if payload.generate_examples and ai.is_enabled() and new:
+        filled = _ai_fill(new)
+
+    rows = []
+    for en, ja in new:
+        f = filled.get(en.lower(), {})
+        rows.append((
+            en,
+            f.get("japanese") or ja,
+            f.get("pos", ""),
+            f.get("example", ""),
+        ))
+    with db() as conn:
+        conn.executemany(
+            "INSERT INTO words (english, japanese, part_of_speech, example) "
+            "VALUES (?, ?, ?, ?)",
+            rows,
+        )
+    return {
+        "ok": True,
+        "parsed": len(pairs),
+        "added": len(rows),
+        "skipped": len(pairs) - len(rows),
+        "examples": sum(1 for r in rows if r[3]),
+    }
 
 
 @router.get("/stats")
