@@ -5,7 +5,11 @@ import * as speech from "./speech.js";
 import { quizRunner } from "./quiz.js";
 import {
   el, md, escapeHtml, toast, state, go, refreshCost, refreshAiState,
+  showBanned, setShowBanned, testBanned, setTestBanned,
 } from "./app.js";
+
+// 禁止用語クエリ: include_banned を付ける/付けないを返す小ヘルパー。
+const bannedParam = (on) => (on ? "include_banned=true" : "");
 
 // --- shared answer-input helper (voice or text) ----------------------------
 
@@ -151,7 +155,8 @@ export async function dashboard(root) {
 // --- Daily 10-minute session ------------------------------------------------
 
 export async function daily(root) {
-  const data = await api.get("/api/learn/daily");
+  const q = testBanned() ? "?include_banned=true" : "";
+  const data = await api.get("/api/learn/daily" + q);
   const steps = data.plan;
   let current = 0;
 
@@ -262,8 +267,23 @@ async function writingStep(area, next) {
 
 // --- Vocabulary -------------------------------------------------------------
 
+// 男声=ash(青) / 女声=nova(赤)。一覧の2つの再生ボタンに対応。
+const MALE_VOICE = "ash";
+const FEMALE_VOICE = "nova";
+
+// 2つの再生ボタン(男声=青 / 女声=赤)を作って返す。getText() は再生する英文。
+function voiceButtons(getText) {
+  const cell = el(`<div class="voice-cell">
+    <button class="btn voice-m" title="男性の声 (ash)">🔊</button>
+    <button class="btn voice-f" title="女性の声 (nova)">🔊</button></div>`);
+  const [m, f] = cell.querySelectorAll("button");
+  m.addEventListener("click", () => speech.sayWithVoice(getText(), MALE_VOICE));
+  f.addEventListener("click", () => speech.sayWithVoice(getText(), FEMALE_VOICE));
+  return cell;
+}
+
 export async function vocab(root) {
-  const words = await api.get("/api/words?sort=mastery");
+  const facets = await api.get("/api/words/facets");
   root.innerHTML = `
     <h1>英単語</h1>
     <p class="sub">両方向(英→日 / 日→英)で出題。習熟度・正答率・忘却曲線を管理。</p>
@@ -295,39 +315,86 @@ export async function vocab(root) {
       <div id="impOut" class="muted mt"></div>
     </div>
     <div class="card">
-      <h2>単語一覧 (${words.length})</h2>
-      <table><thead><tr>
-        <th></th><th>英語</th><th>日本語</th><th>Lv</th><th>分野</th>
+      <h2 id="listTitle">単語一覧</h2>
+      <div class="row">
+        <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:200px" />
+        <select id="fDomain"><option value="">全分野</option>
+          ${facets.domains.map((d) =>
+            `<option>${escapeHtml(d)}</option>`).join("")}</select>
+        <select id="fLevel"><option value="">全レベル</option>
+          ${facets.levels.map((l) =>
+            `<option>${escapeHtml(l)}</option>`).join("")}</select>
+        <select id="fSort">
+          <option value="mastery">並び替え: 習熟度 ↑</option>
+          <option value="accuracy">並び替え: 正答率 ↓</option>
+          <option value="english">並び替え: 英語 A→Z</option>
+          <option value="level">並び替え: レベル</option>
+          <option value="domain">並び替え: 分野</option>
+          <option value="recent">並び替え: 最近の学習</option>
+        </select>
+        <label class="toggle" title="禁止用語(注意喚起)を一覧に表示">
+          <input type="checkbox" id="showBanned" ${showBanned() ? "checked" : ""} />
+          🔞 禁止用語も表示</label>
+      </div>
+      <table class="mt"><thead><tr>
+        <th>再生</th><th>英語</th><th>日本語</th><th>Lv</th><th>分野</th>
         <th>習熟度</th><th>正答率</th><th></th></tr></thead>
         <tbody id="rows"></tbody></table>
     </div>`;
 
-  const rows = root.querySelector("#rows");
-  words.forEach((w) => {
-    const tr = el(`<tr>
-      <td><button class="btn ghost" title="再生" style="padding:2px 8px"
-        data-play="1">🔊</button></td>
-      <td>${escapeHtml(w.english)}</td>
-      <td>${escapeHtml(w.japanese)}</td>
-      <td class="muted">${w.level || ""}</td>
-      <td>${w.domain ? `<span class="pill">${escapeHtml(w.domain)}</span>`
-        : ""}</td>
-      <td style="min-width:80px">
-        <div class="bar"><span style="width:${w.mastery}%"></span></div>
-        <small class="muted">${w.mastery}</small></td>
-      <td>${w.accuracy == null ? "—" : w.accuracy + "%"}</td>
-      <td><button class="btn ghost" data-del="1"
-        style="padding:2px 8px">削除</button></td>
-    </tr>`);
-    tr.querySelector("[data-play]").addEventListener("click", () => {
-      const t = w.example ? `${w.english}. ${w.example}` : w.english;
-      speech.speak(t);  // MP3キャッシュ済みなら2回目以降は無料
+  const rowsBody = root.querySelector("#rows");
+  const title = root.querySelector("#listTitle");
+  const kw = root.querySelector("#kw");
+
+  const renderTable = (words) => {
+    title.textContent = `単語一覧 (${words.length})`;
+    rowsBody.innerHTML = "";
+    words.forEach((w) => {
+      const tr = el(`<tr>
+        <td></td>
+        <td>${escapeHtml(w.english)}</td>
+        <td>${escapeHtml(w.japanese)}</td>
+        <td class="muted">${w.level || ""}</td>
+        <td>${w.domain ? `<span class="pill">${escapeHtml(w.domain)}</span>`
+          : ""}</td>
+        <td style="min-width:80px">
+          <div class="bar"><span style="width:${w.mastery}%"></span></div>
+          <small class="muted">${w.mastery}</small></td>
+        <td>${w.accuracy == null ? "—" : w.accuracy + "%"}</td>
+        <td><button class="btn ghost" data-del="1"
+          style="padding:2px 8px">削除</button></td>
+      </tr>`);
+      // MP3キャッシュ済みなら2回目以降は無料。例文があれば続けて読む。
+      tr.firstElementChild.appendChild(voiceButtons(() =>
+        w.example ? `${w.english}. ${w.example}` : w.english));
+      tr.querySelector("[data-del]").addEventListener("click", async () => {
+        await api.del("/api/words/" + w.id); load();
+      });
+      rowsBody.appendChild(tr);
     });
-    tr.querySelector("[data-del]").addEventListener("click", async () => {
-      await api.del("/api/words/" + w.id); go("vocab");
-    });
-    rows.appendChild(tr);
+  };
+
+  // 分野/レベル/並び替え/禁止表示はサーバ側、キーワードはクライアント側。
+  const load = async () => {
+    const q = new URLSearchParams({ sort: root.querySelector("#fSort").value });
+    const d = root.querySelector("#fDomain").value;
+    const l = root.querySelector("#fLevel").value;
+    if (d) q.set("domain", d);
+    if (l) q.set("level", l);
+    if (showBanned()) q.set("include_banned", "true");
+    const words = await api.get("/api/words?" + q.toString());
+    const term = kw.value.trim().toLowerCase();
+    renderTable(term ? words.filter((w) =>
+      w.english.toLowerCase().includes(term)
+      || (w.japanese || "").toLowerCase().includes(term)) : words);
+  };
+  ["#fDomain", "#fLevel", "#fSort"].forEach((id) =>
+    root.querySelector(id).addEventListener("change", load));
+  root.querySelector("#showBanned").addEventListener("change", (e) => {
+    setShowBanned(e.target.checked); load();
   });
+  kw.addEventListener("input", load);
+  load();
 
   root.querySelector("#add").addEventListener("click", async () => {
     const en = root.querySelector("#en").value.trim();
@@ -360,7 +427,8 @@ export async function vocab(root) {
   });
 
   root.querySelector("#quiz").addEventListener("click", async () => {
-    const items = await api.get("/api/words/quiz?limit=10");
+    const tb = testBanned() ? "&include_banned=true" : "";
+    const items = await api.get("/api/words/quiz?limit=10" + tb);
     const c = root; c.innerHTML = `<h1>単語クイズ</h1>`;
     const holder = el(`<div></div>`); c.appendChild(holder);
     quizRunner({ container: holder, items, kind: "word", appState: state,
@@ -374,8 +442,9 @@ export async function vocab(root) {
 // --- Phrases ----------------------------------------------------------------
 
 export async function phrases(root) {
-  const scenes = await api.get("/api/phrases/scenes");
-  const list = await api.get("/api/phrases");
+  const sb = bannedParam(showBanned());
+  const scenes = await api.get("/api/phrases/scenes" + (sb ? "?" + sb : ""));
+  const list = await api.get("/api/phrases" + (sb ? "?" + sb : ""));
   root.innerHTML = `
     <h1>ミニフレーズ</h1>
     <p class="sub">場面別の短い表現。単語と同じく両方向＋忘却曲線で管理。</p>
@@ -383,6 +452,9 @@ export async function phrases(root) {
       <button class="btn" id="quiz">クイズ開始 (10フレーズ)</button>
       <select id="scene"><option value="">全シーン</option>
         ${scenes.map((s) => `<option>${s}</option>`).join("")}</select>
+      <label class="toggle" title="禁止用語(注意喚起)を一覧に表示">
+        <input type="checkbox" id="showBanned" ${showBanned() ? "checked" : ""} />
+        🔞 禁止用語も表示</label>
     </div>
     <div class="card mt">
       <h2>フレーズを追加</h2>
@@ -394,22 +466,39 @@ export async function phrases(root) {
       </div>
     </div>
     <div class="card">
-      <h2>一覧 (${list.length})</h2>
-      <table><thead><tr><th>英語</th><th>日本語</th><th>シーン</th>
-        <th>習熟度</th><th></th></tr></thead><tbody id="rows"></tbody></table>
+      <h2 id="listTitle">一覧 (${list.length})</h2>
+      <div class="row">
+        <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:200px" />
+        <select id="fSort">
+          <option value="mastery">並び替え: 習熟度 ↑</option>
+          <option value="accuracy">並び替え: 正答率 ↓</option>
+          <option value="english">並び替え: 英語 A→Z</option>
+          <option value="scene">並び替え: シーン</option>
+          <option value="recent">並び替え: 最近の学習</option>
+        </select>
+      </div>
+      <table class="mt"><thead><tr><th>再生</th><th>英語</th><th>日本語</th>
+        <th>シーン</th><th>習熟度</th><th></th></tr></thead>
+        <tbody id="rows"></tbody></table>
     </div>`;
 
+  const title = root.querySelector("#listTitle");
+  const kw = root.querySelector("#kw");
+
   const renderRows = (items) => {
+    title.textContent = `一覧 (${items.length})`;
     const rows = root.querySelector("#rows"); rows.innerHTML = "";
     items.forEach((p) => {
       const tr = el(`<tr>
+        <td></td>
         <td>${escapeHtml(p.english)}</td>
         <td>${escapeHtml(p.japanese)}</td>
         <td><span class="pill">${escapeHtml(p.scene || "")}</span></td>
         <td><div class="bar"><span style="width:${p.mastery}%"></span></div></td>
         <td><button class="btn ghost" data-id="${p.id}">削除</button></td>
       </tr>`);
-      tr.querySelector("button").addEventListener("click", async () => {
+      tr.firstElementChild.appendChild(voiceButtons(() => p.english));
+      tr.querySelector("[data-id]").addEventListener("click", async () => {
         await api.del("/api/phrases/" + p.id); go("phrases");
       });
       rows.appendChild(tr);
@@ -417,11 +506,26 @@ export async function phrases(root) {
   };
   renderRows(list);
 
-  root.querySelector("#scene").addEventListener("change", async (e) => {
-    const v = e.target.value;
-    const items = await api.get("/api/phrases" + (v ? "?scene=" + encodeURIComponent(v) : ""));
-    renderRows(items);
+  // シーン・並び替え・禁止表示はサーバ側、キーワードはクライアント側。
+  const load = async () => {
+    const q = new URLSearchParams({ sort: root.querySelector("#fSort").value });
+    const v = root.querySelector("#scene").value;
+    if (v) q.set("scene", v);
+    if (showBanned()) q.set("include_banned", "true");
+    const items = await api.get("/api/phrases?" + q.toString());
+    const term = kw.value.trim().toLowerCase();
+    renderRows(term ? items.filter((p) =>
+      p.english.toLowerCase().includes(term)
+      || (p.japanese || "").toLowerCase().includes(term)) : items);
+  };
+  root.querySelector("#scene").addEventListener("change", load);
+  root.querySelector("#fSort").addEventListener("change", load);
+  // 禁止表示の切替はシーン候補も変わるので画面を作り直す。
+  root.querySelector("#showBanned").addEventListener("change", (e) => {
+    setShowBanned(e.target.checked); go("phrases");
   });
+  kw.addEventListener("input", load);
+
   root.querySelector("#add").addEventListener("click", async () => {
     const en = root.querySelector("#en").value.trim();
     const ja = root.querySelector("#ja").value.trim();
@@ -431,7 +535,8 @@ export async function phrases(root) {
     go("phrases");
   });
   root.querySelector("#quiz").addEventListener("click", async () => {
-    const items = await api.get("/api/phrases/quiz?limit=10");
+    const tb = testBanned() ? "&include_banned=true" : "";
+    const items = await api.get("/api/phrases/quiz?limit=10" + tb);
     root.innerHTML = `<h1>フレーズクイズ</h1>`;
     const holder = el(`<div></div>`); root.appendChild(holder);
     quizRunner({ container: holder, items, kind: "phrase", appState: state,
@@ -990,6 +1095,19 @@ export async function settings(root) {
         録音停止したら自動で判定/送信する（OFFなら内容を確認してから送信）</label>
     </div>
     <div class="card">
+      <h2>🔞 禁止用語（注意喚起）</h2>
+      <p class="muted">罵り・スラング・差別語など、映画やドラマで出会うが
+        使うと危険な表現です。学習(理解・回避)のため最小限・伏字で収録しています。
+        既定では一覧・クイズの両方から除外しています。</p>
+      <label class="toggle">
+        <input type="checkbox" id="banShow" ${showBanned() ? "checked" : ""} />
+        一覧（英単語・フレーズ）に表示する</label><br/>
+      <label class="toggle">
+        <input type="checkbox" id="banTest" ${testBanned() ? "checked" : ""} />
+        クイズ・デイリーの出題に含める</label>
+      <p class="muted mt">※ 和製英語・発音注意（安全な学習項目）は常に表示されます。</p>
+    </div>
+    <div class="card">
       <h2>AIの声（読み上げ）</h2>
       <label class="toggle">
         <input type="checkbox" id="natural" ${speech.isNatural() ? "checked" : ""} />
@@ -1089,6 +1207,14 @@ export async function settings(root) {
   root.querySelector("#autoSubmit").addEventListener("change", (e) => {
     speech.setVoiceAutoSubmit(e.target.checked);
     toast(e.target.checked ? "音声→自動判定 ON" : "音声→確認してから送信");
+  });
+  root.querySelector("#banShow").addEventListener("change", (e) => {
+    setShowBanned(e.target.checked);
+    toast(e.target.checked ? "禁止用語を一覧に表示" : "禁止用語を一覧から除外");
+  });
+  root.querySelector("#banTest").addEventListener("change", (e) => {
+    setTestBanned(e.target.checked);
+    toast(e.target.checked ? "禁止用語を出題に含める" : "禁止用語を出題から除外");
   });
   root.querySelector("#natural").addEventListener("change", (e) => {
     speech.setNatural(e.target.checked);

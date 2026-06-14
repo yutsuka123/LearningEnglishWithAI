@@ -25,6 +25,18 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="English Learning with AI", lifespan=lifespan)
 
+
+@app.middleware("http")
+async def _no_cache_static(request, call_next):
+    """ブラウザが古いCSS/JSをキャッシュし続けないよう、静的配信は毎回再検証。
+    ローカル単一ユーザー用途なので帯域より「変更が即反映」を優先する。"""
+    response = await call_next(request)
+    path = request.url.path
+    if path == "/" or path.startswith("/static"):
+        response.headers["Cache-Control"] = "no-cache, must-revalidate"
+    return response
+
+
 # API routers
 app.include_router(vocabulary.router)
 app.include_router(phrases.router)

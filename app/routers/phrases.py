@@ -44,27 +44,42 @@ def _phrase_dict(row) -> dict:
 
 
 @router.get("")
-def list_phrases(scene: str | None = None):
+def list_phrases(
+    scene: str | None = None,
+    sort: str = "mastery",
+    include_banned: bool = False,
+):
+    order = {
+        "mastery": "mastery ASC, last_studied ASC",
+        "english": "english COLLATE NOCASE ASC",
+        "scene": "scene ASC, english COLLATE NOCASE ASC",
+        "recent": "last_studied DESC",
+        "accuracy": (
+            "CASE WHEN times_asked > 0 "
+            "THEN times_correct * 1.0 / times_asked ELSE -1 END DESC"
+        ),
+    }.get(sort, "mastery ASC, last_studied ASC")
+    conds, params = [], []
+    if scene:
+        conds.append("scene = ?")
+        params.append(scene)
+    if not include_banned:
+        conds.append("COALESCE(scene, '') NOT LIKE '禁止%'")
+    where = (" WHERE " + " AND ".join(conds)) if conds else ""
     with db() as conn:
-        if scene:
-            rows = conn.execute(
-                "SELECT * FROM phrases WHERE scene = ? "
-                "ORDER BY mastery ASC, last_studied ASC",
-                (scene,),
-            ).fetchall()
-        else:
-            rows = conn.execute(
-                "SELECT * FROM phrases ORDER BY mastery ASC, last_studied ASC"
-            ).fetchall()
+        rows = conn.execute(
+            f"SELECT * FROM phrases{where} ORDER BY {order}", params
+        ).fetchall()
         return [_phrase_dict(r) for r in rows]
 
 
 @router.get("/scenes")
-def list_scenes():
+def list_scenes(include_banned: bool = False):
+    ban = "" if include_banned else "AND scene NOT LIKE '禁止%' "
     with db() as conn:
         rows = conn.execute(
             "SELECT DISTINCT scene FROM phrases WHERE scene <> '' "
-            "ORDER BY scene"
+            f"{ban}ORDER BY scene"
         ).fetchall()
         return [r["scene"] for r in rows]
 
@@ -91,9 +106,12 @@ def delete_phrase(phrase_id: int):
 
 
 @router.get("/quiz")
-def quiz(limit: int = 10):
+def quiz(limit: int = 10, include_banned: bool = False):
     with db() as conn:
-        rows = select_for_review(conn, table="phrases", limit=limit)
+        rows = select_for_review(
+            conn, table="phrases", limit=limit,
+            exclude_banned=not include_banned,
+        )
         return [_phrase_dict(r) for r in rows]
 
 

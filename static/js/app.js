@@ -76,6 +76,21 @@ export function md(text) {
 
 export const view = () => document.getElementById("view");
 
+// 禁止用語(注意喚起)の表示・出題トグル。既定は両方OFF（＝除外）。
+// showBanned: 一覧に表示するか / testBanned: クイズ・デイリーに出すか。
+export function showBanned() {
+  return localStorage.getItem("showBanned") === "1";
+}
+export function setShowBanned(on) {
+  localStorage.setItem("showBanned", on ? "1" : "0");
+}
+export function testBanned() {
+  return localStorage.getItem("testBanned") === "1";
+}
+export function setTestBanned(on) {
+  localStorage.setItem("testBanned", on ? "1" : "0");
+}
+
 // ---------------------------------------------------------------------------
 // Routing
 // ---------------------------------------------------------------------------
