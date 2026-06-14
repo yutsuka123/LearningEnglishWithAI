@@ -134,6 +134,15 @@ CREATE TABLE IF NOT EXISTS ai_usage (
     created_at    TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Free-conversation log (used so the level judge can see real production).
+CREATE TABLE IF NOT EXISTS conversation_log (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    role       TEXT NOT NULL,      -- 'user' | 'assistant'
+    content    TEXT NOT NULL,
+    mode       TEXT DEFAULT '',    -- 'free' | scene name
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 -- Key/value store: monthly-decay bookkeeping, API key override, etc.
 CREATE TABLE IF NOT EXISTS app_state (
     key   TEXT PRIMARY KEY,
