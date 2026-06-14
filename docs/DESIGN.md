@@ -130,6 +130,32 @@ study_log更新案」を Markdown 出力。`/api/learn/session/save` で
 - 学習データ（`data/` の DB・memory.md・study_log.md）も git 管理外。
 - 新しいシード文・サンプルに実在の個人名を入れない（プレースホルダを使う）。
 
+## 9.7 音声・番号管理 / 禁止用語（次セッション実装の設計メモ）
+
+**番号(ID)管理**: 単語=`words.id`、フレーズ=`phrases.id`（既存のautoincrement）
+を正準IDとし、UI表示・音声ファイル名に使う。例文は親(単語/フレーズ)IDに紐づく。
+
+**MP3化（2声・番号＋声で命名）**: 既存のTTSディスクキャッシュ
+（`data/tts_cache/`、内容ハッシュ名）に加え、決定的な名前で `data/audio/` に保存:
+- 単語: `w{id}_ash.mp3` / `w{id}_nova.mp3`
+- 単語の例文: `wex{id}_ash.mp3` / `wex{id}_nova.mp3`
+- フレーズ: `p{id}_ash.mp3` / `p{id}_nova.mp3`
+- 声は **ash(男性)** と **nova(女性)** の2種を保存。
+- 生成は `ai.synthesize_speech(text, voice)`（キャッシュ済み）を流用し、
+  生成済みをID命名でコピー/保存するバッチ（スクリプト or `/api/...`）。
+- 再生は保存済みMP3を返す静的配信にすれば**API課金ゼロ**（将来オフライン化）。
+
+**例文ポップアップ**: 一覧の「例文」ボタン→モーダルで 例文/訳/🔊再生。
+
+**分野フィルタ/ソート**: `/api/words?domain=&level=&sort=` を追加。
+
+**禁止用語**: `words`/`phrases` に `banned INTEGER DEFAULT 0`（または
+`domain='禁止用語'`）。`app_state` か設定で次のトグル（既定OFF）:
+- `banned_test`（クイズ・デイリーに含めるか）
+- `banned_show`（一覧に表示するか）
+選択肢で抽出/表示から除外。目的は**映画理解・注意喚起・誤用防止**であり、
+露骨すぎる例文は避け、意味と「使ってはいけない理由」を中心に扱う。
+
 ## 10. 将来拡張（要件§15）
 
 Google Drive 連携 / GitHub 連携 / スマホ対応 / TOEIC 模擬試験生成 /
