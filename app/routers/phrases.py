@@ -29,6 +29,7 @@ class PhraseAttempt(BaseModel):
     phrase_id: int
     direction: str  # 'ja2en' | 'en2ja'
     correct: bool
+    result: str | None = None  # 'correct' | 'vague' | 'wrong'
 
 
 def _phrase_dict(row) -> dict:
@@ -105,6 +106,7 @@ def attempt(payload: PhraseAttempt):
                 payload.phrase_id,
                 payload.direction,
                 payload.correct,
+                result=payload.result,
                 table="phrases",
                 attempts_table="phrase_attempts",
                 id_column="phrase_id",

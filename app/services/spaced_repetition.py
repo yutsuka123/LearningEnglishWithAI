@@ -121,12 +121,19 @@ def pick_weighted(
 # Recording attempts (generic for words & phrases)
 # ---------------------------------------------------------------------------
 
+# レベルを下げて「うろ覚え」を近いうちに再出題するための目標レベル。
+VAGUE_REVIEW_LEVEL = 1  # 約2日後に再出題
+
+_RESULTS = ("correct", "vague", "wrong")
+
+
 def record_attempt(
     conn: sqlite3.Connection,
     item_id: int,
     direction: str,
     correct: bool,
     *,
+    result: str | None = None,
     table: str = "words",
     attempts_table: str = "word_attempts",
     id_column: str = "word_id",
@@ -134,10 +141,19 @@ def record_attempt(
     """Log one attempt, update counters + per-direction stats, award the
     both-directions bonus, and advance the forgetting-curve schedule.
 
-    Returns a dict describing the resulting state.
+    ``result`` は 'correct' / 'vague'(うろ覚え) / 'wrong' のいずれか。未指定なら
+    ``correct`` から決定。出現確率は次回復習日(SRS)で変わる:
+      correct → 間隔を延ばす(出にくくなる) / vague → 約2日後 / wrong → 翌日
     """
     if direction not in _DIRECTIONS:
         raise ValueError("direction must be 'ja2en' or 'en2ja'")
+    if result is None:
+        result = "correct" if correct else "wrong"
+    if result not in _RESULTS:
+        raise ValueError("result must be correct/vague/wrong")
+
+    # 正答としてカウントするのは 'correct' のみ（うろ覚えは正答に含めない）。
+    counting = 1 if result == "correct" else 0
 
     today = date.today().isoformat()
     ask_col = f"ask_{direction}"
@@ -146,7 +162,7 @@ def record_attempt(
     conn.execute(
         f"INSERT INTO {attempts_table} ({id_column}, direction, correct) "
         "VALUES (?, ?, ?)",
-        (item_id, direction, 1 if correct else 0),
+        (item_id, direction, counting),
     )
     conn.execute(
         f"UPDATE {table} SET "
@@ -155,16 +171,20 @@ def record_attempt(
         f"{ask_col} = {ask_col} + 1, "
         f"{ok_col} = {ok_col} + ?, "
         "last_studied = ? WHERE id = ?",
-        (1 if correct else 0, 1 if correct else 0, today, item_id),
+        (counting, counting, today, item_id),
     )
 
-    # Advance / reset the forgetting-curve schedule.
+    # Advance / reset the forgetting-curve schedule per result.
     row = conn.execute(
         f"SELECT mastery, review_level FROM {table} WHERE id = ?", (item_id,)
     ).fetchone()
-    if correct:
+    if result == "correct":
         new_level = min(row["review_level"] + 1, len(REVIEW_INTERVALS) - 1)
-    else:
+    elif result == "vague":
+        # うろ覚えは約2日後に再出題。高習熟の語は近くに引き戻し、
+        # 新規語は wrong(翌日) より少し後にして「不正解 < うろ覚え < 正解」に。
+        new_level = VAGUE_REVIEW_LEVEL
+    else:  # wrong
         new_level = 0
     conn.execute(
         f"UPDATE {table} SET review_level = ?, next_review = ? WHERE id = ?",

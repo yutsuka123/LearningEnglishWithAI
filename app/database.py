@@ -142,13 +142,18 @@ CREATE TABLE IF NOT EXISTS app_state (
 """
 
 def _seed_phrases(conn: sqlite3.Connection) -> None:
+    """Top-up: insert any seed phrase whose English isn't already present."""
     from .seed_data import PHRASES
 
-    count = conn.execute("SELECT COUNT(*) AS c FROM phrases").fetchone()["c"]
-    if count == 0:
+    existing = {
+        r["english"].lower()
+        for r in conn.execute("SELECT english FROM phrases").fetchall()
+    }
+    new_rows = [p for p in PHRASES if p[0].lower() not in existing]
+    if new_rows:
         conn.executemany(
             "INSERT INTO phrases (english, japanese, scene) VALUES (?, ?, ?)",
-            PHRASES,
+            new_rows,
         )
 
 
@@ -266,14 +271,20 @@ def _seed_listening(conn: sqlite3.Connection) -> None:
 
 
 def _seed_words(conn: sqlite3.Connection) -> None:
+    """Top-up: insert any seed word whose English isn't already present.
+    Lets us grow the seed list over time without duplicating existing rows."""
     from .seed_data import WORDS
 
-    count = conn.execute("SELECT COUNT(*) AS c FROM words").fetchone()["c"]
-    if count == 0:
+    existing = {
+        r["english"].lower()
+        for r in conn.execute("SELECT english FROM words").fetchall()
+    }
+    new_rows = [w for w in WORDS if w[0].lower() not in existing]
+    if new_rows:
         conn.executemany(
             "INSERT INTO words (english, japanese, part_of_speech, example) "
             "VALUES (?, ?, ?, ?)",
-            WORDS,
+            new_rows,
         )
 
 
