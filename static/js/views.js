@@ -17,15 +17,28 @@ function answerInput(onSubmit, { lang = "en-US", placeholder = "答えを入力"
   sendBtn.addEventListener("click", () => onSubmit(ta.value));
 
   if (state.inputMode === "voice") {
-    // Record → recognized text fills the box → review → ✓ send (or re-record).
-    const mic = el(`<button class="btn good">🎤 録音</button>`);
+    // Toggle: ON=録音開始, OFF=認識して回答(送信)。テキストは確認用に残る。
+    let recorder = null;
+    let recording = false;
+    const mic = el(`<button class="btn good">🎤 録音開始</button>`);
     mic.addEventListener("click", async () => {
-      mic.disabled = true; mic.textContent = "聞き取り中…";
-      try {
-        const said = await speech.listenOnce(lang);
-        ta.value = ta.value ? ta.value + " " + said : said;
-      } catch (e) { toast(e.message); }
-      finally { mic.disabled = false; mic.textContent = "🎤 録音"; }
+      if (!recording) {
+        try {
+          recorder = speech.createRecorder(lang);
+          recorder.start();
+          recording = true;
+          mic.textContent = "⏹ 停止して回答";
+          mic.classList.remove("good"); mic.classList.add("bad");
+        } catch (e) { toast(e.message); }
+      } else {
+        recording = false;
+        mic.disabled = true; mic.textContent = "認識中…";
+        const said = await recorder.stop();
+        ta.value = said;
+        mic.disabled = false; mic.textContent = "🎤 録音開始";
+        mic.classList.remove("bad"); mic.classList.add("good");
+        if (said.trim() && speech.isVoiceAutoSubmit()) onSubmit(said);
+      }
     });
     row.append(mic, sendBtn);
     wrap.append(ta, row);
@@ -71,7 +84,7 @@ export async function dashboard(root) {
         <div class="num">${p.overall_avg_mastery}</div>
         <div class="lbl">平均習熟度(単語+フレーズ)</div></div>
       <div class="card stat">
-        <div class="num">${usage ? "$" + usage.today_cost_usd.toFixed(3) : "-"}</div>
+        <div class="num">${usage ? "¥" + usage.today_cost_jpy : "-"}</div>
         <div class="lbl">今日のAI費用</div></div>
     </div>
 
@@ -683,6 +696,13 @@ export async function settings(root) {
         （git管理ファイルには保存しません）。</p>
     </div>
     <div class="card">
+      <h2>音声入力</h2>
+      <label class="toggle">
+        <input type="checkbox" id="autoSubmit"
+          ${speech.isVoiceAutoSubmit() ? "checked" : ""} />
+        録音停止したら自動で判定/送信する（OFFなら内容を確認してから送信）</label>
+    </div>
+    <div class="card">
       <h2>AIの声（読み上げ）</h2>
       <label class="toggle">
         <input type="checkbox" id="natural" ${speech.isNatural() ? "checked" : ""} />
@@ -697,9 +717,11 @@ export async function settings(root) {
     </div>
     <div class="card">
       <h2>API使用量・費用</h2>
-      <p>累計 <b>$${usage.total_cost_usd.toFixed(4)}</b> /
-         今日 <b>$${usage.today_cost_usd.toFixed(4)}</b> /
-         呼び出し ${usage.calls} 回</p>
+      <p>累計 <b>¥${usage.total_cost_jpy}</b>（$${usage.total_cost_usd.toFixed(4)}）
+         / 今日 <b>¥${usage.today_cost_jpy}</b>（$${usage.today_cost_usd.toFixed(4)}）
+         / 呼び出し ${usage.calls} 回</p>
+      <p class="muted">為替レート: ¥${usage.jpy_rate}/$（${usage.jpy_as_of} 時点・
+        .env の USD_JPY_RATE で更新可。週1回見直し推奨）</p>
       <table><thead><tr><th>日時</th><th>機能</th><th>モデル</th>
         <th>in</th><th>out</th><th>費用</th></tr></thead><tbody>
         ${usage.recent.map((r) => `<tr><td class="muted">${r.created_at}</td>
@@ -774,6 +796,10 @@ export async function settings(root) {
   if (window.speechSynthesis) {
     window.speechSynthesis.onvoiceschanged = renderVoices;
   }
+  root.querySelector("#autoSubmit").addEventListener("change", (e) => {
+    speech.setVoiceAutoSubmit(e.target.checked);
+    toast(e.target.checked ? "音声→自動判定 ON" : "音声→確認してから送信");
+  });
   root.querySelector("#natural").addEventListener("change", (e) => {
     speech.setNatural(e.target.checked);
     speech.pickRoundVoice();
