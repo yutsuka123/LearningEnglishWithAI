@@ -238,9 +238,15 @@ def usage_summary() -> dict:
             "SELECT model, prompt_tokens, output_tokens, cost_usd, "
             "feature, created_at FROM ai_usage ORDER BY id DESC LIMIT 10"
         ).fetchall()
+    s = load_settings()
+    rate = s.usd_jpy_rate
     return {
         "total_cost_usd": round(total["cost"], 4),
         "today_cost_usd": round(today["cost"], 4),
+        "total_cost_jpy": round(total["cost"] * rate, 1),
+        "today_cost_jpy": round(today["cost"] * rate, 1),
+        "jpy_rate": rate,
+        "jpy_as_of": s.usd_jpy_as_of,
         "prompt_tokens": total["ptok"],
         "output_tokens": total["otok"],
         "calls": total["calls"],

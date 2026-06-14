@@ -64,10 +64,25 @@ class Settings:
     port: int
     nickname: str
     tts_model: str
+    usd_jpy_rate: float
+    usd_jpy_as_of: str
 
     @property
     def ai_enabled(self) -> bool:
         return bool(self.openai_api_key.strip())
+
+
+# USD→JPY 為替レート（費用の円換算用）。週1回見直し、.env で更新可能。
+# 既定は 2026-06-14 時点の概算値。
+DEFAULT_USD_JPY = 155.0
+DEFAULT_USD_JPY_AS_OF = "2026-06-14"
+
+
+def _parse_float(value: str, default: float) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
 
 
 def load_settings() -> Settings:
@@ -76,6 +91,8 @@ def load_settings() -> Settings:
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini").strip()
     host = os.getenv("HOST", "127.0.0.1").strip()
     tts = os.getenv("OPENAI_TTS_MODEL", "gpt-4o-mini-tts").strip()
+    rate = _parse_float(os.getenv("USD_JPY_RATE", ""), DEFAULT_USD_JPY)
+    as_of = os.getenv("USD_JPY_AS_OF", "").strip() or DEFAULT_USD_JPY_AS_OF
     return Settings(
         openai_api_key=os.getenv("OPENAI_API_KEY", "").strip(),
         openai_model=model or "gpt-4o-mini",
@@ -83,6 +100,8 @@ def load_settings() -> Settings:
         port=int(os.getenv("PORT", "8000")),
         nickname=os.getenv("USER_NICKNAME", "").strip(),
         tts_model=tts or "gpt-4o-mini-tts",
+        usd_jpy_rate=rate,
+        usd_jpy_as_of=as_of,
     )
 
 

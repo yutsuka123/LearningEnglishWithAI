@@ -108,24 +108,46 @@ export function quizRunner(config) {
 
   function renderAnswerInput(area, item, direction, lang) {
     const voiceMode = appState.inputMode === "voice";
-    const inp = el(`<input id="ans" placeholder="答えを入力" style="width:55%" />`);
+    const inp = el(`<input id="ans" placeholder="答えを入力" style="width:50%" />`);
     const ok = el(`<button class="btn">✓ 回答</button>`);
+    const dk = el(`<button class="btn ghost">🤔 わからない</button>`);
     const row = el(`<div class="row center" style="justify-content:center"></div>`);
     const submit = () => reveal(area, item, direction, inp.value);
     ok.addEventListener("click", submit);
+    dk.addEventListener("click", () => reveal(area, item, direction, ""));
     inp.addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
 
     if (voiceMode) {
-      const mic = el(`<button class="btn good">🎤 録音</button>`);
+      // Toggle recording: ON=録音開始, OFF=認識して回答。
+      let recorder = null;
+      let recording = false;
+      const mic = el(`<button class="btn good">🎤 録音開始</button>`);
       mic.addEventListener("click", async () => {
-        mic.disabled = true; mic.textContent = "聞き取り中…";
-        try { inp.value = await speech.listenOnce(lang); }
-        catch (e) { inp.placeholder = e.message; }
-        finally { mic.disabled = false; mic.textContent = "🎤 録音"; }
+        if (!recording) {
+          try {
+            recorder = speech.createRecorder(lang);
+            recorder.start();
+            recording = true;
+            mic.textContent = "⏹ 停止して回答";
+            mic.classList.remove("good"); mic.classList.add("bad");
+          } catch (e) { area.appendChild(el(`<p class="muted">${e.message}</p>`)); }
+        } else {
+          recording = false;
+          mic.disabled = true; mic.textContent = "認識中…";
+          const text = await recorder.stop();
+          inp.value = text;
+          if (speech.isVoiceAutoSubmit()) {
+            reveal(area, item, direction, text); // 即判定
+          } else {
+            mic.disabled = false; mic.textContent = "🎤 録音開始";
+            mic.classList.remove("bad"); mic.classList.add("good");
+            inp.focus();
+          }
+        }
       });
-      row.append(mic, inp, ok);
+      row.append(mic, inp, ok, dk);
     } else {
-      row.append(inp, ok);
+      row.append(inp, ok, dk);
       setTimeout(() => inp.focus(), 0);
     }
     area.appendChild(row);

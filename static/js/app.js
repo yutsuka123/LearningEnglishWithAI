@@ -122,8 +122,10 @@ export async function refreshCost() {
     const u = await api.get("/api/system/usage");
     const badge = document.getElementById("costBadge");
     badge.textContent =
-      `💰 今日 $${u.today_cost_usd.toFixed(4)} / 累計 $${u.total_cost_usd.toFixed(4)}`;
+      `💰 今日 ¥${u.today_cost_jpy} / 累計 ¥${u.total_cost_jpy}`;
     badge.title =
+      `今日 $${u.today_cost_usd.toFixed(4)} / 累計 $${u.total_cost_usd.toFixed(4)}` +
+      ` (レート ¥${u.jpy_rate}/$ @${u.jpy_as_of})\n` +
       `呼び出し ${u.calls} 回 / 入力 ${u.prompt_tokens} tok / ` +
       `出力 ${u.output_tokens} tok`;
   } catch (e) { /* ignore */ }

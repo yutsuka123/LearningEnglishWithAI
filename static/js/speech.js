@@ -35,6 +35,14 @@ export function setNatural(on) {
   localStorage.setItem("naturalVoice", on ? "1" : "0");
 }
 
+// Auto-submit after voice recognition (default ON for tempo).
+export function isVoiceAutoSubmit() {
+  return localStorage.getItem("voiceAutoSubmit") !== "0";
+}
+export function setVoiceAutoSubmit(on) {
+  localStorage.setItem("voiceAutoSubmit", on ? "1" : "0");
+}
+
 // --- enabled OpenAI voice set ----------------------------------------------
 
 const LS_OPENAI = "tts_openai_enabled";
@@ -166,19 +174,93 @@ export const speak = say;
 
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
+// Only one recognition can run at a time. Track it so we can always force-stop
+// the previous one before starting a new one (fixes "2回目が動かない").
+let activeRec = null;
+
 export function sttSupported() { return !!SR; }
+
+// Force-abort any running recognition (used as a global 強制中止).
+export function abortListening() {
+  if (activeRec) {
+    try { activeRec.abort(); } catch (e) { /* ignore */ }
+    activeRec = null;
+  }
+}
 
 export function listenOnce(lang = "en-US") {
   return new Promise((resolve, reject) => {
     if (!SR) { reject(new Error("音声認識に未対応のブラウザです")); return; }
+    abortListening();
     const rec = new SR();
+    activeRec = rec;
     rec.lang = lang;
     rec.interimResults = false;
     rec.maxAlternatives = 1;
     let done = false;
-    rec.onresult = (e) => { done = true; resolve(e.results[0][0].transcript); };
-    rec.onerror = (e) => reject(new Error(e.error || "認識エラー"));
-    rec.onend = () => { if (!done) reject(new Error("聞き取れませんでした")); };
+    const finish = (fn) => {
+      if (done) return; done = true;
+      if (activeRec === rec) activeRec = null;
+      clearTimeout(tid);
+      fn();
+    };
+    rec.onresult = (e) =>
+      finish(() => resolve(e.results[0][0].transcript));
+    rec.onerror = (e) =>
+      finish(() => reject(new Error(e.error || "認識エラー")));
+    rec.onend = () =>
+      finish(() => reject(new Error("聞き取れませんでした")));
+    // Safety: never hang forever.
+    const tid = setTimeout(() => {
+      try { rec.abort(); } catch (e) { /* ignore */ }
+      finish(() => reject(new Error("タイムアウトしました")));
+    }, 15000);
     rec.start();
   });
+}
+
+// Toggle-style recorder: start() begins continuous recording, stop() ends it
+// and resolves with the recognized text. Robust against onend not firing.
+export function createRecorder(lang = "en-US") {
+  if (!SR) throw new Error("音声認識に未対応のブラウザです");
+  abortListening(); // release any previous session first
+  const rec = new SR();
+  activeRec = rec;
+  rec.lang = lang;
+  rec.continuous = true;
+  rec.interimResults = true;
+  let finalText = "";
+  rec.onresult = (e) => {
+    let t = "";
+    for (let i = 0; i < e.results.length; i++) {
+      if (e.results[i].isFinal) t += e.results[i][0].transcript + " ";
+    }
+    if (t.trim()) finalText = t.trim();
+  };
+  return {
+    start() { try { rec.start(); } catch (e) { /* already started */ } },
+    stop() {
+      return new Promise((resolve) => {
+        let settled = false;
+        const done = () => {
+          if (settled) return; settled = true;
+          if (activeRec === rec) activeRec = null;
+          clearTimeout(tid);
+          resolve(finalText.trim());
+        };
+        rec.onend = done;
+        rec.onerror = done;
+        // If onend never fires, force-abort after 2.5s so the UI never
+        // gets stuck on "認識中…".
+        const tid = setTimeout(() => {
+          try { rec.abort(); } catch (e) { /* ignore */ }
+          done();
+        }, 2500);
+        try { rec.stop(); } catch (e) {
+          try { rec.abort(); } catch (e2) { /* ignore */ }
+          done();
+        }
+      });
+    },
+  };
 }
