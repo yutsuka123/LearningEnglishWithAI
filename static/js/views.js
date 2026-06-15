@@ -494,12 +494,35 @@ function openModal(title, buildBody) {
   return close;
 }
 
-// 単語の例文ポップアップ: 英語・訳・例文＋例文の再生(男女声)。例文が無ければ
-// AIで生成（コストガードあり）。
-function showWordExample(w) {
+// 詳細(JSON)を整形して描画。
+function renderWordDetail(box, d) {
+  box.innerHTML = "";
+  const sec = (label, html) => {
+    if (!html) return;
+    box.appendChild(el(`<p style="margin:6px 0"><b>${label}</b> ${html}</p>`));
+  };
+  const arr = (a) => Array.isArray(a) ? a.map(escapeHtml).join("、") : "";
+  sec("品詞:", d.pos ? escapeHtml(d.pos) : "");
+  sec("意味:", arr(d.meanings));
+  if (Array.isArray(d.derivatives) && d.derivatives.length) {
+    sec("派生:", d.derivatives.map((x) =>
+      `${escapeHtml(x.word || "")}（${escapeHtml(x.pos || "")}: `
+      + `${escapeHtml(x.ja || "")}）`).join(" / "));
+  }
+  sec("類義語:", arr(d.synonyms));
+  sec("対義語:", arr(d.antonyms));
+  sec("語源・由来:", d.origin ? escapeHtml(d.origin) : "");
+  sec("豆知識:", d.trivia ? escapeHtml(d.trivia) : "");
+  sec("解説:", d.explanation ? escapeHtml(d.explanation) : "");
+}
+
+// 単語の詳細ポップアップ: 例文(再生)＋AI詳細(品詞/意味複数/派生/類義/対義/
+// 由来/豆知識/解説)。詳細は押した時にAI生成→キャッシュ（2回目以降は無料）。
+function showWordDetail(w) {
   openModal(w.english, (body) => {
     body.appendChild(el(`<p class="quiz-answer">${escapeHtml(w.english)}
-      <span class="muted">${escapeHtml(w.japanese || "")}</span></p>`));
+      <span class="muted">${escapeHtml(w.japanese || "")}
+      ${w.level ? "・Lv" + w.level : ""}</span></p>`));
     const exLine = el(`<p>${w.example
       ? "例文: " + escapeHtml(w.example) : "（例文なし）"}</p>`);
     body.appendChild(exLine);
@@ -509,25 +532,41 @@ function showWordExample(w) {
     if (w.example) {
       tools.appendChild(voiceButtonsItem(
         "word", w.id, "example", () => w.example, getMode));
-    } else {
-      const gen = el(`<button class="btn ghost">📝 例文を作る(AI)</button>`);
-      gen.addEventListener("click", async () => {
-        exLine.textContent = "生成中…";
-        try {
-          const r = await api.post("/api/learn/example", { word: w.english });
-          if (r.ok && r.english) {
-            w.example = r.english;
-            exLine.textContent = "例文: " + r.english;
-            tools.innerHTML = "";
-            tools.appendChild(voiceButtonsItem(
-              "word", w.id, "example", () => w.example, getMode));
-            refreshCost();
-          } else { exLine.textContent = r.error || "生成失敗"; }
-        } catch (e) { exLine.textContent = "生成失敗"; }
-      });
-      tools.appendChild(gen);
     }
     body.append(speedRow, tools);
+
+    // --- AI詳細 ---
+    const detailBox = el(`<div class="mt"></div>`);
+    body.appendChild(detailBox);
+    const loadDetail = async (regen) => {
+      detailBox.innerHTML = `<p class="muted">詳細を取得中…</p>`;
+      try {
+        const r = await api.post(
+          `/api/words/${w.id}/detail${regen ? "?regen=true" : ""}`);
+        if (r.ok) {
+          renderWordDetail(detailBox, r.detail);
+          w.has_detail = true;
+          if (!r.cached) refreshCost();
+          const re = el(`<button class="btn ghost mt"
+            >🔄 作り直す(AI)</button>`);
+          re.addEventListener("click", () => loadDetail(true));
+          detailBox.appendChild(re);
+        } else { detailBox.innerHTML =
+          `<p class="muted">${escapeHtml(r.error || "失敗")}</p>`; }
+      } catch (e) {
+        detailBox.innerHTML = `<p class="muted">失敗: ${e.message}</p>`;
+      }
+    };
+    if (w.has_detail) {
+      loadDetail(false);  // キャッシュ済み → 無料で表示
+    } else {
+      const gen = el(`<button class="btn">📖 詳細をAIで生成</button>`);
+      gen.addEventListener("click", () => loadDetail(false));
+      detailBox.appendChild(gen);
+      detailBox.appendChild(el(`<p class="muted">品詞・複数の意味・派生語・
+        類義語/対義語・語源・豆知識・解説を生成します（要API・初回のみ課金、
+        以後はキャッシュで無料）。</p>`));
+    }
   });
 }
 
@@ -625,8 +664,8 @@ export async function vocab(root) {
         () => root.querySelector("#wSpeed").value));
       const ops = tr.querySelector("td:last-child .ops-cell");
       const mc = tr.querySelector("[data-mc]");
-      const ex = el(`<button class="btn good">例文</button>`);
-      ex.addEventListener("click", () => showWordExample(w));
+      const ex = el(`<button class="btn good">詳細</button>`);
+      ex.addEventListener("click", () => showWordDetail(w));
       const repaint = () => { mc.innerHTML = masteryCell(w); };
       const vague = vagueButton("/api/words", w, repaint);
       const known = knownButton("/api/words", w, repaint);
