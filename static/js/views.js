@@ -549,6 +549,8 @@ export async function vocab(root) {
           <option value="domain">並び替え: 分野</option>
           <option value="recent">並び替え: 最近の学習</option>
         </select>
+        <button class="btn ghost" id="fDir"
+          title="昇順/降順を切替">昇順 ▲</button>
         <select id="fMastered" title="覚えた語の表示">
           <option value="">覚えた: 含む</option>
           <option value="hide">覚えた: 隠す</option>
@@ -631,6 +633,7 @@ export async function vocab(root) {
     if (root.querySelector("#fOutRange").checked) q.set("out_of_range", "true");
     const ms = root.querySelector("#fMastered").value;
     if (ms) q.set("mastered", ms);
+    if (root.querySelector("#fDir").dataset.desc === "1") q.set("desc", "true");
     if (showBanned()) q.set("include_banned", "true");
     const words = await api.get("/api/words?" + q.toString());
     const term = kw.value.trim().toLowerCase();
@@ -640,6 +643,13 @@ export async function vocab(root) {
     wPage = 0;
     paint();
   };
+  const fDir = root.querySelector("#fDir");
+  fDir.addEventListener("click", () => {
+    const d = fDir.dataset.desc === "1" ? "0" : "1";
+    fDir.dataset.desc = d;
+    fDir.textContent = d === "1" ? "降順 ▼" : "昇順 ▲";
+    load();
+  });
   ["#fDomain", "#fLevelMin", "#fLevelMax", "#fOutRange", "#fSort",
    "#fMastered"].forEach((id) =>
     root.querySelector(id).addEventListener("change", load));
@@ -697,6 +707,8 @@ export async function phrases(root) {
           <option value="scene">並び替え: シーン</option>
           <option value="recent">並び替え: 最近の学習</option>
         </select>
+        <button class="btn ghost" id="fDir"
+          title="昇順/降順を切替">昇順 ▲</button>
         <select id="fMastered" title="覚えたフレーズの表示">
           <option value="">覚えた: 含む</option>
           <option value="hide">覚えた: 隠す</option>
@@ -764,6 +776,7 @@ export async function phrases(root) {
     if (v) q.set("scene", v);
     const ms = root.querySelector("#fMastered").value;
     if (ms) q.set("mastered", ms);
+    if (root.querySelector("#fDir").dataset.desc === "1") q.set("desc", "true");
     if (showBanned()) q.set("include_banned", "true");
     const items = await api.get("/api/phrases?" + q.toString());
     const term = kw.value.trim().toLowerCase();
@@ -773,6 +786,13 @@ export async function phrases(root) {
     pPage = 0;
     paint();
   };
+  const fDir = root.querySelector("#fDir");
+  fDir.addEventListener("click", () => {
+    const d = fDir.dataset.desc === "1" ? "0" : "1";
+    fDir.dataset.desc = d;
+    fDir.textContent = d === "1" ? "降順 ▼" : "昇順 ▲";
+    load();
+  });
   root.querySelector("#scene").addEventListener("change", load);
   root.querySelector("#fSort").addEventListener("change", load);
   root.querySelector("#fMastered").addEventListener("change", load);

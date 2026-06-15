@@ -57,19 +57,22 @@ def _phrase_dict(row) -> dict:
 def list_phrases(
     scene: str | None = None,
     sort: str = "mastery",
+    desc: bool = False,            # 降順にするか（昇順/降順トグル）
     include_banned: bool = False,
     mastered: str | None = None,   # 'only' | 'hide' | None(=全部)
 ):
-    order = {
-        "mastery": "mastery ASC, last_studied ASC",
-        "english": "english COLLATE NOCASE ASC",
-        "scene": "scene ASC, english COLLATE NOCASE ASC",
-        "recent": "last_studied DESC",
+    col = {
+        "mastery": "mastery",
+        "english": "english COLLATE NOCASE",
+        "scene": "scene",
+        "recent": "last_studied",
         "accuracy": (
             "CASE WHEN times_asked > 0 "
-            "THEN times_correct * 1.0 / times_asked ELSE -1 END DESC"
+            "THEN times_correct * 1.0 / times_asked ELSE -1 END"
         ),
-    }.get(sort, "mastery ASC, last_studied ASC")
+    }.get(sort, "mastery")
+    direction = "DESC" if desc else "ASC"
+    order = f"{col} {direction}, english COLLATE NOCASE ASC"
     conds, params = [], []
     if scene:
         conds.append("scene = ?")
