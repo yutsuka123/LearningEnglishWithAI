@@ -11,15 +11,15 @@ from fastapi.staticfiles import StaticFiles
 from .config import paths
 from .database import db, init_db
 from .routers import categories, learn, phrases, system, vocabulary
-from .services.spaced_repetition import apply_monthly_decay
+from .services.spaced_repetition import apply_weekly_decay
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialise DB + seed data, then apply the monthly forgetting decay.
+    # Initialise DB + seed data, then apply the weekly forgetting decay.
     init_db()
     with db() as conn:
-        apply_monthly_decay(conn)
+        apply_weekly_decay(conn)
     yield
 
 

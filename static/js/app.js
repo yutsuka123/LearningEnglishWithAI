@@ -138,11 +138,15 @@ export async function refreshCost() {
   try {
     const u = await api.get("/api/system/usage");
     const badge = document.getElementById("costBadge");
+    const cap = u.daily_cap_jpy
+      ? ` / 上限 ¥${u.daily_cap_jpy}${u.cap_blocked ? "（停止中）" : ""}` : "";
     badge.textContent =
-      `💰 今日 ¥${u.today_cost_jpy} / 累計 ¥${u.total_cost_jpy}`;
+      `💰 今日 ¥${u.today_cost_jpy}${cap} / 累計 ¥${u.total_cost_jpy}`;
     badge.title =
       `今日 $${u.today_cost_usd.toFixed(4)} / 累計 $${u.total_cost_usd.toFixed(4)}` +
       ` (レート ¥${u.jpy_rate}/$ @${u.jpy_as_of})\n` +
+      `1日の上限 $${(u.daily_cap_usd || 0).toFixed(2)}` +
+      `（暴走防止ガード・.envで変更可）\n` +
       `呼び出し ${u.calls} 回 / 入力 ${u.prompt_tokens} tok / ` +
       `出力 ${u.output_tokens} tok`;
   } catch (e) { /* ignore */ }

@@ -211,3 +211,45 @@ th { color: var(--muted); font-weight: 600; }
 
 .now-voice { font-size: 12px; color: var(--muted); }
 .now-voice b { color: var(--accent); }
+
+/* 「覚えた」バッジ */
+.pill.mastered { background: var(--accent-2); color: #042016;
+  font-weight: 600; }
+
+/* 習熟度バー（一覧用）: 全長は従来の約半分。色は inline で段階を表す。 */
+.mbar {
+  width: 100%; max-width: 110px; height: 8px; background: var(--panel-2);
+  border-radius: 6px; overflow: hidden;
+}
+.mbar.blue { height: 13px; }   /* 青(50超〜200)は太くしてサイズ感を変える */
+.mbar > span { display: block; height: 100%; }
+
+/* 操作セル（例文 / 覚えた / 🗑️）。折り返さず横一列に並べて行が縦に伸びない
+   ようにする。 */
+.ops-cell {
+  display: flex; flex-wrap: nowrap; gap: 4px; align-items: center;
+  white-space: nowrap;
+}
+.ops-cell .btn { padding: 2px 8px; }
+
+/* 覚えたボタン: 青背景。 */
+.btn.blue { background: #3b82f6; color: #fff; }
+
+/* 削除ボタン（ゴミ箱）。背景はそのまま(ghost)・マークだけ赤。押し間違い
+   防止に他のボタンから少し離す。 */
+.del-btn {
+  margin-left: 18px; padding: 2px 6px; color: var(--danger);
+  display: inline-flex; align-items: center;
+}
+.del-btn:hover { color: #b3261e; }   /* 背景は変えず、マークを濃い赤に */
+
+/* モーダル（例文ポップアップ等） */
+.modal-ov {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, .55);
+  display: flex; align-items: center; justify-content: center; z-index: 100;
+}
+.modal-box {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 12px; padding: 20px; width: min(560px, 92vw);
+  max-height: 86vh; overflow-y: auto;
+}

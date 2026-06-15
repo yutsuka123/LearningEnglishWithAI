@@ -11,11 +11,75 @@ the UI can display API consumption (ユーザー要望: API使用量・費用の
 
 from __future__ import annotations
 
+import time
+from collections import deque
 from dataclasses import dataclass
 from typing import Iterator
 
 from ..config import load_settings, log
 from ..database import db
+
+# ---------------------------------------------------------------------------
+# Cost / rate guards — prevent runaway spend if something loops or misbehaves.
+# Two independent limits, both configurable via .env:
+#   * AI_DAILY_COST_CAP_USD — refuse once today's spend reaches the cap.
+#   * AI_MAX_CALLS_PER_MIN  — refuse if calls arrive too fast (loop guard).
+# Refusals are returned as a normal "AI unavailable" result so the UI shows a
+# friendly message and (for TTS) falls back to the free browser voice.
+# ---------------------------------------------------------------------------
+
+_call_times: deque[float] = deque(maxlen=240)  # recent call timestamps (mono)
+
+
+def _today_cost_usd() -> float:
+    with db() as conn:
+        row = conn.execute(
+            "SELECT COALESCE(SUM(cost_usd), 0) AS c FROM ai_usage "
+            "WHERE date(created_at, 'localtime') = date('now', 'localtime')"
+        ).fetchone()
+    return float(row["c"] or 0.0)
+
+
+def budget_status() -> dict:
+    """Today's spend vs. the configured cap (for the UI / settings display)."""
+    s = load_settings()
+    spent = _today_cost_usd()
+    cap = s.ai_daily_cost_cap_usd
+    return {
+        "today_cost_usd": round(spent, 4),
+        "cap_usd": cap,
+        "remaining_usd": round(max(0.0, cap - spent), 4),
+        "blocked": cap > 0 and spent >= cap,
+        "calls_per_min_cap": s.ai_max_calls_per_min,
+    }
+
+
+def _guard(feature: str, *, rate_limit: bool = True) -> str | None:
+    """Return a refusal message if a guard trips, else None. The daily cost
+    cap is ALWAYS enforced. The per-minute rate limit can be skipped for an
+    explicit, user-authorized batch (``rate_limit=False``) — the cap still
+    stops it once the day's budget is spent, so it resumes next run."""
+    s = load_settings()
+    cap = s.ai_daily_cost_cap_usd
+    if cap > 0 and _today_cost_usd() >= cap:
+        rate = s.usd_jpy_rate
+        return (
+            f"本日のAI利用上限(¥{round(cap * rate)} / ${cap:g})に達したため停止"
+            "しました。設定で上限を変更できます（暴走による高額課金を防ぐ"
+            "ためのガードです）。"
+        )
+    if rate_limit:
+        now = time.monotonic()
+        window = [t for t in _call_times if now - t < 60.0]
+        if len(window) >= s.ai_max_calls_per_min:
+            return (
+                f"AI呼び出しが短時間に集中しています（上限 "
+                f"{s.ai_max_calls_per_min}回/分）。少し待ってから再試行して"
+                "ください。"
+            )
+        _call_times.append(now)
+    return None
+
 
 # Approx. USD price per 1M tokens (input, output). Update as needed.
 # Source: OpenAI public pricing. Unknown models fall back to gpt-4o-mini.
@@ -106,7 +170,12 @@ def chat(
             ok=False, text="", error="OpenAI クライアントを初期化できませんでした。"
         )
 
+    refusal = _guard(feature)
+    if refusal:
+        return AIResult(ok=False, text="", error=refusal)
+
     use_model = model or settings.openai_model
+    capped = min(max_tokens, settings.ai_max_output_tokens)
     try:
         resp = client.chat.completions.create(
             model=use_model,
@@ -115,7 +184,7 @@ def chat(
                 {"role": "user", "content": user},
             ],
             temperature=temperature,
-            max_tokens=max_tokens,
+            max_tokens=capped,
         )
         usage = resp.usage
         ptok = getattr(usage, "prompt_tokens", 0) or 0
@@ -151,6 +220,11 @@ def chat_stream(
         yield "[AI未設定] OPENAI_API_KEY を設定すると会話できます。"
         return
 
+    refusal = _guard(feature)
+    if refusal:
+        yield f"[停止] {refusal}"
+        return
+
     try:
         stream = client.chat.completions.create(
             model=settings.openai_model,
@@ -159,7 +233,7 @@ def chat_stream(
                 {"role": "user", "content": user},
             ],
             temperature=temperature,
-            max_tokens=max_tokens,
+            max_tokens=min(max_tokens, settings.ai_max_output_tokens),
             stream=True,
             stream_options={"include_usage": True},
         )
@@ -204,7 +278,7 @@ def _tts_cache_path(model: str, voice: str, text: str):
 
 
 def synthesize_speech(
-    text: str, voice: str = "alloy"
+    text: str, voice: str = "alloy", *, rate_limit: bool = True
 ) -> tuple[bytes | None, str | None]:
     """Return (audio_mp3_bytes, error). Uses OpenAI's natural TTS voices.
 
@@ -222,6 +296,11 @@ def synthesize_speech(
     cache = _tts_cache_path(settings.tts_model, voice, text[:4000])
     if cache.exists():
         return cache.read_bytes(), None  # cache hit → no API call, no cost
+
+    # only a real (paid) synthesis hits the guard
+    refusal = _guard("tts", rate_limit=rate_limit)
+    if refusal:
+        return None, refusal
 
     try:
         resp = client.audio.speech.create(
@@ -263,6 +342,9 @@ def transcribe(
         if not settings.ai_enabled:
             return None, "OPENAI_API_KEY が未設定です。"
         return None, "OpenAI クライアントを初期化できませんでした。"
+    refusal = _guard("stt")
+    if refusal:
+        return None, refusal
     try:
         f = io.BytesIO(audio_bytes)
         f.name = filename
@@ -296,8 +378,8 @@ def usage_summary() -> dict:
             "COUNT(*) AS calls FROM ai_usage"
         ).fetchone()
         today = conn.execute(
-            "SELECT COALESCE(SUM(cost_usd), 0) AS cost "
-            "FROM ai_usage WHERE date(created_at) = date('now')"
+            "SELECT COALESCE(SUM(cost_usd), 0) AS cost FROM ai_usage "
+            "WHERE date(created_at, 'localtime') = date('now', 'localtime')"
         ).fetchone()
         recent = conn.execute(
             "SELECT model, prompt_tokens, output_tokens, cost_usd, "
@@ -316,4 +398,10 @@ def usage_summary() -> dict:
         "output_tokens": total["otok"],
         "calls": total["calls"],
         "recent": [dict(r) for r in recent],
+        "daily_cap_usd": s.ai_daily_cost_cap_usd,
+        "daily_cap_jpy": round(s.ai_daily_cost_cap_usd * rate, 1),
+        "cap_blocked": (
+            s.ai_daily_cost_cap_usd > 0
+            and today["cost"] >= s.ai_daily_cost_cap_usd
+        ),
     }

@@ -98,7 +98,8 @@ export async function dashboard(root) {
       <div class="row" style="justify-content:space-between">
         <b>${areaLabels[k] || k}</b>
         <span class="muted">${v.avg_mastery} / 100</span></div>
-      <div class="bar mt"><span style="width:${v.avg_mastery}%"></span></div>
+      <div class="bar mt"><span style="width:${Math.min(100, v.avg_mastery)}%">
+        </span></div>
     </div>`).join("");
 
   root.innerHTML = `
@@ -210,7 +211,21 @@ export async function daily(root) {
       writingStep(area, next);
     }
   }
-  render();
+
+  // 開いた直後は発声しない。開始ボタンを押してから render() を始める。
+  // （以降は単語表示と同時に読み上げてOK、というご要望どおりの挙動。）
+  function intro() {
+    root.innerHTML = `<h1>デイリーセッション</h1>${chips()}
+      <div class="card center">
+        <h2>今日の学習（約10分）</h2>
+        <p class="muted">単語・フレーズ・読み書きを順番に進めます。
+          音声は開始後に再生されます。</p>
+        <button class="btn" id="startDaily">▶ 開始する</button>
+      </div>`;
+    root.querySelector("#startDaily")
+      .addEventListener("click", () => render());
+  }
+  intro();
 }
 
 async function readingStep(area, next) {
@@ -282,6 +297,136 @@ function voiceButtons(getText) {
   return cell;
 }
 
+// 番号(ID)で再生する2ボタン。保存済みなら無料、無ければ合成して保存し
+// 次回から無料。fallback はTTS不可時にブラウザ音声で読む英文。
+function voiceButtonsItem(itemType, id, kind, fallback) {
+  const cell = el(`<div class="voice-cell">
+    <button class="btn voice-m" title="男性の声 (ash)">🔊</button>
+    <button class="btn voice-f" title="女性の声 (nova)">🔊</button></div>`);
+  const [m, f] = cell.querySelectorAll("button");
+  m.addEventListener("click", () =>
+    speech.sayItem(itemType, id, kind, MALE_VOICE, fallback()));
+  f.addEventListener("click", () =>
+    speech.sayItem(itemType, id, kind, FEMALE_VOICE, fallback()));
+  return cell;
+}
+
+// 習熟度バー: 色＋サイズで段階を表す（全長は従来の約半分）。
+//   0       → 赤・極小
+//   1〜20   → 黄、20で基準サイズ(=200と同じ)に達する
+//   20超〜50 → 緑、基準サイズ
+//   50超〜200 → 青、基準サイズ＋バーを太くしてサイズ感を変える
+function masteryCell(item) {
+  const m = item.mastery;
+  let color, w, cls = "";
+  if (m <= 0) { color = "#e5534b"; w = 8; }
+  else if (m <= 20) { color = "#ffb454"; w = 8 + (m / 20) * 92; }
+  else if (m <= 50) { color = "#36c98d"; w = 100; }
+  else { color = "#3b82f6"; w = 100; cls = " blue"; }
+  const badge = item.mastered
+    ? `<span class="pill mastered">✅ 覚えた</span>` : "";
+  return `<div class="mbar${cls}">
+    <span style="width:${w}%;background:${color}"></span></div>
+    <small class="muted">${m}</small> ${badge}`;
+}
+
+// 「覚えた / 戻す」トグルボタン。endpoint は /api/words or /api/phrases。
+function knownButton(base, item, onChange) {
+  const btn = el(`<button class="btn blue"></button>`);
+  const paint = () => {
+    btn.textContent = item.mastered ? "戻す" : "覚えた";
+    btn.title = item.mastered
+      ? "覚えた状態を解除（閾値直下に戻す）" : "覚えた（満点200・出題を抑制）";
+  };
+  paint();
+  btn.addEventListener("click", async () => {
+    const next = !item.mastered;
+    try {
+      const r = await api.post(`${base}/${item.id}/known`, { known: next });
+      item.mastery = r.mastery;
+      item.mastered = r.known;
+      paint();
+      if (onChange) onChange();
+    } catch (e) { toast("更新に失敗しました"); }
+  });
+  return btn;
+}
+
+// 削除ボタン: ゴミ箱マーク＋二重確認。基本は削除させたくないので、押し間違い
+// 防止に他のボタンから少し離し、確認を2段階にする。onDel() は実際の削除処理。
+function deleteButton(name, onDel) {
+  // ゴミ箱マークは赤（背景はそのまま）。絵文字は色を変えられないのでSVGを使う。
+  const btn = el(`<button class="btn ghost del-btn"
+    title="削除（確認を2回します）">
+    <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"
+      aria-hidden="true"><path d="M9 3h6l1 2h4v2H4V5h4l1-2zM6 9h12l-1 11a2 2
+      0 0 1-2 2H9a2 2 0 0 1-2-2L6 9z"/></svg></button>`);
+  btn.addEventListener("click", async () => {
+    const label = (name || "").slice(0, 40);
+    if (!confirm(
+      `「${label}」を削除しますか？\n` +
+      "※基本的に削除は不要です。本当に消す場合のみ進めてください。")) return;
+    if (!confirm(
+      `最終確認です。「${label}」を完全に削除します。\n` +
+      "この操作は元に戻せません。よろしいですか？")) return;
+    await onDel();
+    toast("削除しました");
+  });
+  return btn;
+}
+
+// 簡易モーダル（例文ポップアップ等）。閉じるとDOMから消える。
+function openModal(title, buildBody) {
+  const ov = el(`<div class="modal-ov"></div>`);
+  const box = el(`<div class="modal-box">
+    <div class="row" style="justify-content:space-between">
+      <h2 style="margin:0">${escapeHtml(title)}</h2>
+      <button class="btn ghost" id="mClose">✕</button></div>
+    <div class="modal-body mt"></div></div>`);
+  const close = () => { speech.stopSpeaking(); ov.remove(); };
+  ov.addEventListener("click", (e) => { if (e.target === ov) close(); });
+  box.querySelector("#mClose").addEventListener("click", close);
+  buildBody(box.querySelector(".modal-body"));
+  ov.appendChild(box);
+  document.body.appendChild(ov);
+  return close;
+}
+
+// 単語の例文ポップアップ: 英語・訳・例文＋例文の再生(男女声)。例文が無ければ
+// AIで生成（コストガードあり）。
+function showWordExample(w) {
+  openModal(w.english, (body) => {
+    body.appendChild(el(`<p class="quiz-answer">${escapeHtml(w.english)}
+      <span class="muted">${escapeHtml(w.japanese || "")}</span></p>`));
+    const exLine = el(`<p>${w.example
+      ? "例文: " + escapeHtml(w.example) : "（例文なし）"}</p>`);
+    body.appendChild(exLine);
+    const tools = el(`<div class="row"></div>`);
+    if (w.example) {
+      tools.appendChild(voiceButtonsItem(
+        "word", w.id, "example", () => w.example));
+    } else {
+      const gen = el(`<button class="btn ghost">📝 例文を作る(AI)</button>`);
+      gen.addEventListener("click", async () => {
+        exLine.textContent = "生成中…";
+        try {
+          const r = await api.post("/api/learn/example", { word: w.english });
+          if (r.ok && r.english) {
+            w.example = r.english;
+            exLine.textContent = "例文: " + r.english;
+            tools.innerHTML = "";
+            tools.appendChild(voiceButtonsItem(
+              "word", w.id, "example", () => w.example));
+            refreshCost();
+          } else { exLine.textContent = r.error || "生成失敗"; }
+        } catch (e) { exLine.textContent = "生成失敗"; }
+      });
+      tools.appendChild(gen);
+    }
+    body.appendChild(tools);
+  });
+}
+
 export async function vocab(root) {
   const facets = await api.get("/api/words/facets");
   root.innerHTML = `
@@ -332,13 +477,18 @@ export async function vocab(root) {
           <option value="domain">並び替え: 分野</option>
           <option value="recent">並び替え: 最近の学習</option>
         </select>
+        <select id="fMastered" title="覚えた語の表示">
+          <option value="">覚えた: 含む</option>
+          <option value="hide">覚えた: 隠す</option>
+          <option value="only">覚えた: のみ</option>
+        </select>
         <label class="toggle" title="禁止用語(注意喚起)を一覧に表示">
           <input type="checkbox" id="showBanned" ${showBanned() ? "checked" : ""} />
           🔞 禁止用語も表示</label>
       </div>
       <table class="mt"><thead><tr>
         <th>再生</th><th>英語</th><th>日本語</th><th>Lv</th><th>分野</th>
-        <th>習熟度</th><th>正答率</th><th></th></tr></thead>
+        <th>習熟度</th><th>正答率</th><th>操作</th></tr></thead>
         <tbody id="rows"></tbody></table>
     </div>`;
 
@@ -357,19 +507,23 @@ export async function vocab(root) {
         <td class="muted">${w.level || ""}</td>
         <td>${w.domain ? `<span class="pill">${escapeHtml(w.domain)}</span>`
           : ""}</td>
-        <td style="min-width:80px">
-          <div class="bar"><span style="width:${w.mastery}%"></span></div>
-          <small class="muted">${w.mastery}</small></td>
+        <td style="min-width:80px" data-mc="1">${masteryCell(w)}</td>
         <td>${w.accuracy == null ? "—" : w.accuracy + "%"}</td>
-        <td><button class="btn ghost" data-del="1"
-          style="padding:2px 8px">削除</button></td>
+        <td><div class="ops-cell"></div></td>
       </tr>`);
-      // MP3キャッシュ済みなら2回目以降は無料。例文があれば続けて読む。
-      tr.firstElementChild.appendChild(voiceButtons(() =>
-        w.example ? `${w.english}. ${w.example}` : w.english));
-      tr.querySelector("[data-del]").addEventListener("click", async () => {
+      // 番号(ID)で再生。保存済みなら無料、無ければ合成して保存。
+      tr.firstElementChild.appendChild(voiceButtonsItem(
+        "word", w.id, "word", () => w.english));
+      const ops = tr.querySelector("td:last-child .ops-cell");
+      const mc = tr.querySelector("[data-mc]");
+      const ex = el(`<button class="btn good">例文</button>`);
+      ex.addEventListener("click", () => showWordExample(w));
+      const known = knownButton("/api/words", w,
+        () => { mc.innerHTML = masteryCell(w); });
+      const del = deleteButton(w.english, async () => {
         await api.del("/api/words/" + w.id); load();
       });
+      ops.append(ex, known, del);
       rowsBody.appendChild(tr);
     });
   };
@@ -381,6 +535,8 @@ export async function vocab(root) {
     const l = root.querySelector("#fLevel").value;
     if (d) q.set("domain", d);
     if (l) q.set("level", l);
+    const ms = root.querySelector("#fMastered").value;
+    if (ms) q.set("mastered", ms);
     if (showBanned()) q.set("include_banned", "true");
     const words = await api.get("/api/words?" + q.toString());
     const term = kw.value.trim().toLowerCase();
@@ -388,7 +544,7 @@ export async function vocab(root) {
       w.english.toLowerCase().includes(term)
       || (w.japanese || "").toLowerCase().includes(term)) : words);
   };
-  ["#fDomain", "#fLevel", "#fSort"].forEach((id) =>
+  ["#fDomain", "#fLevel", "#fSort", "#fMastered"].forEach((id) =>
     root.querySelector(id).addEventListener("change", load));
   root.querySelector("#showBanned").addEventListener("change", (e) => {
     setShowBanned(e.target.checked); load();
@@ -476,9 +632,14 @@ export async function phrases(root) {
           <option value="scene">並び替え: シーン</option>
           <option value="recent">並び替え: 最近の学習</option>
         </select>
+        <select id="fMastered" title="覚えたフレーズの表示">
+          <option value="">覚えた: 含む</option>
+          <option value="hide">覚えた: 隠す</option>
+          <option value="only">覚えた: のみ</option>
+        </select>
       </div>
       <table class="mt"><thead><tr><th>再生</th><th>英語</th><th>日本語</th>
-        <th>シーン</th><th>習熟度</th><th></th></tr></thead>
+        <th>シーン</th><th>習熟度</th><th>操作</th></tr></thead>
         <tbody id="rows"></tbody></table>
     </div>`;
 
@@ -494,13 +655,19 @@ export async function phrases(root) {
         <td>${escapeHtml(p.english)}</td>
         <td>${escapeHtml(p.japanese)}</td>
         <td><span class="pill">${escapeHtml(p.scene || "")}</span></td>
-        <td><div class="bar"><span style="width:${p.mastery}%"></span></div></td>
-        <td><button class="btn ghost" data-id="${p.id}">削除</button></td>
+        <td data-mc="1">${masteryCell(p)}</td>
+        <td><div class="ops-cell"></div></td>
       </tr>`);
-      tr.firstElementChild.appendChild(voiceButtons(() => p.english));
-      tr.querySelector("[data-id]").addEventListener("click", async () => {
+      tr.firstElementChild.appendChild(voiceButtonsItem(
+        "phrase", p.id, "phrase", () => p.english));
+      const ops = tr.querySelector("td:last-child .ops-cell");
+      const mc = tr.querySelector("[data-mc]");
+      const known = knownButton("/api/phrases", p,
+        () => { mc.innerHTML = masteryCell(p); });
+      const del = deleteButton(p.english, async () => {
         await api.del("/api/phrases/" + p.id); go("phrases");
       });
+      ops.append(known, del);
       rows.appendChild(tr);
     });
   };
@@ -511,6 +678,8 @@ export async function phrases(root) {
     const q = new URLSearchParams({ sort: root.querySelector("#fSort").value });
     const v = root.querySelector("#scene").value;
     if (v) q.set("scene", v);
+    const ms = root.querySelector("#fMastered").value;
+    if (ms) q.set("mastered", ms);
     if (showBanned()) q.set("include_banned", "true");
     const items = await api.get("/api/phrases?" + q.toString());
     const term = kw.value.trim().toLowerCase();
@@ -520,6 +689,7 @@ export async function phrases(root) {
   };
   root.querySelector("#scene").addEventListener("change", load);
   root.querySelector("#fSort").addEventListener("change", load);
+  root.querySelector("#fMastered").addEventListener("change", load);
   // 禁止表示の切替はシーン候補も変わるので画面を作り直す。
   root.querySelector("#showBanned").addEventListener("change", (e) => {
     setShowBanned(e.target.checked); go("phrases");

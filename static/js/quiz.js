@@ -181,12 +181,14 @@ export function quizRunner(config) {
     const ok = el(`<button class="btn good">⭕ 正解</button>`);
     const vague = el(`<button class="btn" style="background:var(--warn);color:#3a2600">🤔 うろ覚え</button>`);
     const ng = el(`<button class="btn bad">❌ 不正解</button>`);
+    const known = el(`<button class="btn" style="background:var(--accent-2);color:#fff">✅ 覚えた</button>`);
     const skip = el(`<button class="btn ghost">🚫 ノーカウント</button>`);
     ok.addEventListener("click", () => record(item, direction, "correct"));
     vague.addEventListener("click", () => record(item, direction, "vague"));
     ng.addEventListener("click", () => record(item, direction, "wrong"));
+    known.addEventListener("click", () => markKnown(item));
     skip.addEventListener("click", () => { skippedCount++; idx++; render(); });
-    row.append(ok, vague, ng, skip);
+    row.append(ok, vague, ng, known, skip);
   }
 
   function renderExample(box, item) {
@@ -232,6 +234,23 @@ export function quizRunner(config) {
     if (phrase) { tools.append(say, jp); }
     else { tools.append(gen); }
     box.append(tools, tr);
+  }
+
+  async function markKnown(item) {
+    // 「覚えた」: mastery を満点(200)にして次へ。正解として集計。
+    const base = kind === "word" ? "/api/words" : "/api/phrases";
+    try {
+      await api.post(`${base}/${item.id}/known`, { known: true });
+      correctCount++;
+      const t = document.getElementById("toast");
+      if (t) {
+        t.textContent = "✅ 覚えたに登録 (満点)";
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 1500);
+      }
+    } catch (e) { /* ignore, still advance */ }
+    idx++;
+    render();
   }
 
   async function record(item, direction, result) {

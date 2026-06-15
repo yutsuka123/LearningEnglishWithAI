@@ -145,10 +145,24 @@ CREATE TABLE IF NOT EXISTS conversation_log (
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
--- Key/value store: monthly-decay bookkeeping, API key override, etc.
+-- Key/value store: decay bookkeeping, API key override, etc.
 CREATE TABLE IF NOT EXISTS app_state (
     key   TEXT PRIMARY KEY,
     value TEXT
+);
+
+-- Generated TTS audio, keyed by item (番号) + kind + voice. Lets repeated
+-- playback be free (no API token) and supports DB(BLOB) storage as an
+-- alternative to on-disk files (AUDIO_STORAGE=db|hybrid). One row per
+-- (item_type, item_id, kind, voice).
+CREATE TABLE IF NOT EXISTS audio_blobs (
+    item_type  TEXT    NOT NULL,   -- 'word' | 'phrase'
+    item_id    INTEGER NOT NULL,
+    kind       TEXT    NOT NULL,   -- 'word' | 'example' | 'phrase'
+    voice      TEXT    NOT NULL,   -- 'ash' | 'nova' ...
+    mp3        BLOB    NOT NULL,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (item_type, item_id, kind, voice)
 );
 """
 

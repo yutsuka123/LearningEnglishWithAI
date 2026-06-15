@@ -18,7 +18,7 @@ from ..schemas import (
     WritingFeedbackIn,
 )
 from ..config import load_settings
-from ..services import ai, persistence
+from ..services import ai, audio_store, persistence
 from ..services.context_builder import build_context
 from ..services.metrics import toeic_estimate, word_buckets
 from ..services.spaced_repetition import select_for_review
@@ -459,6 +459,57 @@ def tts(payload: TtsIn):
     if error:
         # 422 lets the frontend fall back to the browser voice.
         return Response(content=error, status_code=422, media_type="text/plain")
+    return Response(content=audio, media_type="audio/mpeg")
+
+
+def _item_text(conn, item_type: str, item_id: int, kind: str) -> str | None:
+    """番号(ID)から読み上げ対象テキストを取得。"""
+    if item_type == "word":
+        row = conn.execute(
+            "SELECT english, example FROM words WHERE id = ?", (item_id,)
+        ).fetchone()
+        if not row:
+            return None
+        if kind == "example":
+            return (row["example"] or "").strip() or None
+        return (row["english"] or "").strip() or None
+    if item_type == "phrase":
+        row = conn.execute(
+            "SELECT english FROM phrases WHERE id = ?", (item_id,)
+        ).fetchone()
+        return (row["english"].strip() if row else None) or None
+    return None
+
+
+@router.get("/tts/item")
+def tts_item(
+    item_type: str, item_id: int, voice: str = "ash", kind: str = "",
+):
+    """番号(ID)で音声を取得。保存済みなら即返す(=無料)。無ければ合成して
+    保存し、次回以降はトークン不要にする。type=word|phrase、kind は word/
+    example/phrase（未指定なら type から既定）。"""
+    item_type = item_type if item_type in audio_store.VALID_TYPES else "word"
+    if kind not in audio_store.VALID_KINDS:
+        kind = "phrase" if item_type == "phrase" else "word"
+
+    with db() as conn:
+        cached = audio_store.get(conn, item_type, item_id, kind, voice)
+        if cached is not None:
+            return Response(content=cached, media_type="audio/mpeg")
+        text = _item_text(conn, item_type, item_id, kind)
+
+    if not text:
+        return Response(
+            content="読み上げる本文がありません（例文なし等）。",
+            status_code=422, media_type="text/plain",
+        )
+
+    audio, error = ai.synthesize_speech(text, voice)
+    if error:
+        return Response(content=error, status_code=422,
+                        media_type="text/plain")
+    with db() as conn:
+        audio_store.put(conn, item_type, item_id, kind, voice, audio)
     return Response(content=audio, media_type="audio/mpeg")
 
 

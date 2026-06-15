@@ -67,6 +67,11 @@ class Settings:
     quality_model: str  # 判定・教材生成など品質重視の処理に使うモデル
     usd_jpy_rate: float
     usd_jpy_as_of: str
+    # コスト暴走ガード（不意の高額課金を防ぐ）。.env で調整可能。
+    ai_daily_cost_cap_usd: float   # 1日の合計AI費用の上限(USD)。超過で停止。
+    ai_max_calls_per_min: int      # 1分あたりのAI呼び出し回数の上限。
+    ai_max_output_tokens: int      # chat の max_tokens 上限（過大指定を抑制）。
+    audio_storage: str             # 'file' | 'db' | 'hybrid'。MP3保存先の方式。
 
     @property
     def ai_enabled(self) -> bool:
@@ -86,6 +91,19 @@ def _parse_float(value: str, default: float) -> float:
         return default
 
 
+def _parse_int(value: str, default: int) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
+# コスト暴走ガードの既定値（保守的）。.env で上書き可能。
+DEFAULT_DAILY_COST_CAP_USD = 1.0   # 1日 約¥155 まで
+DEFAULT_MAX_CALLS_PER_MIN = 20
+DEFAULT_MAX_OUTPUT_TOKENS = 1500
+
+
 def load_settings() -> Settings:
     """Read settings fresh from env (so a saved .env takes effect)."""
     load_dotenv(ROOT_DIR / ".env", override=True)
@@ -96,6 +114,18 @@ def load_settings() -> Settings:
     quality = os.getenv("OPENAI_QUALITY_MODEL", "").strip()
     rate = _parse_float(os.getenv("USD_JPY_RATE", ""), DEFAULT_USD_JPY)
     as_of = os.getenv("USD_JPY_AS_OF", "").strip() or DEFAULT_USD_JPY_AS_OF
+    cap = _parse_float(
+        os.getenv("AI_DAILY_COST_CAP_USD", ""), DEFAULT_DAILY_COST_CAP_USD
+    )
+    cpm = _parse_int(
+        os.getenv("AI_MAX_CALLS_PER_MIN", ""), DEFAULT_MAX_CALLS_PER_MIN
+    )
+    maxout = _parse_int(
+        os.getenv("AI_MAX_OUTPUT_TOKENS", ""), DEFAULT_MAX_OUTPUT_TOKENS
+    )
+    storage = os.getenv("AUDIO_STORAGE", "file").strip().lower()
+    if storage not in ("file", "db", "hybrid"):
+        storage = "file"
     return Settings(
         openai_api_key=os.getenv("OPENAI_API_KEY", "").strip(),
         openai_model=model or "gpt-4o-mini",
@@ -106,6 +136,10 @@ def load_settings() -> Settings:
         quality_model=quality or (model or "gpt-4o-mini"),
         usd_jpy_rate=rate,
         usd_jpy_as_of=as_of,
+        ai_daily_cost_cap_usd=max(0.0, cap),
+        ai_max_calls_per_min=max(1, cpm),
+        ai_max_output_tokens=max(64, maxout),
+        audio_storage=storage,
     )
 
 
