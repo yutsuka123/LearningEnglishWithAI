@@ -16,6 +16,9 @@ data/
 *.db-wal
 *.db-shm
 
+# 機密化: 設計書・要件・進捗・コスト試算など事業情報はローカルのみ(git管理外)
+docs/
+
 # OS
 .DS_Store
 Thumbs.db
