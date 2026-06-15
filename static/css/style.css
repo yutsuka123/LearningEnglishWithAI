@@ -192,6 +192,14 @@ th { color: var(--muted); font-weight: 600; }
 
 /* md() が <br/> で改行を入れるので pre-wrap は使わない（二重改行で縦に
    伸びるのを防ぐ）。見出し・段落の上下マージンも控えめに。 */
+/* 🎧 聞き流しモード(§D3): 文単位のセグメントと再生中ハイライト。 */
+.pl-seg { padding: 6px 10px; border-radius: 8px; margin: 2px 0;
+  border-left: 3px solid transparent; }
+.pl-seg.active { background: rgba(77, 163, 255, 0.14);
+  border-left-color: var(--accent); }
+.pl-seg .pl-en { line-height: 1.5; }
+.pl-seg .pl-ja { font-size: 13px; margin-top: 2px; }
+
 .md { line-height: 1.55; white-space: normal; }
 .md h2, .md h3, .md h4, .md h5 { margin: 12px 0 4px; }
 .md ul { margin: 4px 0; padding-left: 20px; }
