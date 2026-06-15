@@ -47,8 +47,13 @@ def generate(payload: GenerateIn):
         "listening": "リスニング用スクリプト",
     }.get(payload.area, payload.area)
 
+    diff_note = (
+        f" 難易度は『{payload.difficulty}』に合わせ、語彙・文構造・文章量を"
+        "その水準にしてください（学習者プロフィールより難易度指定を優先）。"
+        if payload.difficulty else ""
+    )
     system = (
-        "あなたは英語学習教材を作る講師です。" + _LEVEL_NOTE +
+        "あなたは英語学習教材を作る講師です。" + _LEVEL_NOTE + diff_note +
         " 出力はMarkdownで、次の構成にしてください: "
         "(1) 英文本文、(2) 日本語訳、(3) 重要語彙(3〜6語・英語/日本語)、"
         "(4) 見出し『## Comprehension Questions』の下に内容理解問題を2問。"

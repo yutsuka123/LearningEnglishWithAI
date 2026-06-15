@@ -327,6 +327,18 @@ function lengthSelect(id) {
     <option value="5">長さ: 長文(約2分)</option></select>`;
 }
 
+// 生成時の難易度セレクト（おまかせ＝学習者プロフィール）。
+function diffSelect(id) {
+  return `<select id="${id}" title="難易度">
+    <option value="">難易度: おまかせ</option>
+    <option value="入門(TOEIC 300-400)">難易度: 入門</option>
+    <option value="初級(TOEIC 500)">難易度: 初級</option>
+    <option value="中級(TOEIC 600)">難易度: 中級</option>
+    <option value="中上級(TOEIC 700)">難易度: 中上級</option>
+    <option value="上級(TOEIC 800)">難易度: 上級</option>
+    <option value="最上級(TOEIC 900+)">難易度: 最上級</option></select>`;
+}
+
 // 内容理解問題の見出し以降を取り除く（保存はフル、表示だけ問題を隠す用）。
 function stripQuestions(body) {
   const m = (body || "").match(
@@ -745,6 +757,7 @@ export async function vocab(root) {
 export async function phrases(root) {
   const sb = bannedParam(showBanned());
   const scenes = await api.get("/api/phrases/scenes" + (sb ? "?" + sb : ""));
+  const pfacets = await api.get("/api/phrases/facets");
   const list = await api.get("/api/phrases" + (sb ? "?" + sb : ""));
   root.innerHTML = `
     <h1>ミニフレーズ</h1>
@@ -763,7 +776,17 @@ export async function phrases(root) {
     <div class="card">
       <h2 id="listTitle">一覧 (${list.length})</h2>
       <div class="row">
-        <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:200px" />
+        <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:180px" />
+        <span class="muted">Lv</span>
+        <select id="fLevelMin" title="レベル下限"><option value="">下限</option>
+          ${(pfacets.range_levels || []).map((l) =>
+            `<option>${escapeHtml(l)}</option>`).join("")}</select>
+        <span class="muted">〜</span>
+        <select id="fLevelMax" title="レベル上限"><option value="">上限</option>
+          ${(pfacets.range_levels || []).map((l) =>
+            `<option>${escapeHtml(l)}</option>`).join("")}</select>
+        <label class="toggle" title="範囲外も含める">
+          <input type="checkbox" id="fOutRange" /> 範囲外</label>
         <select id="fSort">
           <option value="mastery">並び替え: 習熟度 ↑</option>
           <option value="accuracy">並び替え: 正答率 ↓</option>
@@ -838,6 +861,11 @@ export async function phrases(root) {
     const q = new URLSearchParams({ sort: root.querySelector("#fSort").value });
     const v = root.querySelector("#scene").value;
     if (v) q.set("scene", v);
+    const lmin = root.querySelector("#fLevelMin").value;
+    const lmax = root.querySelector("#fLevelMax").value;
+    if (lmin) q.set("level_min", lmin);
+    if (lmax) q.set("level_max", lmax);
+    if (root.querySelector("#fOutRange").checked) q.set("out_of_range", "true");
     const ms = root.querySelector("#fMastered").value;
     if (ms) q.set("mastered", ms);
     if (root.querySelector("#fDir").dataset.desc === "1") q.set("desc", "true");
@@ -860,6 +888,8 @@ export async function phrases(root) {
   root.querySelector("#scene").addEventListener("change", load);
   root.querySelector("#fSort").addEventListener("change", load);
   root.querySelector("#fMastered").addEventListener("change", load);
+  ["#fLevelMin", "#fLevelMax", "#fOutRange"].forEach((id) =>
+    root.querySelector(id).addEventListener("change", load));
   root.querySelector("#pPage").addEventListener("change", () => {
     pPage = 0; paint();
   });
@@ -938,6 +968,7 @@ function materialView(title, sub, area, fields, histAreas) {
         <div class="row">
           <select id="field">${fields.map((f) =>
             `<option>${f}</option>`).join("")}</select>
+          ${diffSelect("fdiff")}
           ${lengthSelect("flen")}
           <label class="toggle" title="内容理解問題を表示(常に生成・保存)">
             <input type="checkbox" id="showQ" checked /> 内容理解問題</label>
@@ -979,6 +1010,7 @@ function materialView(title, sub, area, fields, histAreas) {
       const len = LENGTH_INSTR[root.querySelector("#flen").value] || "";
       const r = await api.post("/api/learn/generate", {
         area: genArea, field,
+        difficulty: root.querySelector("#fdiff").value,
         instruction: (len ? `本文は${len}作成。` : "")
           + root.querySelector("#inst").value,
       });
@@ -1285,7 +1317,8 @@ export async function listening(root) {
           <option value="news">ニュース風</option>
           <option value="business">ビジネス</option>
         </select>
-        <input id="theme" placeholder="テーマ(任意)" style="width:140px" />
+        <input id="theme" placeholder="テーマ(任意)" style="width:120px" />
+        ${diffSelect("ldiff")}
         ${lengthSelect("llen")}
         <label class="toggle">速度
           <input type="range" id="rate" min="0.6" max="1.2" step="0.05" value="0.95" />
@@ -1350,6 +1383,7 @@ export async function listening(root) {
     const g = GENRES[genre];
     const len = LENGTH_INSTR[root.querySelector("#llen").value] || "";
     const lenNote = len ? ` 本文は${len}。` : "";
+    const diff = root.querySelector("#ldiff").value;
     let body;
     if (g) {
       body = {
@@ -1363,6 +1397,7 @@ export async function listening(root) {
           (theme ? `（テーマ: ${theme}）` : "") + lenNote,
       };
     }
+    body.difficulty = diff;
     const r = await api.post("/api/learn/generate", body);
     if (!r.ok) { out.textContent = r.error; return; }
     scriptText = r.body; out.innerHTML = md(lDisp(r.body));
