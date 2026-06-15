@@ -368,12 +368,23 @@ def synthesize_speech(
         return None, f"音声合成に失敗しました: {exc}"
 
 
+# 認識言語ヒント: ISO-639-1 コード → Whisper が verbose_json で返す言語名。
+_LANG_NAMES = {
+    "en": "english", "ja": "japanese", "zh": "chinese", "ko": "korean",
+}
+
+
 def transcribe(
-    audio_bytes: bytes, filename: str = "audio.webm"
+    audio_bytes: bytes, filename: str = "audio.webm", language: str = "",
 ) -> tuple[str | None, str | None]:
-    """Speech-to-text via OpenAI (auto language detection). Returns
-    (text, error). Much more accurate than the browser recognizer for
-    non-native English."""
+    """Speech-to-text via OpenAI Whisper. Returns (text, error).
+
+    ``language`` は認識言語のヒント(誤認識対策):
+    * ""            … 完全自動判定(従来動作)
+    * "en"          … その言語に固定(例: 英語以外に化けるのを防ぐ)
+    * "en,ja" など  … 候補を限定。自動判定し、候補外(例:韓国語)に化けたら
+                       先頭の言語で取り直す。
+    """
     import io
 
     client, settings = _client()
@@ -384,16 +395,39 @@ def transcribe(
     refusal = _guard("stt")
     if refusal:
         return None, refusal
-    try:
+    allowed = [c.strip().lower() for c in (language or "").split(",")
+               if c.strip()]
+
+    def _call(lang: str | None, verbose: bool):
         f = io.BytesIO(audio_bytes)
         f.name = filename
-        resp = client.audio.transcriptions.create(
-            model="whisper-1",
-            file=f,
-        )
+        kw: dict = {"model": "whisper-1", "file": f}
+        if lang:
+            kw["language"] = lang
+        if verbose:
+            kw["response_format"] = "verbose_json"
+        return client.audio.transcriptions.create(**kw)
+
+    try:
+        calls = 1
+        if len(allowed) == 1:
+            resp = _call(allowed[0], False)
+            text = resp.text
+        elif len(allowed) >= 2:
+            # 候補が複数: 自動判定し、候補外に化けたら先頭言語で取り直す。
+            resp = _call(None, True)
+            detected = (getattr(resp, "language", "") or "").lower()
+            names = {_LANG_NAMES.get(c, c) for c in allowed} | set(allowed)
+            if detected and detected not in names:
+                resp = _call(allowed[0], False)
+                calls = 2
+            text = resp.text
+        else:
+            resp = _call(None, False)
+            text = resp.text
         # whisper-1 ≈ $0.006/min。長さ不明のため概算（音声バイト数から推定）。
         minutes = max(len(audio_bytes) / (16000 * 60), 0.05)
-        cost = minutes * 0.006
+        cost = minutes * 0.006 * calls
         with db() as conn:
             conn.execute(
                 "INSERT INTO ai_usage "
@@ -401,7 +435,7 @@ def transcribe(
                 "VALUES ('whisper-1', 0, 0, ?, 'stt')",
                 (cost,),
             )
-        return resp.text, None
+        return text, None
     except Exception as exc:
         log.error("STT 失敗: %s", exc)
         return None, f"文字起こしに失敗しました: {exc}"

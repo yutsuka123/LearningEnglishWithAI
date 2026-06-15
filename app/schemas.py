@@ -69,6 +69,14 @@ class SessionEndIn(BaseModel):
     weak_points: str = ""
     next_topic: str = ""
     new_words: str = ""
+    # 会話の自動記録用: 同じキーは上書き保存(行が増えない)。
+    session_key: str = ""
+    # 確定保存(study_log.md へ追記)か、途中の上書きだけかを表す。
+    final: bool = True
+
+
+class SummarizeIn(BaseModel):
+    text: str
 
 
 class MemoryUpdateIn(BaseModel):

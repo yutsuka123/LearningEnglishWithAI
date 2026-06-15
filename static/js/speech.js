@@ -307,7 +307,7 @@ export function aiSttSupported() {
   return !!(navigator.mediaDevices && window.MediaRecorder);
 }
 
-export async function createAIRecorder() {
+export async function createAIRecorder(language = "") {
   if (!aiSttSupported()) throw new Error("録音に未対応のブラウザです");
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   const chunks = [];
@@ -324,6 +324,7 @@ export async function createAIRecorder() {
           try {
             const fd = new FormData();
             fd.append("file", blob, "audio.webm");
+            if (language) fd.append("language", language);
             const res = await fetch("/api/learn/transcribe", {
               method: "POST", body: fd,
             });
@@ -369,11 +370,13 @@ export function speakAndWait(text, opts = {}) {
   });
 }
 
-// Transcribe an audio Blob via the backend (Whisper). Returns text ("" on fail).
-export async function transcribeBlob(blob) {
+// Transcribe an audio Blob via the backend (Whisper). Returns text ("" on
+// fail). language: 認識言語ヒント("en" / "en,ja" / "" など)。
+export async function transcribeBlob(blob, language = "") {
   try {
     const fd = new FormData();
     fd.append("file", blob, "audio.webm");
+    if (language) fd.append("language", language);
     const res = await fetch("/api/learn/transcribe", { method: "POST",
       body: fd });
     const d = await res.json();
