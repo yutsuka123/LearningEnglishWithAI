@@ -35,12 +35,32 @@ def _word_dict(row) -> dict:
 
 BANNED_DOMAIN = "禁止用語"
 
+# レベルの細スケール順（範囲外は別扱い＝チェックで明示的に含める）。
+LEVEL_ORDER = [
+    "300-", "300", "400", "500", "600", "700", "800", "900", "990", "990+",
+]
+OUT_OF_RANGE = "範囲外"
+
+
+def _level_range(level_min: str | None, level_max: str | None) -> list[str]:
+    """下限〜上限から該当レベル一覧を返す（未指定は端まで）。"""
+    def idx(lv, default):
+        return LEVEL_ORDER.index(lv) if lv in LEVEL_ORDER else default
+    lo = idx(level_min, 0)
+    hi = idx(level_max, len(LEVEL_ORDER) - 1)
+    if lo > hi:
+        lo, hi = hi, lo
+    return LEVEL_ORDER[lo:hi + 1]
+
 
 @router.get("")
 def list_words(
     sort: str = "mastery",
     domain: str | None = None,
     level: str | None = None,
+    level_min: str | None = None,   # 下限（細スケール）
+    level_max: str | None = None,   # 上限
+    out_of_range: bool = False,     # 「範囲外」も含める
     include_banned: bool = False,
     mastered: str | None = None,   # 'only' | 'hide' | None(=全部)
 ):
@@ -63,9 +83,26 @@ def list_words(
     if level:
         where.append("COALESCE(level, '') = ?")
         params.append(level)
+    # レベル範囲（下限〜上限）＋範囲外チェック。
+    if level_min or level_max:
+        allowed = _level_range(level_min, level_max)
+        ph = ",".join("?" * len(allowed))
+        cond = f"COALESCE(level, '') IN ({ph})"
+        p = list(allowed)
+        if out_of_range:
+            cond = f"({cond} OR COALESCE(level, '') = ?)"
+            p.append(OUT_OF_RANGE)
+        where.append(cond)
+        params += p
     if not include_banned:
-        where.append("COALESCE(domain, '') <> ?")
-        params.append(BANNED_DOMAIN)
+        # 範囲外(=禁止用語)も見たい場合は、そのレベルだけ除外を緩める。
+        if out_of_range:
+            where.append(
+                "(COALESCE(domain, '') <> ? OR COALESCE(level, '') = ?)")
+            params += [BANNED_DOMAIN, OUT_OF_RANGE]
+        else:
+            where.append("COALESCE(domain, '') <> ?")
+            params.append(BANNED_DOMAIN)
     if mastered == "only":
         where.append(f"mastery >= {MASTERED_THRESHOLD}")
     elif mastered == "hide":
@@ -92,13 +129,22 @@ def facets(include_banned: bool = False):
         # 既定では禁止用語を分野候補から除外（表示トグルONなら含める）。
         if not include_banned:
             domains = [d for d in domains if d != BANNED_DOMAIN]
-        levels = [
+        present = {
             r["level"] for r in conn.execute(
-                "SELECT DISTINCT level FROM words "
-                "WHERE COALESCE(level, '') <> '' ORDER BY level"
+                "SELECT DISTINCT level FROM words WHERE COALESCE(level,'')<>''"
             ).fetchall()
-        ]
-    return {"domains": domains, "levels": levels}
+        }
+    # 細スケール順に整列（範囲外は末尾、未知のレベルはその後ろ）。
+    levels = [lv for lv in LEVEL_ORDER if lv in present]
+    if OUT_OF_RANGE in present:
+        levels.append(OUT_OF_RANGE)
+    levels += sorted(present - set(levels))
+    # 範囲指定用（範囲外を除く）の順序付きレベル。
+    range_levels = [lv for lv in LEVEL_ORDER if lv in present]
+    return {
+        "domains": domains, "levels": levels,
+        "range_levels": range_levels,
+    }
 
 
 @router.post("", status_code=201)

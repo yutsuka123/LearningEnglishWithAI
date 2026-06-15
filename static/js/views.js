@@ -538,9 +538,16 @@ export async function vocab(root) {
         <select id="fDomain"><option value="">全分野</option>
           ${facets.domains.map((d) =>
             `<option>${escapeHtml(d)}</option>`).join("")}</select>
-        <select id="fLevel"><option value="">全レベル</option>
-          ${facets.levels.map((l) =>
+        <span class="muted">Lv</span>
+        <select id="fLevelMin" title="レベル下限"><option value="">下限</option>
+          ${(facets.range_levels || facets.levels).map((l) =>
             `<option>${escapeHtml(l)}</option>`).join("")}</select>
+        <span class="muted">〜</span>
+        <select id="fLevelMax" title="レベル上限"><option value="">上限</option>
+          ${(facets.range_levels || facets.levels).map((l) =>
+            `<option>${escapeHtml(l)}</option>`).join("")}</select>
+        <label class="toggle" title="範囲外(禁止用語相当)も含める">
+          <input type="checkbox" id="fOutRange" /> 範囲外</label>
         <select id="fSort">
           <option value="mastery">並び替え: 習熟度 ↑</option>
           <option value="accuracy">並び替え: 正答率 ↓</option>
@@ -622,9 +629,12 @@ export async function vocab(root) {
   const load = async () => {
     const q = new URLSearchParams({ sort: root.querySelector("#fSort").value });
     const d = root.querySelector("#fDomain").value;
-    const l = root.querySelector("#fLevel").value;
     if (d) q.set("domain", d);
-    if (l) q.set("level", l);
+    const lmin = root.querySelector("#fLevelMin").value;
+    const lmax = root.querySelector("#fLevelMax").value;
+    if (lmin) q.set("level_min", lmin);
+    if (lmax) q.set("level_max", lmax);
+    if (root.querySelector("#fOutRange").checked) q.set("out_of_range", "true");
     const ms = root.querySelector("#fMastered").value;
     if (ms) q.set("mastered", ms);
     if (showBanned()) q.set("include_banned", "true");
@@ -636,7 +646,8 @@ export async function vocab(root) {
     wPage = 0;
     paint();
   };
-  ["#fDomain", "#fLevel", "#fSort", "#fMastered"].forEach((id) =>
+  ["#fDomain", "#fLevelMin", "#fLevelMax", "#fOutRange", "#fSort",
+   "#fMastered"].forEach((id) =>
     root.querySelector(id).addEventListener("change", load));
   root.querySelector("#wPage").addEventListener("change", () => {
     wPage = 0; paint();
