@@ -247,6 +247,13 @@ th { color: var(--muted); font-weight: 600; }
 /* うろ覚えボタン: 黄(警告)背景。 */
 .vague-btn { background: var(--warn); color: #3a2600; padding: 2px 8px; }
 
+/* 履歴の行 */
+.hist-row {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line);
+}
+.hist-title { flex: 1; }
+
 /* 削除ボタン（ゴミ箱）。背景はそのまま(ghost)・マークだけ赤。押し間違い
    防止に他のボタンから少し離す。 */
 .del-btn {

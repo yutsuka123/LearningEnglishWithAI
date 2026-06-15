@@ -820,7 +820,51 @@ export async function phrases(root) {
 
 // --- Generic AI material view (reading / news / literature / listening) -----
 
-function materialView(title, sub, area, fields) {
+// 生成済み題材の履歴パネル。再表示(無料)＋覚えた/うろ覚え/削除。
+// areas: カンマ区切りの領域。showInto(body): 本文を表示するコールバック。
+async function renderHistory(panel, areas, showInto) {
+  panel.innerHTML = `<p class="muted">読み込み中…</p>`;
+  const list = await api.get(
+    "/api/learn/materials?areas=" + encodeURIComponent(areas) + "&limit=100");
+  panel.innerHTML = "";
+  const head = el(`<div class="row" style="justify-content:space-between">
+    <h3 style="margin:0">履歴 (${list.length})</h3></div>`);
+  panel.appendChild(head);
+  if (!list.length) {
+    panel.appendChild(el(`<p class="muted">まだ履歴がありません。</p>`));
+    return;
+  }
+  list.forEach((m) => {
+    const badge = m.mastery >= 100
+      ? `<span class="pill mastered">覚えた</span>`
+      : (m.mastery > 0 ? `<span class="pill">${m.mastery}</span>` : "");
+    const row = el(`<div class="hist-row">
+      <span class="hist-title">${escapeHtml(m.title)} ${badge}</span>
+      <span class="ops-cell"></span></div>`);
+    const ops = row.querySelector(".ops-cell");
+    const show = el(`<button class="btn ghost">再表示</button>`);
+    show.addEventListener("click", () => showInto(m.body));
+    const vague = el(`<button class="vague-btn btn">うろ覚え</button>`);
+    vague.addEventListener("click", async () => {
+      const r = await api.post(`/api/learn/materials/${m.id}/vague`);
+      m.mastery = r.mastery; renderHistory(panel, areas, showInto);
+      toast("うろ覚え +10");
+    });
+    const known = el(`<button class="btn blue">覚えた</button>`);
+    known.addEventListener("click", async () => {
+      await api.post(`/api/learn/materials/${m.id}/known`);
+      m.mastery = 200; renderHistory(panel, areas, showInto); toast("覚えた");
+    });
+    const del = deleteButton(m.title, async () => {
+      await api.del(`/api/learn/materials/${m.id}`);
+      renderHistory(panel, areas, showInto);
+    });
+    ops.append(show, vague, known, del);
+    panel.appendChild(row);
+  });
+}
+
+function materialView(title, sub, area, fields, histAreas) {
   return async function (root) {
     root.innerHTML = `
       <h1>${title}</h1>
@@ -830,13 +874,30 @@ function materialView(title, sub, area, fields) {
         <div class="row">
           <select id="field">${fields.map((f) =>
             `<option>${f}</option>`).join("")}</select>
-          <input id="inst" placeholder="追加指示(任意)" style="width:280px" />
+          <input id="inst" placeholder="追加指示(任意)" style="width:260px" />
           <button class="btn" id="gen" ${state.aiEnabled ? "" : "disabled"}>
             生成</button>
+          <button class="btn ghost" id="histBtn">📚 履歴</button>
         </div>
       </div>
+      <div id="histPanel" class="card" style="display:none"></div>
       <div class="card"><div id="out" class="md">
         左上で分野を選んで「生成」を押してください。</div></div>`;
+    const showInto = (body) => {
+      const out = root.querySelector("#out");
+      out.innerHTML = "";
+      out.appendChild(readAloudBar(() => body));
+      const b = el(`<div class="md mt"></div>`); b.innerHTML = md(body);
+      out.appendChild(b);
+      out.appendChild(readAloudBar(() => body));
+    };
+    const panel = root.querySelector("#histPanel");
+    root.querySelector("#histBtn").addEventListener("click", () => {
+      if (panel.style.display === "none") {
+        panel.style.display = "";
+        renderHistory(panel, histAreas || area, showInto);
+      } else { panel.style.display = "none"; }
+    });
     root.querySelector("#gen").addEventListener("click", async () => {
       const out = root.querySelector("#out");
       out.textContent = "生成中…";
@@ -874,7 +935,7 @@ export const reading = (root) => materialView(
       ? state.taxonomy.news_fields.map((f) => "ニュース(" + f + ")")
       : ["ニュース(政治)", "ニュース(経済)", "ニュース(AI)",
          "ニュース(IT)"]),
-  ])(root);
+  ], "reading,literature,news")(root);
 
 // --- Writing ----------------------------------------------------------------
 
@@ -1163,7 +1224,9 @@ export async function listening(root) {
         </label>
         <button class="btn" id="gen" ${state.aiEnabled ? "" : "disabled"}>
           スクリプト生成</button>
+        <button class="btn ghost" id="histBtn">📚 履歴</button>
       </div>
+      <div id="histPanel" class="mt" style="display:none"></div>
       <div id="out" class="md mt"></div>
       <div class="row mt">
         <label class="toggle">理解度
@@ -1173,6 +1236,24 @@ export async function listening(root) {
       </div>
     </div>`;
   let scriptText = "";
+  {
+    const panel = root.querySelector("#histPanel");
+    const showInto = (body) => {
+      scriptText = body;
+      const out = root.querySelector("#out");
+      out.innerHTML = md(body);
+      const play = el(`<button class="btn mt">🔊 再生</button>`);
+      play.addEventListener("click", () => speech.speak(body,
+        { rate: parseFloat(root.querySelector("#rate").value) }));
+      out.appendChild(play);
+    };
+    root.querySelector("#histBtn").addEventListener("click", () => {
+      if (panel.style.display === "none") {
+        panel.style.display = "";
+        renderHistory(panel, "listening", showInto);
+      } else { panel.style.display = "none"; }
+    });
+  }
   root.querySelector("#gen").addEventListener("click", async () => {
     const sel = root.querySelector("#topic");
     const label = sel.options[sel.selectedIndex].textContent;
