@@ -1081,12 +1081,18 @@ export async function writing(root) {
 export async function conversation(root) {
   const cats = await api.get("/api/categories/conversation");
   const grps = [...new Set(cats.map((c) => c.grp))];
-  const voice = speech.pickRoundVoice();
+  // 記憶した声があればそれを使う。無ければランダムで1つ選ぶ。
+  const pref = speech.loadPreferredVoice();
+  if (pref) speech.setVoice(pref); else speech.pickRoundVoice();
+  const vlist = speech.listOpenAIVoices();
   root.innerHTML = `
     <h1>英会話</h1>
-    <p class="sub">AIの声: <b id="voiceName">${voice || "未取得"}</b>
+    <p class="sub">AIの声:
+      <select id="voiceSel">${vlist.map((v) =>
+        `<option value="${v}" ${v === speech.currentVoice() ? "selected" : ""}
+          >${v}（${speech.voiceGender(v)}）</option>`).join("")}</select>
       <button class="btn ghost" id="changeVoice"
-        style="padding:2px 8px">🔁 声を変える</button></p>
+        style="padding:2px 8px">🔁 ランダム</button></p>
     ${aiBadgeNote()}
     <div class="card" id="hfCard">
       <div class="row">
@@ -1146,10 +1152,17 @@ export async function conversation(root) {
     buildInput();
   });
 
-  // 声を変えるボタン: 別の声をランダムに選び直して表示。
+  // 声プルダウン: 選んだ声を記憶して以後の読み上げに使う。
+  const voiceSel = root.querySelector("#voiceSel");
+  voiceSel.addEventListener("change", () => {
+    speech.setVoice(voiceSel.value);
+    toast("声: " + voiceSel.value + "（" + speech.voiceGender(voiceSel.value)
+      + "）");
+  });
+  // 🔁 ランダム: 別の声を選び、プルダウンと記憶も更新。
   root.querySelector("#changeVoice").addEventListener("click", () => {
     const v = speech.pickRoundVoice();
-    root.querySelector("#voiceName").textContent = v || "なし";
+    if (v) { speech.setVoice(v); voiceSel.value = v; }
     toast("声: " + (v || "なし"));
   });
 
