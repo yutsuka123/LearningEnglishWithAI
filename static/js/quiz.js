@@ -37,9 +37,11 @@ function autoJudge(direction, answer, item) {
 // config: { container, items, kind:'word'|'phrase', appState, onDone }
 export function quizRunner(config) {
   const { container, items, kind, appState, onDone } = config;
-  const idField = kind === "word" ? "word_id" : "phrase_id";
-  const endpoint = kind === "word"
-    ? "/api/words/attempt" : "/api/phrases/attempt";
+  const idField = config.idField || (kind === "word" ? "word_id" : "phrase_id");
+  const endpoint = config.attemptEndpoint || (kind === "word"
+    ? "/api/words/attempt" : "/api/phrases/attempt");
+  // 出題方向: 'both'(両方向) | 'en2ja' | 'ja2en'
+  const directions = config.directions || "both";
 
   // Build the question queue so the two directions of the SAME item are well
   // separated: first half = one direction per item, second half = the other.
@@ -51,15 +53,21 @@ export function quizRunner(config) {
     }
     return arr;
   };
-  const firstHalf = [];
-  const secondHalf = [];
-  items.forEach((it) => {
-    const dirs = Math.random() < 0.5
-      ? ["en2ja", "ja2en"] : ["ja2en", "en2ja"];
-    firstHalf.push({ item: it, direction: dirs[0] });
-    secondHalf.push({ item: it, direction: dirs[1] });
-  });
-  const queue = [...shuffle(firstHalf), ...shuffle(secondHalf)];
+  let queue;
+  if (directions === "both") {
+    const firstHalf = [];
+    const secondHalf = [];
+    items.forEach((it) => {
+      const dirs = Math.random() < 0.5
+        ? ["en2ja", "ja2en"] : ["ja2en", "en2ja"];
+      firstHalf.push({ item: it, direction: dirs[0] });
+      secondHalf.push({ item: it, direction: dirs[1] });
+    });
+    queue = [...shuffle(firstHalf), ...shuffle(secondHalf)];
+  } else {
+    // 片方向のみ（en2ja or ja2en）。1語1問。
+    queue = shuffle(items.map((it) => ({ item: it, direction: directions })));
+  }
 
   let idx = 0;
   let correctCount = 0;
