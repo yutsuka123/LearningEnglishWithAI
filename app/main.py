@@ -10,7 +10,9 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import paths
 from .database import db, init_db
-from .routers import categories, learn, phrases, system, vocabulary
+from .routers import (
+    categories, decks, learn, phrases, system, vocabulary,
+)
 from .services.spaced_repetition import apply_weekly_decay
 
 
@@ -44,6 +46,7 @@ app.include_router(categories.router)
 app.include_router(categories.listening)
 app.include_router(learn.router)
 app.include_router(system.router)
+app.include_router(decks.router)
 
 
 @app.get("/api/health")

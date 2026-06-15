@@ -1516,3 +1516,172 @@ export async function settings(root) {
     speech.speak(TEST_LINE);
   });
 }
+
+// --- 単語帳(デッキ) --------------------------------------------------------
+
+export async function decks(root) {
+  const [list, facets] = await Promise.all([
+    api.get("/api/decks"),
+    api.get("/api/words/facets?include_banned=true"),
+  ]);
+  root.innerHTML = `
+    <h1>単語帳</h1>
+    <p class="sub">分野・レベルから自分用の単語帳(デッキ)を作って学習。
+      デッキ別に出題方向や合格条件を設定できます。</p>
+    <div class="card">
+      <h2>新しい単語帳を作る</h2>
+      <input id="dname" placeholder="単語帳の名前" style="width:240px" />
+      <div class="row mt" style="align-items:flex-start">
+        <div><div class="muted">分野(複数可)</div>
+          <select id="ddomains" multiple size="7" style="min-width:180px">
+            ${facets.domains.map((d) =>
+              `<option>${escapeHtml(d)}</option>`).join("")}</select></div>
+        <div><div class="muted">レベル(複数可)</div>
+          <select id="dlevels" multiple size="7" style="min-width:120px">
+            ${facets.levels.map((l) =>
+              `<option>${escapeHtml(l)}</option>`).join("")}</select></div>
+      </div>
+      <div class="row mt">
+        <label>件数(お任せ): <input id="dlimit" type="number" value="50"
+          style="width:80px" min="1" /></label>
+        <label>出題方向: <select id="ddir">
+          <option value="both">両方向</option>
+          <option value="en2ja">英→日</option>
+          <option value="ja2en">日→英</option></select></label>
+        <label>N回正解で習得: <input id="dpass" type="number" value="2"
+          style="width:60px" min="1" /></label>
+        <label class="toggle"><input type="checkbox" id="dsrs" checked />
+          忘却曲線を使う</label>
+        <label>1回の出題数: <input id="dsize" type="number" value="10"
+          style="width:60px" min="1" /></label>
+      </div>
+      <div class="row mt">
+        <label class="toggle"><input type="checkbox" id="dbanned" />
+          🔞 禁止用語も含める</label>
+        <button class="btn good" id="dcreate">作成</button>
+        <span id="dcreateOut" class="muted"></span>
+      </div>
+      <p class="muted mt">分野・レベルを選ばなければ全体から、件数ぶんランダムに
+        「お任せ」で作ります。</p>
+    </div>
+    <div id="deckList" class="mt"></div>`;
+
+  const sels = (id) =>
+    [...root.querySelector(id).selectedOptions].map((o) => o.value);
+
+  const renderList = (decksArr) => {
+    const box = root.querySelector("#deckList");
+    box.innerHTML = `<h2>マイ単語帳 (${decksArr.length})</h2>`;
+    if (!decksArr.length) {
+      box.appendChild(el(`<p class="muted">まだ単語帳がありません。</p>`));
+      return;
+    }
+    decksArr.forEach((d) => {
+      const pct = d.total ? Math.round(d.done / d.total * 100) : 0;
+      const dirLabel = { both: "両方向", en2ja: "英→日", ja2en: "日→英" }[
+        d.settings.directions] || "両方向";
+      const card = el(`<div class="card">
+        <div class="row" style="justify-content:space-between">
+          <b>${escapeHtml(d.name)}</b>
+          <span class="muted">${d.done}/${d.total} 習得 (${pct}%)</span></div>
+        <div class="bar mt"><span style="width:${pct}%"></span></div>
+        <div class="muted mt">${dirLabel} ・ ${d.settings.pass_count}回正解で習得
+          ・ 忘却曲線${d.settings.use_srs ? "ON" : "OFF"}
+          ・ 出題${d.settings.quiz_size}</div>
+        <div class="row mt">
+          <button class="btn" data-act="study">▶ 学習する</button>
+          <button class="btn ghost" data-act="settings">⚙️ 設定</button>
+          <button class="btn ghost del-btn" data-act="del"
+            title="削除">🗑️</button></div></div>`);
+      card.querySelector('[data-act="study"]')
+        .addEventListener("click", () => studyDeck(d));
+      card.querySelector('[data-act="settings"]')
+        .addEventListener("click", () => editDeck(d));
+      card.querySelector('[data-act="del"]').addEventListener("click",
+        async () => {
+          if (!confirm(`「${d.name}」を削除しますか？`)) return;
+          await api.del("/api/decks/" + d.id);
+          go("deck");
+        });
+      box.appendChild(card);
+    });
+  };
+  renderList(list);
+
+  root.querySelector("#dcreate").addEventListener("click", async () => {
+    const name = root.querySelector("#dname").value.trim();
+    const out = root.querySelector("#dcreateOut");
+    out.textContent = "作成中…";
+    try {
+      const d = await api.post("/api/decks", {
+        name: name || "新しい単語帳",
+        domains: sels("#ddomains"),
+        levels: sels("#dlevels"),
+        include_banned: root.querySelector("#dbanned").checked,
+        limit: parseInt(root.querySelector("#dlimit").value, 10) || null,
+        settings: {
+          directions: root.querySelector("#ddir").value,
+          pass_count: parseInt(root.querySelector("#dpass").value, 10) || 2,
+          use_srs: root.querySelector("#dsrs").checked,
+          quiz_size: parseInt(root.querySelector("#dsize").value, 10) || 10,
+        },
+      });
+      out.textContent = `作成: ${d.name} (${d.total}語)`;
+      go("deck");
+    } catch (e) { out.textContent = "失敗: " + e.message; }
+  });
+
+  async function studyDeck(d) {
+    const q = await api.get(`/api/decks/${d.id}/quiz`);
+    if (!q.items.length) {
+      toast("この単語帳は全て習得済みです🎉"); return;
+    }
+    root.innerHTML = `<h1>単語帳: ${escapeHtml(d.name)}</h1>`;
+    const holder = el(`<div></div>`); root.appendChild(holder);
+    quizRunner({
+      container: holder, items: q.items, kind: "word", appState: state,
+      directions: q.settings.directions,
+      attemptEndpoint: `/api/decks/${d.id}/attempt`,
+      onDone: () => {
+        const b = el(`<button class="btn mt">単語帳へ戻る</button>`);
+        b.addEventListener("click", () => go("deck")); holder.appendChild(b);
+      },
+    });
+  }
+
+  function editDeck(d) {
+    openModal("設定: " + d.name, (body) => {
+      const s = d.settings;
+      body.appendChild(el(`<div class="row">
+        <label>名前: <input id="en" value="${escapeHtml(d.name)}"
+          style="width:200px" /></label></div>`));
+      body.appendChild(el(`<div class="row mt">
+        <label>出題方向: <select id="edir">
+          <option value="both">両方向</option>
+          <option value="en2ja">英→日</option>
+          <option value="ja2en">日→英</option></select></label>
+        <label>N回正解で習得: <input id="epass" type="number"
+          value="${s.pass_count}" style="width:60px" min="1" /></label></div>`));
+      body.appendChild(el(`<div class="row mt">
+        <label class="toggle"><input type="checkbox" id="esrs"
+          ${s.use_srs ? "checked" : ""} /> 忘却曲線を使う</label>
+        <label>出題数: <input id="esize" type="number" value="${s.quiz_size}"
+          style="width:60px" min="1" /></label></div>`));
+      body.querySelector("#edir").value = s.directions;
+      const save = el(`<button class="btn good mt">保存</button>`);
+      save.addEventListener("click", async () => {
+        await api.put("/api/decks/" + d.id, {
+          name: body.querySelector("#en").value.trim() || d.name,
+          settings: {
+            directions: body.querySelector("#edir").value,
+            pass_count: parseInt(body.querySelector("#epass").value, 10) || 2,
+            use_srs: body.querySelector("#esrs").checked,
+            quiz_size: parseInt(body.querySelector("#esize").value, 10) || 10,
+          },
+        });
+        go("deck");
+      });
+      body.appendChild(save);
+    });
+  }
+}

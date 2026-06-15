@@ -151,6 +151,27 @@ CREATE TABLE IF NOT EXISTS app_state (
     value TEXT
 );
 
+-- 単語帳(デッキ): 分野/レベル等で作る自分用の単語セット。設定は JSON。
+CREATE TABLE IF NOT EXISTS decks (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    name       TEXT    NOT NULL,
+    settings   TEXT    DEFAULT '{}',   -- 出題方向/合格回数/SRS/出題数 等
+    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS deck_words (
+    deck_id INTEGER NOT NULL REFERENCES decks(id) ON DELETE CASCADE,
+    word_id INTEGER NOT NULL REFERENCES words(id) ON DELETE CASCADE,
+    PRIMARY KEY (deck_id, word_id)
+);
+-- デッキ別の進捗（N回正解で done。グローバルの mastery とは別管理）。
+CREATE TABLE IF NOT EXISTS deck_progress (
+    deck_id       INTEGER NOT NULL REFERENCES decks(id) ON DELETE CASCADE,
+    word_id       INTEGER NOT NULL,
+    correct_count INTEGER NOT NULL DEFAULT 0,
+    done_at       TEXT,
+    PRIMARY KEY (deck_id, word_id)
+);
+
 -- Generated TTS audio, keyed by item (番号) + kind + voice. Lets repeated
 -- playback be free (no API token) and supports DB(BLOB) storage as an
 -- alternative to on-disk files (AUDIO_STORAGE=db|hybrid). One row per
