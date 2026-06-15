@@ -484,19 +484,22 @@ def _item_text(conn, item_type: str, item_id: int, kind: str) -> str | None:
 @router.get("/tts/item")
 def tts_item(
     item_type: str, item_id: int, voice: str = "ash", kind: str = "",
+    speed: str = "learn",
 ):
     """番号(ID)で音声を取得。保存済みなら即返す(=無料)。無ければ合成して
     保存し、次回以降はトークン不要にする。type=word|phrase、kind は word/
-    example/phrase（未指定なら type から既定）。"""
+    example/phrase。speed=learn(学習・ゆっくり明瞭) / native(自然な速さ)。"""
     item_type = item_type if item_type in audio_store.VALID_TYPES else "word"
-    if kind not in audio_store.VALID_KINDS:
-        kind = "phrase" if item_type == "phrase" else "word"
+    base = kind if kind in ("word", "example", "phrase") else (
+        "phrase" if item_type == "phrase" else "word")
+    speed = "native" if speed == "native" else "learn"
+    skind = audio_store.storage_kind(base, speed)
 
     with db() as conn:
-        cached = audio_store.get(conn, item_type, item_id, kind, voice)
+        cached = audio_store.get(conn, item_type, item_id, skind, voice)
         if cached is not None:
             return Response(content=cached, media_type="audio/mpeg")
-        text = _item_text(conn, item_type, item_id, kind)
+        text = _item_text(conn, item_type, item_id, base)
 
     if not text:
         return Response(
@@ -504,12 +507,12 @@ def tts_item(
             status_code=422, media_type="text/plain",
         )
 
-    audio, error = ai.synthesize_speech(text, voice)
+    audio, error = ai.synthesize_speech(text, voice, style=speed)
     if error:
         return Response(content=error, status_code=422,
                         media_type="text/plain")
     with db() as conn:
-        audio_store.put(conn, item_type, item_id, kind, voice, audio)
+        audio_store.put(conn, item_type, item_id, skind, voice, audio)
     return Response(content=audio, media_type="audio/mpeg")
 
 

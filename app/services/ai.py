@@ -265,12 +265,43 @@ TTS_VOICES = [
 _TTS_USD_PER_1K_CHARS = 0.015
 
 
-def _tts_cache_path(model: str, voice: str, text: str):
+# 読み上げの話し方プリセット（gpt-4o-mini-tts の品質を安定させる）。
+#   learn  … 学習用。落ち着いた一定ペース・やや遅め・明瞭（指示なしだと文の
+#            抑揚が過剰・不自然になるのを防ぐ）。
+#   native … ネイティブの自然な速さ・リズム・リンキング（少し速い）。
+TTS_STYLES = {
+    "learn": (
+        "You are a clear, friendly English teacher reading for a learner. "
+        "Speak in natural, standard English with calm, even intonation and a "
+        "steady, slightly slower pace. Pronounce every word clearly and "
+        "distinctly. Do not rush, do not add emotion, drama, whispering, or "
+        "any accent."
+    ),
+    "native": (
+        "Speak in natural, native English at a normal conversational pace "
+        "and rhythm, with the natural linking, stress, and flow a native "
+        "speaker uses in everyday speech. Keep it clear and easy to follow. "
+        "Neutral, friendly tone; no exaggeration, drama, or strong accent."
+    ),
+}
+TTS_STYLE_DEFAULT = "learn"
+
+
+def _tts_instructions(style: str = TTS_STYLE_DEFAULT) -> str:
+    import os
+    if style == "learn":
+        env = os.getenv("OPENAI_TTS_INSTRUCTIONS", "").strip()
+        if env:
+            return env
+    return TTS_STYLES.get(style, TTS_STYLES["learn"])
+
+
+def _tts_cache_path(model: str, voice: str, text: str, instr: str = ""):
     import hashlib
 
     from ..config import paths
 
-    key = f"{model}|{voice}|{text}".encode("utf-8")
+    key = f"{model}|{voice}|{instr}|{text}".encode("utf-8")
     digest = hashlib.sha256(key).hexdigest()[:32]
     cache_dir = paths.data_dir / "tts_cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -278,12 +309,14 @@ def _tts_cache_path(model: str, voice: str, text: str):
 
 
 def synthesize_speech(
-    text: str, voice: str = "alloy", *, rate_limit: bool = True
+    text: str, voice: str = "alloy", *,
+    style: str = TTS_STYLE_DEFAULT, rate_limit: bool = True
 ) -> tuple[bytes | None, str | None]:
     """Return (audio_mp3_bytes, error). Uses OpenAI's natural TTS voices.
 
-    Audio is cached on disk by (model, voice, text); a cache hit costs nothing
-    and makes repeated playback free (ユーザー要望: 再生のたびの課金を避ける)。
+    Audio is cached on disk by (model, voice, instructions, text); a cache hit
+    costs nothing and makes repeated playback free。``style`` で読み上げの
+    話し方を選ぶ（'learn'=学習用ゆっくり明瞭 / 'native'=ネイティブの自然な速さ）。
     """
     client, settings = _client()
     if client is None:
@@ -293,7 +326,8 @@ def synthesize_speech(
     if voice not in TTS_VOICES:
         voice = "alloy"
 
-    cache = _tts_cache_path(settings.tts_model, voice, text[:4000])
+    instr = _tts_instructions(style)
+    cache = _tts_cache_path(settings.tts_model, voice, text[:4000], instr)
     if cache.exists():
         return cache.read_bytes(), None  # cache hit → no API call, no cost
 
@@ -302,12 +336,17 @@ def synthesize_speech(
     if refusal:
         return None, refusal
 
+    # instructions は gpt-4o-mini-tts 系のみ対応（tts-1系は非対応なので付けない）
+    extra = {}
+    if instr and "gpt-4o" in settings.tts_model:
+        extra["instructions"] = instr
     try:
         resp = client.audio.speech.create(
             model=settings.tts_model,
             voice=voice,
             input=text[:4000],
             response_format="mp3",
+            **extra,
         )
         audio = resp.read() if hasattr(resp, "read") else resp.content
         try:
