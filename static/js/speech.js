@@ -99,6 +99,24 @@ export function pickRoundVoice() {
 
 export function currentVoice() { return currentVoiceName; }
 
+// OpenAI音声のおおよその性別（UI表示用）。
+const VOICE_GENDER = {
+  alloy: "中性", ash: "男声", ballad: "男声", coral: "女声", echo: "男声",
+  fable: "男声", nova: "女声", onyx: "男声", sage: "女声", shimmer: "女声",
+};
+export function voiceGender(name) { return VOICE_GENDER[name] || ""; }
+
+// 会話で使う声を明示選択して記憶（localStorage）。以後はこの声で読み上げる。
+export function setVoice(name) {
+  if (!openaiVoices.includes(name)) return false;
+  currentVoiceName = name; currentIsOpenAI = true;
+  localStorage.setItem("convVoice", name);
+  return true;
+}
+export function loadPreferredVoice() {
+  return localStorage.getItem("convVoice") || "";
+}
+
 // --- speaking ---------------------------------------------------------------
 
 export function stopSpeaking() {
