@@ -310,6 +310,23 @@ function voiceButtons(getText) {
   return cell;
 }
 
+// 教材の長さ（5段階）。1=短め(1〜2文) … 5=長文(約2分)。
+const LENGTH_INSTR = {
+  "1": "ごく短く1〜2文（約20語）で",
+  "2": "短め（約50語）で",
+  "3": "標準的な長さ（約100語）で",
+  "4": "やや長め（約180語）で",
+  "5": "長文（約300語・朗読で約2分）で",
+};
+function lengthSelect(id) {
+  return `<select id="${id}" title="長さ(5段階)">
+    <option value="1">長さ: 短め(1〜2文)</option>
+    <option value="2">長さ: やや短め</option>
+    <option value="3" selected>長さ: 標準</option>
+    <option value="4">長さ: やや長め</option>
+    <option value="5">長さ: 長文(約2分)</option></select>`;
+}
+
 // 速度モード → sayItem オプション。learn音声/native音声＋再生速度を決める。
 //   slow=学習ゆっくり / std=学習標準 / native=ネイティブ音声(自然な速さ)
 function speedOpts(mode) {
@@ -874,7 +891,8 @@ function materialView(title, sub, area, fields, histAreas) {
         <div class="row">
           <select id="field">${fields.map((f) =>
             `<option>${f}</option>`).join("")}</select>
-          <input id="inst" placeholder="追加指示(任意)" style="width:260px" />
+          ${lengthSelect("flen")}
+          <input id="inst" placeholder="追加指示(任意)" style="width:200px" />
           <button class="btn" id="gen" ${state.aiEnabled ? "" : "disabled"}>
             生成</button>
           <button class="btn ghost" id="histBtn">📚 履歴</button>
@@ -906,9 +924,11 @@ function materialView(title, sub, area, fields, histAreas) {
       let genArea = area;
       if (field.startsWith("文学(")) genArea = "literature";
       else if (field.startsWith("ニュース(")) genArea = "news";
+      const len = LENGTH_INSTR[root.querySelector("#flen").value] || "";
       const r = await api.post("/api/learn/generate", {
         area: genArea, field,
-        instruction: root.querySelector("#inst").value,
+        instruction: (len ? `本文は${len}作成。` : "")
+          + root.querySelector("#inst").value,
       });
       if (!r.ok) { out.textContent = r.error; return; }
       out.innerHTML = "";
@@ -1218,7 +1238,8 @@ export async function listening(root) {
           <option value="news">ニュース風</option>
           <option value="business">ビジネス</option>
         </select>
-        <input id="theme" placeholder="テーマ(任意)" style="width:160px" />
+        <input id="theme" placeholder="テーマ(任意)" style="width:140px" />
+        ${lengthSelect("llen")}
         <label class="toggle">速度
           <input type="range" id="rate" min="0.6" max="1.2" step="0.05" value="0.95" />
         </label>
@@ -1274,17 +1295,19 @@ export async function listening(root) {
         inst: "ビジネスシーンの会話形式スクリプト" },
     };
     const g = GENRES[genre];
+    const len = LENGTH_INSTR[root.querySelector("#llen").value] || "";
+    const lenNote = len ? ` 本文は${len}。` : "";
     let body;
     if (g) {
       body = {
         area: g.area, field: theme ? `${g.field}・${theme}` : g.field,
-        instruction: g.inst + (theme ? `（テーマ: ${theme}）` : ""),
+        instruction: g.inst + (theme ? `（テーマ: ${theme}）` : "") + lenNote,
       };
     } else {
       body = {
         area: "listening", field: theme ? `${label}・${theme}` : label,
         instruction: "会話形式のスクリプト" +
-          (theme ? `（テーマ: ${theme}）` : ""),
+          (theme ? `（テーマ: ${theme}）` : "") + lenNote,
       };
     }
     const r = await api.post("/api/learn/generate", body);
