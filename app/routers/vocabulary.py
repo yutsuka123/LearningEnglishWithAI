@@ -8,9 +8,11 @@ from pydantic import BaseModel
 from ..database import db
 from ..schemas import AttemptIn, WordCreate, WordUpdate
 from ..services.spaced_repetition import (
+    MASTERED_THRESHOLD,
     pick_weighted,
     record_attempt,
     selection_weight,
+    set_known,
 )
 
 router = APIRouter(prefix="/api/words", tags=["vocabulary"])
@@ -19,6 +21,7 @@ router = APIRouter(prefix="/api/words", tags=["vocabulary"])
 def _word_dict(row) -> dict:
     d = dict(row)
     d["selection_priority"] = selection_weight(d["mastery"])
+    d["mastered"] = d["mastery"] >= MASTERED_THRESHOLD
     accuracy = (
         round(d["times_correct"] / d["times_asked"] * 100)
         if d["times_asked"]
@@ -26,6 +29,8 @@ def _word_dict(row) -> dict:
     )
     d["accuracy"] = accuracy
     return d
+
+
 
 
 BANNED_DOMAIN = "禁止用語"
@@ -37,6 +42,7 @@ def list_words(
     domain: str | None = None,
     level: str | None = None,
     include_banned: bool = False,
+    mastered: str | None = None,   # 'only' | 'hide' | None(=全部)
 ):
     order = {
         "mastery": "mastery ASC, last_studied ASC",
@@ -60,6 +66,10 @@ def list_words(
     if not include_banned:
         where.append("COALESCE(domain, '') <> ?")
         params.append(BANNED_DOMAIN)
+    if mastered == "only":
+        where.append(f"mastery >= {MASTERED_THRESHOLD}")
+    elif mastered == "hide":
+        where.append(f"mastery < {MASTERED_THRESHOLD}")
     clause = (" WHERE " + " AND ".join(where)) if where else ""
     with db() as conn:
         rows = conn.execute(
@@ -149,6 +159,23 @@ def attempt(payload: AttemptIn):
         except ValueError as exc:
             raise HTTPException(400, str(exc))
         return result
+
+
+class KnownIn(BaseModel):
+    known: bool = True
+
+
+@router.post("/{word_id}/known")
+def mark_known(word_id: int, payload: KnownIn):
+    """「覚えた」ボタン: mastery を満点(200)に。known=false で解除。"""
+    with db() as conn:
+        exists = conn.execute(
+            "SELECT id FROM words WHERE id = ?", (word_id,)
+        ).fetchone()
+        if not exists:
+            raise HTTPException(404, "単語が見つかりません")
+        new = set_known(conn, word_id, payload.known, table="words")
+    return {"ok": True, "mastery": new, "known": payload.known}
 
 
 class ImportIn(BaseModel):

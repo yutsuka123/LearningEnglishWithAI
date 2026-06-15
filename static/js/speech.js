@@ -167,6 +167,32 @@ export async function sayWithVoice(text, voice, opts = {}) {
   }
 }
 
+// Play by item 番号(ID): the server returns saved audio for free (no token)
+// or synthesizes once and saves it, so 2回目以降は無料。Falls back to the
+// browser voice when natural TTS is off / AI is unavailable / the call fails.
+//   itemType: 'word' | 'phrase', kind: 'word' | 'example' | 'phrase'
+export async function sayItem(itemType, id, kind, voice, fallbackText, opts = {}) {
+  if (!(isNatural() && aiEnabled)) {
+    if (fallbackText) browserSpeak(fallbackText, opts);
+    return;
+  }
+  const q = new URLSearchParams({
+    item_type: itemType, item_id: id, kind, voice,
+  });
+  try {
+    const res = await fetch("/api/learn/tts/item?" + q.toString());
+    if (!res.ok) throw new Error("tts item failed");
+    const blob = await res.blob();
+    stopSpeaking();
+    audioEl = new Audio(URL.createObjectURL(blob));
+    audioEl.playbackRate = opts.rate || 1;
+    await audioEl.play();
+    if (usageCb) usageCb();
+  } catch (e) {
+    if (fallbackText) browserSpeak(fallbackText, opts);
+  }
+}
+
 // Speak with a specific OpenAI voice (for the settings preview button).
 // Returns { ok, error } so the UI can show the real reason on failure.
 export async function previewOpenAIVoice(voice, text) {

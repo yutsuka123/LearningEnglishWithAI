@@ -4,10 +4,13 @@ Works identically for ``words`` and ``phrases`` (both have the same columns).
 
 Rules implemented:
 
-* Mastery is an integer 0..100, starting at 0.
+* Mastery is an integer 0..200, starting at 0.
 * Items are tested in BOTH directions: ``ja2en`` (日本語→英語) and
   ``en2ja`` (英語→日本語). When both directions are answered correctly
-  in a day, mastery gains +5 (capped at 100).
+  in a day, mastery gains +5 (capped at 200).
+* 「覚えた」ボタン: 学習者が「もう覚えた」と宣言すると mastery を満点(200)に。
+  週-1の減衰でも 100 を下回るまで約100週かかるため、長く「覚えた」状態を保つ。
+* mastery >= 100 を「覚えた(mastered)」とみなす。一覧で表示/非表示を切替可能。
 * Per-direction counters track accuracy for each direction.
 * Forgetting curve (Leitner-style boxes): a correct review promotes the item
   to a longer interval; a wrong review sends it back to the start. The
@@ -15,7 +18,7 @@ Rules implemented:
   back rarely, but they DO come back (occasional review).
 * Selection prioritises items that are *due* (next_review <= today), then
   weights remaining slots by ``100 - mastery`` (lower mastery → asked more).
-* Monthly decay: once per month every word loses 5 mastery (floored at 0).
+* Weekly decay: every elapsed week each item loses 1 mastery (floored at 0).
 """
 
 from __future__ import annotations
@@ -25,9 +28,11 @@ import sqlite3
 from datetime import date, timedelta
 
 MASTERY_MIN = 0
-MASTERY_MAX = 100
+MASTERY_MAX = 200
 CORRECT_BOTH_BONUS = 5
-MONTHLY_DECAY = 5
+WEEKLY_DECAY = 1            # 週あたりの減衰（忘却曲線）。
+MASTERED_THRESHOLD = 100   # これ以上で「覚えた」。
+KNOWN_MASTERY = 200        # 「覚えた」ボタン押下時の値（満点）。
 
 # Forgetting-curve intervals in days, indexed by review level (box).
 REVIEW_INTERVALS = [1, 2, 4, 8, 16, 35, 70, 150]
@@ -40,8 +45,9 @@ def clamp(value: int) -> int:
 
 
 def selection_weight(mastery: int) -> int:
-    """Higher weight → more likely to be picked. ``100 - mastery`` (min 1)."""
-    return max(1, MASTERY_MAX - mastery)
+    """Higher weight → more likely to be picked. ``100 - mastery`` (min 1).
+    「覚えた」(mastery>=100) は最小重み1で、まれにしか出題されない。"""
+    return max(1, MASTERED_THRESHOLD - mastery)
 
 
 def interval_for_level(level: int) -> int:
@@ -270,31 +276,64 @@ def _maybe_award_bonus(
 
 
 # ---------------------------------------------------------------------------
-# Monthly decay
+# 「覚えた」宣言
 # ---------------------------------------------------------------------------
 
-def apply_monthly_decay(conn: sqlite3.Connection) -> int:
-    """If a new month has started since the last run, subtract 5 from every
-    word's mastery (floored at 0). Returns the number of runs applied."""
-    current_month = date.today().strftime("%Y-%m")
-    row = conn.execute(
-        "SELECT value FROM app_state WHERE key = 'last_decay_month'"
-    ).fetchone()
-    last_month = row["value"] if row else None
+def set_known(
+    conn: sqlite3.Connection, item_id: int, known: bool, *, table: str = "words"
+) -> int:
+    """「覚えた」ボタン。known=True で満点(200)、False で覚えた状態を解除
+    (閾値直下の95に戻す)。新しい mastery を返す。"""
+    new = KNOWN_MASTERY if known else (MASTERED_THRESHOLD - 5)
+    conn.execute(
+        f"UPDATE {table} SET mastery = ? WHERE id = ?", (new, item_id)
+    )
+    return new
 
-    if last_month == current_month:
+
+# ---------------------------------------------------------------------------
+# Weekly decay (忘却曲線)
+# ---------------------------------------------------------------------------
+
+def apply_weekly_decay(conn: sqlite3.Connection) -> int:
+    """Subtract 1 mastery for every full week elapsed since the last run
+    (floored at 0). Handles multiple missed weeks at once. Returns the number
+    of weeks applied."""
+    today = date.today()
+    row = conn.execute(
+        "SELECT value FROM app_state WHERE key = 'last_decay_date'"
+    ).fetchone()
+    if not row or not row["value"]:
+        conn.execute(
+            "INSERT OR REPLACE INTO app_state (key, value) VALUES "
+            "('last_decay_date', ?)",
+            (today.isoformat(),),
+        )
+        return 0
+    try:
+        last = date.fromisoformat(row["value"])
+    except ValueError:
+        last = today
+    weeks = (today - last).days // 7
+    if weeks <= 0:
         return 0
 
-    conn.execute(
-        f"UPDATE words SET mastery = MAX({MASTERY_MIN}, mastery - {MONTHLY_DECAY})"
-    )
-    conn.execute(
-        f"UPDATE phrases SET mastery = MAX({MASTERY_MIN}, "
-        f"mastery - {MONTHLY_DECAY})"
-    )
+    drop = weeks * WEEKLY_DECAY
+    for tbl in ("words", "phrases"):
+        conn.execute(
+            f"UPDATE {tbl} SET mastery = MAX({MASTERY_MIN}, mastery - ?)",
+            (drop,),
+        )
+    # 端数日を保つため、消化した週数ぶんだけ基準日を進める。
+    new_anchor = last + timedelta(weeks=weeks)
     conn.execute(
         "INSERT OR REPLACE INTO app_state (key, value) VALUES "
-        "('last_decay_month', ?)",
-        (current_month,),
+        "('last_decay_date', ?)",
+        (new_anchor.isoformat(),),
     )
-    return 1
+    return weeks
+
+
+# 後方互換: 旧名で呼ばれても週次減衰を実行する。
+def apply_monthly_decay(conn: sqlite3.Connection) -> int:
+    return apply_weekly_decay(conn)
