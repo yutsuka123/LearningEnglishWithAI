@@ -115,8 +115,17 @@ const ROUTES = {
 
 let currentTab = "dashboard";
 
+// 画面を離れるときに一度だけ呼ばれるクリーンアップ。views が登録する
+// (例: 英会話の自動記録の確定保存)。次の go() で消費される。
+let leaveHook = null;
+export function onLeaveView(fn) { leaveHook = fn; }
+
 export async function go(tab) {
   if (!ROUTES[tab]) tab = "dashboard";
+  if (leaveHook) {
+    const fn = leaveHook; leaveHook = null;
+    try { fn(); } catch (e) { /* ignore */ }
+  }
   currentTab = tab;
   speech.stopSpeaking();
   document.querySelectorAll(".nav-item").forEach((b) =>

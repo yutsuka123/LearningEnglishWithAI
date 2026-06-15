@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 from datetime import date
 
-from fastapi import APIRouter, File, Response, UploadFile
+from fastapi import APIRouter, File, Form, Response, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
@@ -15,6 +15,7 @@ from ..schemas import (
     ConversationIn,
     GenerateIn,
     SessionEndIn,
+    SummarizeIn,
     WritingFeedbackIn,
 )
 from ..config import load_settings
@@ -500,10 +501,15 @@ class TtsIn(BaseModel):
 
 
 @router.post("/transcribe")
-async def transcribe(file: UploadFile = File(...)):
-    """音声→テキスト（言語自動判定）。英会話の音声入力に使用。"""
+async def transcribe(
+    file: UploadFile = File(...),
+    language: str = Form(""),
+):
+    """音声→テキスト。``language`` で認識言語を限定(誤認識対策)。
+    例: "en"=英語固定 / "en,ja"=英語か日本語 / ""=自動。"""
     audio = await file.read()
-    text, error = ai.transcribe(audio, file.filename or "audio.webm")
+    text, error = ai.transcribe(
+        audio, file.filename or "audio.webm", language=language)
     if error:
         return {"ok": False, "error": error}
     return {"ok": True, "text": text}
@@ -622,20 +628,41 @@ def session_summary(payload: SessionEndIn):
 
 @router.post("/session/save")
 def session_save(payload: SessionEndIn):
-    """Persist a study session to the DB and append to study_log.md (§10, §12)."""
+    """Persist a study session to the DB; append to study_log.md (§10,§12).
+
+    会話の自動記録では同じ ``session_key`` で何度も呼ばれる。その場合は行を
+    増やさず既存行を上書きする。``final`` のときだけ study_log.md へ追記する
+    (途中の上書き保存ではログを汚さない)。"""
     with db() as conn:
-        conn.execute(
-            "INSERT INTO study_sessions "
-            "(content, accuracy, weak_points, next_topic, new_words) "
-            "VALUES (?, ?, ?, ?, ?)",
-            (
-                payload.content,
-                payload.accuracy,
-                payload.weak_points,
-                payload.next_topic,
-                payload.new_words,
-            ),
-        )
+        existing = None
+        if payload.session_key:
+            row = conn.execute(
+                "SELECT id FROM study_sessions WHERE session_key = ? "
+                "ORDER BY id DESC LIMIT 1",
+                (payload.session_key,),
+            ).fetchone()
+            existing = row["id"] if row else None
+        if existing is not None:
+            conn.execute(
+                "UPDATE study_sessions SET content = ?, accuracy = ?, "
+                "weak_points = ?, next_topic = ?, new_words = ? WHERE id = ?",
+                (
+                    payload.content, payload.accuracy, payload.weak_points,
+                    payload.next_topic, payload.new_words, existing,
+                ),
+            )
+        else:
+            conn.execute(
+                "INSERT INTO study_sessions "
+                "(content, accuracy, weak_points, next_topic, new_words, "
+                "session_key) VALUES (?, ?, ?, ?, ?, ?)",
+                (
+                    payload.content, payload.accuracy, payload.weak_points,
+                    payload.next_topic, payload.new_words, payload.session_key,
+                ),
+            )
+    if not payload.final:
+        return {"ok": True, "appended": ""}
     entry = persistence.format_session_entry(
         content=payload.content,
         accuracy=payload.accuracy,
@@ -645,6 +672,22 @@ def session_save(payload: SessionEndIn):
     )
     persistence.append_study_log(entry)
     return {"ok": True, "appended": entry}
+
+
+@router.post("/summarize")
+def summarize(payload: SummarizeIn):
+    """会話の古い部分を短い日本語要約にする(会話の自動記録用)。"""
+    if not ai.is_enabled():
+        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+    system = (
+        "次の英会話ログを、日本語で3〜6行に要約してください。話した話題・"
+        "学習者がつまずいた点・覚えた表現を簡潔に。箇条書きでも可。要約のみ出力。"
+    )
+    result = ai.chat(
+        system, payload.text, temperature=0.3,
+        max_tokens=400, feature="summarize",
+    )
+    return {"ok": result.ok, "summary": result.text, "error": result.error}
 
 
 @router.get("/daily")

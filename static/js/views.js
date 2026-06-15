@@ -5,7 +5,7 @@ import * as speech from "./speech.js";
 import { quizRunner } from "./quiz.js";
 import {
   el, md, escapeHtml, toast, state, go, refreshCost, refreshAiState,
-  showBanned, setShowBanned, testBanned, setTestBanned,
+  showBanned, setShowBanned, testBanned, setTestBanned, onLeaveView,
 } from "./app.js";
 
 // 禁止用語クエリ: include_banned を付ける/付けないを返す小ヘルパー。
@@ -1100,7 +1100,10 @@ export async function conversation(root) {
         <button class="btn good" id="hfStart">▶ 開始</button>
         <button class="btn bad" id="hfStop" style="display:none">⏹ 終了</button>
         <button class="btn" id="hfEnd" style="display:none">発話終了</button>
-        <button class="btn ghost" id="hfSave">📝 会話を記録</button>
+        <label class="toggle"><input type="checkbox" id="autoLog" />
+          ✓ 自動で記録</label>
+        <button class="btn ghost" id="hfSave"
+          style="padding:2px 8px">📝 今すぐ記録</button>
         <span id="hfStatus" class="muted"></span>
       </div>
       <div class="row mt">
@@ -1126,6 +1129,21 @@ export async function conversation(root) {
         <label class="toggle"><input type="checkbox" id="autoTts" checked />
           AI返答を読み上げ</label>
         <button class="btn secondary" id="start">AIから始める</button>
+      </div>
+      <div class="row mt">
+        <label>🎤 認識言語:
+          <select id="sttLang">
+            <option value="en,ja">英語もしくは日本語</option>
+            <option value="en">英語</option>
+            <option value="ja">日本語</option>
+            <option value="zh,en">中国語もしくは英語</option>
+            <option value="zh">中国語</option>
+            <option value="ko,en">韓国語もしくは英語</option>
+            <option value="ko">韓国語</option>
+            <option value="">自動判定(すべて)</option>
+          </select></label>
+        <span class="muted">音声入力(AI認識)の言語。誤認識(例: 韓国語に
+          化ける)時はここを絞ると改善します。</span>
       </div>
       <p id="freeHelp" class="muted" style="display:none">
         日本語でもOK。単語・フレーズ・リスニング・ライティング、何でも相談できます。
@@ -1166,6 +1184,14 @@ export async function conversation(root) {
     toast("声: " + (v || "なし"));
   });
 
+  // 🎤 認識言語: localStorage に記憶。既定は「英語もしくは日本語」。
+  const sttLangSel = root.querySelector("#sttLang");
+  sttLangSel.value = localStorage.getItem("convSttLang") ?? "en,ja";
+  const sttLang = () => sttLangSel.value;
+  sttLangSel.addEventListener("change", () => {
+    localStorage.setItem("convSttLang", sttLangSel.value);
+  });
+
   function scene() {
     if (modeSel.value === "free") {
       return { grp: "自由会話", topic: "どんな話題でもOK・フリートーク" };
@@ -1184,9 +1210,11 @@ export async function conversation(root) {
   };
 
   function addMsg(role, text) {
+    // ラベルは吹き出しの外。本文・ツール類は bubble の中。
     const m = el(`<div class="msg ${role}">
       <div class="who">${role === "user" ? "あなた" : "AI"}</div>
-      <div class="body"></div></div>`);
+      <div class="bubble"><div class="body"></div></div></div>`);
+    const bubble = m.querySelector(".bubble");
     const body = m.querySelector(".body");
     body.textContent = text;
     if (role === "ai") {
@@ -1213,15 +1241,17 @@ export async function conversation(root) {
         if (ex) speech.speak(ex); else toast("添削例がありません");
       });
       tools.append(jp, say, sayEx);
-      m.append(tools, tr);
+      bubble.append(tools, tr);
     }
     chat.appendChild(m); chat.scrollTop = chat.scrollHeight;
     return body;
   }
 
   function addHelper(label, text) {
-    const m = el(`<div class="msg ai" style="background:var(--panel)">
-      <div class="who">${label}</div><div class="md"></div></div>`);
+    const m = el(`<div class="msg ai">
+      <div class="who">${label}</div>
+      <div class="bubble" style="background:var(--panel)">
+        <div class="md"></div></div></div>`);
     m.querySelector(".md").innerHTML = md(text);
     chat.appendChild(m); chat.scrollTop = chat.scrollHeight;
   }
@@ -1257,6 +1287,7 @@ export async function conversation(root) {
       speech.speak(englishOnly(full.split("【コーチ")[0]));
     }
     refreshCost();
+    scheduleAutoSave();
   }
 
   root.querySelector("#start").addEventListener("click", () => send("", true));
@@ -1297,7 +1328,7 @@ export async function conversation(root) {
       if (!recording) {
         try {
           recorder = langSel.value === "auto"
-            ? await speech.createAIRecorder()
+            ? await speech.createAIRecorder(sttLang())
             : speech.createRecorder(langSel.value);
           recorder.start(); recording = true;
           mic.textContent = "⏹ 停止"; mic.classList.replace("good", "bad");
@@ -1346,8 +1377,112 @@ export async function conversation(root) {
       });
     history.push({ role: "assistant", content: full });
     refreshCost();
+    scheduleAutoSave();
     await speech.speakAndWait(englishOnly(full.split("【コーチ")[0]));
   }
+
+  // --- 会話の自動記録 -------------------------------------------------------
+  // ✓「自動で記録」をONにすると、ターンごとに学習履歴へ自動保存する(同じ
+  // session_key で上書きするので行は増えない)。直近の会話はそのまま、古い
+  // 部分は要約して保存。音声は保存しない(テキストのみ)。
+  const KEEP_RECENT = 8;        // 直近この数の発言はそのまま記録
+  const RESUMMARIZE_EVERY = 6;  // 古い部分がこの数増えたら要約し直す
+  const recKey = "conv-" + Date.now() + "-"
+    + Math.random().toString(36).slice(2, 8);
+  let archivedSummary = "";     // 古い部分の要約(キャッシュ)
+  let archivedCount = 0;        // 要約に畳み込み済みの history 件数
+  let saveTimer = null;
+  let saving = false;
+  let lastSavedLen = 0;         // 最後に保存した時点の history 件数
+  let finalLogged = false;      // study_log.md へ確定追記したか
+
+  // 記録用に1発言を整形(AI側は英語のみ・コーチ注記は落とす)。
+  const lineFor = (m) => {
+    const t = m.role === "assistant"
+      ? (enText(m.content) || m.content) : m.content;
+    return (m.role === "user" ? "あなた" : "AI") + ": " + (t || "").trim();
+  };
+
+  async function buildRecordContent() {
+    const total = history.length;
+    const oldEnd = Math.max(0, total - KEEP_RECENT);
+    // 古い部分が十分増えたら、まとめて要約に畳み込む(古い=要約)。
+    if (state.aiEnabled && oldEnd - archivedCount >= RESUMMARIZE_EVERY) {
+      const older = history.slice(0, oldEnd).map(lineFor).join("\n");
+      try {
+        const r = await api.post("/api/learn/summarize", { text: older });
+        if (r.ok && r.summary) {
+          archivedSummary = r.summary; archivedCount = oldEnd;
+        }
+      } catch (e) { /* 失敗時はそのまま直近側に全文を残す */ }
+    }
+    // 直近(=まだ要約していない分)はそのまま記録。
+    const recent = history.slice(archivedCount).map(lineFor).join("\n");
+    let out = "🗣️ 英会話の記録";
+    const s = scene();
+    if (s.topic) out += "（" + s.grp + " / " + s.topic + "）";
+    if (archivedSummary) {
+      out += "\n\n## これまでの要約\n" + archivedSummary;
+    }
+    out += "\n\n## 直近の会話（そのまま）\n" + recent;
+    return out;
+  }
+
+  async function doSave(final) {
+    if (saving || !history.length) return;
+    if (!final && history.length === lastSavedLen) return;
+    saving = true;
+    try {
+      const content = await buildRecordContent();
+      await api.post("/api/learn/session/save", {
+        content, accuracy: null, weak_points: "", next_topic: "",
+        new_words: "", session_key: recKey, final: !!final,
+      });
+      lastSavedLen = history.length;
+      if (final) finalLogged = true;
+    } catch (e) { /* ignore */ }
+    finally { saving = false; refreshCost(); }
+  }
+
+  const autoLogOn = () => root.querySelector("#autoLog").checked;
+  // ターン完了時に呼ぶ。ONなら少し待ってから自動保存(連打を抑制)。
+  function scheduleAutoSave() {
+    if (!autoLogOn()) return;
+    if (saveTimer) clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => { saveTimer = null; doSave(false); }, 4000);
+  }
+
+  // タブを閉じる等で離脱するとき、未保存分をベストエフォートで送る。
+  const beforeUnload = () => {
+    if (!autoLogOn() || history.length === lastSavedLen) return;
+    const recent = history.slice(archivedCount).map(lineFor).join("\n");
+    let content = "🗣️ 英会話の記録";
+    if (archivedSummary) content += "\n\n## これまでの要約\n" + archivedSummary;
+    content += "\n\n## 直近の会話（そのまま）\n" + recent;
+    try {
+      const blob = new Blob([JSON.stringify({
+        content, accuracy: null, weak_points: "", next_topic: "",
+        new_words: "", session_key: recKey, final: true,
+      })], { type: "application/json" });
+      navigator.sendBeacon("/api/learn/session/save", blob);
+    } catch (e) { /* ignore */ }
+  };
+  window.addEventListener("beforeunload", beforeUnload);
+
+  // 画面を離れたら確定保存(study_log.md へ1度だけ追記)。
+  onLeaveView(() => {
+    window.removeEventListener("beforeunload", beforeUnload);
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+    if (autoLogOn() && history.length && !finalLogged) doSave(true);
+  });
+
+  // ✓「自動で記録」: 状態を localStorage に保存。ONにした時点で一度保存。
+  const autoLogCb = root.querySelector("#autoLog");
+  autoLogCb.checked = localStorage.getItem("convAutoLog") === "1";
+  autoLogCb.addEventListener("change", () => {
+    localStorage.setItem("convAutoLog", autoLogCb.checked ? "1" : "0");
+    if (autoLogCb.checked) { toast("自動で記録します"); doSave(false); }
+  });
 
   let hf = null;
   const hfStatus = root.querySelector("#hfStatus");
@@ -1375,7 +1510,7 @@ export async function conversation(root) {
         onUtterance: async (blob) => {
           if (!hf) return;
           hf.pause(); setHfStatus("認識中…");
-          const text = await speech.transcribeBlob(blob);
+          const text = await speech.transcribeBlob(blob, sttLang());
           if (!text.trim()) {
             if (hf) { hf.resume(); setHfStatus("🎤 どうぞ話してください"); }
             return;
@@ -1400,28 +1535,13 @@ export async function conversation(root) {
     stopHF(); setHfStatus("終了しました");
   });
   hfEnd.addEventListener("click", () => { if (hf) hf.forceEnd(); });
+  // 📝 今すぐ記録: その場で確定保存(直近そのまま＋古い部分は要約)。
   root.querySelector("#hfSave").addEventListener("click", async () => {
     if (!history.length) { toast("まだ会話がありません"); return; }
     setHfStatus("要点をまとめています…");
-    const transcript = history.map((m) =>
-      `${m.role}: ${m.content}`).join("\n");
-    let content = transcript;
-    try {
-      const r = await api.post("/api/learn/session/summary", {
-        content: transcript, accuracy: null, weak_points: "",
-        next_topic: "", new_words: "",
-      });
-      if (r.ok && r.summary) content = r.summary;
-    } catch (e) { /* fall back to transcript */ }
-    try {
-      await api.post("/api/learn/session/save", {
-        content, accuracy: null, weak_points: "", next_topic: "",
-        new_words: "",
-      });
-      toast("会話の要点を保存しました");
-      setHfStatus("会話を記録しました（学習履歴に保存）");
-    } catch (e) { toast("保存に失敗しました"); }
-    refreshCost();
+    await doSave(true);
+    setHfStatus("会話を記録しました（学習履歴に保存）");
+    toast("会話を記録しました");
   });
 }
 

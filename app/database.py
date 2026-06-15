@@ -357,6 +357,12 @@ def _migrate(conn: sqlite3.Connection) -> None:
     if "mastery" not in mcols:
         conn.execute(
             "ALTER TABLE materials ADD COLUMN mastery INTEGER DEFAULT 0")
+    scols = {r["name"] for r in conn.execute(
+        "PRAGMA table_info(study_sessions)")}
+    if "session_key" not in scols:  # 会話の自動記録を上書きするためのキー
+        conn.execute(
+            "ALTER TABLE study_sessions ADD COLUMN session_key "
+            "TEXT DEFAULT ''")
 
 
 def init_db() -> None:
