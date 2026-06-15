@@ -290,15 +290,20 @@ def word_detail(word_id: int, regen: bool = False):
         "pos(主な品詞), meanings(意味の配列・主要な語義を複数), "
         "examples(配列[{en,ja}]・自然な例文1〜2個), "
         "derivatives(派生語の配列[{word,pos,ja}]・元が形容詞なら動詞/副詞/名詞"
-        "形など他の品詞の関連語も含める), synonyms(類義語の配列), "
-        "antonyms(対義語の配列), origin(語源・由来), trivia(豆知識), "
-        "explanation(使い方・ニュアンスの解説). 簡潔に。JSONのみ出力。"
+        "形など他の品詞の関連語も含める), "
+        "synonyms(類義語の配列[{word,note}]。note は各類義語の意味やニュアンス・"
+        "使い分けの違いを簡潔に), "
+        "antonyms(対義語の配列[{word,note}]), "
+        "origin(語源・由来。語源に出てくる語(例: amine/アミン等)があれば、その語が"
+        "何を意味するかも一言添えて分かりやすく), "
+        "trivia(豆知識), explanation(使い方・ニュアンスの解説). "
+        "簡潔に。必ず完結したJSONのみを出力（途中で切らない）。"
     )
     user = (
         f"単語: {row['english']}\n既知の訳: {row['japanese']}\n"
         f"既存例文: {row['example'] or 'なし'}"
     )
-    r = ai.chat(system, user, temperature=0.3, max_tokens=900,
+    r = ai.chat(system, user, temperature=0.3, max_tokens=1500,
                 feature="detail", model=load_settings().quality_model)
     if not r.ok:
         return {"ok": False, "error": r.error}
