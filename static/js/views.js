@@ -1532,14 +1532,14 @@ export async function decks(root) {
       <h2>新しい単語帳を作る</h2>
       <input id="dname" placeholder="単語帳の名前" style="width:240px" />
       <div class="row mt" style="align-items:flex-start">
-        <div><div class="muted">分野(複数可)</div>
-          <select id="ddomains" multiple size="7" style="min-width:180px">
-            ${facets.domains.map((d) =>
-              `<option>${escapeHtml(d)}</option>`).join("")}</select></div>
-        <div><div class="muted">レベル(複数可)</div>
-          <select id="dlevels" multiple size="7" style="min-width:120px">
-            ${facets.levels.map((l) =>
-              `<option>${escapeHtml(l)}</option>`).join("")}</select></div>
+        <div><div class="muted">分野(複数チェック可)</div>
+          <div id="ddomains" class="chkbox">${facets.domains.map((d) =>
+            `<label class="chk"><input type="checkbox" value="${escapeHtml(d)}"
+              /> ${escapeHtml(d)}</label>`).join("")}</div></div>
+        <div><div class="muted">レベル(複数チェック可)</div>
+          <div id="dlevels" class="chkbox">${facets.levels.map((l) =>
+            `<label class="chk"><input type="checkbox" value="${escapeHtml(l)}"
+              /> ${escapeHtml(l)}</label>`).join("")}</div></div>
       </div>
       <div class="row mt">
         <label>件数(お任せ): <input id="dlimit" type="number" value="50"
@@ -1567,7 +1567,7 @@ export async function decks(root) {
     <div id="deckList" class="mt"></div>`;
 
   const sels = (id) =>
-    [...root.querySelector(id).selectedOptions].map((o) => o.value);
+    [...root.querySelectorAll(id + " input:checked")].map((o) => o.value);
 
   const renderList = (decksArr) => {
     const box = root.querySelector("#deckList");
