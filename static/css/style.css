@@ -224,6 +224,16 @@ th { color: var(--muted); font-weight: 600; }
 .mbar.blue { height: 13px; }   /* 青(50超〜200)は太くしてサイズ感を変える */
 .mbar > span { display: block; height: 100%; }
 
+/* 単語帳の分野/レベル チェックボックス一覧（スクロール可） */
+.chkbox {
+  max-height: 200px; overflow-y: auto; border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px 10px; min-width: 160px; background: var(--panel-2);
+}
+.chk {
+  display: flex; align-items: center; gap: 6px; padding: 2px 0;
+  font-size: 14px; cursor: pointer; white-space: nowrap;
+}
+
 /* 操作セル（例文 / 覚えた / 🗑️）。折り返さず横一列に並べて行が縦に伸びない
    ようにする。 */
 .ops-cell {
