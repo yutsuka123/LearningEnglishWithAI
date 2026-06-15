@@ -23,6 +23,8 @@ router = APIRouter(prefix="/api/words", tags=["vocabulary"])
 
 def _word_dict(row) -> dict:
     d = dict(row)
+    # detail(JSON)は一覧では送らず、有無フラグだけ返す（応答を軽く保つ）。
+    d["has_detail"] = bool((d.pop("detail", "") or "").strip())
     d["selection_priority"] = selection_weight(d["mastery"])
     d["mastered"] = d["mastery"] >= MASTERED_THRESHOLD
     accuracy = (
@@ -244,6 +246,71 @@ def mark_vague(word_id: int):
             "UPDATE words SET mastery = ? WHERE id = ?", (new, word_id)
         )
     return {"ok": True, "mastery": new}
+
+
+def _json_object(text: str) -> dict | None:
+    import json
+    a, b = text.find("{"), text.rfind("}")
+    if a == -1 or b == -1:
+        return None
+    try:
+        d = json.loads(text[a:b + 1])
+        return d if isinstance(d, dict) else None
+    except (json.JSONDecodeError, ValueError):
+        return None
+
+
+@router.post("/{word_id}/detail")
+def word_detail(word_id: int, regen: bool = False):
+    """単語の詳細情報(品詞/意味複数/例文/派生/類義語/対義語/由来/豆知識/解説)を
+    AIで生成してキャッシュ。2回目以降はキャッシュを返す（無料）。重いので
+    ボタン押下時にだけ生成し、少しずつDBに蓄積する。"""
+    import json as _json
+
+    from ..config import load_settings
+    from ..services import ai
+
+    with db() as conn:
+        row = conn.execute(
+            "SELECT english, japanese, example, detail FROM words "
+            "WHERE id = ?", (word_id,)
+        ).fetchone()
+        if not row:
+            raise HTTPException(404, "単語が見つかりません")
+        if row["detail"] and not regen:
+            try:
+                return {"ok": True, "cached": True,
+                        "detail": _json.loads(row["detail"])}
+            except ValueError:
+                pass
+    if not ai.is_enabled():
+        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+    system = (
+        "英単語の詳細情報を日本語でJSONのみ作成。キー: "
+        "pos(主な品詞), meanings(意味の配列・主要な語義を複数), "
+        "examples(配列[{en,ja}]・自然な例文1〜2個), "
+        "derivatives(派生語の配列[{word,pos,ja}]・元が形容詞なら動詞/副詞/名詞"
+        "形など他の品詞の関連語も含める), synonyms(類義語の配列), "
+        "antonyms(対義語の配列), origin(語源・由来), trivia(豆知識), "
+        "explanation(使い方・ニュアンスの解説). 簡潔に。JSONのみ出力。"
+    )
+    user = (
+        f"単語: {row['english']}\n既知の訳: {row['japanese']}\n"
+        f"既存例文: {row['example'] or 'なし'}"
+    )
+    r = ai.chat(system, user, temperature=0.3, max_tokens=900,
+                feature="detail", model=load_settings().quality_model)
+    if not r.ok:
+        return {"ok": False, "error": r.error}
+    data = _json_object(r.text)
+    if not data:
+        return {"ok": False, "error": "詳細の生成に失敗しました。"}
+    with db() as conn:
+        conn.execute(
+            "UPDATE words SET detail = ? WHERE id = ?",
+            (_json.dumps(data, ensure_ascii=False), word_id),
+        )
+    return {"ok": True, "cached": False, "detail": data}
 
 
 class ImportIn(BaseModel):
