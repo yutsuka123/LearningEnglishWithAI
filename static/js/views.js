@@ -858,8 +858,13 @@ function materialView(title, sub, area, fields) {
     root.querySelector("#gen").addEventListener("click", async () => {
       const out = root.querySelector("#out");
       out.textContent = "生成中…";
+      // 文学/ニュースのトピックは適切な生成プロンプト(area)に振り分け。
+      const field = root.querySelector("#field").value;
+      let genArea = area;
+      if (field.startsWith("文学(")) genArea = "literature";
+      else if (field.startsWith("ニュース(")) genArea = "news";
       const r = await api.post("/api/learn/generate", {
-        area, field: root.querySelector("#field").value,
+        area: genArea, field,
         instruction: root.querySelector("#inst").value,
       });
       if (!r.ok) { out.textContent = r.error; return; }
@@ -874,19 +879,20 @@ function materialView(title, sub, area, fields) {
   };
 }
 
-export const reading = materialView(
-  "リーディング", "分野別の長文と理解問題をAIが生成します。", "reading",
-  ["一般", "新聞", "雑誌", "ビジネスメール", "技術文書", "API仕様書",
-   "エラーメッセージ", "歴史", "文化"]);
-
-export const news = (root) => materialView(
-  "ニュース英語", "最新トピック風の記事を分野別に生成します。", "news",
-  state.taxonomy.news_fields.length ? state.taxonomy.news_fields
-    : ["政治", "経済", "AI", "IT"])(root);
-
-export const literature = materialView(
-  "文学", "古典・英文学の抜粋と語彙解説を生成します。", "literature",
-  ["Shakespeare", "英文学", "古典文学"]);
+// リーディングに「文学」「ニュース」も統合（独立タブは廃止）。
+export const reading = (root) => materialView(
+  "リーディング",
+  "分野別の長文（文学・ニュースも含む）と理解問題をAIが生成します。",
+  "reading",
+  [
+    "一般", "新聞", "雑誌", "ビジネスメール", "技術文書", "API仕様書",
+    "エラーメッセージ", "歴史", "文化",
+    "文学(シェイクスピア)", "文学(英文学)", "文学(古典)",
+    ...(state.taxonomy.news_fields.length
+      ? state.taxonomy.news_fields.map((f) => "ニュース(" + f + ")")
+      : ["ニュース(政治)", "ニュース(経済)", "ニュース(AI)",
+         "ニュース(IT)"]),
+  ])(root);
 
 // --- Writing ----------------------------------------------------------------
 
@@ -1161,6 +1167,8 @@ export async function listening(root) {
         <select id="topic">${topics.map((t) =>
           `<option value="${t.id}">${t.source} / ${t.accent} (理解度${t.comprehension})</option>`
         ).join("")}</select>
+        <input id="theme" placeholder="テーマ(任意): 文学/ニュース/ビジネス等"
+          style="width:220px" />
         <label class="toggle">速度
           <input type="range" id="rate" min="0.6" max="1.2" step="0.05" value="0.95" />
         </label>
@@ -1180,8 +1188,11 @@ export async function listening(root) {
     const sel = root.querySelector("#topic");
     const label = sel.options[sel.selectedIndex].textContent;
     const out = root.querySelector("#out"); out.textContent = "生成中…";
-    const r = await api.post("/api/learn/generate",
-      { area: "listening", field: label, instruction: "会話形式のスクリプト" });
+    const theme = root.querySelector("#theme").value.trim();
+    const r = await api.post("/api/learn/generate", {
+      area: "listening", field: theme ? `${label}・${theme}` : label,
+      instruction: "会話形式のスクリプト" + (theme ? `（テーマ: ${theme}）` : ""),
+    });
     if (!r.ok) { out.textContent = r.error; return; }
     scriptText = r.body; out.innerHTML = md(r.body);
     const play = el(`<button class="btn mt">🔊 再生</button>`);
