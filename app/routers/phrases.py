@@ -12,11 +12,14 @@ from pydantic import BaseModel, Field
 from ..database import db
 from ..services.spaced_repetition import (
     MASTERED_THRESHOLD,
+    clamp,
     record_attempt,
     selection_weight,
     select_for_review,
     set_known,
 )
+
+VAGUE_BONUS = 10  # 「うろ覚え」ボタンで加点する mastery
 
 router = APIRouter(prefix="/api/phrases", tags=["phrases"])
 
@@ -120,6 +123,22 @@ def mark_known(phrase_id: int, payload: KnownIn):
             raise HTTPException(404, "フレーズが見つかりません")
         new = set_known(conn, phrase_id, payload.known, table="phrases")
     return {"ok": True, "mastery": new, "known": payload.known}
+
+
+@router.post("/{phrase_id}/vague")
+def mark_vague(phrase_id: int):
+    """「うろ覚え」ボタン: mastery を +10（0..200でクランプ）。"""
+    with db() as conn:
+        row = conn.execute(
+            "SELECT mastery FROM phrases WHERE id = ?", (phrase_id,)
+        ).fetchone()
+        if not row:
+            raise HTTPException(404, "フレーズが見つかりません")
+        new = clamp(row["mastery"] + VAGUE_BONUS)
+        conn.execute(
+            "UPDATE phrases SET mastery = ? WHERE id = ?", (new, phrase_id)
+        )
+    return {"ok": True, "mastery": new}
 
 
 @router.delete("/{phrase_id}", status_code=204)
