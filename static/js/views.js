@@ -327,6 +327,14 @@ function lengthSelect(id) {
     <option value="5">長さ: 長文(約2分)</option></select>`;
 }
 
+// 内容理解問題の見出し以降を取り除く（保存はフル、表示だけ問題を隠す用）。
+function stripQuestions(body) {
+  const m = (body || "").match(
+    /^#{1,6}\s*.*(Comprehension|内容理解|理解問題|設問|Questions).*$/im);
+  return (m && m.index != null)
+    ? body.slice(0, m.index).trimEnd() : body;
+}
+
 // 速度モード → sayItem オプション。learn音声/native音声＋再生速度を決める。
 //   slow=学習ゆっくり / std=学習標準 / native=ネイティブ音声(自然な速さ)
 function speedOpts(mode) {
@@ -931,7 +939,9 @@ function materialView(title, sub, area, fields, histAreas) {
           <select id="field">${fields.map((f) =>
             `<option>${f}</option>`).join("")}</select>
           ${lengthSelect("flen")}
-          <input id="inst" placeholder="追加指示(任意)" style="width:200px" />
+          <label class="toggle" title="内容理解問題を表示(常に生成・保存)">
+            <input type="checkbox" id="showQ" checked /> 内容理解問題</label>
+          <input id="inst" placeholder="追加指示(任意)" style="width:160px" />
           <button class="btn" id="gen" ${state.aiEnabled ? "" : "disabled"}>
             生成</button>
           <button class="btn ghost" id="histBtn">📚 履歴</button>
@@ -940,13 +950,16 @@ function materialView(title, sub, area, fields, histAreas) {
       <div id="histPanel" class="card" style="display:none"></div>
       <div class="card"><div id="out" class="md">
         左上で分野を選んで「生成」を押してください。</div></div>`;
+    // 内容理解問題トグル: OFFなら表示・読み上げから問題部分を除く（保存はフル）。
+    const disp = (b) =>
+      root.querySelector("#showQ").checked ? b : stripQuestions(b);
     const showInto = (body) => {
       const out = root.querySelector("#out");
       out.innerHTML = "";
-      out.appendChild(readAloudBar(() => body));
-      const b = el(`<div class="md mt"></div>`); b.innerHTML = md(body);
+      out.appendChild(readAloudBar(() => disp(body)));
+      const b = el(`<div class="md mt"></div>`); b.innerHTML = md(disp(body));
       out.appendChild(b);
-      out.appendChild(readAloudBar(() => body));
+      out.appendChild(readAloudBar(() => disp(body)));
     };
     const panel = root.querySelector("#histPanel");
     root.querySelector("#histBtn").addEventListener("click", () => {
@@ -970,12 +983,7 @@ function materialView(title, sub, area, fields, histAreas) {
           + root.querySelector("#inst").value,
       });
       if (!r.ok) { out.textContent = r.error; return; }
-      out.innerHTML = "";
-      out.appendChild(readAloudBar(() => r.body)); // controls at top
-      const body = el(`<div class="md mt"></div>`);
-      body.innerHTML = md(r.body);
-      out.appendChild(body);
-      out.appendChild(readAloudBar(() => r.body)); // and at bottom
+      showInto(r.body);   // disp() で問題トグルを反映
       refreshCost();
     });
   };
@@ -1282,6 +1290,8 @@ export async function listening(root) {
         <label class="toggle">速度
           <input type="range" id="rate" min="0.6" max="1.2" step="0.05" value="0.95" />
         </label>
+        <label class="toggle" title="内容理解問題を表示(常に生成・保存)">
+          <input type="checkbox" id="showQ" checked /> 内容理解問題</label>
         <button class="btn" id="gen" ${state.aiEnabled ? "" : "disabled"}>
           スクリプト生成</button>
         <button class="btn ghost" id="histBtn">📚 履歴</button>
@@ -1296,15 +1306,19 @@ export async function listening(root) {
       </div>
     </div>`;
   let scriptText = "";
+  // 内容理解問題トグル＋読み上げは英語のみ(englishOnly)で統一。
+  const lDisp = (b) =>
+    root.querySelector("#showQ").checked ? b : stripQuestions(b);
+  const lSpeak = (b) => speech.speak(englishOnly(lDisp(b)),
+    { rate: parseFloat(root.querySelector("#rate").value) });
   {
     const panel = root.querySelector("#histPanel");
     const showInto = (body) => {
       scriptText = body;
       const out = root.querySelector("#out");
-      out.innerHTML = md(body);
+      out.innerHTML = md(lDisp(body));
       const play = el(`<button class="btn mt">🔊 再生</button>`);
-      play.addEventListener("click", () => speech.speak(body,
-        { rate: parseFloat(root.querySelector("#rate").value) }));
+      play.addEventListener("click", () => lSpeak(body));
       out.appendChild(play);
     };
     root.querySelector("#histBtn").addEventListener("click", () => {
@@ -1351,10 +1365,9 @@ export async function listening(root) {
     }
     const r = await api.post("/api/learn/generate", body);
     if (!r.ok) { out.textContent = r.error; return; }
-    scriptText = r.body; out.innerHTML = md(r.body);
+    scriptText = r.body; out.innerHTML = md(lDisp(r.body));
     const play = el(`<button class="btn mt">🔊 再生</button>`);
-    play.addEventListener("click", () => speech.speak(scriptText,
-      { rate: parseFloat(root.querySelector("#rate").value) }));
+    play.addEventListener("click", () => lSpeak(scriptText));
     out.appendChild(play);
     refreshCost();
   });
