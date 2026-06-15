@@ -18,6 +18,7 @@ from ..services.spaced_repetition import (
     select_for_review,
     set_known,
 )
+from .vocabulary import LEVEL_ORDER, OUT_OF_RANGE, _level_range
 
 VAGUE_BONUS = 10  # 「うろ覚え」ボタンで加点する mastery
 
@@ -58,6 +59,9 @@ def list_phrases(
     scene: str | None = None,
     sort: str = "mastery",
     desc: bool = False,            # 降順にするか（昇順/降順トグル）
+    level_min: str | None = None,
+    level_max: str | None = None,
+    out_of_range: bool = False,
     include_banned: bool = False,
     mastered: str | None = None,   # 'only' | 'hide' | None(=全部)
 ):
@@ -77,8 +81,24 @@ def list_phrases(
     if scene:
         conds.append("scene = ?")
         params.append(scene)
+    if level_min or level_max:
+        allowed = _level_range(level_min, level_max)
+        ph = ",".join("?" * len(allowed))
+        cond = f"COALESCE(level, '') IN ({ph})"
+        p = list(allowed)
+        if out_of_range:
+            cond = f"({cond} OR COALESCE(level, '') = ?)"
+            p.append(OUT_OF_RANGE)
+        conds.append(cond)
+        params += p
     if not include_banned:
-        conds.append("COALESCE(scene, '') NOT LIKE '禁止%'")
+        if out_of_range:
+            conds.append(
+                "(COALESCE(scene, '') NOT LIKE '禁止%' "
+                "OR COALESCE(level, '') = ?)")
+            params.append(OUT_OF_RANGE)
+        else:
+            conds.append("COALESCE(scene, '') NOT LIKE '禁止%'")
     if mastered == "only":
         conds.append(f"mastery >= {MASTERED_THRESHOLD}")
     elif mastered == "hide":
@@ -89,6 +109,18 @@ def list_phrases(
             f"SELECT * FROM phrases{where} ORDER BY {order}", params
         ).fetchall()
         return [_phrase_dict(r) for r in rows]
+
+
+@router.get("/facets")
+def facets():
+    """フィルタUI用: レベル範囲の選択肢（細スケール順・範囲外を除く）。"""
+    with db() as conn:
+        present = {
+            r["level"] for r in conn.execute(
+                "SELECT DISTINCT level FROM phrases WHERE COALESCE(level,'')<>''"
+            ).fetchall()
+        }
+    return {"range_levels": [lv for lv in LEVEL_ORDER if lv in present]}
 
 
 @router.get("/scenes")

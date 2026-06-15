@@ -47,6 +47,7 @@ class GenerateIn(BaseModel):
     area: str  # news / reading / literature / conversation / writing / listening
     field: str = ""
     instruction: str = ""
+    difficulty: str = ""   # 例: "中級(TOEIC 600)"。空ならおまかせ。
 
 
 class WritingFeedbackIn(BaseModel):
