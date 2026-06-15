@@ -64,6 +64,10 @@ export function md(text) {
     } else if (/^\s*[-*]\s+/.test(line)) {
       if (!inList) { out.push("<ul>"); inList = true; }
       out.push("<li>" + line.replace(/^\s*[-*]\s+/, "") + "</li>");
+    } else if (line.trim() === "") {
+      // 連続する空行は1つの改行に集約（縦に伸びすぎないように）。
+      if (inList) { out.push("</ul>"); inList = false; }
+      if (out.length && out[out.length - 1] !== "<br/>") out.push("<br/>");
     } else {
       if (inList) { out.push("</ul>"); inList = false; }
       out.push(line + "<br/>");
