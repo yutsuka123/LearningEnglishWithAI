@@ -18,7 +18,18 @@ import sqlite3
 from ..config import load_settings, paths
 
 VALID_TYPES = ("word", "phrase")
-VALID_KINDS = ("word", "example", "phrase")
+# 基本種別。速度(native)は kind に "_native" を付けて区別する
+# （例: phrase / phrase_native / example / example_native）。
+VALID_KINDS = (
+    "word", "example", "phrase",
+    "example_native", "phrase_native",
+)
+
+
+def storage_kind(kind: str, speed: str) -> str:
+    """基本種別＋速度 → 保存用の種別文字列。learn は無印、native は _native。"""
+    base = kind if kind in ("word", "example", "phrase") else "phrase"
+    return base if speed != "native" else f"{base}_native"
 
 
 def _audio_dir():

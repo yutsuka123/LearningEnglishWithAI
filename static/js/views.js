@@ -72,6 +72,19 @@ function englishOnly(text) {
   return (en.length ? en.join(" ") : text).slice(0, 3500);
 }
 
+// 読み上げ速度の共通コントロール（playbackRate を全再生に適用・音程不変）。
+// 一度設定すると localStorage に保存され、会話など他の読み上げにも効く。
+function playbackSpeedControl() {
+  const sel = el(`<select title="読み上げ速度">
+    <option value="1">速度: 標準</option>
+    <option value="0.8">速度: ゆっくり</option>
+    <option value="1.2">速度: 速い(native寄り)</option></select>`);
+  sel.value = String(speech.getPlaybackRate());
+  sel.addEventListener("change", () =>
+    speech.setPlaybackRate(parseFloat(sel.value) || 1));
+  return sel;
+}
+
 // A reusable 🔊読み上げ / ⏹停止 control bar for generated material.
 function readAloudBar(getText) {
   const bar = el(`<div class="row mt"></div>`);
@@ -79,7 +92,7 @@ function readAloudBar(getText) {
   const stop = el(`<button class="btn ghost">⏹ 停止</button>`);
   play.addEventListener("click", () => speech.speak(englishOnly(getText())));
   stop.addEventListener("click", () => speech.stopSpeaking());
-  bar.append(play, stop);
+  bar.append(play, stop, playbackSpeedControl());
   return bar;
 }
 
@@ -297,18 +310,74 @@ function voiceButtons(getText) {
   return cell;
 }
 
+// 速度モード → sayItem オプション。learn音声/native音声＋再生速度を決める。
+//   slow=学習ゆっくり / std=学習標準 / native=ネイティブ音声(自然な速さ)
+function speedOpts(mode) {
+  if (mode === "native") return { speed: "native", rate: 1.0 };
+  if (mode === "slow") return { speed: "learn", rate: 0.8 };
+  return { speed: "learn", rate: 1.0 };
+}
+
 // 番号(ID)で再生する2ボタン。保存済みなら無料、無ければ合成して保存し
 // 次回から無料。fallback はTTS不可時にブラウザ音声で読む英文。
-function voiceButtonsItem(itemType, id, kind, fallback) {
+// getMode() は 'slow'|'std'|'native' を返す（省略時 'std'）。
+function voiceButtonsItem(itemType, id, kind, fallback, getMode) {
   const cell = el(`<div class="voice-cell">
     <button class="btn voice-m" title="男性の声 (ash)">🔊</button>
     <button class="btn voice-f" title="女性の声 (nova)">🔊</button></div>`);
   const [m, f] = cell.querySelectorAll("button");
-  m.addEventListener("click", () =>
-    speech.sayItem(itemType, id, kind, MALE_VOICE, fallback()));
-  f.addEventListener("click", () =>
-    speech.sayItem(itemType, id, kind, FEMALE_VOICE, fallback()));
+  const play = (voice) => speech.sayItem(
+    itemType, id, kind, voice, fallback(),
+    speedOpts(getMode ? getMode() : "std"));
+  m.addEventListener("click", () => play(MALE_VOICE));
+  f.addEventListener("click", () => play(FEMALE_VOICE));
   return cell;
+}
+
+// --- ページネーション（1ページ50件 標準）---------------------------------
+
+// 表示件数セレクト（20/50/100/500/全件、既定50）。value は数値 or 'all'。
+function pageSizeSelect(id) {
+  return `<select id="${id}" title="1ページの表示件数">
+    <option value="20">20件/ページ</option>
+    <option value="50" selected>50件/ページ</option>
+    <option value="100">100件/ページ</option>
+    <option value="500">500件/ページ</option>
+    <option value="all">全件</option></select>`;
+}
+
+// list を page/size で切り出す。size='all' は全件。
+function pageSlice(list, page, size) {
+  if (size === "all") return { slice: list, page: 0, pages: 1 };
+  const n = parseInt(size, 10) || 50;
+  const pages = Math.max(1, Math.ceil(list.length / n));
+  const p = Math.min(Math.max(0, page), pages - 1);
+  return { slice: list.slice(p * n, p * n + n), page: p, pages };
+}
+
+// 前/次ページのバーを作る。
+function pagerBar(total, page, pages, onPrev, onNext) {
+  const bar = el(`<div class="row pager"></div>`);
+  const prev = el(`<button class="btn ghost">← 前</button>`);
+  const next = el(`<button class="btn ghost">次 →</button>`);
+  const info = el(`<span class="muted">${pages > 1
+    ? page + 1 + " / " + pages + " ページ ・ " : ""}全 ${total} 件</span>`);
+  prev.disabled = page <= 0;
+  next.disabled = page >= pages - 1;
+  prev.addEventListener("click", onPrev);
+  next.addEventListener("click", onNext);
+  bar.append(prev, info, next);
+  return bar;
+}
+
+// 速度セレクト（ゆっくり/標準/ネイティブ）。value は slow/std/native。
+// withNative=false で「ネイティブ」を出さない（単語は native音声が無い）。
+function speedSelect(id, withNative = true) {
+  const nat = withNative
+    ? `<option value="native">速度: ネイティブ</option>` : "";
+  return `<select id="${id}" title="再生速度">
+    <option value="std">速度: 標準(学習)</option>
+    <option value="slow">速度: ゆっくり</option>${nat}</select>`;
 }
 
 // 習熟度バー: 色＋サイズで段階を表す（全長は従来の約半分）。
@@ -401,10 +470,12 @@ function showWordExample(w) {
     const exLine = el(`<p>${w.example
       ? "例文: " + escapeHtml(w.example) : "（例文なし）"}</p>`);
     body.appendChild(exLine);
+    const speedRow = el(`<div class="row">${speedSelect("exSpeed")}</div>`);
+    const getMode = () => body.querySelector("#exSpeed").value;
     const tools = el(`<div class="row"></div>`);
     if (w.example) {
       tools.appendChild(voiceButtonsItem(
-        "word", w.id, "example", () => w.example));
+        "word", w.id, "example", () => w.example, getMode));
     } else {
       const gen = el(`<button class="btn ghost">📝 例文を作る(AI)</button>`);
       gen.addEventListener("click", async () => {
@@ -416,14 +487,14 @@ function showWordExample(w) {
             exLine.textContent = "例文: " + r.english;
             tools.innerHTML = "";
             tools.appendChild(voiceButtonsItem(
-              "word", w.id, "example", () => w.example));
+              "word", w.id, "example", () => w.example, getMode));
             refreshCost();
           } else { exLine.textContent = r.error || "生成失敗"; }
         } catch (e) { exLine.textContent = "生成失敗"; }
       });
       tools.appendChild(gen);
     }
-    body.appendChild(tools);
+    body.append(speedRow, tools);
   });
 }
 
@@ -482,6 +553,8 @@ export async function vocab(root) {
           <option value="hide">覚えた: 隠す</option>
           <option value="only">覚えた: のみ</option>
         </select>
+        ${speedSelect("wSpeed", false)}
+        ${pageSizeSelect("wPage")}
         <label class="toggle" title="禁止用語(注意喚起)を一覧に表示">
           <input type="checkbox" id="showBanned" ${showBanned() ? "checked" : ""} />
           🔞 禁止用語も表示</label>
@@ -490,14 +563,29 @@ export async function vocab(root) {
         <th>再生</th><th>英語</th><th>日本語</th><th>Lv</th><th>分野</th>
         <th>習熟度</th><th>正答率</th><th>操作</th></tr></thead>
         <tbody id="rows"></tbody></table>
+      <div id="pager" class="mt"></div>
     </div>`;
 
   const rowsBody = root.querySelector("#rows");
   const title = root.querySelector("#listTitle");
   const kw = root.querySelector("#kw");
+  const pagerEl = root.querySelector("#pager");
+  let curWords = [];
+  let wPage = 0;
+
+  const paint = () => {
+    const size = root.querySelector("#wPage").value;
+    const { slice, page, pages } = pageSlice(curWords, wPage, size);
+    wPage = page;
+    title.textContent = `単語一覧 (${curWords.length})`;
+    renderTable(slice);
+    pagerEl.innerHTML = "";
+    pagerEl.appendChild(pagerBar(curWords.length, page, pages,
+      () => { wPage = page - 1; paint(); },
+      () => { wPage = page + 1; paint(); }));
+  };
 
   const renderTable = (words) => {
-    title.textContent = `単語一覧 (${words.length})`;
     rowsBody.innerHTML = "";
     words.forEach((w) => {
       const tr = el(`<tr>
@@ -513,7 +601,8 @@ export async function vocab(root) {
       </tr>`);
       // 番号(ID)で再生。保存済みなら無料、無ければ合成して保存。
       tr.firstElementChild.appendChild(voiceButtonsItem(
-        "word", w.id, "word", () => w.english));
+        "word", w.id, "word", () => w.english,
+        () => root.querySelector("#wSpeed").value));
       const ops = tr.querySelector("td:last-child .ops-cell");
       const mc = tr.querySelector("[data-mc]");
       const ex = el(`<button class="btn good">例文</button>`);
@@ -540,12 +629,17 @@ export async function vocab(root) {
     if (showBanned()) q.set("include_banned", "true");
     const words = await api.get("/api/words?" + q.toString());
     const term = kw.value.trim().toLowerCase();
-    renderTable(term ? words.filter((w) =>
+    curWords = term ? words.filter((w) =>
       w.english.toLowerCase().includes(term)
-      || (w.japanese || "").toLowerCase().includes(term)) : words);
+      || (w.japanese || "").toLowerCase().includes(term)) : words;
+    wPage = 0;
+    paint();
   };
   ["#fDomain", "#fLevel", "#fSort", "#fMastered"].forEach((id) =>
     root.querySelector(id).addEventListener("change", load));
+  root.querySelector("#wPage").addEventListener("change", () => {
+    wPage = 0; paint();
+  });
   root.querySelector("#showBanned").addEventListener("change", (e) => {
     setShowBanned(e.target.checked); load();
   });
@@ -637,17 +731,34 @@ export async function phrases(root) {
           <option value="hide">覚えた: 隠す</option>
           <option value="only">覚えた: のみ</option>
         </select>
+        ${speedSelect("pSpeed")}
+        ${pageSizeSelect("pPage")}
       </div>
       <table class="mt"><thead><tr><th>再生</th><th>英語</th><th>日本語</th>
         <th>シーン</th><th>習熟度</th><th>操作</th></tr></thead>
         <tbody id="rows"></tbody></table>
+      <div id="pager" class="mt"></div>
     </div>`;
 
   const title = root.querySelector("#listTitle");
   const kw = root.querySelector("#kw");
+  const pagerEl = root.querySelector("#pager");
+  let curList = [];
+  let pPage = 0;
+
+  const paint = () => {
+    const size = root.querySelector("#pPage").value;
+    const { slice, page, pages } = pageSlice(curList, pPage, size);
+    pPage = page;
+    title.textContent = `一覧 (${curList.length})`;
+    renderRows(slice);
+    pagerEl.innerHTML = "";
+    pagerEl.appendChild(pagerBar(curList.length, page, pages,
+      () => { pPage = page - 1; paint(); },
+      () => { pPage = page + 1; paint(); }));
+  };
 
   const renderRows = (items) => {
-    title.textContent = `一覧 (${items.length})`;
     const rows = root.querySelector("#rows"); rows.innerHTML = "";
     items.forEach((p) => {
       const tr = el(`<tr>
@@ -659,7 +770,8 @@ export async function phrases(root) {
         <td><div class="ops-cell"></div></td>
       </tr>`);
       tr.firstElementChild.appendChild(voiceButtonsItem(
-        "phrase", p.id, "phrase", () => p.english));
+        "phrase", p.id, "phrase", () => p.english,
+        () => root.querySelector("#pSpeed").value));
       const ops = tr.querySelector("td:last-child .ops-cell");
       const mc = tr.querySelector("[data-mc]");
       const known = knownButton("/api/phrases", p,
@@ -671,7 +783,7 @@ export async function phrases(root) {
       rows.appendChild(tr);
     });
   };
-  renderRows(list);
+  curList = list; pPage = 0; paint();
 
   // シーン・並び替え・禁止表示はサーバ側、キーワードはクライアント側。
   const load = async () => {
@@ -683,13 +795,18 @@ export async function phrases(root) {
     if (showBanned()) q.set("include_banned", "true");
     const items = await api.get("/api/phrases?" + q.toString());
     const term = kw.value.trim().toLowerCase();
-    renderRows(term ? items.filter((p) =>
+    curList = term ? items.filter((p) =>
       p.english.toLowerCase().includes(term)
-      || (p.japanese || "").toLowerCase().includes(term)) : items);
+      || (p.japanese || "").toLowerCase().includes(term)) : items;
+    pPage = 0;
+    paint();
   };
   root.querySelector("#scene").addEventListener("change", load);
   root.querySelector("#fSort").addEventListener("change", load);
   root.querySelector("#fMastered").addEventListener("change", load);
+  root.querySelector("#pPage").addEventListener("change", () => {
+    pPage = 0; paint();
+  });
   // 禁止表示の切替はシーン候補も変わるので画面を作り直す。
   root.querySelector("#showBanned").addEventListener("change", (e) => {
     setShowBanned(e.target.checked); go("phrases");

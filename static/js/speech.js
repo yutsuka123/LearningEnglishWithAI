@@ -115,7 +115,7 @@ function browserSpeak(text, opts = {}) {
     ? voices.find((v) => v.name === currentVoiceName) : null;
   if (chosen) { u.voice = chosen; u.lang = chosen.lang; }
   else u.lang = "en-US";
-  u.rate = opts.rate || 0.95;
+  u.rate = opts.rate || playbackRate || 0.95;
   synth.speak(u);
 }
 
@@ -135,7 +135,7 @@ export async function say(text, opts = {}) {
     const blob = await res.blob();
     stopSpeaking();
     audioEl = new Audio(URL.createObjectURL(blob));
-    audioEl.playbackRate = opts.rate || 1;
+    audioEl.playbackRate = opts.rate || playbackRate;
     await audioEl.play();
     if (usageCb) usageCb();
   } catch (e) {
@@ -159,7 +159,7 @@ export async function sayWithVoice(text, voice, opts = {}) {
     const blob = await res.blob();
     stopSpeaking();
     audioEl = new Audio(URL.createObjectURL(blob));
-    audioEl.playbackRate = opts.rate || 1;
+    audioEl.playbackRate = opts.rate || playbackRate;
     await audioEl.play();
     if (usageCb) usageCb();
   } catch (e) {
@@ -167,17 +167,30 @@ export async function sayWithVoice(text, voice, opts = {}) {
   }
 }
 
+// Global playback speed (再生速度ボタン用)。音程は変えず速さだけ変える。
+let playbackRate = parseFloat(localStorage.getItem("playbackRate") || "1") || 1;
+export function getPlaybackRate() { return playbackRate; }
+export function setPlaybackRate(r) {
+  playbackRate = r;
+  localStorage.setItem("playbackRate", String(r));
+  if (audioEl) audioEl.playbackRate = r;
+}
+
 // Play by item 番号(ID): the server returns saved audio for free (no token)
 // or synthesizes once and saves it, so 2回目以降は無料。Falls back to the
 // browser voice when natural TTS is off / AI is unavailable / the call fails.
 //   itemType: 'word' | 'phrase', kind: 'word' | 'example' | 'phrase'
-export async function sayItem(itemType, id, kind, voice, fallbackText, opts = {}) {
+//   speed: 'learn'(学習・ゆっくり明瞭) | 'native'(自然な速さ) — 別音声を取得
+export async function sayItem(
+  itemType, id, kind, voice, fallbackText, opts = {}
+) {
   if (!(isNatural() && aiEnabled)) {
     if (fallbackText) browserSpeak(fallbackText, opts);
     return;
   }
   const q = new URLSearchParams({
     item_type: itemType, item_id: id, kind, voice,
+    speed: opts.speed || "learn",
   });
   try {
     const res = await fetch("/api/learn/tts/item?" + q.toString());
@@ -185,7 +198,7 @@ export async function sayItem(itemType, id, kind, voice, fallbackText, opts = {}
     const blob = await res.blob();
     stopSpeaking();
     audioEl = new Audio(URL.createObjectURL(blob));
-    audioEl.playbackRate = opts.rate || 1;
+    audioEl.playbackRate = opts.rate || playbackRate;
     await audioEl.play();
     if (usageCb) usageCb();
   } catch (e) {

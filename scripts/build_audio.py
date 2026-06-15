@@ -37,14 +37,16 @@ def _total_cost(conn) -> float:
     )
 
 
-def _gen_one(conn, item_type, item_id, kind, text, voices) -> tuple[int, str]:
+def _gen_one(conn, item_type, item_id, skind, style, text, voices, force):
     """Ensure audio exists for each voice. Returns (made, status).
     status: 'ok' / 'cap'（上限到達で中断）/ 'aierr'（AI不可で中断）。"""
     made = 0
     for v in voices:
-        if audio_store.get(conn, item_type, item_id, kind, v) is not None:
+        if not force and audio_store.get(
+                conn, item_type, item_id, skind, v) is not None:
             continue  # 既に保存済み → スキップ（無料）
-        audio, err = ai.synthesize_speech(text, v, rate_limit=False)
+        audio, err = ai.synthesize_speech(
+            text, v, style=style, rate_limit=False)
         if err:
             if "上限" in err:
                 return made, "cap"
@@ -52,12 +54,13 @@ def _gen_one(conn, item_type, item_id, kind, text, voices) -> tuple[int, str]:
                 return made, "aierr"
             # その他(一時的エラー等)はこの声だけ飛ばす
             continue
-        audio_store.put(conn, item_type, item_id, kind, v, audio)
+        audio_store.put(conn, item_type, item_id, skind, v, audio)
         made += 1
     return made, "ok"
 
 
-def _process(conn, label, item_type, kind, rows, text_key, limit, voices):
+def _process(conn, label, item_type, skind, style, rows, text_key,
+             limit, voices, force):
     """rows を順に処理し、未生成分の音声を limit 件まで作る。
     Returns (done, files, status)。status: 'ok'/'cap'/'aierr'。"""
     done = files = 0
@@ -67,10 +70,12 @@ def _process(conn, label, item_type, kind, rows, text_key, limit, voices):
         text = (r[text_key] or "").strip()
         if not text:
             continue
-        if all(audio_store.get(conn, item_type, r["id"], kind, v) is not None
-               for v in voices):
+        if not force and all(
+                audio_store.get(conn, item_type, r["id"], skind, v)
+                is not None for v in voices):
             continue  # 全声そろい済み → 次の未生成へ
-        made, st = _gen_one(conn, item_type, r["id"], kind, text, voices)
+        made, st = _gen_one(
+            conn, item_type, r["id"], skind, style, text, voices, force)
         files += made
         if st != "ok":
             return done, files, st
@@ -90,6 +95,10 @@ def main() -> int:
     ap.add_argument("--examples", type=int, default=0)
     ap.add_argument("--all", action="store_true",
                     help="単語/例文/フレーズを全件（件数指定を無視）")
+    ap.add_argument("--native", action="store_true",
+                    help="フレーズ/例文に native速度版も生成（学習+native）")
+    ap.add_argument("--force", action="store_true",
+                    help="保存済みも上書き再生成（品質作り直し用）")
     ap.add_argument("--voices", default="ash,nova")
     args = ap.parse_args()
     voices = [v.strip() for v in args.voices.split(",") if v.strip()]
@@ -99,40 +108,48 @@ def main() -> int:
         print("OPENAI_API_KEY が未設定のため音声生成できません。")
         return 1
 
-    # (label, item_type, kind, SQL, text_key, limit)
+    W_SQL = "SELECT id, english FROM words ORDER BY level ASC, id ASC"
+    EX_SQL = ("SELECT id, example FROM words "
+              "WHERE COALESCE(TRIM(example), '') <> '' "
+              "ORDER BY level ASC, id ASC")
+    P_SQL = "SELECT id, english FROM phrases ORDER BY id ASC"
+    # (label, item_type, base_kind, speed, SQL, text_key, limit)
     jobs = [
-        ("単語", "word", "word",
-         "SELECT id, english FROM words ORDER BY level ASC, id ASC",
-         "english", lim(args.words)),
-        ("例文", "word", "example",
-         "SELECT id, example FROM words "
-         "WHERE COALESCE(TRIM(example), '') <> '' "
-         "ORDER BY level ASC, id ASC",
-         "example", lim(args.examples)),
-        ("フレーズ", "phrase", "phrase",
-         "SELECT id, english FROM phrases ORDER BY id ASC",
-         "english", lim(args.phrases)),
+        ("単語", "word", "word", "learn", W_SQL, "english", lim(args.words)),
+        ("例文", "word", "example", "learn", EX_SQL, "example",
+         lim(args.examples)),
+        ("フレーズ", "phrase", "phrase", "learn", P_SQL, "english",
+         lim(args.phrases)),
     ]
+    if args.native:  # フレーズ/例文の native速度版
+        jobs += [
+            ("例文native", "word", "example", "native", EX_SQL, "example",
+             lim(args.examples)),
+            ("フレーズnative", "phrase", "phrase", "native", P_SQL,
+             "english", lim(args.phrases)),
+        ]
 
     results = {}
     stopped = None
     with db() as conn:
         start_cost = _total_cost(conn)
-        for label, item_type, kind, sql, key, limit in jobs:
+        for label, item_type, base, speed, sql, key, limit in jobs:
             if stopped is not None or (limit is not None and limit <= 0):
                 results[label] = (0, 0)
                 continue
+            skind = audio_store.storage_kind(base, speed)
             rows = conn.execute(sql).fetchall()
             done, files, st = _process(
-                conn, label, item_type, kind, rows, key, limit, voices)
+                conn, label, item_type, skind, speed, rows, key, limit,
+                voices, args.force)
             results[label] = (done, files)
             if st != "ok":
                 stopped = st
         end_cost = _total_cost(conn)
 
     print("---")
-    print(f"声: {voices}")
-    for label in ("単語", "例文", "フレーズ"):
+    print(f"声: {voices}  force={args.force} native={args.native}")
+    for label, *_ in jobs:
         d, f = results.get(label, (0, 0))
         print(f"{label}: +{d} / +{f}ファイル")
     print(f"今回の概算費用: ${end_cost - start_cost:.4f}")
