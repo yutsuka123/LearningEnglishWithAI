@@ -79,8 +79,9 @@ def list_words(
 
 
 @router.get("/facets")
-def facets():
-    """フィルタUI用の分野(domain)・レベル(level)の選択肢一覧。"""
+def facets(include_banned: bool = False):
+    """フィルタUI用の分野(domain)・レベル(level)の選択肢一覧。
+    include_banned=true のとき「禁止用語」も分野候補に含める。"""
     with db() as conn:
         domains = [
             r["domain"] for r in conn.execute(
@@ -88,8 +89,9 @@ def facets():
                 "WHERE COALESCE(domain, '') <> '' ORDER BY domain"
             ).fetchall()
         ]
-        # 禁止用語は通常フィルタには出さない（表示トグルで明示的に出す）。
-        domains = [d for d in domains if d != BANNED_DOMAIN]
+        # 既定では禁止用語を分野候補から除外（表示トグルONなら含める）。
+        if not include_banned:
+            domains = [d for d in domains if d != BANNED_DOMAIN]
         levels = [
             r["level"] for r in conn.execute(
                 "SELECT DISTINCT level FROM words "

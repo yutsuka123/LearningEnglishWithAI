@@ -499,7 +499,8 @@ function showWordExample(w) {
 }
 
 export async function vocab(root) {
-  const facets = await api.get("/api/words/facets");
+  const facets = await api.get(
+    "/api/words/facets" + (showBanned() ? "?include_banned=true" : ""));
   root.innerHTML = `
     <h1>英単語</h1>
     <p class="sub">両方向(英→日 / 日→英)で出題。習熟度・正答率・忘却曲線を管理。</p>
@@ -640,8 +641,9 @@ export async function vocab(root) {
   root.querySelector("#wPage").addEventListener("change", () => {
     wPage = 0; paint();
   });
+  // 禁止表示の切替で分野フィルタの候補(禁止用語)も変わるので作り直す。
   root.querySelector("#showBanned").addEventListener("change", (e) => {
-    setShowBanned(e.target.checked); load();
+    setShowBanned(e.target.checked); go("vocab");
   });
   kw.addEventListener("input", load);
   load();
