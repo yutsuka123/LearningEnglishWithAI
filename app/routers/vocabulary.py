@@ -9,11 +9,14 @@ from ..database import db
 from ..schemas import AttemptIn, WordCreate, WordUpdate
 from ..services.spaced_repetition import (
     MASTERED_THRESHOLD,
+    clamp,
     pick_weighted,
     record_attempt,
     selection_weight,
     set_known,
 )
+
+VAGUE_BONUS = 10  # 「うろ覚え」ボタンで加点する mastery
 
 router = APIRouter(prefix="/api/words", tags=["vocabulary"])
 
@@ -29,8 +32,6 @@ def _word_dict(row) -> dict:
     )
     d["accuracy"] = accuracy
     return d
-
-
 
 
 BANNED_DOMAIN = "禁止用語"
@@ -224,6 +225,22 @@ def mark_known(word_id: int, payload: KnownIn):
             raise HTTPException(404, "単語が見つかりません")
         new = set_known(conn, word_id, payload.known, table="words")
     return {"ok": True, "mastery": new, "known": payload.known}
+
+
+@router.post("/{word_id}/vague")
+def mark_vague(word_id: int):
+    """「うろ覚え」ボタン: mastery を +10（0..200でクランプ）。"""
+    with db() as conn:
+        row = conn.execute(
+            "SELECT mastery FROM words WHERE id = ?", (word_id,)
+        ).fetchone()
+        if not row:
+            raise HTTPException(404, "単語が見つかりません")
+        new = clamp(row["mastery"] + VAGUE_BONUS)
+        conn.execute(
+            "UPDATE words SET mastery = ? WHERE id = ?", (new, word_id)
+        )
+    return {"ok": True, "mastery": new}
 
 
 class ImportIn(BaseModel):

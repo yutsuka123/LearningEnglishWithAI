@@ -421,6 +421,22 @@ function knownButton(base, item, onChange) {
   return btn;
 }
 
+// 「うろ覚え」ボタン: 押すと mastery +10。base は /api/words or /api/phrases。
+function vagueButton(base, item, onChange) {
+  const btn = el(`<button class="btn vague-btn"
+    title="うろ覚え（+10ポイント）">うろ覚え</button>`);
+  btn.addEventListener("click", async () => {
+    try {
+      const r = await api.post(`${base}/${item.id}/vague`);
+      item.mastery = r.mastery;
+      item.mastered = item.mastery >= 100;
+      if (onChange) onChange();
+      toast("うろ覚え +10");
+    } catch (e) { toast("更新に失敗しました"); }
+  });
+  return btn;
+}
+
 // 削除ボタン: ゴミ箱マーク＋二重確認。基本は削除させたくないので、押し間違い
 // 防止に他のボタンから少し離し、確認を2段階にする。onDel() は実際の削除処理。
 function deleteButton(name, onDel) {
@@ -592,12 +608,13 @@ export async function vocab(root) {
       const mc = tr.querySelector("[data-mc]");
       const ex = el(`<button class="btn good">例文</button>`);
       ex.addEventListener("click", () => showWordExample(w));
-      const known = knownButton("/api/words", w,
-        () => { mc.innerHTML = masteryCell(w); });
+      const repaint = () => { mc.innerHTML = masteryCell(w); };
+      const vague = vagueButton("/api/words", w, repaint);
+      const known = knownButton("/api/words", w, repaint);
       const del = deleteButton(w.english, async () => {
         await api.del("/api/words/" + w.id); load();
       });
-      ops.append(ex, known, del);
+      ops.append(ex, vague, known, del);
       rowsBody.appendChild(tr);
     });
   };
@@ -728,12 +745,13 @@ export async function phrases(root) {
         () => root.querySelector("#pSpeed").value));
       const ops = tr.querySelector("td:last-child .ops-cell");
       const mc = tr.querySelector("[data-mc]");
-      const known = knownButton("/api/phrases", p,
-        () => { mc.innerHTML = masteryCell(p); });
+      const repaint = () => { mc.innerHTML = masteryCell(p); };
+      const vague = vagueButton("/api/phrases", p, repaint);
+      const known = knownButton("/api/phrases", p, repaint);
       const del = deleteButton(p.english, async () => {
         await api.del("/api/phrases/" + p.id); go("phrases");
       });
-      ops.append(known, del);
+      ops.append(vague, known, del);
       rows.appendChild(tr);
     });
   };
