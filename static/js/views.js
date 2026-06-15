@@ -506,30 +506,7 @@ export async function vocab(root) {
     <p class="sub">両方向(英→日 / 日→英)で出題。習熟度・正答率・忘却曲線を管理。</p>
     <div class="row">
       <button class="btn" id="quiz">クイズ開始 (10語)</button>
-    </div>
-    <div class="card mt">
-      <h2>単語を追加</h2>
-      <div class="row">
-        <input id="en" placeholder="English" />
-        <input id="ja" placeholder="日本語" />
-        <input id="pos" placeholder="品詞" style="width:80px" />
-        <input id="ex" placeholder="例文" style="width:260px" />
-        <button class="btn good" id="add">追加</button>
-      </div>
-    </div>
-    <div class="card">
-      <h2>一括インポート</h2>
-      <p class="muted">「英単語 [タブ/カンマ] 日本語」を1行ずつ貼り付け。
-        番号付きの一覧でもOK。AIが訳を精査し例文を自動生成します。</p>
-      <textarea id="bulk" style="min-height:120px"
-        placeholder="例:\ncompany\t会社\nseveral\tいくつかの"></textarea>
-      <div class="row mt">
-        <label class="toggle"><input type="checkbox" id="genEx" checked />
-          例文をAI生成・訳を精査（要API）</label>
-        <button class="btn" id="imp" ${state.aiEnabled ? "" : ""}>
-          インポート</button>
-      </div>
-      <div id="impOut" class="muted mt"></div>
+      <span class="muted">単語の追加・一括インポートは ⚙️設定 に移動しました。</span>
     </div>
     <div class="card">
       <h2 id="listTitle">単語一覧</h2>
@@ -659,36 +636,6 @@ export async function vocab(root) {
   kw.addEventListener("input", load);
   load();
 
-  root.querySelector("#add").addEventListener("click", async () => {
-    const en = root.querySelector("#en").value.trim();
-    const ja = root.querySelector("#ja").value.trim();
-    if (!en || !ja) { toast("英語と日本語は必須です"); return; }
-    await api.post("/api/words", {
-      english: en, japanese: ja,
-      part_of_speech: root.querySelector("#pos").value,
-      example: root.querySelector("#ex").value,
-    });
-    go("vocab");
-  });
-
-  root.querySelector("#imp").addEventListener("click", async () => {
-    const text = root.querySelector("#bulk").value;
-    if (!text.trim()) { toast("貼り付けてください"); return; }
-    const out = root.querySelector("#impOut");
-    out.textContent = "インポート中…（AI生成は数十秒かかることがあります）";
-    try {
-      const r = await api.post("/api/words/import", {
-        text,
-        generate_examples: root.querySelector("#genEx").checked,
-      });
-      out.textContent =
-        `解析 ${r.parsed} / 追加 ${r.added} / 重複スキップ ${r.skipped}`
-        + ` / 例文生成 ${r.examples}`;
-      refreshCost();
-      setTimeout(() => go("vocab"), 1500);
-    } catch (e) { out.textContent = "失敗: " + e.message; }
-  });
-
   root.querySelector("#quiz").addEventListener("click", async () => {
     const tb = testBanned() ? "&include_banned=true" : "";
     const items = await api.get("/api/words/quiz?limit=10" + tb);
@@ -719,14 +666,8 @@ export async function phrases(root) {
         <input type="checkbox" id="showBanned" ${showBanned() ? "checked" : ""} />
         🔞 禁止用語も表示</label>
     </div>
-    <div class="card mt">
-      <h2>フレーズを追加</h2>
-      <div class="row">
-        <input id="en" placeholder="English" style="width:260px" />
-        <input id="ja" placeholder="日本語" style="width:220px" />
-        <input id="sc" placeholder="シーン" style="width:120px" />
-        <button class="btn good" id="add">追加</button>
-      </div>
+    <div class="row">
+      <span class="muted">フレーズの追加は ⚙️設定 に移動しました。</span>
     </div>
     <div class="card">
       <h2 id="listTitle">一覧 (${list.length})</h2>
@@ -826,14 +767,6 @@ export async function phrases(root) {
   });
   kw.addEventListener("input", load);
 
-  root.querySelector("#add").addEventListener("click", async () => {
-    const en = root.querySelector("#en").value.trim();
-    const ja = root.querySelector("#ja").value.trim();
-    if (!en || !ja) { toast("英語と日本語は必須です"); return; }
-    await api.post("/api/phrases", { english: en, japanese: ja,
-      scene: root.querySelector("#sc").value });
-    go("phrases");
-  });
   root.querySelector("#quiz").addEventListener("click", async () => {
     const tb = testBanned() ? "&include_banned=true" : "";
     const items = await api.get("/api/phrases/quiz?limit=10" + tb);
@@ -1432,6 +1365,37 @@ export async function settings(root) {
         失敗時は自動でブラウザ標準の声に切り替わります。</p>
     </div>
     <div class="card">
+      <h2>語彙の追加・インポート</h2>
+      <h3>単語を追加</h3>
+      <div class="row">
+        <input id="sa_en" placeholder="English" />
+        <input id="sa_ja" placeholder="日本語" />
+        <input id="sa_pos" placeholder="品詞" style="width:80px" />
+        <input id="sa_ex" placeholder="例文" style="width:240px" />
+        <button class="btn good" id="sa_add">追加</button>
+        <span id="sa_out" class="muted"></span>
+      </div>
+      <h3 class="mt">単語の一括インポート</h3>
+      <p class="muted">「英単語 [タブ/カンマ] 日本語」を1行ずつ貼り付け。
+        番号付き一覧でもOK。AIが訳を精査し例文を自動生成します。</p>
+      <textarea id="sa_bulk" style="min-height:110px"
+        placeholder="例:\ncompany\t会社\nseveral\tいくつかの"></textarea>
+      <div class="row mt">
+        <label class="toggle"><input type="checkbox" id="sa_gen" checked />
+          例文をAI生成・訳を精査（要API）</label>
+        <button class="btn" id="sa_imp">インポート</button>
+      </div>
+      <div id="sa_impout" class="muted mt"></div>
+      <h3 class="mt">フレーズを追加</h3>
+      <div class="row">
+        <input id="sp_en" placeholder="English" style="width:240px" />
+        <input id="sp_ja" placeholder="日本語" style="width:200px" />
+        <input id="sp_sc" placeholder="シーン" style="width:120px" />
+        <button class="btn good" id="sp_add">追加</button>
+        <span id="sp_out" class="muted"></span>
+      </div>
+    </div>
+    <div class="card">
       <h2>API使用量・費用</h2>
       <p>累計 <b>¥${usage.total_cost_jpy}</b>（$${usage.total_cost_usd.toFixed(4)}）
          / 今日 <b>¥${usage.today_cost_jpy}</b>（$${usage.today_cost_usd.toFixed(4)}）
@@ -1445,6 +1409,45 @@ export async function settings(root) {
           <td>${r.output_tokens}</td><td>$${r.cost_usd.toFixed(4)}</td></tr>`)
           .join("")}</tbody></table>
     </div>`;
+
+  // 語彙の追加・インポート（英単語/フレーズ画面から移動）。
+  const sq = (s) => root.querySelector(s);
+  sq("#sa_add").addEventListener("click", async () => {
+    const en = sq("#sa_en").value.trim(), ja = sq("#sa_ja").value.trim();
+    if (!en || !ja) { toast("英語と日本語は必須です"); return; }
+    await api.post("/api/words", {
+      english: en, japanese: ja,
+      part_of_speech: sq("#sa_pos").value, example: sq("#sa_ex").value,
+    });
+    sq("#sa_out").textContent = `追加: ${en}`;
+    ["#sa_en", "#sa_ja", "#sa_pos", "#sa_ex"].forEach((i) => {
+      sq(i).value = "";
+    });
+  });
+  sq("#sa_imp").addEventListener("click", async () => {
+    const text = sq("#sa_bulk").value;
+    if (!text.trim()) { toast("貼り付けてください"); return; }
+    const out = sq("#sa_impout");
+    out.textContent = "インポート中…（AI生成は数十秒かかることがあります）";
+    try {
+      const r = await api.post("/api/words/import", {
+        text, generate_examples: sq("#sa_gen").checked,
+      });
+      out.textContent =
+        `解析 ${r.parsed} / 追加 ${r.added} / 重複 ${r.skipped}`
+        + ` / 例文生成 ${r.examples}`;
+      refreshCost();
+    } catch (e) { out.textContent = "失敗: " + e.message; }
+  });
+  sq("#sp_add").addEventListener("click", async () => {
+    const en = sq("#sp_en").value.trim(), ja = sq("#sp_ja").value.trim();
+    if (!en || !ja) { toast("英語と日本語は必須です"); return; }
+    await api.post("/api/phrases", {
+      english: en, japanese: ja, scene: sq("#sp_sc").value,
+    });
+    sq("#sp_out").textContent = `追加: ${en}`;
+    ["#sp_en", "#sp_ja", "#sp_sc"].forEach((i) => { sq(i).value = ""; });
+  });
 
   root.querySelector("#save").addEventListener("click", async () => {
     const body = {
