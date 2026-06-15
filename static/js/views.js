@@ -1578,6 +1578,20 @@ export async function listening(root) {
           スクリプト生成</button>
         <button class="btn ghost" id="histBtn">📚 履歴</button>
       </div>
+      <div class="row mt" style="border-top:1px solid var(--panel-2);
+        padding-top:8px">
+        <b>🎧 聞き流し</b>
+        <button class="btn secondary" id="plStart">▶ 開始(約2分)</button>
+        <button class="btn bad" id="plStop" style="display:none">⏹ 停止</button>
+        <label class="toggle"><input type="checkbox" id="plEn" checked />
+          英文表示</label>
+        <label class="toggle"><input type="checkbox" id="plJa" checked />
+          日本語訳</label>
+        <label class="toggle"><input type="checkbox" id="plLoop" />
+          繰り返し</label>
+        <span id="plStatus" class="muted"></span>
+      </div>
+      <div id="plBox" class="mt" style="display:none"></div>
       <div id="histPanel" class="mt" style="display:none"></div>
       <div id="out" class="md mt"></div>
       <div class="row mt">
@@ -1663,6 +1677,121 @@ export async function listening(root) {
     });
     toast("記録しました"); go("listening");
   });
+
+  // --- 🎧 聞き流しモード (§D3) ------------------------------------------------
+  // 生成済みスクリプト(無ければ約2分ぶんを生成)を文単位で連続再生。再生中の文を
+  // ハイライト(文単位カラオケ=Whisper不要で確実)。英文/日本語訳の表示はトグル。
+  // 日本語は英文の直後に交互表示(英→日→次の英)。音声は英語のみ読み上げる。
+  const plBox = root.querySelector("#plBox");
+  const plStart = root.querySelector("#plStart");
+  const plStop = root.querySelector("#plStop");
+  const plStatus = root.querySelector("#plStatus");
+  let plRunning = false;
+  const jaCache = new Map();  // 英文 → 日本語訳(使い回し)
+
+  // 英文を文に分割(英語のみ抽出→. ! ? で区切り)。
+  const splitSentences = (text) => englishOnly(stripQuestions(text))
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter((s) => (s.match(/[A-Za-z]/g) || []).length >= 3);
+
+  async function ensureScript() {
+    if (scriptText && splitSentences(scriptText).length) return scriptText;
+    if (!state.aiEnabled) { toast("AI未設定です"); return ""; }
+    plStatus.textContent = "約2分ぶんを生成中…";
+    const sel = root.querySelector("#topic");
+    const label = sel.options[sel.selectedIndex].textContent;
+    const theme = root.querySelector("#theme").value.trim();
+    const r = await api.post("/api/learn/generate", {
+      area: "listening",
+      field: theme ? `${label}・${theme}` : label,
+      instruction: "会話形式のスクリプト" +
+        (theme ? `（テーマ: ${theme}）` : "") +
+        ` 本文は${LENGTH_INSTR["5"]}。`,
+      difficulty: root.querySelector("#ldiff").value,
+    });
+    refreshCost();
+    if (!r.ok) { toast(r.error || "生成失敗"); return ""; }
+    scriptText = r.body;
+    return scriptText;
+  }
+
+  async function jaFor(sentence) {
+    if (jaCache.has(sentence)) return jaCache.get(sentence);
+    try {
+      const r = await api.post("/api/learn/translate", { text: sentence });
+      const t = r.ok ? r.text : "";
+      jaCache.set(sentence, t); refreshCost();
+      return t;
+    } catch (e) { return ""; }
+  }
+
+  const stopPL = () => {
+    plRunning = false; speech.stopSpeaking();
+    plStart.style.display = ""; plStop.style.display = "none";
+  };
+
+  async function runPassive() {
+    const text = await ensureScript();
+    if (!text) { stopPL(); return; }
+    const sents = splitSentences(text);
+    if (!sents.length) { toast("読み上げる英文がありません"); stopPL(); return; }
+    const showEn = () => root.querySelector("#plEn").checked;
+    const showJa = () => root.querySelector("#plJa").checked;
+    const rate = () => parseFloat(root.querySelector("#rate").value) || 0.95;
+    // セグメントを並べて描画(本文はハイライト用に span 化)。
+    plBox.style.display = "";
+    plBox.innerHTML = "";
+    const segEls = sents.map((s, i) => {
+      const seg = el(`<div class="pl-seg">
+        <div class="pl-en"></div><div class="pl-ja muted"></div></div>`);
+      seg.querySelector(".pl-en").textContent = s;
+      segEls_set(seg, showEn(), showJa());
+      plBox.appendChild(seg);
+      return seg;
+    });
+    function segEls_set(seg, en, ja) {
+      seg.querySelector(".pl-en").style.display = en ? "" : "none";
+      seg.querySelector(".pl-ja").style.display = ja ? "" : "none";
+    }
+    // トグル変更を即時反映。
+    const applyToggles = () => segEls.forEach((seg) =>
+      segEls_set(seg, showEn(), showJa()));
+    root.querySelector("#plEn").onchange = applyToggles;
+    root.querySelector("#plJa").onchange = applyToggles;
+
+    do {
+      for (let i = 0; i < sents.length; i++) {
+        if (!plRunning) return;
+        const seg = segEls[i];
+        segEls.forEach((s) => s.classList.remove("active"));
+        seg.classList.add("active");
+        seg.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        plStatus.textContent = `再生中 ${i + 1}/${sents.length}`;
+        // 日本語訳トグルがONなら、その文の訳を直後に出す(英→日)。
+        if (showJa()) {
+          const jaEl = seg.querySelector(".pl-ja");
+          if (!jaEl.textContent) jaEl.textContent = "訳: " +
+            (await jaFor(sents[i]) || "—");
+        }
+        if (!plRunning) return;
+        await speech.speakAndWait(sents[i], { rate: rate() });
+      }
+    } while (plRunning && root.querySelector("#plLoop").checked);
+    if (plRunning) { plStatus.textContent = "完了"; stopPL(); }
+  }
+
+  plStart.addEventListener("click", async () => {
+    if (plRunning) return;
+    plRunning = true;
+    plStart.style.display = "none"; plStop.style.display = "";
+    await runPassive();
+  });
+  plStop.addEventListener("click", () => {
+    stopPL(); plStatus.textContent = "停止しました";
+  });
+  // 画面を離れたら聞き流しを止める(go() も stopSpeaking するが、ループ継続を防ぐ)。
+  onLeaveView(() => { plRunning = false; });
 }
 
 // --- Assessment + material generation --------------------------------------
