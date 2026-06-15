@@ -74,18 +74,65 @@ def generate(payload: GenerateIn):
 
 
 @router.get("/materials")
-def list_materials(area: str | None = None, limit: int = 20):
+def list_materials(
+    area: str | None = None, areas: str | None = None, limit: int = 100,
+):
+    """area 単一、または areas=カンマ区切りで複数領域の履歴を新しい順に。"""
+    area_list = (
+        [a.strip() for a in areas.split(",") if a.strip()] if areas
+        else ([area] if area else [])
+    )
     with db() as conn:
-        if area:
+        if area_list:
+            ph = ",".join("?" * len(area_list))
             rows = conn.execute(
-                "SELECT * FROM materials WHERE area = ? ORDER BY id DESC LIMIT ?",
-                (area, limit),
+                f"SELECT * FROM materials WHERE area IN ({ph}) "
+                "ORDER BY id DESC LIMIT ?", (*area_list, limit),
             ).fetchall()
         else:
             rows = conn.execute(
                 "SELECT * FROM materials ORDER BY id DESC LIMIT ?", (limit,)
             ).fetchall()
         return [dict(r) for r in rows]
+
+
+@router.get("/materials/{material_id}")
+def get_material(material_id: int):
+    with db() as conn:
+        row = conn.execute(
+            "SELECT * FROM materials WHERE id = ?", (material_id,)
+        ).fetchone()
+        if not row:
+            return Response(content="not found", status_code=404,
+                            media_type="text/plain")
+        return dict(row)
+
+
+@router.delete("/materials/{material_id}", status_code=204)
+def delete_material(material_id: int):
+    with db() as conn:
+        conn.execute("DELETE FROM materials WHERE id = ?", (material_id,))
+
+
+@router.post("/materials/{material_id}/known")
+def material_known(material_id: int):
+    with db() as conn:
+        conn.execute(
+            "UPDATE materials SET mastery = 200 WHERE id = ?", (material_id,))
+    return {"ok": True, "mastery": 200}
+
+
+@router.post("/materials/{material_id}/vague")
+def material_vague(material_id: int):
+    with db() as conn:
+        row = conn.execute(
+            "SELECT mastery FROM materials WHERE id = ?", (material_id,)
+        ).fetchone()
+        new = max(0, min(200, (row["mastery"] if row else 0) + 10))
+        conn.execute(
+            "UPDATE materials SET mastery = ? WHERE id = ?",
+            (new, material_id))
+    return {"ok": True, "mastery": new}
 
 
 def _is_free_mode(payload: ConversationIn) -> bool:

@@ -348,6 +348,10 @@ def _migrate(conn: sqlite3.Connection) -> None:
         conn.execute("ALTER TABLE words ADD COLUMN level TEXT DEFAULT ''")
     if "domain" not in cols:
         conn.execute("ALTER TABLE words ADD COLUMN domain TEXT DEFAULT ''")
+    mcols = {r["name"] for r in conn.execute("PRAGMA table_info(materials)")}
+    if "mastery" not in mcols:
+        conn.execute(
+            "ALTER TABLE materials ADD COLUMN mastery INTEGER DEFAULT 0")
 
 
 def init_db() -> None:
