@@ -320,6 +320,157 @@ export async function createAIRecorder() {
   };
 }
 
+// Like say(), but resolves when the audio FINISHES (for hands-free flow:
+// resume listening only after the AI has stopped talking).
+export function speakAndWait(text, opts = {}) {
+  return new Promise((resolve) => {
+    if (!text || !text.trim()) { resolve(); return; }
+    const browser = () => {
+      if (!synth) { resolve(); return; }
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "en-US"; u.rate = opts.rate || playbackRate || 0.95;
+      u.onend = () => resolve(); u.onerror = () => resolve();
+      synth.speak(u);
+    };
+    if (!(isNatural() && aiEnabled)) { browser(); return; }
+    if (!currentIsOpenAI || !currentVoiceName) pickRoundVoice();
+    fetch("/api/learn/tts", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, voice: currentVoiceName }),
+    }).then((r) => r.ok ? r.blob() : Promise.reject(new Error("tts")))
+      .then((blob) => {
+        stopSpeaking();
+        audioEl = new Audio(URL.createObjectURL(blob));
+        audioEl.playbackRate = opts.rate || playbackRate;
+        audioEl.onended = () => resolve();
+        audioEl.onerror = () => resolve();
+        audioEl.play();
+        if (usageCb) usageCb();
+      }).catch(() => browser());
+  });
+}
+
+// Transcribe an audio Blob via the backend (Whisper). Returns text ("" on fail).
+export async function transcribeBlob(blob) {
+  try {
+    const fd = new FormData();
+    fd.append("file", blob, "audio.webm");
+    const res = await fetch("/api/learn/transcribe", { method: "POST",
+      body: fd });
+    const d = await res.json();
+    if (usageCb) usageCb();
+    return d && d.ok ? (d.text || "") : "";
+  } catch (e) { return ""; }
+}
+
+// ---------------------------------------------------------------------------
+// ハンズフリー会話: Web Audio で音量を監視し、ロジックで発話の切れ目(無音)を
+// 検出する（AIは使わない）。無音が一定時間続いたら1発話として確定し onUtterance
+// に音声Blobを渡す。発話なしが続いたら onNoSpeechEnd。AI応答中は pause() で監視
+// を止め、AIの声を拾わないようにする。手動モードは forceEnd() で確定。
+// ---------------------------------------------------------------------------
+export function vadSupported() {
+  return !!(navigator.mediaDevices && window.MediaRecorder &&
+    (window.AudioContext || window.webkitAudioContext));
+}
+
+export async function createVADSession(opts = {}) {
+  const baseSilenceMs = opts.baseSilenceMs || 2000;   // 無音しきい値(既定2s)
+  const noSpeechEndMs = opts.noSpeechEndMs || 20000;  // 20s無音で自動終了
+  const manual = !!opts.manual;                       // 手動発話終了モード
+  if (!vadSupported()) throw new Error("ハンズフリーに未対応のブラウザです");
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const AC = window.AudioContext || window.webkitAudioContext;
+  const ac = new AC();
+  const source = ac.createMediaStreamSource(stream);
+  const analyser = ac.createAnalyser();
+  analyser.fftSize = 1024;
+  source.connect(analyser);
+  const buf = new Float32Array(analyser.fftSize);
+
+  let running = false, paused = false, recording = false;
+  let mr = null, chunks = [];
+  let speechStart = 0, lastVoice = 0, lastUtterDur = 0;
+  let noSpeechStart = 0, timer = null, ambient = 0.008;
+
+  const rms = () => {
+    analyser.getFloatTimeDomainData(buf);
+    let s = 0;
+    for (let i = 0; i < buf.length; i++) s += buf[i] * buf[i];
+    return Math.sqrt(s / buf.length);
+  };
+  const startRec = () => {
+    chunks = [];
+    try { mr = new MediaRecorder(stream); } catch (e) { return; }
+    mr.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+    mr.start(); recording = true;
+  };
+  const emitUtterance = () => {
+    if (!recording || !mr) return;
+    recording = false;
+    const dur = lastUtterDur;
+    mr.onstop = () => {
+      const blob = new Blob(chunks, { type: mr.mimeType || "audio/webm" });
+      if (opts.onUtterance) opts.onUtterance(blob, dur);
+    };
+    try { mr.stop(); } catch (e) { /* ignore */ }
+  };
+  const tick = () => {
+    if (!running || paused) return;
+    const now = performance.now();
+    const level = rms();
+    const speaking = level > Math.max(0.013, ambient * 2.5 + 0.012);
+    if (speaking) {
+      lastVoice = now; noSpeechStart = 0;
+      if (!recording) {
+        speechStart = now; startRec();
+        if (opts.onSpeechStart) opts.onSpeechStart();
+      }
+    } else if (recording) {
+      lastUtterDur = lastVoice - speechStart;
+      // 直前の発話が短いほど無音判定を少し長めに（早すぎる確定を防ぐ）。
+      const eff = manual ? Infinity
+        : baseSilenceMs + (lastUtterDur < 1200 ? 500 : 0);
+      if (now - lastVoice >= eff) { emitUtterance(); noSpeechStart = now; }
+    } else {
+      if (!noSpeechStart) noSpeechStart = now;
+      if (now - noSpeechStart >= noSpeechEndMs) {
+        if (opts.onNoSpeechEnd) opts.onNoSpeechEnd();
+        stop();
+      }
+    }
+  };
+  const calibrate = () => new Promise((res) => {
+    let n = 0, sum = 0;
+    const id = setInterval(() => {
+      sum += rms(); n++;
+      if (n >= 8) { clearInterval(id); ambient = sum / n; res(); }
+    }, 50);
+  });
+  const start = async () => {
+    if (ac.state === "suspended") { try { await ac.resume(); } catch (e) {} }
+    await calibrate();
+    running = true; noSpeechStart = performance.now();
+    timer = setInterval(tick, 60);
+  };
+  const stop = () => {
+    running = false;
+    if (timer) { clearInterval(timer); timer = null; }
+    if (recording && mr) { try { mr.stop(); } catch (e) {} recording = false; }
+    try { source.disconnect(); } catch (e) {}
+    try { stream.getTracks().forEach((t) => t.stop()); } catch (e) {}
+    try { ac.close(); } catch (e) {}
+  };
+  return {
+    start, stop,
+    pause() { paused = true; },
+    resume() { paused = false; noSpeechStart = performance.now(); },
+    forceEnd() { emitUtterance(); noSpeechStart = performance.now(); },
+    isRunning() { return running; },
+  };
+}
+
 // Toggle-style recorder: start() begins continuous recording, stop() ends it
 // and resolves with the recognized text. Robust against onend not firing.
 export function createRecorder(lang = "en-US") {

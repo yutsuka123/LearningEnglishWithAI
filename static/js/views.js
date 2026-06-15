@@ -1083,6 +1083,24 @@ export async function conversation(root) {
       <button class="btn ghost" id="changeVoice"
         style="padding:2px 8px">🔁 声を変える</button></p>
     ${aiBadgeNote()}
+    <div class="card" id="hfCard">
+      <div class="row">
+        <b>🎙️ ハンズフリー会話</b>
+        <button class="btn good" id="hfStart">▶ 開始</button>
+        <button class="btn bad" id="hfStop" style="display:none">⏹ 終了</button>
+        <button class="btn" id="hfEnd" style="display:none">発話終了</button>
+        <button class="btn ghost" id="hfSave">📝 会話を記録</button>
+        <span id="hfStatus" class="muted"></span>
+      </div>
+      <div class="row mt">
+        <label>無音しきい値(秒):
+          <input id="hfSil" type="number" value="2" step="0.5" min="0.5"
+            style="width:64px" /></label>
+        <label class="toggle"><input type="checkbox" id="hfManual" />
+          発話終了ボタンで応答(手動)</label>
+        <span class="muted">・20秒無音で自動終了。声の切れ目を音量で判定します。</span>
+      </div>
+    </div>
     <div class="card">
       <div class="row">
         <select id="mode">
@@ -1294,6 +1312,99 @@ export async function conversation(root) {
     inputArea.append(ta, bar);
   }
   renderInput();
+
+  // --- ハンズフリー会話（無音検出ベース・ロジック） ---
+  // 1発話を文字起こし→AI応答→読み上げ。AI発話中は監視を止めて拾わない。
+  async function handsfreeTurn(text) {
+    addMsg("user", text);
+    history.push({ role: "user", content: text });
+    const s = scene();
+    const target = addMsg("ai", "");
+    let full = "";
+    await api.stream("/api/learn/conversation/stream",
+      { grp: s.grp, topic: s.topic, history, message: text }, (chunk) => {
+        full += chunk; target.textContent = full;
+        chat.scrollTop = chat.scrollHeight;
+      });
+    history.push({ role: "assistant", content: full });
+    refreshCost();
+    await speech.speakAndWait(englishOnly(full.split("【コーチ")[0]));
+  }
+
+  let hf = null;
+  const hfStatus = root.querySelector("#hfStatus");
+  const hfStart = root.querySelector("#hfStart");
+  const hfStop = root.querySelector("#hfStop");
+  const hfEnd = root.querySelector("#hfEnd");
+  const setHfStatus = (t) => { hfStatus.textContent = t; };
+  const stopHF = () => {
+    if (hf) { hf.stop(); hf = null; }
+    hfStart.style.display = ""; hfStop.style.display = "none";
+    hfEnd.style.display = "none";
+  };
+  hfStart.addEventListener("click", async () => {
+    if (!state.aiEnabled) { toast("AI未設定です"); return; }
+    if (!speech.vadSupported()) {
+      toast("このブラウザはハンズフリーに未対応です"); return;
+    }
+    const sil = Math.max(0.5,
+      parseFloat(root.querySelector("#hfSil").value) || 2) * 1000;
+    const manual = root.querySelector("#hfManual").checked;
+    try {
+      hf = await speech.createVADSession({
+        baseSilenceMs: sil, noSpeechEndMs: 20000, manual,
+        onSpeechStart: () => setHfStatus("🎤 聞き取り中…"),
+        onUtterance: async (blob) => {
+          if (!hf) return;
+          hf.pause(); setHfStatus("認識中…");
+          const text = await speech.transcribeBlob(blob);
+          if (!text.trim()) {
+            if (hf) { hf.resume(); setHfStatus("🎤 どうぞ話してください"); }
+            return;
+          }
+          setHfStatus("AI応答中…");
+          await handsfreeTurn(text);
+          if (hf && hf.isRunning()) {
+            hf.resume(); setHfStatus("🎤 どうぞ話してください");
+          }
+        },
+        onNoSpeechEnd: () => {
+          setHfStatus("20秒無音で自動終了しました"); stopHF();
+        },
+      });
+      await hf.start();
+      hfStart.style.display = "none"; hfStop.style.display = "";
+      hfEnd.style.display = manual ? "" : "none";
+      setHfStatus("🎤 どうぞ話してください");
+    } catch (e) { toast(e.message || "マイクを利用できません"); }
+  });
+  hfStop.addEventListener("click", () => {
+    stopHF(); setHfStatus("終了しました");
+  });
+  hfEnd.addEventListener("click", () => { if (hf) hf.forceEnd(); });
+  root.querySelector("#hfSave").addEventListener("click", async () => {
+    if (!history.length) { toast("まだ会話がありません"); return; }
+    setHfStatus("要点をまとめています…");
+    const transcript = history.map((m) =>
+      `${m.role}: ${m.content}`).join("\n");
+    let content = transcript;
+    try {
+      const r = await api.post("/api/learn/session/summary", {
+        content: transcript, accuracy: null, weak_points: "",
+        next_topic: "", new_words: "",
+      });
+      if (r.ok && r.summary) content = r.summary;
+    } catch (e) { /* fall back to transcript */ }
+    try {
+      await api.post("/api/learn/session/save", {
+        content, accuracy: null, weak_points: "", next_topic: "",
+        new_words: "",
+      });
+      toast("会話の要点を保存しました");
+      setHfStatus("会話を記録しました（学習履歴に保存）");
+    } catch (e) { toast("保存に失敗しました"); }
+    refreshCost();
+  });
 }
 
 // --- Listening --------------------------------------------------------------
