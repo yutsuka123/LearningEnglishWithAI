@@ -522,6 +522,11 @@ function renderWordDetail(box, d) {
     box.appendChild(el(`<p style="margin:6px 0"><b>${label}</b> ${html}</p>`));
   };
   const arr = (a) => Array.isArray(a) ? a.map(escapeHtml).join("、") : "";
+  // 類義語/対義語: 文字列(旧形式) と {word,note}(新形式・ニュアンス併記)に対応。
+  const wn = (a) => Array.isArray(a) ? a.map((x) => typeof x === "string"
+    ? escapeHtml(x)
+    : `<b>${escapeHtml(x.word || "")}</b>${x.note
+      ? "（" + escapeHtml(x.note) + "）" : ""}`).join(" / ") : "";
   sec("品詞:", d.pos ? escapeHtml(d.pos) : "");
   sec("意味:", arr(d.meanings));
   if (Array.isArray(d.derivatives) && d.derivatives.length) {
@@ -529,8 +534,8 @@ function renderWordDetail(box, d) {
       `${escapeHtml(x.word || "")}（${escapeHtml(x.pos || "")}: `
       + `${escapeHtml(x.ja || "")}）`).join(" / "));
   }
-  sec("類義語:", arr(d.synonyms));
-  sec("対義語:", arr(d.antonyms));
+  sec("類義語:", wn(d.synonyms));
+  sec("対義語:", wn(d.antonyms));
   sec("語源・由来:", d.origin ? escapeHtml(d.origin) : "");
   sec("豆知識:", d.trivia ? escapeHtml(d.trivia) : "");
   sec("解説:", d.explanation ? escapeHtml(d.explanation) : "");
