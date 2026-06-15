@@ -1129,8 +1129,15 @@ export async function listening(root) {
         <select id="topic">${topics.map((t) =>
           `<option value="${t.id}">${t.source} / ${t.accent} (理解度${t.comprehension})</option>`
         ).join("")}</select>
-        <input id="theme" placeholder="テーマ(任意): 文学/ニュース/ビジネス等"
-          style="width:220px" />
+        <select id="genre" title="題材ジャンル">
+          <option value="">（題材: トピックのまま）</option>
+          <option value="lit_uk">文学（英文学）</option>
+          <option value="lit_us">文学（米国文学）</option>
+          <option value="lit_rand">文学（ランダム）</option>
+          <option value="news">ニュース風</option>
+          <option value="business">ビジネス</option>
+        </select>
+        <input id="theme" placeholder="テーマ(任意)" style="width:160px" />
         <label class="toggle">速度
           <input type="range" id="rate" min="0.6" max="1.2" step="0.05" value="0.95" />
         </label>
@@ -1151,10 +1158,35 @@ export async function listening(root) {
     const label = sel.options[sel.selectedIndex].textContent;
     const out = root.querySelector("#out"); out.textContent = "生成中…";
     const theme = root.querySelector("#theme").value.trim();
-    const r = await api.post("/api/learn/generate", {
-      area: "listening", field: theme ? `${label}・${theme}` : label,
-      instruction: "会話形式のスクリプト" + (theme ? `（テーマ: ${theme}）` : ""),
-    });
+    const genre = root.querySelector("#genre").value;
+    // 文学などのジャンルは適切な area/field・指示に振り分け。
+    const GENRES = {
+      lit_uk: { area: "literature", field: "英文学",
+        inst: "英文学の有名作品(著作権切れ)風の朗読スクリプト" },
+      lit_us: { area: "literature", field: "米国文学",
+        inst: "アメリカ文学(著作権切れ)風の朗読スクリプト" },
+      lit_rand: { area: "literature", field: "文学(ランダム)",
+        inst: "古典文学からランダムに題材を選んだ朗読スクリプト" },
+      news: { area: "news", field: "ニュース風",
+        inst: "ニュース風のオリジナル原稿(創作・実在の記事を使わない)" },
+      business: { area: "listening", field: "ビジネス",
+        inst: "ビジネスシーンの会話形式スクリプト" },
+    };
+    const g = GENRES[genre];
+    let body;
+    if (g) {
+      body = {
+        area: g.area, field: theme ? `${g.field}・${theme}` : g.field,
+        instruction: g.inst + (theme ? `（テーマ: ${theme}）` : ""),
+      };
+    } else {
+      body = {
+        area: "listening", field: theme ? `${label}・${theme}` : label,
+        instruction: "会話形式のスクリプト" +
+          (theme ? `（テーマ: ${theme}）` : ""),
+      };
+    }
+    const r = await api.post("/api/learn/generate", body);
     if (!r.ok) { out.textContent = r.error; return; }
     scriptText = r.body; out.innerHTML = md(r.body);
     const play = el(`<button class="btn mt">🔊 再生</button>`);
