@@ -185,7 +185,83 @@ CREATE TABLE IF NOT EXISTS audio_blobs (
     created_at TEXT    NOT NULL DEFAULT (datetime('now')),
     PRIMARY KEY (item_type, item_id, kind, voice)
 );
+
+-- ===== マルチユーザー化（§A）=====================================
+-- コンテンツ(words/phrases/materials/audio)は全員共有のまま、進捗だけ
+-- user 別に分離する。ローカル単一ユーザーは owner(id=1) に集約され、
+-- MULTIUSER=0 のときは自動 owner ログインで従来どおり無認証で動く。
+CREATE TABLE IF NOT EXISTS users (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    username            TEXT    NOT NULL UNIQUE,
+    password_hash       TEXT    NOT NULL DEFAULT '',  -- pbkdf2$...（空=未設定）
+    role                TEXT    NOT NULL DEFAULT 'user',  -- 'admin' | 'user'
+    is_active           INTEGER NOT NULL DEFAULT 1,
+    display_name        TEXT    DEFAULT '',
+    email               TEXT    DEFAULT '',   -- 将来のメール/2FA用（任意）
+    -- AI利用ガード（per-user）。NULL/0 ならグローバル既定にフォールバック。
+    daily_cost_cap_usd   REAL,
+    monthly_cost_cap_usd REAL,
+    -- 前払いチャージ残高（¥）。日次/月次の無料枠とは別管理。枠に到達した後の
+    -- 利用でのみ消費される（NULL/0 なら枠到達で停止）。
+    balance_jpy         REAL,
+    -- 禁止用語の許可（§E）。既定0=不可。1で表示/出題を許可。
+    allow_banned        INTEGER NOT NULL DEFAULT 0,
+    created_at          TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+-- 単語の進捗（per-user）。words 本体の mastery/SRS 列の置き換え先。
+CREATE TABLE IF NOT EXISTS user_word_progress (
+    user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    word_id       INTEGER NOT NULL REFERENCES words(id) ON DELETE CASCADE,
+    mastery       INTEGER NOT NULL DEFAULT 0,
+    last_studied  TEXT,
+    times_asked   INTEGER NOT NULL DEFAULT 0,
+    times_correct INTEGER NOT NULL DEFAULT 0,
+    ask_en2ja     INTEGER NOT NULL DEFAULT 0,
+    ok_en2ja      INTEGER NOT NULL DEFAULT 0,
+    ask_ja2en     INTEGER NOT NULL DEFAULT 0,
+    ok_ja2en      INTEGER NOT NULL DEFAULT 0,
+    review_level  INTEGER NOT NULL DEFAULT 0,
+    next_review   TEXT,
+    PRIMARY KEY (user_id, word_id)
+);
+
+-- リーディング/リスニング教材の学習履歴（per-user）。教材本文・音声は共有、
+-- 既読/覚えた(mastery)だけ user 別。
+CREATE TABLE IF NOT EXISTS user_material_progress (
+    user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    material_id  INTEGER NOT NULL REFERENCES materials(id) ON DELETE CASCADE,
+    mastery      INTEGER NOT NULL DEFAULT 0,
+    last_studied TEXT,
+    PRIMARY KEY (user_id, material_id)
+);
+
+-- per-user 設定（端末非依存。ブラウザlocalStorageの同期先）。JSON文字列。
+CREATE TABLE IF NOT EXISTS user_settings (
+    user_id   INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    settings  TEXT NOT NULL DEFAULT '{}',
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- フレーズの進捗（per-user）。
+CREATE TABLE IF NOT EXISTS user_phrase_progress (
+    user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    phrase_id     INTEGER NOT NULL REFERENCES phrases(id) ON DELETE CASCADE,
+    mastery       INTEGER NOT NULL DEFAULT 0,
+    last_studied  TEXT,
+    study_count   INTEGER NOT NULL DEFAULT 0,
+    times_asked   INTEGER NOT NULL DEFAULT 0,
+    times_correct INTEGER NOT NULL DEFAULT 0,
+    ask_en2ja     INTEGER NOT NULL DEFAULT 0,
+    ok_en2ja      INTEGER NOT NULL DEFAULT 0,
+    ask_ja2en     INTEGER NOT NULL DEFAULT 0,
+    ok_ja2en      INTEGER NOT NULL DEFAULT 0,
+    review_level  INTEGER NOT NULL DEFAULT 0,
+    next_review   TEXT,
+    PRIMARY KEY (user_id, phrase_id)
+);
 """
+
 
 def _seed_phrases(conn: sqlite3.Connection) -> None:
     """Top-up: insert any seed phrase whose English isn't already present."""
@@ -292,6 +368,7 @@ LISTENING_SEED = [
     ("ニュース", "イギリス英語"),
 ]
 
+
 def _seed_categories(conn: sqlite3.Connection) -> None:
     rows: list[tuple[str, str, str]] = []
     for grp, names in CONVERSATION_SEED.items():
@@ -363,6 +440,73 @@ def _migrate(conn: sqlite3.Connection) -> None:
         conn.execute(
             "ALTER TABLE study_sessions ADD COLUMN session_key "
             "TEXT DEFAULT ''")
+    _migrate_multiuser(conn)
+
+
+def _add_col(conn: sqlite3.Connection, table: str, col: str,
+             ddl: str) -> None:
+    """Add a column if it does not yet exist (idempotent)."""
+    have = {r["name"] for r in conn.execute(
+        f"PRAGMA table_info({table})")}
+    if col not in have:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {ddl}")
+
+
+# owner(=ローカル単一ユーザー)の固定 id。MULTIUSER=0 はこの user で動く。
+OWNER_USER_ID = 1
+
+
+def _migrate_multiuser(conn: sqlite3.Connection) -> None:
+    """§A: user_id 列の付与 / owner 作成 / 既存進捗の per-user 移行。
+    すべて冪等（何度呼んでも安全）。"""
+    # 1) 既存テーブルに user_id を付与（既定 owner=1）。
+    for tbl in ("ai_usage", "word_attempts", "phrase_attempts",
+                "study_sessions", "conversation_log", "deck_progress"):
+        _add_col(conn, tbl, "user_id",
+                 "user_id INTEGER NOT NULL DEFAULT 1")
+    # users に allow_banned（§E・既定0=禁止用語不可）を後付け。
+    _add_col(conn, "users", "allow_banned",
+             "allow_banned INTEGER NOT NULL DEFAULT 0")
+    # decks を per-user に（既存は owner=1）。
+    _add_col(conn, "decks", "user_id",
+             "user_id INTEGER NOT NULL DEFAULT 1")
+
+    # 2) owner ユーザーを用意（無ければ作成。パスワードは admin.py で設定）。
+    n = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+    if n == 0:
+        from .config import settings
+        owner = (settings.nickname or "owner").strip() or "owner"
+        conn.execute(
+            "INSERT INTO users (id, username, role, display_name) "
+            "VALUES (?, ?, 'admin', ?)",
+            (OWNER_USER_ID, owner, owner),
+        )
+
+    # 3) 既存の words/phrases 進捗を owner の per-user テーブルへ初期移行。
+    #    PK 衝突は無視（=一度だけ実行され、以後は上書きしない）。進捗のある
+    #    行だけ移す（未学習は accessor 側で既定0 として扱う）。
+    conn.execute(
+        "INSERT OR IGNORE INTO user_word_progress "
+        "(user_id, word_id, mastery, last_studied, times_asked, "
+        " times_correct, ask_en2ja, ok_en2ja, ask_ja2en, ok_ja2en, "
+        " review_level, next_review) "
+        "SELECT ?, id, mastery, last_studied, times_asked, times_correct, "
+        " ask_en2ja, ok_en2ja, ask_ja2en, ok_ja2en, review_level, "
+        " next_review FROM words "
+        "WHERE mastery > 0 OR times_asked > 0 OR review_level > 0",
+        (OWNER_USER_ID,),
+    )
+    conn.execute(
+        "INSERT OR IGNORE INTO user_phrase_progress "
+        "(user_id, phrase_id, mastery, last_studied, study_count, "
+        " times_asked, times_correct, ask_en2ja, ok_en2ja, ask_ja2en, "
+        " ok_ja2en, review_level, next_review) "
+        "SELECT ?, id, mastery, last_studied, study_count, times_asked, "
+        " times_correct, ask_en2ja, ok_en2ja, ask_ja2en, ok_ja2en, "
+        " review_level, next_review FROM phrases "
+        "WHERE mastery > 0 OR times_asked > 0 OR review_level > 0",
+        (OWNER_USER_ID,),
+    )
 
 
 def init_db() -> None:

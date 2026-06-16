@@ -104,9 +104,13 @@ def list_phrases(
     elif mastered == "hide":
         conds.append(f"mastery < {MASTERED_THRESHOLD}")
     where = (" WHERE " + " AND ".join(conds)) if conds else ""
+    from ..services.auth import current_user_id
+    from ..services.progress import user_items_subquery
+    src = user_items_subquery("phrases")  # 先頭 ? = user_id
     with db() as conn:
         rows = conn.execute(
-            f"SELECT * FROM phrases{where} ORDER BY {order}", params
+            f"SELECT * FROM {src} AS phrases{where} ORDER BY {order}",
+            [current_user_id(), *params],
         ).fetchall()
         return [_phrase_dict(r) for r in rows]
 
@@ -149,30 +153,34 @@ def create_phrase(payload: PhraseCreate):
 
 @router.post("/{phrase_id}/known")
 def mark_known(phrase_id: int, payload: KnownIn):
-    """「覚えた」ボタン: mastery を満点(200)に。known=false で解除。"""
+    """「覚えた」ボタン(per-user): mastery を満点(200)に。known=false で解除。"""
+    from ..services.auth import current_user_id
     with db() as conn:
         exists = conn.execute(
             "SELECT id FROM phrases WHERE id = ?", (phrase_id,)
         ).fetchone()
         if not exists:
             raise HTTPException(404, "フレーズが見つかりません")
-        new = set_known(conn, phrase_id, payload.known, table="phrases")
+        new = set_known(conn, phrase_id, payload.known, table="phrases",
+                        user_id=current_user_id())
     return {"ok": True, "mastery": new, "known": payload.known}
 
 
 @router.post("/{phrase_id}/vague")
 def mark_vague(phrase_id: int):
-    """「うろ覚え」ボタン: mastery を +10（0..200でクランプ）。"""
+    """「うろ覚え」ボタン(per-user): mastery を +10（0..200でクランプ）。"""
+    from ..services.auth import current_user_id
+    from ..services import progress as P
     with db() as conn:
-        row = conn.execute(
-            "SELECT mastery FROM phrases WHERE id = ?", (phrase_id,)
+        exists = conn.execute(
+            "SELECT id FROM phrases WHERE id = ?", (phrase_id,)
         ).fetchone()
-        if not row:
+        if not exists:
             raise HTTPException(404, "フレーズが見つかりません")
-        new = clamp(row["mastery"] + VAGUE_BONUS)
-        conn.execute(
-            "UPDATE phrases SET mastery = ? WHERE id = ?", (new, phrase_id)
-        )
+        uid = current_user_id()
+        cur = P.get_progress(conn, uid, "phrases", phrase_id)
+        new = clamp(cur["mastery"] + VAGUE_BONUS)
+        P.upsert_progress(conn, uid, "phrases", phrase_id, mastery=new)
     return {"ok": True, "mastery": new}
 
 
@@ -186,16 +194,18 @@ def delete_phrase(phrase_id: int):
 
 @router.get("/quiz")
 def quiz(limit: int = 10, include_banned: bool = False):
+    from ..services.auth import current_user_id
     with db() as conn:
         rows = select_for_review(
             conn, table="phrases", limit=limit,
-            exclude_banned=not include_banned,
+            exclude_banned=not include_banned, user_id=current_user_id(),
         )
         return [_phrase_dict(r) for r in rows]
 
 
 @router.post("/attempt")
 def attempt(payload: PhraseAttempt):
+    from ..services.auth import current_user_id
     with db() as conn:
         try:
             result = record_attempt(
@@ -207,6 +217,7 @@ def attempt(payload: PhraseAttempt):
                 table="phrases",
                 attempts_table="phrase_attempts",
                 id_column="phrase_id",
+                user_id=current_user_id(),
             )
         except ValueError as exc:
             raise HTTPException(400, str(exc))

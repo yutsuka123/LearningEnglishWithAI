@@ -292,3 +292,31 @@ th { color: var(--muted); font-weight: 600; }
   border-radius: 12px; padding: 20px; width: min(560px, 92vw);
   max-height: 86vh; overflow-y: auto;
 }
+
+/* 単語詳細内の類義語/対義語/派生語ジャンプ（DB登録済みの語のみリンク化） */
+.jw-link {
+  color: var(--accent, #4da3ff);
+  cursor: pointer;
+  border-bottom: 1px dashed currentColor;
+}
+.jw-link:hover { opacity: 0.8; }
+
+/* AI利用の残量バー（topbar）＋モデル/バージョン表示 */
+.usage-bars { display: inline-flex; gap: 8px; align-items: center; }
+.ubar { display: inline-flex; align-items: center; gap: 4px; font-size: 11px;
+  color: var(--muted); }
+.ubar-lbl { white-space: nowrap; }
+.ubar-track { display: inline-block; width: 56px; height: 8px;
+  background: rgba(127,127,127,.25); border-radius: 5px; overflow: hidden; }
+.ubar-fill { display: block; height: 100%; border-radius: 5px;
+  transition: width .4s ease, background .4s ease; }
+.ai-model { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.app-ver { font-size: 10px; color: var(--muted); opacity: .7; }
+
+/* 管理者ダッシュボードの状態バッジ */
+.badge-off, .badge-bad, .badge-warn {
+  display: inline-block; font-size: 10px; padding: 1px 6px;
+  border-radius: 8px; white-space: nowrap; }
+.badge-off  { background: rgba(127,127,127,.3); color: var(--text); }
+.badge-bad  { background: rgba(226,80,59,.85); color: #fff; }
+.badge-warn { background: rgba(231,181,59,.85); color: #222; }

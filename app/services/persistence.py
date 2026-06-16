@@ -12,23 +12,17 @@ from pathlib import Path
 
 from ..config import paths
 
+# 新規ユーザーの memory は空テンプレート（各自が設定画面の入力欄で記入）。
+# 旧版は yutakatsu 固有(TOEIC550等)だったため、共通の空欄に変更。
 DEFAULT_MEMORY = """# 学習メモリ (memory.md)
 
-## 現在レベル
-- TOEIC 550〜600程度
-
 ## 学習方針
-- 英単語・英会話・リスニング・リーディング・ライティングを総合的に学習する
 
 ## 目標
-- 短期目標: TOEIC 700点
-- 最終目標: TOEIC 800点以上
 
 ## 苦手分野
-- （学習を進めると自動で追記されます）
 
 ## 学習傾向
-- （学習を進めると自動で追記されます）
 """
 
 DEFAULT_STUDY_LOG = """# 学習履歴 (study_log.md)
@@ -37,8 +31,23 @@ DEFAULT_STUDY_LOG = """# 学習履歴 (study_log.md)
 """
 
 
+def _user_dir() -> Path:
+    """現在ユーザーの専用ディレクトリ data/users/<uid>/（per-user 化）。"""
+    from .auth import current_user_id
+    d = paths.data_dir / "users" / str(current_user_id())
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _memory_path() -> Path:
+    return _user_dir() / "memory.md"
+
+
+def _study_log_path() -> Path:
+    return _user_dir() / "study_log.md"
+
+
 def _read_or_create(path: Path, default: str) -> str:
-    paths.ensure()
     if not path.exists():
         path.write_text(default, encoding="utf-8")
         return default
@@ -46,23 +55,22 @@ def _read_or_create(path: Path, default: str) -> str:
 
 
 def read_memory() -> str:
-    return _read_or_create(paths.memory_file, DEFAULT_MEMORY)
+    return _read_or_create(_memory_path(), DEFAULT_MEMORY)
 
 
 def write_memory(content: str) -> None:
-    paths.ensure()
-    paths.memory_file.write_text(content, encoding="utf-8")
+    _memory_path().write_text(content, encoding="utf-8")
 
 
 def read_study_log() -> str:
-    return _read_or_create(paths.study_log_file, DEFAULT_STUDY_LOG)
+    return _read_or_create(_study_log_path(), DEFAULT_STUDY_LOG)
 
 
 def append_study_log(entry: str) -> None:
-    """Append a study-log entry, ensuring the file exists first."""
+    """Append a study-log entry (per-user), ensuring the file exists first."""
     current = read_study_log()
     separator = "" if current.endswith("\n") else "\n"
-    paths.study_log_file.write_text(
+    _study_log_path().write_text(
         f"{current}{separator}\n{entry.rstrip()}\n", encoding="utf-8"
     )
 

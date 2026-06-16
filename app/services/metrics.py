@@ -17,7 +17,12 @@ MASTERED = 80   # これ以上を「習得」
 VAGUE = 40      # これ以上 MASTERED 未満を「うろ覚え」
 
 
-def word_buckets(conn: sqlite3.Connection, table: str = "words") -> dict:
+def word_buckets(
+    conn: sqlite3.Connection, table: str = "words", *, user_id: int
+) -> dict:
+    """当該 user の習熟バケツ集計（進捗は per-user テーブルからマージ）。"""
+    from .progress import user_items_subquery
+    src = user_items_subquery(table)  # 先頭 ? = user_id
     row = conn.execute(
         f"SELECT "
         f"COUNT(*) AS total, "
@@ -26,7 +31,8 @@ def word_buckets(conn: sqlite3.Connection, table: str = "words") -> dict:
         f"SUM(CASE WHEN mastery >= {VAGUE} AND mastery < {MASTERED} "
         f"         THEN 1 ELSE 0 END) AS vague, "
         f"COALESCE(AVG(mastery), 0) AS avg_mastery "
-        f"FROM {table}"
+        f"FROM {src} AS t",
+        (user_id,),
     ).fetchone()
     return {
         "total": row["total"] or 0,
@@ -37,12 +43,20 @@ def word_buckets(conn: sqlite3.Connection, table: str = "words") -> dict:
     }
 
 
-def toeic_estimate(avg_mastery: float, mastered: int, total: int) -> int:
-    """目安のTOEICスコア。現在レベル(約550)を起点に学習の進み具合で加点。
-
-    base 550 + 平均習熟度で最大+200 + 習得率で最大+50 → 約800が上限の目安。
+def toeic_estimate(
+    avg_mastery: float, mastered: int, total: int, *,
+    studied: int = 0, self_declared: int | None = None,
+) -> int | None:
+    """目安のTOEICスコア。
+    - 学習データが無い(studied==0)とき: 自己申告値をそのまま返す。自己申告も
+      無ければ None（=未判定）。
+    - データがあるとき: 自己申告(無ければ550)を起点に、実績(平均習熟度・習得率)で
+      補正してブレンド。実応答や正答率は avg_mastery に反映されている前提。
     """
+    if studied <= 0:
+        return self_declared  # None なら未判定
+    base = self_declared if self_declared else 550
     mastered_ratio = (mastered / total) if total else 0.0
-    est = 550 + (avg_mastery / 100) * 200 + mastered_ratio * 50
+    est = base + (avg_mastery / 100) * 150 + mastered_ratio * 50
     est = max(300, min(990, est))
     return int(round(est / 5) * 5)  # 5点刻みに丸める

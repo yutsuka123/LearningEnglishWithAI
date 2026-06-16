@@ -77,18 +77,23 @@ def select_for_review(
     table: str = "words",
     limit: int = 10,
     exclude_banned: bool = False,
+    *,
+    user_id: int,
 ) -> list[sqlite3.Row]:
-    """Pick up to ``limit`` items, prioritising due ones, then weighting the
-    rest by (100 - mastery). When ``exclude_banned`` is set, 禁止用語 items are
-    never selected for quizzes/daily."""
+    """Pick up to ``limit`` items for ``user_id``, prioritising due ones, then
+    weighting the rest by (100 - mastery). 進捗は per-user テーブルからマージ。
+    When ``exclude_banned`` is set, 禁止用語 items are never selected."""
+    from .progress import user_items_subquery
+
     today = date.today().isoformat()
+    src = user_items_subquery(table)  # 1つの ? (=user_id) を取る
     ban = f" AND {banned_filter(table)}" if exclude_banned else ""
     # Due items first (never reviewed -> next_review IS NULL counts as due).
     due = conn.execute(
-        f"SELECT * FROM {table} "
+        f"SELECT * FROM {src} AS t "
         f"WHERE (next_review IS NULL OR next_review <= ?){ban} "
         "ORDER BY mastery ASC, next_review ASC",
-        (today,),
+        (user_id, today),
     ).fetchall()
 
     chosen = list(due[:limit])
@@ -101,7 +106,8 @@ def select_for_review(
     where = f" WHERE {banned_filter(table)}" if exclude_banned else ""
     rest = [
         r
-        for r in conn.execute(f"SELECT * FROM {table}{where}").fetchall()
+        for r in conn.execute(
+            f"SELECT * FROM {src} AS t{where}", (user_id,)).fetchall()
         if r["id"] not in chosen_ids
     ]
     chosen += _weighted_sample(rest, remaining)
@@ -131,10 +137,11 @@ def _weighted_sample(rows: list[sqlite3.Row], k: int) -> list[sqlite3.Row]:
 # Backwards-compatible alias used elsewhere.
 def pick_weighted(
     conn: sqlite3.Connection, limit: int = 10, table: str = "words",
-    exclude_banned: bool = False,
+    exclude_banned: bool = False, *, user_id: int,
 ) -> list[sqlite3.Row]:
     return select_for_review(
-        conn, table=table, limit=limit, exclude_banned=exclude_banned
+        conn, table=table, limit=limit, exclude_banned=exclude_banned,
+        user_id=user_id,
     )
 
 
@@ -158,14 +165,16 @@ def record_attempt(
     table: str = "words",
     attempts_table: str = "word_attempts",
     id_column: str = "word_id",
+    user_id: int,
 ) -> dict:
-    """Log one attempt, update counters + per-direction stats, award the
-    both-directions bonus, and advance the forgetting-curve schedule.
+    """Log one attempt for ``user_id``, update per-user counters + per-direction
+    stats, award the both-directions bonus, and advance the forgetting curve.
+    進捗は per-user テーブル(user_word/phrase_progress)へ UPSERT。
 
-    ``result`` は 'correct' / 'vague'(うろ覚え) / 'wrong' のいずれか。未指定なら
-    ``correct`` から決定。出現確率は次回復習日(SRS)で変わる:
-      correct → 間隔を延ばす(出にくくなる) / vague → 約2日後 / wrong → 翌日
+    ``result`` は 'correct' / 'vague'(うろ覚え) / 'wrong'。未指定なら correct から。
     """
+    from . import progress as P
+
     if direction not in _DIRECTIONS:
         raise ValueError("direction must be 'ja2en' or 'en2ja'")
     if result is None:
@@ -175,53 +184,37 @@ def record_attempt(
 
     # 正答としてカウントするのは 'correct' のみ（うろ覚えは正答に含めない）。
     counting = 1 if result == "correct" else 0
-
     today = date.today().isoformat()
-    ask_col = f"ask_{direction}"
-    ok_col = f"ok_{direction}"
 
     conn.execute(
-        f"INSERT INTO {attempts_table} ({id_column}, direction, correct) "
-        "VALUES (?, ?, ?)",
-        (item_id, direction, counting),
-    )
-    conn.execute(
-        f"UPDATE {table} SET "
-        "times_asked = times_asked + 1, "
-        "times_correct = times_correct + ?, "
-        f"{ask_col} = {ask_col} + 1, "
-        f"{ok_col} = {ok_col} + ?, "
-        "last_studied = ? WHERE id = ?",
-        (counting, counting, today, item_id),
+        f"INSERT INTO {attempts_table} ({id_column}, direction, correct, "
+        "user_id) VALUES (?, ?, ?, ?)",
+        (item_id, direction, counting, user_id),
     )
 
-    # Advance / reset the forgetting-curve schedule per result.
-    row = conn.execute(
-        f"SELECT mastery, review_level FROM {table} WHERE id = ?", (item_id,)
-    ).fetchone()
+    cur = P.get_progress(conn, user_id, table, item_id)
     if result == "correct":
-        new_level = min(row["review_level"] + 1, len(REVIEW_INTERVALS) - 1)
+        new_level = min(cur["review_level"] + 1, len(REVIEW_INTERVALS) - 1)
     elif result == "vague":
-        # うろ覚えは約2日後に再出題。高習熟の語は近くに引き戻し、
-        # 新規語は wrong(翌日) より少し後にして「不正解 < うろ覚え < 正解」に。
         new_level = VAGUE_REVIEW_LEVEL
     else:  # wrong
         new_level = 0
-    conn.execute(
-        f"UPDATE {table} SET review_level = ?, next_review = ? WHERE id = ?",
-        (new_level, _next_review_date(new_level), item_id),
+    P.upsert_progress(
+        conn, user_id, table, item_id,
+        times_asked=cur["times_asked"] + 1,
+        times_correct=cur["times_correct"] + counting,
+        **{f"ask_{direction}": cur[f"ask_{direction}"] + 1,
+           f"ok_{direction}": cur[f"ok_{direction}"] + counting},
+        last_studied=today,
+        review_level=new_level,
+        next_review=_next_review_date(new_level),
     )
 
-    # Both-directions-correct bonus (once per day per item).
     bonus_awarded = _maybe_award_bonus(
-        conn, item_id, today, table, attempts_table, id_column
+        conn, user_id, item_id, today, table, attempts_table, id_column
     )
 
-    new = conn.execute(
-        f"SELECT mastery, times_asked, times_correct, review_level, "
-        f"next_review FROM {table} WHERE id = ?",
-        (item_id,),
-    ).fetchone()
+    new = P.get_progress(conn, user_id, table, item_id)
     return {
         "mastery": new["mastery"],
         "bonus_awarded": bonus_awarded,
@@ -234,40 +227,35 @@ def record_attempt(
 
 def _maybe_award_bonus(
     conn: sqlite3.Connection,
+    user_id: int,
     item_id: int,
     today: str,
     table: str,
     attempts_table: str,
     id_column: str,
 ) -> bool:
-    # Compare on local calendar day. created_at is stored as UTC
-    # (datetime('now')), so convert with 'localtime' to match the learner's
-    # actual study day — otherwise the bonus silently never fires near UTC
-    # midnight boundaries.
+    from . import progress as P
+
+    # 当該ユーザーの本日(ローカル日)の正答方向を集計。両方向そろえば +5。
     correct_dirs = conn.execute(
         f"SELECT DISTINCT direction FROM {attempts_table} "
-        f"WHERE {id_column} = ? AND correct = 1 "
+        f"WHERE {id_column} = ? AND user_id = ? AND correct = 1 "
         "AND date(created_at, 'localtime') = date('now', 'localtime')",
-        (item_id,),
+        (item_id, user_id),
     ).fetchall()
     dirs = {r["direction"] for r in correct_dirs}
     if not {"ja2en", "en2ja"}.issubset(dirs):
         return False
 
-    state_key = f"bonus:{table}:{item_id}:{today}"
-    already = conn.execute(
-        "SELECT value FROM app_state WHERE key = ?", (state_key,)
-    ).fetchone()
-    if already:
+    state_key = f"bonus:{table}:{user_id}:{item_id}:{today}"
+    if conn.execute(
+        "SELECT 1 FROM app_state WHERE key = ?", (state_key,)
+    ).fetchone():
         return False
 
-    row = conn.execute(
-        f"SELECT mastery FROM {table} WHERE id = ?", (item_id,)
-    ).fetchone()
-    new_mastery = clamp(row["mastery"] + CORRECT_BOTH_BONUS)
-    conn.execute(
-        f"UPDATE {table} SET mastery = ? WHERE id = ?", (new_mastery, item_id)
-    )
+    cur = P.get_progress(conn, user_id, table, item_id)
+    P.upsert_progress(conn, user_id, table, item_id,
+                      mastery=clamp(cur["mastery"] + CORRECT_BOTH_BONUS))
     conn.execute(
         "INSERT OR REPLACE INTO app_state (key, value) VALUES (?, '1')",
         (state_key,),
@@ -280,14 +268,13 @@ def _maybe_award_bonus(
 # ---------------------------------------------------------------------------
 
 def set_known(
-    conn: sqlite3.Connection, item_id: int, known: bool, *, table: str = "words"
+    conn: sqlite3.Connection, item_id: int, known: bool, *,
+    table: str = "words", user_id: int,
 ) -> int:
-    """「覚えた」ボタン。known=True で満点(200)、False で覚えた状態を解除
-    (閾値直下の95に戻す)。新しい mastery を返す。"""
+    """「覚えた」ボタン(per-user)。known=True で満点(200)、False で解除(95)。"""
+    from . import progress as P
     new = KNOWN_MASTERY if known else (MASTERED_THRESHOLD - 5)
-    conn.execute(
-        f"UPDATE {table} SET mastery = ? WHERE id = ?", (new, item_id)
-    )
+    P.upsert_progress(conn, user_id, table, item_id, mastery=new)
     return new
 
 
@@ -319,7 +306,8 @@ def apply_weekly_decay(conn: sqlite3.Connection) -> int:
         return 0
 
     drop = weeks * WEEKLY_DECAY
-    for tbl in ("words", "phrases"):
+    # per-user 進捗テーブルを全行減衰（全ユーザー分まとめて）。
+    for tbl in ("user_word_progress", "user_phrase_progress"):
         conn.execute(
             f"UPDATE {tbl} SET mastery = MAX({MASTERY_MIN}, mastery - ?)",
             (drop,),

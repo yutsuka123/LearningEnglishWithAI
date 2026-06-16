@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ログイン — English Learning with AI</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #f4f6fb;
+      display: flex; min-height: 100vh; align-items: center;
+      justify-content: center; margin: 0; }
+    .card { background: #fff; padding: 32px; border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08); width: 320px; }
+    h1 { font-size: 18px; margin: 0 0 20px; color: #223; }
+    label { display: block; font-size: 13px; color: #556; margin: 12px 0 4px; }
+    input { width: 100%; padding: 10px; border: 1px solid #ccd;
+      border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+    button { width: 100%; margin-top: 20px; padding: 11px; border: 0;
+      border-radius: 8px; background: #3b6fd4; color: #fff; font-size: 15px;
+      cursor: pointer; }
+    button:hover { background: #2f5cb8; }
+    .err { color: #c0392b; font-size: 13px; margin-top: 12px;
+      min-height: 18px; }
+  </style>
+</head>
+<body>
+  <form class="card" id="f">
+    <h1>🐱 English Learning with AI</h1>
+    <label for="u">ユーザー名</label>
+    <input id="u" name="username" autocomplete="username" required />
+    <label for="p">パスワード</label>
+    <input id="p" name="password" type="password"
+      autocomplete="current-password" required />
+    <button type="submit">ログイン</button>
+    <div class="err" id="e"></div>
+  </form>
+  <script>
+    document.getElementById('f').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const e = document.getElementById('e');
+      e.textContent = '';
+      try {
+        const r = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('u').value,
+            password: document.getElementById('p').value,
+          }),
+        });
+        const d = await r.json();
+        if (d.ok) { location.href = '/'; }
+        else { e.textContent = d.error || 'ログインに失敗しました。'; }
+      } catch (_) { e.textContent = '通信エラーが発生しました。'; }
+    });
+  </script>
+</body>
+</html>

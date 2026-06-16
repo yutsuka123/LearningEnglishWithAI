@@ -100,7 +100,16 @@ function readAloudBar(getText) {
 
 export async function dashboard(root) {
   const p = await api.get("/api/system/progress");
-  const usage = await api.get("/api/system/usage");
+  let mu = null;
+  try { mu = await api.get("/api/system/my-usage"); } catch (_) { /* */ }
+  const isAdmin = mu && mu.role === "admin";
+  const toeic = (p.toeic_estimate == null) ? "未判定" : p.toeic_estimate;
+  // 一般ユーザーには費用額を見せない（管理者のみ）。残高があれば残高を表示。
+  let costNum = "—", costLbl = "今日のAI費用";
+  if (isAdmin && mu) { costNum = "¥" + mu.today_jpy; }
+  else if (mu && mu.balance_jpy != null) {
+    costNum = "¥" + Math.round(mu.balance_jpy); costLbl = "チャージ残高";
+  }
   const w = p.words;
   const areaLabels = {
     conversation: "英会話", reading: "リーディング", writing: "ライティング",
@@ -121,14 +130,14 @@ export async function dashboard(root) {
 
     <div class="grid cols-3">
       <div class="card stat">
-        <div class="num">${p.toeic_estimate}</div>
+        <div class="num">${toeic}</div>
         <div class="lbl">TOEIC換算(目安)</div></div>
       <div class="card stat">
         <div class="num">${p.overall_avg_mastery}</div>
         <div class="lbl">平均習熟度(単語+フレーズ)</div></div>
       <div class="card stat">
-        <div class="num">${usage ? "¥" + usage.today_cost_jpy : "-"}</div>
-        <div class="lbl">今日のAI費用</div></div>
+        <div class="num">${costNum}</div>
+        <div class="lbl">${costLbl}</div></div>
     </div>
 
     <div class="card">
@@ -514,7 +523,8 @@ function openModal(title, buildBody) {
   return close;
 }
 
-// 詳細(JSON)を整形して描画。
+// 詳細(JSON)を整形して描画。類義語/対義語/派生語のうちDB登録済みの語は、
+// 描画後に linkifyJumps() でクリック可能化し、その語の詳細へジャンプできる。
 function renderWordDetail(box, d) {
   box.innerHTML = "";
   const sec = (label, html) => {
@@ -522,16 +532,22 @@ function renderWordDetail(box, d) {
     box.appendChild(el(`<p style="margin:6px 0"><b>${label}</b> ${html}</p>`));
   };
   const arr = (a) => Array.isArray(a) ? a.map(escapeHtml).join("、") : "";
+  // ジャンプ候補の語を span で包む（後で登録済みのみリンク化）。
+  const jw = (word) => {
+    const w = word || "";
+    return `<span class="jw" data-w="${escapeHtml(w)}">${escapeHtml(w)}</span>`;
+  };
   // 類義語/対義語: 文字列(旧形式) と {word,note}(新形式・ニュアンス併記)に対応。
   const wn = (a) => Array.isArray(a) ? a.map((x) => typeof x === "string"
-    ? escapeHtml(x)
-    : `<b>${escapeHtml(x.word || "")}</b>${x.note
+    ? jw(x)
+    : `${jw(x.word || "")}${x.note
       ? "（" + escapeHtml(x.note) + "）" : ""}`).join(" / ") : "";
+  sec("発音:", d.pronunciation ? escapeHtml(d.pronunciation) : "");
   sec("品詞:", d.pos ? escapeHtml(d.pos) : "");
   sec("意味:", arr(d.meanings));
   if (Array.isArray(d.derivatives) && d.derivatives.length) {
     sec("派生:", d.derivatives.map((x) =>
-      `${escapeHtml(x.word || "")}（${escapeHtml(x.pos || "")}: `
+      `${jw(x.word || "")}（${escapeHtml(x.pos || "")}: `
       + `${escapeHtml(x.ja || "")}）`).join(" / "));
   }
   sec("類義語:", wn(d.synonyms));
@@ -539,6 +555,27 @@ function renderWordDetail(box, d) {
   sec("語源・由来:", d.origin ? escapeHtml(d.origin) : "");
   sec("豆知識:", d.trivia ? escapeHtml(d.trivia) : "");
   sec("解説:", d.explanation ? escapeHtml(d.explanation) : "");
+  linkifyJumps(box);
+}
+
+// 詳細内の語(.jw)のうちDB登録済みのものをクリック可能にし、その語の詳細へ。
+async function linkifyJumps(box) {
+  const spans = Array.from(box.querySelectorAll(".jw"));
+  if (!spans.length) return;
+  const words = Array.from(new Set(
+    spans.map((s) => s.dataset.w).filter(Boolean)));
+  try {
+    const r = await api.post("/api/words/resolve", { words });
+    const found = (r && r.found) || {};
+    for (const s of spans) {
+      const hit = found[(s.dataset.w || "").toLowerCase()];
+      if (hit) {
+        s.classList.add("jw-link");
+        s.title = `「${hit.english}」の詳細へ`;
+        s.addEventListener("click", () => showWordDetail(hit));
+      }
+    }
+  } catch (_) { /* 解決失敗時はリンク化しないだけ（表示はそのまま） */ }
 }
 
 // 単語の詳細ポップアップ: 例文(再生)＋AI詳細(品詞/意味複数/派生/類義/対義/
@@ -563,34 +600,27 @@ function showWordDetail(w) {
     // --- AI詳細 ---
     const detailBox = el(`<div class="mt"></div>`);
     body.appendChild(detailBox);
-    const loadDetail = async (regen) => {
+    // 詳細は事前生成方式（キャッシュ済みのみ表示）。AI生成/作り直しボタンは廃止。
+    const loadDetail = async () => {
       detailBox.innerHTML = `<p class="muted">詳細を取得中…</p>`;
       try {
-        const r = await api.post(
-          `/api/words/${w.id}/detail${regen ? "?regen=true" : ""}`);
+        const r = await api.post(`/api/words/${w.id}/detail`);
         if (r.ok) {
           renderWordDetail(detailBox, r.detail);
           w.has_detail = true;
-          if (!r.cached) refreshCost();
-          const re = el(`<button class="btn ghost mt"
-            >🔄 作り直す(AI)</button>`);
-          re.addEventListener("click", () => loadDetail(true));
-          detailBox.appendChild(re);
-        } else { detailBox.innerHTML =
-          `<p class="muted">${escapeHtml(r.error || "失敗")}</p>`; }
+        } else {
+          detailBox.innerHTML =
+            `<p class="muted">${escapeHtml(r.error || "失敗")}</p>`;
+        }
       } catch (e) {
         detailBox.innerHTML = `<p class="muted">失敗: ${e.message}</p>`;
       }
     };
     if (w.has_detail) {
-      loadDetail(false);  // キャッシュ済み → 無料で表示
+      loadDetail();  // キャッシュ済み → 無料で表示
     } else {
-      const gen = el(`<button class="btn">📖 詳細をAIで生成</button>`);
-      gen.addEventListener("click", () => loadDetail(false));
-      detailBox.appendChild(gen);
-      detailBox.appendChild(el(`<p class="muted">品詞・複数の意味・派生語・
-        類義語/対義語・語源・豆知識・解説を生成します（要API・初回のみ課金、
-        以後はキャッシュで無料）。</p>`));
+      detailBox.appendChild(el(
+        `<p class="muted">この単語の詳細は準備中です。</p>`));
     }
   });
 }
@@ -639,9 +669,11 @@ export async function vocab(root) {
         </select>
         ${speedSelect("wSpeed", false)}
         ${pageSizeSelect("wPage")}
-        <label class="toggle" title="禁止用語(注意喚起)を一覧に表示">
-          <input type="checkbox" id="showBanned" ${showBanned() ? "checked" : ""} />
-          🔞 禁止用語も表示</label>
+        ${state.isAdmin ? `<label class="toggle"
+          title="禁止用語(注意喚起)を一覧に表示">
+          <input type="checkbox" id="showBanned"
+          ${showBanned() ? "checked" : ""} />
+          🔞 禁止用語も表示</label>` : ""}
       </div>
       <table class="mt"><thead><tr>
         <th>再生</th><th>英語</th><th>日本語</th><th>Lv</th><th>分野</th>
@@ -738,7 +770,8 @@ export async function vocab(root) {
     wPage = 0; paint();
   });
   // 禁止表示の切替で分野フィルタの候補(禁止用語)も変わるので作り直す。
-  root.querySelector("#showBanned").addEventListener("change", (e) => {
+  const sbW = root.querySelector("#showBanned");
+  if (sbW) sbW.addEventListener("change", (e) => {
     setShowBanned(e.target.checked); go("vocab");
   });
   kw.addEventListener("input", load);
@@ -771,9 +804,11 @@ export async function phrases(root) {
       <button class="btn" id="quiz">クイズ開始 (10フレーズ)</button>
       <select id="scene"><option value="">全シーン</option>
         ${scenes.map((s) => `<option>${s}</option>`).join("")}</select>
-      <label class="toggle" title="禁止用語(注意喚起)を一覧に表示">
-        <input type="checkbox" id="showBanned" ${showBanned() ? "checked" : ""} />
-        🔞 禁止用語も表示</label>
+      ${state.isAdmin ? `<label class="toggle"
+        title="禁止用語(注意喚起)を一覧に表示">
+        <input type="checkbox" id="showBanned"
+        ${showBanned() ? "checked" : ""} />
+        🔞 禁止用語も表示</label>` : ""}
     </div>
     <div class="row">
       <span class="muted">フレーズの追加は ⚙️設定 に移動しました。</span>
@@ -899,7 +934,8 @@ export async function phrases(root) {
     pPage = 0; paint();
   });
   // 禁止表示の切替はシーン候補も変わるので画面を作り直す。
-  root.querySelector("#showBanned").addEventListener("change", (e) => {
+  const sbP = root.querySelector("#showBanned");
+  if (sbP) sbP.addEventListener("change", (e) => {
     setShowBanned(e.target.checked); go("phrases");
   });
   kw.addEventListener("input", load);
@@ -1806,7 +1842,8 @@ export async function assess(root) {
     <div class="card">
       <h2>🎯 レベル判定</h2>
       <div class="grid cols-3">
-        <div class="stat"><div class="num">${p.toeic_estimate}</div>
+        <div class="stat"><div class="num">${
+          p.toeic_estimate == null ? "未判定" : p.toeic_estimate}</div>
           <div class="lbl">TOEIC換算(目安)</div></div>
         <div class="stat"><div class="num">${w.studied}</div>
           <div class="lbl">学習済み単語</div></div>
@@ -1908,14 +1945,52 @@ export async function history(root) {
       <div id="sumOut" class="md mt"></div>
     </div>
     <div class="card">
-      <h2>memory.md（学習方針・目標・苦手）</h2>
-      <textarea id="mem" style="min-height:160px">${escapeHtml(mem.content)}</textarea>
-      <button class="btn secondary mt" id="saveMem">memoryを保存</button>
+      <h2>学習プロフィール（AIが参考にします）</h2>
+      <p class="muted">記入すると会話・教材作成でAIが考慮します。空欄でOK。</p>
+      <label class="toggle">学習方針</label>
+      <textarea id="mem_policy"
+        placeholder="例: 英会話とリスニングを重点的に"></textarea>
+      <label class="toggle mt">目標</label>
+      <textarea id="mem_goal"
+        placeholder="例: 半年でTOEIC700点"></textarea>
+      <label class="toggle mt">苦手分野</label>
+      <textarea id="mem_weak"
+        placeholder="例: 長文読解、前置詞の使い分け"></textarea>
+      <label class="toggle mt">学習の傾向・自由メモ</label>
+      <textarea id="mem_note"
+        placeholder="その他、AIに伝えたいこと"></textarea>
+      <button class="btn good mt" id="saveMem">プロフィールを保存</button>
     </div>
     <div class="card">
-      <h2>study_log.md</h2>
+      <h2>学習ログ（自動記録）</h2>
       <div class="md" style="max-height:320px;overflow:auto">${md(log.content)}</div>
     </div>`;
+
+  // memory.md(セクション形式) ⇄ 入力欄 の相互変換。
+  const MEM_MAP = [["学習方針", "mem_policy"], ["目標", "mem_goal"],
+    ["苦手分野", "mem_weak"], ["学習傾向", "mem_note"]];
+  const parseMem = (text) => {
+    const out = {}; let cur = null;
+    (text || "").split("\n").forEach((line) => {
+      const m = line.match(/^##\s*(.+?)\s*$/);
+      if (m) { cur = m[1]; out[cur] = out[cur] || ""; return; }
+      if (line.startsWith("# ")) { cur = null; return; }
+      if (cur != null) out[cur] = (out[cur] ? out[cur] + "\n" : "") + line;
+    });
+    return out;
+  };
+  const buildMem = () => {
+    let s = "# 学習メモリ (memory.md)\n";
+    for (const [title, id] of MEM_MAP) {
+      const v = (root.querySelector("#" + id).value || "").trim();
+      s += `\n## ${title}\n${v}\n`;
+    }
+    return s;
+  };
+  const parsed = parseMem(mem.content);
+  for (const [title, id] of MEM_MAP) {
+    root.querySelector("#" + id).value = (parsed[title] || "").trim();
+  }
 
   const payload = () => ({
     content: root.querySelector("#content").value,
@@ -1937,9 +2012,91 @@ export async function history(root) {
     toast("学習履歴に保存しました"); go("history");
   });
   root.querySelector("#saveMem").addEventListener("click", async () => {
-    await api.put("/api/system/memory",
-      { content: root.querySelector("#mem").value });
-    toast("memory.md を保存しました");
+    await api.put("/api/system/memory", { content: buildMem() });
+    toast("プロフィールを保存しました");
+  });
+}
+
+// --- 管理者ダッシュボード（管理者のみ）---------------------------------------
+export async function admin(root) {
+  let d;
+  try {
+    d = await api.get("/api/system/admin/overview");
+  } catch (e) {
+    root.innerHTML = `<h1>管理者情報</h1>
+      <p class="muted">管理者のみ閲覧できます（${escapeHtml(e.message)}）。</p>`;
+    return;
+  }
+  const sec = d.security || {};
+  const fmtDate = (s) => s ? s.replace("T", " ").slice(0, 16) : "—";
+  const rows = d.users.map((u) => {
+    const flags = [];
+    if (!u.is_active) flags.push('<span class="badge-off">無効</span>');
+    if (u.balance_empty) flags.push('<span class="badge-bad">残高切れ</span>');
+    if (u.over_daily) flags.push('<span class="badge-bad">日上限</span>');
+    if (u.over_monthly) flags.push('<span class="badge-bad">月上限</span>');
+    if (u.allow_banned) flags.push('<span class="badge-warn">禁止可</span>');
+    const bal = u.balance_jpy == null ? "—" : "¥" + Math.round(u.balance_jpy);
+    const dcap = u.daily_cap_jpy ? "¥" + u.daily_cap_jpy : "—";
+    const mcap = u.monthly_cap_jpy ? "¥" + u.monthly_cap_jpy : "—";
+    return `<tr>
+      <td>${escapeHtml(u.display_name || u.username)}<br>
+        <span class="muted">${escapeHtml(u.username)}</span></td>
+      <td>${u.role}</td>
+      <td>¥${u.today_jpy} / ${dcap}</td>
+      <td>¥${u.month_jpy} / ${mcap}</td>
+      <td>${bal}</td>
+      <td><input type="number" class="chg-amt" data-uid="${u.id}"
+        value="1000" min="1" max="1000" step="100" style="width:74px" />
+        <button class="btn good chg-btn" data-uid="${u.id}"
+        style="padding:3px 8px">＋</button></td>
+      <td>${u.calls}</td>
+      <td>${fmtDate(u.last_used)}</td>
+      <td>${flags.join(" ") || "—"}</td>
+    </tr>`;
+  }).join("");
+  root.innerHTML = `
+    <h1>👑 管理者情報</h1>
+    <p class="sub">ユーザー別の利用状況・上限・残高・問題の把握（管理者専用）。</p>
+    <div class="card">
+      <h2>セキュリティ</h2>
+      <div class="grid cols-3">
+        <div class="stat"><div class="num">${sec.locked_accounts ?? 0}</div>
+          <div class="lbl">ロック中アカウント</div></div>
+        <div class="stat"><div class="num">${sec.locked_ips ?? 0}</div>
+          <div class="lbl">ロック中IP(スプレー)</div></div>
+        <div class="stat"><div class="num">${d.users.length}</div>
+          <div class="lbl">登録ユーザー数</div></div>
+      </div>
+      <p class="muted mt">ログイン3回連続失敗→5分ロック / 1IP15回失敗→15分ロック。</p>
+    </div>
+    <div class="card">
+      <h2>ユーザー別 利用状況</h2>
+      <table class="mt"><thead><tr>
+        <th>担当者 / ID</th><th>権限</th><th>今日 / 上限</th>
+        <th>今月 / 上限</th><th>残高</th><th>チャージ(¥)</th><th>累計回数</th>
+        <th>最終利用</th><th>状態</th>
+      </tr></thead><tbody>${rows}</tbody></table>
+      <p class="muted mt">残高は日次/月次の<b>無料枠（上限）とは別管理</b>で、枠に
+        到達した後の利用で消費されます。チャージは<b>1回 最大¥1000</b>。
+        「残高切れ/日上限/月上限」は利用が止まっている目安です。</p>
+    </div>`;
+
+  // チャージ（1回最大¥1000）。
+  root.querySelectorAll(".chg-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const uid = parseInt(btn.dataset.uid, 10);
+      const inp = root.querySelector(`.chg-amt[data-uid="${uid}"]`);
+      let amt = parseInt(inp.value, 10);
+      if (!Number.isFinite(amt) || amt <= 0) { toast("金額を入力"); return; }
+      if (amt > 1000) { amt = 1000; toast("1回の上限は¥1000です"); }
+      try {
+        const r = await api.post("/api/system/admin/charge",
+          { user_id: uid, amount_jpy: amt });
+        toast(`チャージ完了: 残高 ¥${Math.round(r.balance_jpy)}`);
+        go("admin");  // 再描画
+      } catch (e) { toast("失敗: " + e.message); }
+    });
   });
 }
 
@@ -1949,9 +2106,24 @@ export async function settings(root) {
   const s = await api.get("/api/system/settings");
   const usage = await api.get("/api/system/usage");
   root.innerHTML = `
-    <h1>設定</h1>
-    <p class="sub">APIキーは設定後 .env に保存されます（git管理外）。</p>
+    <h1>設定 <span class="muted" id="roleBadge"></span></h1>
+    <p class="sub">学習者プロフィールと音声・AIの設定。</p>
     <div class="card">
+      <h2>プロフィール</h2>
+      <div class="row">
+        <label class="toggle">呼んでほしい名前</label>
+        <input id="pf_nick" placeholder="例: ゆうた" style="width:200px" />
+      </div>
+      <div class="row mt">
+        <label class="toggle">TOEIC自己申告(任意)</label>
+        <input id="pf_toeic" type="number" min="0" max="990" step="5"
+          placeholder="例: 550" style="width:120px" />
+        <button class="btn good" id="pf_save">保存</button>
+      </div>
+      <p class="muted">TOEICは出題題材のレベルの手がかりにします（学習が進むと
+        実績も加味）。名前はAIが会話で呼びかける際に使います。</p>
+    </div>
+    <div class="card admin-only">
       <h2>OpenAI</h2>
       <div class="row">
         <input id="key" type="password" placeholder="APIキー (${s.api_key_masked || "未設定"})"
@@ -1977,7 +2149,7 @@ export async function settings(root) {
           ${speech.isVoiceAutoSubmit() ? "checked" : ""} />
         録音停止したら自動で判定/送信する（OFFなら内容を確認してから送信）</label>
     </div>
-    <div class="card">
+    <div class="card admin-only">
       <h2>🔞 禁止用語（注意喚起）</h2>
       <p class="muted">罵り・スラング・差別語など、映画やドラマで出会うが
         使うと危険な表現です。学習(理解・回避)のため最小限・伏字で収録しています。
@@ -2003,7 +2175,7 @@ export async function settings(root) {
       <p class="muted">自然な声にはOpenAIの利用枠（課金/クレジット）が必要です。
         失敗時は自動でブラウザ標準の声に切り替わります。</p>
     </div>
-    <div class="card">
+    <div class="card admin-only">
       <h2>語彙の追加・インポート</h2>
       <h3>単語を追加</h3>
       <div class="row">
@@ -2034,7 +2206,7 @@ export async function settings(root) {
         <span id="sp_out" class="muted"></span>
       </div>
     </div>
-    <div class="card">
+    <div class="card admin-only">
       <h2>API使用量・費用</h2>
       <p>累計 <b>¥${usage.total_cost_jpy}</b>（$${usage.total_cost_usd.toFixed(4)}）
          / 今日 <b>¥${usage.today_cost_jpy}</b>（$${usage.today_cost_usd.toFixed(4)}）
@@ -2088,7 +2260,8 @@ export async function settings(root) {
     ["#sp_en", "#sp_ja", "#sp_sc"].forEach((i) => { sq(i).value = ""; });
   });
 
-  root.querySelector("#save").addEventListener("click", async () => {
+  const saveBtn = root.querySelector("#save");
+  if (saveBtn) saveBtn.addEventListener("click", async () => {
     const body = {
       openai_model: root.querySelector("#model").value,
       openai_quality_model: root.querySelector("#qmodel").value,
@@ -2097,6 +2270,41 @@ export async function settings(root) {
     if (key) body.openai_api_key = key;
     await api.put("/api/system/settings", body);
     toast("保存しました"); await refreshAiState(); go("settings");
+  });
+
+  // --- プロフィール(per-user 設定) のロード/保存 + ロール別表示 ---
+  (async () => {
+    let mu = null, us = {};
+    try { mu = await api.get("/api/system/my-usage"); } catch (_) { /* */ }
+    try { us = (await api.get("/api/system/user-settings")).settings || {}; }
+    catch (_) { /* */ }
+    const nick = root.querySelector("#pf_nick");
+    const toeic = root.querySelector("#pf_toeic");
+    if (nick) nick.value = us.nickname || "";
+    if (toeic) toeic.value = us.toeic_self || "";
+    // 管理者表示。一般ユーザーには管理者向けカードを隠す。
+    const badge = root.querySelector("#roleBadge");
+    if (mu && mu.role === "admin") {
+      if (badge) badge.textContent = "（管理者）";
+    } else {
+      root.querySelectorAll(".admin-only").forEach((c) => {
+        c.style.display = "none";
+      });
+    }
+  })();
+
+  const pfSave = root.querySelector("#pf_save");
+  if (pfSave) pfSave.addEventListener("click", async () => {
+    const settings = {};
+    // 既存設定とマージ（他キーを消さない）。
+    try { Object.assign(settings,
+      (await api.get("/api/system/user-settings")).settings || {}); }
+    catch (_) { /* */ }
+    settings.nickname = root.querySelector("#pf_nick").value.trim();
+    const t = parseInt(root.querySelector("#pf_toeic").value, 10);
+    settings.toeic_self = Number.isFinite(t) ? t : null;
+    await api.put("/api/system/user-settings", { settings });
+    toast("プロフィールを保存しました");
   });
 
   // Friendly descriptions for the OpenAI voices.
@@ -2220,8 +2428,9 @@ export async function decks(root) {
           style="width:60px" min="1" /></label>
       </div>
       <div class="row mt">
-        <label class="toggle"><input type="checkbox" id="dbanned" />
-          🔞 禁止用語も含める</label>
+        ${state.isAdmin ? `<label class="toggle">
+          <input type="checkbox" id="dbanned" />
+          🔞 禁止用語も含める</label>` : ""}
         <button class="btn good" id="dcreate">作成</button>
         <span id="dcreateOut" class="muted"></span>
       </div>
@@ -2281,7 +2490,7 @@ export async function decks(root) {
         name: name || "新しい単語帳",
         domains: sels("#ddomains"),
         levels: sels("#dlevels"),
-        include_banned: root.querySelector("#dbanned").checked,
+        include_banned: !!root.querySelector("#dbanned")?.checked,
         limit: parseInt(root.querySelector("#dlimit").value, 10) || null,
         settings: {
           directions: root.querySelector("#ddir").value,

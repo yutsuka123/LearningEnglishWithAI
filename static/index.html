@@ -27,10 +27,12 @@
               <option value="voice">🎤 音声</option>
             </select>
           </label>
-          <span class="cost" id="costBadge" title="API使用量・推定費用">
-            💰 …
-          </span>
+          <span class="usage-bars" id="usageBars" title="AI利用の残量"></span>
+          <span class="cost" id="costBadge"></span>
           <span class="ai-state" id="aiState"></span>
+          <span class="app-ver" id="appVer"></span>
+          <button class="btn ghost" id="logoutBtn"
+            style="display:none;padding:4px 10px">ログアウト</button>
         </div>
       </header>
 

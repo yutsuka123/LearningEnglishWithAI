@@ -87,29 +87,44 @@ def list_materials(
     area: str | None = None, areas: str | None = None, limit: int = 100,
 ):
     """area 単一、または areas=カンマ区切りで複数領域の履歴を新しい順に。"""
+    from ..services.auth import current_user_id
     area_list = (
         [a.strip() for a in areas.split(",") if a.strip()] if areas
         else ([area] if area else [])
     )
+    # 教材本文は共有、覚えた/うろ覚え(mastery)は per-user。
+    base = (
+        "SELECT m.id, m.area, m.field, m.title, m.body, m.created_at, "
+        "COALESCE(ump.mastery, 0) AS mastery, ump.last_studied AS last_studied "
+        "FROM materials m LEFT JOIN user_material_progress ump "
+        "ON ump.material_id = m.id AND ump.user_id = ?"
+    )
+    uid = current_user_id()
     with db() as conn:
         if area_list:
             ph = ",".join("?" * len(area_list))
             rows = conn.execute(
-                f"SELECT * FROM materials WHERE area IN ({ph}) "
-                "ORDER BY id DESC LIMIT ?", (*area_list, limit),
+                f"{base} WHERE m.area IN ({ph}) "
+                "ORDER BY m.id DESC LIMIT ?", (uid, *area_list, limit),
             ).fetchall()
         else:
             rows = conn.execute(
-                "SELECT * FROM materials ORDER BY id DESC LIMIT ?", (limit,)
+                f"{base} ORDER BY m.id DESC LIMIT ?", (uid, limit)
             ).fetchall()
         return [dict(r) for r in rows]
 
 
 @router.get("/materials/{material_id}")
 def get_material(material_id: int):
+    from ..services.auth import current_user_id
     with db() as conn:
         row = conn.execute(
-            "SELECT * FROM materials WHERE id = ?", (material_id,)
+            "SELECT m.id, m.area, m.field, m.title, m.body, m.created_at, "
+            "COALESCE(ump.mastery, 0) AS mastery, ump.last_studied "
+            "AS last_studied FROM materials m LEFT JOIN "
+            "user_material_progress ump ON ump.material_id = m.id "
+            "AND ump.user_id = ? WHERE m.id = ?",
+            (current_user_id(), material_id),
         ).fetchone()
         if not row:
             return Response(content="not found", status_code=404,
@@ -123,24 +138,38 @@ def delete_material(material_id: int):
         conn.execute("DELETE FROM materials WHERE id = ?", (material_id,))
 
 
+def _material_set_mastery(conn, material_id: int, mastery: int) -> None:
+    """教材の習得度を per-user に UPSERT（教材本文は共有・履歴だけuser別）。"""
+    from ..services.auth import current_user_id
+    conn.execute(
+        "INSERT INTO user_material_progress "
+        "(user_id, material_id, mastery, last_studied) "
+        "VALUES (?, ?, ?, date('now')) "
+        "ON CONFLICT(user_id, material_id) DO UPDATE SET "
+        "mastery=excluded.mastery, last_studied=excluded.last_studied",
+        (current_user_id(), material_id, mastery),
+    )
+
+
 @router.post("/materials/{material_id}/known")
 def material_known(material_id: int):
     with db() as conn:
-        conn.execute(
-            "UPDATE materials SET mastery = 200 WHERE id = ?", (material_id,))
+        _material_set_mastery(conn, material_id, 200)
     return {"ok": True, "mastery": 200}
 
 
 @router.post("/materials/{material_id}/vague")
 def material_vague(material_id: int):
+    from ..services.auth import current_user_id
+    from ..services import progress  # noqa: F401 (一貫性のため)
     with db() as conn:
         row = conn.execute(
-            "SELECT mastery FROM materials WHERE id = ?", (material_id,)
+            "SELECT mastery FROM user_material_progress "
+            "WHERE user_id = ? AND material_id = ?",
+            (current_user_id(), material_id),
         ).fetchone()
         new = max(0, min(200, (row["mastery"] if row else 0) + 10))
-        conn.execute(
-            "UPDATE materials SET mastery = ? WHERE id = ?",
-            (new, material_id))
+        _material_set_mastery(conn, material_id, new)
     return {"ok": True, "mastery": new}
 
 
@@ -187,11 +216,12 @@ def _conversation_prompts(payload: ConversationIn) -> tuple[str, str]:
 def _log_conversation(role: str, content: str, mode: str) -> None:
     if not content.strip():
         return
+    from ..services.auth import current_user_id
     with db() as conn:
         conn.execute(
-            "INSERT INTO conversation_log (role, content, mode) "
-            "VALUES (?, ?, ?)",
-            (role, content.strip(), mode),
+            "INSERT INTO conversation_log (role, content, mode, user_id) "
+            "VALUES (?, ?, ?, ?)",
+            (role, content.strip(), mode, current_user_id()),
         )
 
 
@@ -304,26 +334,37 @@ def reply_examples(payload: ConversationIn):
 @router.get("/assess")
 def assess():
     """学習データから現在のレベルをAIが判定（品質モデルを使用）。"""
+    from ..services.auth import current_user_id
+    from ..services.progress import user_items_subquery
+    uid = current_user_id()
+    src = user_items_subquery("words")
     with db() as conn:
-        wb = word_buckets(conn, "words")
-        pb = word_buckets(conn, "phrases")
+        wb = word_buckets(conn, "words", user_id=uid)
+        pb = word_buckets(conn, "phrases", user_id=uid)
         studied = conn.execute(
             "SELECT english, japanese, times_asked, times_correct, "
             "ok_en2ja, ask_en2ja, ok_ja2en, ask_ja2en "
-            "FROM words WHERE times_asked > 0 ORDER BY times_asked DESC"
+            f"FROM {src} AS t WHERE times_asked > 0 ORDER BY times_asked DESC",
+            (uid,),
         ).fetchall()
         convo = conn.execute(
             "SELECT content FROM conversation_log "
-            "WHERE role = 'user' ORDER BY id DESC LIMIT 20"
+            "WHERE role = 'user' AND user_id = ? ORDER BY id DESC LIMIT 20",
+            (uid,),
         ).fetchall()
 
+    from ..services.auth import get_user_settings
     total = wb["total"] + pb["total"]
     mastered = wb["mastered"] + pb["mastered"]
+    studied_n = wb["studied"] + pb["studied"]
     avg = 0.0
     if total:
         avg = (wb["avg_mastery"] * wb["total"]
                + pb["avg_mastery"] * pb["total"]) / total
-    est = toeic_estimate(avg, mastered, total)
+    with db() as conn:
+        self_toeic = get_user_settings(conn, uid).get("toeic_self")
+    est = toeic_estimate(avg, mastered, total, studied=studied_n,
+                         self_declared=self_toeic)
 
     base = {
         "toeic_estimate": est,
@@ -633,13 +674,15 @@ def session_save(payload: SessionEndIn):
     会話の自動記録では同じ ``session_key`` で何度も呼ばれる。その場合は行を
     増やさず既存行を上書きする。``final`` のときだけ study_log.md へ追記する
     (途中の上書き保存ではログを汚さない)。"""
+    from ..services.auth import current_user_id
+    uid = current_user_id()
     with db() as conn:
         existing = None
         if payload.session_key:
             row = conn.execute(
                 "SELECT id FROM study_sessions WHERE session_key = ? "
-                "ORDER BY id DESC LIMIT 1",
-                (payload.session_key,),
+                "AND user_id = ? ORDER BY id DESC LIMIT 1",
+                (payload.session_key, uid),
             ).fetchone()
             existing = row["id"] if row else None
         if existing is not None:
@@ -655,10 +698,11 @@ def session_save(payload: SessionEndIn):
             conn.execute(
                 "INSERT INTO study_sessions "
                 "(content, accuracy, weak_points, next_topic, new_words, "
-                "session_key) VALUES (?, ?, ?, ?, ?, ?)",
+                "session_key, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (
                     payload.content, payload.accuracy, payload.weak_points,
-                    payload.next_topic, payload.new_words, payload.session_key,
+                    payload.next_topic, payload.new_words,
+                    payload.session_key, uid,
                 ),
             )
     if not payload.final:
@@ -700,9 +744,11 @@ def daily_session(
     chosen by the forgetting-curve scheduler (due items first). Returns the
     concrete items so the client can run the fast part without AI calls.
     禁止用語は ``include_banned`` が真でない限り出題しない。"""
+    from ..services.auth import current_user_id
     n_words = max(1, min(words, 10))
     n_phrases = max(1, min(phrases, 10))
     ban = not include_banned
+    uid = current_user_id()
 
     with db() as conn:
         words_list = [
@@ -714,11 +760,13 @@ def daily_session(
                 "mastery": r["mastery"],
             }
             for r in select_for_review(
-                conn, table="words", limit=n_words, exclude_banned=ban
+                conn, table="words", limit=n_words, exclude_banned=ban,
+                user_id=uid,
             )
         ]
         phrase_rows = select_for_review(
-            conn, table="phrases", limit=n_phrases, exclude_banned=ban
+            conn, table="phrases", limit=n_phrases, exclude_banned=ban,
+            user_id=uid,
         )
         phrases_list = [dict(r) for r in phrase_rows]
 

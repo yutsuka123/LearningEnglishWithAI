@@ -1,0 +1,67 @@
+# study.nyangailab.com 用の単独 compose（AIpoc/n8n には一切触れない）。
+#
+# ★AIpoc 共有前提に準拠（2026-06-16 受領）:
+#  - Caddy はホスト常駐で 80/443 を占有・Let's Encrypt 自動TLS（/etc/caddy/Caddyfile）。
+#    → 相乗りサービスは **127.0.0.1 の空きポート**で起動し、**Caddy が逆プロキシ**する。
+#      直接 443 を掴まない／新規 inbound ポートを開けない（127.0.0.1 はローカル限定）。
+#  - aipoc-n8n / aipoc-postgres / owners-app / ailab.* /aipoc/ には触れない。
+#  - DB は本アプリ専用 SQLite（aipoc-postgres には接続しない）。
+#  - mem_limit で 2GB VPS の n8n を圧迫しない。データは bind mount（rsync/バックアップ）。
+#
+# ★公開ポートは VPS で `sudo ss -tlnp` で空きを確認して合わせる（既定 8001。
+#   5678=n8n 使用中。owners-app 等が 8000 を使う可能性あり→必ず確認）。
+#
+# 使い方（VPS 上・ailab には無影響）:
+#   docker compose -f docker-compose.study.yml up -d --build
+#   docker compose -f docker-compose.study.yml down        # 撤去(ailab無関係)
+
+services:
+  eigo-app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: eigo-app:latest
+    container_name: eigo-app
+    restart: unless-stopped
+    # bind マウントした /data(host ubuntu=1000:1000 所有)に書き込むため、コンテナを
+    # 同 uid で実行（非root維持・SQLite書込可）。VPS の `id ubuntu` に一致させる。
+    user: "1000:1000"
+    env_file:
+      - ./.env.study           # 秘密はここ（リポジトリには置かない・下記example参照）
+    environment:
+      DATA_DIR: /data
+      HOST: 0.0.0.0
+      PORT: "8000"
+    volumes:
+      # VPS 上のホストパス:コンテナ内。事前に rsync でデータを置く（RUNBOOK参照）。
+      - /home/ubuntu/eigo/data:/data
+    # ★実機確認の結果(2026-06-16): Caddy は Docker コンテナ(aipoc-web)で稼働し
+    #   ネットワーク aipoc_default に owners-app 等と同居。よって eigo-app も同網に
+    #   参加し、Caddy から `eigo-app:8000` をコンテナ名で解決させる（owners-app と同方式）。
+    #   ホストポート公開は不要だが、ホストからの死活確認用に 127.0.0.1:8001 も公開（任意）。
+    ports:
+      - "127.0.0.1:8001:8000"   # ローカル限定（FW変更不要）。検証用・外部非公開
+    networks:
+      - shared
+    mem_limit: 512m            # n8n を守るための上限（uvicorn+SQLite は十分軽い）
+    cpus: "1.0"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0) if urllib.request.urlopen('http://127.0.0.1:8000/api/health',timeout=3).status==200 else sys.exit(1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  shared:
+    external: true
+    name: aipoc_default        # 実在の AIpoc 網（owners-app/n8n/caddy が所属）
+
+# 注: aipoc-web の Caddyfile は global に `admin off` のため `caddy reload`(admin API)
+# は不可。設定反映は `docker restart aipoc-web`（ailab に数秒の瞬断）。事前に
+# `docker exec aipoc-web caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile`。

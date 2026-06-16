@@ -114,9 +114,13 @@ def list_words(
     elif mastered == "hide":
         where.append(f"mastery < {MASTERED_THRESHOLD}")
     clause = (" WHERE " + " AND ".join(where)) if where else ""
+    from ..services.auth import current_user_id
+    from ..services.progress import user_items_subquery
+    src = user_items_subquery("words")  # 先頭の ? = user_id
     with db() as conn:
         rows = conn.execute(
-            f"SELECT * FROM words{clause} ORDER BY {order}", params
+            f"SELECT * FROM {src} AS words{clause} ORDER BY {order}",
+            [current_user_id(), *params],
         ).fetchall()
         return [_word_dict(r) for r in rows]
 
@@ -195,20 +199,23 @@ def delete_word(word_id: int):
 @router.get("/quiz")
 def quiz(limit: int = 10, include_banned: bool = False):
     """Return a weighted set of words to quiz (probability ∝ 100 - mastery)."""
+    from ..services.auth import current_user_id
     with db() as conn:
         rows = pick_weighted(
-            conn, limit=limit, exclude_banned=not include_banned
+            conn, limit=limit, exclude_banned=not include_banned,
+            user_id=current_user_id(),
         )
         return [_word_dict(r) for r in rows]
 
 
 @router.post("/attempt")
 def attempt(payload: AttemptIn):
+    from ..services.auth import current_user_id
     with db() as conn:
         try:
             result = record_attempt(
                 conn, payload.word_id, payload.direction, payload.correct,
-                result=payload.result,
+                result=payload.result, user_id=current_user_id(),
             )
         except ValueError as exc:
             raise HTTPException(400, str(exc))
@@ -221,30 +228,34 @@ class KnownIn(BaseModel):
 
 @router.post("/{word_id}/known")
 def mark_known(word_id: int, payload: KnownIn):
-    """「覚えた」ボタン: mastery を満点(200)に。known=false で解除。"""
+    """「覚えた」ボタン(per-user): mastery を満点(200)に。known=false で解除。"""
+    from ..services.auth import current_user_id
     with db() as conn:
         exists = conn.execute(
             "SELECT id FROM words WHERE id = ?", (word_id,)
         ).fetchone()
         if not exists:
             raise HTTPException(404, "単語が見つかりません")
-        new = set_known(conn, word_id, payload.known, table="words")
+        new = set_known(conn, word_id, payload.known, table="words",
+                        user_id=current_user_id())
     return {"ok": True, "mastery": new, "known": payload.known}
 
 
 @router.post("/{word_id}/vague")
 def mark_vague(word_id: int):
-    """「うろ覚え」ボタン: mastery を +10（0..200でクランプ）。"""
+    """「うろ覚え」ボタン(per-user): mastery を +10（0..200でクランプ）。"""
+    from ..services.auth import current_user_id
+    from ..services import progress as P
     with db() as conn:
-        row = conn.execute(
-            "SELECT mastery FROM words WHERE id = ?", (word_id,)
+        exists = conn.execute(
+            "SELECT id FROM words WHERE id = ?", (word_id,)
         ).fetchone()
-        if not row:
+        if not exists:
             raise HTTPException(404, "単語が見つかりません")
-        new = clamp(row["mastery"] + VAGUE_BONUS)
-        conn.execute(
-            "UPDATE words SET mastery = ? WHERE id = ?", (new, word_id)
-        )
+        uid = current_user_id()
+        cur = P.get_progress(conn, uid, "words", word_id)
+        new = clamp(cur["mastery"] + VAGUE_BONUS)
+        P.upsert_progress(conn, uid, "words", word_id, mastery=new)
     return {"ok": True, "mastery": new}
 
 
@@ -287,6 +298,7 @@ def word_detail(word_id: int, regen: bool = False):
         return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
     system = (
         "英単語の詳細情報を日本語でJSONのみ作成。キー: "
+        "pronunciation(発音記号・IPA。米音を基本にスラッシュで囲む 例: /əˈbændən/), "
         "pos(主な品詞), meanings(意味の配列・主要な語義を複数), "
         "examples(配列[{en,ja}]・自然な例文1〜2個), "
         "derivatives(派生語の配列[{word,pos,ja}]・元が形容詞なら動詞/副詞/名詞"
@@ -316,6 +328,47 @@ def word_detail(word_id: int, regen: bool = False):
             (_json.dumps(data, ensure_ascii=False), word_id),
         )
     return {"ok": True, "cached": False, "detail": data}
+
+
+class ResolveIn(BaseModel):
+    words: list[str]
+
+
+@router.post("/resolve")
+def resolve_words(payload: ResolveIn):
+    """与えた英単語リストのうち、DBに登録済みのものを返す（類義語ジャンプ用）。
+    詳細の synonyms/antonyms/derivatives の語をクリックでその語へ飛べるように、
+    フロントが表示時にどれが登録済みかを引くための軽量エンドポイント。
+    返り値: {found: {小文字キー: {id, english, japanese, level, example,
+    has_detail}}}。"""
+    keys = []
+    seen = set()
+    for w in payload.words or []:
+        k = (w or "").strip().lower()
+        if k and k not in seen:
+            seen.add(k)
+            keys.append(k)
+    if not keys:
+        return {"found": {}}
+    found: dict[str, dict] = {}
+    with db() as conn:
+        # 小文字一致でまとめて引く（IN 句）。語数は詳細1件ぶんで小さい。
+        qmarks = ",".join("?" * len(keys))
+        rows = conn.execute(
+            f"SELECT id, english, japanese, level, example, detail "
+            f"FROM words WHERE LOWER(english) IN ({qmarks})", keys
+        ).fetchall()
+    for r in rows:
+        k = r["english"].strip().lower()
+        if k in found:
+            continue  # 同綴り重複は先勝ち
+        found[k] = {
+            "id": r["id"], "english": r["english"],
+            "japanese": r["japanese"], "level": r["level"],
+            "example": r["example"],
+            "has_detail": bool((r["detail"] or "").strip()),
+        }
+    return {"found": found}
 
 
 class ImportIn(BaseModel):
@@ -521,11 +574,15 @@ def retag(batch: int = 30):
 
 @router.get("/stats")
 def stats():
+    from ..services.auth import current_user_id, get_user_settings
     from ..services.metrics import toeic_estimate, word_buckets
 
+    uid = current_user_id()
     with db() as conn:
-        b = word_buckets(conn, "words")
+        b = word_buckets(conn, "words", user_id=uid)
+        self_toeic = get_user_settings(conn, uid).get("toeic_self")
     b["toeic_estimate"] = toeic_estimate(
-        b["avg_mastery"], b["mastered"], b["total"]
+        b["avg_mastery"], b["mastered"], b["total"],
+        studied=b["studied"], self_declared=self_toeic,
     )
     return b
