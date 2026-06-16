@@ -12,6 +12,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+# アプリのバージョン（UI表示用）。
+APP_VERSION = "ver1.1.0-alpha01"
+
 # Project root = the directory that contains the "app" package.
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
@@ -107,7 +110,7 @@ DEFAULT_MAX_OUTPUT_TOKENS = 1500
 def load_settings() -> Settings:
     """Read settings fresh from env (so a saved .env takes effect)."""
     load_dotenv(ROOT_DIR / ".env", override=True)
-    model = os.getenv("OPENAI_MODEL", "gpt-4o-mini").strip()
+    model = os.getenv("OPENAI_MODEL", "gpt-5.4-mini").strip()
     host = os.getenv("HOST", "127.0.0.1").strip()
     tts = os.getenv("OPENAI_TTS_MODEL", "gpt-4o-mini-tts").strip()
     # 品質重視の処理用。未設定なら通常モデルにフォールバック。
@@ -128,12 +131,12 @@ def load_settings() -> Settings:
         storage = "file"
     return Settings(
         openai_api_key=os.getenv("OPENAI_API_KEY", "").strip(),
-        openai_model=model or "gpt-4o-mini",
+        openai_model=model or "gpt-5.4-mini",
         host=host or "127.0.0.1",
         port=int(os.getenv("PORT", "8000")),
         nickname=os.getenv("USER_NICKNAME", "").strip(),
         tts_model=tts or "gpt-4o-mini-tts",
-        quality_model=quality or (model or "gpt-4o-mini"),
+        quality_model=quality or (model or "gpt-5.4-mini"),
         usd_jpy_rate=rate,
         usd_jpy_as_of=as_of,
         ai_daily_cost_cap_usd=max(0.0, cap),

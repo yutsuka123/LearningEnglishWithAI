@@ -1,0 +1,41 @@
+# ▼ study.nyangailab.com 用の vhost ブロック。
+# ★実機(2026-06-16): Caddy は Docker コンテナ aipoc-web。Caddyfile は host の
+#   /home/ubuntu/AIpoc/sakura-web/Caddyfile（コンテナに ro マウント）。
+#   この study ブロックを ailab ブロックの**後ろに追記**（AIpoc ブロックは不変）。
+#   global に `admin off` のため reload 不可 → 反映は `docker restart aipoc-web`。
+#   反映前に検証:
+#     docker exec aipoc-web caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+#   反映:
+#     docker cp で無く host の Caddyfile を直接編集 → docker restart aipoc-web
+#     （ailab に数秒の瞬断。直後に ailab と study の両方を curl 確認）
+#
+# 前提: study.nyangailab.com の A録が VPS を指す（設定済）。80/443 は Caddy 占有。
+# Caddy が自動で Let's Encrypt 証明書を取得し HTTPS 化。reverse_proxy は
+# X-Forwarded-Proto を自動付与（COOKIE_SECURE=auto でも可・本番は 1 推奨）。
+
+study.nyangailab.com {
+    encode gzip
+
+    # セキュリティヘッダ（HSTS 等）。
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+
+    # 同一 Docker 網 aipoc_default の eigo-app:8000 へ（owners-app と同方式）。
+    reverse_proxy eigo-app:8000
+
+    # アクセスログ（fail2ban 連携や監視に）。
+    log {
+        output file /var/log/caddy/study.log {
+            roll_size 10mb
+            roll_keep 5
+        }
+    }
+}
+
+# 任意（さらに堅牢化）: レート制限を入れる場合は caddy-ratelimit プラグインを
+# 組み込んだ Caddy イメージが必要。未導入なら省略可（アプリ側 RATE_LIMIT_PER_MIN
+# とログインロックで一次防御）。

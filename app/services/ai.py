@@ -40,6 +40,57 @@ def _today_cost_usd() -> float:
     return float(row["c"] or 0.0)
 
 
+def _user_cost_usd(user_id: int, period: str) -> float:
+    """Sum of a single user's AI cost over 'day' (local day) or 'month'."""
+    if period == "month":
+        clause = ("strftime('%Y-%m', created_at, 'localtime') = "
+                  "strftime('%Y-%m', 'now', 'localtime')")
+    else:
+        clause = ("date(created_at, 'localtime') = "
+                  "date('now', 'localtime')")
+    with db() as conn:
+        row = conn.execute(
+            f"SELECT COALESCE(SUM(cost_usd), 0) AS c FROM ai_usage "
+            f"WHERE user_id = ? AND {clause}", (user_id,)
+        ).fetchone()
+    return float(row["c"] or 0.0)
+
+
+def _effective_caps(u: dict, s) -> tuple:
+    """ユーザーの実効 日次/月次 上限(USD)。日次は個別→無ければグローバル既定。
+    月次は個別のみ(未設定=なし)。"""
+    dcap = u.get("daily_cost_cap_usd")
+    dcap = float(dcap) if dcap else (s.ai_daily_cost_cap_usd or None)
+    mcap = u.get("monthly_cost_cap_usd")
+    mcap = float(mcap) if mcap else None
+    return dcap, mcap
+
+
+def _user_guard(s) -> str | None:
+    """課金モデル: 日次/月次の上限は「無料枠」。枠に到達したら**前払いチャージ
+    残高**を消費して継続（残高は枠とは別管理）。残高が無ければ停止。
+    Owner(個別上限なし)はグローバル日次上限のみが効く。"""
+    from .auth import current_user_id, get_user
+
+    uid = current_user_id()
+    with db() as conn:
+        u = get_user(conn, uid)
+    if not u:
+        return None
+    dcap, mcap = _effective_caps(u, s)
+    over_daily = bool(dcap and dcap > 0 and _user_cost_usd(uid, "day") >= dcap)
+    over_monthly = bool(
+        mcap and mcap > 0 and _user_cost_usd(uid, "month") >= mcap)
+    if over_daily or over_monthly:
+        bal = u.get("balance_jpy")
+        if bal is not None and float(bal) > 0:
+            return None  # 枠到達だがチャージ残高で継続（_record_usageで消費）
+        which = "本日" if over_daily else "今月"
+        return (f"{which}の利用上限に達しました。管理者によるチャージ(¥500)で"
+                "継続できます。")
+    return None
+
+
 def budget_status() -> dict:
     """Today's spend vs. the configured cap (for the UI / settings display)."""
     s = load_settings()
@@ -60,14 +111,11 @@ def _guard(feature: str, *, rate_limit: bool = True) -> str | None:
     explicit, user-authorized batch (``rate_limit=False``) — the cap still
     stops it once the day's budget is spent, so it resumes next run."""
     s = load_settings()
-    cap = s.ai_daily_cost_cap_usd
-    if cap > 0 and _today_cost_usd() >= cap:
-        rate = s.usd_jpy_rate
-        return (
-            f"本日のAI利用上限(¥{round(cap * rate)} / ${cap:g})に達したため停止"
-            "しました。設定で上限を変更できます（暴走による高額課金を防ぐ"
-            "ためのガードです）。"
-        )
+    # ユーザー別ガード（日次/月次上限・前払い残高）。owner で個別設定が無ければ
+    # グローバル日次上限のみが効く＝従来のローカル単一ユーザー動作と同じ。
+    refusal = _user_guard(s)
+    if refusal:
+        return refusal
     if rate_limit:
         now = time.monotonic()
         window = [t for t in _call_times if now - t < 60.0]
@@ -84,6 +132,10 @@ def _guard(feature: str, *, rate_limit: bool = True) -> str | None:
 # Approx. USD price per 1M tokens (input, output). Update as needed.
 # Source: OpenAI public pricing. Unknown models fall back to gpt-4o-mini.
 PRICING = {
+    # 既定(標準ティア)。4o/4o-mini を使っていた箇所はこれに統一。
+    "gpt-5.4-mini": (0.75, 4.50),
+    # 高品質ティア(gpt-5.4 フル)。<272K context の標準レート。
+    "gpt-5.4": (2.50, 15.00),
     "gpt-4o-mini": (0.15, 0.60),
     "gpt-4o": (2.50, 10.00),
     "gpt-4.1-mini": (0.40, 1.60),
@@ -92,7 +144,16 @@ PRICING = {
 
 
 def _price_for(model: str) -> tuple[float, float]:
-    return PRICING.get(model, PRICING["gpt-4o-mini"])
+    return PRICING.get(model, PRICING["gpt-5.4-mini"])
+
+
+def _token_kwarg(model: str, n: int) -> dict:
+    """新しめのモデル(gpt-5系 / o系)は max_tokens 非対応で
+    max_completion_tokens を使う。旧モデル(4o/4.1)は従来どおり max_tokens。"""
+    m = (model or "").lower()
+    if m.startswith("gpt-5") or m.startswith(("o1", "o3", "o4")):
+        return {"max_completion_tokens": n}
+    return {"max_tokens": n}
 
 
 def estimate_cost(model: str, prompt_tokens: int, output_tokens: int) -> float:
@@ -116,14 +177,36 @@ def _record_usage(
     output_tokens: int,
     feature: str,
 ) -> float:
+    from .auth import current_user_id
+
     cost = estimate_cost(model, prompt_tokens, output_tokens)
+    uid = current_user_id()
+    s = load_settings()
     with db() as conn:
         conn.execute(
             "INSERT INTO ai_usage "
-            "(model, prompt_tokens, output_tokens, cost_usd, feature) "
-            "VALUES (?, ?, ?, ?, ?)",
-            (model, prompt_tokens, output_tokens, cost, feature),
+            "(model, prompt_tokens, output_tokens, cost_usd, feature, "
+            " user_id) VALUES (?, ?, ?, ?, ?, ?)",
+            (model, prompt_tokens, output_tokens, cost, feature, uid),
         )
+        # チャージ残高は「無料枠（日次/月次上限）に到達した後の利用」でのみ消費
+        # する（枠とは別管理）。枠内の利用では残高を減らさない。
+        from .auth import get_user
+        u = get_user(conn, uid)
+        if u and u.get("balance_jpy") is not None:
+            dcap, mcap = _effective_caps(u, s)
+            # _user_cost_usd は別接続でコミット済み分のみ参照する＝この呼び出し
+            # 直前(この分を除く)の累計。直前で枠到達済みなら「枠外利用」として控除。
+            prior_day = _user_cost_usd(uid, "day")
+            prior_mon = _user_cost_usd(uid, "month")
+            over = ((dcap and dcap > 0 and prior_day >= dcap)
+                    or (mcap and mcap > 0 and prior_mon >= mcap))
+            if over:
+                charge = cost * s.usd_jpy_rate * 1.5  # 原価×為替×1.5
+                conn.execute(
+                    "UPDATE users SET balance_jpy = "
+                    "MAX(0, balance_jpy - ?) WHERE id = ?", (charge, uid),
+                )
     return cost
 
 
@@ -153,11 +236,14 @@ def chat(
     max_tokens: int = 1200,
     feature: str = "",
     model: str | None = None,
+    rate_limit: bool = True,
 ) -> AIResult:
     """Single-turn chat completion. Stateless by design — we never rely on
     server-side chat history; all context is passed in explicitly.
 
-    ``model`` overrides the configured chat model (used for判定/教材生成)."""
+    ``model`` overrides the configured chat model (used for判定/教材生成).
+    ``rate_limit=False`` skips the per-minute cap for an explicit, authorized
+    batch (the daily cost cap still applies and will stop it once spent)."""
     client, settings = _client()
     if client is None:
         if not settings.ai_enabled:
@@ -170,7 +256,7 @@ def chat(
             ok=False, text="", error="OpenAI クライアントを初期化できませんでした。"
         )
 
-    refusal = _guard(feature)
+    refusal = _guard(feature, rate_limit=rate_limit)
     if refusal:
         return AIResult(ok=False, text="", error=refusal)
 
@@ -184,7 +270,7 @@ def chat(
                 {"role": "user", "content": user},
             ],
             temperature=temperature,
-            max_tokens=capped,
+            **_token_kwarg(use_model, capped),
         )
         usage = resp.usage
         ptok = getattr(usage, "prompt_tokens", 0) or 0
@@ -233,7 +319,10 @@ def chat_stream(
                 {"role": "user", "content": user},
             ],
             temperature=temperature,
-            max_tokens=min(max_tokens, settings.ai_max_output_tokens),
+            **_token_kwarg(
+                settings.openai_model,
+                min(max_tokens, settings.ai_max_output_tokens),
+            ),
             stream=True,
             stream_options={"include_usage": True},
         )

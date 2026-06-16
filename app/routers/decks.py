@@ -11,9 +11,21 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from ..database import db
+from ..services.auth import current_user_id
 from ..services.spaced_repetition import banned_filter, record_attempt
 
 router = APIRouter(prefix="/api/decks", tags=["decks"])
+
+
+def _owned_deck(conn, deck_id: int):
+    """現在ユーザーが所有するデッキ行を返す（無ければ404）。"""
+    row = conn.execute(
+        "SELECT * FROM decks WHERE id = ? AND user_id = ?",
+        (deck_id, current_user_id()),
+    ).fetchone()
+    if not row:
+        raise HTTPException(404, "単語帳が見つかりません")
+    return row
 
 DEFAULT_SETTINGS = {
     "directions": "both",   # 'both' | 'en2ja' | 'ja2en'
@@ -89,7 +101,8 @@ def _select_word_ids(conn, p: DeckCreate) -> list[int]:
 def list_decks():
     with db() as conn:
         rows = conn.execute(
-            "SELECT * FROM decks ORDER BY created_at DESC"
+            "SELECT * FROM decks WHERE user_id = ? ORDER BY created_at DESC",
+            (current_user_id(),),
         ).fetchall()
         return [_deck_summary(conn, r) for r in rows]
 
@@ -101,8 +114,9 @@ def create_deck(payload: DeckCreate):
     with db() as conn:
         ids = _select_word_ids(conn, payload)
         cur = conn.execute(
-            "INSERT INTO decks (name, settings) VALUES (?, ?)",
-            (payload.name.strip() or "新しい単語帳", json.dumps(settings)),
+            "INSERT INTO decks (name, settings, user_id) VALUES (?, ?, ?)",
+            (payload.name.strip() or "新しい単語帳", json.dumps(settings),
+             current_user_id()),
         )
         deck_id = cur.lastrowid
         conn.executemany(
@@ -118,12 +132,7 @@ def create_deck(payload: DeckCreate):
 @router.get("/{deck_id}")
 def get_deck(deck_id: int):
     with db() as conn:
-        row = conn.execute(
-            "SELECT * FROM decks WHERE id = ?", (deck_id,)
-        ).fetchone()
-        if not row:
-            raise HTTPException(404, "単語帳が見つかりません")
-        return _deck_summary(conn, row)
+        return _deck_summary(conn, _owned_deck(conn, deck_id))
 
 
 class DeckUpdate(BaseModel):
@@ -134,11 +143,7 @@ class DeckUpdate(BaseModel):
 @router.put("/{deck_id}")
 def update_deck(deck_id: int, payload: DeckUpdate):
     with db() as conn:
-        row = conn.execute(
-            "SELECT * FROM decks WHERE id = ?", (deck_id,)
-        ).fetchone()
-        if not row:
-            raise HTTPException(404, "単語帳が見つかりません")
+        row = _owned_deck(conn, deck_id)
         name = payload.name if payload.name is not None else row["name"]
         settings = _settings(row["settings"])
         if payload.settings is not None:
@@ -156,7 +161,10 @@ def update_deck(deck_id: int, payload: DeckUpdate):
 @router.delete("/{deck_id}", status_code=204)
 def delete_deck(deck_id: int):
     with db() as conn:
-        cur = conn.execute("DELETE FROM decks WHERE id = ?", (deck_id,))
+        cur = conn.execute(
+            "DELETE FROM decks WHERE id = ? AND user_id = ?",
+            (deck_id, current_user_id()),
+        )
         if cur.rowcount == 0:
             raise HTTPException(404, "単語帳が見つかりません")
 
@@ -165,11 +173,7 @@ def delete_deck(deck_id: int):
 def deck_quiz(deck_id: int, limit: int | None = None):
     """未習得(correct_count<pass_count)を優先して出題する単語を返す。"""
     with db() as conn:
-        drow = conn.execute(
-            "SELECT * FROM decks WHERE id = ?", (deck_id,)
-        ).fetchone()
-        if not drow:
-            raise HTTPException(404, "単語帳が見つかりません")
+        drow = _owned_deck(conn, deck_id)
         s = _settings(drow["settings"])
         n = limit or s.get("quiz_size", 10)
         rows = conn.execute(
@@ -200,18 +204,15 @@ class DeckAttempt(BaseModel):
 @router.post("/{deck_id}/attempt")
 def deck_attempt(deck_id: int, payload: DeckAttempt):
     with db() as conn:
-        drow = conn.execute(
-            "SELECT * FROM decks WHERE id = ?", (deck_id,)
-        ).fetchone()
-        if not drow:
-            raise HTTPException(404, "単語帳が見つかりません")
+        drow = _owned_deck(conn, deck_id)
         s = _settings(drow["settings"])
-        # 忘却曲線ONならグローバルの mastery/SRS も更新。
+        # 忘却曲線ONなら per-user の mastery/SRS も更新。
         if s.get("use_srs", True):
             try:
                 record_attempt(
                     conn, payload.word_id, payload.direction,
                     payload.correct, result=payload.result,
+                    user_id=current_user_id(),
                 )
             except ValueError:
                 pass

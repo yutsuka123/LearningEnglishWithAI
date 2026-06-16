@@ -20,8 +20,9 @@ from .spaced_repetition import pick_weighted
 
 
 def review_words_today(limit: int = 10) -> list[dict]:
+    from .auth import current_user_id
     with db() as conn:
-        rows = pick_weighted(conn, limit=limit)
+        rows = pick_weighted(conn, limit=limit, user_id=current_user_id())
         return [
             {
                 "id": r["id"],
@@ -34,19 +35,24 @@ def review_words_today(limit: int = 10) -> list[dict]:
 
 
 def recent_sessions(limit: int = 5) -> list[dict]:
+    from .auth import current_user_id
     with db() as conn:
         rows = conn.execute(
-            "SELECT * FROM study_sessions ORDER BY id DESC LIMIT ?", (limit,)
+            "SELECT * FROM study_sessions WHERE user_id = ? "
+            "ORDER BY id DESC LIMIT ?", (current_user_id(), limit)
         ).fetchall()
         return [dict(r) for r in rows]
 
 
 def build_context() -> str:
     """Return a Markdown snapshot suitable for prepending to an AI prompt."""
+    from .auth import current_user_id, get_user_settings
     memory = persistence.read_memory()
     sessions = recent_sessions()
     review = review_words_today()
-    nickname = load_settings().nickname
+    with db() as conn:
+        us = get_user_settings(conn, current_user_id())
+    nickname = (us.get("nickname") or "").strip() or load_settings().nickname
 
     lines = [
         "# 学習者コンテキスト",

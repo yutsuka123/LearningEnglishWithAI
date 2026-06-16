@@ -1,0 +1,19 @@
+# イメージに含めない（軽量化＋機密保護）。データはボリュームでマウントする。
+.git
+.gitignore
+.venv
+__pycache__
+**/__pycache__
+*.pyc
+.env
+.env.*
+data/
+docs/
+backups/
+*.db
+*.db-wal
+*.db-shm
+.DS_Store
+.claude/
+deploy/
+README.md

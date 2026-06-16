@@ -26,6 +26,7 @@ const TABS = [
   ["assess", "🎯 判定・教材"],
   ["history", "📚 学習履歴"],
   ["settings", "⚙️ 設定"],
+  ["admin", "👑 管理者情報"],   // 管理者のみ表示（boot で非adminは隠す）
 ];
 
 // ---------------------------------------------------------------------------
@@ -111,6 +112,7 @@ const ROUTES = {
   assess: views.assess,
   history: views.history,
   settings: views.settings,
+  admin: views.admin,
 };
 
 let currentTab = "dashboard";
@@ -145,21 +147,77 @@ export { api, speech, quizRunner };
 // Topbar wiring
 // ---------------------------------------------------------------------------
 
+// 残量バーの色: 満タン緑→青→半分以下黄→あと少し赤。
+function barColor(ratio) {
+  if (ratio >= 0.8) return "#36c98d";       // 緑(満タン)
+  if (ratio >= 0.5) return "#4da3ff";       // 青
+  if (ratio >= 0.2) return "#e7b53b";       // 黄(半分以下)
+  return "#e2503b";                          // 赤(あと少し)
+}
+
+// 上限到達ポップアップは1期間1回だけ。
+const _capNotified = { day: false, month: false };
+
+function _renderBar(label, used, cap) {
+  if (!cap || cap <= 0) return "";
+  const remain = Math.max(0, cap - used);
+  const ratio = Math.max(0, Math.min(1, remain / cap));
+  const pct = Math.round(ratio * 100);
+  return (
+    `<span class="ubar" title="${label}: 残 ¥${Math.round(remain)} / ` +
+    `上限 ¥${cap}（使用 ¥${Math.round(used)}）">` +
+    `<span class="ubar-lbl">${label}</span>` +
+    `<span class="ubar-track"><span class="ubar-fill" style="width:${pct}%;` +
+    `background:${barColor(ratio)}"></span></span></span>`
+  );
+}
+
 export async function refreshCost() {
   try {
-    const u = await api.get("/api/system/usage");
+    const u = await api.get("/api/system/my-usage");
+    const isAdmin = u.role === "admin";
+    state.isAdmin = isAdmin;       // 各ビューのロール別表示に使う
+    state.multiuser = !!u.multiuser;
+    const bars = document.getElementById("usageBars");
+    if (bars) {
+      bars.innerHTML =
+        _renderBar("今日", u.today_jpy, u.daily_cap_jpy) +
+        _renderBar("今月", u.month_jpy, u.monthly_cap_jpy);
+    }
+    // 管理者のみ金額表示。一般ユーザーは残量バーのみ。
     const badge = document.getElementById("costBadge");
-    const cap = u.daily_cap_jpy
-      ? ` / 上限 ¥${u.daily_cap_jpy}${u.cap_blocked ? "（停止中）" : ""}` : "";
-    badge.textContent =
-      `💰 今日 ¥${u.today_cost_jpy}${cap} / 累計 ¥${u.total_cost_jpy}`;
-    badge.title =
-      `今日 $${u.today_cost_usd.toFixed(4)} / 累計 $${u.total_cost_usd.toFixed(4)}` +
-      ` (レート ¥${u.jpy_rate}/$ @${u.jpy_as_of})\n` +
-      `1日の上限 $${(u.daily_cap_usd || 0).toFixed(2)}` +
-      `（暴走防止ガード・.envで変更可）\n` +
-      `呼び出し ${u.calls} 回 / 入力 ${u.prompt_tokens} tok / ` +
-      `出力 ${u.output_tokens} tok`;
+    if (badge) {
+      // 残高はバーで表現するため非表示。管理者のみ今日/今月の金額を表示。
+      badge.textContent = isAdmin
+        ? `💰 今日 ¥${u.today_jpy} / 今月 ¥${u.month_jpy}`
+        : "";
+    }
+    const ver = document.getElementById("appVer");
+    if (ver) ver.textContent = u.version || "";
+    // ログアウトボタン（マルチユーザー時のみ表示）。
+    const lo = document.getElementById("logoutBtn");
+    if (lo) {
+      lo.style.display = u.multiuser ? "" : "none";
+      lo.title = u.username ? `${u.username} としてログイン中` : "";
+    }
+    // 上限到達のポップアップ（チャージ残高が無ければ）。
+    const dOver = u.daily_cap_jpy && u.today_jpy >= u.daily_cap_jpy;
+    const mOver = u.monthly_cap_jpy && u.month_jpy >= u.monthly_cap_jpy;
+    const hasBalance = u.balance_jpy != null && u.balance_jpy > 0;
+    if (dOver && !_capNotified.day) {
+      _capNotified.day = true;
+      alert(hasBalance
+        ? "本日のAI利用上限に達しました。以降はチャージ残高から消費されます。"
+        : "本日のAI利用上限に達しました。管理者のチャージで継続できます。");
+    }
+    if (!dOver) _capNotified.day = false;
+    if (mOver && !_capNotified.month) {
+      _capNotified.month = true;
+      alert(hasBalance
+        ? "今月のAI利用上限に達しました。以降はチャージ残高から消費されます。"
+        : "今月のAI利用上限に達しました。管理者のチャージで継続できます。");
+    }
+    if (!mOver) _capNotified.month = false;
   } catch (e) { /* ignore */ }
 }
 
@@ -232,8 +290,8 @@ export async function refreshAiState() {
     state.aiEnabled = s.ai_enabled;
     speech.setAiEnabled(s.ai_enabled);
     const node = document.getElementById("aiState");
-    node.textContent = s.ai_enabled
-      ? `AI: ${s.model}` : "AI: 未設定";
+    // モデル名は非表示。未設定のときだけ警告を出す。
+    node.textContent = s.ai_enabled ? "" : "⚠️ AI未設定";
     node.className = "ai-state " + (s.ai_enabled ? "ai-on" : "ai-off");
   } catch (e) { /* ignore */ }
 }
@@ -256,6 +314,11 @@ async function boot() {
   document.getElementById("inputMode")
     .addEventListener("change", (e) => setInputMode(e.target.value));
   document.getElementById("micCmd").addEventListener("click", runCommand);
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) logoutBtn.addEventListener("click", async () => {
+    try { await api.post("/api/auth/logout"); } catch (_) { /* */ }
+    location.href = "/login";
+  });
 
   try {
     state.taxonomy = await api.get("/api/system/taxonomy");
@@ -265,7 +328,10 @@ async function boot() {
   } catch (e) { /* ignore */ }
 
   await refreshAiState();   // sets speech aiEnabled
-  await refreshCost();
+  await refreshCost();      // sets state.isAdmin / state.multiuser
+  // 管理者タブは管理者のみ表示。
+  const adminNav = document.querySelector('.nav-item[data-tab="admin"]');
+  if (adminNav) adminNav.style.display = state.isAdmin ? "" : "none";
   speech.onUsage(refreshCost); // refresh cost after paid TTS calls
   // Pre-load voices for TTS.
   speech.getEnglishVoices();
