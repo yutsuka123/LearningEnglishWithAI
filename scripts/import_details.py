@@ -28,8 +28,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.database import db  # noqa: E402
 
 _DETAIL_KEYS = {
-    "pronunciation", "pos", "meanings", "examples", "derivatives",
-    "synonyms", "antonyms", "origin", "trivia", "explanation",
+    "pronunciation", "pos", "meanings", "examples", "example_ja",
+    "derivatives", "synonyms", "antonyms", "origin", "trivia",
+    "explanation",
 }
 
 

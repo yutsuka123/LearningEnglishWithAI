@@ -525,7 +525,7 @@ function openModal(title, buildBody) {
 
 // 詳細(JSON)を整形して描画。類義語/対義語/派生語のうちDB登録済みの語は、
 // 描画後に linkifyJumps() でクリック可能化し、その語の詳細へジャンプできる。
-function renderWordDetail(box, d) {
+function renderWordDetail(box, d, primaryEn) {
   box.innerHTML = "";
   const sec = (label, html) => {
     if (!html) return;
@@ -545,6 +545,21 @@ function renderWordDetail(box, d) {
   sec("発音:", d.pronunciation ? escapeHtml(d.pronunciation) : "");
   sec("品詞:", d.pos ? escapeHtml(d.pos) : "");
   sec("意味:", arr(d.meanings));
+  // 例文(英文＋日本語訳)。訳は淡色で英文の下に。発声は不要なので再生ボタンなし。
+  // 先頭の読み上げ例文(primaryEn)と同じ文は重複表示しない。
+  if (Array.isArray(d.examples) && d.examples.length) {
+    const norm = (s) => (s || "").trim().toLowerCase().replace(/\.+$/, "");
+    const exs = primaryEn
+      ? d.examples.filter((x) => norm(x.en) !== norm(primaryEn))
+      : d.examples;
+    if (exs.length) {
+      const exHtml = exs.map((x) =>
+        `${escapeHtml(x.en || "")}<br>`
+        + `<span class="muted">${escapeHtml(x.ja || "")}</span>`)
+        .join(`<br>`);
+      sec("例文:", exHtml);
+    }
+  }
   if (Array.isArray(d.derivatives) && d.derivatives.length) {
     sec("派生:", d.derivatives.map((x) =>
       `${jw(x.word || "")}（${escapeHtml(x.pos || "")}: `
@@ -585,12 +600,17 @@ function showWordDetail(w) {
     body.appendChild(el(`<p class="quiz-answer">${escapeHtml(w.english)}
       <span class="muted">${escapeHtml(w.japanese || "")}
       ${w.level ? "・Lv" + w.level : ""}</span></p>`));
-    const exLine = el(`<p>${w.example
+    const exLine = el(`<p style="margin-bottom:2px">${w.example
       ? "例文: " + escapeHtml(w.example) : "（例文なし）"}</p>`);
     body.appendChild(exLine);
+    // 読み上げ例文の日本語訳（詳細の example_ja。読み込み後に埋める・発声なし）。
+    const exJa = el(`<p class="muted" style="margin:0 0 4px"></p>`);
+    if (w.example) body.appendChild(exJa);
     const speedRow = el(`<div class="row">${speedSelect("exSpeed")}</div>`);
     const getMode = () => body.querySelector("#exSpeed").value;
-    const tools = el(`<div class="row"></div>`);
+    // タブレット操作性: 速度セレクトの直下なので、発話ボタンを文字一行分
+    // (約1.4em)下げて誤タップを防ぐ。
+    const tools = el(`<div class="row" style="margin-top:1.4em"></div>`);
     if (w.example) {
       tools.appendChild(voiceButtonsItem(
         "word", w.id, "example", () => w.example, getMode));
@@ -606,7 +626,10 @@ function showWordDetail(w) {
       try {
         const r = await api.post(`/api/words/${w.id}/detail`);
         if (r.ok) {
-          renderWordDetail(detailBox, r.detail);
+          renderWordDetail(detailBox, r.detail, w.example);
+          if (w.example && r.detail && r.detail.example_ja) {
+            exJa.textContent = "訳: " + r.detail.example_ja;
+          }
           w.has_detail = true;
         } else {
           detailBox.innerHTML =
