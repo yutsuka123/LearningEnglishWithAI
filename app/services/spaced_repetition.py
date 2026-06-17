@@ -79,21 +79,29 @@ def select_for_review(
     exclude_banned: bool = False,
     *,
     user_id: int,
+    where_extra: str = "",
+    params_extra: tuple = (),
 ) -> list[sqlite3.Row]:
     """Pick up to ``limit`` items for ``user_id``, prioritising due ones, then
     weighting the rest by (100 - mastery). 進捗は per-user テーブルからマージ。
-    When ``exclude_banned`` is set, 禁止用語 items are never selected."""
+    When ``exclude_banned`` is set, 禁止用語 items are never selected.
+
+    ``where_extra`` は追加の絞り込み条件（先頭の AND 不要・列は subquery の別名
+    ``t`` を前提）。フラッシュカード等で分野/レベル/覚えた状態でフィルタするのに使う。
+    """
     from .progress import user_items_subquery
 
     today = date.today().isoformat()
     src = user_items_subquery(table)  # 1つの ? (=user_id) を取る
     ban = f" AND {banned_filter(table)}" if exclude_banned else ""
+    extra = f" AND ({where_extra})" if where_extra else ""
+    ep = tuple(params_extra)
     # Due items first (never reviewed -> next_review IS NULL counts as due).
     due = conn.execute(
         f"SELECT * FROM {src} AS t "
-        f"WHERE (next_review IS NULL OR next_review <= ?){ban} "
+        f"WHERE (next_review IS NULL OR next_review <= ?){ban}{extra} "
         "ORDER BY mastery ASC, next_review ASC",
-        (user_id, today),
+        (user_id, today, *ep),
     ).fetchall()
 
     chosen = list(due[:limit])
@@ -103,11 +111,16 @@ def select_for_review(
     # Fill remaining slots with not-yet-due items, weighted by 100 - mastery.
     remaining = limit - len(chosen)
     chosen_ids = {r["id"] for r in chosen}
-    where = f" WHERE {banned_filter(table)}" if exclude_banned else ""
+    conds = []
+    if exclude_banned:
+        conds.append(banned_filter(table))
+    if where_extra:
+        conds.append(f"({where_extra})")
+    where = (" WHERE " + " AND ".join(conds)) if conds else ""
     rest = [
         r
         for r in conn.execute(
-            f"SELECT * FROM {src} AS t{where}", (user_id,)).fetchall()
+            f"SELECT * FROM {src} AS t{where}", (user_id, *ep)).fetchall()
         if r["id"] not in chosen_ids
     ]
     chosen += _weighted_sample(rest, remaining)

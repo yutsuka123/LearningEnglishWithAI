@@ -10,7 +10,6 @@ from ..schemas import AttemptIn, WordCreate, WordUpdate
 from ..services.spaced_repetition import (
     MASTERED_THRESHOLD,
     clamp,
-    pick_weighted,
     record_attempt,
     selection_weight,
     set_known,
@@ -56,31 +55,14 @@ def _level_range(level_min: str | None, level_max: str | None) -> list[str]:
     return LEVEL_ORDER[lo:hi + 1]
 
 
-@router.get("")
-def list_words(
-    sort: str = "mastery",
-    desc: bool = False,            # 降順にするか（昇順/降順トグル）
-    domain: str | None = None,
-    level: str | None = None,
-    level_min: str | None = None,   # 下限（細スケール）
-    level_max: str | None = None,   # 上限
-    out_of_range: bool = False,     # 「範囲外」も含める
-    include_banned: bool = False,
-    mastered: str | None = None,   # 'only' | 'hide' | None(=全部)
-):
-    col = {
-        "mastery": "mastery",
-        "english": "english COLLATE NOCASE",
-        "recent": "last_studied",
-        "level": "level",
-        "domain": "domain",
-        "accuracy": (
-            "CASE WHEN times_asked > 0 "
-            "THEN times_correct * 1.0 / times_asked ELSE -1 END"
-        ),
-    }.get(sort, "mastery")
-    direction = "DESC" if desc else "ASC"
-    order = f"{col} {direction}, english COLLATE NOCASE ASC"
+def _word_filter(
+    domain: str | None, level: str | None,
+    level_min: str | None, level_max: str | None,
+    out_of_range: bool, include_banned: bool, mastered: str | None,
+) -> tuple[list[str], list]:
+    """単語一覧/フラッシュカード共通のフィルタ WHERE 句を組み立てる。
+    列は素の名前(domain/level/mastery)で参照（一覧の `AS words`・選抜の `AS t`
+    どちらの別名でも解決可能）。返り値は (条件リスト, パラメータ)。"""
     where: list[str] = []
     params: list = []
     if domain:
@@ -113,6 +95,38 @@ def list_words(
         where.append(f"mastery >= {MASTERED_THRESHOLD}")
     elif mastered == "hide":
         where.append(f"mastery < {MASTERED_THRESHOLD}")
+    return where, params
+
+
+@router.get("")
+def list_words(
+    sort: str = "mastery",
+    desc: bool = False,            # 降順にするか（昇順/降順トグル）
+    domain: str | None = None,
+    level: str | None = None,
+    level_min: str | None = None,   # 下限（細スケール）
+    level_max: str | None = None,   # 上限
+    out_of_range: bool = False,     # 「範囲外」も含める
+    include_banned: bool = False,
+    mastered: str | None = None,   # 'only' | 'hide' | None(=全部)
+):
+    col = {
+        "mastery": "mastery",
+        "english": "english COLLATE NOCASE",
+        "recent": "last_studied",
+        "level": "level",
+        "domain": "domain",
+        "accuracy": (
+            "CASE WHEN times_asked > 0 "
+            "THEN times_correct * 1.0 / times_asked ELSE -1 END"
+        ),
+    }.get(sort, "mastery")
+    direction = "DESC" if desc else "ASC"
+    order = f"{col} {direction}, english COLLATE NOCASE ASC"
+    where, params = _word_filter(
+        domain, level, level_min, level_max, out_of_range,
+        include_banned, mastered,
+    )
     clause = (" WHERE " + " AND ".join(where)) if where else ""
     from ..services.auth import current_user_id
     from ..services.progress import user_items_subquery
@@ -197,13 +211,31 @@ def delete_word(word_id: int):
 
 
 @router.get("/quiz")
-def quiz(limit: int = 10, include_banned: bool = False):
-    """Return a weighted set of words to quiz (probability ∝ 100 - mastery)."""
+def quiz(
+    limit: int = 10,
+    include_banned: bool = False,
+    domain: str | None = None,
+    level: str | None = None,
+    level_min: str | None = None,
+    level_max: str | None = None,
+    out_of_range: bool = False,
+    mastered: str | None = None,   # 'only' | 'hide' | None
+):
+    """Return a weighted set of words to quiz (probability ∝ 100 - mastery).
+    分野/レベル/覚えた状態でフィルタ可能（フラッシュカードと共用）。"""
     from ..services.auth import current_user_id
+    from ..services.spaced_repetition import select_for_review
+    where, params = _word_filter(
+        domain, level, level_min, level_max, out_of_range,
+        include_banned, mastered,
+    )
+    where_extra = " AND ".join(where)
     with db() as conn:
-        rows = pick_weighted(
-            conn, limit=limit, exclude_banned=not include_banned,
+        rows = select_for_review(
+            conn, table="words", limit=limit,
+            exclude_banned=False,  # banned は _word_filter 側で処理済み
             user_id=current_user_id(),
+            where_extra=where_extra, params_extra=tuple(params),
         )
         return [_word_dict(r) for r in rows]
 
@@ -257,6 +289,33 @@ def mark_vague(word_id: int):
         new = clamp(cur["mastery"] + VAGUE_BONUS)
         P.upsert_progress(conn, uid, "words", word_id, mastery=new)
     return {"ok": True, "mastery": new}
+
+
+class RestoreIn(BaseModel):
+    mastery: int
+    review_level: int | None = None
+    next_review: str | None = None
+
+
+@router.post("/{word_id}/restore")
+def restore_progress(word_id: int, payload: RestoreIn):
+    """直前の採点を取り消す（フラッシュカードの「戻る」）。採点前にクライアントが
+    控えた習得度/復習レベル/次回日を per-user 進捗へ書き戻す。"""
+    from ..services.auth import current_user_id
+    from ..services import progress as P
+    fields: dict = {"mastery": clamp(payload.mastery)}
+    if payload.review_level is not None:
+        fields["review_level"] = payload.review_level
+    # next_review は None(未学習に戻す) も許容して上書きする。
+    fields["next_review"] = payload.next_review
+    with db() as conn:
+        exists = conn.execute(
+            "SELECT id FROM words WHERE id = ?", (word_id,)
+        ).fetchone()
+        if not exists:
+            raise HTTPException(404, "単語が見つかりません")
+        P.upsert_progress(conn, current_user_id(), "words", word_id, **fields)
+    return {"ok": True, "mastery": fields["mastery"]}
 
 
 def _json_object(text: str) -> dict | None:
