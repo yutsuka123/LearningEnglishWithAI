@@ -17,7 +17,8 @@ let openaiVoices = [
 ];
 let currentVoiceName = null;   // chosen voice for the current round
 let currentIsOpenAI = false;
-let audioEl = null;            // currently playing <audio>
+let audioEl = null;            // single reused <audio> element (unlocked once)
+let audioUnlocked = false;     // true after first user-gesture unlock
 let usageCb = null;            // called after a paid TTS call (cost refresh)
 
 export function setAiEnabled(v) { aiEnabled = !!v; }
@@ -117,11 +118,70 @@ export function loadPreferredVoice() {
   return localStorage.getItem("convVoice") || "";
 }
 
+// --- iOS/Safari audio unlock ------------------------------------------------
+// iOS/iPadOS では「音声再生はユーザー操作の直後でないと禁止」される。iPad 上の
+// Chrome/Edge も中身は WebKit なので同じ制限。対策は (1) <audio> を1つだけ使い回し
+// (毎回 new Audio() しない)、(2) 最初のタップ等で無音を鳴らして「解錠」しておく。
+// 解錠済みの要素なら、以後は await をまたいだ自動再生(会話の読み上げ等)も鳴る。
+// デスクトップ各ブラウザ(Win/macOS/Android の Chrome/Edge/Firefox/Safari)では
+// 実質 no-op で無害。
+const SILENT_WAV =
+  "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
+
+function audioElement() {
+  if (!audioEl) {
+    audioEl = new Audio();
+    try { audioEl.setAttribute("playsinline", ""); } catch (e) { /* ignore */ }
+  }
+  return audioEl;
+}
+
+export function unlockAudio() {
+  try {
+    const a = audioElement();
+    if (!a.src) a.src = SILENT_WAV;
+    const p = a.play();
+    if (p && p.then) {
+      p.then(() => { try { a.pause(); a.currentTime = 0; } catch (e) {} })
+       .catch(() => { /* ignore — まだ操作が無い等 */ });
+    }
+  } catch (e) { /* ignore */ }
+  try {
+    if (synth && !audioUnlocked) synth.speak(new SpeechSynthesisUtterance(""));
+  } catch (e) { /* ignore */ }
+  audioUnlocked = true;
+}
+
+// 最初のユーザー操作(どのボタン/キーでもOK)で自動的に解錠する。
+if (typeof window !== "undefined" && window.addEventListener) {
+  const onceUnlock = () => {
+    unlockAudio();
+    window.removeEventListener("pointerdown", onceUnlock);
+    window.removeEventListener("touchend", onceUnlock);
+    window.removeEventListener("keydown", onceUnlock);
+  };
+  window.addEventListener("pointerdown", onceUnlock);
+  window.addEventListener("touchend", onceUnlock);
+  window.addEventListener("keydown", onceUnlock);
+}
+
+// Play a TTS Blob on the single reused (and unlocked) audio element.
+async function playBlob(blob, rate) {
+  stopSpeaking();
+  const a = audioElement();
+  try { if (a._objUrl) URL.revokeObjectURL(a._objUrl); } catch (e) { /* ignore */ }
+  a._objUrl = URL.createObjectURL(blob);
+  a.onended = null; a.onerror = null;   // clear stale handlers (speakAndWait)
+  a.src = a._objUrl;
+  a.playbackRate = rate || playbackRate;
+  await a.play();
+}
+
 // --- speaking ---------------------------------------------------------------
 
 export function stopSpeaking() {
   if (synth) synth.cancel();
-  if (audioEl) { audioEl.pause(); audioEl = null; }
+  if (audioEl) { try { audioEl.pause(); } catch (e) { /* ignore */ } }
 }
 
 function browserSpeak(text, opts = {}) {
@@ -151,10 +211,7 @@ export async function say(text, opts = {}) {
     });
     if (!res.ok) throw new Error("tts failed");
     const blob = await res.blob();
-    stopSpeaking();
-    audioEl = new Audio(URL.createObjectURL(blob));
-    audioEl.playbackRate = opts.rate || playbackRate;
-    await audioEl.play();
+    await playBlob(blob, opts.rate);
     if (usageCb) usageCb();
   } catch (e) {
     browserSpeak(text, opts); // graceful fallback
@@ -175,10 +232,7 @@ export async function sayWithVoice(text, voice, opts = {}) {
     });
     if (!res.ok) throw new Error("tts failed");
     const blob = await res.blob();
-    stopSpeaking();
-    audioEl = new Audio(URL.createObjectURL(blob));
-    audioEl.playbackRate = opts.rate || playbackRate;
-    await audioEl.play();
+    await playBlob(blob, opts.rate);
     if (usageCb) usageCb();
   } catch (e) {
     browserSpeak(text, opts); // graceful fallback
@@ -214,10 +268,7 @@ export async function sayItem(
     const res = await fetch("/api/learn/tts/item?" + q.toString());
     if (!res.ok) throw new Error("tts item failed");
     const blob = await res.blob();
-    stopSpeaking();
-    audioEl = new Audio(URL.createObjectURL(blob));
-    audioEl.playbackRate = opts.rate || playbackRate;
-    await audioEl.play();
+    await playBlob(blob, opts.rate);
     if (usageCb) usageCb();
   } catch (e) {
     if (fallbackText) browserSpeak(fallbackText, opts);
@@ -238,9 +289,7 @@ export async function previewOpenAIVoice(voice, text) {
       return { ok: false, error: msg || `HTTP ${res.status}` };
     }
     const blob = await res.blob();
-    stopSpeaking();
-    audioEl = new Audio(URL.createObjectURL(blob));
-    await audioEl.play();
+    await playBlob(blob, 1);
     if (usageCb) usageCb();
     return { ok: true };
   } catch (e) {
@@ -360,11 +409,14 @@ export function speakAndWait(text, opts = {}) {
     }).then((r) => r.ok ? r.blob() : Promise.reject(new Error("tts")))
       .then((blob) => {
         stopSpeaking();
-        audioEl = new Audio(URL.createObjectURL(blob));
-        audioEl.playbackRate = opts.rate || playbackRate;
-        audioEl.onended = () => resolve();
-        audioEl.onerror = () => resolve();
-        audioEl.play();
+        const a = audioElement();
+        try { if (a._objUrl) URL.revokeObjectURL(a._objUrl); } catch (e) {}
+        a._objUrl = URL.createObjectURL(blob);
+        a.src = a._objUrl;
+        a.playbackRate = opts.rate || playbackRate;
+        a.onended = () => resolve();
+        a.onerror = () => resolve();
+        a.play();
         if (usageCb) usageCb();
       }).catch(() => browser());
   });
