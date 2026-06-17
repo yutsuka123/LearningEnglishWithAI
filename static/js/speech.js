@@ -275,6 +275,42 @@ export async function sayItem(
   }
 }
 
+// Like sayItem(), but resolves when the audio FINISHES (ended/error). 連続読み上げ
+// (単語→例文)に使う。stopSpeaking() で中断された場合は ended が来ないので、呼び側で
+// シーケンス番号を見て打ち切ること。
+export function sayItemAndWait(itemType, id, kind, voice, fallbackText, opts = {}) {
+  return new Promise((resolve) => {
+    const browser = () => {
+      if (!fallbackText || !synth) { resolve(); return; }
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(fallbackText);
+      u.lang = "en-US"; u.rate = opts.rate || playbackRate || 0.95;
+      u.onend = () => resolve(); u.onerror = () => resolve();
+      synth.speak(u);
+    };
+    if (!(isNatural() && aiEnabled)) { browser(); return; }
+    const q = new URLSearchParams({
+      item_type: itemType, item_id: id, kind, voice,
+      speed: opts.speed || "learn",
+    });
+    fetch("/api/learn/tts/item?" + q.toString())
+      .then((res) => res.ok ? res.blob() : Promise.reject(new Error("tts")))
+      .then((blob) => {
+        stopSpeaking();
+        const a = audioElement();
+        try { if (a._objUrl) URL.revokeObjectURL(a._objUrl); } catch (e) {}
+        a._objUrl = URL.createObjectURL(blob);
+        a.src = a._objUrl;
+        a.playbackRate = opts.rate || playbackRate;
+        a.onended = () => resolve();
+        a.onerror = () => resolve();
+        a.play();
+        if (usageCb) usageCb();
+      })
+      .catch(() => browser());
+  });
+}
+
 // Speak with a specific OpenAI voice (for the settings preview button).
 // Returns { ok, error } so the UI can show the real reason on failure.
 export async function previewOpenAIVoice(voice, text) {

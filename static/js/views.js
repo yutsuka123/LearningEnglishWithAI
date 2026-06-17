@@ -676,18 +676,44 @@ function attachSwipe(elm, h) {
 
 // 1セッション分のカードを回す。queue は /api/words/quiz の結果。
 function runFlashcards(stage, initialQueue, opts) {
-  const { dir, speed, auto, qs } = opts;   // dir: 'en2ja' | 'ja2en'
+  const { dir, speed, auto, qs, voice } = opts;   // dir: 'en2ja' | 'ja2en'
   let queue = initialQueue;
   let pos = 0, revealed = false;
   const history = [];                       // {index, snapshot, action}
   const counts = { known: 0, vague: 0, wrong: 0 };
   const card = () => queue[pos];
 
-  const playWord = (c) => speech.sayItem(
-    "word", c.id, "word", MALE_VOICE, c.english, speedOpts(speed));
+  // 連続読み上げ(単語→例文)の中断管理。speakSeq が変わると進行中の読み上げを打切り。
+  let speakSeq = 0;
+  function stopAudio() { speakSeq++; speech.stopSpeaking(); }
 
-  async function onReveal(c) {
-    if (auto && dir === "ja2en") playWord(c);   // 和英は答え表示時に英語を再生
+  // parts: [[kind, fallbackText], ...] を順番に(終わってから次へ)読み上げる。
+  async function readParts(c, parts) {
+    if (!auto) return;
+    const my = ++speakSeq;
+    for (const [kind, fb] of parts) {
+      if (my !== speakSeq) return;          // スワイプ等で打切り
+      await speech.sayItemAndWait("word", c.id, kind, voice, fb,
+        speedOpts(speed));
+    }
+  }
+
+  // 出題時: 英和は英語(単語)を先読み。和英は答えを出すまで無音。
+  function readFront(c) {
+    if (dir === "en2ja") readParts(c, [["word", c.english]]);
+  }
+
+  // 答え表示時の読み上げ: 単語＋例文(英和は単語を先読み済みなので例文のみ)。
+  function readAnswer(c) {
+    const parts = [];
+    if (dir === "ja2en") parts.push(["word", c.english]);
+    if (c.example) parts.push(["example", c.example]);
+    if (parts.length) readParts(c, parts);
+  }
+
+  // 答えを表示: 発音記号/例文訳を埋め、単語＋例文を読み上げる。
+  async function reveal(c) {
+    readAnswer(c);
     if (!c.has_detail) return;
     let d = c._detail;
     if (!d) {
@@ -725,6 +751,7 @@ function runFlashcards(stage, initialQueue, opts) {
   function grade(action) {
     const c = card();
     if (!c) return;
+    stopAudio();                              // スワイプしたら即停止
     history.push({ index: pos, action, snapshot: {
       mastery: c.mastery, review_level: c.review_level,
       next_review: c.next_review } });
@@ -743,6 +770,7 @@ function runFlashcards(stage, initialQueue, opts) {
 
   async function undo() {
     if (!history.length) { toast("これ以上戻れません"); return; }
+    stopAudio();                              // スワイプしたら即停止
     const { index, snapshot, action } = history.pop();
     if (action === "known") counts.known = Math.max(0, counts.known - 1);
     else if (action === "vague") counts.vague = Math.max(0, counts.vague - 1);
@@ -810,9 +838,10 @@ function runFlashcards(stage, initialQueue, opts) {
     const cardEl = stage.querySelector("#fcCard");
     attachSwipe(cardEl, {
       onTap: () => {
+        stopAudio();
         revealed = !revealed;
         cardEl.classList.toggle("flip", revealed);
-        if (revealed) onReveal(c);
+        if (revealed) reveal(c);
       },
       onUp: () => grade("known"),
       onDown: () => grade("wrong"),
@@ -825,9 +854,11 @@ function runFlashcards(stage, initialQueue, opts) {
       "word", c.id, "word", () => c.english, () => speed));
     const exBtn = el(`<button class="btn ghost">🔊 例文</button>`);
     exBtn.disabled = !c.example;
-    exBtn.addEventListener("click", () => { if (c.example)
-      speech.sayItem("word", c.id, "example", FEMALE_VOICE, c.example,
-        speedOpts(speed)); });
+    exBtn.addEventListener("click", () => { if (c.example) {
+      stopAudio();
+      speech.sayItem("word", c.id, "example", voice, c.example,
+        speedOpts(speed));
+    } });
     const detBtn = el(`<button class="btn ghost">📖 詳細</button>`);
     detBtn.addEventListener("click", () => showWordDetail(c));
     tools.append(exBtn, detBtn);
@@ -844,8 +875,7 @@ function runFlashcards(stage, initialQueue, opts) {
       mk("vague-btn", "➡ うろ覚え", () => grade("vague")),
       mk("good", "⬆ 覚えた", () => grade("known")),
     );
-    if (revealed) onReveal(c);
-    if (auto && dir === "en2ja") playWord(c);  // 英和は出題時に英語を再生
+    if (revealed) reveal(c); else readFront(c);
   }
 
   // キーボード(PC)対応。← → ↑ ↓ で採点、Space/Enter で反転。
@@ -858,9 +888,10 @@ function runFlashcards(stage, initialQueue, opts) {
       e.preventDefault();
       const cardEl = stage.querySelector("#fcCard");
       if (!cardEl) return;
+      stopAudio();
       revealed = !revealed;
       cardEl.classList.toggle("flip", revealed);
-      if (revealed) onReveal(card());
+      if (revealed) reveal(card());
     }
   };
   document.addEventListener("keydown", onKey);
@@ -877,6 +908,10 @@ export async function flashcard(root) {
     .join("");
   const lvOpts = '<option value="">--</option>' + facets.range_levels
     .map((l) => `<option>${escapeHtml(l)}</option>`).join("");
+  const voiceOpts = speech.listOpenAIVoices().map((vn) => {
+    const g = speech.voiceGender(vn);
+    return `<option value="${vn}">声: ${vn}${g ? "（" + g + "）" : ""}</option>`;
+  }).join("");
 
   root.innerHTML = `
     <h1>🃏 フラッシュ単語</h1>
@@ -908,8 +943,10 @@ export async function flashcard(root) {
           <option value="100">100枚</option>
         </select>
         ${speedSelect("fcSpeed", false)}
+        <select id="fcVoice" title="読み上げの声（自然な声ONのとき）">
+          ${voiceOpts}</select>
         <label class="toggle"><input type="checkbox" id="fcAuto"/>
-          英語を自動再生</label>
+          答え表示で自動読み上げ</label>
       </div>
       <div class="row mt">
         <button class="btn" id="fcStart">▶ 開始</button>
@@ -928,6 +965,8 @@ export async function flashcard(root) {
   setVal("#fcMastered", localStorage.getItem("fc_mastered") || "");
   setVal("#fcSize", localStorage.getItem("fc_size") || "50");
   setVal("#fcSpeed", localStorage.getItem("fc_speed") || "std");
+  setVal("#fcVoice", localStorage.getItem("fc_voice")
+    || speech.loadPreferredVoice() || "nova");
   root.querySelector("#fcAuto").checked =
     (localStorage.getItem("fc_auto") ?? "1") === "1";
 
@@ -936,7 +975,7 @@ export async function flashcard(root) {
     const dir = v("#fcDir"), dom = v("#fcDom");
     const lvmin = v("#fcLvMin"), lvmax = v("#fcLvMax");
     const mastered = v("#fcMastered"), size = v("#fcSize");
-    const speed = v("#fcSpeed");
+    const speed = v("#fcSpeed"), voice = v("#fcVoice");
     const auto = root.querySelector("#fcAuto").checked;
     localStorage.setItem("fc_dir", dir);
     localStorage.setItem("fc_dom", dom);
@@ -945,6 +984,7 @@ export async function flashcard(root) {
     localStorage.setItem("fc_mastered", mastered);
     localStorage.setItem("fc_size", size);
     localStorage.setItem("fc_speed", speed);
+    localStorage.setItem("fc_voice", voice);
     localStorage.setItem("fc_auto", auto ? "1" : "0");
 
     const q = new URLSearchParams({ limit: size });
@@ -967,7 +1007,7 @@ export async function flashcard(root) {
         フィルタを緩めてください。</div>`;
       return;
     }
-    runFlashcards(stage, queue, { dir, speed, auto, qs });
+    runFlashcards(stage, queue, { dir, speed, auto, qs, voice });
   });
 }
 
