@@ -648,6 +648,329 @@ function showWordDetail(w) {
   });
 }
 
+// --- 🃏 フラッシュ単語 -------------------------------------------------------
+// 英単語ページの「高速めくり」版。大きなカードをタップで答え表示、スワイプ
+// (またはカード欄外のボタン)で採点してテンポよく次々めくる。
+//   上=覚えた(満点200・出題から外す) / 下=できない(不正解・すぐ再出題) /
+//   右=うろ覚え(+10) / 左=1つ戻る(採点やり直し=直前の習得度を復元)。
+// 出題はポイントが低い語ほど高確率(比例)＋復習期限を優先(/api/words/quiz)。
+
+// カードへスワイプ/タップ操作を付与。pointer events で touch/mouse 両対応。
+function attachSwipe(elm, h) {
+  const TH = 45;            // スワイプ確定の最小移動距離(px)
+  let sx = 0, sy = 0, active = false;
+  const pt = (e) => ({ x: e.clientX, y: e.clientY });
+  elm.addEventListener("pointerdown", (e) => {
+    active = true; const p = pt(e); sx = p.x; sy = p.y;
+    try { elm.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+  });
+  elm.addEventListener("pointerup", (e) => {
+    if (!active) return; active = false;
+    const p = pt(e), dx = p.x - sx, dy = p.y - sy;
+    const adx = Math.abs(dx), ady = Math.abs(dy);
+    if (adx < TH && ady < TH) { h.onTap && h.onTap(); return; }
+    if (adx > ady) (dx > 0 ? h.onRight : h.onLeft)();
+    else (dy > 0 ? h.onDown : h.onUp)();
+  });
+}
+
+// 1セッション分のカードを回す。queue は /api/words/quiz の結果。
+function runFlashcards(stage, initialQueue, opts) {
+  const { dir, speed, auto, qs } = opts;   // dir: 'en2ja' | 'ja2en'
+  let queue = initialQueue;
+  let pos = 0, revealed = false;
+  const history = [];                       // {index, snapshot, action}
+  const counts = { known: 0, vague: 0, wrong: 0 };
+  const card = () => queue[pos];
+
+  const playWord = (c) => speech.sayItem(
+    "word", c.id, "word", MALE_VOICE, c.english, speedOpts(speed));
+
+  async function onReveal(c) {
+    if (auto && dir === "ja2en") playWord(c);   // 和英は答え表示時に英語を再生
+    if (!c.has_detail) return;
+    let d = c._detail;
+    if (!d) {
+      try {
+        const r = await api.post(`/api/words/${c.id}/detail`);
+        if (r.ok) d = c._detail = r.detail;
+      } catch (_) { /* 詳細なしでも続行 */ }
+    }
+    if (!d || card() !== c) return;             // 先に進んでいたら無視
+    const ipa = stage.querySelector("#fcIpa");
+    const exja = stage.querySelector("#fcExJa");
+    if (ipa && d.pronunciation) ipa.textContent = "発音 " + d.pronunciation;
+    if (exja && d.example_ja) exja.textContent = "訳: " + d.example_ja;
+  }
+
+  function applyGrade(c, action) {
+    (async () => {
+      try {
+        if (action === "known") {
+          const r = await api.post(`/api/words/${c.id}/known`, { known: true });
+          c.mastery = r.mastery; c.mastered = true;
+        } else if (action === "vague") {
+          const r = await api.post(`/api/words/${c.id}/vague`);
+          c.mastery = r.mastery;
+        } else {
+          const r = await api.post("/api/words/attempt", {
+            word_id: c.id, direction: dir, correct: false, result: "wrong" });
+          c.mastery = r.mastery;
+          c.review_level = r.review_level; c.next_review = r.next_review;
+        }
+      } catch (_) { /* 失敗しても次へ進む */ }
+    })();
+  }
+
+  function grade(action) {
+    const c = card();
+    if (!c) return;
+    history.push({ index: pos, action, snapshot: {
+      mastery: c.mastery, review_level: c.review_level,
+      next_review: c.next_review } });
+    if (action === "known") counts.known++;
+    else if (action === "vague") counts.vague++;
+    else counts.wrong++;
+    applyGrade(c, action);
+    const fly = { known: "fly-up", wrong: "fly-down", vague: "fly-right" }[action];
+    const cardEl = stage.querySelector("#fcCard");
+    pos++; revealed = false;
+    if (cardEl && fly) {
+      cardEl.classList.add(fly);
+      setTimeout(render, 150);
+    } else render();
+  }
+
+  async function undo() {
+    if (!history.length) { toast("これ以上戻れません"); return; }
+    const { index, snapshot, action } = history.pop();
+    if (action === "known") counts.known = Math.max(0, counts.known - 1);
+    else if (action === "vague") counts.vague = Math.max(0, counts.vague - 1);
+    else counts.wrong = Math.max(0, counts.wrong - 1);
+    const c = queue[index];
+    c.mastery = snapshot.mastery; c.mastered = c.mastery >= 100;
+    c.review_level = snapshot.review_level; c.next_review = snapshot.next_review;
+    try { await api.post(`/api/words/${c.id}/restore`, snapshot); }
+    catch (_) { /* ignore */ }
+    pos = index; revealed = true; render();
+    toast("1つ戻りました（採点やり直し）");
+  }
+
+  async function fetchMore() {
+    stage.innerHTML = `<p class="muted">読み込み中…</p>`;
+    let more;
+    try { more = await api.get("/api/words/quiz?" + qs); }
+    catch (_) { stage.innerHTML = `<div class="card">取得に失敗しました</div>`; return; }
+    if (!more.length) {
+      stage.innerHTML = `<div class="card">対象の単語がありません。</div>`; return;
+    }
+    queue = more; pos = 0; revealed = false; history.length = 0;
+    render();
+  }
+
+  function renderDone() {
+    stage.innerHTML = `<div class="card fc-done">
+      <h2 style="margin-top:0">お疲れさまでした 🎉</h2>
+      <p>覚えた <b>${counts.known}</b> ・ うろ覚え <b>${counts.vague}</b>
+        ・ できない <b>${counts.wrong}</b></p>
+      <div class="row">
+        <button class="btn" id="fcMore">▶ もっと続ける</button>
+        <button class="btn ghost" id="fcBack">設定に戻る</button>
+      </div></div>`;
+    stage.querySelector("#fcMore").addEventListener("click", fetchMore);
+    stage.querySelector("#fcBack").addEventListener("click",
+      () => go("flashcard"));
+  }
+
+  function render() {
+    const c = card();
+    if (!c) { renderDone(); return; }
+    const qText = dir === "en2ja" ? c.english : c.japanese;
+    const aText = dir === "en2ja" ? c.japanese : c.english;
+    stage.innerHTML = `<div class="fc-wrap">
+      <div class="fc-progress muted">${pos + 1} / ${queue.length}
+        ・ 覚${counts.known} うろ${counts.vague} ✗${counts.wrong}</div>
+      <div class="fc-card${revealed ? " flip" : ""}" id="fcCard">
+        <div class="fc-q">${escapeHtml(qText)}</div>
+        <div class="fc-side muted">${dir === "en2ja" ? "英→日" : "日→英"}</div>
+        <div class="fc-a">
+          <div class="fc-ans">${escapeHtml(aText)}</div>
+          <div class="fc-ipa muted" id="fcIpa"></div>
+          <div class="fc-ex" id="fcEx">${c.example
+            ? escapeHtml(c.example) : ""}</div>
+          <div class="fc-exja muted" id="fcExJa"></div>
+        </div>
+        <div class="fc-hint muted">タップで答え</div>
+      </div>
+      <div class="fc-legend muted">⬆ 覚えた ・ ⬇ できない ・ ➡ うろ覚え
+        ・ ⬅ 戻る ／ カードをタップで答え</div>
+      <div class="row fc-tools"></div>
+      <div class="row fc-actions"></div>
+    </div>`;
+    const cardEl = stage.querySelector("#fcCard");
+    attachSwipe(cardEl, {
+      onTap: () => {
+        revealed = !revealed;
+        cardEl.classList.toggle("flip", revealed);
+        if (revealed) onReveal(c);
+      },
+      onUp: () => grade("known"),
+      onDown: () => grade("wrong"),
+      onRight: () => grade("vague"),
+      onLeft: () => undo(),
+    });
+    // ツール: 音声(男/女)・例文再生・詳細。
+    const tools = stage.querySelector(".fc-tools");
+    tools.appendChild(voiceButtonsItem(
+      "word", c.id, "word", () => c.english, () => speed));
+    const exBtn = el(`<button class="btn ghost">🔊 例文</button>`);
+    exBtn.disabled = !c.example;
+    exBtn.addEventListener("click", () => { if (c.example)
+      speech.sayItem("word", c.id, "example", FEMALE_VOICE, c.example,
+        speedOpts(speed)); });
+    const detBtn = el(`<button class="btn ghost">📖 詳細</button>`);
+    detBtn.addEventListener("click", () => showWordDetail(c));
+    tools.append(exBtn, detBtn);
+    // 採点ボタン(スワイプできない端末用)。
+    const actions = stage.querySelector(".fc-actions");
+    const mk = (cls, label, fn) => {
+      const b = el(`<button class="btn ${cls}">${label}</button>`);
+      b.addEventListener("click", fn);
+      return b;
+    };
+    actions.append(
+      mk("ghost", "⬅ 戻る", undo),
+      mk("danger", "⬇ できない", () => grade("wrong")),
+      mk("vague-btn", "➡ うろ覚え", () => grade("vague")),
+      mk("good", "⬆ 覚えた", () => grade("known")),
+    );
+    if (revealed) onReveal(c);
+    if (auto && dir === "en2ja") playWord(c);  // 英和は出題時に英語を再生
+  }
+
+  // キーボード(PC)対応。← → ↑ ↓ で採点、Space/Enter で反転。
+  const onKey = (e) => {
+    if (e.key === "ArrowUp") { e.preventDefault(); grade("known"); }
+    else if (e.key === "ArrowDown") { e.preventDefault(); grade("wrong"); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); grade("vague"); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); undo(); }
+    else if (e.key === " " || e.key === "Enter") {
+      e.preventDefault();
+      const cardEl = stage.querySelector("#fcCard");
+      if (!cardEl) return;
+      revealed = !revealed;
+      cardEl.classList.toggle("flip", revealed);
+      if (revealed) onReveal(card());
+    }
+  };
+  document.addEventListener("keydown", onKey);
+  onLeaveView(() => document.removeEventListener("keydown", onKey));
+
+  render();
+}
+
+export async function flashcard(root) {
+  const facets = await api.get(
+    "/api/words/facets" + (showBanned() ? "?include_banned=true" : ""));
+  const domOpts = ['<option value="">分野: すべて</option>']
+    .concat(facets.domains.map((d) => `<option>${escapeHtml(d)}</option>`))
+    .join("");
+  const lvOpts = '<option value="">--</option>' + facets.range_levels
+    .map((l) => `<option>${escapeHtml(l)}</option>`).join("");
+
+  root.innerHTML = `
+    <h1>🃏 フラッシュ単語</h1>
+    <div class="card" id="fcSetup">
+      <p class="muted">単語帳をどんどんめくる高速学習。カードをタップで答え、
+        スワイプ（または下のボタン）で採点します。</p>
+      <div class="row">
+        <select id="fcDir">
+          <option value="en2ja">英和（英→日）</option>
+          <option value="ja2en">和英（日→英）</option>
+        </select>
+        <select id="fcDom">${domOpts}</select>
+      </div>
+      <div class="row mt">
+        <span class="muted">レベル</span>
+        <select id="fcLvMin">${lvOpts}</select>
+        <span class="muted">〜</span>
+        <select id="fcLvMax">${lvOpts}</select>
+        <select id="fcMastered">
+          <option value="">覚えた: 含む</option>
+          <option value="hide">覚えた: 隠す</option>
+          <option value="only">覚えた: のみ</option>
+        </select>
+      </div>
+      <div class="row mt">
+        <select id="fcSize">
+          <option value="20">20枚</option>
+          <option value="50">50枚</option>
+          <option value="100">100枚</option>
+        </select>
+        ${speedSelect("fcSpeed", false)}
+        <label class="toggle"><input type="checkbox" id="fcAuto"/>
+          英語を自動再生</label>
+      </div>
+      <div class="row mt">
+        <button class="btn" id="fcStart">▶ 開始</button>
+      </div>
+    </div>
+    <div id="fcStage"></div>`;
+
+  const setVal = (id, v) => {
+    const e = root.querySelector(id);
+    if (e && v != null) e.value = v;
+  };
+  setVal("#fcDir", localStorage.getItem("fc_dir") || "en2ja");
+  setVal("#fcDom", localStorage.getItem("fc_dom") || "");
+  setVal("#fcLvMin", localStorage.getItem("fc_lvmin") || "");
+  setVal("#fcLvMax", localStorage.getItem("fc_lvmax") || "");
+  setVal("#fcMastered", localStorage.getItem("fc_mastered") || "");
+  setVal("#fcSize", localStorage.getItem("fc_size") || "50");
+  setVal("#fcSpeed", localStorage.getItem("fc_speed") || "std");
+  root.querySelector("#fcAuto").checked =
+    (localStorage.getItem("fc_auto") ?? "1") === "1";
+
+  root.querySelector("#fcStart").addEventListener("click", async () => {
+    const v = (id) => root.querySelector(id).value;
+    const dir = v("#fcDir"), dom = v("#fcDom");
+    const lvmin = v("#fcLvMin"), lvmax = v("#fcLvMax");
+    const mastered = v("#fcMastered"), size = v("#fcSize");
+    const speed = v("#fcSpeed");
+    const auto = root.querySelector("#fcAuto").checked;
+    localStorage.setItem("fc_dir", dir);
+    localStorage.setItem("fc_dom", dom);
+    localStorage.setItem("fc_lvmin", lvmin);
+    localStorage.setItem("fc_lvmax", lvmax);
+    localStorage.setItem("fc_mastered", mastered);
+    localStorage.setItem("fc_size", size);
+    localStorage.setItem("fc_speed", speed);
+    localStorage.setItem("fc_auto", auto ? "1" : "0");
+
+    const q = new URLSearchParams({ limit: size });
+    if (dom) q.set("domain", dom);
+    if (lvmin) q.set("level_min", lvmin);
+    if (lvmax) q.set("level_max", lvmax);
+    if (mastered) q.set("mastered", mastered);
+    if (showBanned()) q.set("include_banned", "true");
+    const qs = q.toString();
+
+    const stage = root.querySelector("#fcStage");
+    stage.innerHTML = `<p class="muted">読み込み中…</p>`;
+    let queue;
+    try { queue = await api.get("/api/words/quiz?" + qs); }
+    catch (_) {
+      stage.innerHTML = `<div class="card">取得に失敗しました</div>`; return;
+    }
+    if (!queue.length) {
+      stage.innerHTML = `<div class="card">該当する単語がありません。
+        フィルタを緩めてください。</div>`;
+      return;
+    }
+    runFlashcards(stage, queue, { dir, speed, auto, qs });
+  });
+}
+
 export async function vocab(root) {
   const facets = await api.get(
     "/api/words/facets" + (showBanned() ? "?include_banned=true" : ""));
