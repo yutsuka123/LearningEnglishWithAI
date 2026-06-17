@@ -301,6 +301,7 @@ def word_detail(word_id: int, regen: bool = False):
         "pronunciation(発音記号・IPA。米音を基本にスラッシュで囲む 例: /əˈbændən/), "
         "pos(主な品詞), meanings(意味の配列・主要な語義を複数), "
         "examples(配列[{en,ja}]・自然な例文1〜2個), "
+        "example_ja(上記『既存例文』の自然な日本語訳。既存例文が無ければ空文字), "
         "derivatives(派生語の配列[{word,pos,ja}]・元が形容詞なら動詞/副詞/名詞"
         "形など他の品詞の関連語も含める), "
         "synonyms(類義語の配列[{word,note}]。note は各類義語の意味やニュアンス・"

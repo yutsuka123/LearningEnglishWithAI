@@ -146,10 +146,11 @@ h2 { font-size: 17px; margin: 22px 0 10px; }
 .btn.bad { background: var(--danger); color: #fff; }
 .btn.ghost { background: none; border: 1px solid var(--line); color: var(--text); }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
-/* 男声(青)/女声(赤) の再生ボタン (単語・フレーズ一覧) */
-.btn.voice-m { background: #1f6fd6; color: #fff; padding: 2px 9px; font-size: 13px; }
-.btn.voice-f { background: #d6406a; color: #fff; padding: 2px 9px; font-size: 13px; }
-.voice-cell { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 4px; }
+/* 男声(青)/女声(赤) の再生ボタン (単語・フレーズ一覧)
+   タブレット操作性: サイズ約1.1倍・男女ボタン間の横隙間1.2倍(4→5px)。 */
+.btn.voice-m { background: #1f6fd6; color: #fff; padding: 3px 11px; font-size: 15px; }
+.btn.voice-f { background: #d6406a; color: #fff; padding: 3px 11px; font-size: 15px; }
+.voice-cell { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 5px; }
 .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
 .stat {
