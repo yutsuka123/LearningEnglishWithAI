@@ -65,6 +65,8 @@ def list_phrases(
     include_banned: bool = False,
     mastered: str | None = None,   # 'only' | 'hide' | None(=全部)
 ):
+    from ..services.auth import current_user_allow_banned
+    include_banned = include_banned and current_user_allow_banned()
     col = {
         "mastery": "mastery",
         "english": "english COLLATE NOCASE",
@@ -129,6 +131,8 @@ def facets():
 
 @router.get("/scenes")
 def list_scenes(include_banned: bool = False):
+    from ..services.auth import current_user_allow_banned
+    include_banned = include_banned and current_user_allow_banned()
     ban = "" if include_banned else "AND scene NOT LIKE '禁止%' "
     with db() as conn:
         rows = conn.execute(
@@ -194,7 +198,8 @@ def delete_phrase(phrase_id: int):
 
 @router.get("/quiz")
 def quiz(limit: int = 10, include_banned: bool = False):
-    from ..services.auth import current_user_id
+    from ..services.auth import current_user_id, current_user_allow_banned
+    include_banned = include_banned and current_user_allow_banned()
     with db() as conn:
         rows = select_for_review(
             conn, table="phrases", limit=limit,
