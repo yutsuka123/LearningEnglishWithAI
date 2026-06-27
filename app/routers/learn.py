@@ -744,7 +744,8 @@ def daily_session(
     chosen by the forgetting-curve scheduler (due items first). Returns the
     concrete items so the client can run the fast part without AI calls.
     禁止用語は ``include_banned`` が真でない限り出題しない。"""
-    from ..services.auth import current_user_id
+    from ..services.auth import current_user_id, current_user_allow_banned
+    include_banned = include_banned and current_user_allow_banned()
     n_words = max(1, min(words, 10))
     n_phrases = max(1, min(phrases, 10))
     ban = not include_banned

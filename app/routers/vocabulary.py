@@ -110,6 +110,8 @@ def list_words(
     include_banned: bool = False,
     mastered: str | None = None,   # 'only' | 'hide' | None(=全部)
 ):
+    from ..services.auth import current_user_allow_banned
+    include_banned = include_banned and current_user_allow_banned()
     col = {
         "mastery": "mastery",
         "english": "english COLLATE NOCASE",
@@ -143,6 +145,8 @@ def list_words(
 def facets(include_banned: bool = False):
     """フィルタUI用の分野(domain)・レベル(level)の選択肢一覧。
     include_banned=true のとき「禁止用語」も分野候補に含める。"""
+    from ..services.auth import current_user_allow_banned
+    include_banned = include_banned and current_user_allow_banned()
     with db() as conn:
         domains = [
             r["domain"] for r in conn.execute(
@@ -223,7 +227,8 @@ def quiz(
 ):
     """Return a weighted set of words to quiz (probability ∝ 100 - mastery).
     分野/レベル/覚えた状態でフィルタ可能（フラッシュカードと共用）。"""
-    from ..services.auth import current_user_id
+    from ..services.auth import current_user_id, current_user_allow_banned
+    include_banned = include_banned and current_user_allow_banned()
     from ..services.spaced_repetition import select_for_review
     where, params = _word_filter(
         domain, level, level_min, level_max, out_of_range,

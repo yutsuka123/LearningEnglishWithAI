@@ -77,6 +77,25 @@ def current_user_id() -> int:
     return _current_user_id.get()
 
 
+def current_user_allow_banned() -> bool:
+    """現在ユーザーが禁止用語コンテンツを閲覧してよいか（§E）。
+    owner(id=1) と admin は常に可。一般ユーザーは ``allow_banned`` 列に従う。
+    クライアントが ``include_banned=true`` を送っても、この関数が False を返す
+    ユーザーには禁止用語を出さない（サーバー側で強制）。"""
+    from ..database import db, OWNER_USER_ID as _OWNER
+
+    uid = current_user_id()
+    if uid == _OWNER:
+        return True
+    with db() as conn:
+        u = get_user(conn, uid)
+    if not u:
+        return False
+    if u.get("role") == "admin":
+        return True
+    return bool(u.get("allow_banned"))
+
+
 # ---------------------------------------------------------------------------
 # ユーザー CRUD
 # ---------------------------------------------------------------------------

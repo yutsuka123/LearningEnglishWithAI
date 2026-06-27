@@ -76,6 +76,8 @@ class DeckCreate(BaseModel):
 def _select_word_ids(conn, p: DeckCreate) -> list[int]:
     if p.word_ids:
         return list(dict.fromkeys(p.word_ids))
+    from ..services.auth import current_user_allow_banned
+    include_banned = p.include_banned and current_user_allow_banned()
     where, params = [], []
     if p.domains:
         ph = ",".join("?" * len(p.domains))
@@ -85,7 +87,7 @@ def _select_word_ids(conn, p: DeckCreate) -> list[int]:
         ph = ",".join("?" * len(p.levels))
         where.append(f"COALESCE(level,'') IN ({ph})")
         params += p.levels
-    if not p.include_banned:
+    if not include_banned:
         where.append(banned_filter("words"))
     clause = (" WHERE " + " AND ".join(where)) if where else ""
     rows = conn.execute(
