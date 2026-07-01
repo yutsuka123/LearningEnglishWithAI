@@ -77,8 +77,9 @@ def main() -> int:
 
     made = failed = 0
     t0 = time.monotonic()
+    lim = args.limit if args.limit > 0 else -1  # 0/未指定=全件(LIMIT -1)
     with db() as conn:
-        rows = conn.execute(sql, (args.limit,)).fetchall()
+        rows = conn.execute(sql, (lim,)).fetchall()
         print(f"対象 {len(rows)} 語 / モデル {model} / dry_run={args.dry_run}")
         for r in rows:
             old = _json_object(r["detail"])
