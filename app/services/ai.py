@@ -443,12 +443,13 @@ def synthesize_speech(
         except Exception:  # caching is best-effort
             pass
         cost = len(text) / 1000 * _TTS_USD_PER_1K_CHARS
+        from .auth import current_user_id
         with db() as conn:
             conn.execute(
                 "INSERT INTO ai_usage "
-                "(model, prompt_tokens, output_tokens, cost_usd, feature) "
-                "VALUES (?, 0, 0, ?, 'tts')",
-                (settings.tts_model, cost),
+                "(model, prompt_tokens, output_tokens, cost_usd, feature, "
+                " user_id) VALUES (?, 0, 0, ?, 'tts', ?)",
+                (settings.tts_model, cost, current_user_id()),
             )
         return audio, None
     except Exception as exc:
@@ -517,12 +518,13 @@ def transcribe(
         # whisper-1 ≈ $0.006/min。長さ不明のため概算（音声バイト数から推定）。
         minutes = max(len(audio_bytes) / (16000 * 60), 0.05)
         cost = minutes * 0.006 * calls
+        from .auth import current_user_id
         with db() as conn:
             conn.execute(
                 "INSERT INTO ai_usage "
-                "(model, prompt_tokens, output_tokens, cost_usd, feature) "
-                "VALUES ('whisper-1', 0, 0, ?, 'stt')",
-                (cost,),
+                "(model, prompt_tokens, output_tokens, cost_usd, feature, "
+                " user_id) VALUES ('whisper-1', 0, 0, ?, 'stt', ?)",
+                (cost, current_user_id()),
             )
         return text, None
     except Exception as exc:
