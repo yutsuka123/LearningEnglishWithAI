@@ -37,16 +37,22 @@ from app.services import ai  # noqa: E402
 # vocabulary.py の word_detail と同一のシステムプロンプト（昨日改善版）。
 SYSTEM = (
     "英単語の詳細情報を日本語でJSONのみ作成。キー: "
+    "pronunciation(発音記号・IPA。米音を基本にスラッシュで囲む 例: /əˈbændən/), "
     "pos(主な品詞), meanings(意味の配列・主要な語義を複数), "
     "examples(配列[{en,ja}]・自然な例文1〜2個), "
+    "example_ja(上記『既存例文』の自然な日本語訳。既存例文が無ければ空文字), "
     "derivatives(派生語の配列[{word,pos,ja}]・元が形容詞なら動詞/副詞/名詞"
     "形など他の品詞の関連語も含める), "
     "synonyms(類義語の配列[{word,note}]。note は各類義語の意味やニュアンス・"
     "使い分けの違いを簡潔に), "
     "antonyms(対義語の配列[{word,note}]), "
-    "origin(語源・由来。語源に出てくる語(例: amine/アミン等)があれば、その語が"
-    "何を意味するかも一言添えて分かりやすく), "
-    "trivia(豆知識), explanation(使い方・ニュアンスの解説). "
+    "origin(語源・由来。可能なら接頭辞/語根/接尾辞に分解し各要素の意味を示す"
+    "(例: abnormal = ab-「離れて」+ normal「正常」)。語源に出てくる語があれば"
+    "その意味も一言添える), "
+    "trivia(豆知識。関連が本当にあれば、著名人・聖書・哲学・有名な技術・歴史上の"
+    "名言や出来事・有名な書籍や映画のセリフとの結びつきを1つ挙げる。無理に作らず"
+    "自然なものだけ), "
+    "explanation(使い方・ニュアンスの解説). "
     "簡潔に。必ず完結したJSONのみを出力（途中で切らない）。"
 )
 
@@ -118,9 +124,11 @@ def main() -> int:
                 "UPDATE words SET detail = ? WHERE id = ?",
                 (json.dumps(data, ensure_ascii=False), r["id"]),
             )
+            # 1語ごとにコミットして書込みロックを解放する。握ったままだと次語の
+            # ai.chat 内 ai_usage 記録(別接続)が database is locked になる。
+            conn.commit()
             made += 1
             if made % 20 == 0:
-                conn.commit()
                 tgt = args.limit or total
                 print(f"  詳細 {made}/{tgt} … (失敗 {failed})")
         conn.commit()
