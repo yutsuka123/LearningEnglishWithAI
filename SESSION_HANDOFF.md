@@ -66,7 +66,19 @@
 **追記(同日)**: `build_details.py --limit 60` で新規52語ぶんの detail
 （IPA/意味/例文/派生/類義/対義/語源/豆知識/解説）を生成済み。52/52成功・失敗0・
 概算費用 **$0.166**。words.detail カバレッジは4060/4060で100%維持。
-音声生成(`build_audio.py --all --native`)と本番デプロイはまだ未実施。
+
+**追記2(同日)**: 音声生成＋本番デプロイまで完了。
+- `build_audio.py --all --native`: 新規52語+44フレーズぶん（単語/例文/フレーズ×
+  learn/native×ash,nova）**488ファイル**生成。概算費用 **$0.2501**。
+  ローカル音声 30,993→**31,481**。
+- 本番反映: 事前バックアップ`vocabulary.predeploy-0707.db`→
+  `docker cp`でスクリプト配置→`docker exec eigo-app python3
+  scripts/add_outdoor_weather_transit_20260707.py`で新規行INSERT→
+  detail差分をJSON抽出→`import_details.py`で52語分UPDATE→
+  音声は`rsync --ignore-existing`で追加のみ。
+- **確認済み**: 本番 words 4060/phrases 1780（ローカルと一致）、進捗系
+  (users12/uwp134/upp18/word_attempts92/ai_usage30419)は**完全に不変**、
+  study /login 200・ailab 302。3分野の追加分は**本番デプロイ完了**。
 
 ## 現在の規模
 - 単語 4008 / フレーズ 1736 / 音声 30,993 ファイル / level は50点刻み（範囲外=禁止用語90は据置）。
