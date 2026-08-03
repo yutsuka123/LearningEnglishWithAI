@@ -20,21 +20,67 @@
     button:hover { background: #2f5cb8; }
     .err { color: #c0392b; font-size: 13px; margin-top: 12px;
       min-height: 18px; }
+    .toggle { text-align: center; margin-top: 16px; }
+    .toggle a { font-size: 13px; color: #3b6fd4; text-decoration: none;
+      cursor: pointer; }
+    .toggle a:hover { text-decoration: underline; }
+    .hint { font-size: 12px; color: #789; margin: 4px 0 0; }
+    .hidden { display: none; }
+    .foot { text-align: center; margin-top: 14px; }
+    .foot a { font-size: 12px; color: #9ab; text-decoration: none; }
+    .foot a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <form class="card" id="f">
     <h1>🐱 English Learning with AI</h1>
-    <label for="u">ユーザー名</label>
+    <label for="u">ユーザー名（メールアドレスでも可）</label>
     <input id="u" name="username" autocomplete="username" required />
     <label for="p">パスワード</label>
     <input id="p" name="password" type="password"
       autocomplete="current-password" required />
     <button type="submit">ログイン</button>
     <div class="err" id="e"></div>
+    <div class="toggle">
+      <a id="toSignup">アカウントをお持ちでない方はこちら（新規登録）</a>
+    </div>
+    <div class="foot"><a href="/static/terms.html" target="_blank">利用規約・免責事項</a></div>
   </form>
+
+  <form class="card hidden" id="fSignup">
+    <h1>🐱 新規登録</h1>
+    <label for="su">メールアドレス</label>
+    <input id="su" name="email" type="email" autocomplete="email"
+      required />
+    <label for="sp">パスワード（8文字以上）</label>
+    <input id="sp" name="password" type="password" minlength="8"
+      autocomplete="new-password" required />
+    <label for="sk">チャージキー</label>
+    <input id="sk" name="charge_key" autocomplete="off" required
+      placeholder="XXXX-XXXXXXX-X-XXXX" />
+    <p class="hint">BASE等で購入時にお送りしたキーを入力してください。
+      登録と同時にチャージ（pt付与）されます。</p>
+    <button type="submit">登録してはじめる</button>
+    <div class="err" id="se"></div>
+    <div class="toggle">
+      <a id="toLogin">ログイン画面に戻る</a>
+    </div>
+    <div class="foot"><a href="/static/terms.html" target="_blank">利用規約・免責事項</a></div>
+  </form>
+
   <script>
-    document.getElementById('f').addEventListener('submit', async (ev) => {
+    const fLogin = document.getElementById('f');
+    const fSignup = document.getElementById('fSignup');
+    document.getElementById('toSignup').addEventListener('click', () => {
+      fLogin.classList.add('hidden');
+      fSignup.classList.remove('hidden');
+    });
+    document.getElementById('toLogin').addEventListener('click', () => {
+      fSignup.classList.add('hidden');
+      fLogin.classList.remove('hidden');
+    });
+
+    fLogin.addEventListener('submit', async (ev) => {
       ev.preventDefault();
       const e = document.getElementById('e');
       e.textContent = '';
@@ -51,6 +97,26 @@
         if (d.ok) { location.href = '/'; }
         else { e.textContent = d.error || 'ログインに失敗しました。'; }
       } catch (_) { e.textContent = '通信エラーが発生しました。'; }
+    });
+
+    fSignup.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const se = document.getElementById('se');
+      se.textContent = '';
+      try {
+        const r = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('su').value,
+            password: document.getElementById('sp').value,
+            charge_key: document.getElementById('sk').value,
+          }),
+        });
+        const d = await r.json();
+        if (d.ok) { location.href = '/'; }
+        else { se.textContent = d.error || '登録に失敗しました。'; }
+      } catch (_) { se.textContent = '通信エラーが発生しました。'; }
     });
   </script>
 </body>

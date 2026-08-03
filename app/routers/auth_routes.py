@@ -37,6 +37,70 @@ class LoginIn(BaseModel):
     password: str
 
 
+class SignupIn(BaseModel):
+    email: str
+    password: str
+    charge_key: str
+    display_name: str = ""
+
+
+@router.post("/signup")
+def signup(payload: SignupIn, request: Request, response: Response):
+    """自己サインアップ（メアド+パス）。招待制を維持するため、有効な
+    未使用チャージキーの提示を必須にする（=登録がそのままキー償還になる）。
+    username にはメアドをそのまま使うため、既存の /api/auth/login や
+    authenticate() は一切変更不要（従来ユーザーのログイン経路と共存する）。
+    """
+    from ..services import charge_keys
+
+    email = payload.email.strip().lower()
+    password = payload.password
+    if "@" not in email or "." not in email.split("@")[-1]:
+        return JSONResponse(
+            {"ok": False, "error": "メールアドレスの形式が正しくありません。"},
+            status_code=400,
+        )
+    if len(password) < 8:
+        return JSONResponse(
+            {"ok": False, "error": "パスワードは8文字以上にしてください。"},
+            status_code=400,
+        )
+    # 注意: ChargeKeyError は with ブロックの外で捕まえること。ブロック内で
+    # catch して return してしまうと、db() の contextmanager からは
+    # "例外なく正常終了" に見えて create_user の INSERT がロールバックされず
+    # コミットされてしまう（同じ except を with の内側に置いて早期return
+    # した場合に発生する既知の落とし穴。実装時に一度この不具合を作り込み、
+    # 検証で「無効キーでも登録失敗のはずがユーザー行が残る」ことを発見して
+    # 修正した）。
+    try:
+        with db() as conn:
+            if auth.get_user_by_email(conn, email) or auth.get_user_by_name(
+                conn, email
+            ):
+                raise charge_keys.ChargeKeyError(
+                    "このメールアドレスは既に登録されています。")
+            uid = auth.create_user(
+                conn, email, password,
+                email=email, display_name=payload.display_name or email,
+            )
+            charge_keys.redeem_key(conn, uid, payload.charge_key)
+            secret = auth.get_session_secret(conn)
+            u = auth.get_user(conn, uid)
+    except charge_keys.ChargeKeyError as e:
+        return JSONResponse({"ok": False, "error": str(e)}, status_code=400)
+    token = auth.make_session_token(secret, uid, int(time.time()))
+    resp = JSONResponse({"ok": True, "user": {
+        "id": u["id"], "username": u["username"], "role": u["role"],
+        "display_name": u["display_name"], "email": u["email"],
+    }})
+    resp.set_cookie(
+        auth.SESSION_COOKIE, token, max_age=auth._SESSION_TTL,
+        httponly=True, samesite="lax", path="/",
+        secure=_cookie_secure(request),
+    )
+    return resp
+
+
 @router.post("/login")
 def login(payload: LoginIn, request: Request, response: Response):
     ip = request.client.host if request.client else "?"
@@ -82,12 +146,14 @@ def me():
     uid = auth.current_user_id()
     with db() as conn:
         u = auth.get_user(conn, uid)
+        tier = auth.user_tier(conn, uid) if u else None
     if not u:
         return JSONResponse({"ok": False, "error": "未ログイン"},
                             status_code=401)
     return {"ok": True, "user": {
         "id": u["id"], "username": u["username"], "role": u["role"],
-        "display_name": u["display_name"],
+        "display_name": u["display_name"], "email": u["email"],
+        "tier": tier,
         "daily_cost_cap_usd": u["daily_cost_cap_usd"],
         "monthly_cost_cap_usd": u["monthly_cost_cap_usd"],
         "balance_jpy": u["balance_jpy"],

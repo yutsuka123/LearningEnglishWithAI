@@ -13,7 +13,12 @@ from __future__ import annotations
 
 import sqlite3
 
-MASTERED = 80   # これ以上を「習得」
+from .spaced_repetition import MASTERED_THRESHOLD
+
+# 「習得」のしきい値は spaced_repetition.MASTERED_THRESHOLD と統一する
+# （以前は本モジュール独自に 80 を定義しており、一覧/フラッシュカードの
+#  「覚えた」判定=100以上とダッシュボードの「習得」判定=80以上がズレていた）。
+MASTERED = MASTERED_THRESHOLD  # これ以上を「習得」
 VAGUE = 40      # これ以上 MASTERED 未満を「うろ覚え」
 
 

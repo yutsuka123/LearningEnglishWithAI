@@ -115,6 +115,16 @@ def get_user_by_name(
     return dict(row) if row else None
 
 
+def get_user_by_email(
+    conn: sqlite3.Connection, email: str
+) -> Optional[dict]:
+    row = conn.execute(
+        "SELECT * FROM users WHERE email = ? AND email <> ''",
+        (email.strip().lower(),),
+    ).fetchone()
+    return dict(row) if row else None
+
+
 def authenticate(
     conn: sqlite3.Connection, username: str, password: str
 ) -> Optional[dict]:
@@ -134,19 +144,25 @@ def create_user(
     *,
     role: str = "user",
     display_name: str = "",
+    email: str = "",
     daily_cap_usd: Optional[float] = None,
     monthly_cap_usd: Optional[float] = None,
     balance_jpy: Optional[float] = None,
     allow_banned: bool = False,
 ) -> int:
-    """ユーザーを作成して id を返す（管理者が割当）。username は一意。"""
+    """ユーザーを作成して id を返す。username は一意。
+
+    ``email`` は自己サインアップ(メアド+パス)ユーザー用（既定は空文字＝
+    管理者(admin.py)作成の従来ユーザーと同じ扱い）。呼び出し元を増やさず
+    後方互換を保つため、キーワード専用・既定空文字にしている。
+    """
     pw = hash_password(password) if password else ""
     cur = conn.execute(
         "INSERT INTO users (username, password_hash, role, display_name, "
-        " daily_cost_cap_usd, monthly_cost_cap_usd, balance_jpy, "
-        " allow_banned) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        " email, daily_cost_cap_usd, monthly_cost_cap_usd, balance_jpy, "
+        " allow_banned) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (username.strip(), pw, role, display_name or username.strip(),
-         daily_cap_usd, monthly_cap_usd, balance_jpy,
+         email.strip().lower(), daily_cap_usd, monthly_cap_usd, balance_jpy,
          1 if allow_banned else 0),
     )
     return int(cur.lastrowid)
@@ -211,11 +227,35 @@ def set_active(
 
 def list_users(conn: sqlite3.Connection) -> list[dict]:
     rows = conn.execute(
-        "SELECT id, username, role, is_active, display_name, "
+        "SELECT id, username, role, is_active, display_name, email, "
         " daily_cost_cap_usd, monthly_cost_cap_usd, balance_jpy, created_at "
         "FROM users ORDER BY id"
     ).fetchall()
-    return [dict(r) for r in rows]
+    users = [dict(r) for r in rows]
+    for u in users:
+        u["tier"] = user_tier(conn, u["id"])
+    return users
+
+
+def user_tier(conn: sqlite3.Connection, user_id: int) -> str:
+    """ユーザーの階層を判定して返す（"legacy" | "email" | "charged"）。
+    未ログイン("guest")はこの関数の対象外（呼び出し側で判定する）。
+
+    - email が空 → "legacy"（admin.py が作成した従来ユーザー）
+    - email が非空 → "email"（自己サインアップユーザー）
+    - 上記に加え、残高>0 か チャージキー償還履歴があれば "charged"
+      （管理者が直接残高を付与したケースも実質的に有償相当のため含める）。
+    """
+    u = get_user(conn, user_id)
+    if not u:
+        return "legacy"
+    charged = bool(u.get("balance_jpy")) or conn.execute(
+        "SELECT 1 FROM charge_keys WHERE used_by_user_id = ? LIMIT 1",
+        (user_id,),
+    ).fetchone() is not None
+    if charged:
+        return "charged"
+    return "email" if (u.get("email") or "").strip() else "legacy"
 
 
 def multiuser_enabled() -> bool:

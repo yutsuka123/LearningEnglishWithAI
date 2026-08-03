@@ -2509,6 +2509,20 @@ export async function settings(root) {
       <p class="muted">TOEICは出題題材のレベルの手がかりにします（学習が進むと
         実績も加味）。名前はAIが会話で呼びかける際に使います。</p>
     </div>
+    <div class="card" id="chargeCard" style="display:none">
+      <h2>💳 チャージ</h2>
+      <p>現在の残高: <b id="ptBalance">-</b> pt</p>
+      <div class="row">
+        <input id="ck_key" placeholder="XXXX-XXXXXXX-X-XXXX"
+          style="width:220px" />
+        <button class="btn good" id="ck_redeem">チャージする</button>
+      </div>
+      <p class="muted mt" id="ck_out"></p>
+      <p class="muted">BASE等で購入したチャージキーを入力すると、
+        pt（1pt=1円）が残高に加算されます。AI英会話・reading・listening
+        等の生成でこの残高が消費されます（単語/フレーズのクイズは無料）。
+        <a href="/static/terms.html" target="_blank">利用規約・免責事項</a></p>
+    </div>
     <div class="card admin-only">
       <h2>OpenAI</h2>
       <div class="row">
@@ -2677,6 +2691,18 @@ export async function settings(root) {
         c.style.display = "none";
       });
     }
+    // チャージカード: ローカル単一ユーザー(multiuser=false)では非表示
+    // （残高の概念が無いため）。ログイン中の全ユーザーに表示する
+    // （admin-onlyではない）。
+    const chargeCard = root.querySelector("#chargeCard");
+    if (mu && mu.multiuser && chargeCard) {
+      chargeCard.style.display = "";
+      const bal = root.querySelector("#ptBalance");
+      if (bal) {
+        bal.textContent = mu.balance_jpy != null
+          ? Math.round(mu.balance_jpy) : "0";
+      }
+    }
   })();
 
   const pfSave = root.querySelector("#pf_save");
@@ -2691,6 +2717,25 @@ export async function settings(root) {
     settings.toeic_self = Number.isFinite(t) ? t : null;
     await api.put("/api/system/user-settings", { settings });
     toast("プロフィールを保存しました");
+  });
+
+  const ckBtn = root.querySelector("#ck_redeem");
+  if (ckBtn) ckBtn.addEventListener("click", async () => {
+    const keyInput = root.querySelector("#ck_key");
+    const out = root.querySelector("#ck_out");
+    const key = keyInput.value.trim();
+    if (!key) { toast("チャージキーを入力してください"); return; }
+    out.textContent = "";
+    try {
+      const r = await api.post("/api/billing/redeem", { key });
+      out.textContent = `チャージしました。現在の残高: `
+        + `${Math.round(r.balance_jpy)} pt`;
+      const bal = root.querySelector("#ptBalance");
+      if (bal) bal.textContent = Math.round(r.balance_jpy);
+      keyInput.value = "";
+      toast("チャージが完了しました");
+      refreshCost();
+    } catch (e) { out.textContent = "失敗: " + e.message; }
   });
 
   // Friendly descriptions for the OpenAI voices.

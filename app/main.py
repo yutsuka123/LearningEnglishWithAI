@@ -19,7 +19,11 @@ from .services import auth as auth_svc
 from .services.spaced_repetition import apply_weekly_decay
 
 # 認証なしで許可するパス（MULTIUSER=1 のとき）。
-_AUTH_ALLOW = {"/login", "/api/auth/login", "/api/health", "/favicon.ico"}
+# 注: /static 配下は下の判定で別途常に許可される（terms.html もそこに置く）。
+_AUTH_ALLOW = {
+    "/login", "/api/auth/login", "/api/auth/signup", "/api/health",
+    "/favicon.ico",
+}
 
 
 @asynccontextmanager

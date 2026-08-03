@@ -36,6 +36,7 @@ def _print_users(rows: list[dict]) -> None:
         print("（ユーザーなし）")
         return
     print(f"{'id':>3} {'username':<16} {'role':<6} {'act':<3} "
+          f"{'tier':<8} {'email':<24} "
           f"{'daily$':>7} {'month$':>7} {'¥bal':>9}")
     for u in rows:
         d = u["daily_cost_cap_usd"]
@@ -43,6 +44,7 @@ def _print_users(rows: list[dict]) -> None:
         b = u["balance_jpy"]
         print(f"{u['id']:>3} {u['username']:<16} {u['role']:<6} "
               f"{'on' if u['is_active'] else 'off':<3} "
+              f"{u.get('tier', '-'):<8} {(u.get('email') or '-'):<24} "
               f"{('-' if d is None else d):>7} "
               f"{('-' if m is None else m):>7} "
               f"{('-' if b is None else round(b)):>9}")
