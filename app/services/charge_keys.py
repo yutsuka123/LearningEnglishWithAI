@@ -1,0 +1,205 @@
+"""チャージキー: BASE等で手売りする招待コードのセルフサービス償還。
+
+キー形式（全16桁・大文字小文字は区別しない）::
+
+    [4桁: 固定値(パターン)] + [7桁: ユニークID] + [1桁: CRC] + [4桁: シークレット]
+
+- 文字セットは31種（``0 O 1 I L`` を除外した英数字）。人間が手入力しても
+  間違えにくい。
+- ユニークID7桁は、DBの連番(id)をFeistel型の可逆変換にかけて作る。連番から
+  作るので衝突は原理的に起きないが、変換の鍵（``CHARGE_KEY_SECRET``）を知ら
+  ない限り「次の連番がどの文字列になるか」は予測できない。常時表示してよい
+  （これだけでは残高を奪えない）。
+- CRC1桁は固定値+ユニークID(先頭11桁)から算出。入力ミスをDB照会前に検知する
+  目的のみで、常時表示してよい（隠す意味がない）。
+- シークレット4桁は独立した乱数で、これが実際の償還権。DBにはハッシュのみ
+  保存し、発行時の送付以外の画面では常に伏字にすること。
+"""
+
+from __future__ import annotations
+
+import hashlib
+import hmac
+import os
+import secrets
+import sqlite3
+from typing import Optional
+
+from . import auth
+
+# ---------------------------------------------------------------------------
+# アルファベット（0 O 1 I L を除外した31種。大文字小文字は区別しない）
+# ---------------------------------------------------------------------------
+ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ"
+_BASE = len(ALPHABET)  # 31
+_CHAR_VALUE = {c: i for i, c in enumerate(ALPHABET)}
+
+FIXED_DIGITS = 4
+ID_DIGITS = 7
+CRC_DIGITS = 1
+SECRET_DIGITS = 4
+KEY_ID_DIGITS = FIXED_DIGITS + ID_DIGITS + CRC_DIGITS       # 12
+TOTAL_DIGITS = KEY_ID_DIGITS + SECRET_DIGITS                # 16
+
+ID_DOMAIN = _BASE ** ID_DIGITS  # 31**7 ≈ 275億
+
+# Feistel: 2^36 >= ID_DOMAIN の均等割り(18bit+18bit)にサイクルウォーキングで収める。
+_FEISTEL_BITS = 36
+_HALF_BITS = _FEISTEL_BITS // 2  # 18
+_HALF_MASK = (1 << _HALF_BITS) - 1
+_ROUNDS = 4
+
+
+class ChargeKeyError(ValueError):
+    """キー形式不正・見つからない・使用済み等、ユーザーに見せてよいエラー。"""
+
+
+# ---------------------------------------------------------------------------
+# Feistel（連番 -> 一見ランダムなユニークID。逆変換は不要なので一方向のみ実装）
+# ---------------------------------------------------------------------------
+def _feistel_secret() -> bytes:
+    """Feistelのラウンド鍵。サーバー内(.envのCHARGE_KEY_SECRET)にのみ保管する。
+    未設定のままだと開発用の固定値にフォールバックする（本番投入前に必ず設定
+    すること。値を変えると既発行キーのユニークID対応が変わってしまうので、
+    一度本番で使い始めたら変更しない）。"""
+    env = os.getenv("CHARGE_KEY_SECRET", "").strip()
+    if env:
+        return env.encode("utf-8")
+    return b"dev-only-charge-key-secret-please-set-CHARGE_KEY_SECRET-in-env"
+
+
+def _round_fn(x: int, round_no: int, key: bytes) -> int:
+    h = hmac.new(
+        key, round_no.to_bytes(1, "big") + x.to_bytes(3, "big"), hashlib.sha256
+    ).digest()
+    return int.from_bytes(h[:3], "big") & _HALF_MASK
+
+
+def _feistel_permute(x: int, key: bytes) -> int:
+    """2^36 空間での全単射（何回適用しても可逆・Fの性質を問わない標準Feistel）。"""
+    l = (x >> _HALF_BITS) & _HALF_MASK
+    r = x & _HALF_MASK
+    for round_no in range(_ROUNDS):
+        l, r = r, l ^ _round_fn(r, round_no, key)
+    return (l << _HALF_BITS) | r
+
+
+def seq_to_pseudo_unique(seq: int) -> int:
+    """連番(0以上)を [0, ID_DOMAIN) の一見ランダムな整数へ可逆変換する
+    （サイクルウォーキング法）。全単射なので衝突しない。"""
+    if seq < 0 or seq >= ID_DOMAIN:
+        raise ValueError(f"seq must be in [0, {ID_DOMAIN})")
+    key = _feistel_secret()
+    x = seq
+    while True:
+        x = _feistel_permute(x, key)
+        if x < ID_DOMAIN:
+            return x
+
+
+# ---------------------------------------------------------------------------
+# 31進エンコード / CRC
+# ---------------------------------------------------------------------------
+def _encode(n: int, width: int) -> str:
+    digits = []
+    for _ in range(width):
+        n, r = divmod(n, _BASE)
+        digits.append(ALPHABET[r])
+    if n != 0:
+        raise ValueError("value too large for width")
+    return "".join(reversed(digits))
+
+
+def _crc_char(s: str) -> str:
+    """先頭桁からのHorner法チェックサム(mod 31)。1文字誤字の大半・多くの
+    入れ替わりを検知できる（31は素数なので分布が良い）。"""
+    total = 0
+    for ch in s:
+        total = (total * _BASE + _CHAR_VALUE[ch]) % _BASE
+    return ALPHABET[total]
+
+
+def _normalize(s: str) -> str:
+    """大文字小文字を無視し、区切り文字(- や空白)を許容して除去する。"""
+    return "".join(ch for ch in s.upper() if ch not in "- ")
+
+
+def _validate_pattern(pattern: str) -> str:
+    p = _normalize(pattern)
+    if len(p) != FIXED_DIGITS or any(c not in _CHAR_VALUE for c in p):
+        raise ValueError(
+            f"pattern must be {FIXED_DIGITS} chars from: {ALPHABET}")
+    return p
+
+
+def _random_secret() -> str:
+    return "".join(secrets.choice(ALPHABET) for _ in range(SECRET_DIGITS))
+
+
+# ---------------------------------------------------------------------------
+# 生成・償還
+# ---------------------------------------------------------------------------
+def generate_key(
+    conn: sqlite3.Connection, *, pattern: str, amount_jpy: int
+) -> str:
+    """新しいチャージキーを1つ生成しDBへ登録、平文キー(全16桁)を返す。
+    平文が得られるのはこの返り値のみ（DBにはシークレットのハッシュしか
+    保存されない）。呼び出し側は戻り値を控えたら画面/ログに残さないこと。"""
+    p = _validate_pattern(pattern)
+    if amount_jpy <= 0:
+        raise ValueError("amount_jpy must be positive")
+    secret = _random_secret()
+    secret_hash = auth.hash_password(secret)
+    cur = conn.execute(
+        "INSERT INTO charge_keys (key_id, secret_hash, amount_jpy, pattern) "
+        "VALUES ('', ?, ?, ?)",
+        (secret_hash, amount_jpy, p),
+    )
+    seq = int(cur.lastrowid)
+    pseudo = seq_to_pseudo_unique(seq)
+    unique_id = _encode(pseudo, ID_DIGITS)
+    crc = _crc_char(p + unique_id)
+    key_id = p + unique_id + crc
+    conn.execute(
+        "UPDATE charge_keys SET key_id = ? WHERE id = ?", (key_id, seq)
+    )
+    return key_id + secret
+
+
+def redeem_key(
+    conn: sqlite3.Connection, user_id: int, raw_key: str
+) -> float:
+    """キーを償還してuser_idの残高(pt=balance_jpy)に加算し、更新後残高を返す。
+    無効・入力ミス・使用済みは ChargeKeyError。"""
+    raw = _normalize(raw_key)
+    if len(raw) != TOTAL_DIGITS or any(c not in _CHAR_VALUE for c in raw):
+        raise ChargeKeyError("キーの形式が正しくありません。")
+    key_id, secret = raw[:KEY_ID_DIGITS], raw[KEY_ID_DIGITS:]
+    if _crc_char(key_id[:-1]) != key_id[-1]:
+        raise ChargeKeyError("キーが正しくありません（入力ミスの可能性）。")
+    row = conn.execute(
+        "SELECT * FROM charge_keys WHERE key_id = ?", (key_id,)
+    ).fetchone()
+    if not row:
+        raise ChargeKeyError("キーが見つかりません。")
+    if row["used_at"]:
+        raise ChargeKeyError("このキーは既に使用済みです。")
+    if not auth.verify_password(secret, row["secret_hash"]):
+        raise ChargeKeyError("キーが正しくありません。")
+    cur = conn.execute(
+        "UPDATE charge_keys SET used_at = datetime('now'), "
+        "used_by_user_id = ? WHERE key_id = ? AND used_at IS NULL",
+        (user_id, key_id),
+    )
+    if cur.rowcount == 0:
+        # 同時償還などの競合。ここに来た時点で二重付与は防げている。
+        raise ChargeKeyError("このキーは既に使用済みです。")
+    return auth.add_balance(conn, user_id, float(row["amount_jpy"]))
+
+
+def mask_key_id(key_id: str) -> str:
+    """二次表示用: ユニークID+CRC部分を伏字にする（固定値4桁だけ見せる）。
+    ※フルキー(シークレット込み)を渡さないこと。"""
+    if len(key_id) != KEY_ID_DIGITS:
+        return "*" * len(key_id)
+    return key_id[:FIXED_DIGITS] + "*" * (KEY_ID_DIGITS - FIXED_DIGITS)

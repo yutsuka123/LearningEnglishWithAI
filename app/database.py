@@ -260,6 +260,21 @@ CREATE TABLE IF NOT EXISTS user_phrase_progress (
     next_review   TEXT,
     PRIMARY KEY (user_id, phrase_id)
 );
+
+-- チャージキー（BASE等で手売りする招待コードのセルフサービス償還用）。
+-- key_id = 固定値4+ユニークID7+CRC1桁(常時表示可・伏字にしない)。
+-- id(AUTOINCREMENT)をFeistel変換した値からユニークIDを作るため、id自体が
+-- 事実上の連番シード。シークレット4桁は平文を保存せずハッシュのみ保持。
+CREATE TABLE IF NOT EXISTS charge_keys (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    key_id          TEXT    NOT NULL UNIQUE,
+    secret_hash     TEXT    NOT NULL,
+    amount_jpy      INTEGER NOT NULL,
+    pattern         TEXT    NOT NULL,
+    created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+    used_at         TEXT,
+    used_by_user_id INTEGER REFERENCES users(id)
+);
 """
 
 
