@@ -1061,7 +1061,7 @@ export async function vocab(root) {
           ${showBanned() ? "checked" : ""} />
           🔞 禁止用語も表示</label>` : ""}
       </div>
-      <table class="mt"><thead><tr>
+      <table class="mt rtable"><thead><tr>
         <th>再生</th><th>英語</th><th>日本語</th><th>Lv</th><th>分野</th>
         <th>習熟度</th><th>正答率</th><th>操作</th></tr></thead>
         <tbody id="rows"></tbody></table>
@@ -1092,13 +1092,15 @@ export async function vocab(root) {
     words.forEach((w) => {
       const tr = el(`<tr>
         <td></td>
-        <td>${escapeHtml(w.english)}</td>
-        <td>${escapeHtml(w.japanese)}</td>
-        <td class="muted">${w.level || ""}</td>
-        <td>${w.domain ? `<span class="pill">${escapeHtml(w.domain)}</span>`
-          : ""}</td>
-        <td style="min-width:80px" data-mc="1">${masteryCell(w)}</td>
-        <td>${w.accuracy == null ? "—" : w.accuracy + "%"}</td>
+        <td data-label="英語">${escapeHtml(w.english)}</td>
+        <td data-label="日本語">${escapeHtml(w.japanese)}</td>
+        <td class="muted" data-label="Lv">${w.level || ""}</td>
+        <td data-label="分野">${w.domain
+          ? `<span class="pill">${escapeHtml(w.domain)}</span>` : ""}</td>
+        <td style="min-width:80px" data-mc="1"
+          data-label="習熟度">${masteryCell(w)}</td>
+        <td data-label="正答率">${w.accuracy == null
+          ? "—" : w.accuracy + "%"}</td>
         <td><div class="ops-cell"></div></td>
       </tr>`);
       // 番号(ID)で再生。保存済みなら無料、無ければ合成して保存。
@@ -1230,7 +1232,7 @@ export async function phrases(root) {
         ${speedSelect("pSpeed")}
         ${pageSizeSelect("pPage")}
       </div>
-      <table class="mt"><thead><tr><th>再生</th><th>英語</th><th>日本語</th>
+      <table class="mt rtable"><thead><tr><th>再生</th><th>英語</th><th>日本語</th>
         <th>シーン</th><th>習熟度</th><th>操作</th></tr></thead>
         <tbody id="rows"></tbody></table>
       <div id="pager" class="mt"></div>
@@ -1259,10 +1261,11 @@ export async function phrases(root) {
     items.forEach((p) => {
       const tr = el(`<tr>
         <td></td>
-        <td>${escapeHtml(p.english)}</td>
-        <td>${escapeHtml(p.japanese)}</td>
-        <td><span class="pill">${escapeHtml(p.scene || "")}</span></td>
-        <td data-mc="1">${masteryCell(p)}</td>
+        <td data-label="英語">${escapeHtml(p.english)}</td>
+        <td data-label="日本語">${escapeHtml(p.japanese)}</td>
+        <td data-label="シーン"><span class="pill">
+          ${escapeHtml(p.scene || "")}</span></td>
+        <td data-mc="1" data-label="習熟度">${masteryCell(p)}</td>
         <td><div class="ops-cell"></div></td>
       </tr>`);
       tr.firstElementChild.appendChild(voiceButtonsItem(

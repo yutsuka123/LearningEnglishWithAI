@@ -167,8 +167,36 @@ h2 { font-size: 17px; margin: 22px 0 10px; }
     display: block; position: fixed; inset: 0;
     background: rgba(0, 0, 0, .5); z-index: 205;
   }
-  /* 表が画面幅を超える時は、ページ全体ではなく表の中だけ横スクロール。 */
+  /* 表が画面幅を超える時は、ページ全体ではなく表の中だけ横スクロール
+     （下の.rtableに未対応の表向けの簡易フォールバック）。 */
   table { display: block; overflow-x: auto; }
+
+  /* 単語/フレーズ一覧など、列数が多く操作ボタンも多い表はカード型に変える。
+     「詳細」「覚えた」等の操作ボタンが横スクロールの先に隠れて押しづらい
+     問題への対応（2026-08-04・実機フィードバックで判明）。ヘッダ行を隠し、
+     各行を1枚のカードとして縦積みにし、各セルの前に data-label をラベルと
+     して出す（CSSのみ・JS側は各tdにdata-labelを振るだけ）。 */
+  table.rtable { display: block; overflow-x: visible; }
+  table.rtable thead { display: none; }
+  table.rtable tbody { display: block; }
+  table.rtable tr {
+    display: block; margin-bottom: 10px; padding: 10px 12px;
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  table.rtable td {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; padding: 5px 0; border: none; text-align: right;
+  }
+  table.rtable td[data-label]::before {
+    content: attr(data-label);
+    color: var(--muted); font-size: 12px; text-align: left;
+    flex: 0 0 auto; margin-right: auto;
+  }
+  /* 再生ボタン・操作ボタン列はラベル無しでそのまま横並びに。 */
+  table.rtable td:not([data-label]) {
+    justify-content: flex-start; flex-wrap: wrap;
+  }
 }
 
 .btn {
