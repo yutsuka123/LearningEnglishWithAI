@@ -13,7 +13,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # アプリのバージョン（UI表示用）。
-APP_VERSION = "ver1.1.0-alpha02"
+APP_VERSION = "ver1.1.0-alpha03"
 
 # Project root = the directory that contains the "app" package.
 ROOT_DIR = Path(__file__).resolve().parent.parent

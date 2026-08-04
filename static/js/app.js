@@ -101,6 +101,45 @@ export function setTestBanned(on) {
 }
 
 // ---------------------------------------------------------------------------
+// スマホ向けハンバーガーメニュー（狭い画面でのみCSSが有効化する）。
+// ---------------------------------------------------------------------------
+
+function closeMobileNav() {
+  document.getElementById("sidebar")?.classList.remove("open");
+  document.getElementById("sidebarBackdrop")?.classList.remove("show");
+}
+
+function toggleMobileNav() {
+  document.getElementById("sidebar")?.classList.toggle("open");
+  document.getElementById("sidebarBackdrop")?.classList.toggle("show");
+}
+
+// ---------------------------------------------------------------------------
+// ダーク/ライト表示テーマ（既定はダーク。切替はlocalStorageに記憶）。
+// ---------------------------------------------------------------------------
+
+function applyTheme(theme) {
+  const btn = document.getElementById("themeToggle");
+  if (theme === "light") {
+    document.documentElement.dataset.theme = "light";
+    if (btn) btn.textContent = "☀️";
+  } else {
+    delete document.documentElement.dataset.theme;
+    if (btn) btn.textContent = "🌙";
+  }
+}
+
+function initTheme() {
+  applyTheme(localStorage.getItem("theme") || "dark");
+  document.getElementById("themeToggle")?.addEventListener("click", () => {
+    const next = document.documentElement.dataset.theme === "light"
+      ? "dark" : "light";
+    localStorage.setItem("theme", next);
+    applyTheme(next);
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Routing
 // ---------------------------------------------------------------------------
 
@@ -139,6 +178,7 @@ export async function go(tab) {
   speech.stopSpeaking();
   document.querySelectorAll(".nav-item").forEach((b) =>
     b.classList.toggle("active", b.dataset.tab === tab));
+  closeMobileNav();
   view().innerHTML = '<p class="muted">読み込み中…</p>';
   try {
     await ROUTES[tab](view());
@@ -308,6 +348,8 @@ export async function refreshAiState() {
 // ---------------------------------------------------------------------------
 
 async function boot() {
+  initTheme();
+
   // Build nav.
   const nav = document.getElementById("nav");
   TABS.forEach(([tab, label]) => {
@@ -315,6 +357,12 @@ async function boot() {
     b.addEventListener("click", () => go(tab));
     nav.appendChild(b);
   });
+
+  // スマホ向けハンバーガーメニュー: ボタン/背景タップで開閉。
+  document.getElementById("navToggle")
+    ?.addEventListener("click", toggleMobileNav);
+  document.getElementById("sidebarBackdrop")
+    ?.addEventListener("click", closeMobileNav);
 
   // Topbar.
   document.getElementById("inputMode").value = state.inputMode;

@@ -5,29 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ログイン — English Learning with AI</title>
   <style>
-    body { font-family: system-ui, sans-serif; background: #f4f6fb;
+    :root {
+      --bg: #f4f6fb; --card: #fff; --text: #223; --sub: #556;
+      --border: #ccd; --accent: #3b6fd4; --accent-hover: #2f5cb8;
+      --err: #c0392b; --shadow: rgba(0,0,0,.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1419; --card: #1a2230; --text: #e6edf3; --sub: #8b9bb0;
+        --border: #2c3a4f; --accent: #4da3ff; --accent-hover: #6db4ff;
+        --err: #ff6b6b; --shadow: rgba(0,0,0,.4);
+      }
+    }
+    body { font-family: system-ui, sans-serif; background: var(--bg);
       display: flex; min-height: 100vh; align-items: center;
       justify-content: center; margin: 0; }
-    .card { background: #fff; padding: 32px; border-radius: 12px;
-      box-shadow: 0 4px 24px rgba(0,0,0,.08); width: 320px; }
-    h1 { font-size: 18px; margin: 0 0 20px; color: #223; }
-    label { display: block; font-size: 13px; color: #556; margin: 12px 0 4px; }
-    input { width: 100%; padding: 10px; border: 1px solid #ccd;
-      border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+    .card { background: var(--card); padding: 32px; border-radius: 12px;
+      box-shadow: 0 4px 24px var(--shadow); width: 320px; }
+    h1 { font-size: 18px; margin: 0 0 20px; color: var(--text); }
+    label { display: block; font-size: 13px; color: var(--sub);
+      margin: 12px 0 4px; }
+    input { width: 100%; padding: 10px; border: 1px solid var(--border);
+      border-radius: 8px; box-sizing: border-box; font-size: 14px;
+      background: var(--bg); color: var(--text); }
     button { width: 100%; margin-top: 20px; padding: 11px; border: 0;
-      border-radius: 8px; background: #3b6fd4; color: #fff; font-size: 15px;
-      cursor: pointer; }
-    button:hover { background: #2f5cb8; }
-    .err { color: #c0392b; font-size: 13px; margin-top: 12px;
+      border-radius: 8px; background: var(--accent); color: #fff;
+      font-size: 15px; cursor: pointer; }
+    button:hover { background: var(--accent-hover); }
+    .err { color: var(--err); font-size: 13px; margin-top: 12px;
       min-height: 18px; }
     .toggle { text-align: center; margin-top: 16px; }
-    .toggle a { font-size: 13px; color: #3b6fd4; text-decoration: none;
+    .toggle a { font-size: 13px; color: var(--accent); text-decoration: none;
       cursor: pointer; }
     .toggle a:hover { text-decoration: underline; }
-    .hint { font-size: 12px; color: #789; margin: 4px 0 0; }
+    .hint { font-size: 12px; color: var(--sub); margin: 4px 0 0; }
     .hidden { display: none; }
     .foot { text-align: center; margin-top: 14px; }
-    .foot a { font-size: 12px; color: #9ab; text-decoration: none; }
+    .foot a { font-size: 12px; color: var(--sub); text-decoration: none; }
     .foot a:hover { text-decoration: underline; }
   </style>
 </head>

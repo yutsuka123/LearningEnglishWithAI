@@ -8,14 +8,16 @@
 </head>
 <body>
   <div id="app">
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="brand">📘 English<br />Learning AI</div>
       <nav id="nav"></nav>
     </aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
     <main class="main">
       <header class="topbar">
         <div class="topbar-left">
+          <button id="navToggle" class="nav-toggle" title="メニュー">☰</button>
           <button id="micCmd" class="mic-cmd" title="音声で操作">🎙️ 操作</button>
           <span id="cmdStatus" class="cmd-status"></span>
         </div>
@@ -31,6 +33,8 @@
           <span class="cost" id="costBadge"></span>
           <span class="ai-state" id="aiState"></span>
           <span class="app-ver" id="appVer"></span>
+          <button class="btn ghost" id="themeToggle" title="表示テーマ切替"
+            style="padding:4px 10px">🌙</button>
           <button class="btn ghost" id="logoutBtn"
             style="display:none;padding:4px 10px">ログアウト</button>
         </div>
