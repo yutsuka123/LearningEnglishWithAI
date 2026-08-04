@@ -1221,6 +1221,7 @@ export async function phrases(root) {
           <option value="english">並び替え: 英語 A→Z</option>
           <option value="scene">並び替え: シーン</option>
           <option value="recent">並び替え: 最近の学習</option>
+          <option value="added">並び替え: 登録順(ペア対応)</option>
         </select>
         <button class="btn ghost" id="fDir"
           title="昇順/降順を切替">昇順 ▲</button>

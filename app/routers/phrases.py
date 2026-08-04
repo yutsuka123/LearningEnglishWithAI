@@ -72,13 +72,18 @@ def list_phrases(
         "english": "english COLLATE NOCASE",
         "scene": "scene",
         "recent": "last_studied",
+        "added": "id",
         "accuracy": (
             "CASE WHEN times_asked > 0 "
             "THEN times_correct * 1.0 / times_asked ELSE -1 END"
         ),
     }.get(sort, "mastery")
     direction = "DESC" if desc else "ASC"
-    order = f"{col} {direction}, english COLLATE NOCASE ASC"
+    # タイブレークは英字アルファベット順ではなく登録順(id)。理由:
+    # 「直訳で失礼に響く表現→丁寧な言い方」のような意図的なペア構成の
+    # シーンで、mastery=0が並ぶ初回表示時にアルファベット順だとペアが
+    # ばらばらになってしまうため(2026-08-04ユーザー指摘)。
+    order = f"{col} {direction}, id ASC"
     conds, params = [], []
     if scene:
         conds.append("scene = ?")
