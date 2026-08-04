@@ -61,6 +61,22 @@ class ConversationIn(BaseModel):
     topic: str = ""
     message: str
     history: list[dict] = []  # [{role, content}] kept client-side only
+    # B16: 状況入力型パーソナライズ生成の「困難な相手とのロールプレイ」用。
+    # 空文字なら従来通り(grp/topicベース)の挙動。指定時のみ人物像を上書き。
+    persona: str = ""
+
+
+class TripPrepIn(BaseModel):
+    """B16: 出張・旅行の状況入力→教材一式のAI生成。destination のみ必須。"""
+    destination: str = Field(min_length=1)
+    dates: str = ""
+    purpose: str = ""
+    destination_url: str = ""  # サーバー側では取得しない(v1・参考テキストのみ)
+    role: str = ""
+    counterpart: str = ""
+    concerns: str = ""
+    own_materials: str = ""
+    english_level: str = ""
 
 
 class SessionEndIn(BaseModel):

@@ -11,6 +11,9 @@ export const state = {
   inputMode: localStorage.getItem("inputMode") || "text", // 'text' | 'voice'
   aiEnabled: false,
   taxonomy: { news_fields: [], accents: [], models: [] },
+  // B16: 出張・旅行準備の「ロールプレイを始める」から一時的にセットされる
+  // 人物像。会話タブがこれを見て、シーン選択の代わりにpersonaで会話する。
+  tripPrepPersona: null,
 };
 
 const TABS = [
@@ -24,6 +27,7 @@ const TABS = [
   ["writing", "✍️ ライティング"],
   ["conversation", "🗣️ 英会話"],
   ["listening", "🎧 リスニング"],
+  ["tripprep", "🧳 出張・旅行準備"],
   ["assess", "🎯 判定・教材"],
   ["history", "📚 学習履歴"],
   ["settings", "⚙️ 設定"],
@@ -111,6 +115,7 @@ const ROUTES = {
   writing: views.writing,
   conversation: views.conversation,
   listening: views.listening,
+  tripprep: views.tripPrep,
   assess: views.assess,
   history: views.history,
   settings: views.settings,

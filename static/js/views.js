@@ -1516,6 +1516,14 @@ export async function conversation(root) {
       <button class="btn ghost" id="changeVoice"
         style="padding:2px 8px">🔁 ランダム</button></p>
     ${aiBadgeNote()}
+    ${state.tripPrepPersona ? `<div class="card" id="personaBanner">
+      <div class="row">
+        <b>🧳 出張ロールプレイ中</b>
+        <span class="muted">${escapeHtml(state.tripPrepPersona)}</span>
+        <button class="btn ghost" id="endPersona"
+          style="padding:2px 8px">終了して通常の会話に戻る</button>
+      </div>
+    </div>` : ""}
     <div class="card" id="hfCard">
       <div class="row">
         <b>🎙️ ハンズフリー会話</b>
@@ -1577,6 +1585,16 @@ export async function conversation(root) {
   const modeSel = root.querySelector("#mode");
   const sceneSel = root.querySelector("#sceneSel");
   const topicSel = root.querySelector("#topic");
+  if (state.tripPrepPersona) {
+    // ペルソナ指定中はシーン/自由の選択を隠す（scene()がpersonaを優先する）。
+    // 「AIから始める」ボタン等、同じ行の他の操作はそのまま使える。
+    modeSel.style.display = "none";
+    sceneSel.style.display = "none";
+    root.querySelector("#endPersona").addEventListener("click", () => {
+      state.tripPrepPersona = null;
+      go("conversation");
+    });
+  }
   const fillTopics = () => {
     const g = root.querySelector("#grp").value;
     topicSel.innerHTML = cats.filter((c) => c.grp === g)
@@ -1615,6 +1633,15 @@ export async function conversation(root) {
   });
 
   function scene() {
+    if (state.tripPrepPersona) {
+      // B16: 出張準備画面からの「困難な相手とのロールプレイ」。
+      // grp/topicは表示・記録ラベル用、実際の人物像はpersonaで渡す。
+      return {
+        grp: "出張ロールプレイ",
+        topic: state.tripPrepPersona.slice(0, 40),
+        persona: state.tripPrepPersona,
+      };
+    }
     if (modeSel.value === "free") {
       return { grp: "自由会話", topic: "どんな話題でもOK・フリートーク" };
     }
@@ -1687,7 +1714,7 @@ export async function conversation(root) {
     }
     const s = scene();
     const body = {
-      grp: s.grp, topic: s.topic, history,
+      grp: s.grp, topic: s.topic, history, persona: s.persona || "",
       message: kickoff
         ? "(会話を自然に始めてください。まず1つ質問してください)" : text,
     };
@@ -1793,7 +1820,8 @@ export async function conversation(root) {
     const target = addMsg("ai", "");
     let full = "";
     await api.stream("/api/learn/conversation/stream",
-      { grp: s.grp, topic: s.topic, history, message: text }, (chunk) => {
+      { grp: s.grp, topic: s.topic, history, persona: s.persona || "",
+        message: text }, (chunk) => {
         full += chunk; target.textContent = full;
         chat.scrollTop = chat.scrollHeight;
       });
@@ -2217,6 +2245,215 @@ export async function listening(root) {
 }
 
 // --- Assessment + material generation --------------------------------------
+
+// --- B16: 出張・旅行準備（状況入力型パーソナライズ生成） ------------------
+
+function renderTripPrepData(panel, data) {
+  panel.innerHTML = "";
+  if (!data || typeof data !== "object") {
+    panel.appendChild(el(`<p class="muted">表示できる内容がありません。</p>`));
+    return;
+  }
+  if (Array.isArray(data.checklist) && data.checklist.length) {
+    const card = el(`<div class="card"><h3>✅ チェックリスト</h3></div>`);
+    const ul = el(`<ul></ul>`);
+    data.checklist.forEach((item) => {
+      ul.appendChild(el(`<li><label><input type="checkbox" /> `
+        + `${escapeHtml(String(item))}</label></li>`));
+    });
+    card.appendChild(ul);
+    panel.appendChild(card);
+  }
+  if (Array.isArray(data.vocabulary) && data.vocabulary.length) {
+    const card = el(`<div class="card"><h3>🔤 必要語彙</h3></div>`);
+    const list = el(`<div></div>`);
+    data.vocabulary.forEach((v) => {
+      list.appendChild(el(`<div class="row mt"><b>`
+        + `${escapeHtml(v.en || "")}</b><span class="muted">`
+        + `${escapeHtml(v.ja || "")}</span></div>`));
+    });
+    card.appendChild(list);
+    card.appendChild(
+      readAloudBar(() => data.vocabulary.map((v) => v.en).join(". ")));
+    panel.appendChild(card);
+  }
+  if (Array.isArray(data.cheat_sheet) && data.cheat_sheet.length) {
+    const card = el(`<div class="card"><h3>📝 当日用カンペ</h3></div>`);
+    const ul = el(`<ul></ul>`);
+    data.cheat_sheet.forEach((item) =>
+      ul.appendChild(el(`<li>${escapeHtml(String(item))}</li>`)));
+    card.appendChild(ul);
+    card.appendChild(readAloudBar(() => data.cheat_sheet.join(". ")));
+    panel.appendChild(card);
+  }
+  if (Array.isArray(data.questions) && data.questions.length) {
+    const card = el(`<div class="card"><h3>❓ 質問一覧</h3></div>`);
+    const ul = el(`<ul></ul>`);
+    data.questions.forEach((item) =>
+      ul.appendChild(el(`<li>${escapeHtml(String(item))}</li>`)));
+    card.appendChild(ul);
+    panel.appendChild(card);
+  }
+  if (Array.isArray(data.sample_conversation)
+      && data.sample_conversation.length) {
+    const card = el(`<div class="card"><h3>💬 想定会話</h3></div>`);
+    const chat = el(`<div class="chat"></div>`);
+    data.sample_conversation.forEach((turn) => {
+      const you = String(turn.speaker || "").toLowerCase().startsWith("you");
+      const m = el(`<div class="msg ${you ? "user" : "ai"}">`
+        + `<div class="who">${escapeHtml(turn.speaker || "")}</div>`
+        + `<div class="bubble"><div class="body"></div>`
+        + `<div class="muted" style="font-size:12px"></div></div></div>`);
+      m.querySelector(".body").textContent = turn.en || "";
+      m.querySelector(".muted").textContent = turn.ja || "";
+      chat.appendChild(m);
+    });
+    card.appendChild(chat);
+    card.appendChild(readAloudBar(
+      () => data.sample_conversation.map((t) => t.en).join(". ")));
+    panel.appendChild(card);
+  }
+  if (data.follow_up_email
+      && (data.follow_up_email.subject || data.follow_up_email.body)) {
+    const card = el(`<div class="card"><h3>✉️ フォローメール</h3></div>`);
+    const subj = el(`<p><b>件名:</b> `
+      + `${escapeHtml(data.follow_up_email.subject || "")}</p>`);
+    const body = el(`<textarea style="min-height:140px"></textarea>`);
+    body.value = data.follow_up_email.body || "";
+    card.append(subj, body);
+    panel.appendChild(card);
+  }
+}
+
+export async function tripPrep(root) {
+  root.innerHTML = `
+    <h1>🧳 出張・旅行準備</h1>
+    <p class="sub">渡航先や状況を入力すると、AIがチェックリスト・語彙・
+      想定会話などを一括で作成します。</p>
+    ${aiBadgeNote()}
+    <div class="card">
+      <div class="row"><label class="toggle" style="width:110px">渡航先
+        <span style="color:#c00">*</span></label>
+        <input id="tp_dest" placeholder="例: ドイツ・シュツットガルト"
+          style="width:260px" /></div>
+      <div class="row mt"><label class="toggle" style="width:110px">日程</label>
+        <input id="tp_dates" placeholder="例: 2026-09-01〜09-05"
+          style="width:260px" /></div>
+      <div class="row mt"><label class="toggle" style="width:110px">訪問目的</label>
+        <input id="tp_purpose" placeholder="例: 装置の立上げ・現地デバッグ"
+          style="width:340px" /></div>
+      <div class="row mt"><label class="toggle" style="width:110px">訪問先URL</label>
+        <input id="tp_url" placeholder="任意・参考として渡すのみ(取得はしません)"
+          style="width:340px" /></div>
+      <div class="row mt"><label class="toggle" style="width:110px">自分の役割</label>
+        <input id="tp_role" placeholder="例: 品質保証エンジニア"
+          style="width:260px" /></div>
+      <div class="row mt"><label class="toggle" style="width:110px">会う相手</label>
+        <input id="tp_counterpart" placeholder="例: 現地工場の品質責任者"
+          style="width:260px" /></div>
+      <div class="row mt"><label class="toggle" style="width:110px">心配なこと</label>
+        <input id="tp_concerns"
+          placeholder="例: 原因を断定した根拠を聞き返せるか不安"
+          style="width:340px" /></div>
+      <div class="row mt"><label class="toggle" style="width:110px">英語レベル</label>
+        <input id="tp_level" placeholder="例: TOEIC 600程度"
+          style="width:200px" /></div>
+      <div class="row mt"><label class="toggle" style="width:110px">
+        自社資料等</label></div>
+      <textarea id="tp_materials"
+        placeholder="製品概要や資料の抜粋(任意・そのままプロンプトに渡ります)"
+        style="min-height:80px"></textarea>
+      <div class="row mt">
+        <button class="btn good" id="tp_gen">生成する</button>
+        <span id="tp_status" class="muted"></span>
+      </div>
+    </div>
+    <div id="tp_result"></div>
+    <h2 class="mt">履歴</h2>
+    <div id="tp_hist"></div>`;
+
+  // 前回入力の復元（user_settings.trip_prep_last）。
+  try {
+    const s = (await api.get("/api/system/user-settings")).settings || {};
+    const last = s.trip_prep_last;
+    if (last) {
+      const set = (sel, v) => {
+        const e = root.querySelector(sel);
+        if (e && v) e.value = v;
+      };
+      set("#tp_dest", last.destination);
+      set("#tp_dates", last.dates);
+      set("#tp_purpose", last.purpose);
+      set("#tp_url", last.destination_url);
+      set("#tp_role", last.role);
+      set("#tp_counterpart", last.counterpart);
+      set("#tp_concerns", last.concerns);
+      set("#tp_level", last.english_level);
+      set("#tp_materials", last.own_materials);
+    }
+  } catch (_) { /* 初回は設定が無いので無視 */ }
+
+  const resultPanel = root.querySelector("#tp_result");
+  let lastForm = null;
+
+  function showInto(body) {
+    let data = null;
+    try { data = JSON.parse(body); } catch (_) { data = null; }
+    if (!data) {
+      resultPanel.innerHTML =
+        `<p class="muted">この履歴は表示できませんでした。</p>`;
+      return;
+    }
+    renderTripPrepData(resultPanel, data);
+    const rp = el(`<div class="row mt"></div>`);
+    const startBtn = el(
+      `<button class="btn secondary">🎭 この内容でロールプレイを始める`
+      + `</button>`);
+    startBtn.addEventListener("click", () => {
+      const role = (lastForm && lastForm.role) || "出張者";
+      const counterpart = (lastForm && lastForm.counterpart) || "相手役";
+      const concerns = (lastForm && lastForm.concerns) || "特になし";
+      state.tripPrepPersona =
+        `${counterpart}（相手はこの状況で対応する人物として振る舞う。`
+        + `ユーザーの役割: ${role}。ユーザーの懸念点: ${concerns}）`;
+      go("conversation");
+    });
+    rp.appendChild(startBtn);
+    resultPanel.appendChild(rp);
+  }
+
+  const histPanel = root.querySelector("#tp_hist");
+
+  root.querySelector("#tp_gen").addEventListener("click", async () => {
+    if (!state.aiEnabled) { toast("AI未設定です"); return; }
+    const dest = root.querySelector("#tp_dest").value.trim();
+    if (!dest) { toast("渡航先を入力してください"); return; }
+    const form = {
+      destination: dest,
+      dates: root.querySelector("#tp_dates").value.trim(),
+      purpose: root.querySelector("#tp_purpose").value.trim(),
+      destination_url: root.querySelector("#tp_url").value.trim(),
+      role: root.querySelector("#tp_role").value.trim(),
+      counterpart: root.querySelector("#tp_counterpart").value.trim(),
+      concerns: root.querySelector("#tp_concerns").value.trim(),
+      own_materials: root.querySelector("#tp_materials").value.trim(),
+      english_level: root.querySelector("#tp_level").value.trim(),
+    };
+    const status = root.querySelector("#tp_status");
+    status.textContent = "生成中…(数十秒かかることがあります)";
+    try {
+      const r = await api.post("/api/learn/trip-prep", form);
+      if (!r.ok) { status.textContent = "失敗: " + r.error; return; }
+      status.textContent = "";
+      lastForm = form;
+      showInto(JSON.stringify(r.data));
+      renderHistory(histPanel, "trip_prep", showInto);
+      refreshCost();
+    } catch (e) { status.textContent = "失敗: " + e.message; }
+  });
+
+  renderHistory(histPanel, "trip_prep", showInto);
+}
 
 export async function assess(root) {
   const p = await api.get("/api/system/progress");

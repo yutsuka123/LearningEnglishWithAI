@@ -16,6 +16,7 @@ from ..schemas import (
     GenerateIn,
     SessionEndIn,
     SummarizeIn,
+    TripPrepIn,
     WritingFeedbackIn,
 )
 from ..config import load_settings
@@ -80,6 +81,90 @@ def generate(payload: GenerateIn):
         )
         material_id = cur.lastrowid
     return {"ok": True, "id": material_id, "title": title, "body": result.text}
+
+
+@router.post("/trip-prep")
+def trip_prep(payload: TripPrepIn):
+    """B16: 出張・旅行の状況入力から教材一式をAIで1回のJSON生成にまとめる。
+    生成物は materials(area='trip_prep') に保存し、既存の /materials 系
+    エンドポイントで一覧・再表示できるようにする。訪問先URLはサーバー側では
+    取得しない(著作権/利用規約リスク回避・参考テキストとして渡すのみ)。"""
+    if not ai.is_enabled():
+        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+
+    system = (
+        "あなたは海外出張・旅行の準備を手伝う英語コーチです。" + _LEVEL_NOTE +
+        " 与えられた状況に合わせて、実際にその場で使える教材一式をJSON配列"
+        "『のみ』で出力してください（前後に説明文やMarkdown装飾を付けない）。"
+        ' 出力形式（キーは固定・値は日本語/英語混在可）: '
+        '{"checklist":["準備すべきことの短い項目",...],'
+        '"vocabulary":[{"en":"...","ja":"..."},...],'
+        '"cheat_sheet":["当日その場で見返せる短いフレーズ",...],'
+        '"questions":["相手に確認すべき質問",...],'
+        '"follow_up_email":{"subject":"...","body":"..."},'
+        '"sample_conversation":[{"speaker":"You|Them","en":"...","ja":"..."},'
+        '...]} '
+        "checklist/cheat_sheet/questionsは各5〜8件、vocabularyは10〜15件、"
+        "sample_conversationは6〜10ターム程度にすること。"
+        "destination_urlは実在確認や本文取得をせず、あくまで参考の手がかりと"
+        "して扱うこと（存在や内容を断定しない）。"
+    )
+    lines = [f"渡航先: {payload.destination}"]
+    if payload.dates:
+        lines.append(f"日程: {payload.dates}")
+    if payload.purpose:
+        lines.append(f"訪問目的: {payload.purpose}")
+    if payload.destination_url:
+        lines.append(f"訪問先URL(参考・未取得): {payload.destination_url}")
+    if payload.role:
+        lines.append(f"自分の役割: {payload.role}")
+    if payload.counterpart:
+        lines.append(f"会う相手: {payload.counterpart}")
+    if payload.concerns:
+        lines.append(f"心配なこと: {payload.concerns}")
+    if payload.own_materials:
+        lines.append(f"自社資料・製品資料(抜粋):\n{payload.own_materials}")
+    if payload.english_level:
+        lines.append(f"英語レベルの自己申告: {payload.english_level}")
+    user = f"{build_context()}\n\n## 出張・旅行の状況\n" + "\n".join(lines)
+
+    qmodel = load_settings().quality_model
+    result = ai.chat(
+        system, user, temperature=0.6, max_tokens=2000,
+        feature="trip_prep", model=qmodel,
+    )
+    if not result.ok:
+        return {"ok": False, "error": result.error}
+
+    data = _parse_json_object(result.text)
+    if not data:
+        return {"ok": False, "error": "生成結果を解釈できませんでした。"}
+
+    title = f"{payload.destination} 渡航準備 ({date.today().isoformat()})"
+    body = json.dumps(data, ensure_ascii=False)
+    with db() as conn:
+        cur = conn.execute(
+            "INSERT INTO materials (area, field, title, body) "
+            "VALUES ('trip_prep', ?, ?, ?)",
+            (payload.destination, title, body),
+        )
+        material_id = cur.lastrowid
+
+    # 次回フォームの初期値用に、今回の入力一式を user_settings へ保存。
+    from ..services.auth import current_user_id, get_user_settings
+    uid = current_user_id()
+    with db() as conn:
+        settings = get_user_settings(conn, uid)
+        settings["trip_prep_last"] = payload.model_dump()
+        conn.execute(
+            "INSERT INTO user_settings (user_id, settings, updated_at) "
+            "VALUES (?, ?, datetime('now')) "
+            "ON CONFLICT(user_id) DO UPDATE SET "
+            "settings=excluded.settings, updated_at=excluded.updated_at",
+            (uid, json.dumps(settings)),
+        )
+
+    return {"ok": True, "id": material_id, "title": title, "data": data}
 
 
 @router.get("/materials")
@@ -178,7 +263,18 @@ def _is_free_mode(payload: ConversationIn) -> bool:
 
 
 def _conversation_prompts(payload: ConversationIn) -> tuple[str, str]:
-    if _is_free_mode(payload):
+    if payload.persona.strip():
+        # B16: 出張準備の状況(役割/相手/心配なこと)から組み立てた人物像で
+        # ロールプレイする。grp/topicの通常分岐には一切影響しない。
+        system = (
+            "あなたは英会話ロールプレイの相手役です。" + _LEVEL_NOTE +
+            f" 次の人物として一貫して振る舞ってください: {payload.persona}"
+            " 自然な英語で短めに返答し、次に【コーチ】として学習者の文の"
+            "良い点と直すべき点を日本語で1〜2行。"
+            " さらに最後の行に『【例】<学習者が言える改善後の自然な英文>』"
+            "を必ず1文付けてください（この英文は読み上げ用）。"
+        )
+    elif _is_free_mode(payload):
         system = (
             "あなたは万能の英語学習チューターです。" + _LEVEL_NOTE +
             " 学習者は英語でも日本語でも話します。日本語で話しかけられても"
@@ -484,6 +580,20 @@ def _parse_json_array(text: str) -> list:
         return data if isinstance(data, list) else []
     except (json.JSONDecodeError, ValueError):
         return []
+
+
+def _parse_json_object(text: str) -> dict:
+    """```json フェンス等が前後に付いていても寛容にJSONオブジェクトを取り出す
+    （_parse_json_array と同じ堅牢化方針・B16 trip-prep 用）。"""
+    raw = text.strip()
+    start, end = raw.find("{"), raw.rfind("}")
+    if start == -1 or end == -1:
+        return {}
+    try:
+        data = json.loads(raw[start:end + 1])
+        return data if isinstance(data, dict) else {}
+    except (json.JSONDecodeError, ValueError):
+        return {}
 
 
 def _insert_generated(
