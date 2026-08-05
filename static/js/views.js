@@ -1011,9 +1011,17 @@ export async function flashcard(root) {
   });
 }
 
+// 大分類→分野の2階層セレクタ用。カテゴリを選ぶと分野側の選択肢が絞られる
+// （「大分類のみ選択」でもそのカテゴリ配下の全分野を検索対象にできる）。
+function groupedOptionsHtml(groups, category) {
+  const list = category ? (groups[category] || []) : Object.values(groups).flat();
+  return list.map((d) => `<option>${escapeHtml(d)}</option>`).join("");
+}
+
 export async function vocab(root) {
   const facets = await api.get(
     "/api/words/facets" + (showBanned() ? "?include_banned=true" : ""));
+  const domainGroups = facets.domain_groups || {};
   root.innerHTML = `
     <h1>英単語</h1>
     <p class="sub">両方向(英→日 / 日→英)で出題。習熟度・正答率・忘却曲線を管理。</p>
@@ -1025,9 +1033,11 @@ export async function vocab(root) {
       <h2 id="listTitle">単語一覧</h2>
       <div class="row">
         <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:200px" />
-        <select id="fDomain"><option value="">全分野</option>
-          ${facets.domains.map((d) =>
-            `<option>${escapeHtml(d)}</option>`).join("")}</select>
+        <select id="fCategory" title="大分類"><option value="">全カテゴリ</option>
+          ${Object.keys(domainGroups).map((c) =>
+            `<option>${escapeHtml(c)}</option>`).join("")}</select>
+        <select id="fDomain" title="分野"><option value="">全分野</option>
+          ${groupedOptionsHtml(domainGroups, "")}</select>
         <span class="muted">Lv</span>
         <select id="fLevelMin" title="レベル下限"><option value="">下限</option>
           ${(facets.range_levels || facets.levels).map((l) =>
@@ -1127,6 +1137,10 @@ export async function vocab(root) {
     const q = new URLSearchParams({ sort: root.querySelector("#fSort").value });
     const d = root.querySelector("#fDomain").value;
     if (d) q.set("domain", d);
+    else {
+      const cat = root.querySelector("#fCategory").value;
+      if (cat) q.set("category", cat);
+    }
     const lmin = root.querySelector("#fLevelMin").value;
     const lmax = root.querySelector("#fLevelMax").value;
     if (lmin) q.set("level_min", lmin);
@@ -1154,6 +1168,14 @@ export async function vocab(root) {
   ["#fDomain", "#fLevelMin", "#fLevelMax", "#fOutRange", "#fSort",
    "#fMastered"].forEach((id) =>
     root.querySelector(id).addEventListener("change", load));
+  // 大分類を選ぶと分野セレクタの候補を絞り込む（大分類だけでもカテゴリ
+  // 配下の全分野を検索対象にできる＝分野は「未選択」のままでよい）。
+  root.querySelector("#fCategory").addEventListener("change", (e) => {
+    const domSel = root.querySelector("#fDomain");
+    domSel.innerHTML = `<option value="">全分野</option>` +
+      groupedOptionsHtml(domainGroups, e.target.value);
+    load();
+  });
   root.querySelector("#wPage").addEventListener("change", () => {
     wPage = 0; paint();
   });
@@ -1182,7 +1204,9 @@ export async function vocab(root) {
 
 export async function phrases(root) {
   const sb = bannedParam(showBanned());
-  const scenes = await api.get("/api/phrases/scenes" + (sb ? "?" + sb : ""));
+  const sceneData = await api.get(
+    "/api/phrases/scenes" + (sb ? "?" + sb : ""));
+  const sceneGroups = sceneData.scene_groups || {};
   const pfacets = await api.get("/api/phrases/facets");
   const list = await api.get("/api/phrases" + (sb ? "?" + sb : ""));
   root.innerHTML = `
@@ -1190,8 +1214,11 @@ export async function phrases(root) {
     <p class="sub">場面別の短い表現。単語と同じく両方向＋忘却曲線で管理。</p>
     <div class="row">
       <button class="btn" id="quiz">クイズ開始 (10フレーズ)</button>
-      <select id="scene"><option value="">全シーン</option>
-        ${scenes.map((s) => `<option>${s}</option>`).join("")}</select>
+      <select id="sceneCategory" title="大分類"><option value="">全カテゴリ</option>
+        ${Object.keys(sceneGroups).map((c) =>
+          `<option>${escapeHtml(c)}</option>`).join("")}</select>
+      <select id="scene" title="シーン"><option value="">全シーン</option>
+        ${groupedOptionsHtml(sceneGroups, "")}</select>
       ${state.isAdmin ? `<label class="toggle"
         title="禁止用語(注意喚起)を一覧に表示">
         <input type="checkbox" id="showBanned"
@@ -1291,6 +1318,10 @@ export async function phrases(root) {
     const q = new URLSearchParams({ sort: root.querySelector("#fSort").value });
     const v = root.querySelector("#scene").value;
     if (v) q.set("scene", v);
+    else {
+      const cat = root.querySelector("#sceneCategory").value;
+      if (cat) q.set("category", cat);
+    }
     const lmin = root.querySelector("#fLevelMin").value;
     const lmax = root.querySelector("#fLevelMax").value;
     if (lmin) q.set("level_min", lmin);
@@ -1316,6 +1347,12 @@ export async function phrases(root) {
     load();
   });
   root.querySelector("#scene").addEventListener("change", load);
+  root.querySelector("#sceneCategory").addEventListener("change", (e) => {
+    const sceneSel = root.querySelector("#scene");
+    sceneSel.innerHTML = `<option value="">全シーン</option>` +
+      groupedOptionsHtml(sceneGroups, e.target.value);
+    load();
+  });
   root.querySelector("#fSort").addEventListener("change", load);
   root.querySelector("#fMastered").addEventListener("change", load);
   ["#fLevelMin", "#fLevelMax", "#fOutRange"].forEach((id) =>

@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from ..database import db
+from ..services.taxonomy import PHRASE_CATEGORIES, group_by_category
 from ..services.spaced_repetition import (
     MASTERED_THRESHOLD,
     clamp,
@@ -57,6 +58,7 @@ def _phrase_dict(row) -> dict:
 @router.get("")
 def list_phrases(
     scene: str | None = None,
+    category: str | None = None,   # 大分類（scene未指定時のみ有効）
     sort: str = "mastery",
     desc: bool = False,            # 降順にするか（昇順/降順トグル）
     level_min: str | None = None,
@@ -88,6 +90,12 @@ def list_phrases(
     if scene:
         conds.append("scene = ?")
         params.append(scene)
+    elif category:
+        cat_scenes = PHRASE_CATEGORIES.get(category, [])
+        if cat_scenes:
+            ph = ",".join("?" * len(cat_scenes))
+            conds.append(f"COALESCE(scene, '') IN ({ph})")
+            params += cat_scenes
     if level_min or level_max:
         allowed = _level_range(level_min, level_max)
         ph = ",".join("?" * len(allowed))
@@ -136,6 +144,8 @@ def facets():
 
 @router.get("/scenes")
 def list_scenes(include_banned: bool = False):
+    """シーン(scene)の一覧＋大分類ごとのグルーピング。
+    `scenes`は既存互換のフラット配列、`scene_groups`が新設の階層情報。"""
     from ..services.auth import current_user_allow_banned
     include_banned = include_banned and current_user_allow_banned()
     ban = "" if include_banned else "AND scene NOT LIKE '禁止%' "
@@ -144,7 +154,11 @@ def list_scenes(include_banned: bool = False):
             "SELECT DISTINCT scene FROM phrases WHERE scene <> '' "
             f"{ban}ORDER BY scene"
         ).fetchall()
-        return [r["scene"] for r in rows]
+        scenes = [r["scene"] for r in rows]
+    return {
+        "scenes": scenes,
+        "scene_groups": group_by_category(scenes, PHRASE_CATEGORIES),
+    }
 
 
 @router.post("", status_code=201)

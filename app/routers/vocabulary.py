@@ -7,6 +7,7 @@ from pydantic import BaseModel
 
 from ..database import db
 from ..schemas import AttemptIn, WordCreate, WordUpdate
+from ..services.taxonomy import WORD_CATEGORIES, group_by_category
 from ..services.spaced_repetition import (
     MASTERED_THRESHOLD,
     clamp,
@@ -60,15 +61,24 @@ def _word_filter(
     domain: str | None, level: str | None,
     level_min: str | None, level_max: str | None,
     out_of_range: bool, include_banned: bool, mastered: str | None,
+    category: str | None = None,
 ) -> tuple[list[str], list]:
     """単語一覧/フラッシュカード共通のフィルタ WHERE 句を組み立てる。
     列は素の名前(domain/level/mastery)で参照（一覧の `AS words`・選抜の `AS t`
-    どちらの別名でも解決可能）。返り値は (条件リスト, パラメータ)。"""
+    どちらの別名でも解決可能）。返り値は (条件リスト, パラメータ)。
+    ``category``(大分類)は``domain``が指定されない時のみ有効（大分類配下の
+    全分野をOR検索）。"""
     where: list[str] = []
     params: list = []
     if domain:
         where.append("COALESCE(domain, '') = ?")
         params.append(domain)
+    elif category:
+        cat_domains = WORD_CATEGORIES.get(category, [])
+        if cat_domains:
+            ph = ",".join("?" * len(cat_domains))
+            where.append(f"COALESCE(domain, '') IN ({ph})")
+            params += cat_domains
     if level:
         where.append("COALESCE(level, '') = ?")
         params.append(level)
@@ -104,6 +114,7 @@ def list_words(
     sort: str = "mastery",
     desc: bool = False,            # 降順にするか（昇順/降順トグル）
     domain: str | None = None,
+    category: str | None = None,   # 大分類（domain未指定時のみ有効）
     level: str | None = None,
     level_min: str | None = None,   # 下限（細スケール）
     level_max: str | None = None,   # 上限
@@ -128,7 +139,7 @@ def list_words(
     order = f"{col} {direction}, english COLLATE NOCASE ASC"
     where, params = _word_filter(
         domain, level, level_min, level_max, out_of_range,
-        include_banned, mastered,
+        include_banned, mastered, category,
     )
     clause = (" WHERE " + " AND ".join(where)) if where else ""
     from ..services.auth import current_user_id
@@ -170,9 +181,11 @@ def facets(include_banned: bool = False):
     levels += sorted(present - set(levels))
     # 範囲指定用（範囲外を除く）の順序付きレベル。
     range_levels = [lv for lv in LEVEL_ORDER if lv in present]
+    domain_groups = group_by_category(domains, WORD_CATEGORIES)
     return {
         "domains": domains, "levels": levels,
         "range_levels": range_levels,
+        "domain_groups": domain_groups,
     }
 
 

@@ -162,6 +162,12 @@ const ROUTES = {
 };
 
 let currentTab = "dashboard";
+// boot()の末尾で無条件にgo("dashboard")するとboot()の非同期処理(タクソノミー
+// 取得等)が終わる前にユーザーがタブをクリックした場合、そのビューの
+// レンダリングをboot()が上書きしてしまい、後から解決するそのビューの
+// load()/paint()等がDOMを見失ってエラーになる(2026-08-05発見)。boot()側で
+// 既にユーザーがナビゲートしたか判定するためのフラグ。
+let userNavigated = false;
 
 // 画面を離れるときに一度だけ呼ばれるクリーンアップ。views が登録する
 // (例: 英会話の自動記録の確定保存)。次の go() で消費される。
@@ -169,6 +175,7 @@ let leaveHook = null;
 export function onLeaveView(fn) { leaveHook = fn; }
 
 export async function go(tab) {
+  userNavigated = true;
   if (!ROUTES[tab]) tab = "dashboard";
   if (leaveHook) {
     const fn = leaveHook; leaveHook = null;
@@ -179,11 +186,20 @@ export async function go(tab) {
   document.querySelectorAll(".nav-item").forEach((b) =>
     b.classList.toggle("active", b.dataset.tab === tab));
   closeMobileNav();
-  view().innerHTML = '<p class="muted">読み込み中…</p>';
+  // 各ビュー関数には view() 本体ではなく専用のラッパーdivを渡す。views
+  // の中には内部でawaitを挟んでから root.innerHTML を書くものがあり
+  // (例: dashboard() の /api/system/progress 取得後)、その間に別タブへ
+  // 素早く切り替えると、古いawaitが後から解決して新しいビューのDOMを
+  // 上書きし、後続のquerySelectorがnullを返してクラッシュしていた
+  // (2026-08-05発見)。ラッパーを毎回差し替えることで、古い呼び出しが
+  // 書き込む先は表示から切り離された(=無害な)自分専用のdivになる。
+  const myRoot = document.createElement("div");
+  myRoot.innerHTML = '<p class="muted">読み込み中…</p>';
+  view().replaceChildren(myRoot);
   try {
-    await ROUTES[tab](view());
+    await ROUTES[tab](myRoot);
   } catch (e) {
-    view().innerHTML = `<div class="card">エラー: ${escapeHtml(e.message)}</div>`;
+    myRoot.innerHTML = `<div class="card">エラー: ${escapeHtml(e.message)}</div>`;
   }
 }
 
@@ -392,7 +408,9 @@ async function boot() {
   speech.getEnglishVoices();
   speech.pickRoundVoice();
 
-  go("dashboard");
+  // 上記の非同期処理中にユーザーが既に別タブへナビゲートしていたら、
+  // ダッシュボードで上書きしない（レースコンディション対策）。
+  if (!userNavigated) go("dashboard");
 }
 
 boot();
