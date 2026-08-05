@@ -20,6 +20,11 @@ let currentIsOpenAI = false;
 let audioEl = null;            // single reused <audio> element (unlocked once)
 let audioUnlocked = false;     // true after first user-gesture unlock
 let usageCb = null;            // called after a paid TTS call (cost refresh)
+// 再生要求の連番。複数箇所（一覧の各行の🔊ボタン等）が同じ<audio>要素を共有する
+// ため、古い要求のfetchが後から解決すると別の語の音声が鳴ってしまう
+// （テキストと音声が一致しない不具合の原因）。常に「最後に要求された再生」だけ
+// 実際に鳴らし、古い要求は結果を捨てる。
+let playSeq = 0;
 
 export function setAiEnabled(v) { aiEnabled = !!v; }
 export function setOpenAIVoices(list) {
@@ -203,6 +208,7 @@ export async function say(text, opts = {}) {
   if (!(isNatural() && aiEnabled)) { browserSpeak(text, opts); return; }
   // Ensure we have an OpenAI voice selected for this round.
   if (!currentIsOpenAI || !currentVoiceName) pickRoundVoice();
+  const myToken = ++playSeq;
   try {
     const res = await fetch("/api/learn/tts", {
       method: "POST",
@@ -211,10 +217,11 @@ export async function say(text, opts = {}) {
     });
     if (!res.ok) throw new Error("tts failed");
     const blob = await res.blob();
+    if (myToken !== playSeq) return; // 新しい再生要求が来ていた→古い音声は捨てる
     await playBlob(blob, opts.rate);
     if (usageCb) usageCb();
   } catch (e) {
-    browserSpeak(text, opts); // graceful fallback
+    if (myToken === playSeq) browserSpeak(text, opts); // graceful fallback
   }
 }
 
@@ -224,6 +231,7 @@ export async function say(text, opts = {}) {
 export async function sayWithVoice(text, voice, opts = {}) {
   if (!text) return;
   if (!(isNatural() && aiEnabled)) { browserSpeak(text, opts); return; }
+  const myToken = ++playSeq;
   try {
     const res = await fetch("/api/learn/tts", {
       method: "POST",
@@ -232,10 +240,11 @@ export async function sayWithVoice(text, voice, opts = {}) {
     });
     if (!res.ok) throw new Error("tts failed");
     const blob = await res.blob();
+    if (myToken !== playSeq) return; // 新しい再生要求が来ていた→古い音声は捨てる
     await playBlob(blob, opts.rate);
     if (usageCb) usageCb();
   } catch (e) {
-    browserSpeak(text, opts); // graceful fallback
+    if (myToken === playSeq) browserSpeak(text, opts); // graceful fallback
   }
 }
 
@@ -264,14 +273,16 @@ export async function sayItem(
     item_type: itemType, item_id: id, kind, voice,
     speed: opts.speed || "learn",
   });
+  const myToken = ++playSeq;
   try {
     const res = await fetch("/api/learn/tts/item?" + q.toString());
     if (!res.ok) throw new Error("tts item failed");
     const blob = await res.blob();
+    if (myToken !== playSeq) return; // 新しい再生要求が来ていた→古い音声は捨てる
     await playBlob(blob, opts.rate);
     if (usageCb) usageCb();
   } catch (e) {
-    if (fallbackText) browserSpeak(fallbackText, opts);
+    if (myToken === playSeq && fallbackText) browserSpeak(fallbackText, opts);
   }
 }
 
@@ -293,9 +304,11 @@ export function sayItemAndWait(itemType, id, kind, voice, fallbackText, opts = {
       item_type: itemType, item_id: id, kind, voice,
       speed: opts.speed || "learn",
     });
+    const myToken = ++playSeq;
     fetch("/api/learn/tts/item?" + q.toString())
       .then((res) => res.ok ? res.blob() : Promise.reject(new Error("tts")))
       .then((blob) => {
+        if (myToken !== playSeq) { resolve(); return; } // 古い要求→捨てて即解決
         stopSpeaking();
         const a = audioElement();
         try { if (a._objUrl) URL.revokeObjectURL(a._objUrl); } catch (e) {}
@@ -307,13 +320,14 @@ export function sayItemAndWait(itemType, id, kind, voice, fallbackText, opts = {
         a.play();
         if (usageCb) usageCb();
       })
-      .catch(() => browser());
+      .catch(() => { if (myToken === playSeq) browser(); else resolve(); });
   });
 }
 
 // Speak with a specific OpenAI voice (for the settings preview button).
 // Returns { ok, error } so the UI can show the real reason on failure.
 export async function previewOpenAIVoice(voice, text) {
+  const myToken = ++playSeq;
   try {
     const res = await fetch("/api/learn/tts", {
       method: "POST",
@@ -325,6 +339,7 @@ export async function previewOpenAIVoice(voice, text) {
       return { ok: false, error: msg || `HTTP ${res.status}` };
     }
     const blob = await res.blob();
+    if (myToken !== playSeq) return { ok: true }; // 新しい要求が来ていた→捨てる
     await playBlob(blob, 1);
     if (usageCb) usageCb();
     return { ok: true };

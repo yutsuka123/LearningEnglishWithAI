@@ -710,23 +710,22 @@ def tts_item(
     skind = audio_store.storage_kind(base, speed)
 
     with db() as conn:
-        cached = audio_store.get(conn, item_type, item_id, skind, voice)
+        text = _item_text(conn, item_type, item_id, base)
+        if not text:
+            return Response(
+                content="読み上げる本文がありません（例文なし等）。",
+                status_code=422, media_type="text/plain",
+            )
+        cached = audio_store.get(conn, item_type, item_id, skind, voice, text)
         if cached is not None:
             return Response(content=cached, media_type="audio/mpeg")
-        text = _item_text(conn, item_type, item_id, base)
-
-    if not text:
-        return Response(
-            content="読み上げる本文がありません（例文なし等）。",
-            status_code=422, media_type="text/plain",
-        )
 
     audio, error = ai.synthesize_speech(text, voice, style=speed)
     if error:
         return Response(content=error, status_code=422,
                         media_type="text/plain")
     with db() as conn:
-        audio_store.put(conn, item_type, item_id, skind, voice, audio)
+        audio_store.put(conn, item_type, item_id, skind, voice, text, audio)
     return Response(content=audio, media_type="audio/mpeg")
 
 

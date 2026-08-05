@@ -43,7 +43,7 @@ def _gen_one(conn, item_type, item_id, skind, style, text, voices, force):
     made = 0
     for v in voices:
         if not force and audio_store.get(
-                conn, item_type, item_id, skind, v) is not None:
+                conn, item_type, item_id, skind, v, text) is not None:
             continue  # 既に保存済み → スキップ（無料）
         audio, err = ai.synthesize_speech(
             text, v, style=style, rate_limit=False)
@@ -54,7 +54,7 @@ def _gen_one(conn, item_type, item_id, skind, style, text, voices, force):
                 return made, "aierr"
             # その他(一時的エラー等)はこの声だけ飛ばす
             continue
-        audio_store.put(conn, item_type, item_id, skind, v, audio)
+        audio_store.put(conn, item_type, item_id, skind, v, text, audio)
         made += 1
     return made, "ok"
 
@@ -71,7 +71,7 @@ def _process(conn, label, item_type, skind, style, rows, text_key,
         if not text:
             continue
         if not force and all(
-                audio_store.get(conn, item_type, r["id"], skind, v)
+                audio_store.get(conn, item_type, r["id"], skind, v, text)
                 is not None for v in voices):
             continue  # 全声そろい済み → 次の未生成へ
         made, st = _gen_one(

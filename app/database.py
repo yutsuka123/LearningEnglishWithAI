@@ -455,6 +455,12 @@ def _migrate(conn: sqlite3.Connection) -> None:
         conn.execute(
             "ALTER TABLE study_sessions ADD COLUMN session_key "
             "TEXT DEFAULT ''")
+    acols = {r["name"] for r in conn.execute(
+        "PRAGMA table_info(audio_blobs)")}
+    if "text_hash" not in acols:  # 番号↔テキストのズレ対策(2026-08-05)
+        conn.execute(
+            "ALTER TABLE audio_blobs ADD COLUMN text_hash "
+            "TEXT DEFAULT ''")
     _migrate_multiuser(conn)
 
 
