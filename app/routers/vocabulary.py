@@ -157,10 +157,14 @@ def list_words(
 
 
 @router.get("/facets")
-def facets(include_banned: bool = False):
+def facets(include_banned: bool = False, include_hidden: bool = False):
     """フィルタUI用の分野(domain)・レベル(level)の選択肢一覧。
-    include_banned=true のとき「禁止用語」も分野候補に含める。"""
-    from ..services.auth import current_user_allow_banned
+    include_banned=true のとき「禁止用語」も分野候補に含める。
+    include_hidden=false（既定）のとき、設定画面でユーザーが非表示に
+    した分野(user_settings.hidden_domains)を候補から除外する（一覧画面の
+    フィルタ用）。設定画面自体はinclude_hidden=trueで全分野を取得する。"""
+    from ..services.auth import current_user_allow_banned, \
+        current_user_id, get_user_settings
     include_banned = include_banned and current_user_allow_banned()
     with db() as conn:
         domains = [
@@ -172,6 +176,12 @@ def facets(include_banned: bool = False):
         # 既定では禁止用語を分野候補から除外（表示トグルONなら含める）。
         if not include_banned:
             domains = [d for d in domains if d != BANNED_DOMAIN]
+        if not include_hidden:
+            hidden = set(
+                get_user_settings(conn, current_user_id())
+                .get("hidden_domains", []))
+            if hidden:
+                domains = [d for d in domains if d not in hidden]
         present = {
             r["level"] for r in conn.execute(
                 "SELECT DISTINCT level FROM words WHERE COALESCE(level,'')<>''"

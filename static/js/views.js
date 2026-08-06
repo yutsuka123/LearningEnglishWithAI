@@ -2827,9 +2827,41 @@ export async function admin(root) {
 
 // --- Settings (API key, model, nickname note, voices, usage) ---------------
 
+// 大分類ごとにチェックボックス化した分野/シーン一覧のHTMLを組み立てる。
+// hiddenSet に入っている項目は未チェック(=非表示設定)で描画する。
+function fsetGroupsHtml(groups, hiddenSet, prefix) {
+  return Object.entries(groups).map(([cat, items]) => `
+    <details class="fset-group" open>
+      <summary>${escapeHtml(cat)}
+        <span class="muted">(${items.length})</span></summary>
+      <div class="fset-actions">
+        <button type="button" class="btn ghost fset-cat-all"
+          data-prefix="${prefix}" data-cat="${escapeHtml(cat)}"
+          data-val="1">このカテゴリを全てON</button>
+        <button type="button" class="btn ghost fset-cat-all"
+          data-prefix="${prefix}" data-cat="${escapeHtml(cat)}"
+          data-val="0">このカテゴリを全てOFF</button>
+      </div>
+      <div class="fset-items" data-cat="${escapeHtml(cat)}">
+        ${items.map((it) => `<label class="fset-item">
+          <input type="checkbox" class="fset-${prefix}"
+            value="${escapeHtml(it)}"
+            ${hiddenSet.has(it) ? "" : "checked"} />
+          ${escapeHtml(it)}</label>`).join("")}
+      </div>
+    </details>`).join("");
+}
+
 export async function settings(root) {
   const s = await api.get("/api/system/settings");
   const usage = await api.get("/api/system/usage");
+  const domainGroups = (await api.get(
+    "/api/words/facets?include_hidden=true")).domain_groups || {};
+  const sceneGroups = (await api.get(
+    "/api/phrases/scenes?include_hidden=true")).scene_groups || {};
+  const us0 = (await api.get("/api/system/user-settings")).settings || {};
+  const hiddenDomains = new Set(us0.hidden_domains || []);
+  const hiddenScenes = new Set(us0.hidden_scenes || []);
   root.innerHTML = `
     <h1>設定 <span class="muted" id="roleBadge"></span></h1>
     <p class="sub">学習者プロフィールと音声・AIの設定。</p>
@@ -2847,6 +2879,33 @@ export async function settings(root) {
       </div>
       <p class="muted">TOEICは出題題材のレベルの手がかりにします（学習が進むと
         実績も加味）。名前はAIが会話で呼びかける際に使います。</p>
+    </div>
+    <div class="card">
+      <h2>表示する分野・シーン</h2>
+      <p class="muted">興味のない分野・シーンのチェックを外すと、英単語/
+        フレーズ画面のフィルター候補から消えます（データ自体は削除され
+        ません・いつでも再表示できます）。<b>チェックの変更はこのカードの
+        「保存」を押すまで反映されません。</b></p>
+      <h3 class="mt">英単語の分野</h3>
+      <div class="row">
+        <button type="button" class="btn ghost" id="fset_w_all1">全てON</button>
+        <button type="button" class="btn ghost" id="fset_w_all0">全てOFF</button>
+        <button type="button" class="btn ghost" id="fset_w_reset">デフォルトに戻す</button>
+      </div>
+      <div class="fset-wrap mt" id="fset_words">
+        ${fsetGroupsHtml(domainGroups, hiddenDomains, "w")}
+      </div>
+      <h3 class="mt">フレーズのシーン</h3>
+      <div class="row">
+        <button type="button" class="btn ghost" id="fset_p_all1">全てON</button>
+        <button type="button" class="btn ghost" id="fset_p_all0">全てOFF</button>
+        <button type="button" class="btn ghost" id="fset_p_reset">デフォルトに戻す</button>
+      </div>
+      <div class="fset-wrap mt" id="fset_phrases">
+        ${fsetGroupsHtml(sceneGroups, hiddenScenes, "p")}
+      </div>
+      <button class="btn good mt" id="fset_save">保存</button>
+      <span class="muted mt" id="fset_out"></span>
     </div>
     <div class="card" id="chargeCard" style="display:none">
       <h2>💳 チャージ</h2>
@@ -2997,6 +3056,51 @@ export async function settings(root) {
     });
     sq("#sp_out").textContent = `追加: ${en}`;
     ["#sp_en", "#sp_ja", "#sp_sc"].forEach((i) => { sq(i).value = ""; });
+  });
+
+  // --- 表示する分野・シーン（チェックボックス、保存を押すまで反映しない）---
+  const fsetAll = (prefix, val) => {
+    root.querySelectorAll(`.fset-${prefix}`).forEach((cb) => {
+      cb.checked = !!val;
+    });
+  };
+  root.querySelector("#fset_w_all1").addEventListener("click",
+    () => fsetAll("w", true));
+  root.querySelector("#fset_w_all0").addEventListener("click",
+    () => fsetAll("w", false));
+  root.querySelector("#fset_w_reset").addEventListener("click",
+    () => fsetAll("w", true));
+  root.querySelector("#fset_p_all1").addEventListener("click",
+    () => fsetAll("p", true));
+  root.querySelector("#fset_p_all0").addEventListener("click",
+    () => fsetAll("p", false));
+  root.querySelector("#fset_p_reset").addEventListener("click",
+    () => fsetAll("p", true));
+  root.querySelectorAll(".fset-cat-all").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const prefix = btn.dataset.prefix, cat = btn.dataset.cat;
+      const val = btn.dataset.val === "1";
+      root.querySelectorAll(
+        `.fset-items[data-cat="${CSS.escape(cat)}"] .fset-${prefix}`,
+      ).forEach((cb) => { cb.checked = val; });
+    });
+  });
+  root.querySelector("#fset_save").addEventListener("click", async () => {
+    const hidden_domains = [...root.querySelectorAll(".fset-w")]
+      .filter((cb) => !cb.checked).map((cb) => cb.value);
+    const hidden_scenes = [...root.querySelectorAll(".fset-p")]
+      .filter((cb) => !cb.checked).map((cb) => cb.value);
+    const settings = {};
+    try { Object.assign(settings,
+      (await api.get("/api/system/user-settings")).settings || {}); }
+    catch (_) { /* */ }
+    settings.hidden_domains = hidden_domains;
+    settings.hidden_scenes = hidden_scenes;
+    await api.put("/api/system/user-settings", { settings });
+    root.querySelector("#fset_out").textContent =
+      `保存しました（非表示: 分野${hidden_domains.length}件 / `
+      + `シーン${hidden_scenes.length}件）`;
   });
 
   const saveBtn = root.querySelector("#save");

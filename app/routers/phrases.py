@@ -147,10 +147,13 @@ def facets():
 
 
 @router.get("/scenes")
-def list_scenes(include_banned: bool = False):
+def list_scenes(include_banned: bool = False, include_hidden: bool = False):
     """シーン(scene)の一覧＋大分類ごとのグルーピング。
-    `scenes`は既存互換のフラット配列、`scene_groups`が新設の階層情報。"""
-    from ..services.auth import current_user_allow_banned
+    `scenes`は既存互換のフラット配列、`scene_groups`が新設の階層情報。
+    include_hidden=false（既定）のとき、設定画面でユーザーが非表示に
+    したシーン(user_settings.hidden_scenes)を候補から除外する。"""
+    from ..services.auth import current_user_allow_banned, \
+        current_user_id, get_user_settings
     include_banned = include_banned and current_user_allow_banned()
     ban = "" if include_banned else "AND scene NOT LIKE '禁止%' "
     with db() as conn:
@@ -159,6 +162,12 @@ def list_scenes(include_banned: bool = False):
             f"{ban}ORDER BY scene"
         ).fetchall()
         scenes = [r["scene"] for r in rows]
+        if not include_hidden:
+            hidden = set(
+                get_user_settings(conn, current_user_id())
+                .get("hidden_scenes", []))
+            if hidden:
+                scenes = [s for s in scenes if s not in hidden]
     return {
         "scenes": scenes,
         "scene_groups": group_by_category(scenes, PHRASE_CATEGORIES),
