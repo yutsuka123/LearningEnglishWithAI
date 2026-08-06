@@ -275,6 +275,19 @@ CREATE TABLE IF NOT EXISTS charge_keys (
     used_at         TEXT,
     used_by_user_id INTEGER REFERENCES users(id)
 );
+
+-- お問い合わせ・要望フォーム（2026-08-06・手動対応前提。自動振り分け等は
+-- 将来検討）。管理者が一覧で確認し、status を手動で更新する運用。
+CREATE TABLE IF NOT EXISTS inquiries (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    kind       TEXT    NOT NULL DEFAULT '要望',
+    name       TEXT    NOT NULL DEFAULT '',
+    email      TEXT    NOT NULL DEFAULT '',
+    content    TEXT    NOT NULL,
+    status     TEXT    NOT NULL DEFAULT '未対応',
+    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
 """
 
 

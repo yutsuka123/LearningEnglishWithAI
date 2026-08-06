@@ -2745,6 +2745,9 @@ export async function admin(root) {
       <p class="muted">管理者のみ閲覧できます（${escapeHtml(e.message)}）。</p>`;
     return;
   }
+  let inquiries = [];
+  try { inquiries = (await api.get("/api/inquiries")).inquiries || []; }
+  catch (_) { /* */ }
   const sec = d.security || {};
   const fmtDate = (s) => s ? s.replace("T", " ").slice(0, 16) : "—";
   const rows = d.users.map((u) => {
@@ -2805,7 +2808,38 @@ export async function admin(root) {
         「残高切れ/日上限/月上限」は利用が止まっている目安です。「AI回数」は
         会話等のAI機能利用のみを表し、無料の単語/フレーズクイズは含まない
         （そちらは「単語クイズ数」「フレーズクイズ数」「最終学習」列を参照）。</p>
+    </div>
+    <div class="card">
+      <h2>📮 お問い合わせ・ご要望</h2>
+      <p class="muted">ユーザーからの送信を新しい順に表示（手動対応）。</p>
+      <table class="mt"><thead><tr>
+        <th>日時</th><th>ログインID</th><th>種別</th><th>お名前</th>
+        <th>メール</th><th>内容</th><th>状態</th><th>操作</th>
+      </tr></thead><tbody>${inquiries.length ? inquiries.map((q) => `
+        <tr>
+          <td class="muted">${fmtDate(q.created_at)}</td>
+          <td>${escapeHtml(q.display_name || q.username || "—")}</td>
+          <td>${escapeHtml(q.kind)}</td>
+          <td>${escapeHtml(q.name || "—")}</td>
+          <td>${escapeHtml(q.email || "—")}</td>
+          <td style="white-space:pre-wrap">${escapeHtml(q.content)}</td>
+          <td class="iq-status" data-id="${q.id}">${escapeHtml(q.status)}</td>
+          <td>${q.status === "対応済み" ? "" :
+            `<button class="btn ghost iq-done" data-id="${q.id}"
+              style="padding:3px 8px">対応済みにする</button>`}</td>
+        </tr>`).join("") :
+        `<tr><td colspan="8" class="muted">まだありません。</td></tr>`}
+      </tbody></table>
     </div>`;
+
+  root.querySelectorAll(".iq-done").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      await api.put(`/api/inquiries/${id}/status`, { status: "対応済み" });
+      root.querySelector(`.iq-status[data-id="${id}"]`).textContent = "対応済み";
+      btn.remove();
+    });
+  });
 
   // チャージ（1回最大¥1000）。
   root.querySelectorAll(".chg-btn").forEach((btn) => {
@@ -2941,6 +2975,29 @@ export async function settings(root) {
         （git管理ファイルには保存しません）。</p>
     </div>
     <div class="card">
+      <h2>お問い合わせ・ご要望</h2>
+      <p class="muted">不具合報告・追加してほしい語彙/機能など、お気軽に
+        送信してください（個人開発のため対応は手動・ベストエフォートです）。</p>
+      <div class="row">
+        <select id="iq_kind">
+          ${["要望", "お問い合わせ", "ログインできない", "技術的トラブル",
+             "課金トラブル", "機能に関する要望",
+             "訳・音声の間違えに関する報告", "応援メッセージ", "感想",
+             "その他"].map((k) => `<option>${escapeHtml(k)}</option>`)
+             .join("")}
+        </select>
+        <input id="iq_name" placeholder="お名前(任意)" style="width:140px" />
+        <input id="iq_email" placeholder="メール(任意・返信が必要な場合)"
+          style="width:220px" />
+      </div>
+      <textarea id="iq_content" class="mt" style="min-height:80px"
+        placeholder="内容を入力してください"></textarea>
+      <div class="row mt">
+        <button class="btn good" id="iq_send">送信</button>
+        <span class="muted" id="iq_out"></span>
+      </div>
+    </div>
+    <div class="card">
       <h2>音声入力</h2>
       <label class="toggle">
         <input type="checkbox" id="autoSubmit"
@@ -3056,6 +3113,22 @@ export async function settings(root) {
     });
     sq("#sp_out").textContent = `追加: ${en}`;
     ["#sp_en", "#sp_ja", "#sp_sc"].forEach((i) => { sq(i).value = ""; });
+  });
+
+  sq("#iq_send").addEventListener("click", async () => {
+    const content = sq("#iq_content").value.trim();
+    if (!content) { toast("内容を入力してください"); return; }
+    try {
+      await api.post("/api/inquiries", {
+        kind: sq("#iq_kind").value,
+        name: sq("#iq_name").value.trim(),
+        email: sq("#iq_email").value.trim(),
+        content,
+      });
+      sq("#iq_out").textContent = "送信しました。ありがとうございます！";
+      sq("#iq_content").value = "";
+      sq("#iq_name").value = ""; sq("#iq_email").value = "";
+    } catch (e) { sq("#iq_out").textContent = "送信失敗: " + e.message; }
   });
 
   // --- 表示する分野・シーン（チェックボックス、保存を押すまで反映しない）---
