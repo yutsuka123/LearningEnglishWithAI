@@ -2770,6 +2770,9 @@ export async function admin(root) {
         style="padding:3px 8px">＋</button></td>
       <td>${u.calls}</td>
       <td>${fmtDate(u.last_used)}</td>
+      <td>${u.word_quizzes}</td>
+      <td>${u.phrase_quizzes}</td>
+      <td>${fmtDate(u.last_studied)}</td>
       <td>${flags.join(" ") || "—"}</td>
     </tr>`;
   }).join("");
@@ -2792,12 +2795,16 @@ export async function admin(root) {
       <h2>ユーザー別 利用状況</h2>
       <table class="mt"><thead><tr>
         <th>担当者 / ID</th><th>権限</th><th>今日 / 上限</th>
-        <th>今月 / 上限</th><th>残高</th><th>チャージ(¥)</th><th>累計回数</th>
-        <th>最終利用</th><th>状態</th>
+        <th>今月 / 上限</th><th>残高</th><th>チャージ(¥)</th>
+        <th>AI回数</th><th>AI最終利用</th>
+        <th>単語クイズ数</th><th>フレーズクイズ数</th><th>最終学習</th>
+        <th>状態</th>
       </tr></thead><tbody>${rows}</tbody></table>
       <p class="muted mt">残高は日次/月次の<b>無料枠（上限）とは別管理</b>で、枠に
         到達した後の利用で消費されます。チャージは<b>1回 最大¥1000</b>。
-        「残高切れ/日上限/月上限」は利用が止まっている目安です。</p>
+        「残高切れ/日上限/月上限」は利用が止まっている目安です。「AI回数」は
+        会話等のAI機能利用のみを表し、無料の単語/フレーズクイズは含まない
+        （そちらは「単語クイズ数」「フレーズクイズ数」「最終学習」列を参照）。</p>
     </div>`;
 
   // チャージ（1回最大¥1000）。

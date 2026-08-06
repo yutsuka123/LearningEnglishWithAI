@@ -250,7 +250,18 @@ def admin_overview():
             "  strftime('%Y-%m','now','localtime')) month, "
             " (SELECT COUNT(*) FROM ai_usage a WHERE a.user_id=u.id) calls, "
             " (SELECT MAX(created_at) FROM ai_usage a WHERE a.user_id=u.id) "
-            "  last_used "
+            "  last_used, "
+            " (SELECT COUNT(*) FROM word_attempts wa "
+            "  WHERE wa.user_id=u.id) word_quizzes, "
+            " (SELECT COUNT(*) FROM phrase_attempts pa "
+            "  WHERE pa.user_id=u.id) phrase_quizzes, "
+            " (SELECT MAX(x) FROM ("
+            "   SELECT MAX(created_at) x FROM word_attempts "
+            "    WHERE user_id=u.id "
+            "   UNION ALL "
+            "   SELECT MAX(created_at) FROM phrase_attempts "
+            "    WHERE user_id=u.id"
+            "  )) last_studied "
             "FROM users u ORDER BY u.id"
         ).fetchall()
     users = []
@@ -275,6 +286,9 @@ def admin_overview():
             "calls": r["calls"], "last_used": r["last_used"],
             "over_daily": over_daily, "over_monthly": over_monthly,
             "balance_empty": bal is not None and bal <= 0,
+            "word_quizzes": r["word_quizzes"],
+            "phrase_quizzes": r["phrase_quizzes"],
+            "last_studied": r["last_studied"],
         })
     return {"users": users, "security": auth.lockout_status()}
 
