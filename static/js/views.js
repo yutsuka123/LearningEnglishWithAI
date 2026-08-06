@@ -1071,7 +1071,7 @@ export async function vocab(root) {
           ${showBanned() ? "checked" : ""} />
           🔞 禁止用語も表示</label>` : ""}
       </div>
-      <table class="mt rtable"><thead><tr>
+      <table class="mt rtable rtable-words"><thead><tr>
         <th>再生</th><th>英語</th><th>日本語</th><th>Lv</th><th>分野</th>
         <th>習熟度</th><th>正答率</th><th>操作</th></tr></thead>
         <tbody id="rows"></tbody></table>
@@ -1104,12 +1104,12 @@ export async function vocab(root) {
         <td></td>
         <td data-label="英語">${escapeHtml(w.english)}</td>
         <td data-label="日本語">${escapeHtml(w.japanese)}</td>
-        <td class="muted" data-label="Lv">${w.level || ""}</td>
-        <td data-label="分野">${w.domain
+        <td class="muted pair2" data-label="Lv">${w.level || ""}</td>
+        <td class="pair2" data-label="分野">${w.domain
           ? `<span class="pill">${escapeHtml(w.domain)}</span>` : ""}</td>
-        <td style="min-width:80px" data-mc="1"
+        <td class="pair2" style="min-width:80px" data-mc="1"
           data-label="習熟度">${masteryCell(w)}</td>
-        <td data-label="正答率">${w.accuracy == null
+        <td class="pair2" data-label="正答率">${w.accuracy == null
           ? "—" : w.accuracy + "%"}</td>
         <td><div class="ops-cell"></div></td>
       </tr>`);
