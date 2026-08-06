@@ -43,7 +43,7 @@ from app.database import db  # noqa: E402
 # --- phrases: scene -> [(english, japanese)] --------------------------------
 
 PHRASES_BY_SCENE: dict[str, list[tuple[str, str]]] = {
-    "韓国・メキシコ料理を英語で語る": [
+    "韓国・メキシコ料理": [
         # --- 韓国料理: 注文する ---
         ("Could I get an order of banchan to start?", "最初に韓国のおかず（バンチャン）を一皿もらえますか？"),
         ("What's in doenjang jjigae?", "テンジャンチゲには何が入っていますか？"),
@@ -69,7 +69,7 @@ PHRASES_BY_SCENE: dict[str, list[tuple[str, str]]] = {
         ("What's the difference between a taco and a quesadilla?", "タコスとケサディーヤの違いは何ですか？"),
         ("Mole sauce takes hours to make — it has chocolate in it.", "モレソースは作るのに何時間もかかり、チョコレートが入っています。"),
     ],
-    "中東・ギリシャ料理を英語で語る": [
+    "中東・ギリシャ料理": [
         # --- 中東料理: 注文する ---
         ("Could I get a chicken shawarma wrap to go?", "チキンシャワルマラップをテイクアウトでもらえますか？"),
         ("Would you like tabbouleh or fattoush as a side?", "サイドにタブーリとファットゥーシュ、どちらがいいですか？"),
@@ -95,7 +95,7 @@ PHRASES_BY_SCENE: dict[str, list[tuple[str, str]]] = {
         ("We ordered souvlaki skewers and spanakopita.", "スブラキの串焼きとスパナコピタを注文しました。"),
         ("Would you like a glass of ouzo after dinner?", "食後にウーゾを一杯いかがですか？"),
     ],
-    "その他世界の料理を英語で語る": [
+    "その他世界の料理": [
         # --- ロシア料理 ---
         ("Have you ever tried kvass? It's a fermented rye drink.", "クワスを飲んだことがありますか？発酵させたライ麦の飲み物です。"),
         ("The waiter brought out a plate of zakuski before the meal.", "ウェイターが食事の前にザクースキ（前菜盛り合わせ）を持ってきました。"),

@@ -48,7 +48,7 @@ from app.database import db  # noqa: E402
 # --- phrases: scene -> [(english, japanese)] --------------------------------
 
 PHRASES_BY_SCENE: dict[str, list[tuple[str, str]]] = {
-    "インド料理を英語で語る": [
+    "インド料理": [
         # --- 注文する ---
         ("I'll have the butter chicken with garlic naan, please.", "バターチキンとガーリックナンをお願いします。"),
         ("Could we get a vegetarian thali for the table?", "テーブル用にベジタリアンのターリーをお願いできますか？"),
@@ -74,7 +74,7 @@ PHRASES_BY_SCENE: dict[str, list[tuple[str, str]]] = {
         ("Curries are usually shared, so we order a few dishes for the table.", "カレーは大抵シェアするので、テーブル用に数皿頼みます。"),
         ("A dabbawala can deliver a home-cooked lunch across the whole city.", "ダッバーワーラーは街中どこへでも家庭料理の弁当を配達してくれます。"),
     ],
-    "ベトナム料理を英語で語る": [
+    "ベトナム料理": [
         # --- 注文する ---
         ("I'll have the goi cuon, not the fried ones.", "揚げていない生春巻き（ゴイクン）をお願いします。"),
         ("I'll take a banh mi with pate and pickled vegetables.", "パテと漬け野菜入りのバインミーをお願いします。"),
@@ -100,7 +100,7 @@ PHRASES_BY_SCENE: dict[str, list[tuple[str, str]]] = {
         ("This dish is served with a plate of fresh herbs on the side.", "この料理には新鮮なハーブの盛り合わせが添えられます。"),
         ("Street food stalls are often the best place to try local specialties.", "屋台こそ地元の名物を味わうのに一番の場所であることが多いです。"),
     ],
-    "スペイン料理を英語で語る": [
+    "スペイン料理": [
         # --- 注文する ---
         ("Could we order a few tapas to share?", "シェアできるタパスをいくつか頼みましょうか？"),
         ("What would you recommend for the table?", "テーブル用に何がおすすめですか？"),

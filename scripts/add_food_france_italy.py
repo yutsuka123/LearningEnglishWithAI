@@ -18,7 +18,7 @@ whisk...）でほぼ埋まっている。本スクリプトはその先— フ�
   al denteの概念、nonna（おばあちゃん）の手料理語彙。
 
 フレーズは注文・給仕への質問・ワイン/コースのペアリング・食事作法の説明を中心に
-2シーン（フランス料理を英語で語る／イタリア料理を英語で語る）に整理した。
+2シーン（フランス料理／イタリア料理）に整理した。
 
 既存語（コース側で既に投入済みのため再追加していないもの）:
 baguette, coq au vin, creme brulee, crepe, croissant, escargot, foie gras,
@@ -50,7 +50,7 @@ from app.database import db  # noqa: E402
 # --- phrases: scene -> [(english, japanese)] --------------------------------
 
 PHRASES_BY_SCENE: dict[str, list[tuple[str, str]]] = {
-    "フランス料理を英語で語る": [
+    "フランス料理": [
         # --- 注文・メニューについて尋ねる ---
         ("What's in the sauce?", "ソースには何が入っていますか？"),
         ("What does 'confit' mean on this menu?", "メニューにある『コンフィ』とはどういう意味ですか？"),
@@ -83,7 +83,7 @@ PHRASES_BY_SCENE: dict[str, list[tuple[str, str]]] = {
         ("Could we get some more mise en place before we start cooking?", "調理を始める前に下ごしらえをもう少しお願いできますか？"),
         ("A proper French meal is built around a fixed course structure.", "本格的なフランス料理の食事は、決まったコース構成で組み立てられています。"),
     ],
-    "イタリア料理を英語で語る": [
+    "イタリア料理": [
         # --- 注文・給仕への質問 ---
         ("Could I get this pasta al dente?", "このパスタはアルデンテでお願いできますか？"),
         ("What's the difference between primo and secondo?", "プリモとセコンドの違いは何ですか？"),

@@ -45,7 +45,7 @@ from app.database import db  # noqa: E402
 # --- phrases: scene -> [(english, japanese)] --------------------------------
 
 PHRASES_BY_SCENE: dict[str, list[tuple[str, str]]] = {
-    "アメリカ料理を英語で語る": [
+    "アメリカ料理": [
         ("What's today's special?", "本日のおすすめは何ですか？"),
         ("I'll have the biscuits and gravy, please.", "ビスケット・アンド・グレイビーをお願いします。"),
         ("Could I get that to go?", "それ、持ち帰りでお願いできますか？〔米: to go／英: takeaway〕"),
@@ -69,7 +69,7 @@ PHRASES_BY_SCENE: dict[str, list[tuple[str, str]]] = {
         ("A po' boy is stuffed with fried shrimp or oysters.", "ポーボーイは揚げたエビや牡蠣がぎっしり詰まっています。"),
         ("We finished with beignets and powdered sugar everywhere.", "最後はベニエを食べて粉砂糖だらけになりました。"),
     ],
-    "イギリス料理を英語で語る": [
+    "イギリス料理": [
         ("Shall we book a table for afternoon tea?", "アフタヌーンティーの予約をしましょうか？"),
         ("Do you put the jam or the clotted cream on first?", "ジャムとクロテッドクリーム、どちらを先に塗りますか？〔デヴォン式/コーンウォール式で順番が違う定番論争〕"),
         ("We're having a proper Sunday roast this weekend.", "今週末はちゃんとしたサンデーローストを食べます。"),
@@ -93,7 +93,7 @@ PHRASES_BY_SCENE: dict[str, list[tuple[str, str]]] = {
         ("Would you like your steak and kidney pie with mushy peas?", "ステーキ・アンド・キドニーパイにマッシュド・ピーは添えますか？"),
         ("The pub does a proper Sunday carvery.", "そのパブはちゃんとしたサンデーカーヴェリーをやっています。"),
     ],
-    "ドイツ料理を英語で語る": [
+    "ドイツ料理": [
         ("What would you recommend — bratwurst or currywurst?", "ブラートヴルストとカリーヴルスト、どちらがおすすめですか？"),
         ("Could I get a beer stein as a souvenir?", "お土産にビアジョッキを買えますか？"),
         ("Is this a pilsner or a lager?", "これはピルスナーですか、それともラガーですか？"),

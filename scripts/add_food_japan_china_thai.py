@@ -12,12 +12,12 @@ dining-culture terms, and natural phrases for ordering, asking about spice
 level/allergens/ingredients, and explaining an unfamiliar dish.
 
 Three scene buckets:
-  - 和食を英語で語る   (washoku beyond the basics: kaiseki, izakaya, natto,
+  - 和食   (washoku beyond the basics: kaiseki, izakaya, natto,
                         dashi, umami, wagyu, mochi, sake, chopstick etiquette...)
-  - 中華料理を英語で語る (regional variety: Sichuan/Cantonese/Hunan, mala,
+  - 中華料理 (regional variety: Sichuan/Cantonese/Hunan, mala,
                         wok technique, xiaolongbao vs. potstickers, dim sum
                         brunch, lazy Susan, family-style dining...)
-  - タイ料理を英語で語る (tom yum, curries, som tam, sticky rice, fish sauce,
+  - タイ料理 (tom yum, curries, som tam, sticky rice, fish sauce,
                         lemongrass-family aromatics, spice-level vocabulary,
                         street food culture, allergen questions...)
 
@@ -43,7 +43,7 @@ from app.database import db  # noqa: E402
 # --- phrases: scene -> [(english, japanese)] --------------------------------
 
 PHRASES_BY_SCENE: dict[str, list[tuple[str, str]]] = {
-    "和食を英語で語る": [
+    "和食": [
         ("What's in this dish?", "この料理には何が入っていますか？"),
         ("Is this raw fish?", "これは生魚ですか？"),
         ("Sashimi is raw fish served without rice, while sushi usually includes vinegared rice.", "刺身は酢飯を使わない生魚で、寿司は普通酢飯を使います。"),
@@ -67,7 +67,7 @@ PHRASES_BY_SCENE: dict[str, list[tuple[str, str]]] = {
         ("Sake pairs really well with sashimi.", "日本酒は刺身とよく合います。"),
         ("Would you like your sake warm or chilled?", "日本酒は熱燗と冷酒どちらがよろしいですか？"),
     ],
-    "中華料理を英語で語る": [
+    "中華料理": [
         ("Chinese food varies a lot depending on the region.", "中華料理は地方によってかなり違います。"),
         ("Sichuan cuisine is known for being spicy and numbing.", "四川料理は辛くて痺れる味で知られています。"),
         ("What does mala actually taste like?", "麻辣とは実際どんな味なんですか？"),
@@ -91,7 +91,7 @@ PHRASES_BY_SCENE: dict[str, list[tuple[str, str]]] = {
         ("It has a creamy yolk and a somewhat pungent smell.", "とろりとした黄身で、少し香りの強い匂いがあります。"),
         ("Chinese tea culture goes hand in hand with a good meal.", "中国の茶文化はおいしい食事と切っても切れない関係です。"),
     ],
-    "タイ料理を英語で語る": [
+    "タイ料理": [
         ("How spicy is this curry?", "このカレーはどのくらい辛いですか？"),
         ("Could you make it mild? I can't handle spicy food very well.", "マイルドにしていただけますか？辛い物があまり得意ではないので。"),
         ("What spice level would you like — mild, medium, or Thai spicy?", "辛さのレベルはどれにしますか？マイルド、ミディアム、それともタイ基準の激辛？"),
