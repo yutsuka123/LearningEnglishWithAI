@@ -1011,11 +1011,48 @@ export async function flashcard(root) {
   });
 }
 
-// 大分類→分野の2階層セレクタ用。カテゴリを選ぶと分野側の選択肢が絞られる
-// （「大分類のみ選択」でもそのカテゴリ配下の全分野を検索対象にできる）。
-function groupedOptionsHtml(groups, category) {
-  const list = category ? (groups[category] || []) : Object.values(groups).flat();
-  return list.map((d) => `<option>${escapeHtml(d)}</option>`).join("");
+// 分野/シーンの複数選択チェックボックス・ドロップダウン（2026-08-06・
+// ユーザー要望「フィルターを複数選択できるように」）。ボタンをクリックすると
+// グループ分けされたチェックボックス一覧を開く。`selected`(Set)を直接
+// ミューテートするので、呼び出し側はそのSetをフィルタ条件の組み立てに使う。
+function initCheckDropdown(root, btnId, panelId, groupsGetter, selected,
+  onChange, label) {
+  const btn = root.querySelector(`#${btnId}`);
+  const panel = root.querySelector(`#${panelId}`);
+  const refreshLabel = () => {
+    btn.textContent = selected.size
+      ? `${label}: ${selected.size}件選択中 ▾` : `${label}: 全て ▾`;
+  };
+  const renderPanel = () => {
+    const groups = groupsGetter();
+    panel.innerHTML = Object.entries(groups).map(([g, items]) => `
+      <div class="cd-group">
+        <div class="cd-group-label">${escapeHtml(g)}</div>
+        ${items.map((it) => `<label class="cd-item">
+          <input type="checkbox" value="${escapeHtml(it)}"
+            ${selected.has(it) ? "checked" : ""}/> ${escapeHtml(it)}</label>`)
+          .join("")}
+      </div>`).join("");
+    panel.querySelectorAll("input[type=checkbox]").forEach((cb) => {
+      cb.addEventListener("change", () => {
+        if (cb.checked) selected.add(cb.value); else selected.delete(cb.value);
+        refreshLabel();
+        onChange();
+      });
+    });
+  };
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    panel.classList.toggle("open");
+  });
+  document.addEventListener("click", (e) => {
+    if (!panel.contains(e.target) && e.target !== btn) {
+      panel.classList.remove("open");
+    }
+  });
+  refreshLabel();
+  renderPanel();
+  return { renderPanel, refreshLabel };
 }
 
 export async function vocab(root) {
@@ -1036,8 +1073,10 @@ export async function vocab(root) {
         <select id="fCategory" title="大分類"><option value="">全カテゴリ</option>
           ${Object.keys(domainGroups).map((c) =>
             `<option>${escapeHtml(c)}</option>`).join("")}</select>
-        <select id="fDomain" title="分野"><option value="">全分野</option>
-          ${groupedOptionsHtml(domainGroups, "")}</select>
+        <span class="cdrop">
+          <button type="button" class="btn ghost" id="fDomainBtn">全て ▾</button>
+          <div class="cdrop-panel" id="fDomainPanel"></div>
+        </span>
         <span class="muted">Lv</span>
         <select id="fLevelMin" title="レベル下限"><option value="">下限</option>
           ${(facets.range_levels || facets.levels).map((l) =>
@@ -1084,6 +1123,7 @@ export async function vocab(root) {
   const pagerEl = root.querySelector("#pager");
   let curWords = [];
   let wPage = 0;
+  const selectedDomains = new Set();
 
   const paint = () => {
     const size = root.querySelector("#wPage").value;
@@ -1135,9 +1175,9 @@ export async function vocab(root) {
   // 分野/レベル/並び替え/禁止表示はサーバ側、キーワードはクライアント側。
   const load = async () => {
     const q = new URLSearchParams({ sort: root.querySelector("#fSort").value });
-    const d = root.querySelector("#fDomain").value;
-    if (d) q.set("domain", d);
-    else {
+    if (selectedDomains.size) {
+      q.set("domain", [...selectedDomains].join(","));
+    } else {
       const cat = root.querySelector("#fCategory").value;
       if (cat) q.set("category", cat);
     }
@@ -1165,15 +1205,21 @@ export async function vocab(root) {
     fDir.textContent = d === "1" ? "降順 ▼" : "昇順 ▲";
     load();
   });
-  ["#fDomain", "#fLevelMin", "#fLevelMax", "#fOutRange", "#fSort",
+  ["#fLevelMin", "#fLevelMax", "#fOutRange", "#fSort",
    "#fMastered"].forEach((id) =>
     root.querySelector(id).addEventListener("change", load));
-  // 大分類を選ぶと分野セレクタの候補を絞り込む（大分類だけでもカテゴリ
-  // 配下の全分野を検索対象にできる＝分野は「未選択」のままでよい）。
-  root.querySelector("#fCategory").addEventListener("change", (e) => {
-    const domSel = root.querySelector("#fDomain");
-    domSel.innerHTML = `<option value="">全分野</option>` +
-      groupedOptionsHtml(domainGroups, e.target.value);
+  // 分野チェックボックス（複数選択可）。大分類を選ぶと候補が絞り込まれる
+  // （大分類だけでもカテゴリ配下の全分野を検索対象にできる＝分野は
+  // 「未選択」のままでよい）。
+  const domainDropdown = initCheckDropdown(root, "fDomainBtn", "fDomainPanel",
+    () => {
+      const cat = root.querySelector("#fCategory").value;
+      return cat ? { [cat]: domainGroups[cat] || [] } : domainGroups;
+    }, selectedDomains, load, "分野");
+  root.querySelector("#fCategory").addEventListener("change", () => {
+    selectedDomains.clear();
+    domainDropdown.renderPanel();
+    domainDropdown.refreshLabel();
     load();
   });
   root.querySelector("#wPage").addEventListener("change", () => {
@@ -1217,8 +1263,10 @@ export async function phrases(root) {
       <select id="sceneCategory" title="大分類"><option value="">全カテゴリ</option>
         ${Object.keys(sceneGroups).map((c) =>
           `<option>${escapeHtml(c)}</option>`).join("")}</select>
-      <select id="scene" title="シーン"><option value="">全シーン</option>
-        ${groupedOptionsHtml(sceneGroups, "")}</select>
+      <span class="cdrop">
+        <button type="button" class="btn ghost" id="fSceneBtn">全て ▾</button>
+        <div class="cdrop-panel" id="fScenePanel"></div>
+      </span>
       ${state.isAdmin ? `<label class="toggle"
         title="禁止用語(注意喚起)を一覧に表示">
         <input type="checkbox" id="showBanned"
@@ -1271,6 +1319,7 @@ export async function phrases(root) {
   const pagerEl = root.querySelector("#pager");
   let curList = [];
   let pPage = 0;
+  const selectedScenes = new Set();
 
   const paint = () => {
     const size = root.querySelector("#pPage").value;
@@ -1316,9 +1365,9 @@ export async function phrases(root) {
   // シーン・並び替え・禁止表示はサーバ側、キーワードはクライアント側。
   const load = async () => {
     const q = new URLSearchParams({ sort: root.querySelector("#fSort").value });
-    const v = root.querySelector("#scene").value;
-    if (v) q.set("scene", v);
-    else {
+    if (selectedScenes.size) {
+      q.set("scene", [...selectedScenes].join(","));
+    } else {
       const cat = root.querySelector("#sceneCategory").value;
       if (cat) q.set("category", cat);
     }
@@ -1346,11 +1395,16 @@ export async function phrases(root) {
     fDir.textContent = d === "1" ? "降順 ▼" : "昇順 ▲";
     load();
   });
-  root.querySelector("#scene").addEventListener("change", load);
-  root.querySelector("#sceneCategory").addEventListener("change", (e) => {
-    const sceneSel = root.querySelector("#scene");
-    sceneSel.innerHTML = `<option value="">全シーン</option>` +
-      groupedOptionsHtml(sceneGroups, e.target.value);
+  // シーンチェックボックス（複数選択可）。大分類を選ぶと候補が絞り込まれる。
+  const sceneDropdown = initCheckDropdown(root, "fSceneBtn", "fScenePanel",
+    () => {
+      const cat = root.querySelector("#sceneCategory").value;
+      return cat ? { [cat]: sceneGroups[cat] || [] } : sceneGroups;
+    }, selectedScenes, load, "シーン");
+  root.querySelector("#sceneCategory").addEventListener("change", () => {
+    selectedScenes.clear();
+    sceneDropdown.renderPanel();
+    sceneDropdown.refreshLabel();
     load();
   });
   root.querySelector("#fSort").addEventListener("change", load);

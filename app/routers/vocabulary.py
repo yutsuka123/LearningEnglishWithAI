@@ -67,12 +67,15 @@ def _word_filter(
     列は素の名前(domain/level/mastery)で参照（一覧の `AS words`・選抜の `AS t`
     どちらの別名でも解決可能）。返り値は (条件リスト, パラメータ)。
     ``category``(大分類)は``domain``が指定されない時のみ有効（大分類配下の
-    全分野をOR検索）。"""
+    全分野をOR検索）。``domain``はカンマ区切りで複数分野を指定可（チェック
+    ボックスでの複数選択に対応・単一指定時も同じIN句で動作）。"""
     where: list[str] = []
     params: list = []
     if domain:
-        where.append("COALESCE(domain, '') = ?")
-        params.append(domain)
+        domains = [d for d in domain.split(",") if d]
+        ph = ",".join("?" * len(domains))
+        where.append(f"COALESCE(domain, '') IN ({ph})")
+        params += domains
     elif category:
         cat_domains = WORD_CATEGORIES.get(category, [])
         if cat_domains:

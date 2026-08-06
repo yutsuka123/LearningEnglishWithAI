@@ -88,8 +88,12 @@ def list_phrases(
     order = f"{col} {direction}, id ASC"
     conds, params = [], []
     if scene:
-        conds.append("scene = ?")
-        params.append(scene)
+        # カンマ区切りで複数シーン指定可（チェックボックスでの複数選択に
+        # 対応・単一指定時も同じIN句で動作）。
+        scenes = [s for s in scene.split(",") if s]
+        ph = ",".join("?" * len(scenes))
+        conds.append(f"scene IN ({ph})")
+        params += scenes
     elif category:
         cat_scenes = PHRASE_CATEGORIES.get(category, [])
         if cat_scenes:

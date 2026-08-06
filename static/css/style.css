@@ -357,6 +357,26 @@ th { color: var(--muted); font-weight: 600; }
 .vague-btn { background: var(--warn); color: #3a2600; padding: 2px 8px; }
 
 /* 履歴の行 */
+/* 分野/シーンの複数選択チェックボックス・ドロップダウン
+   （2026-08-06・単一選択セレクトからの置き換え）。 */
+.cdrop { position: relative; display: inline-block; }
+.cdrop-panel {
+  display: none; position: absolute; top: 100%; left: 0; margin-top: 4px;
+  z-index: 50; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px; max-height: 320px; overflow-y: auto;
+  min-width: 240px; box-shadow: 0 4px 16px rgba(0, 0, 0, .35);
+}
+.cdrop-panel.open { display: block; }
+.cd-group-label {
+  font-weight: 600; font-size: 12px; color: var(--muted); margin: 8px 0 2px;
+}
+.cd-group:first-child .cd-group-label { margin-top: 0; }
+.cd-item {
+  display: block; padding: 3px 4px; font-size: 13px; cursor: pointer;
+  border-radius: 4px; white-space: nowrap;
+}
+.cd-item:hover { background: var(--panel-2); }
+
 .hist-row {
   display: flex; justify-content: space-between; align-items: center;
   gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line);
