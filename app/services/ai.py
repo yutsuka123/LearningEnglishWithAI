@@ -56,31 +56,47 @@ def _user_cost_usd(user_id: int, period: str) -> float:
     return float(row["c"] or 0.0)
 
 
-def _effective_caps(u: dict, s) -> tuple:
-    """ユーザーの実効 日次/月次 上限(USD)。日次は個別→無ければグローバル既定。
-    月次は個別のみ(未設定=なし)。"""
+def _tier_default_daily_cap_usd(tier: str, s) -> float:
+    """個別上限が未設定のユーザーの既定無料枠(USD/日)。
+    2026-08-08決定: legacy/charged(=既に課金実績あり)は¥150/日相当の
+    無料枠を持つが、email tier(自己サインアップ・未課金)は**0円**
+    （無料枠なし・残高が無ければAI機能を一切使えない）。以前は全ユーザーが
+    グローバル既定`AI_DAILY_COST_CAP_USD`(元は単一開発者のテスト予算)に
+    フォールバックしており、実質無制限に近い無料枠になっていた不具合の
+    修正（詳細: docs/TODO.md 2026-08-08）。"""
+    if tier == "email":
+        return 0.0
+    return s.ai_daily_free_jpy / s.usd_jpy_rate
+
+
+def _effective_caps(u: dict, tier: str, s) -> tuple[float, float]:
+    """ユーザーの実効 日次/月次 上限(USD)。個別設定があればそれを優先
+    （0円の明示指定も尊重）、無ければ階層(tier)ごとの既定値を使う。
+    月次は個別未設定なら日次既定の30日分を上限とする（従来は無制限だった
+    ギャップの修正）。"""
     dcap = u.get("daily_cost_cap_usd")
-    dcap = float(dcap) if dcap else (s.ai_daily_cost_cap_usd or None)
+    dcap = float(dcap) if dcap is not None else _tier_default_daily_cap_usd(
+        tier, s)
     mcap = u.get("monthly_cost_cap_usd")
-    mcap = float(mcap) if mcap else None
+    mcap = float(mcap) if mcap is not None else dcap * 30
     return dcap, mcap
 
 
 def _user_guard(s) -> str | None:
     """課金モデル: 日次/月次の上限は「無料枠」。枠に到達したら**前払いチャージ
     残高**を消費して継続（残高は枠とは別管理）。残高が無ければ停止。
-    Owner(個別上限なし)はグローバル日次上限のみが効く。"""
-    from .auth import current_user_id, get_user
+    無料枠は0円もありえる（email tier）＝その場合は初回から残高必須。"""
+    from .auth import current_user_id, get_user, user_tier
 
     uid = current_user_id()
     with db() as conn:
         u = get_user(conn, uid)
+        tier = user_tier(conn, uid) if u else "legacy"
     if not u:
         return None
-    dcap, mcap = _effective_caps(u, s)
-    over_daily = bool(dcap and dcap > 0 and _user_cost_usd(uid, "day") >= dcap)
-    over_monthly = bool(
-        mcap and mcap > 0 and _user_cost_usd(uid, "month") >= mcap)
+    dcap, mcap = _effective_caps(u, tier, s)
+    over_daily = _user_cost_usd(uid, "day") >= dcap
+    over_monthly = _user_cost_usd(uid, "month") >= mcap
     if over_daily or over_monthly:
         bal = u.get("balance_jpy")
         if bal is not None and float(bal) > 0:
@@ -111,8 +127,15 @@ def _guard(feature: str, *, rate_limit: bool = True) -> str | None:
     explicit, user-authorized batch (``rate_limit=False``) — the cap still
     stops it once the day's budget is spent, so it resumes next run."""
     s = load_settings()
-    # ユーザー別ガード（日次/月次上限・前払い残高）。owner で個別設定が無ければ
-    # グローバル日次上限のみが効く＝従来のローカル単一ユーザー動作と同じ。
+    # サイト全体の合計支出に対する保険（個別/tier別の枠とは独立の最終防衛線）。
+    # 2026-08-08: 以前はこの`AI_DAILY_COST_CAP_USD`がユーザー個別枠の
+    # フォールバックとしても使われ実質有名無実だったため、tier別無料枠の
+    # 導入と合わせて「サイト全体の1日合計」チェックとして再定義した。
+    site_cap = s.ai_daily_cost_cap_usd
+    if site_cap > 0 and _today_cost_usd() >= site_cap:
+        return ("本日のAI利用がサイト全体の上限に達しました。"
+                "時間をおいて再試行してください。")
+    # ユーザー別ガード（tierごとの日次/月次無料枠・前払い残高）。
     refusal = _user_guard(s)
     if refusal:
         return refusal
@@ -158,6 +181,21 @@ def _token_kwarg(model: str, n: int) -> dict:
     return {"max_tokens": n}
 
 
+# temperature のカスタム値を受け付けないモデル（既定値1のみ対応）。
+# 2026-08-08: gpt-5.6-luna採用時に temperature=0.7 で400エラーになることを
+# 確認して追加。同日、gpt-5.6-terra でも同じ制約を確認したため gpt-5.6系
+# 全体に広げた（sol は未確認だが同一世代のため予防的に含める）。o系
+# (推論系)モデルも同様の制約を持つことが多いため含める。
+_NO_CUSTOM_TEMPERATURE_PREFIXES = ("gpt-5.6", "o1", "o3", "o4")
+
+
+def _temperature_kwarg(model: str, temperature: float) -> dict:
+    m = (model or "").lower()
+    if m.startswith(_NO_CUSTOM_TEMPERATURE_PREFIXES):
+        return {}
+    return {"temperature": temperature}
+
+
 def estimate_cost(model: str, prompt_tokens: int, output_tokens: int) -> float:
     pin, pout = _price_for(model)
     return prompt_tokens / 1_000_000 * pin + output_tokens / 1_000_000 * pout
@@ -193,16 +231,16 @@ def _record_usage(
         )
         # チャージ残高は「無料枠（日次/月次上限）に到達した後の利用」でのみ消費
         # する（枠とは別管理）。枠内の利用では残高を減らさない。
-        from .auth import get_user
+        from .auth import get_user, user_tier
         u = get_user(conn, uid)
         if u and u.get("balance_jpy") is not None:
-            dcap, mcap = _effective_caps(u, s)
+            tier = user_tier(conn, uid)
+            dcap, mcap = _effective_caps(u, tier, s)
             # _user_cost_usd は別接続でコミット済み分のみ参照する＝この呼び出し
             # 直前(この分を除く)の累計。直前で枠到達済みなら「枠外利用」として控除。
             prior_day = _user_cost_usd(uid, "day")
             prior_mon = _user_cost_usd(uid, "month")
-            over = ((dcap and dcap > 0 and prior_day >= dcap)
-                    or (mcap and mcap > 0 and prior_mon >= mcap))
+            over = prior_day >= dcap or prior_mon >= mcap
             if over:
                 charge = cost * s.usd_jpy_rate * s.balance_markup
                 conn.execute(
@@ -271,7 +309,7 @@ def chat(
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            temperature=temperature,
+            **_temperature_kwarg(use_model, temperature),
             **_token_kwarg(use_model, capped),
         )
         usage = resp.usage
@@ -320,7 +358,7 @@ def chat_stream(
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            temperature=temperature,
+            **_temperature_kwarg(settings.openai_model, temperature),
             **_token_kwarg(
                 settings.openai_model,
                 min(max_tokens, settings.ai_max_output_tokens),
@@ -493,7 +531,7 @@ def transcribe(
     def _call(lang: str | None, verbose: bool):
         f = io.BytesIO(audio_bytes)
         f.name = filename
-        kw: dict = {"model": "whisper-1", "file": f}
+        kw: dict = {"model": settings.stt_model, "file": f}
         if lang:
             kw["language"] = lang
         if verbose:
@@ -517,7 +555,9 @@ def transcribe(
         else:
             resp = _call(None, False)
             text = resp.text
-        # whisper-1 ≈ $0.006/min。長さ不明のため概算（音声バイト数から推定）。
+        # whisper-1 ≈ $0.006/分。長さ不明のため概算（音声バイト数から推定）。
+        # 別のSTTモデルに切り替えた場合、単価が異なればこの概算はズレる
+        # （既知の制約。docs/TODO.md D4参照）。
         minutes = max(len(audio_bytes) / (16000 * 60), 0.05)
         cost = minutes * 0.006 * calls
         from .auth import current_user_id
@@ -525,8 +565,8 @@ def transcribe(
             conn.execute(
                 "INSERT INTO ai_usage "
                 "(model, prompt_tokens, output_tokens, cost_usd, feature, "
-                " user_id) VALUES ('whisper-1', 0, 0, ?, 'stt', ?)",
-                (cost, current_user_id()),
+                " user_id) VALUES (?, 0, 0, ?, 'stt', ?)",
+                (settings.stt_model, cost, current_user_id()),
             )
         return text, None
     except Exception as exc:

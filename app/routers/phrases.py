@@ -45,6 +45,9 @@ class KnownIn(BaseModel):
 
 def _phrase_dict(row) -> dict:
     d = dict(row)
+    # detail(JSON)は一覧では送らず、有無フラグだけ返す（応答を軽く保つ、
+    # 単語(words)と同じ扱い）。
+    d["has_detail"] = bool((d.pop("detail", "") or "").strip())
     d["selection_priority"] = selection_weight(d["mastery"])
     d["mastered"] = d["mastery"] >= MASTERED_THRESHOLD
     d["accuracy"] = (
@@ -226,6 +229,87 @@ def delete_phrase(phrase_id: int):
         cur = conn.execute("DELETE FROM phrases WHERE id = ?", (phrase_id,))
         if cur.rowcount == 0:
             raise HTTPException(404, "フレーズが見つかりません")
+
+
+def _json_object(text: str) -> dict | None:
+    import json
+    raw = (text or "").strip()
+    s, e = raw.find("{"), raw.rfind("}")
+    if s == -1 or e == -1:
+        return None
+    try:
+        d = json.loads(raw[s:e + 1])
+    except (json.JSONDecodeError, ValueError):
+        return None
+    return d if isinstance(d, dict) else None
+
+
+@router.post("/{phrase_id}/detail")
+def phrase_detail(phrase_id: int, regen: bool = False):
+    """フレーズの詳細情報をAIで生成してキャッシュ（単語のdetailと同じ方式・
+    2回目以降はキャッシュを返す）。格言・慣用句・誤解されやすい言い回し・
+    マナーに関わる表現は補足を厚く、普通の日常フレーズは軽くと、AI側で
+    重要度に応じて濃淡をつける（全フレーズに詳細が必要なわけではないため、
+    ボタンを押した時だけ生成し、少しずつDBに蓄積する運用を想定）。"""
+    import json as _json
+
+    from ..config import load_settings
+    from ..services import ai
+
+    with db() as conn:
+        row = conn.execute(
+            "SELECT english, japanese, scene, detail FROM phrases "
+            "WHERE id = ?", (phrase_id,)
+        ).fetchone()
+        if not row:
+            raise HTTPException(404, "フレーズが見つかりません")
+        if row["detail"] and not regen:
+            try:
+                return {"ok": True, "cached": True,
+                        "detail": _json.loads(row["detail"])}
+            except ValueError:
+                pass
+    if not ai.is_enabled():
+        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+    system = (
+        "英語フレーズの詳細情報を日本語でJSONのみ作成する英語講師です。"
+        "このフレーズが(a)格言・ことわざ・歴史的に有名な発言・出典のある"
+        "引用、(b)よく使われる重要な慣用表現、(c)直訳すると誤解を招く/"
+        "字面と実際の意味がずれている言い回し、(d)使う場面や相手を間違えると"
+        "失礼・不自然になるマナーに関わる表現、のいずれかに該当するなら"
+        "深く濃い内容にし、当てはまらないありふれた日常フレーズなら軽めで"
+        "よい（無理に話を作らない・該当しない項目は空文字でよい）。"
+        "キー: "
+        "nuance(意味のニュアンス・フォーマル度・実際に使われる場面), "
+        "similar_expressions(類似表現/言い換えの配列[{en,ja,diff}]。diffは"
+        "元のフレーズとのニュアンス・丁寧さ・使う場面の違い。2〜4個程度), "
+        "background(由来・歴史的背景。格言/名言なら誰がいつどんな文脈で"
+        "言った/書いたか、出典、時代背景まで踏み込む。慣用句ならその語源。"
+        "普通のフレーズで特筆すべき由来が無ければ空文字), "
+        "caution(誤解されやすい点、または失礼・マナー違反になりうる点の"
+        "具体的な注意。該当しなければ空文字), "
+        "trivia(豆知識。関連する文化的背景・著名な引用例・映画や書籍での"
+        "使用例など、本当に自然なものがあれば1つ。無ければ空文字), "
+        "explanation(総合的な使い方の解説。1〜2文で簡潔に). "
+        "必ず完結したJSONのみを出力（途中で切らない）。"
+    )
+    user = (
+        f"フレーズ: {row['english']}\n日本語訳: {row['japanese']}\n"
+        f"シーン: {row['scene'] or '指定なし'}"
+    )
+    r = ai.chat(system, user, temperature=0.4, max_tokens=1200,
+                feature="phrase_detail", model=load_settings().quality_model)
+    if not r.ok:
+        return {"ok": False, "error": r.error}
+    data = _json_object(r.text)
+    if not data:
+        return {"ok": False, "error": "詳細の生成に失敗しました。"}
+    with db() as conn:
+        conn.execute(
+            "UPDATE phrases SET detail = ? WHERE id = ?",
+            (_json.dumps(data, ensure_ascii=False), phrase_id),
+        )
+    return {"ok": True, "cached": False, "detail": data}
 
 
 @router.get("/quiz")

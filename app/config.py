@@ -12,8 +12,9 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# アプリのバージョン（UI表示用）。
-APP_VERSION = "ver1.1.0-alpha03"
+# アプリのバージョン（UI表示用）。バージョンを上げたら CHANGELOG.md に追記し、
+# 必ず git commit + push をセットで行うこと（CLAUDE.md参照）。
+APP_VERSION = "ver1.1.0-alpha04"
 
 # Project root = the directory that contains the "app" package.
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -67,6 +68,7 @@ class Settings:
     port: int
     nickname: str
     tts_model: str
+    stt_model: str      # 音声認識(文字起こし)モデル
     quality_model: str  # 判定・教材生成など品質重視の処理に使うモデル
     usd_jpy_rate: float
     usd_jpy_as_of: str
@@ -76,6 +78,8 @@ class Settings:
     ai_max_output_tokens: int      # chat の max_tokens 上限（過大指定を抑制）。
     audio_storage: str             # 'file' | 'db' | 'hybrid'。MP3保存先の方式。
     balance_markup: float          # 枠外利用の残高控除倍率(原価×為替×この値)。
+    # 個別上限未設定時の既定無料枠(円/日)。legacy/charged専用(email tierは0円)。
+    ai_daily_free_jpy: float
 
     @property
     def ai_enabled(self) -> bool:
@@ -109,6 +113,10 @@ DEFAULT_MAX_OUTPUT_TOKENS = 1500
 # 枠外利用時の残高控除倍率（原価×為替×この値）。2026-08-08: 1.5→2.0に変更
 # （粗利率33%→50%）。docs/COST_ESTIMATE.md §6参照。
 DEFAULT_BALANCE_MARKUP = 2.0
+# 個別上限未設定時の既定無料枠(円/日)。2026-08-08決定: legacy/charged
+# ユーザーのみ適用（¥150/日）。email tier(自己サインアップ・未課金)は
+# ai.py側で強制的に0円（無料枠なし・残高必須）とする。
+DEFAULT_AI_DAILY_FREE_JPY = 150.0
 
 
 def load_settings() -> Settings:
@@ -117,6 +125,7 @@ def load_settings() -> Settings:
     model = os.getenv("OPENAI_MODEL", "gpt-5.4-mini").strip()
     host = os.getenv("HOST", "127.0.0.1").strip()
     tts = os.getenv("OPENAI_TTS_MODEL", "gpt-4o-mini-tts").strip()
+    stt = os.getenv("OPENAI_STT_MODEL", "whisper-1").strip()
     # 品質重視の処理用。未設定なら通常モデルにフォールバック。
     quality = os.getenv("OPENAI_QUALITY_MODEL", "").strip()
     rate = _parse_float(os.getenv("USD_JPY_RATE", ""), DEFAULT_USD_JPY)
@@ -136,6 +145,9 @@ def load_settings() -> Settings:
     markup = _parse_float(
         os.getenv("BALANCE_MARKUP", ""), DEFAULT_BALANCE_MARKUP
     )
+    daily_free_jpy = _parse_float(
+        os.getenv("AI_DAILY_FREE_JPY", ""), DEFAULT_AI_DAILY_FREE_JPY
+    )
     return Settings(
         openai_api_key=os.getenv("OPENAI_API_KEY", "").strip(),
         openai_model=model or "gpt-5.4-mini",
@@ -143,6 +155,7 @@ def load_settings() -> Settings:
         port=int(os.getenv("PORT", "8000")),
         nickname=os.getenv("USER_NICKNAME", "").strip(),
         tts_model=tts or "gpt-4o-mini-tts",
+        stt_model=stt or "whisper-1",
         quality_model=quality or (model or "gpt-5.4-mini"),
         usd_jpy_rate=rate,
         usd_jpy_as_of=as_of,
@@ -151,6 +164,7 @@ def load_settings() -> Settings:
         ai_max_output_tokens=max(64, maxout),
         audio_storage=storage,
         balance_markup=max(1.0, markup),
+        ai_daily_free_jpy=max(0.0, daily_free_jpy),
     )
 
 

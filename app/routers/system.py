@@ -6,11 +6,19 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from ..config import ROOT_DIR, load_settings
-from ..database import ACCENTS, NEWS_FIELDS
+from ..database import ACCENTS, NEWS_FIELDS, db
 from ..schemas import MemoryUpdateIn, SettingsIn
-from ..services import ai, persistence
+from ..services import ai, auth, persistence
 
 router = APIRouter(prefix="/api/system", tags=["system"])
+
+
+def _require_admin() -> None:
+    """管理者専用エンドポイントのガード（未管理者は403）。"""
+    with db() as conn:
+        me = auth.get_user(conn, auth.current_user_id())
+    if not me or me.get("role") != "admin":
+        raise HTTPException(403, "管理者のみ利用できます。")
 
 
 @router.get("/taxonomy")
@@ -64,6 +72,7 @@ def _write_env(updates: dict[str, str]) -> None:
 
 @router.put("/settings")
 def update_settings(payload: SettingsIn):
+    _require_admin()
     updates: dict[str, str] = {}
     if payload.openai_api_key is not None and payload.openai_api_key.strip():
         updates["OPENAI_API_KEY"] = payload.openai_api_key.strip()
@@ -79,6 +88,7 @@ def update_settings(payload: SettingsIn):
 
 @router.get("/usage")
 def usage():
+    _require_admin()
     return ai.usage_summary()
 
 
@@ -95,14 +105,20 @@ def progress():
         words = word_buckets(conn, "words", user_id=uid)
         phrases = word_buckets(conn, "phrases", user_id=uid)
         self_toeic = get_user_settings(conn, uid).get("toeic_self")
-        # 会話/読/書/文学: エリア別の平均習熟度。
+        # 会話/読/書/文学: エリア別の平均習熟度（per-user、他ユーザーの
+        # 学習は混ざらない。2026-08-08にcategories直書きから分離）。
         area_rows = conn.execute(
-            "SELECT area, COUNT(*) AS n, COALESCE(AVG(mastery),0) AS avg "
-            "FROM categories GROUP BY area"
+            "SELECT c.area, COUNT(*) AS n, "
+            "COALESCE(AVG(ucp.mastery),0) AS avg "
+            "FROM categories c LEFT JOIN user_category_progress ucp "
+            "ON ucp.category_id = c.id AND ucp.user_id = ? "
+            "GROUP BY c.area", (uid,)
         ).fetchall()
         listening = conn.execute(
-            "SELECT COALESCE(AVG(comprehension),0) AS avg, COUNT(*) AS n "
-            "FROM listening_topics"
+            "SELECT COALESCE(AVG(ulp.comprehension),0) AS avg, "
+            "COUNT(*) AS n FROM listening_topics lt "
+            "LEFT JOIN user_listening_progress ulp "
+            "ON ulp.topic_id = lt.id AND ulp.user_id = ?", (uid,)
         ).fetchone()
 
     areas = {

@@ -236,6 +236,30 @@ CREATE TABLE IF NOT EXISTS user_material_progress (
     PRIMARY KEY (user_id, material_id)
 );
 
+-- 会話/読/書/文学カテゴリの習熟度（per-user）。カテゴリ名自体(area/grp/name)は
+-- 共有、習熟度だけ user 別（旧: categories.mastery 直書きは全員で共有/混在
+-- していたバグのため2026-08-08に分離）。
+CREATE TABLE IF NOT EXISTS user_category_progress (
+    user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    category_id  INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+    mastery      INTEGER NOT NULL DEFAULT 0,
+    last_studied TEXT,
+    study_count  INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (user_id, category_id)
+);
+
+-- リスニングトピックの理解度（per-user）。トピック自体(source/accent)は
+-- 共有、理解度・弱点メモだけ user 別（同上の理由で分離）。
+CREATE TABLE IF NOT EXISTS user_listening_progress (
+    user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    topic_id      INTEGER NOT NULL REFERENCES listening_topics(id) ON DELETE CASCADE,
+    comprehension INTEGER NOT NULL DEFAULT 0,
+    weak_areas    TEXT DEFAULT '',
+    study_count   INTEGER NOT NULL DEFAULT 0,
+    last_studied  TEXT,
+    PRIMARY KEY (user_id, topic_id)
+);
+
 -- per-user 設定（端末非依存。ブラウザlocalStorageの同期先）。JSON文字列。
 CREATE TABLE IF NOT EXISTS user_settings (
     user_id   INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
@@ -458,6 +482,8 @@ def _migrate(conn: sqlite3.Connection) -> None:
     pcols = {r["name"] for r in conn.execute("PRAGMA table_info(phrases)")}
     if "level" not in pcols:  # フレーズの難易度
         conn.execute("ALTER TABLE phrases ADD COLUMN level TEXT DEFAULT ''")
+    if "detail" not in pcols:  # 詳細情報(JSON)のキャッシュ（フレーズ版）
+        conn.execute("ALTER TABLE phrases ADD COLUMN detail TEXT DEFAULT ''")
     mcols = {r["name"] for r in conn.execute("PRAGMA table_info(materials)")}
     if "mastery" not in mcols:
         conn.execute(

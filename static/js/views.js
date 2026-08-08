@@ -648,6 +648,60 @@ function showWordDetail(w) {
   });
 }
 
+// フレーズ詳細の中身を描画（ニュアンス/類似表現/由来・歴史的背景/注意点/
+// 豆知識/解説）。格言・慣用句・誤解されやすい表現・マナー系は内容が
+// 濃くなり、普通のフレーズは該当欄が空になる想定（サーバー側で調整済み）。
+function renderPhraseDetail(box, d) {
+  box.innerHTML = "";
+  const sec = (label, html) => {
+    if (!html) return;
+    box.appendChild(el(`<p style="margin:6px 0"><b>${label}</b> ${html}</p>`));
+  };
+  sec("ニュアンス:", d.nuance ? escapeHtml(d.nuance) : "");
+  if (Array.isArray(d.similar_expressions) && d.similar_expressions.length) {
+    const html = d.similar_expressions.map((x) =>
+      `${escapeHtml(x.en || "")}（${escapeHtml(x.ja || "")}）`
+      + (x.diff ? ` — ${escapeHtml(x.diff)}` : "")).join("<br>");
+    sec("類似表現:", html);
+  }
+  sec("由来・背景:", d.background ? escapeHtml(d.background) : "");
+  sec("⚠️ 注意:", d.caution ? escapeHtml(d.caution) : "");
+  sec("豆知識:", d.trivia ? escapeHtml(d.trivia) : "");
+  sec("解説:", d.explanation ? escapeHtml(d.explanation) : "");
+}
+
+// フレーズの詳細ポップアップ（単語のshowWordDetailと同じ方式）。
+function showPhraseDetail(p) {
+  openModal(p.english, (body) => {
+    body.appendChild(el(`<p class="quiz-answer">${escapeHtml(p.english)}
+      <span class="muted">${escapeHtml(p.japanese || "")}
+      ${p.scene ? "・" + escapeHtml(p.scene) : ""}</span></p>`));
+    const detailBox = el(`<div class="mt"></div>`);
+    body.appendChild(detailBox);
+    const loadDetail = async () => {
+      detailBox.innerHTML = `<p class="muted">詳細を取得中…</p>`;
+      try {
+        const r = await api.post(`/api/phrases/${p.id}/detail`);
+        if (r.ok) {
+          renderPhraseDetail(detailBox, r.detail);
+          p.has_detail = true;
+        } else {
+          detailBox.innerHTML =
+            `<p class="muted">${escapeHtml(r.error || "失敗")}</p>`;
+        }
+      } catch (e) {
+        detailBox.innerHTML = `<p class="muted">失敗: ${e.message}</p>`;
+      }
+    };
+    if (p.has_detail) {
+      loadDetail();  // キャッシュ済み → 無料で表示
+    } else {
+      detailBox.appendChild(el(
+        `<p class="muted">このフレーズの詳細は準備中です。</p>`));
+    }
+  });
+}
+
 // --- 🃏 フラッシュ単語 -------------------------------------------------------
 // 英単語ページの「高速めくり」版。大きなカードをタップで答え表示、スワイプ
 // (またはカード欄外のボタン)で採点してテンポよく次々めくる。
@@ -1375,13 +1429,15 @@ export async function phrases(root) {
         () => root.querySelector("#pSpeed").value));
       const ops = tr.querySelector("td:last-child .ops-cell");
       const mc = tr.querySelector("[data-mc]");
+      const det = el(`<button class="btn good">詳細</button>`);
+      det.addEventListener("click", () => showPhraseDetail(p));
       const repaint = () => { mc.innerHTML = masteryCell(p); };
       const vague = vagueButton("/api/phrases", p, repaint);
       const known = knownButton("/api/phrases", p, repaint);
       const del = deleteButton(p.english, async () => {
         await api.del("/api/phrases/" + p.id); go("phrases");
       });
-      ops.append(vague, known, del);
+      ops.append(det, vague, known, del);
       rows.appendChild(tr);
     });
   };
@@ -2920,7 +2976,13 @@ function fsetGroupsHtml(groups, hiddenSet, prefix) {
 
 export async function settings(root) {
   const s = await api.get("/api/system/settings");
-  const usage = await api.get("/api/system/usage");
+  // /api/system/usage is admin-only (全ユーザー横断の使用量のため); 一般
+  // ユーザーは403になるので、その場合は空扱いにしてページ全体は描画する。
+  let usage = {
+    total_cost_usd: 0, today_cost_usd: 0, total_cost_jpy: 0,
+    today_cost_jpy: 0, calls: 0, jpy_rate: 0, jpy_as_of: "", recent: [],
+  };
+  try { usage = await api.get("/api/system/usage"); } catch (_) { /* not admin */ }
   const wFacets = await api.get("/api/words/facets?include_hidden=true");
   const domainGroups = wFacets.domain_groups || {};
   const wLevels = wFacets.range_levels || [];
@@ -3096,8 +3158,9 @@ export async function settings(root) {
       <p class="muted">バージョン ${escapeHtml(s.version || "")}
         （個人開発・ベストエフォート対応）。</p>
       <p><a href="/static/terms.html" target="_blank">利用規約・免責事項</a></p>
-      ${s.tokushoho_ready ? `<p><a href="/tokushoho" target="_blank">
-        特定商取引法に基づく表記</a></p>` : ""}
+      <p><a href="/tokushoho" target="_blank">特定商取引法に基づく表記</a>
+        ${s.tokushoho_ready ? "" : `<span class="muted">
+        （現在たたき台・記入中です）</span>`}</p>
       <p class="muted">取扱説明書・使い方ガイドは準備中です。ご不明な点は
         上の「お問い合わせ・ご要望」からお気軽にどうぞ。</p>
     </div>

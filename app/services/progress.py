@@ -57,6 +57,7 @@ def user_items_subquery(table: str) -> str:
     if table == "phrases":
         return (
             "(SELECT ph.id, ph.english, ph.japanese, ph.scene, ph.level, "
+            " ph.detail, "
             " COALESCE(p.mastery,0) AS mastery, p.last_studied AS last_studied, "
             " COALESCE(p.study_count,0) AS study_count, "
             " COALESCE(p.times_asked,0) AS times_asked, "
