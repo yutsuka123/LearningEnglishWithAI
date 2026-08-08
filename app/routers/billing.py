@@ -18,11 +18,17 @@ class RedeemIn(BaseModel):
 
 @router.post("/redeem")
 def redeem(payload: RedeemIn):
-    """ログイン中のユーザーがチャージキーを償還し、残高(pt)に加算する。"""
+    """ログイン中のユーザーがチャージキーを償還し、残高(pt)に加算する。
+    総当たり対策: 直近1時間に10回失敗した場合はロックする
+    （app/services/charge_keys.py の redeem_locked 参照）。"""
+    uid = current_user_id()
+    if charge_keys.redeem_locked(uid):
+        raise HTTPException(
+            429, "失敗が続いたため、しばらく時間をおいてから再試行して"
+            "ください。")
     with db() as conn:
         try:
-            new_balance = charge_keys.redeem_key(
-                conn, current_user_id(), payload.key)
+            new_balance = charge_keys.redeem_key(conn, uid, payload.key)
         except charge_keys.ChargeKeyError as e:
             raise HTTPException(400, str(e))
     return {"ok": True, "balance_jpy": round(new_balance, 1)}

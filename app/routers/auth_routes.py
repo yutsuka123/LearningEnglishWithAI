@@ -53,6 +53,13 @@ def signup(payload: SignupIn, request: Request, response: Response):
     """
     from ..services import charge_keys
 
+    ip = request.client.host if request.client else "?"
+    if charge_keys.signup_redeem_locked(ip):
+        return JSONResponse(
+            {"ok": False, "error": "失敗が続いたため、しばらく時間をおいて"
+             "から再試行してください。"},
+            status_code=429,
+        )
     email = payload.email.strip().lower()
     password = payload.password
     if "@" not in email or "." not in email.split("@")[-1]:
@@ -87,6 +94,9 @@ def signup(payload: SignupIn, request: Request, response: Response):
             secret = auth.get_session_secret(conn)
             u = auth.get_user(conn, uid)
     except charge_keys.ChargeKeyError as e:
+        # 「メール登録済み」はチャージキー総当たりとは無関係なので数えない。
+        if str(e) != "このメールアドレスは既に登録されています。":
+            charge_keys.record_signup_redeem_failure(ip)
         return JSONResponse({"ok": False, "error": str(e)}, status_code=400)
     token = auth.make_session_token(secret, uid, int(time.time()))
     resp = JSONResponse({"ok": True, "user": {

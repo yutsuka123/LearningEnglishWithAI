@@ -166,34 +166,100 @@ def generate_key(
     return key_id + secret
 
 
+# キーが「存在しない/使用済み/シークレット不一致」のどれであるかを応答から
+# 区別できると、攻撃者が「有効かつ未償還のkey_id」だけに絞って総当たり対象を
+# 絞り込めてしまう（error oracle）。2026-08-08: 不正利用分析で指摘され、
+# この3ケースは同一の汎用メッセージに統一した（形式不正・CRC不一致は
+# DBに触れる前に分かる純粋な入力ミスなので区別してよい）。
+_INVALID_KEY_MSG = "キーが無効です。入力内容をご確認ください。"
+
+# ---------------------------------------------------------------------------
+# 償還の総当たり対策（簡易・プロセス内メモリ。ログイン総当たり対策
+# (app/services/auth.py の _LOGIN_FAILS)と同じ方式）。
+# シークレット4桁(31進数・約92万通り)への総当たりを、ユーザー単位で
+# 一定回数の失敗後にロックすることで実用上不可能にする。
+# ---------------------------------------------------------------------------
+import time as _time  # noqa: E402
+
+_REDEEM_FAILS: dict[int, list[float]] = {}
+_REDEEM_MAX = 10        # 直近_REDEEM_WINDOW秒でこの回数失敗したらロック
+_REDEEM_WINDOW = 3600.0  # 1時間
+
+# サインアップ経由(POST /api/auth/signup)の償還失敗はIP単位で数える。
+# signupは失敗するとユーザー行ごとロールバックされるため、上記のuser_id単位
+# カウンタでは「毎回新規uidで試せてしまう」抜け道がある(2026-08-08発見)。
+_SIGNUP_REDEEM_FAILS: dict[str, list[float]] = {}
+_SIGNUP_REDEEM_MAX = 10
+_SIGNUP_REDEEM_WINDOW = 3600.0
+
+
+def signup_redeem_locked(ip: str) -> bool:
+    now = _time.monotonic()
+    key = ip or "?"
+    fails = [t for t in _SIGNUP_REDEEM_FAILS.get(key, [])
+             if now - t < _SIGNUP_REDEEM_WINDOW]
+    _SIGNUP_REDEEM_FAILS[key] = fails
+    return len(fails) >= _SIGNUP_REDEEM_MAX
+
+
+def record_signup_redeem_failure(ip: str) -> None:
+    _SIGNUP_REDEEM_FAILS.setdefault(ip or "?", []).append(_time.monotonic())
+
+
+def _recent_fails(user_id: int) -> list[float]:
+    now = _time.monotonic()
+    fails = [t for t in _REDEEM_FAILS.get(user_id, []) if now - t < _REDEEM_WINDOW]
+    _REDEEM_FAILS[user_id] = fails
+    return fails
+
+
+def redeem_locked(user_id: int) -> bool:
+    """直近1時間に10回失敗していればロック。"""
+    return len(_recent_fails(user_id)) >= _REDEEM_MAX
+
+
+def _record_redeem_failure(user_id: int) -> None:
+    _REDEEM_FAILS.setdefault(user_id, []).append(_time.monotonic())
+
+
+def _clear_redeem_failures(user_id: int) -> None:
+    _REDEEM_FAILS.pop(user_id, None)
+
+
 def redeem_key(
     conn: sqlite3.Connection, user_id: int, raw_key: str
 ) -> float:
     """キーを償還してuser_idの残高(pt=balance_jpy)に加算し、更新後残高を返す。
-    無効・入力ミス・使用済みは ChargeKeyError。"""
-    raw = _normalize(raw_key)
-    if len(raw) != TOTAL_DIGITS or any(c not in _CHAR_VALUE for c in raw):
-        raise ChargeKeyError("キーの形式が正しくありません。")
-    key_id, secret = raw[:KEY_ID_DIGITS], raw[KEY_ID_DIGITS:]
-    if _crc_char(key_id[:-1]) != key_id[-1]:
-        raise ChargeKeyError("キーが正しくありません（入力ミスの可能性）。")
-    row = conn.execute(
-        "SELECT * FROM charge_keys WHERE key_id = ?", (key_id,)
-    ).fetchone()
-    if not row:
-        raise ChargeKeyError("キーが見つかりません。")
-    if row["used_at"]:
-        raise ChargeKeyError("このキーは既に使用済みです。")
-    if not auth.verify_password(secret, row["secret_hash"]):
-        raise ChargeKeyError("キーが正しくありません。")
-    cur = conn.execute(
-        "UPDATE charge_keys SET used_at = datetime('now'), "
-        "used_by_user_id = ? WHERE key_id = ? AND used_at IS NULL",
-        (user_id, key_id),
-    )
-    if cur.rowcount == 0:
-        # 同時償還などの競合。ここに来た時点で二重付与は防げている。
-        raise ChargeKeyError("このキーは既に使用済みです。")
+    無効・入力ミス・使用済みは ChargeKeyError。失敗はユーザー単位で記録し、
+    一定回数でロックする（呼び出し側は事前に`redeem_locked()`を確認）。"""
+    try:
+        raw = _normalize(raw_key)
+        if len(raw) != TOTAL_DIGITS or any(c not in _CHAR_VALUE for c in raw):
+            raise ChargeKeyError("キーの形式が正しくありません。")
+        key_id, secret = raw[:KEY_ID_DIGITS], raw[KEY_ID_DIGITS:]
+        if _crc_char(key_id[:-1]) != key_id[-1]:
+            raise ChargeKeyError("キーが正しくありません（入力ミスの可能性）。")
+        row = conn.execute(
+            "SELECT * FROM charge_keys WHERE key_id = ?", (key_id,)
+        ).fetchone()
+        if not row:
+            raise ChargeKeyError(_INVALID_KEY_MSG)
+        if row["used_at"]:
+            raise ChargeKeyError(_INVALID_KEY_MSG)
+        if not auth.verify_password(secret, row["secret_hash"]):
+            raise ChargeKeyError(_INVALID_KEY_MSG)
+        cur = conn.execute(
+            "UPDATE charge_keys SET used_at = datetime('now'), "
+            "used_by_user_id = ? WHERE key_id = ? AND used_at IS NULL",
+            (user_id, key_id),
+        )
+        if cur.rowcount == 0:
+            # 同時償還などの競合。ここに来た時点で二重付与は防げている。
+            raise ChargeKeyError(_INVALID_KEY_MSG)
+    except ChargeKeyError:
+        _record_redeem_failure(user_id)
+        raise
+    _clear_redeem_failures(user_id)
     return auth.add_balance(conn, user_id, float(row["amount_jpy"]))
 
 

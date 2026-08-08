@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 
 # アプリのバージョン（UI表示用）。バージョンを上げたら CHANGELOG.md に追記し、
 # 必ず git commit + push をセットで行うこと（CLAUDE.md参照）。
-APP_VERSION = "ver1.1.0-alpha05"
+APP_VERSION = "ver1.1.0-alpha06"
 
 # Project root = the directory that contains the "app" package.
 ROOT_DIR = Path(__file__).resolve().parent.parent
