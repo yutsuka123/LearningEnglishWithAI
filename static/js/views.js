@@ -680,7 +680,7 @@ function runFlashcards(stage, initialQueue, opts) {
   let queue = initialQueue;
   let pos = 0, revealed = false;
   const history = [];                       // {index, snapshot, action}
-  const counts = { known: 0, vague: 0, wrong: 0 };
+  const counts = { known: 0, vague: 0, wrong: 0, skip: 0 };
   const card = () => queue[pos];
 
   // 連続読み上げ(単語→例文)の中断管理。speakSeq が変わると進行中の読み上げを打切り。
@@ -757,8 +757,9 @@ function runFlashcards(stage, initialQueue, opts) {
       next_review: c.next_review } });
     if (action === "known") counts.known++;
     else if (action === "vague") counts.vague++;
+    else if (action === "skip") counts.skip++;
     else counts.wrong++;
-    applyGrade(c, action);
+    if (action !== "skip") applyGrade(c, action);
     const fly = { known: "fly-up", wrong: "fly-down", vague: "fly-right" }[action];
     const cardEl = stage.querySelector("#fcCard");
     pos++; revealed = false;
@@ -774,12 +775,15 @@ function runFlashcards(stage, initialQueue, opts) {
     const { index, snapshot, action } = history.pop();
     if (action === "known") counts.known = Math.max(0, counts.known - 1);
     else if (action === "vague") counts.vague = Math.max(0, counts.vague - 1);
+    else if (action === "skip") counts.skip = Math.max(0, counts.skip - 1);
     else counts.wrong = Math.max(0, counts.wrong - 1);
     const c = queue[index];
     c.mastery = snapshot.mastery; c.mastered = c.mastery >= 100;
     c.review_level = snapshot.review_level; c.next_review = snapshot.next_review;
-    try { await api.post(`/api/words/${c.id}/restore`, snapshot); }
-    catch (_) { /* ignore */ }
+    if (action !== "skip") {
+      try { await api.post(`/api/words/${c.id}/restore`, snapshot); }
+      catch (_) { /* ignore */ }
+    }
     pos = index; revealed = true; render();
     toast("1つ戻りました（採点やり直し）");
   }
@@ -800,7 +804,7 @@ function runFlashcards(stage, initialQueue, opts) {
     stage.innerHTML = `<div class="card fc-done">
       <h2 style="margin-top:0">お疲れさまでした 🎉</h2>
       <p>覚えた <b>${counts.known}</b> ・ うろ覚え <b>${counts.vague}</b>
-        ・ できない <b>${counts.wrong}</b></p>
+        ・ できない <b>${counts.wrong}</b> ・ 保留 <b>${counts.skip}</b></p>
       <div class="row">
         <button class="btn" id="fcMore">▶ もっと続ける</button>
         <button class="btn ghost" id="fcBack">設定に戻る</button>
@@ -817,7 +821,8 @@ function runFlashcards(stage, initialQueue, opts) {
     const aText = dir === "en2ja" ? c.japanese : c.english;
     stage.innerHTML = `<div class="fc-wrap">
       <div class="fc-progress muted">${pos + 1} / ${queue.length}
-        ・ 覚${counts.known} うろ${counts.vague} ✗${counts.wrong}</div>
+        ・ 覚${counts.known} うろ${counts.vague} ✗${counts.wrong}
+        保留${counts.skip}</div>
       <div class="fc-card${revealed ? " flip" : ""}" id="fcCard">
         <div class="fc-q">${escapeHtml(qText)}</div>
         <div class="fc-side muted">${dir === "en2ja" ? "英→日" : "日→英"}</div>
@@ -871,6 +876,7 @@ function runFlashcards(stage, initialQueue, opts) {
     };
     actions.append(
       mk("ghost", "⬅ 戻る", undo),
+      mk("ghost", "⏸ 保留", () => grade("skip")),
       mk("danger", "⬇ できない", () => grade("wrong")),
       mk("vague-btn", "➡ うろ覚え", () => grade("vague")),
       mk("good", "⬆ 覚えた", () => grade("known")),
@@ -884,6 +890,7 @@ function runFlashcards(stage, initialQueue, opts) {
     else if (e.key === "ArrowDown") { e.preventDefault(); grade("wrong"); }
     else if (e.key === "ArrowRight") { e.preventDefault(); grade("vague"); }
     else if (e.key === "ArrowLeft") { e.preventDefault(); undo(); }
+    else if (e.key === "s" || e.key === "S") { e.preventDefault(); grade("skip"); }
     else if (e.key === " " || e.key === "Enter") {
       e.preventDefault();
       const cardEl = stage.querySelector("#fcCard");
