@@ -75,6 +75,7 @@ class Settings:
     ai_max_calls_per_min: int      # 1分あたりのAI呼び出し回数の上限。
     ai_max_output_tokens: int      # chat の max_tokens 上限（過大指定を抑制）。
     audio_storage: str             # 'file' | 'db' | 'hybrid'。MP3保存先の方式。
+    balance_markup: float          # 枠外利用の残高控除倍率(原価×為替×この値)。
 
     @property
     def ai_enabled(self) -> bool:
@@ -105,6 +106,9 @@ def _parse_int(value: str, default: int) -> int:
 DEFAULT_DAILY_COST_CAP_USD = 1.0   # 1日 約¥155 まで
 DEFAULT_MAX_CALLS_PER_MIN = 20
 DEFAULT_MAX_OUTPUT_TOKENS = 1500
+# 枠外利用時の残高控除倍率（原価×為替×この値）。2026-08-08: 1.5→2.0に変更
+# （粗利率33%→50%）。docs/COST_ESTIMATE.md §6参照。
+DEFAULT_BALANCE_MARKUP = 2.0
 
 
 def load_settings() -> Settings:
@@ -129,6 +133,9 @@ def load_settings() -> Settings:
     storage = os.getenv("AUDIO_STORAGE", "file").strip().lower()
     if storage not in ("file", "db", "hybrid"):
         storage = "file"
+    markup = _parse_float(
+        os.getenv("BALANCE_MARKUP", ""), DEFAULT_BALANCE_MARKUP
+    )
     return Settings(
         openai_api_key=os.getenv("OPENAI_API_KEY", "").strip(),
         openai_model=model or "gpt-5.4-mini",
@@ -143,6 +150,7 @@ def load_settings() -> Settings:
         ai_max_calls_per_min=max(1, cpm),
         ai_max_output_tokens=max(64, maxout),
         audio_storage=storage,
+        balance_markup=max(1.0, markup),
     )
 
 

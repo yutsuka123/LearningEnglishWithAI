@@ -136,6 +136,8 @@ PRICING = {
     "gpt-5.4-mini": (0.75, 4.50),
     # 高品質ティア(gpt-5.4 フル)。<272K context の標準レート。
     "gpt-5.4": (2.50, 15.00),
+    # 2026-07リリースの最安ティア(品質/速度テスト後に既定切替を検討中)。
+    "gpt-5.6-luna": (0.20, 1.20),
     "gpt-4o-mini": (0.15, 0.60),
     "gpt-4o": (2.50, 10.00),
     "gpt-4.1-mini": (0.40, 1.60),
@@ -202,7 +204,7 @@ def _record_usage(
             over = ((dcap and dcap > 0 and prior_day >= dcap)
                     or (mcap and mcap > 0 and prior_mon >= mcap))
             if over:
-                charge = cost * s.usd_jpy_rate * 1.5  # 原価×為替×1.5
+                charge = cost * s.usd_jpy_rate * s.balance_markup
                 conn.execute(
                     "UPDATE users SET balance_jpy = "
                     "MAX(0, balance_jpy - ?) WHERE id = ?", (charge, uid),
