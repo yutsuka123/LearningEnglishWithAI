@@ -2927,23 +2927,27 @@ export async function settings(root) {
         フレーズ画面のフィルター候補から消えます（データ自体は削除され
         ません・いつでも再表示できます）。<b>チェックの変更はこのカードの
         「保存」を押すまで反映されません。</b></p>
-      <h3 class="mt">英単語の分野</h3>
-      <div class="row">
-        <button type="button" class="btn ghost" id="fset_w_all1">全てON</button>
-        <button type="button" class="btn ghost" id="fset_w_all0">全てOFF</button>
-        <button type="button" class="btn ghost" id="fset_w_reset">デフォルトに戻す</button>
+      <div class="fset-section fset-section-w mt">
+        <h3>🔤 英単語の分野</h3>
+        <div class="row">
+          <button type="button" class="btn ghost" id="fset_w_all1">全てON</button>
+          <button type="button" class="btn ghost" id="fset_w_all0">全てOFF</button>
+          <button type="button" class="btn ghost" id="fset_w_reset">デフォルトに戻す</button>
+        </div>
+        <div class="fset-wrap mt" id="fset_words">
+          ${fsetGroupsHtml(domainGroups, hiddenDomains, "w")}
+        </div>
       </div>
-      <div class="fset-wrap mt" id="fset_words">
-        ${fsetGroupsHtml(domainGroups, hiddenDomains, "w")}
-      </div>
-      <h3 class="mt">フレーズのシーン</h3>
-      <div class="row">
-        <button type="button" class="btn ghost" id="fset_p_all1">全てON</button>
-        <button type="button" class="btn ghost" id="fset_p_all0">全てOFF</button>
-        <button type="button" class="btn ghost" id="fset_p_reset">デフォルトに戻す</button>
-      </div>
-      <div class="fset-wrap mt" id="fset_phrases">
-        ${fsetGroupsHtml(sceneGroups, hiddenScenes, "p")}
+      <div class="fset-section fset-section-p mt">
+        <h3>💬 フレーズのシーン</h3>
+        <div class="row">
+          <button type="button" class="btn ghost" id="fset_p_all1">全てON</button>
+          <button type="button" class="btn ghost" id="fset_p_all0">全てOFF</button>
+          <button type="button" class="btn ghost" id="fset_p_reset">デフォルトに戻す</button>
+        </div>
+        <div class="fset-wrap mt" id="fset_phrases">
+          ${fsetGroupsHtml(sceneGroups, hiddenScenes, "p")}
+        </div>
       </div>
       <button class="btn good mt" id="fset_save">保存</button>
       <span class="muted mt" id="fset_out"></span>
@@ -3037,7 +3041,7 @@ export async function settings(root) {
       <p class="muted">自然な声にはOpenAIの利用枠（課金/クレジット）が必要です。
         失敗時は自動でブラウザ標準の声に切り替わります。</p>
     </div>
-    <div class="card admin-only">
+    <div class="card admin-only" id="vocabAddCard">
       <h2>語彙の追加・インポート</h2>
       <h3>単語を追加</h3>
       <div class="row">
@@ -3214,6 +3218,11 @@ export async function settings(root) {
         c.style.display = "none";
       });
     }
+    // 単語/フレーズの手動追加・一括インポートは2026-08-08よりとりあえず
+    // 非表示（メンテ負荷を下げ機能を簡潔に保つ方針・ユーザー指示）。
+    // 管理者でも表示しない。復活させる場合はこのブロックを削除するだけでよい。
+    const vac = root.querySelector("#vocabAddCard");
+    if (vac) vac.style.display = "none";
     // チャージカード: ローカル単一ユーザー(multiuser=false)では非表示
     // （残高の概念が無いため）。ログイン中の全ユーザーに表示する
     // （admin-onlyではない）。
