@@ -1066,6 +1066,10 @@ export async function vocab(root) {
   const facets = await api.get(
     "/api/words/facets" + (showBanned() ? "?include_banned=true" : ""));
   const domainGroups = facets.domain_groups || {};
+  const dfw = (await api.get("/api/system/user-settings"))
+    .settings?.default_word_filters || {};
+  const dfwActive = !!(dfw.category || dfw.level_min || dfw.level_max
+    || dfw.mastered);
   root.innerHTML = `
     <h1>英単語</h1>
     <p class="sub">両方向(英→日 / 日→英)で出題。習熟度・正答率・忘却曲線を管理。</p>
@@ -1073,6 +1077,8 @@ export async function vocab(root) {
       <button class="btn" id="quiz">クイズ開始 (10語)</button>
       <span class="muted">単語の追加・一括インポートは ⚙️設定 に移動しました。</span>
     </div>
+    ${dfwActive ? `<p class="muted">⚙️ 設定の既定フィルターを適用中です。
+      この画面でその場変更もできます。</p>` : ""}
     <div class="card">
       <h2 id="listTitle">単語一覧</h2>
       <div class="row">
@@ -1238,6 +1244,12 @@ export async function vocab(root) {
     setShowBanned(e.target.checked); go("vocab");
   });
   kw.addEventListener("input", load);
+  if (dfwActive) {
+    if (dfw.category) root.querySelector("#fCategory").value = dfw.category;
+    if (dfw.level_min) root.querySelector("#fLevelMin").value = dfw.level_min;
+    if (dfw.level_max) root.querySelector("#fLevelMax").value = dfw.level_max;
+    if (dfw.mastered) root.querySelector("#fMastered").value = dfw.mastered;
+  }
   load();
 
   root.querySelector("#quiz").addEventListener("click", async () => {
@@ -1262,9 +1274,15 @@ export async function phrases(root) {
   const sceneGroups = sceneData.scene_groups || {};
   const pfacets = await api.get("/api/phrases/facets");
   const list = await api.get("/api/phrases" + (sb ? "?" + sb : ""));
+  const dfp = (await api.get("/api/system/user-settings"))
+    .settings?.default_phrase_filters || {};
+  const dfpActive = !!(dfp.category || dfp.level_min || dfp.level_max
+    || dfp.mastered);
   root.innerHTML = `
     <h1>ミニフレーズ</h1>
     <p class="sub">場面別の短い表現。単語と同じく両方向＋忘却曲線で管理。</p>
+    ${dfpActive ? `<p class="muted">⚙️ 設定の既定フィルターを適用中です。
+      この画面でその場変更もできます。</p>` : ""}
     <div class="row">
       <button class="btn" id="quiz">クイズ開始 (10フレーズ)</button>
       <select id="sceneCategory" title="大分類"><option value="">全カテゴリ</option>
@@ -1367,7 +1385,7 @@ export async function phrases(root) {
       rows.appendChild(tr);
     });
   };
-  curList = list; pPage = 0; paint();
+  if (!dfpActive) { curList = list; pPage = 0; paint(); }
 
   // シーン・並び替え・禁止表示はサーバ側、キーワードはクライアント側。
   const load = async () => {
@@ -1427,6 +1445,13 @@ export async function phrases(root) {
     setShowBanned(e.target.checked); go("phrases");
   });
   kw.addEventListener("input", load);
+  if (dfpActive) {
+    if (dfp.category) root.querySelector("#sceneCategory").value = dfp.category;
+    if (dfp.level_min) root.querySelector("#fLevelMin").value = dfp.level_min;
+    if (dfp.level_max) root.querySelector("#fLevelMax").value = dfp.level_max;
+    if (dfp.mastered) root.querySelector("#fMastered").value = dfp.mastered;
+    load();
+  }
 
   root.querySelector("#quiz").addEventListener("click", async () => {
     const tb = testBanned() ? "&include_banned=true" : "";
@@ -2896,13 +2921,21 @@ function fsetGroupsHtml(groups, hiddenSet, prefix) {
 export async function settings(root) {
   const s = await api.get("/api/system/settings");
   const usage = await api.get("/api/system/usage");
-  const domainGroups = (await api.get(
-    "/api/words/facets?include_hidden=true")).domain_groups || {};
+  const wFacets = await api.get("/api/words/facets?include_hidden=true");
+  const domainGroups = wFacets.domain_groups || {};
+  const wLevels = wFacets.range_levels || [];
   const sceneGroups = (await api.get(
     "/api/phrases/scenes?include_hidden=true")).scene_groups || {};
+  const pLevels = (await api.get("/api/phrases/facets")).range_levels || [];
   const us0 = (await api.get("/api/system/user-settings")).settings || {};
   const hiddenDomains = new Set(us0.hidden_domains || []);
   const hiddenScenes = new Set(us0.hidden_scenes || []);
+  const dfw = us0.default_word_filters || {};
+  const dfp = us0.default_phrase_filters || {};
+  const lvOptsHtml = (levels, cur) => '<option value="">--</option>'
+    + levels.map((l) =>
+      `<option ${l === cur ? "selected" : ""}>${escapeHtml(l)}</option>`)
+      .join("");
   root.innerHTML = `
     <h1>設定 <span class="muted" id="roleBadge"></span></h1>
     <p class="sub">学習者プロフィールと音声・AIの設定。</p>
@@ -2951,6 +2984,56 @@ export async function settings(root) {
       </div>
       <button class="btn good mt" id="fset_save">保存</button>
       <span class="muted mt" id="fset_out"></span>
+    </div>
+    <div class="card">
+      <h2>既定フィルター</h2>
+      <p class="muted">英単語・フレーズの画面を開いたときに自動で適用される
+        フィルターです。開いた後にその場でフィルターを変更することも
+        今まで通りできます（その場の変更はここでは保存されません。
+        既定を変えたいときはこのカードで「保存」してください）。</p>
+      <h3 class="mt">英単語</h3>
+      <div class="row">
+        <select id="dfWCategory">
+          <option value="">大分類: 指定なし</option>
+          ${Object.keys(domainGroups).map((c) =>
+            `<option ${c === dfw.category ? "selected" : ""}>
+              ${escapeHtml(c)}</option>`).join("")}
+        </select>
+        <select id="dfWLvMin">${lvOptsHtml(wLevels, dfw.level_min)}</select>
+        <span class="muted">〜</span>
+        <select id="dfWLvMax">${lvOptsHtml(wLevels, dfw.level_max)}</select>
+        <select id="dfWMastered">
+          <option value="">覚えた: 含む</option>
+          <option value="hide" ${dfw.mastered === "hide" ? "selected" : ""}>
+            覚えた: 隠す</option>
+          <option value="only" ${dfw.mastered === "only" ? "selected" : ""}>
+            覚えた: のみ</option>
+        </select>
+      </div>
+      <h3 class="mt">フレーズ</h3>
+      <div class="row">
+        <select id="dfPCategory">
+          <option value="">大分類: 指定なし</option>
+          ${Object.keys(sceneGroups).map((c) =>
+            `<option ${c === dfp.category ? "selected" : ""}>
+              ${escapeHtml(c)}</option>`).join("")}
+        </select>
+        <select id="dfPLvMin">${lvOptsHtml(pLevels, dfp.level_min)}</select>
+        <span class="muted">〜</span>
+        <select id="dfPLvMax">${lvOptsHtml(pLevels, dfp.level_max)}</select>
+        <select id="dfPMastered">
+          <option value="">覚えた: 含む</option>
+          <option value="hide" ${dfp.mastered === "hide" ? "selected" : ""}>
+            覚えた: 隠す</option>
+          <option value="only" ${dfp.mastered === "only" ? "selected" : ""}>
+            覚えた: のみ</option>
+        </select>
+      </div>
+      <div class="row mt">
+        <button class="btn good" id="df_save">保存</button>
+        <button class="btn ghost" id="df_clear">既定を使わない(クリア)</button>
+        <span class="muted" id="df_out"></span>
+      </div>
     </div>
     <div class="card" id="chargeCard" style="display:none">
       <h2>💳 チャージ</h2>
@@ -3185,6 +3268,46 @@ export async function settings(root) {
     root.querySelector("#fset_out").textContent =
       `保存しました（非表示: 分野${hidden_domains.length}件 / `
       + `シーン${hidden_scenes.length}件）`;
+  });
+
+  // 単語/フレーズの既定フィルター（2026-08-08・2026-08-04要望のB10）。
+  const readDefaultFilters = (prefix) => {
+    const v = (id) => root.querySelector(id).value;
+    return {
+      category: v(`#df${prefix}Category`),
+      level_min: v(`#df${prefix}LvMin`),
+      level_max: v(`#df${prefix}LvMax`),
+      mastered: v(`#df${prefix}Mastered`),
+    };
+  };
+  root.querySelector("#df_save").addEventListener("click", async () => {
+    const settings = {};
+    try { Object.assign(settings,
+      (await api.get("/api/system/user-settings")).settings || {}); }
+    catch (_) { /* */ }
+    settings.default_word_filters = readDefaultFilters("W");
+    settings.default_phrase_filters = readDefaultFilters("P");
+    await api.put("/api/system/user-settings", { settings });
+    root.querySelector("#df_out").textContent = "保存しました";
+  });
+  root.querySelector("#df_clear").addEventListener("click", async () => {
+    ["#dfWCategory", "#dfPCategory"].forEach((s) => {
+      root.querySelector(s).value = "";
+    });
+    ["#dfWLvMin", "#dfWLvMax", "#dfPLvMin", "#dfPLvMax"].forEach((s) => {
+      root.querySelector(s).value = "";
+    });
+    ["#dfWMastered", "#dfPMastered"].forEach((s) => {
+      root.querySelector(s).value = "";
+    });
+    const settings = {};
+    try { Object.assign(settings,
+      (await api.get("/api/system/user-settings")).settings || {}); }
+    catch (_) { /* */ }
+    settings.default_word_filters = {};
+    settings.default_phrase_filters = {};
+    await api.put("/api/system/user-settings", { settings });
+    root.querySelector("#df_out").textContent = "既定フィルターをクリアしました";
   });
 
   const saveBtn = root.querySelector("#save");
