@@ -149,6 +149,19 @@ def load_settings() -> Settings:
 settings = load_settings()
 
 
+def load_tokushoho_info() -> dict[str, str]:
+    """特定商取引法ページ用の個人情報。.env にのみ記載する(コードに書かない)。
+    空欄のフィールドは呼び出し側で「[要記入]」表示にフォールバックする。"""
+    load_dotenv(ROOT_DIR / ".env", override=True)
+    return {
+        "name": os.getenv("TOKUSHOHO_NAME", "").strip(),
+        "supervisor": os.getenv("TOKUSHOHO_SUPERVISOR", "").strip(),
+        "address": os.getenv("TOKUSHOHO_ADDRESS", "").strip(),
+        "phone": os.getenv("TOKUSHOHO_PHONE", "").strip(),
+        "email": os.getenv("TOKUSHOHO_EMAIL", "").strip(),
+    }
+
+
 # ---------------------------------------------------------------------------
 # Logging (file + console). Errors are written to data/app.log.
 # ---------------------------------------------------------------------------

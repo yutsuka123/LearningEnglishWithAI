@@ -5,11 +5,15 @@ from __future__ import annotations
 import time
 from contextlib import asynccontextmanager
 
+import html as html_lib
+
 from fastapi import FastAPI
-from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
+from fastapi.responses import (
+    FileResponse, HTMLResponse, JSONResponse, RedirectResponse,
+)
 from fastapi.staticfiles import StaticFiles
 
-from .config import paths
+from .config import load_tokushoho_info, paths
 from .database import OWNER_USER_ID, db, init_db
 from .routers import (
     auth_routes, billing, categories, decks, inquiries, learn, phrases,
@@ -22,8 +26,30 @@ from .services.spaced_repetition import apply_weekly_decay
 # 注: /static 配下は下の判定で別途常に許可される（terms.html もそこに置く）。
 _AUTH_ALLOW = {
     "/login", "/api/auth/login", "/api/auth/signup", "/api/health",
-    "/favicon.ico",
+    "/favicon.ico", "/tokushoho",
 }
+
+# 特定商取引法ページ: 未記入欄のフォールバック文言(赤字表示)。
+_TOKUSHOHO_PLACEHOLDERS = {
+    "name": "[要記入: 個人事業主の氏名（本名・フルネーム）]",
+    "supervisor": "[要記入: 上記と同一の場合は「同上」]",
+    "address": (
+        "[要記入: 住所。特定商取引法の2022年改正により、個人事業主は"
+        "「請求があれば遅滞なく開示します」という表記で住所公開を省略"
+        "できる場合があります（詳細は利用する決済窓口のガイドラインで"
+        "確認）。]"
+    ),
+    "phone": (
+        "[要記入: 電話番号。上記と同様、「請求があれば遅滞なく開示"
+        "します」で省略できる場合があります。]"
+    ),
+    "email": "[要記入: 問い合わせ用メールアドレス]",
+}
+_TOKUSHOHO_DRAFT_BANNER = (
+    '<div class="draft">⚠️ <strong>このページは作成中のたたき台です。</strong>'
+    ' <span class="todo">赤字</span>の項目は事業者本人が.envで確認・記入する'
+    "必要があります（正式公開前に必ず埋めてください）。</div>"
+)
 
 
 @asynccontextmanager
@@ -103,6 +129,28 @@ def health():
 def login_page():
     """ログイン画面（MULTIUSER=1 用）。単一ユーザー時は使われない。"""
     return FileResponse(str(paths.static_dir / "login.html"))
+
+
+@app.get("/tokushoho")
+def tokushoho_page():
+    """特定商取引法に基づく表記。個人情報は .env(TOKUSHOHO_*)から読み込み、
+    未記入の項目だけ赤字の案内文にフォールバックする（本文には一切書かない・
+    コミットされない）。全項目が埋まると作成中バナーも自動で消える。"""
+    info = load_tokushoho_info()
+    page = (paths.root / "templates" / "tokushoho.html").read_text(
+        encoding="utf-8")
+    for key, value in info.items():
+        if value:
+            cell = f"<td>{html_lib.escape(value)}</td>"
+        else:
+            cell = (
+                f'<td class="todo">'
+                f"{html_lib.escape(_TOKUSHOHO_PLACEHOLDERS[key])}</td>"
+            )
+        page = page.replace("{{" + key.upper() + "_CELL}}", cell)
+    banner = "" if all(info.values()) else _TOKUSHOHO_DRAFT_BANNER
+    page = page.replace("{{DRAFT_BANNER}}", banner)
+    return HTMLResponse(page)
 
 
 # Serve the SPA. Static assets under /static, index.html at root.
