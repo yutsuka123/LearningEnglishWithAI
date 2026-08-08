@@ -4,7 +4,7 @@
   --panel-2: #222d3d;
   --line: #2c3a4f;
   --text: #e6edf3;
-  --muted: #8b9bb0;
+  --muted: #a7b6c8;
   --accent: #4da3ff;
   --accent-2: #36c98d;
   --warn: #ffb454;
@@ -202,20 +202,42 @@ h2 { font-size: 17px; margin: 22px 0 10px; }
      デスクトップ表のthead/tbody列対応を崩さず、モバイルのみCSS orderで
      視覚的に並べ替え）、かつLv/分野/習熟度/正答率は2列(pair2)で並べて
      カード高さを圧縮する。`.rtable-words`限定なのでフレーズ一覧など他の
-     .rtableには影響しない。 */
+     .rtableには影響しない。
+     2026-08-08 実機フィードバックで追記: (a)再生(音声)ボタンと操作ボタン
+     (詳細/うろ覚え/覚えた)を同じ行にまとめて行数節約、(b)英語/日本語が
+     操作ボタンより目立たなかったのでラベルを外し文字を拡大・太字化。 */
   table.rtable.rtable-words tr {
     display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px;
   }
   table.rtable.rtable-words td { grid-column: 1 / -1; }
   table.rtable.rtable-words td.pair2 { grid-column: auto; }
-  table.rtable.rtable-words td:nth-child(1) { order: 1; }  /* 再生 */
-  table.rtable.rtable-words td:nth-child(2) { order: 2; }  /* 英語 */
-  table.rtable.rtable-words td:nth-child(3) { order: 3; }  /* 日本語 */
-  table.rtable.rtable-words td:nth-child(8) { order: 4; }  /* 操作(繰上げ) */
+  table.rtable.rtable-words td:nth-child(1) { order: 1; grid-column: auto; }  /* 再生 */
+  table.rtable.rtable-words td:nth-child(8) { order: 2; grid-column: auto; }  /* 操作 */
+  table.rtable.rtable-words td:nth-child(2) { order: 3; }  /* 英語 */
+  table.rtable.rtable-words td:nth-child(3) { order: 4; }  /* 日本語 */
   table.rtable.rtable-words td:nth-child(4) { order: 5; }  /* Lv */
   table.rtable.rtable-words td:nth-child(5) { order: 6; }  /* 分野 */
   table.rtable.rtable-words td:nth-child(6) { order: 7; }  /* 習熟度 */
   table.rtable.rtable-words td:nth-child(7) { order: 8; }  /* 正答率 */
+  table.rtable.rtable-words td:nth-child(8) .ops-cell {
+    flex-wrap: wrap; justify-content: flex-end;
+  }
+  /* 英語/日本語: ラベルを外し、本文を大きく・太く・左揃えにして
+     操作ボタンより先に目に入るようにする。 */
+  table.rtable.rtable-words td[data-label="英語"],
+  table.rtable.rtable-words td[data-label="日本語"] {
+    justify-content: flex-start; text-align: left; padding: 3px 0;
+  }
+  table.rtable.rtable-words td[data-label="英語"]::before,
+  table.rtable.rtable-words td[data-label="日本語"]::before {
+    content: none;
+  }
+  table.rtable.rtable-words td[data-label="英語"] {
+    font-size: 17px; font-weight: 700; color: var(--text);
+  }
+  table.rtable.rtable-words td[data-label="日本語"] {
+    font-size: 15px; font-weight: 600; color: var(--text);
+  }
 }
 
 .btn {
