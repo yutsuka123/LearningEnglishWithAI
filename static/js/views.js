@@ -3092,6 +3092,16 @@ export async function settings(root) {
       </div>
     </div>
     <div class="card">
+      <h2>ℹ️ このアプリについて</h2>
+      <p class="muted">バージョン ${escapeHtml(s.version || "")}
+        （個人開発・ベストエフォート対応）。</p>
+      <p><a href="/static/terms.html" target="_blank">利用規約・免責事項</a></p>
+      ${s.tokushoho_ready ? `<p><a href="/tokushoho" target="_blank">
+        特定商取引法に基づく表記</a></p>` : ""}
+      <p class="muted">取扱説明書・使い方ガイドは準備中です。ご不明な点は
+        上の「お問い合わせ・ご要望」からお気軽にどうぞ。</p>
+    </div>
+    <div class="card">
       <h2>音声入力</h2>
       <label class="toggle">
         <input type="checkbox" id="autoSubmit"

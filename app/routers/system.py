@@ -28,6 +28,8 @@ def taxonomy():
 
 @router.get("/settings")
 def get_settings():
+    from ..config import APP_VERSION, load_tokushoho_info
+
     s = load_settings()
     key = s.openai_api_key
     if len(key) > 8:
@@ -41,6 +43,8 @@ def get_settings():
         "api_key_masked": masked,
         "host": s.host,
         "port": s.port,
+        "tokushoho_ready": all(load_tokushoho_info().values()),
+        "version": APP_VERSION,
     }
 
 
