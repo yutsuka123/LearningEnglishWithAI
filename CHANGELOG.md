@@ -6,7 +6,7 @@
 コミットする。詳細な作業ログは非公開の`docs/TODO.md`/`docs/TODO_OLD.md`
 を参照）。
 
-## ver1.1.0-alpha04 (2026-08-08)
+## ver1.1.0-alpha04 (2026-08-08, commit `c2d0718`)
 
 - **セキュリティ修正（重大）**: 管理者専用のはずの`PUT /api/system/settings`
   （OpenAI APIキー/モデル変更）と`GET /api/system/usage`（全ユーザー分の
