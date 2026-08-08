@@ -3157,6 +3157,8 @@ export async function settings(root) {
       <h2>ℹ️ このアプリについて</h2>
       <p class="muted">バージョン ${escapeHtml(s.version || "")}
         （個人開発・ベストエフォート対応）。</p>
+      <p><a href="/static/about.html" target="_blank">このアプリについて
+        （まとめページ）</a></p>
       <p><a href="/static/terms.html" target="_blank">利用規約・免責事項</a></p>
       <p><a href="/tokushoho" target="_blank">特定商取引法に基づく表記</a>
         ${s.tokushoho_ready ? "" : `<span class="muted">
