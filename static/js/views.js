@@ -2966,7 +2966,7 @@ export async function settings(root) {
         等の生成でこの残高が消費されます（単語/フレーズのクイズは無料）。
         <a href="/static/terms.html" target="_blank">利用規約・免責事項</a></p>
     </div>
-    <div class="card admin-only">
+    <div class="card admin-only" id="openaiCard">
       <h2>OpenAI</h2>
       <div class="row">
         <input id="key" type="password" placeholder="APIキー (${s.api_key_masked || "未設定"})"
@@ -3218,11 +3218,14 @@ export async function settings(root) {
         c.style.display = "none";
       });
     }
-    // 単語/フレーズの手動追加・一括インポートは2026-08-08よりとりあえず
-    // 非表示（メンテ負荷を下げ機能を簡潔に保つ方針・ユーザー指示）。
+    // 単語/フレーズの手動追加・一括インポート、OpenAI(APIキー/モデル)設定は
+    // 2026-08-08よりとりあえず非表示（メンテ負荷を下げ機能を簡潔に保つ方針・
+    // ユーザー指示。APIキー/モデルは今後 .env 編集+再デプロイで運用）。
     // 管理者でも表示しない。復活させる場合はこのブロックを削除するだけでよい。
     const vac = root.querySelector("#vocabAddCard");
     if (vac) vac.style.display = "none";
+    const oac = root.querySelector("#openaiCard");
+    if (oac) oac.style.display = "none";
     // チャージカード: ローカル単一ユーザー(multiuser=false)では非表示
     // （残高の概念が無いため）。ログイン中の全ユーザーに表示する
     // （admin-onlyではない）。
