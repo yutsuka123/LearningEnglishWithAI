@@ -19,6 +19,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # アプリ本体のみコピー（docs/ data/ .env .venv .git は .dockerignore で除外）。
 COPY app ./app
 COPY static ./static
+COPY templates ./templates
 COPY scripts ./scripts
 COPY run.py ./run.py
 
