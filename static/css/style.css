@@ -203,24 +203,39 @@ h2 { font-size: 17px; margin: 22px 0 10px; }
      視覚的に並べ替え）、かつLv/分野/習熟度/正答率は2列(pair2)で並べて
      カード高さを圧縮する。`.rtable-words`限定なのでフレーズ一覧など他の
      .rtableには影響しない。
-     2026-08-08 実機フィードバックで追記: (a)再生(音声)ボタンと操作ボタン
-     (詳細/うろ覚え/覚えた)を同じ行にまとめて行数節約、(b)英語/日本語が
-     操作ボタンより目立たなかったのでラベルを外し文字を拡大・太字化。 */
+     2026-08-08 実機フィードバックで反復改善: (a)英語/日本語のラベルを
+     外し文字を拡大・太字化（本文を最優先で目立たせる）、(b)英語/日本語→
+     アイコン行(再生+詳細/うろ覚え/覚えた/削除)→Lv/分野→習熟度/正答率の
+     順に並べ替え（本文を先に見せてからボタン）、(c)アイコン行は4列
+     グリッドにして再生1列:操作3列の非対称割付にし、ボタンが折り返さず
+     1行に収まるようにした（2列均等割りだと操作側が狭すぎて折り返して
+     いた問題への対応）。 */
   table.rtable.rtable-words tr {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 2px 10px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px 10px;
   }
   table.rtable.rtable-words td { grid-column: 1 / -1; }
-  table.rtable.rtable-words td.pair2 { grid-column: auto; }
-  table.rtable.rtable-words td:nth-child(1) { order: 1; grid-column: auto; }  /* 再生 */
-  table.rtable.rtable-words td:nth-child(8) { order: 2; grid-column: auto; }  /* 操作 */
-  table.rtable.rtable-words td:nth-child(2) { order: 3; }  /* 英語 */
-  table.rtable.rtable-words td:nth-child(3) { order: 4; }  /* 日本語 */
+  table.rtable.rtable-words td.pair2 { grid-column: span 2; }
+  table.rtable.rtable-words td:nth-child(2) { order: 1; }  /* 英語 */
+  table.rtable.rtable-words td:nth-child(3) { order: 2; }  /* 日本語 */
+  table.rtable.rtable-words td:nth-child(1) {               /* 再生 */
+    order: 3; grid-column: span 1;
+  }
+  table.rtable.rtable-words td:nth-child(8) {               /* 操作 */
+    order: 4; grid-column: span 3;
+  }
   table.rtable.rtable-words td:nth-child(4) { order: 5; }  /* Lv */
   table.rtable.rtable-words td:nth-child(5) { order: 6; }  /* 分野 */
   table.rtable.rtable-words td:nth-child(6) { order: 7; }  /* 習熟度 */
   table.rtable.rtable-words td:nth-child(7) { order: 8; }  /* 正答率 */
+  /* 操作ボタン群(詳細/うろ覚え/覚えた/削除)は1行に収まらない場合、
+     nowrapだと削除ボタンがカード枠の外へはみ出す不具合になっていた
+     （2026-08-08実機報告で発覚）ので折り返し可に戻し、削除ボタンの
+     余白も詰めて1行に収まりやすくする。 */
   table.rtable.rtable-words td:nth-child(8) .ops-cell {
     flex-wrap: wrap; justify-content: flex-end;
+  }
+  table.rtable.rtable-words td:nth-child(8) .ops-cell .del-btn {
+    margin-left: 6px;
   }
   /* 英語/日本語: ラベルを外し、本文を大きく・太く・左揃えにして
      操作ボタンより先に目に入るようにする。 */
