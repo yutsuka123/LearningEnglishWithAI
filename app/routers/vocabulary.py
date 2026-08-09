@@ -215,9 +215,21 @@ def facets(include_banned: bool = False, include_hidden: bool = False):
     }
 
 
+def _require_admin(conn) -> None:
+    """単語カタログの追加・更新は管理者専用(2026-08-10〜)。カタログは全
+    ユーザー共有のため、フロントの追加/インポートフォームも admin-only
+    表示だが、API直叩きを塞ぐサーバー側の強制がなかった(delete_wordと
+    同種の問題)。"""
+    from ..services import auth
+    me = auth.get_user(conn, auth.current_user_id())
+    if not me or me.get("role") != "admin":
+        raise HTTPException(403, "単語の追加・変更は管理者のみ行えます。")
+
+
 @router.post("", status_code=201)
 def create_word(payload: WordCreate):
     with db() as conn:
+        _require_admin(conn)
         cur = conn.execute(
             "INSERT INTO words (english, japanese, part_of_speech, example) "
             "VALUES (?, ?, ?, ?)",
@@ -236,6 +248,7 @@ def update_word(word_id: int, payload: WordUpdate):
         raise HTTPException(400, "更新する項目がありません")
     sets = ", ".join(f"{k} = ?" for k in fields)
     with db() as conn:
+        _require_admin(conn)
         cur = conn.execute(
             f"UPDATE words SET {sets} WHERE id = ?",
             (*fields.values(), word_id),
@@ -594,6 +607,7 @@ def import_words(payload: ImportIn):
 
     pairs = _parse_word_list(payload.text)
     with db() as conn:
+        _require_admin(conn)
         existing = {
             r["english"].lower()
             for r in conn.execute("SELECT english FROM words").fetchall()

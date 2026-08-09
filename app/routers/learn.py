@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 from datetime import date
 
-from fastapi import APIRouter, File, Form, Response, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
@@ -246,7 +246,15 @@ def get_material(material_id: int):
 
 @router.delete("/materials/{material_id}", status_code=204)
 def delete_material(material_id: int):
+    """教材の完全削除は管理者専用(2026-08-10〜)。教材本文はwords/phrases
+    と同様に全ユーザー共有のため、delete_word/delete_phraseと同じ理由で
+    ガードする(生成 generate/trip-prep は一般ユーザーの中核AI機能なので
+    対象外・削除のみ制限)。"""
+    from ..services import auth
     with db() as conn:
+        me = auth.get_user(conn, auth.current_user_id())
+        if not me or me.get("role") != "admin":
+            raise HTTPException(403, "教材の削除は管理者のみ行えます。")
         conn.execute("DELETE FROM materials WHERE id = ?", (material_id,))
 
 

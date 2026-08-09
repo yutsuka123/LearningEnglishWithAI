@@ -239,7 +239,14 @@ def list_scenes(include_banned: bool = False, include_hidden: bool = False):
 
 @router.post("", status_code=201)
 def create_phrase(payload: PhraseCreate):
+    """フレーズカタログの追加は管理者専用(2026-08-10〜)。単語の
+    create_word/update_wordと同じ理由(カタログは全ユーザー共有・フロントの
+    追加フォームもadmin-only表示)でサーバー側を強制する。"""
+    from ..services import auth
     with db() as conn:
+        me = auth.get_user(conn, auth.current_user_id())
+        if not me or me.get("role") != "admin":
+            raise HTTPException(403, "フレーズの追加は管理者のみ行えます。")
         cur = conn.execute(
             "INSERT INTO phrases (english, japanese, scene) VALUES (?, ?, ?)",
             (payload.english, payload.japanese, payload.scene),
