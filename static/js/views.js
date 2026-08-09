@@ -1257,7 +1257,12 @@ function initCheckDropdown(root, btnId, panelId, groupsGetter, selected,
   };
   const renderPanel = () => {
     const groups = groupsGetter();
-    panel.innerHTML = Object.entries(groups).map(([g, items]) => `
+    const clearRow = selected.size
+      ? `<div class="cd-clear-row">
+          <button type="button" class="btn ghost" id="${panelId}_clear">
+            選択をクリア（${selected.size}件）</button>
+        </div>` : "";
+    panel.innerHTML = clearRow + Object.entries(groups).map(([g, items]) => `
       <div class="cd-group">
         <div class="cd-group-label">${escapeHtml(g)}</div>
         ${items.map((it) => `<label class="cd-item">
@@ -1270,7 +1275,14 @@ function initCheckDropdown(root, btnId, panelId, groupsGetter, selected,
         if (cb.checked) selected.add(cb.value); else selected.delete(cb.value);
         refreshLabel();
         onChange();
+        renderPanel();
       });
+    });
+    panel.querySelector(`#${panelId}_clear`)?.addEventListener("click", () => {
+      selected.clear();
+      refreshLabel();
+      onChange();
+      renderPanel();
     });
   };
   btn.addEventListener("click", (e) => {
@@ -3913,6 +3925,7 @@ export async function decks(root) {
             <button class="btn ghost del-btn" title="単語帳から外す">🗑️</button>
             </div>`);
           row.querySelector("button").addEventListener("click", async () => {
+            if (!confirm(`「${w.english}」を単語帳から外しますか？`)) return;
             await api.del(`/api/decks/${d.id}/words/${w.id}`);
             loadWords();
           });
@@ -4100,6 +4113,7 @@ export async function phraseDecks(root) {
             <button class="btn ghost del-btn" title="フレーズ帳から外す">🗑️</button>
             </div>`);
           row.querySelector("button").addEventListener("click", async () => {
+            if (!confirm(`「${p.english}」をフレーズ帳から外しますか？`)) return;
             await api.del(`/api/phrase-decks/${d.id}/phrases/${p.id}`);
             loadPhrases();
           });
