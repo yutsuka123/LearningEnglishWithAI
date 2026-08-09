@@ -124,8 +124,9 @@ def list_words(
     out_of_range: bool = False,     # 「範囲外」も含める
     include_banned: bool = False,
     mastered: str | None = None,   # 'only' | 'hide' | None(=全部)
+    deck_id: int | None = None,    # 自分の単語帳で絞り込み(2026-08-09)
 ):
-    from ..services.auth import current_user_allow_banned
+    from ..services.auth import current_user_allow_banned, current_user_id
     include_banned = include_banned and current_user_allow_banned()
     col = {
         "mastery": "mastery",
@@ -144,14 +145,26 @@ def list_words(
         domain, level, level_min, level_max, out_of_range,
         include_banned, mastered, category,
     )
-    clause = (" WHERE " + " AND ".join(where)) if where else ""
-    from ..services.auth import current_user_id
     from ..services.progress import user_items_subquery
     src = user_items_subquery("words")  # 先頭の ? = user_id
     with db() as conn:
+        uid = current_user_id()
+        if deck_id is not None:
+            owned = conn.execute(
+                "SELECT 1 FROM decks WHERE id = ? AND user_id = ?",
+                (deck_id, uid),
+            ).fetchone()
+            if not owned:
+                raise HTTPException(404, "単語帳が見つかりません")
+            where = where + [
+                "words.id IN (SELECT word_id FROM deck_words "
+                "WHERE deck_id = ?)"
+            ]
+            params = params + [deck_id]
+        clause = (" WHERE " + " AND ".join(where)) if where else ""
         rows = conn.execute(
             f"SELECT * FROM {src} AS words{clause} ORDER BY {order}",
-            [current_user_id(), *params],
+            [uid, *params],
         ).fetchall()
         return [_word_dict(r) for r in rows]
 
@@ -235,7 +248,15 @@ def update_word(word_id: int, payload: WordUpdate):
 
 @router.delete("/{word_id}", status_code=204)
 def delete_word(word_id: int):
+    """単語の完全削除は管理者専用(2026-08-09〜)。カタログは全ユーザー共有
+    のため、一般ユーザーが個々の単語を削除できると他ユーザーにも影響する。
+    「自分の一覧から外したい」場合は単語帳に入れない/単語帳から外すことで
+    対応する（`app/routers/decks.py`）。"""
+    from ..services import auth
     with db() as conn:
+        me = auth.get_user(conn, auth.current_user_id())
+        if not me or me.get("role") != "admin":
+            raise HTTPException(403, "単語の削除は管理者のみ行えます。")
         cur = conn.execute("DELETE FROM words WHERE id = ?", (word_id,))
         if cur.rowcount == 0:
             raise HTTPException(404, "単語が見つかりません")

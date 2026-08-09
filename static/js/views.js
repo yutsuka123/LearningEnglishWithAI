@@ -103,10 +103,13 @@ export async function dashboard(root) {
   let mu = null;
   try { mu = await api.get("/api/system/my-usage"); } catch (_) { /* */ }
   let deckSummary = null, phraseDeckSummary = null;
+  let myWordDecks = [], myPhraseDecks = [];
   try {
-    [deckSummary, phraseDeckSummary] = await Promise.all([
-      api.get("/api/decks/summary"), api.get("/api/phrase-decks/summary"),
-    ]);
+    [deckSummary, phraseDeckSummary, myWordDecks, myPhraseDecks] =
+      await Promise.all([
+        api.get("/api/decks/summary"), api.get("/api/phrase-decks/summary"),
+        api.get("/api/decks"), api.get("/api/phrase-decks"),
+      ]);
   } catch (_) { /* 未ログイン等で失敗しても致命的ではない */ }
   const isAdmin = mu && mu.role === "admin";
   const toeic = (p.toeic_estimate == null) ? "未判定" : p.toeic_estimate;
@@ -129,6 +132,19 @@ export async function dashboard(root) {
       <div class="bar mt"><span style="width:${Math.min(100, v.avg_mastery)}%">
         </span></div>
     </div>`).join("");
+  // 2026-08-09: 単語帳/フレーズ帳の達成率はドリルダウンせず、デッキ別に
+  // ダッシュボード最上位でフラット表示する（ユーザー要望）。
+  const deckRow = (d, icon) => {
+    const pct = d.total ? Math.round(d.mastered / d.total * 100) : 0;
+    return `<div class="mt">
+      <div class="row" style="justify-content:space-between">
+        <span class="muted">${icon} ${escapeHtml(d.name)}
+          (${d.mastered}/${d.total})</span>
+        <b>${pct}%</b>
+      </div>
+      <div class="bar mt"><span style="width:${pct}%"></span></div>
+    </div>`;
+  };
 
   root.innerHTML = `
     <h1>ダッシュボード</h1>
@@ -174,28 +190,29 @@ export async function dashboard(root) {
     </div>
 
     ${(deckSummary || phraseDeckSummary) ? `<div class="card">
-      <h2>単語帳・フレーズ帳の達成率</h2>
-      <div class="grid cols-2">
-        <div>
-          <div class="row" style="justify-content:space-between">
-            <span class="muted">単語帳(${deckSummary ? deckSummary.deck_count : 0}個・
-              ${deckSummary ? deckSummary.mastered : 0}/${deckSummary ? deckSummary.total : 0}語)</span>
-            <b>${deckSummary ? deckSummary.pct : 0}%</b>
-          </div>
-          <div class="bar mt"><span style="width:${deckSummary ? deckSummary.pct : 0}%"></span></div>
-        </div>
-        <div>
-          <div class="row" style="justify-content:space-between">
-            <span class="muted">フレーズ帳(${phraseDeckSummary ? phraseDeckSummary.deck_count : 0}個・
-              ${phraseDeckSummary ? phraseDeckSummary.mastered : 0}/${phraseDeckSummary ? phraseDeckSummary.total : 0}件)</span>
-            <b>${phraseDeckSummary ? phraseDeckSummary.pct : 0}%</b>
-          </div>
-          <div class="bar mt"><span style="width:${phraseDeckSummary ? phraseDeckSummary.pct : 0}%"></span></div>
-        </div>
+      <h2>単語帳の状況</h2>
+      <div class="row" style="justify-content:space-between">
+        <span class="muted">単語帳 全体(${deckSummary ? deckSummary.deck_count : 0}個・
+          ${deckSummary ? deckSummary.mastered : 0}/${deckSummary ? deckSummary.total : 0}語)</span>
+        <b>${deckSummary ? deckSummary.pct : 0}%</b>
       </div>
+      <div class="bar mt"><span style="width:${deckSummary ? deckSummary.pct : 0}%"></span></div>
+      ${myWordDecks.map((d) => deckRow(d, "📘")).join("")}
       <div class="row mt">
-        <button class="btn ghost" id="goDeck">🗂️ 単語帳を見る</button>
-        <button class="btn ghost" id="goPhraseDeck">🗂️ フレーズ帳を見る</button>
+        <button class="btn ghost" id="goDeck">単語帳を作成・編集</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>フレーズ帳の状況</h2>
+      <div class="row" style="justify-content:space-between">
+        <span class="muted">フレーズ帳 全体(${phraseDeckSummary ? phraseDeckSummary.deck_count : 0}個・
+          ${phraseDeckSummary ? phraseDeckSummary.mastered : 0}/${phraseDeckSummary ? phraseDeckSummary.total : 0}件)</span>
+        <b>${phraseDeckSummary ? phraseDeckSummary.pct : 0}%</b>
+      </div>
+      <div class="bar mt"><span style="width:${phraseDeckSummary ? phraseDeckSummary.pct : 0}%"></span></div>
+      ${myPhraseDecks.map((d) => deckRow(d, "🗂️")).join("")}
+      <div class="row mt">
+        <button class="btn ghost" id="goPhraseDeck">フレーズ帳を作成・編集</button>
       </div>
     </div>` : ""}
 
@@ -1274,6 +1291,7 @@ export async function vocab(root) {
   const facets = await api.get(
     "/api/words/facets" + (showBanned() ? "?include_banned=true" : ""));
   const domainGroups = facets.domain_groups || {};
+  const myDecks = await api.get("/api/decks").catch(() => []);
   const dfw = (await api.get("/api/system/user-settings"))
     .settings?.default_word_filters || {};
   const dfwActive = !!(dfw.category || dfw.level_min || dfw.level_max
@@ -1308,6 +1326,11 @@ export async function vocab(root) {
             `<option>${escapeHtml(l)}</option>`).join("")}</select>
         <label class="toggle" title="範囲外(禁止用語相当)も含める">
           <input type="checkbox" id="fOutRange" /> 範囲外</label>
+        ${myDecks.length ? `<select id="fDeck" title="単語帳で絞り込み">
+          <option value="">単語帳: 全て</option>
+          ${myDecks.map((d) =>
+            `<option value="${d.id}">📘 ${escapeHtml(d.name)}</option>`)
+            .join("")}</select>` : ""}
         <select id="fSort">
           <option value="mastery">並び替え: 習熟度 ↑</option>
           <option value="accuracy">並び替え: 正答率 ↓</option>
@@ -1385,10 +1408,7 @@ export async function vocab(root) {
       const repaint = () => { mc.innerHTML = masteryCell(w); };
       const vague = vagueButton("/api/words", w, repaint);
       const known = knownButton("/api/words", w, repaint);
-      const del = deleteButton(w.english, async () => {
-        await api.del("/api/words/" + w.id); load();
-      });
-      ops.append(ex, vague, known, del);
+      ops.append(ex, vague, known);
       rowsBody.appendChild(tr);
     });
   };
@@ -1411,6 +1431,8 @@ export async function vocab(root) {
     if (ms) q.set("mastered", ms);
     if (root.querySelector("#fDir").dataset.desc === "1") q.set("desc", "true");
     if (showBanned()) q.set("include_banned", "true");
+    const deckSel = root.querySelector("#fDeck");
+    if (deckSel && deckSel.value) q.set("deck_id", deckSel.value);
     const words = await api.get("/api/words?" + q.toString());
     const term = kw.value.trim().toLowerCase();
     curWords = term ? words.filter((w) =>
@@ -1429,6 +1451,7 @@ export async function vocab(root) {
   ["#fLevelMin", "#fLevelMax", "#fOutRange", "#fSort",
    "#fMastered"].forEach((id) =>
     root.querySelector(id).addEventListener("change", load));
+  root.querySelector("#fDeck")?.addEventListener("change", load);
   // 分野チェックボックス（複数選択可）。大分類を選ぶと候補が絞り込まれる
   // （大分類だけでもカテゴリ配下の全分野を検索対象にできる＝分野は
   // 「未選択」のままでよい）。
@@ -1482,6 +1505,7 @@ export async function phrases(root) {
   const sceneGroups = sceneData.scene_groups || {};
   const pfacets = await api.get("/api/phrases/facets");
   const list = await api.get("/api/phrases" + (sb ? "?" + sb : ""));
+  const myDecks = await api.get("/api/phrase-decks").catch(() => []);
   const dfp = (await api.get("/api/system/user-settings"))
     .settings?.default_phrase_filters || {};
   const dfpActive = !!(dfp.category || dfp.level_min || dfp.level_max
@@ -1523,6 +1547,11 @@ export async function phrases(root) {
             `<option>${escapeHtml(l)}</option>`).join("")}</select>
         <label class="toggle" title="範囲外も含める">
           <input type="checkbox" id="fOutRange" /> 範囲外</label>
+        ${myDecks.length ? `<select id="fDeck" title="フレーズ帳で絞り込み">
+          <option value="">フレーズ帳: 全て</option>
+          ${myDecks.map((d) =>
+            `<option value="${d.id}">🗂️ ${escapeHtml(d.name)}</option>`)
+            .join("")}</select>` : ""}
         <select id="fSort">
           <option value="mastery">並び替え: 習熟度 ↑</option>
           <option value="accuracy">並び替え: 正答率 ↓</option>
@@ -1588,10 +1617,7 @@ export async function phrases(root) {
       const repaint = () => { mc.innerHTML = masteryCell(p); };
       const vague = vagueButton("/api/phrases", p, repaint);
       const known = knownButton("/api/phrases", p, repaint);
-      const del = deleteButton(p.english, async () => {
-        await api.del("/api/phrases/" + p.id); go("phrases");
-      });
-      ops.append(det, vague, known, del);
+      ops.append(det, vague, known);
       rows.appendChild(tr);
     });
   };
@@ -1615,6 +1641,8 @@ export async function phrases(root) {
     if (ms) q.set("mastered", ms);
     if (root.querySelector("#fDir").dataset.desc === "1") q.set("desc", "true");
     if (showBanned()) q.set("include_banned", "true");
+    const deckSel = root.querySelector("#fDeck");
+    if (deckSel && deckSel.value) q.set("deck_id", deckSel.value);
     const items = await api.get("/api/phrases?" + q.toString());
     const term = kw.value.trim().toLowerCase();
     curList = term ? items.filter((p) =>
@@ -1646,6 +1674,7 @@ export async function phrases(root) {
   root.querySelector("#fMastered").addEventListener("change", load);
   ["#fLevelMin", "#fLevelMax", "#fOutRange"].forEach((id) =>
     root.querySelector(id).addEventListener("change", load));
+  root.querySelector("#fDeck")?.addEventListener("change", load);
   root.querySelector("#pPage").addEventListener("change", () => {
     pPage = 0; paint();
   });
@@ -3791,13 +3820,10 @@ export async function decks(root) {
           クイズ優先度リセット ・ 忘却曲線${d.settings.use_srs ? "ON" : "OFF"}
           ・ 出題${d.settings.quiz_size}</div>
         <div class="row mt">
-          <button class="btn" data-act="study">▶ 学習する</button>
-          <button class="btn ghost" data-act="settings">⚙️ 設定</button>
+          <button class="btn ghost" data-act="edit">✏️ 編集</button>
           <button class="btn ghost del-btn" data-act="del"
             title="削除">🗑️</button></div></div>`);
-      card.querySelector('[data-act="study"]')
-        .addEventListener("click", () => studyDeck(d));
-      card.querySelector('[data-act="settings"]')
+      card.querySelector('[data-act="edit"]')
         .addEventListener("click", () => editDeck(d));
       card.querySelector('[data-act="del"]').addEventListener("click",
         async () => {
@@ -3833,26 +3859,8 @@ export async function decks(root) {
     } catch (e) { out.textContent = "失敗: " + e.message; }
   });
 
-  async function studyDeck(d) {
-    const q = await api.get(`/api/decks/${d.id}/quiz`);
-    if (!q.items.length) {
-      toast("この単語帳は全て習得済みです🎉"); return;
-    }
-    root.innerHTML = `<h1>単語帳: ${escapeHtml(d.name)}</h1>`;
-    const holder = el(`<div></div>`); root.appendChild(holder);
-    quizRunner({
-      container: holder, items: q.items, kind: "word", appState: state,
-      directions: q.settings.directions,
-      attemptEndpoint: `/api/decks/${d.id}/attempt`,
-      onDone: () => {
-        const b = el(`<button class="btn mt">単語帳へ戻る</button>`);
-        b.addEventListener("click", () => go("deck")); holder.appendChild(b);
-      },
-    });
-  }
-
   function editDeck(d) {
-    openModal("設定: " + d.name, (body) => {
+    openModal("編集: " + d.name, (body) => {
       const s = d.settings;
       body.appendChild(el(`<div class="row">
         <label>名前: <input id="en" value="${escapeHtml(d.name)}"
@@ -3862,7 +3870,7 @@ export async function decks(root) {
           <option value="both">両方向</option>
           <option value="en2ja">英→日</option>
           <option value="ja2en">日→英</option></select></label>
-        <label>N回正解で習得: <input id="epass" type="number"
+        <label>N回正解でクイズ優先度リセット: <input id="epass" type="number"
           value="${s.pass_count}" style="width:60px" min="1" /></label></div>`));
       body.appendChild(el(`<div class="row mt">
         <label class="toggle"><input type="checkbox" id="esrs"
@@ -3884,6 +3892,34 @@ export async function decks(root) {
         go("deck");
       });
       body.appendChild(save);
+
+      body.appendChild(el(`<hr class="mt" />`));
+      body.appendChild(el(`<h3>収録中の単語 (<span id="wcount">…</span>)</h3>`));
+      const wlist = el(`<div id="wlist" class="mt"></div>`);
+      body.appendChild(wlist);
+      const loadWords = async () => {
+        const words = await api.get(`/api/decks/${d.id}/words`);
+        body.querySelector("#wcount").textContent = words.length;
+        wlist.innerHTML = "";
+        if (!words.length) {
+          wlist.appendChild(el(`<p class="muted">単語がありません。</p>`));
+          return;
+        }
+        words.forEach((w) => {
+          const row = el(`<div class="row"
+            style="justify-content:space-between;padding:4px 0">
+            <span>${escapeHtml(w.english)}
+              <span class="muted">${escapeHtml(w.japanese || "")}</span></span>
+            <button class="btn ghost del-btn" title="単語帳から外す">🗑️</button>
+            </div>`);
+          row.querySelector("button").addEventListener("click", async () => {
+            await api.del(`/api/decks/${d.id}/words/${w.id}`);
+            loadWords();
+          });
+          wlist.appendChild(row);
+        });
+      };
+      loadWords();
     });
   }
 }
@@ -3971,13 +4007,10 @@ export async function phraseDecks(root) {
           クイズ優先度リセット ・ 忘却曲線${d.settings.use_srs ? "ON" : "OFF"}
           ・ 出題${d.settings.quiz_size}</div>
         <div class="row mt">
-          <button class="btn" data-act="study">▶ 学習する</button>
-          <button class="btn ghost" data-act="settings">⚙️ 設定</button>
+          <button class="btn ghost" data-act="edit">✏️ 編集</button>
           <button class="btn ghost del-btn" data-act="del"
             title="削除">🗑️</button></div></div>`);
-      card.querySelector('[data-act="study"]')
-        .addEventListener("click", () => studyDeck(d));
-      card.querySelector('[data-act="settings"]')
+      card.querySelector('[data-act="edit"]')
         .addEventListener("click", () => editDeck(d));
       card.querySelector('[data-act="del"]').addEventListener("click",
         async () => {
@@ -4013,26 +4046,8 @@ export async function phraseDecks(root) {
     } catch (e) { out.textContent = "失敗: " + e.message; }
   });
 
-  async function studyDeck(d) {
-    const q = await api.get(`/api/phrase-decks/${d.id}/quiz`);
-    if (!q.items.length) {
-      toast("このフレーズ帳は全て習得済みです🎉"); return;
-    }
-    root.innerHTML = `<h1>フレーズ帳: ${escapeHtml(d.name)}</h1>`;
-    const holder = el(`<div></div>`); root.appendChild(holder);
-    quizRunner({
-      container: holder, items: q.items, kind: "phrase", appState: state,
-      directions: q.settings.directions,
-      attemptEndpoint: `/api/phrase-decks/${d.id}/attempt`,
-      onDone: () => {
-        const b = el(`<button class="btn mt">フレーズ帳へ戻る</button>`);
-        b.addEventListener("click", () => go("phrasedeck")); holder.appendChild(b);
-      },
-    });
-  }
-
   function editDeck(d) {
-    openModal("設定: " + d.name, (body) => {
+    openModal("編集: " + d.name, (body) => {
       const s = d.settings;
       body.appendChild(el(`<div class="row">
         <label>名前: <input id="pen" value="${escapeHtml(d.name)}"
@@ -4064,6 +4079,34 @@ export async function phraseDecks(root) {
         go("phrasedeck");
       });
       body.appendChild(save);
+
+      body.appendChild(el(`<hr class="mt" />`));
+      body.appendChild(el(`<h3>収録中のフレーズ (<span id="pcount">…</span>)</h3>`));
+      const plist = el(`<div id="plist" class="mt"></div>`);
+      body.appendChild(plist);
+      const loadPhrases = async () => {
+        const items = await api.get(`/api/phrase-decks/${d.id}/phrases`);
+        body.querySelector("#pcount").textContent = items.length;
+        plist.innerHTML = "";
+        if (!items.length) {
+          plist.appendChild(el(`<p class="muted">フレーズがありません。</p>`));
+          return;
+        }
+        items.forEach((p) => {
+          const row = el(`<div class="row"
+            style="justify-content:space-between;padding:4px 0">
+            <span>${escapeHtml(p.english)}
+              <span class="muted">${escapeHtml(p.japanese || "")}</span></span>
+            <button class="btn ghost del-btn" title="フレーズ帳から外す">🗑️</button>
+            </div>`);
+          row.querySelector("button").addEventListener("click", async () => {
+            await api.del(`/api/phrase-decks/${d.id}/phrases/${p.id}`);
+            loadPhrases();
+          });
+          plist.appendChild(row);
+        });
+      };
+      loadPhrases();
     });
   }
 }

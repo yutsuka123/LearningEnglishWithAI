@@ -216,6 +216,37 @@ def get_deck(deck_id: int):
         return _deck_summary(conn, _owned_deck(conn, deck_id))
 
 
+@router.get("/{deck_id}/words")
+def deck_words_list(deck_id: int):
+    """デッキ内の単語一覧（編集画面: 個別に削除(デッキから除外)するため）。"""
+    from ..services.progress import user_items_subquery
+    with db() as conn:
+        _owned_deck(conn, deck_id)
+        src = user_items_subquery("words")
+        rows = conn.execute(
+            f"SELECT * FROM {src} AS w "
+            "JOIN deck_words dw ON dw.word_id = w.id "
+            "WHERE dw.deck_id = ? ORDER BY w.english COLLATE NOCASE",
+            [current_user_id(), deck_id],
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+@router.delete("/{deck_id}/words/{word_id}", status_code=204)
+def remove_deck_word(deck_id: int, word_id: int):
+    """デッキから単語を除外する（単語自体の削除ではない）。"""
+    with db() as conn:
+        _owned_deck(conn, deck_id)
+        conn.execute(
+            "DELETE FROM deck_words WHERE deck_id = ? AND word_id = ?",
+            (deck_id, word_id),
+        )
+        conn.execute(
+            "DELETE FROM deck_progress WHERE deck_id = ? AND word_id = ?",
+            (deck_id, word_id),
+        )
+
+
 class DeckUpdate(BaseModel):
     name: str | None = None
     settings: dict | None = None

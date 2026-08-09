@@ -115,6 +115,7 @@ def list_phrases(
     out_of_range: bool = False,
     include_banned: bool = False,
     mastered: str | None = None,   # 'only' | 'hide' | None(=全部)
+    deck_id: int | None = None,    # 自分のフレーズ帳で絞り込み(2026-08-09)
 ):
     from ..services.auth import current_user_allow_banned
     include_banned = include_banned and current_user_allow_banned()
@@ -171,14 +172,27 @@ def list_phrases(
         conds.append(f"mastery >= {MASTERED_THRESHOLD}")
     elif mastered == "hide":
         conds.append(f"mastery < {MASTERED_THRESHOLD}")
-    where = (" WHERE " + " AND ".join(conds)) if conds else ""
     from ..services.auth import current_user_id
     from ..services.progress import user_items_subquery
     src = user_items_subquery("phrases")  # 先頭 ? = user_id
     with db() as conn:
+        uid = current_user_id()
+        if deck_id is not None:
+            owned = conn.execute(
+                "SELECT 1 FROM phrase_decks WHERE id = ? AND user_id = ?",
+                (deck_id, uid),
+            ).fetchone()
+            if not owned:
+                raise HTTPException(404, "フレーズ帳が見つかりません")
+            conds = conds + [
+                "phrases.id IN (SELECT phrase_id FROM deck_phrases "
+                "WHERE deck_id = ?)"
+            ]
+            params = params + [deck_id]
+        where = (" WHERE " + " AND ".join(conds)) if conds else ""
         rows = conn.execute(
             f"SELECT * FROM {src} AS phrases{where} ORDER BY {order}",
-            [current_user_id(), *params],
+            [uid, *params],
         ).fetchall()
         return [_phrase_dict(r) for r in rows]
 
@@ -271,7 +285,12 @@ def mark_vague(phrase_id: int):
 
 @router.delete("/{phrase_id}", status_code=204)
 def delete_phrase(phrase_id: int):
+    """フレーズの完全削除は管理者専用(2026-08-09〜、単語と同じ理由)。"""
+    from ..services import auth
     with db() as conn:
+        me = auth.get_user(conn, auth.current_user_id())
+        if not me or me.get("role") != "admin":
+            raise HTTPException(403, "フレーズの削除は管理者のみ行えます。")
         cur = conn.execute("DELETE FROM phrases WHERE id = ?", (phrase_id,))
         if cur.rowcount == 0:
             raise HTTPException(404, "フレーズが見つかりません")

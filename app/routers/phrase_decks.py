@@ -221,6 +221,39 @@ def get_deck(deck_id: int):
         return _deck_summary(conn, _owned_deck(conn, deck_id))
 
 
+@router.get("/{deck_id}/phrases")
+def deck_phrases_list(deck_id: int):
+    """デッキ内のフレーズ一覧（編集画面: 個別に削除(デッキから除外)する
+    ため）。"""
+    from ..services.progress import user_items_subquery
+    with db() as conn:
+        _owned_deck(conn, deck_id)
+        src = user_items_subquery("phrases")
+        rows = conn.execute(
+            f"SELECT * FROM {src} AS ph "
+            "JOIN deck_phrases dph ON dph.phrase_id = ph.id "
+            "WHERE dph.deck_id = ? ORDER BY ph.english COLLATE NOCASE",
+            [current_user_id(), deck_id],
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+@router.delete("/{deck_id}/phrases/{phrase_id}", status_code=204)
+def remove_deck_phrase(deck_id: int, phrase_id: int):
+    """デッキからフレーズを除外する（フレーズ自体の削除ではない）。"""
+    with db() as conn:
+        _owned_deck(conn, deck_id)
+        conn.execute(
+            "DELETE FROM deck_phrases WHERE deck_id = ? AND phrase_id = ?",
+            (deck_id, phrase_id),
+        )
+        conn.execute(
+            "DELETE FROM phrase_deck_progress "
+            "WHERE deck_id = ? AND phrase_id = ?",
+            (deck_id, phrase_id),
+        )
+
+
 class PhraseDeckUpdate(BaseModel):
     name: str | None = None
     settings: dict | None = None
