@@ -20,6 +20,10 @@ let currentIsOpenAI = false;
 let audioEl = null;            // single reused <audio> element (unlocked once)
 let audioUnlocked = false;     // true after first user-gesture unlock
 let usageCb = null;            // called after a paid TTS call (cost refresh)
+// 2026-08-09: 無料範囲外の単語/フレーズ再生でチャージ残高不足(HTTP 402)
+// のとき呼ばれる。ブラウザ音声へのフォールバックは維持しつつ、ユーザーに
+// 「なぜ自然な声が出ないか」を知らせるためのトースト表示等に使う。
+let paymentRequiredCb = null;
 // 再生要求の連番。複数箇所（一覧の各行の🔊ボタン等）が同じ<audio>要素を共有する
 // ため、古い要求のfetchが後から解決すると別の語の音声が鳴ってしまう
 // （テキストと音声が一致しない不具合の原因）。常に「最後に要求された再生」だけ
@@ -32,6 +36,7 @@ export function setOpenAIVoices(list) {
 }
 export function listOpenAIVoices() { return openaiVoices.slice(); }
 export function onUsage(cb) { usageCb = cb; }
+export function onPaymentRequired(cb) { paymentRequiredCb = cb; }
 
 // natural-voice preference (localStorage)
 export function isNatural() {
@@ -276,7 +281,13 @@ export async function sayItem(
   const myToken = ++playSeq;
   try {
     const res = await fetch("/api/learn/tts/item?" + q.toString());
-    if (!res.ok) throw new Error("tts item failed");
+    if (!res.ok) {
+      if (res.status === 402 && paymentRequiredCb) {
+        const msg = await res.text().catch(() => "");
+        paymentRequiredCb(msg || "チャージ残高が不足しています。");
+      }
+      throw new Error("tts item failed");
+    }
     const blob = await res.blob();
     if (myToken !== playSeq) return; // 新しい再生要求が来ていた→古い音声は捨てる
     await playBlob(blob, opts.rate);
@@ -306,7 +317,16 @@ export function sayItemAndWait(itemType, id, kind, voice, fallbackText, opts = {
     });
     const myToken = ++playSeq;
     fetch("/api/learn/tts/item?" + q.toString())
-      .then((res) => res.ok ? res.blob() : Promise.reject(new Error("tts")))
+      .then((res) => {
+        if (res.ok) return res.blob();
+        if (res.status === 402 && paymentRequiredCb) {
+          return res.text().then((msg) => {
+            paymentRequiredCb(msg || "チャージ残高が不足しています。");
+            return Promise.reject(new Error("payment required"));
+          });
+        }
+        return Promise.reject(new Error("tts"));
+      })
       .then((blob) => {
         if (myToken !== playSeq) { resolve(); return; } // 古い要求→捨てて即解決
         stopSpeaking();

@@ -498,6 +498,58 @@ def synthesize_speech(
         return None, f"音声合成に失敗しました: {exc}"
 
 
+# 単語/フレーズ音声「再生」課金の下限(円)。1回あたりの課金額がこれ未満に
+# なる場合はこの額に切り上げる（ユーザー指示・2026-08-09）。
+PLAYBACK_MIN_CHARGE_JPY = 0.5
+# 再生時に課金する額 = 生成コスト(USD換算前)の何分の1にするか。
+PLAYBACK_CHARGE_DIVISOR = 10
+
+
+def charge_playback_if_needed(
+    item_type: str, item_id: int, text: str,
+) -> str | None:
+    """単語/フレーズ音声「再生」の課金ガード（2026-08-09〜）。
+
+    `access_tiers`の無料範囲(レベル昇順・単語2,000/フレーズ1,500)に
+    入っている語は誰でも無料で再生できる（B1方針・公平性の原則）。
+    範囲外は、再生ごとに「音声生成コストの1/10」(下限0.5円)をチャージ
+    残高から控除する。管理者は課金対象外（動作確認用）。キャッシュ済み
+    音声の再生でも、再生自体は毎回この課金対象になる
+    （＝「生成は1回・再生は課金」というAPIコストとは別軸の収益化）。
+
+    戻り値: 課金不要/成功なら None、拒否する場合はユーザー向けエラー文言。
+    """
+    from . import access_tiers
+    from .auth import current_user_id, get_user
+
+    with db() as conn:
+        if access_tiers.is_free_range(conn, item_type, item_id):
+            return None
+        uid = current_user_id()
+        u = get_user(conn, uid)
+        if u and u.get("role") == "admin":
+            return None
+        settings = load_settings()
+        gen_cost_usd = len(text) / 1000 * _TTS_USD_PER_1K_CHARS
+        charge_jpy = max(
+            PLAYBACK_MIN_CHARGE_JPY,
+            gen_cost_usd / PLAYBACK_CHARGE_DIVISOR
+            * settings.usd_jpy_rate * settings.balance_markup,
+        )
+        balance = float((u or {}).get("balance_jpy") or 0)
+        if balance < charge_jpy:
+            return (
+                "この単語・フレーズの再生には少額のチャージ消費が必要です"
+                f"（必要額: 約¥{charge_jpy:.1f}・残高: ¥{balance:.1f}）。"
+                "設定画面からチャージしてください。"
+            )
+        conn.execute(
+            "UPDATE users SET balance_jpy = MAX(0, balance_jpy - ?) "
+            "WHERE id = ?", (charge_jpy, uid),
+        )
+        return None
+
+
 # 認識言語ヒント: ISO-639-1 コード → Whisper が verbose_json で返す言語名。
 _LANG_NAMES = {
     "en": "english", "ja": "japanese", "zh": "chinese", "ko": "korean",

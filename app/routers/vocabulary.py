@@ -370,7 +370,7 @@ def word_detail(word_id: int, regen: bool = False):
     import json as _json
 
     from ..config import load_settings
-    from ..services import ai
+    from ..services import access_tiers, ai
 
     with db() as conn:
         row = conn.execute(
@@ -379,6 +379,9 @@ def word_detail(word_id: int, regen: bool = False):
         ).fetchone()
         if not row:
             raise HTTPException(404, "単語が見つかりません")
+        block = access_tiers.detail_block_message(conn, "word", word_id)
+        if block:
+            raise HTTPException(403, block)
         if row["detail"] and not regen:
             try:
                 return {"ok": True, "cached": True,

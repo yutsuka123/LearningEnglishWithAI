@@ -735,9 +735,16 @@ def tts_item(
     item_type: str, item_id: int, voice: str = "ash", kind: str = "",
     speed: str = "learn",
 ):
-    """番号(ID)で音声を取得。保存済みなら即返す(=無料)。無ければ合成して
-    保存し、次回以降はトークン不要にする。type=word|phrase、kind は word/
-    example/phrase。speed=learn(学習・ゆっくり明瞭) / native(自然な速さ)。"""
+    """番号(ID)で音声を取得。保存済みなら即返す(生成コストは無料)。無ければ
+    合成して保存し、次回以降は生成コスト不要にする。type=word|phrase、
+    kind は word/example/phrase。speed=learn(学習・ゆっくり明瞭) /
+    native(自然な速さ)。
+
+    2026-08-09〜: 「無料範囲」(レベル昇順で単語2,000語/フレーズ1,500件)
+    外の単語・フレーズは、キャッシュ済みでも**再生ごとに**少額のチャージ
+    残高消費が発生する（`ai.charge_playback_if_needed`参照。生成コストの
+    有無=API課金とは別軸の収益化）。管理者は課金対象外。
+    """
     item_type = item_type if item_type in audio_store.VALID_TYPES else "word"
     base = kind if kind in ("word", "example", "phrase") else (
         "phrase" if item_type == "phrase" else "word")
@@ -751,6 +758,10 @@ def tts_item(
                 content="読み上げる本文がありません（例文なし等）。",
                 status_code=422, media_type="text/plain",
             )
+        charge_error = ai.charge_playback_if_needed(item_type, item_id, text)
+        if charge_error:
+            return Response(content=charge_error, status_code=402,
+                            media_type="text/plain")
         cached = audio_store.get(conn, item_type, item_id, skind, voice, text)
         if cached is not None:
             return Response(content=cached, media_type="audio/mpeg")

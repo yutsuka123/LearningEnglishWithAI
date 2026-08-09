@@ -410,6 +410,7 @@ async function boot() {
   const adminNav = document.querySelector('.nav-item[data-tab="admin"]');
   if (adminNav) adminNav.style.display = state.isAdmin ? "" : "none";
   speech.onUsage(refreshCost); // refresh cost after paid TTS calls
+  speech.onPaymentRequired((msg) => toast(msg)); // 無料範囲外の再生でチャージ不足のとき
   // Pre-load voices for TTS.
   speech.getEnglishVoices();
   speech.pickRoundVoice();
