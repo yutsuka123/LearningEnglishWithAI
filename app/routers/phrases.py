@@ -43,6 +43,52 @@ class KnownIn(BaseModel):
     known: bool = True
 
 
+def _phrase_filter(
+    scene: str | None, level_min: str | None, level_max: str | None,
+    out_of_range: bool, include_banned: bool, mastered: str | None,
+    category: str | None = None,
+) -> tuple[list[str], list]:
+    """フレーズ一覧/フラッシュフレーズ共通のフィルタWHERE句を組み立てる
+    （単語版`_word_filter`のフレーズ版）。列は素の名前(scene/level/mastery)
+    で参照。返り値は(条件リスト, パラメータ)。"""
+    where: list[str] = []
+    params: list = []
+    if scene:
+        scenes = [s for s in scene.split(",") if s]
+        ph = ",".join("?" * len(scenes))
+        where.append(f"COALESCE(scene, '') IN ({ph})")
+        params += scenes
+    elif category:
+        cat_scenes = PHRASE_CATEGORIES.get(category, [])
+        if cat_scenes:
+            ph = ",".join("?" * len(cat_scenes))
+            where.append(f"COALESCE(scene, '') IN ({ph})")
+            params += cat_scenes
+    if level_min or level_max:
+        allowed = _level_range(level_min, level_max)
+        ph = ",".join("?" * len(allowed))
+        cond = f"COALESCE(level, '') IN ({ph})"
+        p = list(allowed)
+        if out_of_range:
+            cond = f"({cond} OR COALESCE(level, '') = ?)"
+            p.append(OUT_OF_RANGE)
+        where.append(cond)
+        params += p
+    if not include_banned:
+        if out_of_range:
+            where.append(
+                "(COALESCE(scene, '') NOT LIKE '禁止%' "
+                "OR COALESCE(level, '') = ?)")
+            params.append(OUT_OF_RANGE)
+        else:
+            where.append("COALESCE(scene, '') NOT LIKE '禁止%'")
+    if mastered == "only":
+        where.append(f"mastery >= {MASTERED_THRESHOLD}")
+    elif mastered == "hide":
+        where.append(f"mastery < {MASTERED_THRESHOLD}")
+    return where, params
+
+
 def _phrase_dict(row) -> dict:
     d = dict(row)
     # detail(JSON)は一覧では送らず、有無フラグだけ返す（応答を軽く保つ、
@@ -313,15 +359,58 @@ def phrase_detail(phrase_id: int, regen: bool = False):
 
 
 @router.get("/quiz")
-def quiz(limit: int = 10, include_banned: bool = False):
+def quiz(
+    limit: int = 10,
+    include_banned: bool = False,
+    scene: str | None = None,
+    level_min: str | None = None,
+    level_max: str | None = None,
+    out_of_range: bool = False,
+    mastered: str | None = None,   # 'only' | 'hide' | None
+):
+    """フラッシュフレーズと共用。シーン/レベル/覚えた状態でフィルタ可能
+    （単語版`/api/words/quiz`と同じインタフェース、列だけscene違い）。"""
     from ..services.auth import current_user_id, current_user_allow_banned
     include_banned = include_banned and current_user_allow_banned()
+    where, params = _phrase_filter(
+        scene, level_min, level_max, out_of_range, include_banned, mastered,
+    )
+    where_extra = " AND ".join(where)
     with db() as conn:
         rows = select_for_review(
             conn, table="phrases", limit=limit,
-            exclude_banned=not include_banned, user_id=current_user_id(),
+            exclude_banned=False,  # banned は _phrase_filter 側で処理済み
+            user_id=current_user_id(),
+            where_extra=where_extra, params_extra=tuple(params),
         )
         return [_phrase_dict(r) for r in rows]
+
+
+class PhraseRestoreIn(BaseModel):
+    mastery: int
+    review_level: int | None = None
+    next_review: str | None = None
+
+
+@router.post("/{phrase_id}/restore")
+def restore_progress(phrase_id: int, payload: PhraseRestoreIn):
+    """直前の採点を取り消す（フラッシュフレーズの「戻る」）。単語版
+    `restore_progress`(vocabulary.py)と同じ方式。"""
+    from ..services.auth import current_user_id
+    from ..services import progress as P
+    fields: dict = {"mastery": clamp(payload.mastery)}
+    if payload.review_level is not None:
+        fields["review_level"] = payload.review_level
+    fields["next_review"] = payload.next_review
+    with db() as conn:
+        exists = conn.execute(
+            "SELECT id FROM phrases WHERE id = ?", (phrase_id,)
+        ).fetchone()
+        if not exists:
+            raise HTTPException(404, "フレーズが見つかりません")
+        P.upsert_progress(
+            conn, current_user_id(), "phrases", phrase_id, **fields)
+    return {"ok": True, "mastery": fields["mastery"]}
 
 
 @router.post("/attempt")

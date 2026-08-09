@@ -258,6 +258,15 @@ def user_tier(conn: sqlite3.Connection, user_id: int) -> str:
     return "email" if (u.get("email") or "").strip() else "legacy"
 
 
+def is_charged_or_admin(conn: sqlite3.Connection, user_id: int) -> bool:
+    """単語帳・フレーズ帳等、課金ユーザー限定機能のゲートに使う判定。
+    管理者(role='admin')は自身のアカウントで機能確認できるよう例外的に許可する。"""
+    u = get_user(conn, user_id)
+    if u and u.get("role") == "admin":
+        return True
+    return user_tier(conn, user_id) == "charged"
+
+
 def multiuser_enabled() -> bool:
     """MULTIUSER=1 のときだけログインを要求（既定はローカル単一ユーザー）。"""
     return os.getenv("MULTIUSER", "0").strip().lower() in ("1", "true", "yes")

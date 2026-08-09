@@ -172,6 +172,28 @@ CREATE TABLE IF NOT EXISTS deck_progress (
     PRIMARY KEY (deck_id, word_id)
 );
 
+-- フレーズ帳(deckのフレーズ版・2026-08-09)。分野の代わりにscene、単語の
+-- 代わりにphraseで、decks/deck_words/deck_progressと全く同じ構造にする。
+CREATE TABLE IF NOT EXISTS phrase_decks (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name       TEXT    NOT NULL,
+    settings   TEXT    DEFAULT '{}',
+    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE IF NOT EXISTS deck_phrases (
+    deck_id   INTEGER NOT NULL REFERENCES phrase_decks(id) ON DELETE CASCADE,
+    phrase_id INTEGER NOT NULL REFERENCES phrases(id) ON DELETE CASCADE,
+    PRIMARY KEY (deck_id, phrase_id)
+);
+CREATE TABLE IF NOT EXISTS phrase_deck_progress (
+    deck_id       INTEGER NOT NULL REFERENCES phrase_decks(id) ON DELETE CASCADE,
+    phrase_id     INTEGER NOT NULL,
+    correct_count INTEGER NOT NULL DEFAULT 0,
+    done_at       TEXT,
+    PRIMARY KEY (deck_id, phrase_id)
+);
+
 -- Generated TTS audio, keyed by item (番号) + kind + voice. Lets repeated
 -- playback be free (no API token) and supports DB(BLOB) storage as an
 -- alternative to on-disk files (AUDIO_STORAGE=db|hybrid). One row per

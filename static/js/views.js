@@ -102,6 +102,12 @@ export async function dashboard(root) {
   const p = await api.get("/api/system/progress");
   let mu = null;
   try { mu = await api.get("/api/system/my-usage"); } catch (_) { /* */ }
+  let deckSummary = null, phraseDeckSummary = null;
+  try {
+    [deckSummary, phraseDeckSummary] = await Promise.all([
+      api.get("/api/decks/summary"), api.get("/api/phrase-decks/summary"),
+    ]);
+  } catch (_) { /* 未ログイン等で失敗しても致命的ではない */ }
   const isAdmin = mu && mu.role === "admin";
   const toeic = (p.toeic_estimate == null) ? "未判定" : p.toeic_estimate;
   // 一般ユーザーには費用額を見せない（管理者のみ）。残高があれば残高を表示。
@@ -148,7 +154,7 @@ export async function dashboard(root) {
         <div class="stat"><div class="num">${w.studied}</div>
           <div class="lbl">学習数(出題済み)</div></div>
         <div class="stat"><div class="num">${w.mastered}</div>
-          <div class="lbl">習得数(80+)</div></div>
+          <div class="lbl">習得数(100+)</div></div>
         <div class="stat"><div class="num">${w.vague}</div>
           <div class="lbl">うろ覚え(40-79)</div></div>
         <div class="stat"><div class="num">${w.avg_mastery}</div>
@@ -167,10 +173,39 @@ export async function dashboard(root) {
       </div>
     </div>
 
+    ${(deckSummary || phraseDeckSummary) ? `<div class="card">
+      <h2>単語帳・フレーズ帳の達成率</h2>
+      <div class="grid cols-2">
+        <div>
+          <div class="row" style="justify-content:space-between">
+            <span class="muted">単語帳(${deckSummary ? deckSummary.deck_count : 0}個・
+              ${deckSummary ? deckSummary.mastered : 0}/${deckSummary ? deckSummary.total : 0}語)</span>
+            <b>${deckSummary ? deckSummary.pct : 0}%</b>
+          </div>
+          <div class="bar mt"><span style="width:${deckSummary ? deckSummary.pct : 0}%"></span></div>
+        </div>
+        <div>
+          <div class="row" style="justify-content:space-between">
+            <span class="muted">フレーズ帳(${phraseDeckSummary ? phraseDeckSummary.deck_count : 0}個・
+              ${phraseDeckSummary ? phraseDeckSummary.mastered : 0}/${phraseDeckSummary ? phraseDeckSummary.total : 0}件)</span>
+            <b>${phraseDeckSummary ? phraseDeckSummary.pct : 0}%</b>
+          </div>
+          <div class="bar mt"><span style="width:${phraseDeckSummary ? phraseDeckSummary.pct : 0}%"></span></div>
+        </div>
+      </div>
+      <div class="row mt">
+        <button class="btn ghost" id="goDeck">🗂️ 単語帳を見る</button>
+        <button class="btn ghost" id="goPhraseDeck">🗂️ フレーズ帳を見る</button>
+      </div>
+    </div>` : ""}
+
     <h2>項目別の習熟度</h2>
     <div class="grid cols-2">${areaCards}</div>`;
   root.querySelector("#goConv").addEventListener("click",
     () => go("conversation"));
+  root.querySelector("#goDeck")?.addEventListener("click", () => go("deck"));
+  root.querySelector("#goPhraseDeck")?.addEventListener("click",
+    () => go("phrasedeck"));
 }
 
 // --- Daily 10-minute session ------------------------------------------------
@@ -726,9 +761,13 @@ function attachSwipe(elm, h) {
   });
 }
 
-// 1セッション分のカードを回す。queue は /api/words/quiz の結果。
+// 1セッション分のカードを回す。queue は /api/words/quiz または
+// /api/phrases/quiz の結果（opts.kind で切り替え、既定は 'word'）。
 function runFlashcards(stage, initialQueue, opts) {
   const { dir, speed, auto, qs, voice } = opts;   // dir: 'en2ja' | 'ja2en'
+  const kind = opts.kind || "word";               // 'word' | 'phrase'
+  const apiBase = kind === "phrase" ? "/api/phrases" : "/api/words";
+  const idField = kind === "phrase" ? "phrase_id" : "word_id";
   let queue = initialQueue;
   let pos = 0, revealed = false;
   const history = [];                       // {index, snapshot, action}
@@ -743,9 +782,9 @@ function runFlashcards(stage, initialQueue, opts) {
   async function readParts(c, parts) {
     if (!auto) return;
     const my = ++speakSeq;
-    for (const [kind, fb] of parts) {
+    for (const [partKind, fb] of parts) {
       if (my !== speakSeq) return;          // スワイプ等で打切り
-      await speech.sayItemAndWait("word", c.id, kind, voice, fb,
+      await speech.sayItemAndWait(kind, c.id, partKind, voice, fb,
         speedOpts(speed));
     }
   }
@@ -764,13 +803,15 @@ function runFlashcards(stage, initialQueue, opts) {
   }
 
   // 答えを表示: 発音記号/例文訳を埋め、単語＋例文を読み上げる。
+  // フレーズには発音記号/example_ja に相当する項目が無いため、その部分は
+  // 単語(kind==='word')のときだけ行う。
   async function reveal(c) {
     readAnswer(c);
-    if (!c.has_detail) return;
+    if (kind !== "word" || !c.has_detail) return;
     let d = c._detail;
     if (!d) {
       try {
-        const r = await api.post(`/api/words/${c.id}/detail`);
+        const r = await api.post(`${apiBase}/${c.id}/detail`);
         if (r.ok) d = c._detail = r.detail;
       } catch (_) { /* 詳細なしでも続行 */ }
     }
@@ -785,14 +826,14 @@ function runFlashcards(stage, initialQueue, opts) {
     (async () => {
       try {
         if (action === "known") {
-          const r = await api.post(`/api/words/${c.id}/known`, { known: true });
+          const r = await api.post(`${apiBase}/${c.id}/known`, { known: true });
           c.mastery = r.mastery; c.mastered = true;
         } else if (action === "vague") {
-          const r = await api.post(`/api/words/${c.id}/vague`);
+          const r = await api.post(`${apiBase}/${c.id}/vague`);
           c.mastery = r.mastery;
         } else {
-          const r = await api.post("/api/words/attempt", {
-            word_id: c.id, direction: dir, correct: false, result: "wrong" });
+          const r = await api.post(`${apiBase}/attempt`, {
+            [idField]: c.id, direction: dir, correct: false, result: "wrong" });
           c.mastery = r.mastery;
           c.review_level = r.review_level; c.next_review = r.next_review;
         }
@@ -833,7 +874,7 @@ function runFlashcards(stage, initialQueue, opts) {
     c.mastery = snapshot.mastery; c.mastered = c.mastery >= 100;
     c.review_level = snapshot.review_level; c.next_review = snapshot.next_review;
     if (action !== "skip") {
-      try { await api.post(`/api/words/${c.id}/restore`, snapshot); }
+      try { await api.post(`${apiBase}/${c.id}/restore`, snapshot); }
       catch (_) { /* ignore */ }
     }
     pos = index; revealed = true; render();
@@ -843,10 +884,11 @@ function runFlashcards(stage, initialQueue, opts) {
   async function fetchMore() {
     stage.innerHTML = `<p class="muted">読み込み中…</p>`;
     let more;
-    try { more = await api.get("/api/words/quiz?" + qs); }
+    try { more = await api.get(`${apiBase}/quiz?` + qs); }
     catch (_) { stage.innerHTML = `<div class="card">取得に失敗しました</div>`; return; }
     if (!more.length) {
-      stage.innerHTML = `<div class="card">対象の単語がありません。</div>`; return;
+      stage.innerHTML = `<div class="card">対象の${
+        kind === "phrase" ? "フレーズ" : "単語"}がありません。</div>`; return;
     }
     queue = more; pos = 0; revealed = false; history.length = 0;
     render();
@@ -863,7 +905,7 @@ function runFlashcards(stage, initialQueue, opts) {
       </div></div>`;
     stage.querySelector("#fcMore").addEventListener("click", fetchMore);
     stage.querySelector("#fcBack").addEventListener("click",
-      () => go("flashcard"));
+      () => go(kind === "phrase" ? "flashphrase" : "flashcard"));
   }
 
   function render() {
@@ -908,16 +950,17 @@ function runFlashcards(stage, initialQueue, opts) {
     // ツール: 音声(男/女)・例文再生・詳細。
     const tools = stage.querySelector(".fc-tools");
     tools.appendChild(voiceButtonsItem(
-      "word", c.id, "word", () => c.english, () => speed));
+      kind, c.id, "word", () => c.english, () => speed));
     const exBtn = el(`<button class="btn ghost">🔊 例文</button>`);
     exBtn.disabled = !c.example;
     exBtn.addEventListener("click", () => { if (c.example) {
       stopAudio();
-      speech.sayItem("word", c.id, "example", voice, c.example,
+      speech.sayItem(kind, c.id, "example", voice, c.example,
         speedOpts(speed));
     } });
     const detBtn = el(`<button class="btn ghost">📖 詳細</button>`);
-    detBtn.addEventListener("click", () => showWordDetail(c));
+    detBtn.addEventListener("click",
+      () => (kind === "phrase" ? showPhraseDetail(c) : showWordDetail(c)));
     tools.append(exBtn, detBtn);
     // 採点ボタン(スワイプできない端末用)。
     const actions = stage.querySelector(".fc-actions");
@@ -1066,7 +1109,120 @@ export async function flashcard(root) {
         フィルタを緩めてください。</div>`;
       return;
     }
-    runFlashcards(stage, queue, { dir, speed, auto, qs, voice });
+    runFlashcards(stage, queue, { dir, speed, auto, qs, voice, kind: "word" });
+  });
+}
+
+export async function flashPhrase(root) {
+  const [sceneFacets, levelFacets] = await Promise.all([
+    api.get("/api/phrases/scenes" + (showBanned() ? "?include_banned=true" : "")),
+    api.get("/api/phrases/facets"),
+  ]);
+  const sceneOpts = ['<option value="">シーン: すべて</option>']
+    .concat(sceneFacets.scenes.map((s) => `<option>${escapeHtml(s)}</option>`))
+    .join("");
+  const lvOpts = '<option value="">--</option>' + levelFacets.range_levels
+    .map((l) => `<option>${escapeHtml(l)}</option>`).join("");
+  const voiceOpts = speech.listOpenAIVoices().map((vn) => {
+    const g = speech.voiceGender(vn);
+    return `<option value="${vn}">声: ${vn}${g ? "（" + g + "）" : ""}</option>`;
+  }).join("");
+
+  root.innerHTML = `
+    <h1>🃏 フラッシュフレーズ</h1>
+    <div class="card" id="fpSetup">
+      <p class="muted">フレーズ帳をどんどんめくる高速学習。カードをタップで答え、
+        スワイプ（または下のボタン）で採点します。</p>
+      <div class="row">
+        <select id="fpDir">
+          <option value="en2ja">英和（英→日）</option>
+          <option value="ja2en">和英（日→英）</option>
+        </select>
+        <select id="fpScene">${sceneOpts}</select>
+      </div>
+      <div class="row mt">
+        <span class="muted">レベル</span>
+        <select id="fpLvMin">${lvOpts}</select>
+        <span class="muted">〜</span>
+        <select id="fpLvMax">${lvOpts}</select>
+        <select id="fpMastered">
+          <option value="">覚えた: 含む</option>
+          <option value="hide">覚えた: 隠す</option>
+          <option value="only">覚えた: のみ</option>
+        </select>
+      </div>
+      <div class="row mt">
+        <select id="fpSize">
+          <option value="20">20枚</option>
+          <option value="50">50枚</option>
+          <option value="100">100枚</option>
+        </select>
+        ${speedSelect("fpSpeed", false)}
+        <select id="fpVoice" title="読み上げの声（自然な声ONのとき）">
+          ${voiceOpts}</select>
+        <label class="toggle"><input type="checkbox" id="fpAuto"/>
+          答え表示で自動読み上げ</label>
+      </div>
+      <div class="row mt">
+        <button class="btn" id="fpStart">▶ 開始</button>
+      </div>
+    </div>
+    <div id="fpStage"></div>`;
+
+  const setVal = (id, v) => {
+    const e = root.querySelector(id);
+    if (e && v != null) e.value = v;
+  };
+  setVal("#fpDir", localStorage.getItem("fp_dir") || "en2ja");
+  setVal("#fpScene", localStorage.getItem("fp_scene") || "");
+  setVal("#fpLvMin", localStorage.getItem("fp_lvmin") || "");
+  setVal("#fpLvMax", localStorage.getItem("fp_lvmax") || "");
+  setVal("#fpMastered", localStorage.getItem("fp_mastered") || "");
+  setVal("#fpSize", localStorage.getItem("fp_size") || "50");
+  setVal("#fpSpeed", localStorage.getItem("fp_speed") || "std");
+  setVal("#fpVoice", localStorage.getItem("fp_voice")
+    || speech.loadPreferredVoice() || "nova");
+  root.querySelector("#fpAuto").checked =
+    (localStorage.getItem("fp_auto") ?? "1") === "1";
+
+  root.querySelector("#fpStart").addEventListener("click", async () => {
+    const v = (id) => root.querySelector(id).value;
+    const dir = v("#fpDir"), scene = v("#fpScene");
+    const lvmin = v("#fpLvMin"), lvmax = v("#fpLvMax");
+    const mastered = v("#fpMastered"), size = v("#fpSize");
+    const speed = v("#fpSpeed"), voice = v("#fpVoice");
+    const auto = root.querySelector("#fpAuto").checked;
+    localStorage.setItem("fp_dir", dir);
+    localStorage.setItem("fp_scene", scene);
+    localStorage.setItem("fp_lvmin", lvmin);
+    localStorage.setItem("fp_lvmax", lvmax);
+    localStorage.setItem("fp_mastered", mastered);
+    localStorage.setItem("fp_size", size);
+    localStorage.setItem("fp_speed", speed);
+    localStorage.setItem("fp_voice", voice);
+    localStorage.setItem("fp_auto", auto ? "1" : "0");
+
+    const q = new URLSearchParams({ limit: size });
+    if (scene) q.set("scene", scene);
+    if (lvmin) q.set("level_min", lvmin);
+    if (lvmax) q.set("level_max", lvmax);
+    if (mastered) q.set("mastered", mastered);
+    if (showBanned()) q.set("include_banned", "true");
+    const qs = q.toString();
+
+    const stage = root.querySelector("#fpStage");
+    stage.innerHTML = `<p class="muted">読み込み中…</p>`;
+    let queue;
+    try { queue = await api.get("/api/phrases/quiz?" + qs); }
+    catch (_) {
+      stage.innerHTML = `<div class="card">取得に失敗しました</div>`; return;
+    }
+    if (!queue.length) {
+      stage.innerHTML = `<div class="card">該当するフレーズがありません。
+        フィルタを緩めてください。</div>`;
+      return;
+    }
+    runFlashcards(stage, queue, { dir, speed, auto, qs, voice, kind: "phrase" });
   });
 }
 
@@ -3554,14 +3710,25 @@ export async function settings(root) {
 // --- 単語帳(デッキ) --------------------------------------------------------
 
 export async function decks(root) {
-  const [list, facets] = await Promise.all([
+  const [list, facets, summary] = await Promise.all([
     api.get("/api/decks"),
     api.get("/api/words/facets?include_banned=true"),
+    api.get("/api/decks/summary"),
   ]);
   root.innerHTML = `
     <h1>単語帳</h1>
     <p class="sub">分野・レベルから自分用の単語帳(デッキ)を作って学習。
-      デッキ別に出題方向や合格条件を設定できます。</p>
+      デッキ別に出題方向や合格条件を設定できます。
+      無料範囲では1個・100語まで、チャージ済みなら個数・件数とも無制限です。</p>
+    <div class="card">
+      <h2>単語帳 全体の達成率</h2>
+      <div class="row" style="justify-content:space-between">
+        <span class="muted">${summary.deck_count}個の単語帳・
+          全${summary.total}語のうち${summary.mastered}語が習得済み</span>
+        <b>${summary.pct}%</b>
+      </div>
+      <div class="bar mt"><span style="width:${summary.pct}%"></span></div>
+    </div>
     <div class="card">
       <h2>新しい単語帳を作る</h2>
       <input id="dname" placeholder="単語帳の名前" style="width:240px" />
@@ -3612,16 +3779,16 @@ export async function decks(root) {
       return;
     }
     decksArr.forEach((d) => {
-      const pct = d.total ? Math.round(d.done / d.total * 100) : 0;
+      const pct = d.total ? Math.round(d.mastered / d.total * 100) : 0;
       const dirLabel = { both: "両方向", en2ja: "英→日", ja2en: "日→英" }[
         d.settings.directions] || "両方向";
       const card = el(`<div class="card">
         <div class="row" style="justify-content:space-between">
           <b>${escapeHtml(d.name)}</b>
-          <span class="muted">${d.done}/${d.total} 習得 (${pct}%)</span></div>
+          <span class="muted">${d.mastered}/${d.total} 習得 (${pct}%)</span></div>
         <div class="bar mt"><span style="width:${pct}%"></span></div>
-        <div class="muted mt">${dirLabel} ・ ${d.settings.pass_count}回正解で習得
-          ・ 忘却曲線${d.settings.use_srs ? "ON" : "OFF"}
+        <div class="muted mt">${dirLabel} ・ ${d.settings.pass_count}回正解で
+          クイズ優先度リセット ・ 忘却曲線${d.settings.use_srs ? "ON" : "OFF"}
           ・ 出題${d.settings.quiz_size}</div>
         <div class="row mt">
           <button class="btn" data-act="study">▶ 学習する</button>
@@ -3715,6 +3882,186 @@ export async function decks(root) {
           },
         });
         go("deck");
+      });
+      body.appendChild(save);
+    });
+  }
+}
+
+export async function phraseDecks(root) {
+  const [list, sceneFacets, levelFacets, summary] = await Promise.all([
+    api.get("/api/phrase-decks"),
+    api.get("/api/phrases/scenes?include_banned=true"),
+    api.get("/api/phrases/facets"),
+    api.get("/api/phrase-decks/summary"),
+  ]);
+  root.innerHTML = `
+    <h1>フレーズ帳</h1>
+    <p class="sub">シーン・レベルから自分用のフレーズ帳(デッキ)を作って学習。
+      デッキ別に出題方向や合格条件を設定できます。
+      無料範囲では1個・100件まで、チャージ済みなら個数・件数とも無制限です。</p>
+    <div class="card">
+      <h2>フレーズ帳 全体の達成率</h2>
+      <div class="row" style="justify-content:space-between">
+        <span class="muted">${summary.deck_count}個のフレーズ帳・
+          全${summary.total}件のうち${summary.mastered}件が習得済み</span>
+        <b>${summary.pct}%</b>
+      </div>
+      <div class="bar mt"><span style="width:${summary.pct}%"></span></div>
+    </div>
+    <div class="card">
+      <h2>新しいフレーズ帳を作る</h2>
+      <input id="pdname" placeholder="フレーズ帳の名前" style="width:240px" />
+      <div class="row mt" style="align-items:flex-start">
+        <div><div class="muted">シーン(複数チェック可)</div>
+          <div id="pdscenes" class="chkbox">${sceneFacets.scenes.map((s) =>
+            `<label class="chk"><input type="checkbox" value="${escapeHtml(s)}"
+              /> ${escapeHtml(s)}</label>`).join("")}</div></div>
+        <div><div class="muted">レベル(複数チェック可)</div>
+          <div id="pdlevels" class="chkbox">${levelFacets.range_levels.map((l) =>
+            `<label class="chk"><input type="checkbox" value="${escapeHtml(l)}"
+              /> ${escapeHtml(l)}</label>`).join("")}</div></div>
+      </div>
+      <div class="row mt">
+        <label>件数(お任せ): <input id="pdlimit" type="number" value="50"
+          style="width:80px" min="1" /></label>
+        <label>出題方向: <select id="pddir">
+          <option value="both">両方向</option>
+          <option value="en2ja">英→日</option>
+          <option value="ja2en">日→英</option></select></label>
+        <label>N回正解でクイズ優先度リセット: <input id="pdpass" type="number"
+          value="2" style="width:60px" min="1" /></label>
+        <label class="toggle"><input type="checkbox" id="pdsrs" checked />
+          忘却曲線を使う</label>
+        <label>1回の出題数: <input id="pdsize" type="number" value="10"
+          style="width:60px" min="1" /></label>
+      </div>
+      <div class="row mt">
+        ${state.isAdmin ? `<label class="toggle">
+          <input type="checkbox" id="pdbanned" />
+          🔞 禁止用語も含める</label>` : ""}
+        <button class="btn good" id="pdcreate">作成</button>
+        <span id="pdcreateOut" class="muted"></span>
+      </div>
+      <p class="muted mt">シーン・レベルを選ばなければ全体から、件数ぶんランダムに
+        「お任せ」で作ります。</p>
+    </div>
+    <div id="phraseDeckList" class="mt"></div>`;
+
+  const sels = (id) =>
+    [...root.querySelectorAll(id + " input:checked")].map((o) => o.value);
+
+  const renderList = (decksArr) => {
+    const box = root.querySelector("#phraseDeckList");
+    box.innerHTML = `<h2>マイフレーズ帳 (${decksArr.length})</h2>`;
+    if (!decksArr.length) {
+      box.appendChild(el(`<p class="muted">まだフレーズ帳がありません。</p>`));
+      return;
+    }
+    decksArr.forEach((d) => {
+      const pct = d.total ? Math.round(d.mastered / d.total * 100) : 0;
+      const dirLabel = { both: "両方向", en2ja: "英→日", ja2en: "日→英" }[
+        d.settings.directions] || "両方向";
+      const card = el(`<div class="card">
+        <div class="row" style="justify-content:space-between">
+          <b>${escapeHtml(d.name)}</b>
+          <span class="muted">${d.mastered}/${d.total} 習得 (${pct}%)</span></div>
+        <div class="bar mt"><span style="width:${pct}%"></span></div>
+        <div class="muted mt">${dirLabel} ・ ${d.settings.pass_count}回正解で
+          クイズ優先度リセット ・ 忘却曲線${d.settings.use_srs ? "ON" : "OFF"}
+          ・ 出題${d.settings.quiz_size}</div>
+        <div class="row mt">
+          <button class="btn" data-act="study">▶ 学習する</button>
+          <button class="btn ghost" data-act="settings">⚙️ 設定</button>
+          <button class="btn ghost del-btn" data-act="del"
+            title="削除">🗑️</button></div></div>`);
+      card.querySelector('[data-act="study"]')
+        .addEventListener("click", () => studyDeck(d));
+      card.querySelector('[data-act="settings"]')
+        .addEventListener("click", () => editDeck(d));
+      card.querySelector('[data-act="del"]').addEventListener("click",
+        async () => {
+          if (!confirm(`「${d.name}」を削除しますか？`)) return;
+          await api.del("/api/phrase-decks/" + d.id);
+          go("phrasedeck");
+        });
+      box.appendChild(card);
+    });
+  };
+  renderList(list);
+
+  root.querySelector("#pdcreate").addEventListener("click", async () => {
+    const name = root.querySelector("#pdname").value.trim();
+    const out = root.querySelector("#pdcreateOut");
+    out.textContent = "作成中…";
+    try {
+      const d = await api.post("/api/phrase-decks", {
+        name: name || "新しいフレーズ帳",
+        scenes: sels("#pdscenes"),
+        levels: sels("#pdlevels"),
+        include_banned: !!root.querySelector("#pdbanned")?.checked,
+        limit: parseInt(root.querySelector("#pdlimit").value, 10) || null,
+        settings: {
+          directions: root.querySelector("#pddir").value,
+          pass_count: parseInt(root.querySelector("#pdpass").value, 10) || 2,
+          use_srs: root.querySelector("#pdsrs").checked,
+          quiz_size: parseInt(root.querySelector("#pdsize").value, 10) || 10,
+        },
+      });
+      out.textContent = `作成: ${d.name} (${d.total}件)`;
+      go("phrasedeck");
+    } catch (e) { out.textContent = "失敗: " + e.message; }
+  });
+
+  async function studyDeck(d) {
+    const q = await api.get(`/api/phrase-decks/${d.id}/quiz`);
+    if (!q.items.length) {
+      toast("このフレーズ帳は全て習得済みです🎉"); return;
+    }
+    root.innerHTML = `<h1>フレーズ帳: ${escapeHtml(d.name)}</h1>`;
+    const holder = el(`<div></div>`); root.appendChild(holder);
+    quizRunner({
+      container: holder, items: q.items, kind: "phrase", appState: state,
+      directions: q.settings.directions,
+      attemptEndpoint: `/api/phrase-decks/${d.id}/attempt`,
+      onDone: () => {
+        const b = el(`<button class="btn mt">フレーズ帳へ戻る</button>`);
+        b.addEventListener("click", () => go("phrasedeck")); holder.appendChild(b);
+      },
+    });
+  }
+
+  function editDeck(d) {
+    openModal("設定: " + d.name, (body) => {
+      const s = d.settings;
+      body.appendChild(el(`<div class="row">
+        <label>名前: <input id="pen" value="${escapeHtml(d.name)}"
+          style="width:200px" /></label></div>`));
+      body.appendChild(el(`<div class="row mt">
+        <label>出題方向: <select id="pedir">
+          <option value="both">両方向</option>
+          <option value="en2ja">英→日</option>
+          <option value="ja2en">日→英</option></select></label>
+        <label>N回正解でクイズ優先度リセット: <input id="pepass" type="number"
+          value="${s.pass_count}" style="width:60px" min="1" /></label></div>`));
+      body.appendChild(el(`<div class="row mt">
+        <label class="toggle"><input type="checkbox" id="pesrs"
+          ${s.use_srs ? "checked" : ""} /> 忘却曲線を使う</label>
+        <label>出題数: <input id="pesize" type="number" value="${s.quiz_size}"
+          style="width:60px" min="1" /></label></div>`));
+      body.querySelector("#pedir").value = s.directions;
+      const save = el(`<button class="btn good mt">保存</button>`);
+      save.addEventListener("click", async () => {
+        await api.put("/api/phrase-decks/" + d.id, {
+          name: body.querySelector("#pen").value.trim() || d.name,
+          settings: {
+            directions: body.querySelector("#pedir").value,
+            pass_count: parseInt(body.querySelector("#pepass").value, 10) || 2,
+            use_srs: body.querySelector("#pesrs").checked,
+            quiz_size: parseInt(body.querySelector("#pesize").value, 10) || 10,
+          },
+        });
+        go("phrasedeck");
       });
       body.appendChild(save);
     });

@@ -16,8 +16,8 @@ from fastapi.staticfiles import StaticFiles
 from .config import load_tokushoho_info, paths
 from .database import OWNER_USER_ID, db, init_db
 from .routers import (
-    auth_routes, billing, categories, decks, inquiries, learn, phrases,
-    system, vocabulary,
+    auth_routes, billing, categories, decks, inquiries, learn, phrase_decks,
+    phrases, system, vocabulary,
 )
 from .services import auth as auth_svc
 from .services.spaced_repetition import apply_weekly_decay
@@ -115,6 +115,7 @@ app.include_router(categories.listening)
 app.include_router(learn.router)
 app.include_router(system.router)
 app.include_router(decks.router)
+app.include_router(phrase_decks.router)
 app.include_router(auth_routes.router)
 app.include_router(billing.router)
 app.include_router(inquiries.router)
