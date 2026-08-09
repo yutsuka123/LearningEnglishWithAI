@@ -334,6 +334,25 @@ CREATE TABLE IF NOT EXISTS inquiries (
     status     TEXT    NOT NULL DEFAULT '未対応',
     created_at TEXT    NOT NULL DEFAULT (datetime('now'))
 );
+
+-- BASE注文のフルフィルメント台帳（2026-08-09・チャージキーの手動/半自動
+-- 配送を「見逃さない」ための管理用）。base_order_id はBASE APIまたは手入力で
+-- 記録。charge_key_id は割り当てたキーの参照のみ（平文はここに保存しない・
+-- 発行APIの応答で一度だけ返す）。status = pending / delivered / cancelled。
+CREATE TABLE IF NOT EXISTS base_orders (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    base_order_id  TEXT    UNIQUE,
+    amount_jpy     INTEGER NOT NULL,
+    pt_to_grant    INTEGER NOT NULL,
+    product_label  TEXT    NOT NULL DEFAULT '',
+    buyer_name     TEXT    NOT NULL DEFAULT '',
+    buyer_email    TEXT    NOT NULL DEFAULT '',
+    charge_key_id  INTEGER REFERENCES charge_keys(id),
+    status         TEXT    NOT NULL DEFAULT 'pending',
+    note           TEXT    NOT NULL DEFAULT '',
+    detected_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+    delivered_at   TEXT
+);
 """
 
 

@@ -16,8 +16,8 @@ from fastapi.staticfiles import StaticFiles
 from .config import load_tokushoho_info, paths
 from .database import OWNER_USER_ID, db, init_db
 from .routers import (
-    auth_routes, billing, categories, decks, inquiries, learn, phrase_decks,
-    phrases, system, vocabulary,
+    auth_routes, billing, categories, decks, fulfillment, inquiries, learn,
+    phrase_decks, phrases, system, vocabulary,
 )
 from .services import auth as auth_svc
 from .services.spaced_repetition import apply_weekly_decay
@@ -119,6 +119,7 @@ app.include_router(phrase_decks.router)
 app.include_router(auth_routes.router)
 app.include_router(billing.router)
 app.include_router(inquiries.router)
+app.include_router(fulfillment.router)
 
 
 @app.get("/api/health")
@@ -152,6 +153,18 @@ def tokushoho_page():
     banner = "" if all(info.values()) else _TOKUSHOHO_DRAFT_BANNER
     page = page.replace("{{DRAFT_BANNER}}", banner)
     return HTMLResponse(page)
+
+
+@app.get("/admin/fulfillment")
+def admin_fulfillment_page():
+    """フルフィルメント管理画面（管理者専用）。未ログインは middleware が
+    /login へ誘導。ログイン済みでも role=admin でなければ弾く。"""
+    with db() as conn:
+        me = auth_svc.get_user(conn, auth_svc.current_user_id())
+    if not me or me.get("role") != "admin":
+        return RedirectResponse("/login")
+    return FileResponse(
+        str(paths.root / "templates" / "admin_fulfillment.html"))
 
 
 # Serve the SPA. Static assets under /static, index.html at root.

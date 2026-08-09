@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>フルフィルメント管理 — English Learning with AI</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #f4f6fb;
+      margin: 0; color: #223; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 60px; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    .sub { color: #789; font-size: 13px; margin: 0 0 20px; }
+    .card { background: #fff; padding: 18px 20px; border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08); margin-bottom: 20px; }
+    .card h2 { font-size: 14px; margin: 0 0 12px; color: #345; }
+    label { display: block; font-size: 12px; color: #567; margin: 8px 0 3px; }
+    input, select, textarea { width: 100%; padding: 8px; font-size: 14px;
+      border: 1px solid #ccd; border-radius: 8px; box-sizing: border-box; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .row > div { flex: 1; min-width: 140px; }
+    button { padding: 8px 14px; border: 0; border-radius: 8px; cursor: pointer;
+      font-size: 13px; background: #3b6fd4; color: #fff; }
+    button.ghost { background: #eef2fb; color: #3b6fd4; }
+    button.warn { background: #fbeaea; color: #b3261e; }
+    button:disabled { opacity: .5; cursor: default; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .tabs a { font-size: 13px; padding: 6px 12px; border-radius: 999px;
+      background: #eef2fb; color: #3b6fd4; cursor: pointer;
+      text-decoration: none; }
+    .tabs a.active { background: #3b6fd4; color: #fff; }
+    .tablewrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px;
+      min-width: 720px; }
+    th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid #e5e9f2;
+      vertical-align: top; }
+    th { color: #345; font-weight: 600; white-space: nowrap; }
+    tr.overdue td { background: #fff4f4; }
+    .badge { display: inline-block; font-size: 11px; padding: 2px 8px;
+      border-radius: 999px; }
+    .b-pending { background: #fff3cd; color: #8a6d00; }
+    .b-delivered { background: #e3f5e8; color: #1a7f37; }
+    .b-cancelled { background: #eceff3; color: #667; }
+    .b-over { background: #fbeaea; color: #b3261e; font-weight: 700; }
+    .keybox { font-family: ui-monospace, monospace; font-size: 13px;
+      background: #f1f4fa; border: 1px dashed #9db4e0; border-radius: 6px;
+      padding: 6px 8px; word-break: break-all; }
+    .muted { color: #99a; font-size: 12px; }
+    .err { color: #b3261e; font-size: 13px; min-height: 18px; }
+    .note { background: #fff8e1; border: 1px solid #ffe58a; border-radius: 8px;
+      padding: 10px 14px; font-size: 12px; color: #665; margin: 0 0 18px; }
+    a.back { font-size: 13px; color: #3b6fd4; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🐱 フルフィルメント管理</h1>
+    <p class="sub">BASE注文のチャージキー配送を管理します（未配送の取りこぼし防止）。</p>
+
+    <div class="note">
+      使い方: ①BASEで注文通知が来たら「注文を追加」で記録 → ②「キー発行」で
+      表示されたキーをコピー → ③BASEの取引メッセージに貼付 → ④「配送済み」を押す。
+      キーは発行時に一度だけ表示され、保存されません（控え損ねたら再発行可）。
+      <span id="ohint"></span>
+    </div>
+
+    <div class="card">
+      <h2>注文を追加（手入力）</h2>
+      <div class="row">
+        <div>
+          <label>金額(税込)</label>
+          <select id="amount">
+            <option value="500">¥500（500pt）</option>
+            <option value="5000">¥5,000（5,500pt）</option>
+          </select>
+        </div>
+        <div>
+          <label>BASE注文ID（任意）</label>
+          <input id="base_order_id" placeholder="例: 12345678" />
+        </div>
+        <div>
+          <label>購入者名（任意）</label>
+          <input id="buyer_name" />
+        </div>
+        <div>
+          <label>購入者メール（任意）</label>
+          <input id="buyer_email" />
+        </div>
+      </div>
+      <label>メモ（任意）</label>
+      <input id="note" />
+      <div style="margin-top:12px;">
+        <button id="addBtn">＋ 注文を追加</button>
+        <span class="err" id="addErr"></span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="tabs" id="tabs">
+        <a data-s="pending" class="active">未配送 <span id="c-pending"></span></a>
+        <a data-s="delivered">配送済み</a>
+        <a data-s="cancelled">キャンセル</a>
+        <a data-s="all">すべて</a>
+      </div>
+      <div class="err" id="listErr"></div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr>
+            <th>検知日時</th><th>注文ID</th><th>金額/付与pt</th><th>購入者</th>
+            <th>状態</th><th>キー</th><th>操作</th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <a class="back" href="/">← アプリに戻る</a>
+  </div>
+
+  <script>
+    let curStatus = 'pending';
+    const $ = (id) => document.getElementById(id);
+
+    async function api(path, opts) {
+      const r = await fetch('/api/fulfillment' + path, Object.assign(
+        { headers: { 'Content-Type': 'application/json' } }, opts || {}));
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.detail || d.error || ('エラー ' + r.status));
+      return d;
+    }
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"]/g,
+        c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+    }
+
+    function fmt(dt) { return dt ? dt.replace('T', ' ').slice(0, 16) : ''; }
+
+    function statusBadge(s, overdue) {
+      if (overdue) return '<span class="badge b-over">⚠️未配送(超過)</span>';
+      const m = { pending: ['b-pending','未配送'],
+        delivered: ['b-delivered','配送済み'], cancelled: ['b-cancelled','キャンセル'] };
+      const x = m[s] || ['b-pending', s];
+      return '<span class="badge ' + x[0] + '">' + x[1] + '</span>';
+    }
+
+    function actions(o) {
+      if (o.status === 'cancelled') return '<span class="muted">—</span>';
+      let h = '';
+      if (o.status === 'pending')
+        h += '<button class="ghost" onclick="issue(' + o.id + ')">キー発行</button> '
+          + '<button onclick="deliver(' + o.id + ')">配送済み</button> '
+          + '<button class="warn" onclick="cancelOrder(' + o.id + ')">取消</button>';
+      return h;
+    }
+
+    function keyCell(o) {
+      if (o.charge_key_public_id)
+        return '<span class="muted">発行済 ' + esc(o.charge_key_public_id)
+          + '…</span>';
+      return '<span class="muted">未発行</span>';
+    }
+
+    async function load() {
+      $('listErr').textContent = '';
+      try {
+        const d = await api('/orders?status=' + curStatus);
+        $('c-pending').textContent = d.pending ? '(' + d.pending + ')' : '';
+        $('ohint').textContent = '検知から' + d.overdue_hours + '時間で「超過」表示。';
+        const tb = $('tbody');
+        tb.innerHTML = '';
+        if (!d.orders.length) {
+          tb.innerHTML = '<tr><td colspan="7" class="muted">該当なし</td></tr>';
+          return;
+        }
+        for (const o of d.orders) {
+          const tr = document.createElement('tr');
+          if (o.overdue) tr.className = 'overdue';
+          tr.innerHTML =
+            '<td>' + esc(fmt(o.detected_at)) + '</td>' +
+            '<td>' + (o.base_order_id ? esc(o.base_order_id) : '<span class="muted">手入力</span>') + '</td>' +
+            '<td>¥' + o.amount_jpy + '<br><span class="muted">' + o.pt_to_grant + 'pt</span></td>' +
+            '<td>' + esc(o.buyer_name) + '<br><span class="muted">' + esc(o.buyer_email) + '</span></td>' +
+            '<td>' + statusBadge(o.status, o.overdue) + '</td>' +
+            '<td id="key-' + o.id + '">' + keyCell(o) + '</td>' +
+            '<td>' + actions(o) + '</td>';
+          tb.appendChild(tr);
+        }
+      } catch (e) { $('listErr').textContent = e.message; }
+    }
+
+    async function issue(id) {
+      try {
+        const d = await api('/orders/' + id + '/issue_key', { method: 'POST' });
+        const cell = $('key-' + id);
+        cell.innerHTML = '<div class="keybox" id="kv-' + id + '">' + esc(d.charge_key)
+          + '</div><button class="ghost" style="margin-top:6px" onclick="copyKey(' + id
+          + ')">📋 コピー</button>';
+      } catch (e) { $('listErr').textContent = e.message; }
+    }
+
+    function copyKey(id) {
+      const t = $('kv-' + id).textContent;
+      navigator.clipboard.writeText(t).then(() => {
+        const b = event.target; const o = b.textContent;
+        b.textContent = '✓ コピーしました'; setTimeout(() => b.textContent = o, 1500);
+      });
+    }
+
+    async function deliver(id) {
+      if (!confirm('この注文を配送済みにしますか？')) return;
+      try { await api('/orders/' + id + '/deliver', { method: 'POST' }); load(); }
+      catch (e) { $('listErr').textContent = e.message; }
+    }
+
+    async function cancelOrder(id) {
+      if (!confirm('この注文をキャンセルにしますか？')) return;
+      try { await api('/orders/' + id + '/cancel', { method: 'POST' }); load(); }
+      catch (e) { $('listErr').textContent = e.message; }
+    }
+
+    $('addBtn').addEventListener('click', async () => {
+      $('addErr').textContent = '';
+      try {
+        await api('/orders', { method: 'POST', body: JSON.stringify({
+          amount_jpy: parseInt($('amount').value, 10),
+          base_order_id: $('base_order_id').value,
+          buyer_name: $('buyer_name').value,
+          buyer_email: $('buyer_email').value,
+          note: $('note').value,
+        }) });
+        $('base_order_id').value = ''; $('buyer_name').value = '';
+        $('buyer_email').value = ''; $('note').value = '';
+        curStatus = 'pending';
+        for (const a of document.querySelectorAll('#tabs a'))
+          a.classList.toggle('active', a.dataset.s === 'pending');
+        load();
+      } catch (e) { $('addErr').textContent = e.message; }
+    });
+
+    for (const a of document.querySelectorAll('#tabs a')) {
+      a.addEventListener('click', () => {
+        curStatus = a.dataset.s;
+        for (const x of document.querySelectorAll('#tabs a'))
+          x.classList.toggle('active', x === a);
+        load();
+      });
+    }
+
+    load();
+  </script>
+</body>
+</html>
