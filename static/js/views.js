@@ -163,14 +163,12 @@ export async function dashboard(root) {
     <div class="card">
       <h2>クイックスタート</h2>
       <div class="row">
-        <button class="btn" id="startDaily">⏱️ デイリー(10分)を始める</button>
         <button class="btn secondary" id="goConv">🗣️ 英会話する</button>
       </div>
     </div>
 
     <h2>項目別の習熟度</h2>
     <div class="grid cols-2">${areaCards}</div>`;
-  root.querySelector("#startDaily").addEventListener("click", () => go("daily"));
   root.querySelector("#goConv").addEventListener("click",
     () => go("conversation"));
 }
