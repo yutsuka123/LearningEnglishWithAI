@@ -271,6 +271,9 @@ def admin_overview():
             " (SELECT COUNT(*) FROM ai_usage a WHERE a.user_id=u.id) calls, "
             " (SELECT MAX(created_at) FROM ai_usage a WHERE a.user_id=u.id) "
             "  last_used, "
+            " (SELECT COUNT(DISTINCT a.ip) FROM ai_usage a WHERE "
+            "  a.user_id=u.id AND a.ip <> '' AND "
+            "  a.created_at >= datetime('now','-30 days')) distinct_ips_30d, "
             " (SELECT COUNT(*) FROM word_attempts wa "
             "  WHERE wa.user_id=u.id) word_quizzes, "
             " (SELECT COUNT(*) FROM phrase_attempts pa "
@@ -304,6 +307,7 @@ def admin_overview():
             "monthly_cap_jpy": round(mcap * rate) if mcap else None,
             "balance_jpy": round(bal, 1) if bal is not None else None,
             "calls": r["calls"], "last_used": r["last_used"],
+            "distinct_ips_30d": r["distinct_ips_30d"],
             "over_daily": over_daily, "over_monthly": over_monthly,
             "balance_empty": bal is not None and bal <= 0,
             "word_quizzes": r["word_quizzes"],

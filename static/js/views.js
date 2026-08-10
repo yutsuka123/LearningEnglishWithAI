@@ -3040,6 +3040,10 @@ export async function admin(root) {
     if (u.over_daily) flags.push('<span class="badge-bad">日上限</span>');
     if (u.over_monthly) flags.push('<span class="badge-bad">月上限</span>');
     if (u.allow_banned) flags.push('<span class="badge-warn">禁止可</span>');
+    if (u.distinct_ips_30d >= 3) {
+      flags.push(`<span class="badge-warn" title="直近30日のAI利用IP数">
+        IP${u.distinct_ips_30d}種</span>`);
+    }
     const bal = u.balance_jpy == null ? "—" : "¥" + Math.round(u.balance_jpy);
     const dcap = u.daily_cap_jpy ? "¥" + u.daily_cap_jpy : "—";
     const mcap = u.monthly_cap_jpy ? "¥" + u.monthly_cap_jpy : "—";
@@ -3067,15 +3071,18 @@ export async function admin(root) {
     <p class="sub">ユーザー別の利用状況・上限・残高・問題の把握（管理者専用）。</p>
     <div class="card">
       <h2>セキュリティ</h2>
-      <div class="grid cols-3">
+      <div class="grid cols-4">
         <div class="stat"><div class="num">${sec.locked_accounts ?? 0}</div>
           <div class="lbl">ロック中アカウント</div></div>
         <div class="stat"><div class="num">${sec.locked_ips ?? 0}</div>
           <div class="lbl">ロック中IP(スプレー)</div></div>
+        <div class="stat"><div class="num">${sec.locked_usernames ?? 0}</div>
+          <div class="lbl">ロック中ユーザー名(分散スプレー)</div></div>
         <div class="stat"><div class="num">${d.users.length}</div>
           <div class="lbl">登録ユーザー数</div></div>
       </div>
-      <p class="muted mt">ログイン3回連続失敗→5分ロック / 1IP15回失敗→15分ロック。</p>
+      <p class="muted mt">ログイン3回連続失敗→5分ロック / 1IP15回失敗→15分
+        ロック / 同一ユーザー名を複数IPから計8回失敗→15分ロック。</p>
     </div>
     <div class="card">
       <h2>ユーザー別 利用状況</h2>

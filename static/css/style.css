@@ -137,6 +137,7 @@ h2 { font-size: 17px; margin: 22px 0 10px; }
 }
 
 .grid { display: grid; gap: 14px; }
+.grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
 .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
 .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
 
@@ -151,7 +152,7 @@ h2 { font-size: 17px; margin: 22px 0 10px; }
 .sidebar-backdrop { display: none; }
 
 @media (max-width: 760px) {
-  .grid.cols-3, .grid.cols-2 { grid-template-columns: 1fr; }
+  .grid.cols-4, .grid.cols-3, .grid.cols-2 { grid-template-columns: 1fr; }
   .nav-toggle { display: inline-flex; }
   /* サイドバーは既定で画面外（オフキャンバス）。.open で右へスライドイン。
      狭い画面で本文を圧迫していた「幅64pxに縮めて文字だけ残す」旧方式は廃止。 */

@@ -28,7 +28,10 @@ from ..database import db
 # friendly message and (for TTS) falls back to the free browser voice.
 # ---------------------------------------------------------------------------
 
-_call_times: deque[float] = deque(maxlen=240)  # recent call timestamps (mono)
+# ユーザーID別の直近呼び出し時刻（§D5: 以前はグローバル単一カウンタだった
+# ため、1ユーザーの連続呼び出しが他の全ユーザーのAI機能を止めてしまう
+# 問題があった。ユーザーごとに独立させ、他ユーザーへの影響を無くす）。
+_call_times: dict[int, deque[float]] = {}
 
 
 def _today_cost_usd() -> float:
@@ -140,15 +143,19 @@ def _guard(feature: str, *, rate_limit: bool = True) -> str | None:
     if refusal:
         return refusal
     if rate_limit:
+        from .auth import current_user_id
+
+        uid = current_user_id()
         now = time.monotonic()
-        window = [t for t in _call_times if now - t < 60.0]
+        times = _call_times.setdefault(uid, deque(maxlen=240))
+        window = [t for t in times if now - t < 60.0]
         if len(window) >= s.ai_max_calls_per_min:
             return (
                 f"AI呼び出しが短時間に集中しています（上限 "
                 f"{s.ai_max_calls_per_min}回/分）。少し待ってから再試行して"
                 "ください。"
             )
-        _call_times.append(now)
+        times.append(now)
     return None
 
 
@@ -217,7 +224,7 @@ def _record_usage(
     output_tokens: int,
     feature: str,
 ) -> float:
-    from .auth import current_user_id
+    from .auth import current_ip, current_user_id
 
     cost = estimate_cost(model, prompt_tokens, output_tokens)
     uid = current_user_id()
@@ -226,8 +233,9 @@ def _record_usage(
         conn.execute(
             "INSERT INTO ai_usage "
             "(model, prompt_tokens, output_tokens, cost_usd, feature, "
-            " user_id) VALUES (?, ?, ?, ?, ?, ?)",
-            (model, prompt_tokens, output_tokens, cost, feature, uid),
+            " user_id, ip) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (model, prompt_tokens, output_tokens, cost, feature, uid,
+             current_ip()),
         )
         # チャージ残高は「無料枠（日次/月次上限）に到達した後の利用」でのみ消費
         # する（枠とは別管理）。枠内の利用では残高を減らさない。
@@ -483,13 +491,13 @@ def synthesize_speech(
         except Exception:  # caching is best-effort
             pass
         cost = len(text) / 1000 * _TTS_USD_PER_1K_CHARS
-        from .auth import current_user_id
+        from .auth import current_ip, current_user_id
         with db() as conn:
             conn.execute(
                 "INSERT INTO ai_usage "
                 "(model, prompt_tokens, output_tokens, cost_usd, feature, "
-                " user_id) VALUES (?, 0, 0, ?, 'tts', ?)",
-                (settings.tts_model, cost, current_user_id()),
+                " user_id, ip) VALUES (?, 0, 0, ?, 'tts', ?, ?)",
+                (settings.tts_model, cost, current_user_id(), current_ip()),
             )
         return audio, None
     except Exception as exc:
@@ -580,45 +588,52 @@ def transcribe(
     allowed = [c.strip().lower() for c in (language or "").split(",")
                if c.strip()]
 
-    def _call(lang: str | None, verbose: bool):
+    def _call(lang: str | None):
+        # verbose_json を常時使い、実際の音声長(resp.duration)をコスト計算に
+        # 使う（§D4: 以前はバイト数からの逆算のみで、圧縮音声だと過小評価
+        # しがちだった）。text/languageは verbose_json でも変わらず取得可能。
         f = io.BytesIO(audio_bytes)
         f.name = filename
-        kw: dict = {"model": settings.stt_model, "file": f}
+        kw: dict = {
+            "model": settings.stt_model, "file": f,
+            "response_format": "verbose_json",
+        }
         if lang:
             kw["language"] = lang
-        if verbose:
-            kw["response_format"] = "verbose_json"
         return client.audio.transcriptions.create(**kw)
 
     try:
         calls = 1
         if len(allowed) == 1:
-            resp = _call(allowed[0], False)
+            resp = _call(allowed[0])
             text = resp.text
         elif len(allowed) >= 2:
             # 候補が複数: 自動判定し、候補外に化けたら先頭言語で取り直す。
-            resp = _call(None, True)
+            resp = _call(None)
             detected = (getattr(resp, "language", "") or "").lower()
             names = {_LANG_NAMES.get(c, c) for c in allowed} | set(allowed)
             if detected and detected not in names:
-                resp = _call(allowed[0], False)
+                resp = _call(allowed[0])
                 calls = 2
             text = resp.text
         else:
-            resp = _call(None, False)
+            resp = _call(None)
             text = resp.text
-        # whisper-1 ≈ $0.006/分。長さ不明のため概算（音声バイト数から推定）。
-        # 別のSTTモデルに切り替えた場合、単価が異なればこの概算はズレる
-        # （既知の制約。docs/TODO.md D4参照）。
-        minutes = max(len(audio_bytes) / (16000 * 60), 0.05)
+        # whisper-1 ≈ $0.006/分。実際の音声長(duration)が取れればそれを使い、
+        # 取れない場合のみバイト数からの概算にフォールバックする。
+        duration_sec = getattr(resp, "duration", None)
+        if duration_sec:
+            minutes = max(float(duration_sec) / 60.0, 0.01)
+        else:
+            minutes = max(len(audio_bytes) / (16000 * 60), 0.05)
         cost = minutes * 0.006 * calls
-        from .auth import current_user_id
+        from .auth import current_ip, current_user_id
         with db() as conn:
             conn.execute(
                 "INSERT INTO ai_usage "
                 "(model, prompt_tokens, output_tokens, cost_usd, feature, "
-                " user_id) VALUES (?, 0, 0, ?, 'stt', ?)",
-                (settings.stt_model, cost, current_user_id()),
+                " user_id, ip) VALUES (?, 0, 0, ?, 'stt', ?, ?)",
+                (settings.stt_model, cost, current_user_id(), current_ip()),
             )
         return text, None
     except Exception as exc:

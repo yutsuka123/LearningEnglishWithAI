@@ -31,6 +31,13 @@ _current_user_id: contextvars.ContextVar[int] = contextvars.ContextVar(
     "current_user_id", default=OWNER_USER_ID
 )
 
+# 現在のリクエストの接続元IP（未設定時は空文字）。current_user_idと同じ
+# contextvarパターンで、ai.py側の呼び出しシグネチャを変えずにai_usageへの
+# IP記録（§E2・アカウント共有の異常検知用）を可能にする。
+_current_ip: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "current_ip", default=""
+)
+
 
 # ---------------------------------------------------------------------------
 # パスワードハッシュ
@@ -75,6 +82,18 @@ def reset_current_user_id(token: contextvars.Token) -> None:
 
 def current_user_id() -> int:
     return _current_user_id.get()
+
+
+def set_current_ip(ip: str) -> contextvars.Token:
+    return _current_ip.set(ip or "")
+
+
+def reset_current_ip(token: contextvars.Token) -> None:
+    _current_ip.reset(token)
+
+
+def current_ip() -> str:
+    return _current_ip.get()
 
 
 def current_user_allow_banned() -> bool:
@@ -123,6 +142,61 @@ def get_user_by_email(
         (email.strip().lower(),),
     ).fetchone()
     return dict(row) if row else None
+
+
+def normalize_email_for_uniqueness(email: str) -> str:
+    """サインアップ時の重複判定専用の正規化（§C2）。保存する値自体は
+    変えない（表示・連絡用に入力どおりを保持）。Gmail/Googlemailは
+    ドット除去・+タグ除去（本家の仕様に合わせる）、他ドメインは+タグ除去
+    のみ行い、`alice+test@x.com`のようなエイリアスでの複垢作成を防ぐ。"""
+    email = (email or "").strip().lower()
+    if "@" not in email:
+        return email
+    local, _, domain = email.partition("@")
+    local = local.split("+", 1)[0]
+    if domain in ("gmail.com", "googlemail.com"):
+        local = local.replace(".", "")
+        domain = "gmail.com"
+    return f"{local}@{domain}"
+
+
+def find_user_by_normalized_email(
+    conn: sqlite3.Connection, email: str
+) -> Optional[dict]:
+    """`get_user_by_email`の完全一致をすり抜けるエイリアス（dot/+tag）での
+    重複登録を検出する（§C2）。ユーザー数が少ないため全走査で十分。"""
+    target = normalize_email_for_uniqueness(email)
+    if not target:
+        return None
+    rows = conn.execute(
+        "SELECT * FROM users WHERE email <> ''"
+    ).fetchall()
+    for row in rows:
+        if normalize_email_for_uniqueness(row["email"]) == target:
+            return dict(row)
+    return None
+
+
+# 既知の使い捨て(一時)メールサービスのドメイン。網羅的ではない簡易
+# ブロックリストのため「最初のハードル」程度の位置づけ（§C1）。
+_DISPOSABLE_EMAIL_DOMAINS = {
+    "mailinator.com", "guerrillamail.com", "guerrillamail.info",
+    "10minutemail.com", "10minutemail.net", "temp-mail.org", "tempmail.com",
+    "throwawaymail.com", "yopmail.com", "trashmail.com", "getnada.com",
+    "sharklasers.com", "maildrop.cc", "dispostable.com", "fakeinbox.com",
+    "mailnesia.com", "mintemail.com", "mytemp.email", "moakt.com",
+    "tempinbox.com", "spamgourmet.com", "emailondeck.com", "burnermail.io",
+    "temp-mail.io", "1secmail.com", "discard.email", "mohmal.com",
+    "tempr.email", "luxusmail.org", "mailcatch.com", "mailnull.com",
+    "spam4.me", "einrot.com", "fakemailgenerator.com", "emailfake.com",
+}
+
+
+def is_disposable_email_domain(email: str) -> bool:
+    """使い捨てメールの既知ドメインかどうか（§C1）。"""
+    email = (email or "").strip().lower()
+    domain = email.rsplit("@", 1)[-1] if "@" in email else ""
+    return domain in _DISPOSABLE_EMAIL_DOMAINS
 
 
 def authenticate(
@@ -340,9 +414,21 @@ _IP_MAX = 15            # 1IPからの失敗が直近 _IP_WINDOW で15回に達�
 _IP_WINDOW = 300.0      # 5分
 _IP_LOCK = 900.0        # 15分ロック
 
+# username 単位: 複数IPに分散した低頻度パスワードスプレー対策(§B3)。
+# (username,ip)単位・IP単位のどちらの閾値にも届かない「1IPあたり数回ずつ・
+# 多数のIPから同一アカウントを狙う」攻撃を検知するため、IPを問わず
+# username単独で失敗を合算する。
+_USERNAME_FAILS: dict[str, list[float]] = {}
+_USERNAME_MAX = 8       # 直近 _USERNAME_LOCK 内でこの回数に達したら
+_USERNAME_LOCK = 900.0  # 15分（IP spray対策と揃える）
+
+
+def _username_key(username: str) -> str:
+    return (username or "").strip().lower()
+
 
 def _login_key(username: str, ip: str) -> str:
-    return f"{(username or '').strip().lower()}|{ip}"
+    return f"{_username_key(username)}|{ip}"
 
 
 def _recent(store: dict, key: str, window: float) -> list[float]:
@@ -353,8 +439,12 @@ def _recent(store: dict, key: str, window: float) -> list[float]:
 
 
 def login_locked(username: str, ip: str) -> bool:
-    """3回連続失敗(user×IP)で5分、または1IPから多数失敗(spray)で15分ロック。"""
+    """3回連続失敗(user×IP)で5分、1IPから多数失敗(spray)で15分、または
+    複数IPに分散した同一username狙いの失敗が続いた場合も15分ロック(§B3)。"""
     if len(_recent(_IP_FAILS, ip or "?", _IP_LOCK)) >= _IP_MAX:
+        return True
+    if len(_recent(_USERNAME_FAILS, _username_key(username),
+                   _USERNAME_LOCK)) >= _USERNAME_MAX:
         return True
     return len(_recent(_LOGIN_FAILS, _login_key(username, ip),
                        _LOGIN_LOCK)) >= _LOGIN_MAX
@@ -364,10 +454,13 @@ def record_login_failure(username: str, ip: str) -> None:
     now = _time.monotonic()
     _LOGIN_FAILS.setdefault(_login_key(username, ip), []).append(now)
     _IP_FAILS.setdefault(ip or "?", []).append(now)
+    _USERNAME_FAILS.setdefault(_username_key(username), []).append(now)
 
 
 def clear_login_failures(username: str, ip: str) -> None:
-    # 成功時は当該 user×IP の連続失敗のみ解除（IPの spray カウントは保持）。
+    # 成功時は当該 user×IP の連続失敗のみ解除する。IPのsprayカウントも
+    # username横断のsprayカウントも保持する（他IPからの同時進行中の攻撃を
+    # 見逃さないため。正規ユーザーの成功はそれらの証拠を消す理由にならない）。
     _LOGIN_FAILS.pop(_login_key(username, ip), None)
 
 
@@ -380,7 +473,14 @@ def lockout_status() -> dict:
     locked_ips = sum(
         1 for ip, ts in _IP_FAILS.items()
         if len([t for t in ts if now - t < _IP_LOCK]) >= _IP_MAX)
-    return {"locked_accounts": locked_accounts, "locked_ips": locked_ips}
+    locked_usernames = sum(
+        1 for uname, ts in _USERNAME_FAILS.items()
+        if len([t for t in ts if now - t < _USERNAME_LOCK]) >= _USERNAME_MAX)
+    return {
+        "locked_accounts": locked_accounts,
+        "locked_ips": locked_ips,
+        "locked_usernames": locked_usernames,
+    }
 
 
 # 汎用 IP レート制限（DDoS/濫用の速度制限）。RATE_LIMIT_PER_MIN で調整。

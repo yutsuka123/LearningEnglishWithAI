@@ -67,6 +67,11 @@ def signup(payload: SignupIn, request: Request, response: Response):
             {"ok": False, "error": "メールアドレスの形式が正しくありません。"},
             status_code=400,
         )
+    if auth.is_disposable_email_domain(email):
+        return JSONResponse(
+            {"ok": False, "error": "使い捨てメールアドレスでは登録できません。"},
+            status_code=400,
+        )
     if len(password) < 8:
         return JSONResponse(
             {"ok": False, "error": "パスワードは8文字以上にしてください。"},
@@ -81,9 +86,9 @@ def signup(payload: SignupIn, request: Request, response: Response):
     # 修正した）。
     try:
         with db() as conn:
-            if auth.get_user_by_email(conn, email) or auth.get_user_by_name(
-                conn, email
-            ):
+            if (auth.get_user_by_email(conn, email)
+                    or auth.get_user_by_name(conn, email)
+                    or auth.find_user_by_normalized_email(conn, email)):
                 raise charge_keys.ChargeKeyError(
                     "このメールアドレスは既に登録されています。")
             uid = auth.create_user(

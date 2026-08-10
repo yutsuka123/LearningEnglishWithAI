@@ -571,6 +571,8 @@ def _migrate_multiuser(conn: sqlite3.Connection) -> None:
     # decks を per-user に（既存は owner=1）。
     _add_col(conn, "decks", "user_id",
              "user_id INTEGER NOT NULL DEFAULT 1")
+    # ai_usage に ip を付与（既定空文字＝アカウント共有の異常検知用・E2）。
+    _add_col(conn, "ai_usage", "ip", "ip TEXT DEFAULT ''")
 
     # 2) owner ユーザーを用意（無ければ作成。パスワードは admin.py で設定）。
     n = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
