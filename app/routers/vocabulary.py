@@ -135,8 +135,11 @@ def list_words(
     include_banned: bool = False,
     mastered: str | None = None,   # 'only' | 'hide' | None(=全部)
     deck_id: int | None = None,    # 自分の単語帳で絞り込み(2026-08-09)
+    free_range_only: bool = False,  # 🔊無料で再生できる範囲のみ(2026-08-11)
 ):
-    from ..services.auth import current_user_allow_banned, current_user_id
+    from ..services.auth import (
+        current_user_allow_banned, current_user_id, is_guest_user_id,
+    )
     include_banned = include_banned and current_user_allow_banned()
     col = {
         "mastery": "mastery",
@@ -171,6 +174,14 @@ def list_words(
                 "WHERE deck_id = ?)"
             ]
             params = params + [deck_id]
+        if free_range_only:
+            from ..services import access_tiers
+            is_guest = is_guest_user_id(conn, uid)
+            fr_clause, fr_params = access_tiers.free_range_id_filter(
+                "word", guest=is_guest,
+            )
+            where = where + [fr_clause]
+            params = params + fr_params
         clause = (" WHERE " + " AND ".join(where)) if where else ""
         rows = conn.execute(
             f"SELECT * FROM {src} AS words{clause} ORDER BY {order}",

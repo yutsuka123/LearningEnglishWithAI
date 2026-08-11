@@ -1388,6 +1388,9 @@ export async function vocab(root) {
             `<option>${escapeHtml(l)}</option>`).join("")}</select>
         <label class="toggle" title="範囲外(禁止用語相当)も含める">
           <input type="checkbox" id="fOutRange" /> 範囲外</label>
+        <label class="toggle" title="無料で🔊再生できる語だけに絞り込む
+          （未ログイン/ログイン無料ユーザー向け）">
+          <input type="checkbox" id="fFreeOnly" /> 🔊再生できるものだけ</label>
         ${myDecks.length ? `<select id="fDeck" title="単語帳で絞り込み">
           <option value="">単語帳: 全て</option>
           ${myDecks.map((d) =>
@@ -1493,6 +1496,9 @@ export async function vocab(root) {
     if (ms) q.set("mastered", ms);
     if (root.querySelector("#fDir").dataset.desc === "1") q.set("desc", "true");
     if (showBanned()) q.set("include_banned", "true");
+    if (root.querySelector("#fFreeOnly").checked) {
+      q.set("free_range_only", "true");
+    }
     const deckSel = root.querySelector("#fDeck");
     if (deckSel && deckSel.value) q.set("deck_id", deckSel.value);
     const words = await api.get("/api/words?" + q.toString());
@@ -1510,7 +1516,7 @@ export async function vocab(root) {
     fDir.textContent = d === "1" ? "降順 ▼" : "昇順 ▲";
     load();
   });
-  ["#fLevelMin", "#fLevelMax", "#fOutRange", "#fSort",
+  ["#fLevelMin", "#fLevelMax", "#fOutRange", "#fFreeOnly", "#fSort",
    "#fMastered"].forEach((id) =>
     root.querySelector(id).addEventListener("change", load));
   root.querySelector("#fDeck")?.addEventListener("change", load);
@@ -1611,6 +1617,9 @@ export async function phrases(root) {
             `<option>${escapeHtml(l)}</option>`).join("")}</select>
         <label class="toggle" title="範囲外も含める">
           <input type="checkbox" id="fOutRange" /> 範囲外</label>
+        <label class="toggle" title="無料で🔊再生できるフレーズだけに絞り込む
+          （未ログイン/ログイン無料ユーザー向け）">
+          <input type="checkbox" id="fFreeOnly" /> 🔊再生できるものだけ</label>
         ${myDecks.length ? `<select id="fDeck" title="フレーズ帳で絞り込み">
           <option value="">フレーズ帳: 全て</option>
           ${myDecks.map((d) =>
@@ -1705,6 +1714,9 @@ export async function phrases(root) {
     if (ms) q.set("mastered", ms);
     if (root.querySelector("#fDir").dataset.desc === "1") q.set("desc", "true");
     if (showBanned()) q.set("include_banned", "true");
+    if (root.querySelector("#fFreeOnly").checked) {
+      q.set("free_range_only", "true");
+    }
     const deckSel = root.querySelector("#fDeck");
     if (deckSel && deckSel.value) q.set("deck_id", deckSel.value);
     const items = await api.get("/api/phrases?" + q.toString());
@@ -1736,7 +1748,7 @@ export async function phrases(root) {
   });
   root.querySelector("#fSort").addEventListener("change", load);
   root.querySelector("#fMastered").addEventListener("change", load);
-  ["#fLevelMin", "#fLevelMax", "#fOutRange"].forEach((id) =>
+  ["#fLevelMin", "#fLevelMax", "#fOutRange", "#fFreeOnly"].forEach((id) =>
     root.querySelector(id).addEventListener("change", load));
   root.querySelector("#fDeck")?.addEventListener("change", load);
   root.querySelector("#pPage").addEventListener("change", () => {

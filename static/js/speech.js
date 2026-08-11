@@ -281,13 +281,17 @@ export async function sayItem(
   const myToken = ++playSeq;
   try {
     const res = await fetch("/api/learn/tts/item?" + q.toString());
-    if (!res.ok) {
-      if (res.status === 402 && paymentRequiredCb) {
+    if (res.status === 402) {
+      // 無料範囲外・要ログイン等、意図的なブロック。ブラウザ音声への
+      // フォールバックはしない（変な声で鳴るくらいなら無音の方がよい、
+      // という2026-08-11ユーザー指摘）。案内メッセージだけ出す。
+      if (paymentRequiredCb) {
         const msg = await res.text().catch(() => "");
-        paymentRequiredCb(msg || "チャージ残高が不足しています。");
+        paymentRequiredCb(msg || "ログインすると聴けます。");
       }
-      throw new Error("tts item failed");
+      return;
     }
+    if (!res.ok) throw new Error("tts item failed");
     const blob = await res.blob();
     if (myToken !== playSeq) return; // 新しい再生要求が来ていた→古い音声は捨てる
     await playBlob(blob, opts.rate);
@@ -319,13 +323,19 @@ export function sayItemAndWait(itemType, id, kind, voice, fallbackText, opts = {
     fetch("/api/learn/tts/item?" + q.toString())
       .then((res) => {
         if (res.ok) return res.blob();
-        if (res.status === 402 && paymentRequiredCb) {
+        if (res.status === 402) {
+          // 意図的なブロック。ブラウザ音声へのフォールバックはせず、
+          // 案内メッセージだけ出して静かに終える(2026-08-11ユーザー指摘)。
           return res.text().then((msg) => {
-            paymentRequiredCb(msg || "チャージ残高が不足しています。");
-            return Promise.reject(new Error("payment required"));
+            if (paymentRequiredCb) {
+              paymentRequiredCb(msg || "ログインすると聴けます。");
+            }
+            const err = new Error("payment required");
+            err.paymentRequired = true;
+            throw err;
           });
         }
-        return Promise.reject(new Error("tts"));
+        throw new Error("tts");
       })
       .then((blob) => {
         if (myToken !== playSeq) { resolve(); return; } // 古い要求→捨てて即解決
@@ -340,7 +350,10 @@ export function sayItemAndWait(itemType, id, kind, voice, fallbackText, opts = {
         a.play();
         if (usageCb) usageCb();
       })
-      .catch(() => { if (myToken === playSeq) browser(); else resolve(); });
+      .catch((err) => {
+        if (err && err.paymentRequired) { resolve(); return; }
+        if (myToken === playSeq) browser(); else resolve();
+      });
   });
 }
 

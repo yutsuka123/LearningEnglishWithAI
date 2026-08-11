@@ -42,10 +42,29 @@ def _level_rank_case(column: str = "level") -> str:
     return f"(CASE {column} {whens} ELSE {len(LEVEL_ORDER) + 1} END)"
 
 
-def _table_and_limit(item_type: str, *, guest: bool = False) -> tuple[str, int]:
+def _table_and_limit(
+    item_type: str, *, guest: bool = False,
+) -> tuple[str, int]:
     if item_type == "phrase":
-        return "phrases", (GUEST_PHRASES_LIMIT if guest else FREE_PHRASES_LIMIT)
+        limit = GUEST_PHRASES_LIMIT if guest else FREE_PHRASES_LIMIT
+        return "phrases", limit
     return "words", (GUEST_WORDS_LIMIT if guest else FREE_WORDS_LIMIT)
+
+
+def free_range_id_filter(
+    item_type: str, *, guest: bool = False,
+) -> tuple[str, list]:
+    """一覧クエリに足せる「無料範囲内のみ」のWHERE断片とパラメータを返す
+    （🔊再生できるものだけ表示フィルター用・2026-08-11）。"""
+    table, limit = _table_and_limit(item_type, guest=guest)
+    rank_expr = _level_rank_case()
+    clause = (
+        "id IN (SELECT id FROM ("
+        f"  SELECT id, ROW_NUMBER() OVER (ORDER BY {rank_expr}, id) AS rn "
+        f"  FROM {table}"
+        ") WHERE rn <= ?)"
+    )
+    return clause, [limit]
 
 
 def is_free_range(

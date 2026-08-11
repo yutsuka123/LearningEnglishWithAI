@@ -116,6 +116,7 @@ def list_phrases(
     include_banned: bool = False,
     mastered: str | None = None,   # 'only' | 'hide' | None(=全部)
     deck_id: int | None = None,    # 自分のフレーズ帳で絞り込み(2026-08-09)
+    free_range_only: bool = False,  # 🔊無料で再生できる範囲のみ(2026-08-11)
 ):
     from ..services.auth import current_user_allow_banned
     include_banned = include_banned and current_user_allow_banned()
@@ -172,7 +173,7 @@ def list_phrases(
         conds.append(f"mastery >= {MASTERED_THRESHOLD}")
     elif mastered == "hide":
         conds.append(f"mastery < {MASTERED_THRESHOLD}")
-    from ..services.auth import current_user_id
+    from ..services.auth import current_user_id, is_guest_user_id
     from ..services.progress import user_items_subquery
     src = user_items_subquery("phrases")  # 先頭 ? = user_id
     with db() as conn:
@@ -189,6 +190,14 @@ def list_phrases(
                 "WHERE deck_id = ?)"
             ]
             params = params + [deck_id]
+        if free_range_only:
+            from ..services import access_tiers
+            is_guest = is_guest_user_id(conn, uid)
+            fr_clause, fr_params = access_tiers.free_range_id_filter(
+                "phrase", guest=is_guest,
+            )
+            conds = conds + [fr_clause]
+            params = params + fr_params
         where = (" WHERE " + " AND ".join(conds)) if conds else ""
         rows = conn.execute(
             f"SELECT * FROM {src} AS phrases{where} ORDER BY {order}",
