@@ -155,6 +155,38 @@ def get_user_by_name(
     return dict(row) if row else None
 
 
+# ①(未ログイン/ゲスト)向けの疑似ユーザー（2026-08-11・B1本実装）。
+# 実際にはログインしない（パスワード無し=verify_passwordは常にFalse）が、
+# user_id外部キーを要求する既存のテーブル(word_attempts等)にそのまま
+# 乗せられるよう、実在のusers行として用意する。全ゲストがこの1行を共有
+# するため、ゲストの学習状態(mastery等)は個別に保存されない＝
+# 「毎回リセットされる体験」という既存の②の設計方針とも整合する。
+GUEST_USERNAME = "__guest__"
+_guest_user_id_cache: int | None = None
+
+
+def ensure_guest_user_id(conn: sqlite3.Connection) -> int:
+    """ゲスト疑似ユーザーのidを返す（無ければ作成、以後はプロセス内で
+    キャッシュ）。"""
+    global _guest_user_id_cache
+    if _guest_user_id_cache is not None:
+        return _guest_user_id_cache
+    row = get_user_by_name(conn, GUEST_USERNAME)
+    if row:
+        _guest_user_id_cache = row["id"]
+        return _guest_user_id_cache
+    uid = create_user(
+        conn, GUEST_USERNAME, "", role="user", display_name="ゲスト",
+    )
+    conn.commit()
+    _guest_user_id_cache = uid
+    return uid
+
+
+def is_guest_user_id(conn: sqlite3.Connection, user_id: int) -> bool:
+    return user_id == ensure_guest_user_id(conn)
+
+
 def get_user_by_email(
     conn: sqlite3.Connection, email: str
 ) -> Optional[dict]:

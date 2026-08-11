@@ -528,22 +528,33 @@ def charge_playback_if_needed(
 ) -> str | None:
     """単語/フレーズ音声「再生」の課金ガード（2026-08-09〜）。
 
-    `access_tiers`の無料範囲(レベル昇順・単語2,000/フレーズ1,500)に
-    入っている語は誰でも無料で再生できる（B1方針・公平性の原則）。
-    範囲外は、再生ごとに「音声生成コストの1/10」(下限0.5円)をチャージ
-    残高から控除する。管理者は課金対象外（動作確認用）。キャッシュ済み
-    音声の再生でも、再生自体は毎回この課金対象になる
-    （＝「生成は1回・再生は課金」というAPIコストとは別軸の収益化）。
+    `access_tiers`の無料範囲(レベル昇順・②ログイン無料=単語2,000/
+    フレーズ1,500、①未ログイン=単語1,000/フレーズ750)に入っている語は
+    誰でも無料で再生できる（B1方針・公平性の原則）。②③④は範囲外だと
+    再生ごとに「音声生成コストの1/10」(下限0.5円)をチャージ残高から
+    控除する。①(ゲスト)は残高という概念自体が無いため、範囲外は
+    ログインを促すメッセージで拒否する（課金消費フローには乗せない）。
+    管理者は課金対象外（動作確認用）。キャッシュ済み音声の再生でも、
+    再生自体は毎回この課金対象になる（＝「生成は1回・再生は課金」という
+    APIコストとは別軸の収益化）。
 
     戻り値: 課金不要/成功なら None、拒否する場合はユーザー向けエラー文言。
     """
     from . import access_tiers
-    from .auth import current_user_id, get_user
+    from .auth import current_user_id, get_user, is_guest_user_id
 
     with db() as conn:
-        if access_tiers.is_free_range(conn, item_type, item_id):
-            return None
         uid = current_user_id()
+        is_guest = is_guest_user_id(conn, uid)
+        if access_tiers.is_free_range(
+            conn, item_type, item_id, guest=is_guest,
+        ):
+            return None
+        if is_guest:
+            return (
+                "この単語・フレーズの音声はログインすると聴けます"
+                "（無料の会員登録のみで再生できる範囲が広がります）。"
+            )
         u = get_user(conn, uid)
         if u and u.get("role") == "admin":
             return None

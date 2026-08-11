@@ -27,8 +27,25 @@ from .services.spaced_repetition import apply_weekly_decay
 # 注: /static 配下は下の判定で別途常に許可される（terms.html もそこに置く）。
 _AUTH_ALLOW = {
     "/login", "/api/auth/login", "/api/auth/signup", "/api/health",
-    "/favicon.ico", "/tokushoho", "/robots.txt",
+    "/favicon.ico", "/tokushoho", "/robots.txt", "/api/system/taxonomy",
 }
+
+# ①(未ログイン/ゲスト)でも読める(=①向け無料範囲で動く)APIのパス接頭辞
+# （2026-08-11・B1本実装）。単語/フレーズカタログの閲覧・詳細・音声
+# （範囲内のみ）・出題(フラッシュ/クイズ)が対象。
+#
+# 注意(2026-08-11・実装時に発見した罠): prefixマッチなので、ここに
+# 追加した接頭辞の**配下にある全エンドポイント**がゲストに開く。
+# /api/words, /api/phrases 配下は棚卸し済み(create/update/delete/tags書換
+# はadmin専用チェックで保護、/detail は未生成時のAI生成のみゲスト拒否、
+# /retag は本来admin専用のはずがチェック漏れだったため追加保護した)。
+# /api/learn は棚卸ししておらず(会話・作文添削等コストの高いAI機能を含む)
+# 丸ごとは絶対に入れない — 音声再生の /tts/item だけをフルパスで個別指定
+# する。新しい接頭辞を足すときは配下の全エンドポイントを必ず確認すること。
+_GUEST_READ_PREFIXES = (
+    "/api/words", "/api/phrases", "/api/system/my-usage",
+    "/api/learn/tts/item",
+)
 
 # 特定商取引法ページ: 未記入欄のフォールバック文言(赤字表示)。
 _TOKUSHOHO_PLACEHOLDERS = {
@@ -96,29 +113,37 @@ async def _auth_context(request, call_next):
                         uid = p_uid
         if uid is None:
             path = request.url.path
-            allowed = (path in _AUTH_ALLOW or path.startswith("/static"))
-            if not allowed:
+            if path == "/":
+                # 未ログインの訪問をIPで軽く記録する（2026-08-11・B1本
+                # 実装。ログ書き込み失敗はトップページ表示自体を妨げない
+                # よう握りつぶす。DBロック等の一過性エラー想定）。
+                try:
+                    with db() as conn:
+                        conn.execute(
+                            "INSERT INTO landing_visits "
+                            "(ip, path, user_agent) VALUES (?, ?, ?)",
+                            (client_ip, path,
+                             request.headers.get("user-agent", "")[:300]),
+                        )
+                except Exception:
+                    log.warning("landing_visits記録に失敗", exc_info=True)
+            allowed = (
+                path in _AUTH_ALLOW or path.startswith("/static")
+                or path == "/"
+            )
+            guest_readable = any(
+                path.startswith(p) for p in _GUEST_READ_PREFIXES)
+            if guest_readable:
+                # ①(未ログイン/ゲスト)向けに疑似ユーザーを割り当てる
+                # （書き込み系・管理者専用操作は各エンドポイント内部の
+                # チェックでそのまま拒否される・多重防御）。
+                with db() as conn:
+                    uid = auth_svc.ensure_guest_user_id(conn)
+            elif not allowed:
                 if path.startswith("/api"):
                     return JSONResponse(
                         {"ok": False, "error": "要ログイン"},
                         status_code=401)
-                if path == "/":
-                    # 未ログインの初回訪問はログインへ即リダイレクトせず、
-                    # まず案内(このアプリについて)を見せる（2026-08-11・
-                    # B1着手前の暫定対応）。アクセスをIPで軽く記録する
-                    # （ログ書き込み失敗はランディング表示自体を妨げない
-                    # よう握りつぶす。DBロック等の一過性エラー想定）。
-                    try:
-                        with db() as conn:
-                            conn.execute(
-                                "INSERT INTO landing_visits "
-                                "(ip, path, user_agent) VALUES (?, ?, ?)",
-                                (client_ip, path,
-                                 request.headers.get("user-agent", "")[:300]),
-                            )
-                    except Exception:
-                        log.warning("landing_visits記録に失敗", exc_info=True)
-                    return RedirectResponse("/static/about.html")
                 return RedirectResponse("/login")
     token = auth_svc.set_current_user_id(
         uid if uid is not None else OWNER_USER_ID)

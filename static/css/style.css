@@ -72,6 +72,7 @@ body {
 }
 .nav-item:hover { background: var(--panel-2); }
 .nav-item.active { background: var(--accent); color: #04101f; font-weight: 600; }
+a.nav-item { display: block; text-decoration: none; box-sizing: border-box; }
 
 .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
@@ -151,9 +152,22 @@ h2 { font-size: 17px; margin: 22px 0 10px; }
 }
 .sidebar-backdrop { display: none; }
 
+/* 狭い画面ではサイドバー(アプリ名の表示元)がオフキャンバスで隠れ、
+   何のアプリか分かる表示が無くなるため、その代わりにトップバーへ
+   簡潔なブランド表示を出す（広い画面ではサイドバーに既に出ているので
+   二重表示を避けて隠す・2026-08-11ユーザー指摘）。 */
+.topbar-brand {
+  display: none; align-items: baseline; gap: 8px;
+  font-weight: 700; color: var(--accent);
+}
+.topbar-brand-sub {
+  font-weight: 600; color: var(--text); font-size: 14px;
+}
+
 @media (max-width: 760px) {
   .grid.cols-4, .grid.cols-3, .grid.cols-2 { grid-template-columns: 1fr; }
   .nav-toggle { display: inline-flex; }
+  .topbar-brand { display: inline-flex; font-size: 15px; }
   /* サイドバーは既定で画面外（オフキャンバス）。.open で右へスライドイン。
      狭い画面で本文を圧迫していた「幅64pxに縮めて文字だけ残す」旧方式は廃止。 */
   .sidebar {

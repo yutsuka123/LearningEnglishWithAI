@@ -20,8 +20,10 @@ from __future__ import annotations
 
 import sqlite3
 
-FREE_WORDS_LIMIT = 2000
+FREE_WORDS_LIMIT = 2000      # ②(ログイン無料)向け
 FREE_PHRASES_LIMIT = 1500
+GUEST_WORDS_LIMIT = 1000     # ①(未ログイン)向け・②の半分
+GUEST_PHRASES_LIMIT = 750
 
 # app/routers/vocabulary.py の LEVEL_ORDER と同一スケール(words/phrases共通)。
 # ここで独自に持つのは循環インポート回避のため（vocabulary.py はルーター）。
@@ -40,17 +42,19 @@ def _level_rank_case(column: str = "level") -> str:
     return f"(CASE {column} {whens} ELSE {len(LEVEL_ORDER) + 1} END)"
 
 
-def _table_and_limit(item_type: str) -> tuple[str, int]:
+def _table_and_limit(item_type: str, *, guest: bool = False) -> tuple[str, int]:
     if item_type == "phrase":
-        return "phrases", FREE_PHRASES_LIMIT
-    return "words", FREE_WORDS_LIMIT
+        return "phrases", (GUEST_PHRASES_LIMIT if guest else FREE_PHRASES_LIMIT)
+    return "words", (GUEST_WORDS_LIMIT if guest else FREE_WORDS_LIMIT)
 
 
 def is_free_range(
-    conn: sqlite3.Connection, item_type: str, item_id: int,
+    conn: sqlite3.Connection, item_type: str, item_id: int, *,
+    guest: bool = False,
 ) -> bool:
-    """指定した単語/フレーズが無料範囲(レベル昇順の上位N件)に入っているか。"""
-    table, limit = _table_and_limit(item_type)
+    """指定した単語/フレーズが無料範囲(レベル昇順の上位N件)に入っているか。
+    ``guest=True``で①(未ログイン)向けのより狭い範囲を使う。"""
+    table, limit = _table_and_limit(item_type, guest=guest)
     rank_expr = _level_rank_case()
     row = conn.execute(
         f"SELECT rn FROM ("

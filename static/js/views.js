@@ -1352,8 +1352,10 @@ export async function vocab(root) {
     "/api/words/facets" + (showBanned() ? "?include_banned=true" : ""));
   const domainGroups = facets.domain_groups || {};
   const myDecks = await api.get("/api/decks").catch(() => []);
-  const dfw = (await api.get("/api/system/user-settings"))
-    .settings?.default_word_filters || {};
+  // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定
+  // フィルター無し(={})として扱う(2026-08-11・ゲスト実装で発見)。
+  const dfw = (await api.get("/api/system/user-settings")
+    .catch(() => ({ settings: {} }))).settings?.default_word_filters || {};
   const dfwActive = !!(dfw.category || dfw.level_min || dfw.level_max
     || dfw.mastered);
   root.innerHTML = `
@@ -1566,8 +1568,10 @@ export async function phrases(root) {
   const pfacets = await api.get("/api/phrases/facets");
   const list = await api.get("/api/phrases" + (sb ? "?" + sb : ""));
   const myDecks = await api.get("/api/phrase-decks").catch(() => []);
-  const dfp = (await api.get("/api/system/user-settings"))
-    .settings?.default_phrase_filters || {};
+  // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定
+  // フィルター無し(={})として扱う(2026-08-11・ゲスト実装で発見)。
+  const dfp = (await api.get("/api/system/user-settings")
+    .catch(() => ({ settings: {} }))).settings?.default_phrase_filters || {};
   const dfpActive = !!(dfp.category || dfp.level_min || dfp.level_max
     || dfp.mastered);
   root.innerHTML = `

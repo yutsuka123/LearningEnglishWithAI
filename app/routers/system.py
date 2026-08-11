@@ -209,7 +209,7 @@ def my_usage():
     """現在ユーザーの当日/当月 AI利用・上限・前払い残高（コスト表示用）。"""
     from ..database import db
     from ..services import ai
-    from ..services.auth import current_user_id, get_user
+    from ..services.auth import current_user_id, get_user, is_guest_user_id
 
     from ..config import APP_VERSION
     from ..services.auth import multiuser_enabled
@@ -219,6 +219,7 @@ def my_usage():
     month = ai._user_cost_usd(uid, "month")
     with db() as conn:
         u = get_user(conn, uid) or {}
+        is_guest = is_guest_user_id(conn, uid)
     rate = s.usd_jpy_rate
     # 実効上限(USD)：user個別→無ければグローバル日次。
     dcap = u.get("daily_cost_cap_usd") or s.ai_daily_cost_cap_usd or None
@@ -243,6 +244,10 @@ def my_usage():
         "model": s.openai_model,
         "version": APP_VERSION,
         "multiuser": multiuser_enabled(),
+        "is_guest": is_guest,
+        # ゲストは api_key_masked 等を含む /api/system/settings を読めない
+        # ため、AI有効フラグだけはここ(秘匿情報なし)からも取れるようにする。
+        "ai_enabled": s.ai_enabled,
     }
 
 

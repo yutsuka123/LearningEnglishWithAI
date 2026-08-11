@@ -247,6 +247,13 @@ export async function refreshCost() {
     const isAdmin = u.role === "admin";
     state.isAdmin = isAdmin;       // 各ビューのロール別表示に使う
     state.multiuser = !!u.multiuser;
+    state.isGuest = !!u.is_guest;
+    if (state.isGuest) {
+      // ゲストは/api/system/settingsを読めない(api_key_masked等を含む
+      // ため)。AI有効状態はここ(my-usage)経由で取得する(2026-08-11)。
+      state.aiEnabled = !!u.ai_enabled;
+      speech.setAiEnabled(u.ai_enabled);
+    }
     const bars = document.getElementById("usageBars");
     if (bars) {
       bars.innerHTML =
@@ -263,12 +270,15 @@ export async function refreshCost() {
     }
     const ver = document.getElementById("appVer");
     if (ver) ver.textContent = u.version || "";
-    // ログアウトボタン（マルチユーザー時のみ表示）。
+    // ログアウト/ログインボタン（マルチユーザー時のみ表示。ゲストは
+    // ログイン導線のみ、ログイン済みはログアウトのみを見せる）。
     const lo = document.getElementById("logoutBtn");
     if (lo) {
-      lo.style.display = u.multiuser ? "" : "none";
+      lo.style.display = (u.multiuser && !state.isGuest) ? "" : "none";
       lo.title = u.username ? `${u.username} としてログイン中` : "";
     }
+    const li = document.getElementById("loginBtn");
+    if (li) li.style.display = (u.multiuser && state.isGuest) ? "" : "none";
     // 上限到達のポップアップ（チャージ残高が無ければ）。
     const dOver = u.daily_cap_jpy && u.today_jpy >= u.daily_cap_jpy;
     const mOver = u.monthly_cap_jpy && u.month_jpy >= u.monthly_cap_jpy;
@@ -379,6 +389,13 @@ async function boot() {
     b.addEventListener("click", () => go(tab));
     nav.appendChild(b);
   });
+  // メニューに常時表示する「このアプリについて」（別タブで開く外部ページ）。
+  // トップバー右のバージョン表記からも行けるが分かりにくいため
+  // (2026-08-11ユーザー指摘)、メニュー本体にも入れる。
+  nav.appendChild(el(
+    '<a class="nav-item" href="/static/about.html" target="_blank">'
+    + "📄 このアプリについて</a>",
+  ));
 
   // スマホ向けハンバーガーメニュー: ボタン/背景タップで開閉。
   document.getElementById("navToggle")
@@ -404,11 +421,29 @@ async function boot() {
     }
   } catch (e) { /* ignore */ }
 
-  await refreshAiState();   // sets speech aiEnabled
-  await refreshCost();      // sets state.isAdmin / state.multiuser
+  await refreshCost();      // sets state.isAdmin / state.multiuser / state.isGuest
+  if (!state.isGuest) {
+    // ゲストは/api/system/settingsを読めないため、AI有効状態は
+    // refreshCost()内でmy-usage経由により既に取得済み(2026-08-11)。
+    await refreshAiState();   // sets speech aiEnabled
+  }
   // 管理者タブは管理者のみ表示。
   const adminNav = document.querySelector('.nav-item[data-tab="admin"]');
   if (adminNav) adminNav.style.display = state.isAdmin ? "" : "none";
+  // ①(未ログイン/ゲスト)は単語・フレーズの閲覧とフラッシュカードのみ
+  // 無料公開。それ以外はログインが要る機能なので隠す(2026-08-11・B1本実装。
+  // バックエンド側も個別に要ログインを強制しているので、ここは表示上の
+  // 案内であり多重防御の一枚)。
+  if (state.isGuest) {
+    const GUEST_HIDDEN_TABS = [
+      "dashboard", "deck", "phrasedeck", "reading", "writing",
+      "conversation", "listening", "assess", "history", "settings",
+    ];
+    GUEST_HIDDEN_TABS.forEach((tab) => {
+      const item = document.querySelector(`.nav-item[data-tab="${tab}"]`);
+      if (item) item.style.display = "none";
+    });
+  }
   speech.onUsage(refreshCost); // refresh cost after paid TTS calls
   speech.onPaymentRequired((msg) => toast(msg)); // 無料範囲外の再生でチャージ不足のとき
   // Pre-load voices for TTS.
@@ -417,7 +452,7 @@ async function boot() {
 
   // 上記の非同期処理中にユーザーが既に別タブへナビゲートしていたら、
   // ダッシュボードで上書きしない（レースコンディション対策）。
-  if (!userNavigated) go("dashboard");
+  if (!userNavigated) go(state.isGuest ? "vocab" : "dashboard");
 }
 
 boot();

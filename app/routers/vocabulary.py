@@ -475,6 +475,7 @@ def word_detail(word_id: int, regen: bool = False):
 
     from ..config import load_settings
     from ..services import ai
+    from ..services.auth import current_user_id, is_guest_user_id
 
     with db() as conn:
         row = conn.execute(
@@ -483,14 +484,21 @@ def word_detail(word_id: int, regen: bool = False):
         ).fetchone()
         if not row:
             raise HTTPException(404, "単語が見つかりません")
-        # 詳細は2026-08-11よりtierを問わず常時無料
-        # （docs/ACCESS_TIERS.md「機能アクセス表」参照）。
+        # 詳細の閲覧は2026-08-11よりtierを問わず常時無料
+        # （docs/ACCESS_TIERS.md「機能アクセス表」参照）。ただし**未生成の
+        # 詳細を新たにAIで作る**のは実コストが発生するため、未ログインの
+        # ゲスト(①)には許可しない(2026-08-11・ゲスト本実装時に発見)。
         if row["detail"] and not regen:
             try:
                 return {"ok": True, "cached": True,
                         "detail": _json.loads(row["detail"])}
             except ValueError:
                 pass
+        if is_guest_user_id(conn, current_user_id()):
+            return {
+                "ok": False,
+                "error": "詳細の生成はログインすると利用できます。",
+            }
     if not ai.is_enabled():
         return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
     system = (
@@ -730,6 +738,8 @@ def retag(batch: int = 30):
     from ..config import load_settings
     from ..services import ai
 
+    with db() as conn:
+        _require_admin(conn)
     if not ai.is_enabled():
         return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
     with db() as conn:
