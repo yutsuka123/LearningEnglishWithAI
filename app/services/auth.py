@@ -38,6 +38,15 @@ _current_ip: contextvars.ContextVar[str] = contextvars.ContextVar(
     "current_ip", default=""
 )
 
+# 現在の呼び出しがWebリクエスト経由か（未設定＝CLI/バッチ実行）。
+# current_user_idはCLI実行時ownerにフォールバックするため、Web経由の
+# owner本人の利用と区別がつかなかった問題を解消する（§CLIスクリプトの
+# AI無料枠問題）。ai.py側の_user_guard()がこれを見て、CLI実行時はtier別
+# 個別枠チェックをスキップする（サイト全体上限は引き続き有効）。
+_in_web_request: contextvars.ContextVar[bool] = contextvars.ContextVar(
+    "in_web_request", default=False
+)
+
 
 # ---------------------------------------------------------------------------
 # パスワードハッシュ
@@ -94,6 +103,18 @@ def reset_current_ip(token: contextvars.Token) -> None:
 
 def current_ip() -> str:
     return _current_ip.get()
+
+
+def mark_web_request() -> contextvars.Token:
+    return _in_web_request.set(True)
+
+
+def reset_web_request(token: contextvars.Token) -> None:
+    _in_web_request.reset(token)
+
+
+def is_web_request() -> bool:
+    return _in_web_request.get()
 
 
 def current_user_allow_banned() -> bool:

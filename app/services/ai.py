@@ -88,8 +88,18 @@ def _effective_caps(u: dict, tier: str, s) -> tuple[float, float]:
 def _user_guard(s) -> str | None:
     """課金モデル: 日次/月次の上限は「無料枠」。枠に到達したら**前払いチャージ
     残高**を消費して継続（残高は枠とは別管理）。残高が無ければ停止。
-    無料枠は0円もありえる（email tier）＝その場合は初回から残高必須。"""
-    from .auth import current_user_id, get_user, user_tier
+    無料枠は0円もありえる（email tier）＝その場合は初回から残高必須。
+
+    CLIスクリプト実行時（Webリクエスト経由でない場合）はこのtier別個別枠
+    チェックを丸ごとスキップする。`current_user_id()`はリクエスト文脈が
+    無い場合ownerにフォールバックするため、CLIバッチ実行がオーナー個人の
+    日次/月次無料枠を消費して停止してしまう問題への対応
+    （docs/TODO.md「CLIスクリプトのAI無料枠問題」参照）。サイト全体の合計
+    支出上限（`_guard()`内のsite_cap）はCLI実行でも引き続き有効。"""
+    from .auth import current_user_id, get_user, is_web_request, user_tier
+
+    if not is_web_request():
+        return None
 
     uid = current_user_id()
     with db() as conn:

@@ -98,11 +98,13 @@ async def _auth_context(request, call_next):
     token = auth_svc.set_current_user_id(
         uid if uid is not None else OWNER_USER_ID)
     ip_token = auth_svc.set_current_ip(client_ip)
+    web_token = auth_svc.mark_web_request()
     try:
         response = await call_next(request)
     finally:
         auth_svc.reset_current_user_id(token)
         auth_svc.reset_current_ip(ip_token)
+        auth_svc.reset_web_request(web_token)
     path = request.url.path
     if path == "/" or path.startswith("/static"):
         response.headers["Cache-Control"] = "no-cache, must-revalidate"
