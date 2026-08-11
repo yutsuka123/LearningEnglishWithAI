@@ -624,6 +624,8 @@ function renderWordDetail(box, d, primaryEn) {
 }
 
 // 詳細内の語(.jw)のうちDB登録済みのものをクリック可能にし、その語の詳細へ。
+// 同綴りで複数の意味(word行)が登録されている場合は選択メニューを挟む
+// （§B17・論点1-b、例: agentのIT用語/スパイ用語/代理人）。
 async function linkifyJumps(box) {
   const spans = Array.from(box.querySelectorAll(".jw"));
   if (!spans.length) return;
@@ -633,14 +635,38 @@ async function linkifyJumps(box) {
     const r = await api.post("/api/words/resolve", { words });
     const found = (r && r.found) || {};
     for (const s of spans) {
-      const hit = found[(s.dataset.w || "").toLowerCase()];
-      if (hit) {
+      const hits = found[(s.dataset.w || "").toLowerCase()];
+      if (hits && hits.length) {
         s.classList.add("jw-link");
-        s.title = `「${hit.english}」の詳細へ`;
-        s.addEventListener("click", () => showWordDetail(hit));
+        if (hits.length === 1) {
+          s.title = `「${hits[0].english}」の詳細へ`;
+          s.addEventListener("click", () => showWordDetail(hits[0]));
+        } else {
+          s.title = `「${hits[0].english}」の詳細へ（${hits.length}件の意味）`;
+          s.addEventListener("click", () => showWordChoices(hits));
+        }
       }
     }
   } catch (_) { /* 解決失敗時はリンク化しないだけ（表示はそのまま） */ }
+}
+
+// 同綴りで複数の意味がある語の選択メニュー（分野で見分けてもらう）。
+function showWordChoices(hits) {
+  openModal(hits[0].english, (body) => {
+    body.appendChild(el(
+      `<p class="muted">同じ綴りで複数の意味があります。選んでください。</p>`));
+    const list = el(
+      `<div class="row" style="flex-direction:column;align-items:stretch;gap:6px"></div>`);
+    hits.forEach((h) => {
+      const btn = el(`<button class="btn ghost" style="text-align:left">
+        ${escapeHtml(h.japanese || "")}
+        <span class="muted">（${escapeHtml(h.domain || "分野未設定")}）</span>
+      </button>`);
+      btn.addEventListener("click", () => showWordDetail(h));
+      list.appendChild(btn);
+    });
+    body.appendChild(list);
+  });
 }
 
 // 単語の詳細ポップアップ: 例文(再生)＋AI詳細(品詞/意味複数/派生/類義/対義/
@@ -695,6 +721,28 @@ function showWordDetail(w) {
       detailBox.appendChild(el(
         `<p class="muted">この単語の詳細は準備中です。</p>`));
     }
+
+    // 同綴りで意味が異なる別エントリがあれば案内する（§B17・論点1-b）。
+    (async () => {
+      try {
+        const r = await api.post(
+          "/api/words/resolve", { words: [w.english] });
+        const hits = (r && r.found && r.found[w.english.toLowerCase()])
+          || [];
+        const others = hits.filter((h) => h.id !== w.id);
+        if (!others.length) return;
+        const box2 = el(`<p class="muted mt">🔀 同じ綴りの別の意味: </p>`);
+        others.forEach((h, i) => {
+          if (i > 0) box2.appendChild(document.createTextNode(" / "));
+          const link = el(`<span class="jw-link" style="cursor:pointer;
+            text-decoration:underline">${escapeHtml(h.japanese || "")}
+            （${escapeHtml(h.domain || "分野未設定")}）</span>`);
+          link.addEventListener("click", () => showWordDetail(h));
+          box2.appendChild(link);
+        });
+        body.appendChild(box2);
+      } catch (_) { /* 取得失敗時は何も表示しない */ }
+    })();
   });
 }
 

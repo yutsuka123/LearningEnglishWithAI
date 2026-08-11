@@ -117,6 +117,18 @@ CREATE TABLE IF NOT EXISTS phrases (
     next_review   TEXT
 );
 
+-- 単語の複数分野タグ付け（§B17・論点1-a）。words.domain は「主分類」
+-- として残したまま、同じ意味で複数分野に該当する語をここに追加登録する
+-- （例: engagement を「恋愛」を主分類にしつつ「冠婚葬祭」にもタグ付け）。
+-- 「同綴りだが意味が違う語」(agentのIT用語/スパイ用語等)は、この仕組みでは
+-- なく別々のwords行として登録する(§論点1-b、resolve API側で対応)。
+CREATE TABLE IF NOT EXISTS word_domain_tags (
+    word_id    INTEGER NOT NULL REFERENCES words(id) ON DELETE CASCADE,
+    domain     TEXT    NOT NULL,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (word_id, domain)
+);
+
 CREATE TABLE IF NOT EXISTS phrase_attempts (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     phrase_id  INTEGER NOT NULL REFERENCES phrases(id) ON DELETE CASCADE,

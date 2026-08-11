@@ -74,14 +74,24 @@ def _word_filter(
     if domain:
         domains = [d for d in domain.split(",") if d]
         ph = ",".join("?" * len(domains))
-        where.append(f"COALESCE(domain, '') IN ({ph})")
-        params += domains
+        # 主分類(domain列)に加え、word_domain_tags(§B17・同じ意味で複数
+        # 分野に該当する語)でのタグ付けもOR条件に含める。テーブル別名は
+        # 呼び出し元でwords/tどちらもあるため列名にプレフィックスを付けない。
+        where.append(
+            f"(COALESCE(domain, '') IN ({ph}) OR id IN "
+            f"(SELECT word_id FROM word_domain_tags WHERE domain IN ({ph})))"
+        )
+        params += domains + domains
     elif category:
         cat_domains = WORD_CATEGORIES.get(category, [])
         if cat_domains:
             ph = ",".join("?" * len(cat_domains))
-            where.append(f"COALESCE(domain, '') IN ({ph})")
-            params += cat_domains
+            where.append(
+                f"(COALESCE(domain, '') IN ({ph}) OR id IN "
+                f"(SELECT word_id FROM word_domain_tags "
+                f"WHERE domain IN ({ph})))"
+            )
+            params += cat_domains + cat_domains
     if level:
         where.append("COALESCE(level, '') = ?")
         params.append(level)
@@ -273,6 +283,66 @@ def delete_word(word_id: int):
         cur = conn.execute("DELETE FROM words WHERE id = ?", (word_id,))
         if cur.rowcount == 0:
             raise HTTPException(404, "単語が見つかりません")
+
+
+class DomainTagIn(BaseModel):
+    domain: str
+
+
+@router.get("/{word_id}/tags")
+def list_word_tags(word_id: int):
+    """指定単語の追加分野タグ一覧を返す（§B17・論点1-a）。主分類
+    (words.domain)は含まない・タグのみ。"""
+    with db() as conn:
+        row = conn.execute(
+            "SELECT id FROM words WHERE id = ?", (word_id,)
+        ).fetchone()
+        if not row:
+            raise HTTPException(404, "単語が見つかりません")
+        rows = conn.execute(
+            "SELECT domain FROM word_domain_tags WHERE word_id = ? "
+            "ORDER BY domain", (word_id,),
+        ).fetchall()
+    return {"tags": [r["domain"] for r in rows]}
+
+
+@router.post("/{word_id}/tags", status_code=201)
+def add_word_tag(word_id: int, payload: DomainTagIn):
+    """単語に追加の分野タグを付与する（同じ意味で複数分野に該当する語用。
+    管理者専用）。既存の主分類(words.domain)と同じ値は追加不要のため拒否。"""
+    domain = payload.domain.strip()
+    if not domain:
+        raise HTTPException(400, "domainを指定してください。")
+    with db() as conn:
+        _require_admin(conn)
+        row = conn.execute(
+            "SELECT domain FROM words WHERE id = ?", (word_id,)
+        ).fetchone()
+        if not row:
+            raise HTTPException(404, "単語が見つかりません")
+        if (row["domain"] or "") == domain:
+            raise HTTPException(
+                400, "既に主分類として設定されている分野です。")
+        conn.execute(
+            "INSERT OR IGNORE INTO word_domain_tags (word_id, domain) "
+            "VALUES (?, ?)", (word_id, domain),
+        )
+        rows = conn.execute(
+            "SELECT domain FROM word_domain_tags WHERE word_id = ? "
+            "ORDER BY domain", (word_id,),
+        ).fetchall()
+    return {"tags": [r["domain"] for r in rows]}
+
+
+@router.delete("/{word_id}/tags/{domain}", status_code=204)
+def remove_word_tag(word_id: int, domain: str):
+    """単語から分野タグを削除する（管理者専用）。"""
+    with db() as conn:
+        _require_admin(conn)
+        conn.execute(
+            "DELETE FROM word_domain_tags WHERE word_id = ? AND domain = ?",
+            (word_id, domain),
+        )
 
 
 @router.get("/quiz")
@@ -472,8 +542,12 @@ def resolve_words(payload: ResolveIn):
     """与えた英単語リストのうち、DBに登録済みのものを返す（類義語ジャンプ用）。
     詳細の synonyms/antonyms/derivatives の語をクリックでその語へ飛べるように、
     フロントが表示時にどれが登録済みかを引くための軽量エンドポイント。
-    返り値: {found: {小文字キー: {id, english, japanese, level, example,
-    has_detail}}}。"""
+
+    同綴りだが意味が違う語（§B17・論点1-b。例: agentのIT用語/スパイ用語/
+    代理人の意味）は別々のwords行として登録される設計のため、1つの綴りに
+    複数件ヒットしうる。返り値は{小文字キー: [{id, english, japanese,
+    level, example, domain, has_detail}, ...]}で、キーごとに配列（1件でも
+    配列）。フロント側で1件なら直接ジャンプ、複数なら選択させる。"""
     keys = []
     seen = set()
     for w in payload.words or []:
@@ -483,24 +557,23 @@ def resolve_words(payload: ResolveIn):
             keys.append(k)
     if not keys:
         return {"found": {}}
-    found: dict[str, dict] = {}
+    found: dict[str, list[dict]] = {}
     with db() as conn:
         # 小文字一致でまとめて引く（IN 句）。語数は詳細1件ぶんで小さい。
         qmarks = ",".join("?" * len(keys))
         rows = conn.execute(
-            f"SELECT id, english, japanese, level, example, detail "
-            f"FROM words WHERE LOWER(english) IN ({qmarks})", keys
+            f"SELECT id, english, japanese, level, example, domain, detail "
+            f"FROM words WHERE LOWER(english) IN ({qmarks}) "
+            f"ORDER BY id", keys
         ).fetchall()
     for r in rows:
         k = r["english"].strip().lower()
-        if k in found:
-            continue  # 同綴り重複は先勝ち
-        found[k] = {
+        found.setdefault(k, []).append({
             "id": r["id"], "english": r["english"],
             "japanese": r["japanese"], "level": r["level"],
-            "example": r["example"],
+            "example": r["example"], "domain": r["domain"],
             "has_detail": bool((r["detail"] or "").strip()),
-        }
+        })
     return {"found": found}
 
 
