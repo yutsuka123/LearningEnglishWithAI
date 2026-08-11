@@ -326,7 +326,7 @@ def phrase_detail(phrase_id: int, regen: bool = False):
     import json as _json
 
     from ..config import load_settings
-    from ..services import access_tiers, ai
+    from ..services import ai
 
     with db() as conn:
         row = conn.execute(
@@ -335,9 +335,8 @@ def phrase_detail(phrase_id: int, regen: bool = False):
         ).fetchone()
         if not row:
             raise HTTPException(404, "フレーズが見つかりません")
-        block = access_tiers.detail_block_message(conn, "phrase", phrase_id)
-        if block:
-            raise HTTPException(403, block)
+        # 詳細は2026-08-11よりtierを問わず常時無料
+        # （docs/ACCESS_TIERS.md「機能アクセス表」参照）。
         if row["detail"] and not regen:
             try:
                 return {"ok": True, "cached": True,
