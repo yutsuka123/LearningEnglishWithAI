@@ -3064,6 +3064,8 @@ export async function admin(root) {
       <td>${u.phrase_quizzes}</td>
       <td>${fmtDate(u.last_studied)}</td>
       <td>${flags.join(" ") || "—"}</td>
+      <td><button class="btn ghost force-logout-btn" data-uid="${u.id}"
+        style="padding:3px 8px">強制ログアウト</button></td>
     </tr>`;
   }).join("");
   root.innerHTML = `
@@ -3091,7 +3093,7 @@ export async function admin(root) {
         <th>今月 / 上限</th><th>残高</th><th>チャージ(¥)</th>
         <th>AI回数</th><th>AI最終利用</th>
         <th>単語クイズ数</th><th>フレーズクイズ数</th><th>最終学習</th>
-        <th>状態</th>
+        <th>状態</th><th>操作</th>
       </tr></thead><tbody>${rows}</tbody></table>
       <p class="muted mt">残高は日次/月次の<b>無料枠（上限）とは別管理</b>で、枠に
         到達した後の利用で消費されます。チャージは<b>1回 最大¥1000</b>。
@@ -3144,6 +3146,19 @@ export async function admin(root) {
           { user_id: uid, amount_jpy: amt });
         toast(`チャージ完了: 残高 ¥${Math.round(r.balance_jpy)}`);
         go("admin");  // 再描画
+      } catch (e) { toast("失敗: " + e.message); }
+    });
+  });
+
+  // 強制ログアウト（対象ユーザーの既存の全セッションを無効化・§B4）。
+  root.querySelectorAll(".force-logout-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const uid = parseInt(btn.dataset.uid, 10);
+      if (!confirm("このユーザーを全端末から強制ログアウトさせます。"
+        + "よろしいですか？")) return;
+      try {
+        await api.post("/api/system/admin/force-logout", { user_id: uid });
+        toast("強制ログアウトしました");
       } catch (e) { toast("失敗: " + e.message); }
     });
   });
@@ -3312,6 +3327,14 @@ export async function settings(root) {
         pt（1pt=1円）が残高に加算されます。AI英会話・reading・listening
         等の生成でこの残高が消費されます（単語/フレーズのクイズは無料）。
         <a href="/static/terms.html" target="_blank">利用規約・免責事項</a></p>
+    </div>
+    <div class="card" id="securityCard" style="display:none">
+      <h2>🔒 セキュリティ</h2>
+      <p class="muted">端末を共有した後や、身に覚えのないログイン状態に
+        気づいたときは、全端末から一括でログアウトできます
+        （このボタンを押した端末も再ログインが必要になります）。</p>
+      <button class="btn bad" id="logoutAllBtn">全端末からログアウト</button>
+      <span class="muted mt" id="logoutAllOut"></span>
     </div>
     <div class="card admin-only" id="openaiCard">
       <h2>OpenAI</h2>
@@ -3638,6 +3661,12 @@ export async function settings(root) {
           ? Math.round(mu.balance_jpy) : "0";
       }
     }
+    // セキュリティカード: chargeCardと同じくmultiuser時のみ表示
+    // （ローカル単一ユーザーはセッション/Cookieの概念が無いため）。
+    const securityCard = root.querySelector("#securityCard");
+    if (mu && mu.multiuser && securityCard) {
+      securityCard.style.display = "";
+    }
   })();
 
   const pfSave = root.querySelector("#pf_save");
@@ -3652,6 +3681,15 @@ export async function settings(root) {
     settings.toeic_self = Number.isFinite(t) ? t : null;
     await api.put("/api/system/user-settings", { settings });
     toast("プロフィールを保存しました");
+  });
+
+  const logoutAllBtn = root.querySelector("#logoutAllBtn");
+  if (logoutAllBtn) logoutAllBtn.addEventListener("click", async () => {
+    if (!confirm("全端末からログアウトします。この端末も含めて"
+      + "再ログインが必要になります。よろしいですか？")) return;
+    try { await api.post("/api/auth/logout-all-devices"); }
+    catch (_) { /* */ }
+    location.href = "/login";
   });
 
   const ckBtn = root.querySelector("#ck_redeem");

@@ -320,6 +320,24 @@ def set_active(
     )
 
 
+def get_session_epoch(conn: sqlite3.Connection, user_id: int) -> int:
+    row = conn.execute(
+        "SELECT session_epoch FROM users WHERE id = ?", (user_id,)
+    ).fetchone()
+    return int(row["session_epoch"]) if row else 0
+
+
+def bump_session_epoch(conn: sqlite3.Connection, user_id: int) -> int:
+    """指定ユーザーの既存の全セッションを一括で無効化する（§B4）。
+    世代番号を+1して返す。以後、古い世代番号を持つCookieは
+    parse_session_token側の照合で無効と判定される。"""
+    conn.execute(
+        "UPDATE users SET session_epoch = session_epoch + 1 WHERE id = ?",
+        (user_id,),
+    )
+    return get_session_epoch(conn, user_id)
+
+
 def list_users(conn: sqlite3.Connection) -> list[dict]:
     rows = conn.execute(
         "SELECT id, username, role, is_active, display_name, email, "
@@ -413,9 +431,14 @@ def _sign(secret: bytes, payload: str) -> str:
                     hashlib.sha256).hexdigest()
 
 
-def make_session_token(secret: bytes, user_id: int, now: int) -> str:
+def make_session_token(
+    secret: bytes, user_id: int, epoch: int, now: int
+) -> str:
+    """``epoch``はusers.session_epochのスナップショット（§B4）。
+    発行後にDB側のepochが進めば、このトークンはparse_session_token側の
+    照合で無効化される（セッション個別無効化の仕組み）。"""
     exp = now + _SESSION_TTL
-    payload = f"{user_id}.{exp}"
+    payload = f"{user_id}.{epoch}.{exp}"
     return f"{payload}.{_sign(secret, payload)}"
 
 
@@ -527,15 +550,17 @@ def ip_rate_limited(ip: str) -> bool:
 
 def parse_session_token(
     secret: bytes, token: str, now: int
-) -> Optional[int]:
-    """トークンを検証して user_id を返す。無効/期限切れは None。"""
+) -> Optional[tuple[int, int]]:
+    """トークンを検証して (user_id, epoch) を返す。無効/期限切れは None。
+    epochはDB側のsession_epochとの照合をmain.py側で行うために返す
+    （§B4・セッション個別無効化）。"""
     try:
-        uid_s, exp_s, sig = token.split(".")
-        payload = f"{uid_s}.{exp_s}"
+        uid_s, epoch_s, exp_s, sig = token.split(".")
+        payload = f"{uid_s}.{epoch_s}.{exp_s}"
     except (ValueError, AttributeError):
         return None
     if not hmac.compare_digest(sig, _sign(secret, payload)):
         return None
     if int(exp_s) < now:
         return None
-    return int(uid_s)
+    return int(uid_s), int(epoch_s)

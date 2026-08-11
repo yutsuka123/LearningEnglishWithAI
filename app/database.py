@@ -573,6 +573,12 @@ def _migrate_multiuser(conn: sqlite3.Connection) -> None:
              "user_id INTEGER NOT NULL DEFAULT 1")
     # ai_usage に ip を付与（既定空文字＝アカウント共有の異常検知用・E2）。
     _add_col(conn, "ai_usage", "ip", "ip TEXT DEFAULT ''")
+    # users に session_epoch を付与（既定0＝セッション個別無効化用・B4）。
+    # ログインCookieにこの世代番号を埋め込み、DB側の現在値と食い違えば
+    # 無効なセッションとして扱う。値を+1すると、そのユーザーの既存の
+    # 全セッションだけを一括で強制ログアウトできる。
+    _add_col(conn, "users", "session_epoch",
+             "session_epoch INTEGER NOT NULL DEFAULT 0")
 
     # 2) owner ユーザーを用意（無ければ作成。パスワードは admin.py で設定）。
     n = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]

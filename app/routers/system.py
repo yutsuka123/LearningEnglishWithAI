@@ -340,3 +340,25 @@ def admin_charge(payload: ChargeIn):
             raise HTTPException(404, "ユーザーが見つかりません。")
         new = auth.add_balance(conn, payload.user_id, amt)
     return {"ok": True, "balance_jpy": round(new, 1)}
+
+
+class ForceLogoutIn(BaseModel):
+    user_id: int
+
+
+@router.post("/admin/force-logout")
+def admin_force_logout(payload: ForceLogoutIn):
+    """管理者が対象ユーザーの既存の全セッションを強制的に無効化する
+    （§B4）。不正アクセスの疑い等で特定ユーザーだけを強制ログアウト
+    させたい場合に使う（他ユーザーには影響しない）。"""
+    from ..database import db
+    from ..services import auth
+    with db() as conn:
+        me = auth.get_user(conn, auth.current_user_id())
+        if not me or me.get("role") != "admin":
+            raise HTTPException(403, "管理者のみ操作できます。")
+        target = auth.get_user(conn, payload.user_id)
+        if not target:
+            raise HTTPException(404, "ユーザーが見つかりません。")
+        epoch = auth.bump_session_epoch(conn, payload.user_id)
+    return {"ok": True, "session_epoch": epoch}

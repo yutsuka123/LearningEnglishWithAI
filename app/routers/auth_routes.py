@@ -103,7 +103,8 @@ def signup(payload: SignupIn, request: Request, response: Response):
         if str(e) != "このメールアドレスは既に登録されています。":
             charge_keys.record_signup_redeem_failure(ip)
         return JSONResponse({"ok": False, "error": str(e)}, status_code=400)
-    token = auth.make_session_token(secret, uid, int(time.time()))
+    token = auth.make_session_token(
+        secret, uid, u.get("session_epoch", 0), int(time.time()))
     resp = JSONResponse({"ok": True, "user": {
         "id": u["id"], "username": u["username"], "role": u["role"],
         "display_name": u["display_name"], "email": u["email"],
@@ -134,7 +135,8 @@ def login(payload: LoginIn, request: Request, response: Response):
             )
         secret = auth.get_session_secret(conn)
     auth.clear_login_failures(payload.username, ip)
-    token = auth.make_session_token(secret, u["id"], int(time.time()))
+    token = auth.make_session_token(
+        secret, u["id"], u.get("session_epoch", 0), int(time.time()))
     resp = JSONResponse({"ok": True, "user": {
         "id": u["id"], "username": u["username"], "role": u["role"],
         "display_name": u["display_name"],
@@ -150,6 +152,20 @@ def login(payload: LoginIn, request: Request, response: Response):
 
 @router.post("/logout")
 def logout():
+    resp = JSONResponse({"ok": True})
+    resp.delete_cookie(auth.SESSION_COOKIE, path="/")
+    return resp
+
+
+@router.post("/logout-all-devices")
+def logout_all_devices():
+    """自分の既存の全セッションを一括で無効化する（§B4）。侵害された
+    かもしれないセッションに心当たりがあるときのセルフサービス機能。
+    このリクエスト自身のCookieも直後に削除するため、この端末でも
+    再ログインが必要になる。"""
+    uid = auth.current_user_id()
+    with db() as conn:
+        auth.bump_session_epoch(conn, uid)
     resp = JSONResponse({"ok": True})
     resp.delete_cookie(auth.SESSION_COOKIE, path="/")
     return resp

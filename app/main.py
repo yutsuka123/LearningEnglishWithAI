@@ -84,8 +84,14 @@ async def _auth_context(request, call_next):
         if tok:
             with db() as conn:
                 secret = auth_svc.get_session_secret(conn)
-            uid = auth_svc.parse_session_token(
-                secret, tok, int(time.time()))
+                parsed = auth_svc.parse_session_token(
+                    secret, tok, int(time.time()))
+                if parsed is not None:
+                    p_uid, p_epoch = parsed
+                    # §B4: DB側のsession_epochと食い違えば無効化された
+                    # セッション（強制ログアウト済み）として扱う。
+                    if auth_svc.get_session_epoch(conn, p_uid) == p_epoch:
+                        uid = p_uid
         if uid is None:
             path = request.url.path
             allowed = (path in _AUTH_ALLOW or path.startswith("/static"))
