@@ -14,7 +14,7 @@ from fastapi.responses import (
 )
 from fastapi.staticfiles import StaticFiles
 
-from .config import load_tokushoho_info, paths
+from .config import load_tokushoho_info, log, paths
 from .database import OWNER_USER_ID, db, init_db
 from .routers import (
     auth_routes, billing, categories, decks, fulfillment, inquiries, learn,
@@ -72,7 +72,8 @@ async def _auth_context(request, call_next):
     - MULTIUSER=1: 署名Cookieから user_id を復元。未ログインなら API は 401、
       ページは /login へリダイレクト（許可パスを除く）。"""
     # 汎用 IP レート制限（既定OFF・公開時に RATE_LIMIT_PER_MIN で有効化）。
-    client_ip = request.client.host if request.client else "?"
+    # real_client_ip: Caddy経由でも実クライアントIPを取る（§auth.py参照）。
+    client_ip = auth_svc.real_client_ip(request)
     if auth_svc.ip_rate_limited(client_ip):
         return JSONResponse(
             {"ok": False, "error": "リクエストが多すぎます。少し待って"
@@ -104,14 +105,19 @@ async def _auth_context(request, call_next):
                 if path == "/":
                     # 未ログインの初回訪問はログインへ即リダイレクトせず、
                     # まず案内(このアプリについて)を見せる（2026-08-11・
-                    # B1着手前の暫定対応）。アクセスをIPで軽く記録する。
-                    with db() as conn:
-                        conn.execute(
-                            "INSERT INTO landing_visits "
-                            "(ip, path, user_agent) VALUES (?, ?, ?)",
-                            (client_ip, path,
-                             request.headers.get("user-agent", "")[:300]),
-                        )
+                    # B1着手前の暫定対応）。アクセスをIPで軽く記録する
+                    # （ログ書き込み失敗はランディング表示自体を妨げない
+                    # よう握りつぶす。DBロック等の一過性エラー想定）。
+                    try:
+                        with db() as conn:
+                            conn.execute(
+                                "INSERT INTO landing_visits "
+                                "(ip, path, user_agent) VALUES (?, ?, ?)",
+                                (client_ip, path,
+                                 request.headers.get("user-agent", "")[:300]),
+                            )
+                    except Exception:
+                        log.warning("landing_visits記録に失敗", exc_info=True)
                     return RedirectResponse("/static/about.html")
                 return RedirectResponse("/login")
     token = auth_svc.set_current_user_id(
@@ -162,6 +168,7 @@ def robots_txt():
         "Disallow: /admin",
         "Disallow: /static/js/",
         "Disallow: /static/css/",
+        "Disallow: /static/index.html",
         "Allow: /$",
         "Allow: /static/about.html",
         "Allow: /static/terms.html",

@@ -527,6 +527,24 @@ def lockout_status() -> dict:
     }
 
 
+def real_client_ip(request) -> str:
+    """本番はCaddy(共有リバースプロキシ)経由でDockerネットワーク接続の
+    ため、request.client.hostはCaddyコンテナ自身のIPになってしまい
+    全訪問者が同一IPに見える不具合があった(2026-08-11発見・Fableモデルに
+    よるセキュリティレビューで指摘)。X-Forwarded-Forの**一番右側**
+    （信頼する唯一のプロキシ=Caddy自身が観測した直接の接続元として
+    追記した値）を実クライアントIPとして採用する。左側の値はクライアント
+    が任意に偽装できるため使わない。ヘッダが無ければ直接接続とみなし
+    request.client.hostにフォールバック（ローカル開発等、プロキシを
+    挟まない場合）。"""
+    xff = request.headers.get("x-forwarded-for", "")
+    if xff:
+        parts = [p.strip() for p in xff.split(",") if p.strip()]
+        if parts:
+            return parts[-1]
+    return request.client.host if request.client else "?"
+
+
 # 汎用 IP レート制限（DDoS/濫用の速度制限）。RATE_LIMIT_PER_MIN で調整。
 # 0/未設定=無効（ローカル単一ユーザーは既定で無効＝通常利用に影響なし）。
 # 公開時は env で 300 程度を推奨。真のDDoSは前段(Cloudflare/Caddy/fail2ban)で防ぐ。

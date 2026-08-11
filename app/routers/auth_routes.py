@@ -53,7 +53,7 @@ def signup(payload: SignupIn, request: Request, response: Response):
     """
     from ..services import charge_keys
 
-    ip = request.client.host if request.client else "?"
+    ip = auth.real_client_ip(request)
     if charge_keys.signup_redeem_locked(ip):
         return JSONResponse(
             {"ok": False, "error": "失敗が続いたため、しばらく時間をおいて"
@@ -119,7 +119,7 @@ def signup(payload: SignupIn, request: Request, response: Response):
 
 @router.post("/login")
 def login(payload: LoginIn, request: Request, response: Response):
-    ip = request.client.host if request.client else "?"
+    ip = auth.real_client_ip(request)
     locked = auth.login_locked(payload.username, ip)
     if locked:
         return JSONResponse(
