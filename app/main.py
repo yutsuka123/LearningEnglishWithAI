@@ -9,7 +9,8 @@ import html as html_lib
 
 from fastapi import FastAPI
 from fastapi.responses import (
-    FileResponse, HTMLResponse, JSONResponse, RedirectResponse,
+    FileResponse, HTMLResponse, JSONResponse, PlainTextResponse,
+    RedirectResponse,
 )
 from fastapi.staticfiles import StaticFiles
 
@@ -26,7 +27,7 @@ from .services.spaced_repetition import apply_weekly_decay
 # 注: /static 配下は下の判定で別途常に許可される（terms.html もそこに置く）。
 _AUTH_ALLOW = {
     "/login", "/api/auth/login", "/api/auth/signup", "/api/health",
-    "/favicon.ico", "/tokushoho",
+    "/favicon.ico", "/tokushoho", "/robots.txt",
 }
 
 # 特定商取引法ページ: 未記入欄のフォールバック文言(赤字表示)。
@@ -100,6 +101,18 @@ async def _auth_context(request, call_next):
                     return JSONResponse(
                         {"ok": False, "error": "要ログイン"},
                         status_code=401)
+                if path == "/":
+                    # 未ログインの初回訪問はログインへ即リダイレクトせず、
+                    # まず案内(このアプリについて)を見せる（2026-08-11・
+                    # B1着手前の暫定対応）。アクセスをIPで軽く記録する。
+                    with db() as conn:
+                        conn.execute(
+                            "INSERT INTO landing_visits "
+                            "(ip, path, user_agent) VALUES (?, ?, ?)",
+                            (client_ip, path,
+                             request.headers.get("user-agent", "")[:300]),
+                        )
+                    return RedirectResponse("/static/about.html")
                 return RedirectResponse("/login")
     token = auth_svc.set_current_user_id(
         uid if uid is not None else OWNER_USER_ID)
@@ -135,6 +148,28 @@ app.include_router(fulfillment.router)
 @app.get("/api/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/robots.txt")
+def robots_txt():
+    """クロール範囲を公開ページのみに明示的に絞る（2026-08-11・機密情報
+    や内部画面が誤って索引されないようにするため）。それ以外の経路は
+    ログイン必須(middlewareが/loginへ誘導)なので実害は薄いが、念のため
+    クローラーに対しても明示しておく。"""
+    lines = [
+        "User-agent: *",
+        "Disallow: /api/",
+        "Disallow: /admin",
+        "Disallow: /static/js/",
+        "Disallow: /static/css/",
+        "Allow: /$",
+        "Allow: /static/about.html",
+        "Allow: /static/terms.html",
+        "Allow: /static/privacy.html",
+        "Allow: /tokushoho",
+        "Allow: /login",
+    ]
+    return PlainTextResponse("\n".join(lines) + "\n")
 
 
 @app.get("/login")

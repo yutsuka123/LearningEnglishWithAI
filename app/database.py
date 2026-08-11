@@ -129,6 +129,17 @@ CREATE TABLE IF NOT EXISTS word_domain_tags (
     PRIMARY KEY (word_id, domain)
 );
 
+-- 未ログイン訪問者向けランディング(このアプリについて)ページのアクセス
+-- ログ（2026-08-11・B1着手前の状況把握用）。IPで同一人物かどうかの
+-- 目安を付ける（厳密な識別ではないが最低限の可視化には十分）。
+CREATE TABLE IF NOT EXISTS landing_visits (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    ip         TEXT    DEFAULT '',
+    path       TEXT    DEFAULT '',
+    user_agent TEXT    DEFAULT '',
+    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS phrase_attempts (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     phrase_id  INTEGER NOT NULL REFERENCES phrases(id) ON DELETE CASCADE,
