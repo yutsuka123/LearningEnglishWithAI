@@ -287,7 +287,12 @@ export async function sayItem(
       // という2026-08-11ユーザー指摘）。案内メッセージだけ出す。
       if (paymentRequiredCb) {
         const msg = await res.text().catch(() => "");
-        paymentRequiredCb(msg || "ログインすると聴けます。");
+        // サーバーからの案内文が必ず状況(要ログイン/要チャージ)に応じて
+        // 出るので、ここでの既定文言は状況を決めつけない中立な文にする
+        // （2026-08-11: 「ログインすると聴けます」固定だと、ログイン済み
+        // ユーザーの要チャージのケースまで誤って「要ログイン」と案内して
+        // しまい苦情の原因になるため）。
+        paymentRequiredCb(msg || "この音声は今は再生できません。");
       }
       return;
     }
@@ -328,7 +333,12 @@ export function sayItemAndWait(itemType, id, kind, voice, fallbackText, opts = {
           // 案内メッセージだけ出して静かに終える(2026-08-11ユーザー指摘)。
           return res.text().then((msg) => {
             if (paymentRequiredCb) {
-              paymentRequiredCb(msg || "ログインすると聴けます。");
+              // サーバーからの案内文が必ず状況(要ログイン/要チャージ)に応じて
+        // 出るので、ここでの既定文言は状況を決めつけない中立な文にする
+        // （2026-08-11: 「ログインすると聴けます」固定だと、ログイン済み
+        // ユーザーの要チャージのケースまで誤って「要ログイン」と案内して
+        // しまい苦情の原因になるため）。
+        paymentRequiredCb(msg || "この音声は今は再生できません。");
             }
             const err = new Error("payment required");
             err.paymentRequired = true;
