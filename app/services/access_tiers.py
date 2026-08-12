@@ -67,6 +67,24 @@ def free_range_id_filter(
     return clause, [limit]
 
 
+def free_range_ids(
+    conn: sqlite3.Connection, item_type: str, *, guest: bool = False,
+) -> set[int]:
+    """`free_range_id_filter`と同じ判定を、リクエスト単位で1回のSELECTだけ
+    実行してidの集合として返す（一覧/quiz応答の各行に`is_free_range`を
+    付与する用途。行ごとにランク計算するのを避けるため・2026-08-12）。"""
+    table, limit = _table_and_limit(item_type, guest=guest)
+    rank_expr = _level_rank_case()
+    rows = conn.execute(
+        f"SELECT id FROM ("
+        f"  SELECT id, ROW_NUMBER() OVER (ORDER BY {rank_expr}, id) AS rn "
+        f"  FROM {table}"
+        f") WHERE rn <= ?",
+        (limit,),
+    ).fetchall()
+    return {r["id"] for r in rows}
+
+
 def is_free_range(
     conn: sqlite3.Connection, item_type: str, item_id: int, *,
     guest: bool = False,

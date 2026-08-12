@@ -20,7 +20,7 @@ from ..services.spaced_repetition import (
 router = APIRouter(prefix="/api/words", tags=["vocabulary"])
 
 
-def _word_dict(row) -> dict:
+def _word_dict(row, free_ids: set[int] | None = None) -> dict:
     d = dict(row)
     # detail(JSON)は一覧では送らず、有無フラグだけ返す（応答を軽く保つ）。
     d["has_detail"] = bool((d.pop("detail", "") or "").strip())
@@ -32,6 +32,10 @@ def _word_dict(row) -> dict:
         else None
     )
     d["accuracy"] = accuracy
+    # 🔒無料範囲外の表示用（呼び出し元がfree_idsを渡した場合のみ付与・
+    # 2026-08-12）。渡さない呼び出し(作成/更新等)ではフィールド自体を省く。
+    if free_ids is not None:
+        d["is_free_range"] = d["id"] in free_ids
     return d
 
 
@@ -159,8 +163,10 @@ def list_words(
     )
     from ..services.progress import user_items_subquery
     src = user_items_subquery("words")  # 先頭の ? = user_id
+    from ..services import access_tiers
     with db() as conn:
         uid = current_user_id()
+        is_guest = is_guest_user_id(conn, uid)
         if deck_id is not None:
             owned = conn.execute(
                 "SELECT 1 FROM decks WHERE id = ? AND user_id = ?",
@@ -174,8 +180,6 @@ def list_words(
             ]
             params = params + [deck_id]
         if free_range_only:
-            from ..services import access_tiers
-            is_guest = is_guest_user_id(conn, uid)
             fr_clause, fr_params = access_tiers.free_range_id_filter(
                 "word", guest=is_guest,
             )
@@ -186,7 +190,8 @@ def list_words(
             f"SELECT * FROM {src} AS words{clause} ORDER BY {order}",
             [uid, *params],
         ).fetchall()
-        return [_word_dict(r) for r in rows]
+        free_ids = access_tiers.free_range_ids(conn, "word", guest=is_guest)
+        return [_word_dict(r, free_ids) for r in rows]
 
 
 @router.get("/facets")
@@ -380,25 +385,38 @@ def quiz(
     level_max: str | None = None,
     out_of_range: bool = False,
     mastered: str | None = None,   # 'only' | 'hide' | None
+    free_range_only: bool = False,  # 🔊無料で再生できる範囲のみ(2026-08-12)
 ):
     """Return a weighted set of words to quiz (probability ∝ 100 - mastery).
     分野/レベル/覚えた状態でフィルタ可能（フラッシュカードと共用）。"""
-    from ..services.auth import current_user_id, current_user_allow_banned
+    from ..services import access_tiers
+    from ..services.auth import (
+        current_user_allow_banned, current_user_id, is_guest_user_id,
+    )
     include_banned = include_banned and current_user_allow_banned()
     from ..services.spaced_repetition import select_for_review
     where, params = _word_filter(
         domain, level, level_min, level_max, out_of_range,
         include_banned, mastered,
     )
-    where_extra = " AND ".join(where)
     with db() as conn:
+        uid = current_user_id()
+        is_guest = is_guest_user_id(conn, uid)
+        if free_range_only:
+            fr_clause, fr_params = access_tiers.free_range_id_filter(
+                "word", guest=is_guest,
+            )
+            where = where + [fr_clause]
+            params = params + fr_params
+        where_extra = " AND ".join(where)
         rows = select_for_review(
             conn, table="words", limit=limit,
             exclude_banned=False,  # banned は _word_filter 側で処理済み
-            user_id=current_user_id(),
+            user_id=uid,
             where_extra=where_extra, params_extra=tuple(params),
         )
-        return [_word_dict(r) for r in rows]
+        free_ids = access_tiers.free_range_ids(conn, "word", guest=is_guest)
+        return [_word_dict(r, free_ids) for r in rows]
 
 
 @router.post("/attempt")

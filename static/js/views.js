@@ -419,10 +419,18 @@ function speedOpts(mode) {
 // 番号(ID)で再生する2ボタン。保存済みなら無料、無ければ合成して保存し
 // 次回から無料。fallback はTTS不可時にブラウザ音声で読む英文。
 // getMode() は 'slow'|'std'|'native' を返す（省略時 'std'）。
-function voiceButtonsItem(itemType, id, kind, fallback, getMode) {
+// isFreeRange===false のとき🔒表示（無料範囲外＝未ログイン/無課金では
+// 再生に制限がかかる語・フレーズ。押すこと自体は可能で、実際の可否は
+// サーバー側の判定に従う＝ここは事前の目印・2026-08-12）。
+function voiceButtonsItem(itemType, id, kind, fallback, getMode, isFreeRange) {
+  const locked = isFreeRange === false;
+  const lockNote = locked
+    ? "・🔒無料範囲外（未ログイン/無課金では聴けない場合があります）" : "";
   const cell = el(`<div class="voice-cell">
-    <button class="btn voice-m" title="男性の声 (ash)">🔊</button>
-    <button class="btn voice-f" title="女性の声 (nova)">🔊</button></div>`);
+    <button class="btn voice-m" title="男性の声 (ash)${lockNote}">${
+      locked ? "🔒" : "🔊"}</button>
+    <button class="btn voice-f" title="女性の声 (nova)${lockNote}">${
+      locked ? "🔒" : "🔊"}</button></div>`);
   const [m, f] = cell.querySelectorAll("button");
   const play = (voice) => speech.sayItem(
     itemType, id, kind, voice, fallback(),
@@ -1023,7 +1031,7 @@ function runFlashcards(stage, initialQueue, opts) {
     // ツール: 音声(男/女)・例文再生・詳細。
     const tools = stage.querySelector(".fc-tools");
     tools.appendChild(voiceButtonsItem(
-      kind, c.id, "word", () => c.english, () => speed));
+      kind, c.id, "word", () => c.english, () => speed, c.is_free_range));
     const exBtn = el(`<button class="btn ghost">🔊 例文</button>`);
     exBtn.disabled = !c.example;
     exBtn.addEventListener("click", () => { if (c.example) {
@@ -1130,6 +1138,11 @@ export async function flashcard(root) {
           ※ONにすると音量にご注意ください</span>
       </div>
       <div class="row mt">
+        <label class="toggle" title="無料で🔊再生できる単語だけに絞り込む
+          （未ログイン/ログイン無料ユーザー向け）">
+          <input type="checkbox" id="fcFreeOnly" /> 🔊再生できるものだけ</label>
+      </div>
+      <div class="row mt">
         <button class="btn" id="fcStart">▶ 開始</button>
       </div>
     </div>
@@ -1157,6 +1170,8 @@ export async function flashcard(root) {
   // （電車内等での利用を想定）。一度でも明示的に選んだ値はそちらを優先する。
   root.querySelector("#fcAuto").checked =
     (localStorage.getItem("fc_auto") ?? "0") === "1";
+  root.querySelector("#fcFreeOnly").checked =
+    localStorage.getItem("fc_free_only") === "1";
 
   root.querySelector("#fcStart").addEventListener("click", async () => {
     const v = (id) => root.querySelector(id).value;
@@ -1165,6 +1180,7 @@ export async function flashcard(root) {
     const mastered = v("#fcMastered"), size = v("#fcSize");
     const speed = v("#fcSpeed"), voice = v("#fcVoice");
     const auto = root.querySelector("#fcAuto").checked;
+    const freeOnly = root.querySelector("#fcFreeOnly").checked;
     localStorage.setItem("fc_dir", dir);
     localStorage.setItem("fc_dom", dom);
     localStorage.setItem("fc_lvmin", lvmin);
@@ -1174,6 +1190,7 @@ export async function flashcard(root) {
     localStorage.setItem("fc_speed", speed);
     localStorage.setItem("fc_voice", voice);
     localStorage.setItem("fc_auto", auto ? "1" : "0");
+    localStorage.setItem("fc_free_only", freeOnly ? "1" : "0");
 
     const q = new URLSearchParams({ limit: size });
     if (dom) q.set("domain", dom);
@@ -1181,6 +1198,7 @@ export async function flashcard(root) {
     if (lvmax) q.set("level_max", lvmax);
     if (mastered) q.set("mastered", mastered);
     if (showBanned()) q.set("include_banned", "true");
+    if (freeOnly) q.set("free_range_only", "true");
     const qs = q.toString();
 
     const stage = root.querySelector("#fcStage");
@@ -1256,6 +1274,11 @@ export async function flashPhrase(root) {
           ※ONにすると音量にご注意ください</span>
       </div>
       <div class="row mt">
+        <label class="toggle" title="無料で🔊再生できるフレーズだけに絞り込む
+          （未ログイン/ログイン無料ユーザー向け）">
+          <input type="checkbox" id="fpFreeOnly" /> 🔊再生できるものだけ</label>
+      </div>
+      <div class="row mt">
         <button class="btn" id="fpStart">▶ 開始</button>
       </div>
     </div>
@@ -1280,6 +1303,8 @@ export async function flashPhrase(root) {
   // 驚くという指摘)。一度でも明示的に選んだ値はそちらを優先する。
   root.querySelector("#fpAuto").checked =
     (localStorage.getItem("fp_auto") ?? "0") === "1";
+  root.querySelector("#fpFreeOnly").checked =
+    localStorage.getItem("fp_free_only") === "1";
 
   root.querySelector("#fpStart").addEventListener("click", async () => {
     const v = (id) => root.querySelector(id).value;
@@ -1288,6 +1313,7 @@ export async function flashPhrase(root) {
     const mastered = v("#fpMastered"), size = v("#fpSize");
     const speed = v("#fpSpeed"), voice = v("#fpVoice");
     const auto = root.querySelector("#fpAuto").checked;
+    const freeOnly = root.querySelector("#fpFreeOnly").checked;
     localStorage.setItem("fp_dir", dir);
     localStorage.setItem("fp_scene", scene);
     localStorage.setItem("fp_lvmin", lvmin);
@@ -1297,6 +1323,7 @@ export async function flashPhrase(root) {
     localStorage.setItem("fp_speed", speed);
     localStorage.setItem("fp_voice", voice);
     localStorage.setItem("fp_auto", auto ? "1" : "0");
+    localStorage.setItem("fp_free_only", freeOnly ? "1" : "0");
 
     const q = new URLSearchParams({ limit: size });
     if (scene) q.set("scene", scene);
@@ -1304,6 +1331,7 @@ export async function flashPhrase(root) {
     if (lvmax) q.set("level_max", lvmax);
     if (mastered) q.set("mastered", mastered);
     if (showBanned()) q.set("include_banned", "true");
+    if (freeOnly) q.set("free_range_only", "true");
     const qs = q.toString();
 
     const stage = root.querySelector("#fpStage");
@@ -1498,7 +1526,7 @@ export async function vocab(root) {
       // 番号(ID)で再生。保存済みなら無料、無ければ合成して保存。
       tr.firstElementChild.appendChild(voiceButtonsItem(
         "word", w.id, "word", () => w.english,
-        () => root.querySelector("#wSpeed").value));
+        () => root.querySelector("#wSpeed").value, w.is_free_range));
       const ops = tr.querySelector("td:last-child .ops-cell");
       const mc = tr.querySelector("[data-mc]");
       const ex = el(`<button class="btn good">詳細</button>`);
@@ -1718,7 +1746,7 @@ export async function phrases(root) {
       </tr>`);
       tr.firstElementChild.appendChild(voiceButtonsItem(
         "phrase", p.id, "phrase", () => p.english,
-        () => root.querySelector("#pSpeed").value));
+        () => root.querySelector("#pSpeed").value, p.is_free_range));
       const ops = tr.querySelector("td:last-child .ops-cell");
       const mc = tr.querySelector("[data-mc]");
       const det = el(`<button class="btn good">詳細</button>`);
@@ -3545,7 +3573,7 @@ export async function settings(root) {
       <h2>ℹ️ このアプリについて</h2>
       <p class="muted">バージョン ${escapeHtml(s.version || "")}
         （個人開発・ベストエフォート対応）。</p>
-      <p><a href="/static/about.html" target="_blank">このアプリについて
+      <p><a href="/static/about.html">このアプリについて
         （まとめページ）</a></p>
       <p><a href="/static/terms.html" target="_blank">利用規約・免責事項</a></p>
       <p><a href="/tokushoho" target="_blank">特定商取引法に基づく表記</a>

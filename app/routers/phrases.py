@@ -88,7 +88,7 @@ def _phrase_filter(
     return where, params
 
 
-def _phrase_dict(row) -> dict:
+def _phrase_dict(row, free_ids: set[int] | None = None) -> dict:
     d = dict(row)
     # detail(JSON)は一覧では送らず、有無フラグだけ返す（応答を軽く保つ、
     # 単語(words)と同じ扱い）。
@@ -100,6 +100,9 @@ def _phrase_dict(row) -> dict:
         if d["times_asked"]
         else None
     )
+    # 🔒無料範囲外の表示用（単語版`_word_dict`と同じ扱い・2026-08-12）。
+    if free_ids is not None:
+        d["is_free_range"] = d["id"] in free_ids
     return d
 
 
@@ -172,11 +175,13 @@ def list_phrases(
         conds.append(f"mastery >= {MASTERED_THRESHOLD}")
     elif mastered == "hide":
         conds.append(f"mastery < {MASTERED_THRESHOLD}")
+    from ..services import access_tiers
     from ..services.auth import current_user_id, is_guest_user_id
     from ..services.progress import user_items_subquery
     src = user_items_subquery("phrases")  # 先頭 ? = user_id
     with db() as conn:
         uid = current_user_id()
+        is_guest = is_guest_user_id(conn, uid)
         if deck_id is not None:
             owned = conn.execute(
                 "SELECT 1 FROM phrase_decks WHERE id = ? AND user_id = ?",
@@ -190,8 +195,6 @@ def list_phrases(
             ]
             params = params + [deck_id]
         if free_range_only:
-            from ..services import access_tiers
-            is_guest = is_guest_user_id(conn, uid)
             fr_clause, fr_params = access_tiers.free_range_id_filter(
                 "phrase", guest=is_guest,
             )
@@ -202,7 +205,9 @@ def list_phrases(
             f"SELECT * FROM {src} AS phrases{where} ORDER BY {order}",
             [uid, *params],
         ).fetchall()
-        return [_phrase_dict(r) for r in rows]
+        free_ids = access_tiers.free_range_ids(
+            conn, "phrase", guest=is_guest)
+        return [_phrase_dict(r, free_ids) for r in rows]
 
 
 @router.get("/facets")
@@ -423,23 +428,37 @@ def quiz(
     level_max: str | None = None,
     out_of_range: bool = False,
     mastered: str | None = None,   # 'only' | 'hide' | None
+    free_range_only: bool = False,  # 🔊無料で再生できる範囲のみ(2026-08-12)
 ):
     """フラッシュフレーズと共用。シーン/レベル/覚えた状態でフィルタ可能
     （単語版`/api/words/quiz`と同じインタフェース、列だけscene違い）。"""
-    from ..services.auth import current_user_id, current_user_allow_banned
+    from ..services import access_tiers
+    from ..services.auth import (
+        current_user_allow_banned, current_user_id, is_guest_user_id,
+    )
     include_banned = include_banned and current_user_allow_banned()
     where, params = _phrase_filter(
         scene, level_min, level_max, out_of_range, include_banned, mastered,
     )
-    where_extra = " AND ".join(where)
     with db() as conn:
+        uid = current_user_id()
+        is_guest = is_guest_user_id(conn, uid)
+        if free_range_only:
+            fr_clause, fr_params = access_tiers.free_range_id_filter(
+                "phrase", guest=is_guest,
+            )
+            where = where + [fr_clause]
+            params = params + fr_params
+        where_extra = " AND ".join(where)
         rows = select_for_review(
             conn, table="phrases", limit=limit,
             exclude_banned=False,  # banned は _phrase_filter 側で処理済み
-            user_id=current_user_id(),
+            user_id=uid,
             where_extra=where_extra, params_extra=tuple(params),
         )
-        return [_phrase_dict(r) for r in rows]
+        free_ids = access_tiers.free_range_ids(
+            conn, "phrase", guest=is_guest)
+        return [_phrase_dict(r, free_ids) for r in rows]
 
 
 class PhraseRestoreIn(BaseModel):

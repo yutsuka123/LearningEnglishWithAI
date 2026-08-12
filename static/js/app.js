@@ -397,7 +397,7 @@ async function boot() {
   // トップバー右のバージョン表記からも行けるが分かりにくいため
   // (2026-08-11ユーザー指摘)、メニュー本体にも入れる。
   nav.appendChild(el(
-    '<a class="nav-item" href="/static/about.html" target="_blank">'
+    '<a class="nav-item" href="/static/about.html">'
     + "📄 このアプリについて</a>",
   ));
 

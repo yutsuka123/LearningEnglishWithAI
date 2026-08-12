@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -11,6 +13,18 @@ from ..schemas import MemoryUpdateIn, SettingsIn
 from ..services import ai, auth, persistence
 
 router = APIRouter(prefix="/api/system", tags=["system"])
+
+
+def _latest_changelog_date() -> str | None:
+    """CHANGELOG.mdの先頭エントリの日付(YYYY-MM-DD)。about.htmlの
+    「バージョン/リリース日」表示をCHANGELOG更新に自動追従させるため
+    （手動転記の同期漏れを防ぐ・2026-08-12）。"""
+    try:
+        text = (ROOT_DIR / "CHANGELOG.md").read_text(encoding="utf-8")
+    except OSError:
+        return None
+    m = re.search(r"^## .*\((\d{4}-\d{2}-\d{2})", text, re.MULTILINE)
+    return m.group(1) if m else None
 
 
 def _require_admin() -> None:
@@ -255,6 +269,7 @@ def my_usage():
         "username": u.get("username", ""),
         "model": s.openai_model,
         "version": APP_VERSION,
+        "version_date": _latest_changelog_date(),
         "multiuser": multiuser_enabled(),
         "is_guest": is_guest,
         # ゲストは api_key_masked 等を含む /api/system/settings を読めない

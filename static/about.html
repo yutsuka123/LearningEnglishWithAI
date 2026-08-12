@@ -68,6 +68,9 @@
       <h1>🐱 nyangailab — サブスク疲れの方のためのAI英語学習アプリ</h1>
       <p class="sub">個人開発・ベストエフォート対応。ログインの前後どちらからも
         このページを開けます。</p>
+      <p class="sub">バージョン: <span id="verNum">—</span>
+        （リリース日: <span id="verDate">—</span>）
+        ・ このページの作成日: 2026-08-08 ／ 最終更新日: 2026-08-12</p>
 
       <p>nyangailabは、月額サブスクリプションではなく<b>使った分だけ払う
         都度課金制（前払いチャージ方式）</b>のAI英語学習アプリです。TOEIC
@@ -78,11 +81,12 @@
 
       <div class="notice">
         ⚠️ 現在、本アプリは<b>無料試験公開中</b>です。本番運用（商用サービス）
-        ではなく、まだ販売も行っておりません。恐れ入りますが、現時点では
+        ではなく、まだ販売も行っておりません。<b>2026年9月中の正式公開を
+        目指して鋭意準備中</b>です。恐れ入りますが、現時点では
         アカウントをお持ちでない方からのお問い合わせには対応できかねます。
       </div>
 
-      <a class="cta" href="/login">ログイン画面へ →</a>
+      <a class="cta" href="/">アプリを開く（トップ画面へ）→</a>
 
       <h2>ご案内</h2>
       <ul class="links">
@@ -153,6 +157,19 @@
       <h2>📘 取扱説明書・使い方ガイド</h2>
       <p class="muted">サイドバーメニューの並び順に沿って、各機能を簡単に
         説明します。ログイン後の画面と合わせてご覧ください。</p>
+
+      <div class="notice">
+        ⚠️ <strong>単語・フレーズ・例文等のコンテンツ、読み上げ音声、
+        音声入力の認識（発音判定等）はAIによって作成・生成しています。</strong>
+        AIを活用しているからこそ、月額サブスクに頼らず低コストで幅広い
+        分野の教材・自然な音声を都度課金でご提供できています。近年の
+        モデルは精度が高く誤りは少なくなっていますが、完璧ではありません。
+        内容の確認・照査には努めておりますが、まれに不自然な表現・誤り・
+        誤った発音や聞き取り違い等が生じる可能性があり、完全な正確性を
+        保証するものではありません。あらかじめご了承のうえご利用ください
+        （詳細は<a href="/static/terms.html">利用規約・免責事項</a>を
+        ご覧ください）。
+      </div>
 
       <div class="manual-item">
         <h3>🏠 ダッシュボード</h3>
@@ -245,7 +262,7 @@
         「お問い合わせ・ご要望」よりお気軽にご連絡ください。</p>
     </div>
 
-    <a class="back" href="/login">← ログイン画面に戻る</a>
+    <a class="back" href="/">← トップ画面に戻る</a>
   </div>
 
   <div id="smModal" style="display:none; position:fixed; inset:0;
@@ -265,6 +282,18 @@
 
   <script>
     (function () {
+      // バージョン/リリース日はCHANGELOG.mdに連動（/api/system/my-usage
+      // 経由。手動転記だと更新漏れが起きるため・2026-08-12）。
+      fetch("/api/system/my-usage")
+        .then((r) => r.json())
+        .then((u) => {
+          const vn = document.getElementById("verNum");
+          const vd = document.getElementById("verDate");
+          if (vn && u.version) vn.textContent = u.version;
+          if (vd && u.version_date) vd.textContent = u.version_date;
+        })
+        .catch(() => { /* ignore: バージョン表記が出ないだけ */ });
+
       const AREA_LABELS = {
         reading: "📖 リーディング", listening: "🎧 リスニング",
         writing_sample: "✍️ ライティング添削", conversation_sample: "🗣️ 英会話",
