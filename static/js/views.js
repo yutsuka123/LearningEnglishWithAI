@@ -1125,7 +1125,9 @@ export async function flashcard(root) {
         <select id="fcVoice" title="読み上げの声（自然な声ONのとき）">
           ${voiceOpts}</select>
         <label class="toggle"><input type="checkbox" id="fcAuto"/>
-          答え表示で自動読み上げ</label>
+          <b>答え表示で自動的に音声を再生する</b></label>
+        <span style="color:var(--danger); font-weight:700;">
+          ※ONにすると音量にご注意ください</span>
       </div>
       <div class="row mt">
         <button class="btn" id="fcStart">▶ 開始</button>
@@ -1249,7 +1251,9 @@ export async function flashPhrase(root) {
         <select id="fpVoice" title="読み上げの声（自然な声ONのとき）">
           ${voiceOpts}</select>
         <label class="toggle"><input type="checkbox" id="fpAuto"/>
-          答え表示で自動読み上げ</label>
+          <b>答え表示で自動的に音声を再生する</b></label>
+        <span style="color:var(--danger); font-weight:700;">
+          ※ONにすると音量にご注意ください</span>
       </div>
       <div class="row mt">
         <button class="btn" id="fpStart">▶ 開始</button>
