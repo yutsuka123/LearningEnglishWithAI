@@ -614,15 +614,24 @@ def _migrate_public_samples(conn: sqlite3.Connection) -> None:
     (`app/routers/learn.py`)経由でゲストにも公開する。area単体では
     reading/listeningの実データと区別できないため、この列で明示的に
     印を付ける。"""
+    have_col = "is_public_sample" in {
+        r["name"] for r in conn.execute("PRAGMA table_info(materials)")}
     _add_col(conn, "materials", "is_public_sample",
              "is_public_sample INTEGER NOT NULL DEFAULT 0")
-    # 2026-08-12に作成した40件のサンプルは、タイトルに共通の
-    # 「・サンプル)」マーカーが入っている（生成時の命名規則）。
-    # 以後この関数は毎起動で走るため既に印済みの行はUPDATE対象0件になる。
-    conn.execute(
-        "UPDATE materials SET is_public_sample = 1 "
-        "WHERE is_public_sample = 0 AND title LIKE '%・サンプル)%'"
-    )
+    if not have_col:
+        # 2026-08-12に作成した40件のサンプルは、タイトルに共通の
+        # 「・サンプル)」マーカーが入っている（生成時の命名規則）。
+        # 列を新規追加したこの瞬間の一回限りでバックフィルする
+        # (Wチェック監査(fable)で指摘・2026-08-12修正: 以前は毎起動で
+        # このUPDATEが走り続けており、field/destination等の自由入力欄
+        # (`app/routers/learn.py`の`generate`/`trip_prep`)にユーザーが
+        # 偶然/意図的に同じ文字列を含めると、次回起動時に**自分の生成物
+        # が全ユーザー・未ログインゲストにまで公開されてしまう**穴が
+        # あった。今後この文字列一致による自動公開は二度と走らない)。
+        conn.execute(
+            "UPDATE materials SET is_public_sample = 1 "
+            "WHERE is_public_sample = 0 AND title LIKE '%・サンプル)%'"
+        )
     # セキュリティ修正(2026-08-12・第2回監査で発見): materialsに所有者が
     # 無く、/api/learn/materials系が全ユーザーの生成物(出張準備で貼り付けた
     # 自社資料等の機密を含みうる)を無差別に返していた重大な情報漏えい。

@@ -36,6 +36,11 @@ def taxonomy():
 
 @router.get("/settings")
 def get_settings():
+    """管理者専用(2026-08-12セキュリティ修正・Wチェック監査で発見:
+    マスク済みAPIキー・ホスト/ポート等を非管理者にも返していた)。
+    非管理者向けのAI有効状態は`/api/system/my-usage`の`ai_enabled`で
+    別途提供済み(static/js/app.jsのrefreshCost/refreshAiState参照)。"""
+    _require_admin()
     from ..config import APP_VERSION, load_tokushoho_info
 
     s = load_settings()

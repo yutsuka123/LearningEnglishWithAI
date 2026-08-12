@@ -234,11 +234,18 @@ export async function refreshCost() {
     state.isAdmin = isAdmin;       // 各ビューのロール別表示に使う
     state.multiuser = !!u.multiuser;
     state.isGuest = !!u.is_guest;
-    if (state.isGuest) {
-      // ゲストは/api/system/settingsを読めない(api_key_masked等を含む
-      // ため)。AI有効状態はここ(my-usage)経由で取得する(2026-08-11)。
+    if (!isAdmin) {
+      // 非管理者(ゲスト・無課金/課金の一般ユーザー)は/api/system/settings
+      // を読めない(api_key_masked等を含むため管理者専用・2026-08-12)。
+      // AI有効状態はここ(my-usage)経由で取得する(元は2026-08-11にゲスト
+      // 向けだけの対応だったが、非管理者全体に拡張)。
       state.aiEnabled = !!u.ai_enabled;
       speech.setAiEnabled(u.ai_enabled);
+      const node = document.getElementById("aiState");
+      if (node) {
+        node.textContent = u.ai_enabled ? "" : "⚠️ AI未設定";
+        node.className = "ai-state " + (u.ai_enabled ? "ai-on" : "ai-off");
+      }
     }
     const balEl = document.getElementById("usageBalance");
     if (balEl) {
@@ -401,9 +408,9 @@ async function boot() {
   } catch (e) { /* ignore */ }
 
   await refreshCost();      // sets state.isAdmin / state.multiuser / state.isGuest
-  if (!state.isGuest) {
-    // ゲストは/api/system/settingsを読めないため、AI有効状態は
-    // refreshCost()内でmy-usage経由により既に取得済み(2026-08-11)。
+  if (state.isAdmin) {
+    // 非管理者は/api/system/settingsを読めない(2026-08-12・管理者専用化)。
+    // AI有効状態はrefreshCost()内でmy-usage経由により既に取得済み。
     await refreshAiState();   // sets speech aiEnabled
   }
   // 管理者タブは管理者のみ表示。

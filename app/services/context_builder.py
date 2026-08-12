@@ -52,7 +52,17 @@ def build_context() -> str:
     review = review_words_today()
     with db() as conn:
         us = get_user_settings(conn, current_user_id())
-    nickname = (us.get("nickname") or "").strip() or load_settings().nickname
+    # 2026-08-12セキュリティ修正(Wチェック監査(fable)で発見): env の
+    # USER_NICKNAME(オーナー自身が設定したニックネーム)への
+    # フォールバックは、オーナー本人（MULTIUSER=0のローカル動作を含む）
+    # にだけ適用する。以前は全ユーザー共通のフォールバックだったため、
+    # ニックネーム未設定の他ユーザーへのAI応答にオーナー本人の
+    # ニックネームが紛れ込んでいた。
+    from .auth import OWNER_USER_ID
+    is_owner = current_user_id() == OWNER_USER_ID
+    nickname = (us.get("nickname") or "").strip()
+    if not nickname and is_owner:
+        nickname = load_settings().nickname
 
     lines = [
         "# 学習者コンテキスト",
