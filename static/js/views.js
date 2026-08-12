@@ -1151,8 +1151,10 @@ export async function flashcard(root) {
   setVal("#fcSpeed", localStorage.getItem("fc_speed") || "std");
   setVal("#fcVoice", localStorage.getItem("fc_voice")
     || speech.loadPreferredVoice() || "nova");
+  // 既定OFF(2026-08-12〜): 開始した瞬間に音声が鳴って驚く、という指摘のため
+  // （電車内等での利用を想定）。一度でも明示的に選んだ値はそちらを優先する。
   root.querySelector("#fcAuto").checked =
-    (localStorage.getItem("fc_auto") ?? "1") === "1";
+    (localStorage.getItem("fc_auto") ?? "0") === "1";
 
   root.querySelector("#fcStart").addEventListener("click", async () => {
     const v = (id) => root.querySelector(id).value;
@@ -1270,8 +1272,10 @@ export async function flashPhrase(root) {
   setVal("#fpSpeed", localStorage.getItem("fp_speed") || "std");
   setVal("#fpVoice", localStorage.getItem("fp_voice")
     || speech.loadPreferredVoice() || "nova");
+  // 既定OFF(2026-08-12〜): フラッシュ単語と同じ理由(開始直後に音声が鳴って
+  // 驚くという指摘)。一度でも明示的に選んだ値はそちらを優先する。
   root.querySelector("#fpAuto").checked =
-    (localStorage.getItem("fp_auto") ?? "1") === "1";
+    (localStorage.getItem("fp_auto") ?? "0") === "1";
 
   root.querySelector("#fpStart").addEventListener("click", async () => {
     const v = (id) => root.querySelector(id).value;
