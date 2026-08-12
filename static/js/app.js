@@ -224,9 +224,6 @@ function _usageColor(remainJpy) {
   return "#36c98d";                         // 緑(十分)
 }
 
-// 利用停止ポップアップは残量¥0の間は1回だけ。
-const _capNotified = { blocked: false };
-
 export async function refreshCost() {
   try {
     const u = await api.get("/api/system/my-usage");
@@ -275,14 +272,6 @@ export async function refreshCost() {
     }
     const li = document.getElementById("loginBtn");
     if (li) li.style.display = (u.multiuser && state.isGuest) ? "" : "none";
-    // 残量¥0のポップアップ（今日/今月を区別せず、実際に利用が止まる
-    // タイミングと一致させる）。
-    const blocked = (u.remaining_jpy || 0) <= 0;
-    if (blocked && !_capNotified.blocked) {
-      _capNotified.blocked = true;
-      alert("AI利用の残量が¥0になりました。管理者のチャージで継続できます。");
-    }
-    if (!blocked) _capNotified.blocked = false;
   } catch (e) { /* ignore */ }
 }
 
