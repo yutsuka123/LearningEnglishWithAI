@@ -6,6 +6,20 @@
 コミットする。詳細な作業ログは非公開の`docs/TODO.md`/`docs/TODO_OLD.md`
 を参照）。
 
+## ver1.1.0-alpha19 (2026-08-12, commit未追記)
+
+**🟢 機能追加（文字の大きさ設定）**: topbarに「文字: 小/中/大/特大」の
+セレクトを追加（既定は中）。`zoom`で全体を一括拡大縮小する方式（既存CSSの
+個別font-size書き換え不要）。未ログインのゲストでも使える設定にしたい
+という要望のため、要ログインの設定画面ではなくtopbarに常設。ピンチズーム
+自体は元々`user-scalable`を無効化していないため既に可能（viewport meta
+タグを確認・変更不要）。
+
+**🔴 バグ修正（about.htmlのバージョン/リリース日が表示されない）**:
+`Dockerfile`が`CHANGELOG.md`をイメージにコピーしていなかったため、
+`/api/system/my-usage`の`version_date`が本番で常にnullになっていた。
+`COPY CHANGELOG.md .`を追加。
+
 ## ver1.1.0-alpha18 (2026-08-12, commit `4827d02`)
 
 **🟢 機能追加（フラッシュ単語/フラッシュフレーズの無料範囲UI）**:

@@ -17,11 +17,14 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # アプリ本体のみコピー（docs/ data/ .env .venv .git は .dockerignore で除外）。
+# CHANGELOG.mdはabout.htmlの「バージョン/リリース日」表示(system.py
+# _latest_changelog_date)が読むため必要(2026-08-12)。
 COPY app ./app
 COPY static ./static
 COPY templates ./templates
 COPY scripts ./scripts
 COPY run.py ./run.py
+COPY CHANGELOG.md .
 
 # 非rootユーザーで実行（セキュリティ）。/data はマウント先なので所有権付与。
 RUN useradd -r -u 10001 appuser \

@@ -144,6 +144,28 @@ function initTheme() {
 }
 
 // ---------------------------------------------------------------------------
+// 文字の大きさ（小/中/大/特大。既定は中。未ログインでも使える設定にしたい
+// という要望のためtopbarに常設、settings画面(要ログイン)には置かない
+// ・2026-08-12）。
+// ---------------------------------------------------------------------------
+
+function applyFontSize(size) {
+  if (size) document.documentElement.dataset.fontSize = size;
+  else delete document.documentElement.dataset.fontSize;
+  const sel = document.getElementById("fontSize");
+  if (sel) sel.value = size;
+}
+
+function initFontSize() {
+  applyFontSize(localStorage.getItem("fontSize") || "");
+  document.getElementById("fontSize")?.addEventListener("change", (e) => {
+    const v = e.target.value;
+    localStorage.setItem("fontSize", v);
+    applyFontSize(v);
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Routing
 // ---------------------------------------------------------------------------
 
@@ -365,6 +387,7 @@ const GUEST_HIDDEN_TABS = new Set([
 
 async function boot() {
   initTheme();
+  initFontSize();
 
   try {
     state.taxonomy = await api.get("/api/system/taxonomy");

@@ -29,7 +29,7 @@
     }
   }
   </script>
-  <link rel="stylesheet" href="/static/css/style.css?v=2" />
+  <link rel="stylesheet" href="/static/css/style.css?v=3" />
 </head>
 <body>
   <h1 class="sr-only">nyangailab（にゃんがいらぼ）｜サブスク不要・ニッチな英単語も学べるAI英語学習アプリ。
@@ -63,6 +63,12 @@
           <span class="ai-state" id="aiState"></span>
           <a class="app-ver" id="appVer" href="/static/about.html"
             title="このアプリについて"></a>
+          <select id="fontSize" title="文字の大きさ">
+            <option value="small">文字: 小</option>
+            <option value="">文字: 中</option>
+            <option value="large">文字: 大</option>
+            <option value="xlarge">文字: 特大</option>
+          </select>
           <button class="btn ghost" id="themeToggle" title="表示テーマ切替"
             style="padding:4px 10px">🌙</button>
           <button class="btn ghost" id="logoutBtn"
