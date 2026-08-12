@@ -11,12 +11,11 @@ from ..services.taxonomy import WORD_CATEGORIES, group_by_category
 from ..services.spaced_repetition import (
     MASTERED_THRESHOLD,
     clamp,
+    mark_vague as _mark_vague,
     record_attempt,
     selection_weight,
     set_known,
 )
-
-VAGUE_BONUS = 10  # 「うろ覚え」ボタンで加点する mastery
 
 router = APIRouter(prefix="/api/words", tags=["vocabulary"])
 
@@ -285,12 +284,27 @@ def delete_word(word_id: int):
     """単語の完全削除は管理者専用(2026-08-09〜)。カタログは全ユーザー共有
     のため、一般ユーザーが個々の単語を削除できると他ユーザーにも影響する。
     「自分の一覧から外したい」場合は単語帳に入れない/単語帳から外すことで
-    対応する（`app/routers/decks.py`）。"""
+    対応する（`app/routers/decks.py`）。
+
+    学習記録(user_word_progress)を持つ単語は削除しない(2026-08-12〜)。
+    `words`→`user_word_progress`のFKはON DELETE CASCADEのため、削除する
+    と全ユーザーのその単語の習熟度・忘却曲線の記録が無警告で消えてしまう
+    バグに近い挙動があった。既に学習履歴がある単語を除外したい場合は、
+    分野を「禁止用語」に変更する（`banned_filter`で出題除外される）。"""
     from ..services import auth
     with db() as conn:
         me = auth.get_user(conn, auth.current_user_id())
         if not me or me.get("role") != "admin":
             raise HTTPException(403, "単語の削除は管理者のみ行えます。")
+        has_progress = conn.execute(
+            "SELECT 1 FROM user_word_progress WHERE word_id = ? LIMIT 1",
+            (word_id,),
+        ).fetchone()
+        if has_progress:
+            raise HTTPException(
+                409, "この単語には学習記録があるため削除できません。"
+                "一覧から除外したい場合は、分野を「禁止用語」に変更して"
+                "ください。")
         cur = conn.execute("DELETE FROM words WHERE id = ?", (word_id,))
         if cur.rowcount == 0:
             raise HTTPException(404, "単語が見つかりません")
@@ -407,7 +421,8 @@ class KnownIn(BaseModel):
 
 @router.post("/{word_id}/known")
 def mark_known(word_id: int, payload: KnownIn):
-    """「覚えた」ボタン(per-user): mastery を満点(200)に。known=false で解除。"""
+    """「覚えた」ボタン(per-user): mastery を満点(200)に、復習間隔も最長へ。
+    known=false で解除（mastery/間隔とも復活させる）。"""
     from ..services.auth import current_user_id
     with db() as conn:
         exists = conn.execute(
@@ -415,27 +430,25 @@ def mark_known(word_id: int, payload: KnownIn):
         ).fetchone()
         if not exists:
             raise HTTPException(404, "単語が見つかりません")
-        new = set_known(conn, word_id, payload.known, table="words",
-                        user_id=current_user_id())
-    return {"ok": True, "mastery": new, "known": payload.known}
+        r = set_known(conn, word_id, payload.known, table="words",
+                      user_id=current_user_id())
+    return {"ok": True, "known": payload.known, **r}
 
 
 @router.post("/{word_id}/vague")
 def mark_vague(word_id: int):
-    """「うろ覚え」ボタン(per-user): mastery を +10（0..200でクランプ）。"""
+    """「うろ覚え」ボタン(per-user): mastery を +10（0..200でクランプ）、
+    復習間隔も約2日後に更新する。"""
     from ..services.auth import current_user_id
-    from ..services import progress as P
     with db() as conn:
         exists = conn.execute(
             "SELECT id FROM words WHERE id = ?", (word_id,)
         ).fetchone()
         if not exists:
             raise HTTPException(404, "単語が見つかりません")
-        uid = current_user_id()
-        cur = P.get_progress(conn, uid, "words", word_id)
-        new = clamp(cur["mastery"] + VAGUE_BONUS)
-        P.upsert_progress(conn, uid, "words", word_id, mastery=new)
-    return {"ok": True, "mastery": new}
+        r = _mark_vague(conn, word_id, table="words",
+                        user_id=current_user_id())
+    return {"ok": True, **r}
 
 
 class RestoreIn(BaseModel):

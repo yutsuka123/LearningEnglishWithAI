@@ -86,11 +86,12 @@ function playbackSpeedControl() {
 }
 
 // A reusable 🔊読み上げ / ⏹停止 control bar for generated material.
-function readAloudBar(getText) {
+function readAloudBar(getText, feature) {
   const bar = el(`<div class="row mt"></div>`);
   const play = el(`<button class="btn ghost">🔊 英文を読み上げ</button>`);
   const stop = el(`<button class="btn ghost">⏹ 停止</button>`);
-  play.addEventListener("click", () => speech.speak(englishOnly(getText())));
+  play.addEventListener("click",
+    () => speech.speak(englishOnly(getText()), { feature }));
   stop.addEventListener("click", () => speech.stopSpeaking());
   bar.append(play, stop, playbackSpeedControl());
   return bar;
@@ -318,7 +319,8 @@ async function readingStep(area, next) {
     if (!r.ok) { out.textContent = r.error; return; }
     out.innerHTML = md(r.body);
     out.appendChild(el(`<button class="btn ghost mt" id="say">🔊 読み上げ</button>`));
-    out.querySelector("#say").addEventListener("click", () => speech.speak(r.body));
+    out.querySelector("#say").addEventListener("click",
+      () => speech.speak(r.body, { feature: "reading_tts" }));
     out.appendChild(el(`<button class="btn mt" id="done">次へ</button>`));
     out.querySelector("#done").addEventListener("click", next);
     refreshCost();
@@ -550,8 +552,12 @@ function deleteButton(name, onDel) {
     if (!confirm(
       `最終確認です。「${label}」を完全に削除します。\n` +
       "この操作は元に戻せません。よろしいですか？")) return;
-    await onDel();
-    toast("削除しました");
+    try {
+      await onDel();
+      toast("削除しました");
+    } catch (e) {
+      toast(e.message || "削除に失敗しました");
+    }
   });
   return btn;
 }
@@ -893,9 +899,11 @@ function runFlashcards(stage, initialQueue, opts) {
         if (action === "known") {
           const r = await api.post(`${apiBase}/${c.id}/known`, { known: true });
           c.mastery = r.mastery; c.mastered = true;
+          c.review_level = r.review_level; c.next_review = r.next_review;
         } else if (action === "vague") {
           const r = await api.post(`${apiBase}/${c.id}/vague`);
           c.mastery = r.mastery;
+          c.review_level = r.review_level; c.next_review = r.next_review;
         } else {
           const r = await api.post(`${apiBase}/attempt`, {
             [idField]: c.id, direction: dir, correct: false, result: "wrong" });
@@ -1070,6 +1078,10 @@ function runFlashcards(stage, initialQueue, opts) {
 export async function flashcard(root) {
   const facets = await api.get(
     "/api/words/facets" + (showBanned() ? "?include_banned=true" : ""));
+  // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定は
+  // オフ(=含む)として扱う。
+  const hideMasteredDefault = !!(await api.get("/api/system/user-settings")
+    .catch(() => ({ settings: {} }))).settings?.hide_mastered;
   const domOpts = ['<option value="">分野: すべて</option>']
     .concat(facets.domains.map((d) => `<option>${escapeHtml(d)}</option>`))
     .join("");
@@ -1129,7 +1141,12 @@ export async function flashcard(root) {
   setVal("#fcDom", localStorage.getItem("fc_dom") || "");
   setVal("#fcLvMin", localStorage.getItem("fc_lvmin") || "");
   setVal("#fcLvMax", localStorage.getItem("fc_lvmax") || "");
-  setVal("#fcMastered", localStorage.getItem("fc_mastered") || "");
+  // 「詳細設定」がONなら毎回「隠す」を既定にする(localStorageの過去の選択
+  // より優先。localStorageには開始のたび""でも上書き保存されるため、単純に
+  // 「未設定なら」という判定だと2回目以降は永遠に効かなくなってしまう)。
+  // その場でドロップダウンを変えれば、そのセッション限定で一時的に閲覧可能。
+  setVal("#fcMastered", hideMasteredDefault
+    ? "hide" : (localStorage.getItem("fc_mastered") || ""));
   setVal("#fcSize", localStorage.getItem("fc_size") || "50");
   setVal("#fcSpeed", localStorage.getItem("fc_speed") || "std");
   setVal("#fcVoice", localStorage.getItem("fc_voice")
@@ -1183,6 +1200,10 @@ export async function flashPhrase(root) {
     api.get("/api/phrases/scenes" + (showBanned() ? "?include_banned=true" : "")),
     api.get("/api/phrases/facets"),
   ]);
+  // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定は
+  // オフ(=含む)として扱う。
+  const hideMasteredDefault = !!(await api.get("/api/system/user-settings")
+    .catch(() => ({ settings: {} }))).settings?.hide_mastered;
   const sceneOpts = ['<option value="">シーン: すべて</option>']
     .concat(sceneFacets.scenes.map((s) => `<option>${escapeHtml(s)}</option>`))
     .join("");
@@ -1242,7 +1263,9 @@ export async function flashPhrase(root) {
   setVal("#fpScene", localStorage.getItem("fp_scene") || "");
   setVal("#fpLvMin", localStorage.getItem("fp_lvmin") || "");
   setVal("#fpLvMax", localStorage.getItem("fp_lvmax") || "");
-  setVal("#fpMastered", localStorage.getItem("fp_mastered") || "");
+  // 「詳細設定」がONなら毎回「隠す」を既定にする(理由はflashcard()と同じ)。
+  setVal("#fpMastered", hideMasteredDefault
+    ? "hide" : (localStorage.getItem("fp_mastered") || ""));
   setVal("#fpSize", localStorage.getItem("fp_size") || "50");
   setVal("#fpSpeed", localStorage.getItem("fp_speed") || "std");
   setVal("#fpVoice", localStorage.getItem("fp_voice")
@@ -1354,8 +1377,10 @@ export async function vocab(root) {
   const myDecks = await api.get("/api/decks").catch(() => []);
   // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定
   // フィルター無し(={})として扱う(2026-08-11・ゲスト実装で発見)。
-  const dfw = (await api.get("/api/system/user-settings")
-    .catch(() => ({ settings: {} }))).settings?.default_word_filters || {};
+  const us = (await api.get("/api/system/user-settings")
+    .catch(() => ({ settings: {} }))).settings || {};
+  const dfw = us.default_word_filters || {};
+  const hideMasteredDefault = !!us.hide_mastered;
   const dfwActive = !!(dfw.category || dfw.level_min || dfw.level_max
     || dfw.mastered);
   root.innerHTML = `
@@ -1553,7 +1578,8 @@ export async function vocab(root) {
 
   root.querySelector("#quiz").addEventListener("click", async () => {
     const tb = testBanned() ? "&include_banned=true" : "";
-    const items = await api.get("/api/words/quiz?limit=10" + tb);
+    const mb = hideMasteredDefault ? "&mastered=hide" : "";
+    const items = await api.get("/api/words/quiz?limit=10" + tb + mb);
     const c = root; c.innerHTML = `<h1>単語クイズ</h1>`;
     const holder = el(`<div></div>`); c.appendChild(holder);
     quizRunner({ container: holder, items, kind: "word", appState: state,
@@ -1576,8 +1602,10 @@ export async function phrases(root) {
   const myDecks = await api.get("/api/phrase-decks").catch(() => []);
   // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定
   // フィルター無し(={})として扱う(2026-08-11・ゲスト実装で発見)。
-  const dfp = (await api.get("/api/system/user-settings")
-    .catch(() => ({ settings: {} }))).settings?.default_phrase_filters || {};
+  const usP = (await api.get("/api/system/user-settings")
+    .catch(() => ({ settings: {} }))).settings || {};
+  const dfp = usP.default_phrase_filters || {};
+  const hideMasteredDefault = !!usP.hide_mastered;
   const dfpActive = !!(dfp.category || dfp.level_min || dfp.level_max
     || dfp.mastered);
   root.innerHTML = `
@@ -1770,7 +1798,8 @@ export async function phrases(root) {
 
   root.querySelector("#quiz").addEventListener("click", async () => {
     const tb = testBanned() ? "&include_banned=true" : "";
-    const items = await api.get("/api/phrases/quiz?limit=10" + tb);
+    const mb = hideMasteredDefault ? "&mastered=hide" : "";
+    const items = await api.get("/api/phrases/quiz?limit=10" + tb + mb);
     root.innerHTML = `<h1>フレーズクイズ</h1>`;
     const holder = el(`<div></div>`); root.appendChild(holder);
     quizRunner({ container: holder, items, kind: "phrase", appState: state,
@@ -1856,10 +1885,10 @@ function materialView(title, sub, area, fields, histAreas) {
     const showInto = (body) => {
       const out = root.querySelector("#out");
       out.innerHTML = "";
-      out.appendChild(readAloudBar(() => disp(body)));
+      out.appendChild(readAloudBar(() => disp(body), "reading_tts"));
       const b = el(`<div class="md mt"></div>`); b.innerHTML = md(disp(body));
       out.appendChild(b);
-      out.appendChild(readAloudBar(() => disp(body)));
+      out.appendChild(readAloudBar(() => disp(body), "reading_tts"));
     };
     const panel = root.querySelector("#histPanel");
     root.querySelector("#histBtn").addEventListener("click", () => {
@@ -1907,6 +1936,39 @@ export const reading = (root) => materialView(
 
 // --- Writing ----------------------------------------------------------------
 
+// area='writing_sample'/'conversation_sample' のプレビュー用教材を一覧表示
+// する共通カード。AI課金は発生しない（既存の保存済み教材を表示するのみ）。
+// クリックでモーダル表示。無課金/未生成でも「どんな機能か」を確認できる。
+function sampleMaterialsCard(area, cardTitle, emptyLabel) {
+  const card = el(`<div class="card">
+    <h2>${escapeHtml(cardTitle)}</h2>
+    <p class="muted">実際にAIを使わなくても内容を確認できるサンプルです。</p>
+    <div class="row" id="smList"><p class="muted">読み込み中…</p></div>
+  </div>`);
+  (async () => {
+    const list = card.querySelector("#smList");
+    let items = [];
+    try {
+      items = await api.get(
+        `/api/learn/materials?area=${encodeURIComponent(area)}&limit=50`);
+    } catch (_) { /* 未ログイン等 */ }
+    if (!items.length) {
+      list.innerHTML = `<p class="muted">${escapeHtml(emptyLabel)}</p>`;
+      return;
+    }
+    list.innerHTML = "";
+    items.forEach((m) => {
+      const btn = el(`<button class="btn ghost"
+        style="margin:2px">${escapeHtml(m.field || m.title)}</button>`);
+      btn.addEventListener("click", () => {
+        openModal(m.title, (box) => { box.innerHTML = md(m.body); });
+      });
+      list.appendChild(btn);
+    });
+  })();
+  return card;
+}
+
 export async function writing(root) {
   root.innerHTML = `
     <h1>ライティング</h1>
@@ -1922,6 +1984,8 @@ export async function writing(root) {
       <div id="ans"></div>
       <div id="fb" class="md mt"></div>
     </div>`;
+  root.appendChild(sampleMaterialsCard("writing_sample",
+    "📝 添削サンプルを見る", "サンプルがまだありません。"));
   const ansBox = root.querySelector("#ans");
   ansBox.appendChild(answerInput(async (txt) => {
     if (!txt.trim()) { toast("文章が空です"); return; }
@@ -2023,6 +2087,8 @@ export async function conversation(root) {
       <div class="chat" id="chat"></div>
       <div id="inputArea" class="mt"></div>
     </div>`;
+  root.appendChild(sampleMaterialsCard("conversation_sample",
+    "💬 会話サンプルを見る", "サンプルがまだありません。"));
 
   const modeSel = root.querySelector("#mode");
   const sceneSel = root.querySelector("#sceneSel");
@@ -2498,7 +2564,8 @@ export async function listening(root) {
   const lDisp = (b) =>
     root.querySelector("#showQ").checked ? b : stripQuestions(b);
   const lSpeak = (b) => speech.speak(englishOnly(lDisp(b)),
-    { rate: parseFloat(root.querySelector("#rate").value) });
+    { rate: parseFloat(root.querySelector("#rate").value),
+      feature: "listening_tts" });
   {
     const panel = root.querySelector("#histPanel");
     const showInto = (body) => {
@@ -2667,7 +2734,8 @@ export async function listening(root) {
             (await jaFor(sents[i]) || "—");
         }
         if (!plRunning) return;
-        await speech.speakAndWait(sents[i], { rate: rate() });
+        await speech.speakAndWait(sents[i],
+          { rate: rate(), feature: "listening_tts" });
       }
     } while (plRunning && root.querySelector("#plLoop").checked);
     if (plRunning) { plStatus.textContent = "完了"; stopPL(); }
@@ -3378,6 +3446,20 @@ export async function settings(root) {
         <span class="muted" id="df_out"></span>
       </div>
     </div>
+    <div class="card">
+      <h2>詳細設定</h2>
+      <label><input type="checkbox" id="advHideMastered" />
+        「覚えた」判定の語彙・フレーズはクイズ/フラッシュカードに出題しない
+        （忘却曲線オフ）</label>
+      <p class="muted">オンにすると、単語帳/フレーズ帳一覧の「覚えた」ボタンで
+        満点にした項目は、クイズ・フラッシュカードに二度と出てこなくなります。
+        また出題したくなったら、一覧画面でその項目の「戻す」ボタンを押すと
+        個別に復活します。</p>
+      <div class="row mt">
+        <button class="btn good" id="adv_save">保存</button>
+        <span class="muted" id="adv_out"></span>
+      </div>
+    </div>
     <div class="card" id="chargeCard" style="display:none">
       <h2>💳 チャージ</h2>
       <p>現在の残高: <b id="ptBalance">-</b> pt</p>
@@ -3390,6 +3472,8 @@ export async function settings(root) {
       <p class="muted">BASE等で購入したチャージキーを入力すると、
         pt（1pt=1円）が残高に加算されます。AI英会話・reading・listening
         等の生成でこの残高が消費されます（単語/フレーズのクイズは無料）。
+        消費ペースは為替やAI提供元のAPI価格改定により変動することが
+        あります。
         <a href="/static/terms.html" target="_blank">利用規約・免責事項</a></p>
     </div>
     <div class="card" id="securityCard" style="display:none">
@@ -3696,6 +3780,8 @@ export async function settings(root) {
     const toeic = root.querySelector("#pf_toeic");
     if (nick) nick.value = us.nickname || "";
     if (toeic) toeic.value = us.toeic_self || "";
+    const advHide = root.querySelector("#advHideMastered");
+    if (advHide) advHide.checked = !!us.hide_mastered;
     // 管理者表示。一般ユーザーには管理者向けカードを隠す。
     const badge = root.querySelector("#roleBadge");
     if (mu && mu.role === "admin") {
@@ -3745,6 +3831,18 @@ export async function settings(root) {
     settings.toeic_self = Number.isFinite(t) ? t : null;
     await api.put("/api/system/user-settings", { settings });
     toast("プロフィールを保存しました");
+  });
+
+  const advSave = root.querySelector("#adv_save");
+  if (advSave) advSave.addEventListener("click", async () => {
+    const settings = {};
+    try { Object.assign(settings,
+      (await api.get("/api/system/user-settings")).settings || {}); }
+    catch (_) { /* */ }
+    settings.hide_mastered =
+      root.querySelector("#advHideMastered").checked;
+    await api.put("/api/system/user-settings", { settings });
+    root.querySelector("#adv_out").textContent = "保存しました";
   });
 
   const logoutAllBtn = root.querySelector("#logoutAllBtn");

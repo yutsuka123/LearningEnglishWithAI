@@ -44,7 +44,7 @@ _AUTH_ALLOW = {
 # する。新しい接頭辞を足すときは配下の全エンドポイントを必ず確認すること。
 _GUEST_READ_PREFIXES = (
     "/api/words", "/api/phrases", "/api/system/my-usage",
-    "/api/learn/tts/item",
+    "/api/learn/tts/item", "/api/learn/samples",
 )
 
 # 特定商取引法ページ: 未記入欄のフォールバック文言(赤字表示)。

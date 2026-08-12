@@ -208,6 +208,8 @@ function browserSpeak(text, opts = {}) {
 }
 
 // Main entry: speak with the best available engine.
+// opts.feature: サーバー側の課金カテゴリのヒント（例: "reading_tts",
+// "listening_tts"）。未指定なら汎用tts扱い（呼び出し元不明時の既定倍率）。
 export async function say(text, opts = {}) {
   if (!text) return;
   if (!(isNatural() && aiEnabled)) { browserSpeak(text, opts); return; }
@@ -215,10 +217,12 @@ export async function say(text, opts = {}) {
   if (!currentIsOpenAI || !currentVoiceName) pickRoundVoice();
   const myToken = ++playSeq;
   try {
+    const body = { text, voice: currentVoiceName };
+    if (opts.feature) body.feature = opts.feature;
     const res = await fetch("/api/learn/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, voice: currentVoiceName }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error("tts failed");
     const blob = await res.blob();
@@ -497,9 +501,11 @@ export function speakAndWait(text, opts = {}) {
     };
     if (!(isNatural() && aiEnabled)) { browser(); return; }
     if (!currentIsOpenAI || !currentVoiceName) pickRoundVoice();
+    const body = { text, voice: currentVoiceName };
+    if (opts.feature) body.feature = opts.feature;
     fetch("/api/learn/tts", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, voice: currentVoiceName }),
+      body: JSON.stringify(body),
     }).then((r) => r.ok ? r.blob() : Promise.reject(new Error("tts")))
       .then((blob) => {
         stopSpeaking();

@@ -221,24 +221,31 @@ def my_usage():
         u = get_user(conn, uid) or {}
         is_guest = is_guest_user_id(conn, uid)
     rate = s.usd_jpy_rate
-    # 実効上限(USD)：user個別→無ければグローバル日次。
-    dcap = u.get("daily_cost_cap_usd") or s.ai_daily_cost_cap_usd or None
-    mcap = u.get("monthly_cost_cap_usd") or None
-    daily_cap_jpy = round(dcap * rate) if dcap else None
-    # 月次上限が未設定なら、表示用に日次×30をフォールバックして月バーも出す。
-    if mcap:
-        monthly_cap_jpy = round(mcap * rate)
-    elif dcap:
-        monthly_cap_jpy = round(dcap * rate * 30)
-    else:
-        monthly_cap_jpy = None
+    # 実効上限(USD)：_user_guardと同じロジック(個別設定→既定=旧ユーザーの
+    # みEmail未設定なら¥150/日、それ以外0円)を使う。以前はここだけ別計算
+    # (グローバル日次にフォールバック)で、実際は無料枠0円のユーザーにも
+    # 上限が余裕あるように見えてしまう不整合があったため統一した
+    # (2026-08-12)。
+    dcap_usd, mcap_usd = ai._effective_caps(u, s)
+    daily_cap_jpy = round(dcap_usd * rate)
+    monthly_cap_jpy = round(mcap_usd * rate)
+    today_jpy = round(day * rate, 1)
+    month_jpy = round(month * rate, 1)
+    balance_jpy = u.get("balance_jpy")
+    # 「今日」「今月」の枠は個別に案内せず、実際にAIが止まるタイミングと
+    # 一致する単一の残量に統合する(無料枠の残り＋チャージ残高)。無料枠は
+    # 日次/月次どちらか厳しい方で頭打ちにする。
+    quota_remain_jpy = min(max(0.0, daily_cap_jpy - today_jpy),
+                            max(0.0, monthly_cap_jpy - month_jpy))
+    remaining_jpy = round(quota_remain_jpy + (balance_jpy or 0), 1)
     return {
-        "today_jpy": round(day * rate, 1),
-        "month_jpy": round(month * rate, 1),
+        "today_jpy": today_jpy,
+        "month_jpy": month_jpy,
         "daily_cap_jpy": daily_cap_jpy,
         "monthly_cap_jpy": monthly_cap_jpy,
-        "balance_jpy": (round(u["balance_jpy"], 1)
-                        if u.get("balance_jpy") is not None else None),
+        "balance_jpy": (round(balance_jpy, 1)
+                        if balance_jpy is not None else None),
+        "remaining_jpy": remaining_jpy,
         "role": u.get("role", "user"),
         "username": u.get("username", ""),
         "model": s.openai_model,

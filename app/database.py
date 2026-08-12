@@ -602,6 +602,51 @@ def _migrate_multiuser(conn: sqlite3.Connection) -> None:
     # 全セッションだけを一括で強制ログアウトできる。
     _add_col(conn, "users", "session_epoch",
              "session_epoch INTEGER NOT NULL DEFAULT 0")
+    _migrate_membership_status(conn)
+    _migrate_public_samples(conn)
+
+
+def _migrate_public_samples(conn: sqlite3.Connection) -> None:
+    """未ログインでも安全に見せられる「サンプル教材」の印(2026-08-12)。
+    `materials`は本来ログイン必須(実際の生成物を含みうる)だが、意図的に
+    作成したサンプル(area='reading'/'listening'/'writing_sample'/
+    'conversation_sample')だけは`GET /api/learn/samples`
+    (`app/routers/learn.py`)経由でゲストにも公開する。area単体では
+    reading/listeningの実データと区別できないため、この列で明示的に
+    印を付ける。"""
+    _add_col(conn, "materials", "is_public_sample",
+             "is_public_sample INTEGER NOT NULL DEFAULT 0")
+    # 2026-08-12に作成した40件のサンプルは、タイトルに共通の
+    # 「・サンプル)」マーカーが入っている（生成時の命名規則）。
+    # 以後この関数は毎起動で走るため既に印済みの行はUPDATE対象0件になる。
+    conn.execute(
+        "UPDATE materials SET is_public_sample = 1 "
+        "WHERE is_public_sample = 0 AND title LIKE '%・サンプル)%'"
+    )
+
+
+def _migrate_membership_status(conn: sqlite3.Connection) -> None:
+    """会員ステータス（ゴールド/シルバー/ブロンズ等）の土台(2026-08-12)。
+    称号の判定条件・pt割引率・達成時のpt付与ロジックは今後検討・未実装。
+    ここでは値を保持するための列だけを用意する（拡張の余地を残す目的）。
+    会員登録年月日は既存の`users.created_at`を流用し、学習数は
+    `word_attempts`/`phrase_attempts`等から算出可能なため、ここでは
+    重複して持たない。"""
+    _add_col(conn, "users", "membership_tier",
+             "membership_tier TEXT NOT NULL DEFAULT 'bronze'")
+    _add_col(conn, "users", "membership_tier_since",
+             "membership_tier_since TEXT")
+    _add_col(conn, "users", "membership_tier_change_count",
+             "membership_tier_change_count INTEGER NOT NULL DEFAULT 0")
+    # ゴールド/シルバー/ブロンズとは別軸の称号用リザーブ（用途未定）。
+    _add_col(conn, "users", "membership_title_reserve",
+             "membership_title_reserve TEXT")
+    # 利用時間の累計（秒）。集計ロジック(セッション計測等)は未実装で常に0。
+    _add_col(conn, "users", "usage_seconds_total",
+             "usage_seconds_total INTEGER NOT NULL DEFAULT 0")
+    # 汎用リザーブ（用途未定・将来の項目追加用）。
+    _add_col(conn, "users", "status_reserve_1", "status_reserve_1 TEXT")
+    _add_col(conn, "users", "status_reserve_2", "status_reserve_2 TEXT")
 
     # 2) owner ユーザーを用意（無ければ作成。パスワードは admin.py で設定）。
     n = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]

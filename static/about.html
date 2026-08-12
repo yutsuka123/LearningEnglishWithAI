@@ -89,7 +89,64 @@
         <li><a href="/static/terms.html">📄 利用規約・免責事項</a></li>
         <li><a href="/tokushoho">🧾 特定商取引法に基づく表記</a></li>
         <li><a href="#manual">📘 取扱説明書・使い方ガイド</a></li>
+        <li><a href="#limits">🔓 ログイン前後・無課金/課金での利用範囲</a></li>
+        <li><a href="#samples">🔊 サンプルを見る（ログイン不要）</a></li>
       </ul>
+    </div>
+
+    <div class="card" id="limits">
+      <h2>🔓 ログイン前後・無課金/課金での利用範囲</h2>
+      <p class="muted">「①未ログイン」「②ログイン（無課金）」「③課金（チャージ後）」
+        の3段階で、使える範囲が変わります。</p>
+
+      <div class="manual-item">
+        <h3>① 未ログイン（ゲスト）</h3>
+        <p>単語・フレーズの一覧・検索・詳細（意味・例文・発音記号など）は
+          全分野無料で閲覧できます。発音の音声再生は、レベルの低い方から
+          単語1,000語・フレーズ750件までは無料で、それ以降はログインまたは
+          チャージが必要です。フラッシュカード・クイズもお試しいただけます
+          が、訪問者全員で共有の状態のため、学習記録はご自身のものとして
+          残りません（訪れるたびリセットされる体験になります）。リーディング・
+          リスニング・ライティング添削・英会話それぞれについて、あらかじめ
+          用意した<a href="#samples">サンプル教材</a>もログイン不要で
+          ご覧いただけます。AIにその場で新しい教材を生成させたり、実際に
+          添削・会話してもらったりする機能（AI自体の利用）や、単語帳/
+          フレーズ帳の作成はご利用いただけません。</p>
+      </div>
+
+      <div class="manual-item">
+        <h3>② ログイン・無課金</h3>
+        <p>音声再生の無料範囲が単語2,000語・フレーズ1,500件に広がります。
+          学習記録（習熟度・忘却曲線に基づく復習間隔）もご自身のアカウント
+          に保存されます。単語帳・フレーズ帳も作成できます（無課金の間は
+          1個・100語までの制限があります）。ただしAI機能（英会話・
+          リーディング/リスニング教材の新規生成・ライティング添削・
+          読み上げ音声など）は都度課金の対象のため、チャージ残高が無いと
+          ご利用いただけません。</p>
+        <p class="muted">※現在は試験公開・招待制のため、新規登録には
+          チャージキーの入力が必要です。</p>
+      </div>
+
+      <div class="manual-item">
+        <h3>③ 課金（チャージ後）</h3>
+        <p>AI英会話・リーディング/リスニング教材の生成・ライティング添削・
+          読み上げ音声などをご利用いただけます。単語帳・フレーズ帳の個数・
+          語数の上限もなくなります。チャージ残高は前払い方式で、使った分
+          だけ消費されます。料金の目安は<a href="/tokushoho">特定商取引法に
+          基づく表記</a>をご覧ください。</p>
+        <p class="muted">※チャージ残高でご利用いただける量（消費ペース）は、
+          為替レートやAI提供元のAPI価格改定により変動することがあります。
+          詳しくは<a href="/static/terms.html">利用規約・免責事項</a>を
+          ご確認ください。</p>
+      </div>
+    </div>
+
+    <div class="card" id="samples">
+      <h2>🔊 サンプルを見る（ログイン不要）</h2>
+      <p class="muted">実際にAIを使わなくても内容を確認できる、
+        リーディング・リスニング・ライティング添削・英会話それぞれの
+        サンプルです。分野ボタンを押すと本文が開きます。</p>
+      <div id="smWrap"><p class="muted">読み込み中…</p></div>
     </div>
 
     <div class="card" id="manual">
@@ -100,8 +157,8 @@
       <div class="manual-item">
         <h3>🏠 ダッシュボード</h3>
         <p>ログイン後の最初の画面。習熟度・学習履歴のサマリーを表示します。
-          進捗が保存されるのは課金ユーザーのみのため、無料ご利用時は
-          表示内容が限定的です。</p>
+          学習記録（単語/フレーズの習熟度・忘却曲線の復習間隔）は無課金の
+          ログインユーザーでも保存されます。</p>
       </div>
 
       <div class="manual-item">
@@ -156,9 +213,8 @@
 
       <div class="manual-item">
         <h3>🗣️ 英会話</h3>
-        <p>AIとテキスト（または音声）で英会話練習ができます。ログイン
-          ユーザーは事前に用意されたサンプル会話を無料で閲覧でき、実際に
-          AIと会話する機能は課金ユーザー向けです。</p>
+        <p>AIとテキスト（または音声）で英会話練習ができます。AIと実際に
+          会話する機能は課金ユーザー向けです。</p>
       </div>
 
       <div class="manual-item">
@@ -175,8 +231,8 @@
 
       <div class="manual-item">
         <h3>📚 学習履歴</h3>
-        <p>これまでの学習セッションの記録を振り返れます（課金ユーザー
-          向け・進捗保存が前提の機能です）。</p>
+        <p>これまでの学習セッションの記録を振り返れます。ログインしていれば
+          無課金でもご利用いただけます。</p>
       </div>
 
       <div class="manual-item">
@@ -191,5 +247,112 @@
 
     <a class="back" href="/login">← ログイン画面に戻る</a>
   </div>
+
+  <div id="smModal" style="display:none; position:fixed; inset:0;
+      background:rgba(20,25,40,.55); z-index:50;">
+    <div style="max-width:640px; margin:40px auto; background:#fff;
+        border-radius:12px; padding:24px 28px; max-height:85vh;
+        overflow:auto;">
+      <div style="display:flex; justify-content:space-between;
+          align-items:center; margin-bottom:8px;">
+        <h3 id="smTitle" style="margin:0; font-size:15px;"></h3>
+        <button id="smClose" class="cta" style="padding:6px 14px;
+            font-size:13px;">閉じる</button>
+      </div>
+      <div id="smBody"></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const AREA_LABELS = {
+        reading: "📖 リーディング", listening: "🎧 リスニング",
+        writing_sample: "✍️ ライティング添削", conversation_sample: "🗣️ 英会話",
+      };
+      function escapeHtml(s) {
+        return (s || "").replace(/[&<>"]/g, (c) =>
+          ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+      }
+      // 簡易Markdown->HTML（見出し・太字・箇条書きのみ。SPA側と同等の
+      // 最小実装を、依存を増やさないためここに複製している）。
+      function md(text) {
+        const lines = escapeHtml(text || "").split("\n");
+        const out = [];
+        let inList = false;
+        for (let line of lines) {
+          line = line.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+          const h = line.match(/^(#{1,4})\s+(.*)$/);
+          if (h) {
+            if (inList) { out.push("</ul>"); inList = false; }
+            out.push(`<h${h[1].length + 1}>${h[2]}</h${h[1].length + 1}>`);
+          } else if (/^\s*[-*]\s+/.test(line)) {
+            if (!inList) { out.push("<ul>"); inList = true; }
+            out.push("<li>" + line.replace(/^\s*[-*]\s+/, "") + "</li>");
+          } else if (line.trim() === "") {
+            if (inList) { out.push("</ul>"); inList = false; }
+            if (out.length && out[out.length - 1] !== "<br/>") out.push("<br/>");
+          } else {
+            if (inList) { out.push("</ul>"); inList = false; }
+            out.push(line + "<br/>");
+          }
+        }
+        if (inList) out.push("</ul>");
+        return out.join("\n");
+      }
+
+      const modal = document.getElementById("smModal");
+      document.getElementById("smClose").addEventListener("click", () => {
+        modal.style.display = "none";
+      });
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.style.display = "none";
+      });
+      function openSample(m) {
+        document.getElementById("smTitle").textContent =
+          AREA_LABELS[m.area] + " — " + (m.field || m.title);
+        document.getElementById("smBody").innerHTML = md(m.body);
+        modal.style.display = "block";
+      }
+
+      fetch("/api/learn/samples")
+        .then((r) => r.json())
+        .then((items) => {
+          const wrap = document.getElementById("smWrap");
+          if (!items || !items.length) {
+            wrap.innerHTML = '<p class="muted">サンプルがまだありません。</p>';
+            return;
+          }
+          const byArea = {};
+          items.forEach((m) => {
+            (byArea[m.area] = byArea[m.area] || []).push(m);
+          });
+          wrap.innerHTML = "";
+          Object.keys(AREA_LABELS).forEach((area) => {
+            const list = byArea[area];
+            if (!list || !list.length) return;
+            const h = document.createElement("h3");
+            h.textContent = AREA_LABELS[area];
+            wrap.appendChild(h);
+            const row = document.createElement("div");
+            list.forEach((m) => {
+              const btn = document.createElement("button");
+              btn.className = "cta";
+              btn.style.cssText =
+                "padding:8px 14px; font-size:13px; margin:3px 6px 3px 0;" +
+                " background:#eef2fb; color:#234;";
+              btn.textContent = m.field || m.title;
+              btn.addEventListener("click", () => openSample(m));
+              row.appendChild(btn);
+            });
+            wrap.appendChild(row);
+          });
+        })
+        .catch(() => {
+          document.getElementById("smWrap").innerHTML =
+            '<p class="muted">サンプルの読み込みに失敗しました。' +
+            "時間をおいて再度お試しください。</p>";
+        });
+    })();
+  </script>
 </body>
 </html>

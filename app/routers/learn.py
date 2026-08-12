@@ -226,6 +226,29 @@ def list_materials(
         return [dict(r) for r in rows]
 
 
+@router.get("/samples")
+def list_samples(area: str | None = None, limit: int = 50):
+    """未ログイン(ゲスト)を含め誰でも見られる、あらかじめ用意した
+    サンプル教材の一覧(2026-08-12)。`materials.is_public_sample=1`の
+    行だけを返す純粋な読み取り専用API(ユーザー進捗は含まない・書き込み
+    系エンドポイントとは完全に別path)。ゲストに安全公開するため
+    `_GUEST_READ_PREFIXES`(app/main.py)にはこのフルパスのみを追加する
+    こと(`/api/learn/materials`ごと追加しないこと・実データが漏れる)。"""
+    with db() as conn:
+        if area:
+            rows = conn.execute(
+                "SELECT id, area, field, title, body FROM materials "
+                "WHERE is_public_sample = 1 AND area = ? "
+                "ORDER BY id LIMIT ?", (area, limit),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT id, area, field, title, body FROM materials "
+                "WHERE is_public_sample = 1 ORDER BY id LIMIT ?", (limit,),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+
 @router.get("/materials/{material_id}")
 def get_material(material_id: int):
     from ..services.auth import current_user_id
@@ -692,6 +715,10 @@ def _insert_generated(
 class TtsIn(BaseModel):
     text: str
     voice: str = "alloy"
+    # 課金カテゴリのヒント（クライアント指定）。許可リスト外は無視して汎用
+    # "tts" 扱いにする（クライアントが任意の値を送って安い倍率を騙る事を
+    # 防ぐため・app/services/ai.pyのCATEGORY_MULTIPLIERと対応）。
+    feature: str = ""
 
 
 @router.post("/transcribe")
@@ -709,10 +736,19 @@ async def transcribe(
     return {"ok": True, "text": text}
 
 
+_TTS_FEATURE_ALLOWLIST = {"reading_tts", "listening_tts"}
+
+
 @router.post("/tts")
 def tts(payload: TtsIn):
-    """Return natural-voice MP3 audio for the given text (OpenAI TTS)."""
-    audio, error = ai.synthesize_speech(payload.text, payload.voice)
+    """Return natural-voice MP3 audio for the given text (OpenAI TTS)。
+    ``feature``はクライアント指定の課金カテゴリのヒントだが、任意の値を
+    渡して安い倍率を騙れないようホワイトリストで検証する（許可外は既定の
+    "tts"扱い＝呼び出し元不明として"other"倍率になる）。"""
+    feature = (payload.feature
+              if payload.feature in _TTS_FEATURE_ALLOWLIST else "tts")
+    audio, error = ai.synthesize_speech(
+        payload.text, payload.voice, feature=feature)
     if error:
         # 422 lets the frontend fall back to the browser voice.
         return Response(content=error, status_code=422, media_type="text/plain")

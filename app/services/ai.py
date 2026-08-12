@@ -59,27 +59,37 @@ def _user_cost_usd(user_id: int, period: str) -> float:
     return float(row["c"] or 0.0)
 
 
-def _tier_default_daily_cap_usd(tier: str, s) -> float:
+def _default_daily_cap_usd(u: dict, s) -> float:
     """個別上限が未設定のユーザーの既定無料枠(USD/日)。
-    2026-08-08決定: legacy/charged(=既に課金実績あり)は¥150/日相当の
-    無料枠を持つが、email tier(自己サインアップ・未課金)は**0円**
-    （無料枠なし・残高が無ければAI機能を一切使えない）。以前は全ユーザーが
-    グローバル既定`AI_DAILY_COST_CAP_USD`(元は単一開発者のテスト予算)に
-    フォールバックしており、実質無制限に近い無料枠になっていた不具合の
-    修正（詳細: docs/TODO.md 2026-08-08）。"""
-    if tier == "email":
+    2026-08-12決定: 無料枠は**旧ユーザー（テスター）＝管理者が直接作成した
+    アカウント（email未設定）のみ**。自己サインアップ（emailを設定して
+    登録した全ユーザー）は課金の有無を問わず**0円**（無料枠なし・残高が
+    無ければAI機能を一切使えない）。
+
+    「特別ユーザー」に無料枠を与えたい場合は、この既定値ではなく
+    `users.daily_cost_cap_usd`(個別上限)を管理者が直接設定する
+    （このオーバーライドは`_effective_caps`側で既にこの既定値より優先
+    されている＝新規スキーマ不要）。
+
+    旧実装は`user_tier()`の"legacy"/"charged"判定（＝emailの有無に加え
+    残高/チャージ履歴も見る）を使っていたが、「一度でも課金した旧
+    ユーザー」は"charged"と判定され、結果的に大半の自己サインアップ課金
+    ユーザーにも恒久的な無料枠を与えてしまっていた
+    （docs/TODO.md「¥150/日無料枠の抜け穴」参照・2026-08-12修正）。
+    emailの有無だけを見ることで、課金履歴に関係なく「旧ユーザーか
+    どうか」を安定して判定する。"""
+    if (u.get("email") or "").strip():
         return 0.0
     return s.ai_daily_free_jpy / s.usd_jpy_rate
 
 
-def _effective_caps(u: dict, tier: str, s) -> tuple[float, float]:
+def _effective_caps(u: dict, s) -> tuple[float, float]:
     """ユーザーの実効 日次/月次 上限(USD)。個別設定があればそれを優先
-    （0円の明示指定も尊重）、無ければ階層(tier)ごとの既定値を使う。
-    月次は個別未設定なら日次既定の30日分を上限とする（従来は無制限だった
-    ギャップの修正）。"""
+    （0円の明示指定も尊重）、無ければ既定値（旧ユーザーのみ¥150/日相当・
+    それ以外は0円）を使う。月次は個別未設定なら日次既定の30日分を上限
+    とする（従来は無制限だったギャップの修正）。"""
     dcap = u.get("daily_cost_cap_usd")
-    dcap = float(dcap) if dcap is not None else _tier_default_daily_cap_usd(
-        tier, s)
+    dcap = float(dcap) if dcap is not None else _default_daily_cap_usd(u, s)
     mcap = u.get("monthly_cost_cap_usd")
     mcap = float(mcap) if mcap is not None else dcap * 30
     return dcap, mcap
@@ -88,15 +98,16 @@ def _effective_caps(u: dict, tier: str, s) -> tuple[float, float]:
 def _user_guard(s) -> str | None:
     """課金モデル: 日次/月次の上限は「無料枠」。枠に到達したら**前払いチャージ
     残高**を消費して継続（残高は枠とは別管理）。残高が無ければ停止。
-    無料枠は0円もありえる（email tier）＝その場合は初回から残高必須。
+    無料枠は0円もありえる（emailを設定した自己サインアップユーザーは
+    全員これ・§`_default_daily_cap_usd`）＝その場合は初回から残高必須。
 
-    CLIスクリプト実行時（Webリクエスト経由でない場合）はこのtier別個別枠
+    CLIスクリプト実行時（Webリクエスト経由でない場合）はこの個別枠
     チェックを丸ごとスキップする。`current_user_id()`はリクエスト文脈が
     無い場合ownerにフォールバックするため、CLIバッチ実行がオーナー個人の
     日次/月次無料枠を消費して停止してしまう問題への対応
     （docs/TODO.md「CLIスクリプトのAI無料枠問題」参照）。サイト全体の合計
     支出上限（`_guard()`内のsite_cap）はCLI実行でも引き続き有効。"""
-    from .auth import current_user_id, get_user, is_web_request, user_tier
+    from .auth import current_user_id, get_user, is_web_request
 
     if not is_web_request():
         return None
@@ -104,10 +115,9 @@ def _user_guard(s) -> str | None:
     uid = current_user_id()
     with db() as conn:
         u = get_user(conn, uid)
-        tier = user_tier(conn, uid) if u else "legacy"
     if not u:
         return None
-    dcap, mcap = _effective_caps(u, tier, s)
+    dcap, mcap = _effective_caps(u, s)
     over_daily = _user_cost_usd(uid, "day") >= dcap
     over_monthly = _user_cost_usd(uid, "month") >= mcap
     if over_daily or over_monthly:
@@ -115,8 +125,8 @@ def _user_guard(s) -> str | None:
         if bal is not None and float(bal) > 0:
             return None  # 枠到達だがチャージ残高で継続（_record_usageで消費）
         which = "本日" if over_daily else "今月"
-        return (f"{which}の利用上限に達しました。管理者によるチャージ(¥500)で"
-                "継続できます。")
+        return (f"{which}の無料利用枠の上限に達しました。設定画面でチャージ"
+                "キーを登録すると、残高で引き続きご利用いただけます。")
     return None
 
 
@@ -228,6 +238,77 @@ class AIResult:
     output_tokens: int = 0
 
 
+# 機能(feature)別の動的課金倍率(2026-08-12・ユーザー決定)。無料枠(日次/月次
+# 上限)を使い切った後の利用でのみ、この式でチャージ残高から控除する
+# （枠内の利用・枠の判定基準そのものは実測原価のまま・変更なし）。
+# 式: 残高から引く額 = ceil_to_0.5円(実測原価(¥) × 倍率 [+ 上乗せ額]) 。
+# 一覧に無いfeatureは既定の"other"倍率(×2.0)を使う（判定・翻訳・要約・
+# 音声操作・単語/フレーズ詳細生成・呼び出し元不明のTTS/STT等）。
+#
+# reading_tts/listening_tts: 教材の読み上げ(TTS)呼び出し元が判明している
+# 場合のみ使う専用倍率（`static/js/views.js`のリーディング/リスニング画面
+# からのみクライアントが`feature`を明示指定・`app/routers/learn.py`の
+# `TtsIn`でホワイトリスト検証済み。会話中の読み上げ等、呼び出し元不明な
+# TTS/STTは"tts"/"stt"のまま＝"other"倍率にフォールバックする）。
+CATEGORY_MULTIPLIER = {
+    "conversation": 2.5,
+    "reading": 1.5,
+    "writing": 2.0,
+    "reading_tts": 1.7,
+    "listening_tts": 1.7,
+    "other": 2.0,
+}
+
+CHARGE_SURCHARGE_JPY = 0.5
+CHARGE_ROUND_STEP_JPY = 0.5
+
+# 会話1往復は「チャット」「TTS」「STT」が別々のAPI呼び出しとして課金される
+# ため、全部に+50銭を乗せると1往復で最大3回分の上乗せになってしまう
+# （2026-08-12ユーザー指摘・「50銭は一回だけ」に修正）。TTS/STTは倍率のみ
+# （丸めによる実質下限0.5円は残る）が原則で、+50銭が乗るのはテキスト生成
+# (chat)、および呼び出し元が判明しているreading_tts/listening_tts
+# （教材読み上げ。ユーザー指示により明示的に+50銭を付ける）のみ。判定は
+# 除外リスト方式にする（許可リスト方式だと、"listening"等chat()経由の
+# 「その他」カテゴリ機能に+50銭が乗り忘れるバグがあったため2026-08-12修正）。
+_NO_SURCHARGE_FEATURES = {"tts", "stt"}
+
+
+def _compute_charge_jpy(cost_usd: float, rate: float, feature: str) -> float:
+    import math
+
+    mult = CATEGORY_MULTIPLIER.get(feature, CATEGORY_MULTIPLIER["other"])
+    surcharge = 0.0 if feature in _NO_SURCHARGE_FEATURES else CHARGE_SURCHARGE_JPY
+    raw = cost_usd * rate * mult + surcharge
+    steps = math.ceil(raw / CHARGE_ROUND_STEP_JPY - 1e-9)
+    return steps * CHARGE_ROUND_STEP_JPY
+
+
+def _maybe_deduct_balance(
+    conn, uid: int, cost_usd: float, feature: str, s,
+) -> None:
+    """チャージ残高は「無料枠（日次/月次上限）に到達した後の利用」でのみ消費
+    する（枠とは別管理）。枠内の利用では残高を減らさない。呼び出し元が同じ
+    接続内で対象のai_usage行を既にINSERTしている前提
+    （`_user_cost_usd`はコミット済み分を見るため、直前＝このコール分を
+    除いた累計になる）。"""
+    from .auth import get_user
+
+    u = get_user(conn, uid)
+    if not u or u.get("balance_jpy") is None:
+        return
+    dcap, mcap = _effective_caps(u, s)
+    prior_day = _user_cost_usd(uid, "day")
+    prior_mon = _user_cost_usd(uid, "month")
+    over = prior_day >= dcap or prior_mon >= mcap
+    if not over:
+        return
+    charge = _compute_charge_jpy(cost_usd, s.usd_jpy_rate, feature)
+    conn.execute(
+        "UPDATE users SET balance_jpy = MAX(0, balance_jpy - ?) WHERE id = ?",
+        (charge, uid),
+    )
+
+
 def _record_usage(
     model: str,
     prompt_tokens: int,
@@ -247,24 +328,7 @@ def _record_usage(
             (model, prompt_tokens, output_tokens, cost, feature, uid,
              current_ip()),
         )
-        # チャージ残高は「無料枠（日次/月次上限）に到達した後の利用」でのみ消費
-        # する（枠とは別管理）。枠内の利用では残高を減らさない。
-        from .auth import get_user, user_tier
-        u = get_user(conn, uid)
-        if u and u.get("balance_jpy") is not None:
-            tier = user_tier(conn, uid)
-            dcap, mcap = _effective_caps(u, tier, s)
-            # _user_cost_usd は別接続でコミット済み分のみ参照する＝この呼び出し
-            # 直前(この分を除く)の累計。直前で枠到達済みなら「枠外利用」として控除。
-            prior_day = _user_cost_usd(uid, "day")
-            prior_mon = _user_cost_usd(uid, "month")
-            over = prior_day >= dcap or prior_mon >= mcap
-            if over:
-                charge = cost * s.usd_jpy_rate * s.balance_markup
-                conn.execute(
-                    "UPDATE users SET balance_jpy = "
-                    "MAX(0, balance_jpy - ?) WHERE id = ?", (charge, uid),
-                )
+        _maybe_deduct_balance(conn, uid, cost, feature, s)
     return cost
 
 
@@ -457,13 +521,17 @@ def _tts_cache_path(model: str, voice: str, text: str, instr: str = ""):
 
 def synthesize_speech(
     text: str, voice: str = "alloy", *,
-    style: str = TTS_STYLE_DEFAULT, rate_limit: bool = True
+    style: str = TTS_STYLE_DEFAULT, rate_limit: bool = True,
+    feature: str = "tts",
 ) -> tuple[bytes | None, str | None]:
     """Return (audio_mp3_bytes, error). Uses OpenAI's natural TTS voices.
 
     Audio is cached on disk by (model, voice, instructions, text); a cache hit
     costs nothing and makes repeated playback free。``style`` で読み上げの
     話し方を選ぶ（'learn'=学習用ゆっくり明瞭 / 'native'=ネイティブの自然な速さ）。
+    ``feature`` は課金カテゴリのヒント（呼び出し元が判明している場合のみ
+    "reading_tts"/"listening_tts" 等・呼び出し側でホワイトリスト検証済みの
+    前提。既定"tts"は呼び出し元不明＝"other"倍率にフォールバック）。
     """
     client, settings = _client()
     if client is None:
@@ -479,7 +547,7 @@ def synthesize_speech(
         return cache.read_bytes(), None  # cache hit → no API call, no cost
 
     # only a real (paid) synthesis hits the guard
-    refusal = _guard("tts", rate_limit=rate_limit)
+    refusal = _guard(feature, rate_limit=rate_limit)
     if refusal:
         return None, refusal
 
@@ -502,13 +570,18 @@ def synthesize_speech(
             pass
         cost = len(text) / 1000 * _TTS_USD_PER_1K_CHARS
         from .auth import current_ip, current_user_id
+        uid = current_user_id()
         with db() as conn:
             conn.execute(
                 "INSERT INTO ai_usage "
                 "(model, prompt_tokens, output_tokens, cost_usd, feature, "
-                " user_id, ip) VALUES (?, 0, 0, ?, 'tts', ?, ?)",
-                (settings.tts_model, cost, current_user_id(), current_ip()),
+                " user_id, ip) VALUES (?, 0, 0, ?, ?, ?, ?)",
+                (settings.tts_model, cost, feature, uid, current_ip()),
             )
+            # 2026-08-12修正: 以前はここでチャージ残高を消費しておらず、
+            # 無料枠を使い切った後もTTSだけ無制限に無料で使えてしまう
+            # 抜け穴があった。
+            _maybe_deduct_balance(conn, uid, cost, feature, settings)
         return audio, None
     except Exception as exc:
         log.error("TTS 失敗 (voice=%s, model=%s): %s",
@@ -660,13 +733,17 @@ def transcribe(
             minutes = max(len(audio_bytes) / (16000 * 60), 0.05)
         cost = minutes * 0.006 * calls
         from .auth import current_ip, current_user_id
+        uid = current_user_id()
         with db() as conn:
             conn.execute(
                 "INSERT INTO ai_usage "
                 "(model, prompt_tokens, output_tokens, cost_usd, feature, "
                 " user_id, ip) VALUES (?, 0, 0, ?, 'stt', ?, ?)",
-                (settings.stt_model, cost, current_user_id(), current_ip()),
+                (settings.stt_model, cost, uid, current_ip()),
             )
+            # 2026-08-12修正: TTSと同じ抜け穴（残高が一切減らない）がSTTにも
+            # あったため同様に修正。
+            _maybe_deduct_balance(conn, uid, cost, "stt", settings)
         return text, None
     except Exception as exc:
         log.error("STT 失敗: %s", exc)

@@ -3,10 +3,9 @@
 使い方:
   python scripts/generate_charge_keys.py <pattern> <amount_jpy> [--count N]
 
-例:
-  python scripts/generate_charge_keys.py 5J0Q 500  --count 5   # ¥500 -> 500pt
-  python scripts/generate_charge_keys.py 2K2B 2200 --count 5   # ¥2,000 -> 2,200pt
-  python scripts/generate_charge_keys.py 5K5B 5500 --count 5   # ¥5,000 -> 5,500pt
+例（正式な価格ラインナップは ¥800(800pt) / ¥8,000(8,800pt) の2種類）:
+  python scripts/generate_charge_keys.py 5J8Q 800  --count 5   # ¥800 -> 800pt
+  python scripts/generate_charge_keys.py 5K8B 8800 --count 5   # ¥8,000 -> 8,800pt
 
 pattern は4桁の固定値（アルファベット: 23456789ABCDEFGHJKMNPQRSTUVWXYZ。
 0/O/1/I/L は使えない）。額面/バッチ等の意味を自分で割り当てて管理する

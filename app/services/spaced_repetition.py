@@ -33,6 +33,7 @@ CORRECT_BOTH_BONUS = 5
 WEEKLY_DECAY = 1            # 週あたりの減衰（忘却曲線）。
 MASTERED_THRESHOLD = 100   # これ以上で「覚えた」。
 KNOWN_MASTERY = 200        # 「覚えた」ボタン押下時の値（満点）。
+VAGUE_BONUS = 10           # 「うろ覚え」ボタンで加点する mastery。
 
 # Forgetting-curve intervals in days, indexed by review level (box).
 REVIEW_INTERVALS = [1, 2, 4, 8, 16, 35, 70, 150]
@@ -168,6 +169,23 @@ VAGUE_REVIEW_LEVEL = 1  # 約2日後に再出題
 _RESULTS = ("correct", "vague", "wrong")
 
 
+def mark_vague(
+    conn: sqlite3.Connection, item_id: int, *,
+    table: str = "words", user_id: int,
+) -> dict:
+    """「うろ覚え」ボタン(per-user、words/phrases共通)。mastery を
+    VAGUE_BONUS 加点し、復習間隔も VAGUE_REVIEW_LEVEL（≒2日後）に更新する
+    （以前はmasteryのみでフラッシュカード経由だと間隔が停滞していた）。"""
+    from . import progress as P
+    cur = P.get_progress(conn, user_id, table, item_id)
+    new_mastery = clamp(cur["mastery"] + VAGUE_BONUS)
+    next_review = _next_review_date(VAGUE_REVIEW_LEVEL)
+    P.upsert_progress(conn, user_id, table, item_id, mastery=new_mastery,
+                      review_level=VAGUE_REVIEW_LEVEL, next_review=next_review)
+    return {"mastery": new_mastery, "review_level": VAGUE_REVIEW_LEVEL,
+            "next_review": next_review}
+
+
 def record_attempt(
     conn: sqlite3.Connection,
     item_id: int,
@@ -283,12 +301,19 @@ def _maybe_award_bonus(
 def set_known(
     conn: sqlite3.Connection, item_id: int, known: bool, *,
     table: str = "words", user_id: int,
-) -> int:
-    """「覚えた」ボタン(per-user)。known=True で満点(200)、False で解除(95)。"""
+) -> dict:
+    """「覚えた」ボタン(per-user)。known=True で満点(200)、False で解除(95)。
+    復習間隔も連動させる: known=True は最長間隔(150日、以前はフラッシュ
+    カード経由だと更新されず間隔が停滞するバグがあった)、known=False
+    （「戻す」＝復活）は最短間隔（すぐ出題対象に戻す）。"""
     from . import progress as P
-    new = KNOWN_MASTERY if known else (MASTERED_THRESHOLD - 5)
-    P.upsert_progress(conn, user_id, table, item_id, mastery=new)
-    return new
+    new_mastery = KNOWN_MASTERY if known else (MASTERED_THRESHOLD - 5)
+    new_level = (len(REVIEW_INTERVALS) - 1) if known else 0
+    next_review = _next_review_date(new_level)
+    P.upsert_progress(conn, user_id, table, item_id, mastery=new_mastery,
+                      review_level=new_level, next_review=next_review)
+    return {"mastery": new_mastery, "review_level": new_level,
+            "next_review": next_review}
 
 
 # ---------------------------------------------------------------------------

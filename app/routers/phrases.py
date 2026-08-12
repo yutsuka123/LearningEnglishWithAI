@@ -14,14 +14,13 @@ from ..services.taxonomy import PHRASE_CATEGORIES, group_by_category
 from ..services.spaced_repetition import (
     MASTERED_THRESHOLD,
     clamp,
+    mark_vague as _mark_vague,
     record_attempt,
     selection_weight,
     select_for_review,
     set_known,
 )
 from .vocabulary import LEVEL_ORDER, OUT_OF_RANGE, _level_range
-
-VAGUE_BONUS = 10  # 「うろ覚え」ボタンで加点する mastery
 
 router = APIRouter(prefix="/api/phrases", tags=["phrases"])
 
@@ -268,7 +267,8 @@ def create_phrase(payload: PhraseCreate):
 
 @router.post("/{phrase_id}/known")
 def mark_known(phrase_id: int, payload: KnownIn):
-    """「覚えた」ボタン(per-user): mastery を満点(200)に。known=false で解除。"""
+    """「覚えた」ボタン(per-user): mastery を満点(200)に、復習間隔も最長へ。
+    known=false で解除（mastery/間隔とも復活させる）。"""
     from ..services.auth import current_user_id
     with db() as conn:
         exists = conn.execute(
@@ -276,37 +276,48 @@ def mark_known(phrase_id: int, payload: KnownIn):
         ).fetchone()
         if not exists:
             raise HTTPException(404, "フレーズが見つかりません")
-        new = set_known(conn, phrase_id, payload.known, table="phrases",
-                        user_id=current_user_id())
-    return {"ok": True, "mastery": new, "known": payload.known}
+        r = set_known(conn, phrase_id, payload.known, table="phrases",
+                      user_id=current_user_id())
+    return {"ok": True, "known": payload.known, **r}
 
 
 @router.post("/{phrase_id}/vague")
 def mark_vague(phrase_id: int):
-    """「うろ覚え」ボタン(per-user): mastery を +10（0..200でクランプ）。"""
+    """「うろ覚え」ボタン(per-user): mastery を +10（0..200でクランプ）、
+    復習間隔も約2日後に更新する。"""
     from ..services.auth import current_user_id
-    from ..services import progress as P
     with db() as conn:
         exists = conn.execute(
             "SELECT id FROM phrases WHERE id = ?", (phrase_id,)
         ).fetchone()
         if not exists:
             raise HTTPException(404, "フレーズが見つかりません")
-        uid = current_user_id()
-        cur = P.get_progress(conn, uid, "phrases", phrase_id)
-        new = clamp(cur["mastery"] + VAGUE_BONUS)
-        P.upsert_progress(conn, uid, "phrases", phrase_id, mastery=new)
-    return {"ok": True, "mastery": new}
+        r = _mark_vague(conn, phrase_id, table="phrases",
+                        user_id=current_user_id())
+    return {"ok": True, **r}
 
 
 @router.delete("/{phrase_id}", status_code=204)
 def delete_phrase(phrase_id: int):
-    """フレーズの完全削除は管理者専用(2026-08-09〜、単語と同じ理由)。"""
+    """フレーズの完全削除は管理者専用(2026-08-09〜、単語と同じ理由)。
+
+    学習記録(user_phrase_progress)を持つフレーズは削除しない
+    (2026-08-12〜、単語のdelete_wordと同じ理由・ON DELETE CASCADEによる
+    無警告データ消失を防ぐ)。"""
     from ..services import auth
     with db() as conn:
         me = auth.get_user(conn, auth.current_user_id())
         if not me or me.get("role") != "admin":
             raise HTTPException(403, "フレーズの削除は管理者のみ行えます。")
+        has_progress = conn.execute(
+            "SELECT 1 FROM user_phrase_progress WHERE phrase_id = ? LIMIT 1",
+            (phrase_id,),
+        ).fetchone()
+        if has_progress:
+            raise HTTPException(
+                409, "このフレーズには学習記録があるため削除できません。"
+                "一覧から除外したい場合は、シーンを「禁止」で始まる名前に"
+                "変更してください。")
         cur = conn.execute("DELETE FROM phrases WHERE id = ?", (phrase_id,))
         if cur.rowcount == 0:
             raise HTTPException(404, "フレーズが見つかりません")

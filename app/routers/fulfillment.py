@@ -27,8 +27,8 @@ OVERDUE_HOURS = 24
 # パターンは自分用の識別ラベル（額面は付与pt側で決まる）。使用可能文字は
 # charge_keys の ALPHABET（0/1/O/I/L 不可）に限る。
 PRICE_TABLE: dict[int, tuple[int, str]] = {
-    500: (500, "C5AA"),
-    5000: (5500, "C5KK"),
+    800: (800, "C5AA"),
+    8000: (8800, "C5KK"),
 }
 _DEFAULT_PATTERN = "CZ99"
 

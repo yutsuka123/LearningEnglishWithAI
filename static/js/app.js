@@ -216,30 +216,16 @@ export { api, speech, quizRunner };
 // Topbar wiring
 // ---------------------------------------------------------------------------
 
-// 残量バーの色: 満タン緑→青→半分以下黄→あと少し赤。
-function barColor(ratio) {
-  if (ratio >= 0.8) return "#36c98d";       // 緑(満タン)
-  if (ratio >= 0.5) return "#4da3ff";       // 青
-  if (ratio >= 0.2) return "#e7b53b";       // 黄(半分以下)
-  return "#e2503b";                          // 赤(あと少し)
+// 残量(¥)の色: 人によって上限(チャージ額)が違うため比率ではなく絶対額で
+// 判定する。50円以下は赤、100円以下はオレンジ、それ以上は緑。
+function _usageColor(remainJpy) {
+  if (remainJpy <= 50) return "#e2503b";   // 赤(残りわずか)
+  if (remainJpy <= 100) return "#f2994a";  // オレンジ(少ない)
+  return "#36c98d";                         // 緑(十分)
 }
 
-// 上限到達ポップアップは1期間1回だけ。
-const _capNotified = { day: false, month: false };
-
-function _renderBar(label, used, cap) {
-  if (!cap || cap <= 0) return "";
-  const remain = Math.max(0, cap - used);
-  const ratio = Math.max(0, Math.min(1, remain / cap));
-  const pct = Math.round(ratio * 100);
-  return (
-    `<span class="ubar" title="${label}: 残 ¥${Math.round(remain)} / ` +
-    `上限 ¥${cap}（使用 ¥${Math.round(used)}）">` +
-    `<span class="ubar-lbl">${label}</span>` +
-    `<span class="ubar-track"><span class="ubar-fill" style="width:${pct}%;` +
-    `background:${barColor(ratio)}"></span></span></span>`
-  );
-}
+// 利用停止ポップアップは残量¥0の間は1回だけ。
+const _capNotified = { blocked: false };
 
 export async function refreshCost() {
   try {
@@ -254,16 +240,19 @@ export async function refreshCost() {
       state.aiEnabled = !!u.ai_enabled;
       speech.setAiEnabled(u.ai_enabled);
     }
-    const bars = document.getElementById("usageBars");
-    if (bars) {
-      bars.innerHTML =
-        _renderBar("今日", u.today_jpy, u.daily_cap_jpy) +
-        _renderBar("今月", u.month_jpy, u.monthly_cap_jpy);
+    const balEl = document.getElementById("usageBalance");
+    if (balEl) {
+      const remain = Math.max(0, Math.round(u.remaining_jpy || 0));
+      balEl.textContent = `¥${remain}`;
+      balEl.style.color = _usageColor(remain);
+      balEl.title = u.balance_jpy != null
+        ? `AI利用の残り目安: ¥${remain}（チャージ残高 ¥` +
+          `${Math.round(u.balance_jpy)} 含む）`
+        : `AI利用の残り目安: ¥${remain}`;
     }
-    // 管理者のみ金額表示。一般ユーザーは残量バーのみ。
+    // 管理者のみ金額表示。一般ユーザーは残量表示のみ。
     const badge = document.getElementById("costBadge");
     if (badge) {
-      // 残高はバーで表現するため非表示。管理者のみ今日/今月の金額を表示。
       badge.textContent = isAdmin
         ? `💰 今日 ¥${u.today_jpy} / 今月 ¥${u.month_jpy}`
         : "";
@@ -279,24 +268,14 @@ export async function refreshCost() {
     }
     const li = document.getElementById("loginBtn");
     if (li) li.style.display = (u.multiuser && state.isGuest) ? "" : "none";
-    // 上限到達のポップアップ（チャージ残高が無ければ）。
-    const dOver = u.daily_cap_jpy && u.today_jpy >= u.daily_cap_jpy;
-    const mOver = u.monthly_cap_jpy && u.month_jpy >= u.monthly_cap_jpy;
-    const hasBalance = u.balance_jpy != null && u.balance_jpy > 0;
-    if (dOver && !_capNotified.day) {
-      _capNotified.day = true;
-      alert(hasBalance
-        ? "本日のAI利用上限に達しました。以降はチャージ残高から消費されます。"
-        : "本日のAI利用上限に達しました。管理者のチャージで継続できます。");
+    // 残量¥0のポップアップ（今日/今月を区別せず、実際に利用が止まる
+    // タイミングと一致させる）。
+    const blocked = (u.remaining_jpy || 0) <= 0;
+    if (blocked && !_capNotified.blocked) {
+      _capNotified.blocked = true;
+      alert("AI利用の残量が¥0になりました。管理者のチャージで継続できます。");
     }
-    if (!dOver) _capNotified.day = false;
-    if (mOver && !_capNotified.month) {
-      _capNotified.month = true;
-      alert(hasBalance
-        ? "今月のAI利用上限に達しました。以降はチャージ残高から消費されます。"
-        : "今月のAI利用上限に達しました。管理者のチャージで継続できます。");
-    }
-    if (!mOver) _capNotified.month = false;
+    if (!blocked) _capNotified.blocked = false;
   } catch (e) { /* ignore */ }
 }
 
