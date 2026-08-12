@@ -285,10 +285,12 @@ export async function sayItem(
   const myToken = ++playSeq;
   try {
     const res = await fetch("/api/learn/tts/item?" + q.toString());
-    if (res.status === 402) {
-      // 無料範囲外・要ログイン等、意図的なブロック。ブラウザ音声への
-      // フォールバックはしない（変な声で鳴るくらいなら無音の方がよい、
-      // という2026-08-11ユーザー指摘）。案内メッセージだけ出す。
+    if (!res.ok) {
+      // 無料範囲外・要ログイン(402)・合成失敗(422)等、サーバーが返した
+      // 意図的なブロック/エラー。ブラウザ音声へのフォールバックはしない
+      // （変な声で鳴るくらいなら無音の方がよい、という2026-08-11ユーザー
+      // 指摘。422も同様に扱う: 2026-08-12・ゲスト無料枠0円化で未キャッシュ
+      // の無料範囲フレーズが合成失敗→しわがれ声になっていた不具合対応）。
       if (paymentRequiredCb) {
         const msg = await res.text().catch(() => "");
         // サーバーからの案内文が必ず状況(要ログイン/要チャージ)に応じて
@@ -300,12 +302,12 @@ export async function sayItem(
       }
       return;
     }
-    if (!res.ok) throw new Error("tts item failed");
     const blob = await res.blob();
     if (myToken !== playSeq) return; // 新しい再生要求が来ていた→古い音声は捨てる
     await playBlob(blob, opts.rate);
     if (usageCb) usageCb();
   } catch (e) {
+    // ここに来るのはネットワーク到達不能等、サーバー応答が得られない場合のみ。
     if (myToken === playSeq && fallbackText) browserSpeak(fallbackText, opts);
   }
 }
@@ -332,24 +334,23 @@ export function sayItemAndWait(itemType, id, kind, voice, fallbackText, opts = {
     fetch("/api/learn/tts/item?" + q.toString())
       .then((res) => {
         if (res.ok) return res.blob();
-        if (res.status === 402) {
-          // 意図的なブロック。ブラウザ音声へのフォールバックはせず、
-          // 案内メッセージだけ出して静かに終える(2026-08-11ユーザー指摘)。
-          return res.text().then((msg) => {
-            if (paymentRequiredCb) {
-              // サーバーからの案内文が必ず状況(要ログイン/要チャージ)に応じて
-        // 出るので、ここでの既定文言は状況を決めつけない中立な文にする
-        // （2026-08-11: 「ログインすると聴けます」固定だと、ログイン済み
-        // ユーザーの要チャージのケースまで誤って「要ログイン」と案内して
-        // しまい苦情の原因になるため）。
-        paymentRequiredCb(msg || "この音声は今は再生できません。");
-            }
-            const err = new Error("payment required");
-            err.paymentRequired = true;
-            throw err;
-          });
-        }
-        throw new Error("tts");
+        // 無料範囲外・要ログイン(402)・合成失敗(422)等、サーバーが返した
+        // 意図的なブロック/エラー。ブラウザ音声へのフォールバックはせず、
+        // 案内メッセージだけ出して静かに終える(2026-08-11ユーザー指摘。
+        // 422も同様に扱う: 2026-08-12・しわがれ声バグ対応)。
+        return res.text().then((msg) => {
+          if (paymentRequiredCb) {
+            // サーバーからの案内文が必ず状況(要ログイン/要チャージ)に応じて
+            // 出るので、ここでの既定文言は状況を決めつけない中立な文にする
+            // （2026-08-11: 「ログインすると聴けます」固定だと、ログイン済み
+            // ユーザーの要チャージのケースまで誤って「要ログイン」と案内して
+            // しまい苦情の原因になるため）。
+            paymentRequiredCb(msg || "この音声は今は再生できません。");
+          }
+          const err = new Error("payment required");
+          err.paymentRequired = true;
+          throw err;
+        });
       })
       .then((blob) => {
         if (myToken !== playSeq) { resolve(); return; } // 古い要求→捨てて即解決

@@ -147,11 +147,22 @@ def budget_status() -> dict:
     }
 
 
-def _guard(feature: str, *, rate_limit: bool = True) -> str | None:
+def _guard(
+    feature: str, *, rate_limit: bool = True, skip_user_cap: bool = False,
+) -> str | None:
     """Return a refusal message if a guard trips, else None. The daily cost
     cap is ALWAYS enforced. The per-minute rate limit can be skipped for an
     explicit, user-authorized batch (``rate_limit=False``) — the cap still
-    stops it once the day's budget is spent, so it resumes next run."""
+    stops it once the day's budget is spent, so it resumes next run.
+
+    ``skip_user_cap``: ユーザー別の日次/月次無料枠チェックだけを飛ばす
+    （サイト全体の合計支出上限・分間レート制限は引き続き有効）。単語/
+    フレーズの「無料範囲」音声(`synthesize_speech`の`free_range`引数)専用
+    — `access_tiers`のとおり件数上限があるためコストは有界で、既に
+    `charge_playback_if_needed`で無料と判定済みの再生をここで再度
+    ブロックしない（2026-08-12: ゲスト無料枠を0円にした際、この二重
+    チェックのせいで無料範囲内でも未キャッシュの語は合成できず、フロント
+    側がブラウザ音声にフォールバックしてしまう不具合が発覚したため）。"""
     s = load_settings()
     # サイト全体の合計支出に対する保険（個別/tier別の枠とは独立の最終防衛線）。
     # 2026-08-08: 以前はこの`AI_DAILY_COST_CAP_USD`がユーザー個別枠の
@@ -162,9 +173,10 @@ def _guard(feature: str, *, rate_limit: bool = True) -> str | None:
         return ("本日のAI利用がサイト全体の上限に達しました。"
                 "時間をおいて再試行してください。")
     # ユーザー別ガード（tierごとの日次/月次無料枠・前払い残高）。
-    refusal = _user_guard(s)
-    if refusal:
-        return refusal
+    if not skip_user_cap:
+        refusal = _user_guard(s)
+        if refusal:
+            return refusal
     if rate_limit:
         from .auth import current_user_id
 
@@ -525,7 +537,7 @@ def _tts_cache_path(model: str, voice: str, text: str, instr: str = ""):
 def synthesize_speech(
     text: str, voice: str = "alloy", *,
     style: str = TTS_STYLE_DEFAULT, rate_limit: bool = True,
-    feature: str = "tts",
+    feature: str = "tts", free_range: bool = False,
 ) -> tuple[bytes | None, str | None]:
     """Return (audio_mp3_bytes, error). Uses OpenAI's natural TTS voices.
 
@@ -535,6 +547,10 @@ def synthesize_speech(
     ``feature`` は課金カテゴリのヒント（呼び出し元が判明している場合のみ
     "reading_tts"/"listening_tts" 等・呼び出し側でホワイトリスト検証済みの
     前提。既定"tts"は呼び出し元不明＝"other"倍率にフォールバック）。
+    ``free_range``: 呼び出し元(`charge_playback_if_needed`)が単語/フレーズの
+    「無料範囲」内と判定済み（＝件数上限があり総コストが有界）の場合に
+    True。ユーザー別の日次/月次無料枠チェックだけを免除する
+    （サイト全体の上限・レート制限は引き続き有効）。
     """
     client, settings = _client()
     if client is None:
@@ -550,7 +566,7 @@ def synthesize_speech(
         return cache.read_bytes(), None  # cache hit → no API call, no cost
 
     # only a real (paid) synthesis hits the guard
-    refusal = _guard(feature, rate_limit=rate_limit)
+    refusal = _guard(feature, rate_limit=rate_limit, skip_user_cap=free_range)
     if refusal:
         return None, refusal
 

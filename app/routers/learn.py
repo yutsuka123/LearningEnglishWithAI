@@ -20,7 +20,7 @@ from ..schemas import (
     WritingFeedbackIn,
 )
 from ..config import load_settings
-from ..services import ai, audio_store, persistence
+from ..services import access_tiers, ai, audio_store, persistence
 from ..services.context_builder import build_context
 from ..services.metrics import toeic_estimate, word_buckets
 from ..services.spaced_repetition import select_for_review
@@ -848,8 +848,13 @@ def tts_item(
         cached = audio_store.get(conn, item_type, item_id, skind, voice, text)
         if cached is not None:
             return Response(content=cached, media_type="audio/mpeg")
+        from ..services.auth import current_user_id, is_guest_user_id
+        is_guest = is_guest_user_id(conn, current_user_id())
+        free_range = access_tiers.is_free_range(
+            conn, item_type, item_id, guest=is_guest)
 
-    audio, error = ai.synthesize_speech(text, voice, style=speed)
+    audio, error = ai.synthesize_speech(
+        text, voice, style=speed, free_range=free_range)
     if error:
         return Response(content=error, status_code=422,
                         media_type="text/plain")
