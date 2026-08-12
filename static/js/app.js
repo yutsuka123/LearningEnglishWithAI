@@ -354,12 +354,41 @@ export async function refreshAiState() {
 // Boot
 // ---------------------------------------------------------------------------
 
+// ①(未ログイン/ゲスト)は単語・フレーズの閲覧とフラッシュカードのみ無料公開。
+// それ以外はログインが要る機能なのでnavに出さない(2026-08-11・B1本実装。
+// バックエンド側も個別に要ログインを強制しているので、これは表示上の案内
+// であり多重防御の一枚)。
+const GUEST_HIDDEN_TABS = new Set([
+  "dashboard", "deck", "phrasedeck", "reading", "writing",
+  "conversation", "listening", "assess", "history", "settings",
+]);
+
 async function boot() {
   initTheme();
 
-  // Build nav.
+  try {
+    state.taxonomy = await api.get("/api/system/taxonomy");
+    if (state.taxonomy.tts_voices) {
+      speech.setOpenAIVoices(state.taxonomy.tts_voices);
+    }
+  } catch (e) { /* ignore */ }
+
+  // ロール/ゲスト判定を先に済ませてからnavを組み立てる（先にnavを全件
+  // 描画してから隠す順序だと、未ログインでも一瞬「管理者」「設定」等が
+  // 見えてちらつく問題があったため・2026-08-12ユーザー指摘）。
+  await refreshCost();      // sets state.isAdmin / state.multiuser / state.isGuest
+  if (state.isAdmin) {
+    // 非管理者は/api/system/settingsを読めない(2026-08-12・管理者専用化)。
+    // AI有効状態はrefreshCost()内でmy-usage経由により既に取得済み。
+    await refreshAiState();   // sets speech aiEnabled
+  }
+
+  // Build nav（管理者タブ・ゲスト非公開タブは、隠すのではなくそもそも
+  // 挿入しない）。
   const nav = document.getElementById("nav");
   TABS.forEach(([tab, label]) => {
+    if (tab === "admin" && !state.isAdmin) return;
+    if (state.isGuest && GUEST_HIDDEN_TABS.has(tab)) return;
     const b = el(`<button class="nav-item" data-tab="${tab}">${label}</button>`);
     b.addEventListener("click", () => go(tab));
     nav.appendChild(b);
@@ -389,36 +418,6 @@ async function boot() {
     location.href = "/login";
   });
 
-  try {
-    state.taxonomy = await api.get("/api/system/taxonomy");
-    if (state.taxonomy.tts_voices) {
-      speech.setOpenAIVoices(state.taxonomy.tts_voices);
-    }
-  } catch (e) { /* ignore */ }
-
-  await refreshCost();      // sets state.isAdmin / state.multiuser / state.isGuest
-  if (state.isAdmin) {
-    // 非管理者は/api/system/settingsを読めない(2026-08-12・管理者専用化)。
-    // AI有効状態はrefreshCost()内でmy-usage経由により既に取得済み。
-    await refreshAiState();   // sets speech aiEnabled
-  }
-  // 管理者タブは管理者のみ表示。
-  const adminNav = document.querySelector('.nav-item[data-tab="admin"]');
-  if (adminNav) adminNav.style.display = state.isAdmin ? "" : "none";
-  // ①(未ログイン/ゲスト)は単語・フレーズの閲覧とフラッシュカードのみ
-  // 無料公開。それ以外はログインが要る機能なので隠す(2026-08-11・B1本実装。
-  // バックエンド側も個別に要ログインを強制しているので、ここは表示上の
-  // 案内であり多重防御の一枚)。
-  if (state.isGuest) {
-    const GUEST_HIDDEN_TABS = [
-      "dashboard", "deck", "phrasedeck", "reading", "writing",
-      "conversation", "listening", "assess", "history", "settings",
-    ];
-    GUEST_HIDDEN_TABS.forEach((tab) => {
-      const item = document.querySelector(`.nav-item[data-tab="${tab}"]`);
-      if (item) item.style.display = "none";
-    });
-  }
   speech.onUsage(refreshCost); // refresh cost after paid TTS calls
   speech.onPaymentRequired((msg) => toast(msg)); // 無料範囲外の再生でチャージ不足のとき
   // Pre-load voices for TTS.
