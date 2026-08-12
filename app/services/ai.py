@@ -80,6 +80,9 @@ def _default_daily_cap_usd(u: dict, s) -> float:
     どうか」を安定して判定する。"""
     if (u.get("email") or "").strip():
         return 0.0
+    from .auth import GUEST_USERNAME
+    if u.get("username") == GUEST_USERNAME:
+        return 0.0  # 2026-08-12: ゲスト疑似ユーザーは常に無料枠0円
     return s.ai_daily_free_jpy / s.usd_jpy_rate
 
 

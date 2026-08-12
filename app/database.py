@@ -623,6 +623,19 @@ def _migrate_public_samples(conn: sqlite3.Connection) -> None:
         "UPDATE materials SET is_public_sample = 1 "
         "WHERE is_public_sample = 0 AND title LIKE '%・サンプル)%'"
     )
+    # セキュリティ修正(2026-08-12・第2回監査で発見): materialsに所有者が
+    # 無く、/api/learn/materials系が全ユーザーの生成物(出張準備で貼り付けた
+    # 自社資料等の機密を含みうる)を無差別に返していた重大な情報漏えい。
+    # user_idを追加しread側で絞り込む(app/routers/learn.py参照)。
+    # 既存行(所有者不明)はis_public_sample=1のもの以外、暫定でオーナー
+    # (id=1)に帰属させる(このバグの発生当時は実質オーナー本人の生成物が
+    # 大半だったため。以後の生成は都度current_user_id()を記録する)。
+    _add_col(conn, "materials", "user_id", "user_id INTEGER")
+    conn.execute(
+        "UPDATE materials SET user_id = ? "
+        "WHERE user_id IS NULL AND is_public_sample = 0",
+        (OWNER_USER_ID,),
+    )
 
 
 def _migrate_membership_status(conn: sqlite3.Connection) -> None:

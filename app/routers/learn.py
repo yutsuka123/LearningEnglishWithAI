@@ -100,10 +100,13 @@ def generate(payload: GenerateIn):
         return {"ok": False, "error": result.error}
 
     title = f"{payload.field or area_label} ({date.today().isoformat()})"
+    from ..services.auth import current_user_id
     with db() as conn:
         cur = conn.execute(
-            "INSERT INTO materials (area, field, title, body) VALUES (?, ?, ?, ?)",
-            (payload.area, payload.field, title, result.text),
+            "INSERT INTO materials (area, field, title, body, user_id) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (payload.area, payload.field, title, result.text,
+             current_user_id()),
         )
         material_id = cur.lastrowid
     return {"ok": True, "id": material_id, "title": title, "body": result.text}
@@ -169,17 +172,17 @@ def trip_prep(payload: TripPrepIn):
 
     title = f"{payload.destination} 渡航準備 ({date.today().isoformat()})"
     body = json.dumps(data, ensure_ascii=False)
+    from ..services.auth import current_user_id, get_user_settings
+    uid = current_user_id()
     with db() as conn:
         cur = conn.execute(
-            "INSERT INTO materials (area, field, title, body) "
-            "VALUES ('trip_prep', ?, ?, ?)",
-            (payload.destination, title, body),
+            "INSERT INTO materials (area, field, title, body, user_id) "
+            "VALUES ('trip_prep', ?, ?, ?, ?)",
+            (payload.destination, title, body, uid),
         )
         material_id = cur.lastrowid
 
     # 次回フォームの初期値用に、今回の入力一式を user_settings へ保存。
-    from ..services.auth import current_user_id, get_user_settings
-    uid = current_user_id()
     with db() as conn:
         settings = get_user_settings(conn, uid)
         settings["trip_prep_last"] = payload.model_dump()
@@ -198,30 +201,35 @@ def trip_prep(payload: TripPrepIn):
 def list_materials(
     area: str | None = None, areas: str | None = None, limit: int = 100,
 ):
-    """area 単一、または areas=カンマ区切りで複数領域の履歴を新しい順に。"""
+    """area 単一、または areas=カンマ区切りで複数領域の履歴を新しい順に。
+    自分が生成した教材(m.user_id=自分)、または誰でも見られるサンプル
+    (is_public_sample=1)だけを返す(2026-08-12セキュリティ修正: 以前は
+    全ユーザーの生成物が無差別に見えていた・他ユーザーの出張準備等に
+    含まれうる機密情報の漏えいだったため)。"""
     from ..services.auth import current_user_id
     area_list = (
         [a.strip() for a in areas.split(",") if a.strip()] if areas
         else ([area] if area else [])
     )
-    # 教材本文は共有、覚えた/うろ覚え(mastery)は per-user。
+    # 教材本文は所有者のみ閲覧可(公開サンプルは例外)、mastery は per-user。
     base = (
         "SELECT m.id, m.area, m.field, m.title, m.body, m.created_at, "
         "COALESCE(ump.mastery, 0) AS mastery, ump.last_studied AS last_studied "
         "FROM materials m LEFT JOIN user_material_progress ump "
-        "ON ump.material_id = m.id AND ump.user_id = ?"
+        "ON ump.material_id = m.id AND ump.user_id = ? "
+        "WHERE (m.user_id = ? OR m.is_public_sample = 1)"
     )
     uid = current_user_id()
     with db() as conn:
         if area_list:
             ph = ",".join("?" * len(area_list))
             rows = conn.execute(
-                f"{base} WHERE m.area IN ({ph}) "
-                "ORDER BY m.id DESC LIMIT ?", (uid, *area_list, limit),
+                f"{base} AND m.area IN ({ph}) "
+                "ORDER BY m.id DESC LIMIT ?", (uid, uid, *area_list, limit),
             ).fetchall()
         else:
             rows = conn.execute(
-                f"{base} ORDER BY m.id DESC LIMIT ?", (uid, limit)
+                f"{base} ORDER BY m.id DESC LIMIT ?", (uid, uid, limit)
             ).fetchall()
         return [dict(r) for r in rows]
 
@@ -251,15 +259,20 @@ def list_samples(area: str | None = None, limit: int = 50):
 
 @router.get("/materials/{material_id}")
 def get_material(material_id: int):
+    """所有者本人、または公開サンプルのみ返す(2026-08-12セキュリティ修正、
+    list_materialsと同じ理由)。他ユーザーの教材idを指定した場合は
+    存在を明かさないよう一律404にする。"""
     from ..services.auth import current_user_id
+    uid = current_user_id()
     with db() as conn:
         row = conn.execute(
             "SELECT m.id, m.area, m.field, m.title, m.body, m.created_at, "
             "COALESCE(ump.mastery, 0) AS mastery, ump.last_studied "
             "AS last_studied FROM materials m LEFT JOIN "
             "user_material_progress ump ON ump.material_id = m.id "
-            "AND ump.user_id = ? WHERE m.id = ?",
-            (current_user_id(), material_id),
+            "AND ump.user_id = ? WHERE m.id = ? "
+            "AND (m.user_id = ? OR m.is_public_sample = 1)",
+            (uid, material_id, uid),
         ).fetchone()
         if not row:
             return Response(content="not found", status_code=404,
@@ -281,6 +294,18 @@ def delete_material(material_id: int):
         conn.execute("DELETE FROM materials WHERE id = ?", (material_id,))
 
 
+def _own_or_public_material(conn, material_id: int, uid: int) -> None:
+    """自分の教材か公開サンプルでなければ404(2026-08-12セキュリティ修正:
+    他ユーザーの教材idへ進捗を書き込めてしまうIDORの防止)。"""
+    row = conn.execute(
+        "SELECT 1 FROM materials WHERE id = ? "
+        "AND (user_id = ? OR is_public_sample = 1)",
+        (material_id, uid),
+    ).fetchone()
+    if not row:
+        raise HTTPException(404, "教材が見つかりません")
+
+
 def _material_set_mastery(conn, material_id: int, mastery: int) -> None:
     """教材の習得度を per-user に UPSERT（教材本文は共有・履歴だけuser別）。"""
     from ..services.auth import current_user_id
@@ -296,7 +321,9 @@ def _material_set_mastery(conn, material_id: int, mastery: int) -> None:
 
 @router.post("/materials/{material_id}/known")
 def material_known(material_id: int):
+    from ..services.auth import current_user_id
     with db() as conn:
+        _own_or_public_material(conn, material_id, current_user_id())
         _material_set_mastery(conn, material_id, 200)
     return {"ok": True, "mastery": 200}
 
@@ -305,11 +332,13 @@ def material_known(material_id: int):
 def material_vague(material_id: int):
     from ..services.auth import current_user_id
     from ..services import progress  # noqa: F401 (一貫性のため)
+    uid = current_user_id()
     with db() as conn:
+        _own_or_public_material(conn, material_id, uid)
         row = conn.execute(
             "SELECT mastery FROM user_material_progress "
             "WHERE user_id = ? AND material_id = ?",
-            (current_user_id(), material_id),
+            (uid, material_id),
         ).fetchone()
         new = max(0, min(200, (row["mastery"] if row else 0) + 10))
         _material_set_mastery(conn, material_id, new)
@@ -592,7 +621,17 @@ class GenItemsIn(BaseModel):
 
 @router.post("/generate-items")
 def generate_items(payload: GenItemsIn):
-    """AIで単語/フレーズを生成してDBに追加（品質モデルを使用・重複は除外）。"""
+    """AIで単語/フレーズを生成してDBに追加（品質モデルを使用・重複は除外）。
+    words/phrasesは全ユーザー共有のカタログのため、create_word/
+    create_phraseと同じ理由で管理者専用にする(2026-08-12セキュリティ
+    修正: 従来はログイン済みなら誰でも呼べ、任意のfocus文字列で内容を
+    誘導しつつ共有カタログへ無制限に書き込めた)。"""
+    from ..services import auth
+    with db() as conn:
+        me = auth.get_user(conn, auth.current_user_id())
+        if not me or me.get("role") != "admin":
+            raise HTTPException(
+                403, "単語/フレーズの自動生成は管理者のみ行えます。")
     if not ai.is_enabled():
         return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
     n = max(1, min(payload.count, 30))
