@@ -971,7 +971,7 @@ function runFlashcards(stage, initialQueue, opts) {
     stage.innerHTML = `<div class="card fc-done">
       <h2 style="margin-top:0">お疲れさまでした 🎉</h2>
       <p>覚えた <b>${counts.known}</b> ・ うろ覚え <b>${counts.vague}</b>
-        ・ できない <b>${counts.wrong}</b> ・ 保留 <b>${counts.skip}</b></p>
+        ・ できない <b>${counts.wrong}</b> ・ スキップ <b>${counts.skip}</b></p>
       <div class="row">
         <button class="btn" id="fcMore">▶ もっと続ける</button>
         <button class="btn ghost" id="fcBack">設定に戻る</button>
@@ -989,7 +989,7 @@ function runFlashcards(stage, initialQueue, opts) {
     stage.innerHTML = `<div class="fc-wrap">
       <div class="fc-progress muted">${pos + 1} / ${queue.length}
         ・ 覚${counts.known} うろ${counts.vague} ✗${counts.wrong}
-        保留${counts.skip}</div>
+        スキップ${counts.skip}</div>
       <div class="fc-card${revealed ? " flip" : ""}" id="fcCard">
         <div class="fc-q">${escapeHtml(qText)}</div>
         <div class="fc-side muted">${dir === "en2ja" ? "英→日" : "日→英"}</div>
@@ -1044,7 +1044,7 @@ function runFlashcards(stage, initialQueue, opts) {
     };
     actions.append(
       mk("ghost", "⬅ 戻る", undo),
-      mk("ghost", "⏸ 保留", () => grade("skip")),
+      mk("ghost", "⏭ 次へ（飛ばす）", () => grade("skip")),
       mk("danger", "⬇ できない", () => grade("wrong")),
       mk("vague-btn", "➡ うろ覚え", () => grade("vague")),
       mk("good", "⬆ 覚えた", () => grade("known")),
