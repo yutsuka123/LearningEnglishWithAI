@@ -1879,6 +1879,8 @@ function materialView(title, sub, area, fields, histAreas) {
       <div id="histPanel" class="card" style="display:none"></div>
       <div class="card"><div id="out" class="md">
         左上で分野を選んで「生成」を押してください。</div></div>`;
+    root.appendChild(sampleMaterialsCard(area,
+      "📖 サンプルを見る", "サンプルがまだありません。"));
     // 内容理解問題トグル: OFFなら表示・読み上げから問題部分を除く（保存はフル）。
     const disp = (b) =>
       root.querySelector("#showQ").checked ? b : stripQuestions(b);
@@ -1936,13 +1938,16 @@ export const reading = (root) => materialView(
 
 // --- Writing ----------------------------------------------------------------
 
-// area='writing_sample'/'conversation_sample' のプレビュー用教材を一覧表示
+// あらかじめ用意した「サンプル」教材(is_public_sample=1)だけを一覧表示
 // する共通カード。AI課金は発生しない（既存の保存済み教材を表示するのみ）。
-// クリックでモーダル表示。無課金/未生成でも「どんな機能か」を確認できる。
+// クリックでモーダル表示。無課金/未ログインでも「どんな機能か」を確認
+// できる（2026-08-12: 個人の生成履歴が混ざらないよう、専用の読み取り
+// 専用API `/api/learn/samples` を使う。ログイン有無を問わず同じ結果）。
 function sampleMaterialsCard(area, cardTitle, emptyLabel) {
   const card = el(`<div class="card">
     <h2>${escapeHtml(cardTitle)}</h2>
-    <p class="muted">実際にAIを使わなくても内容を確認できるサンプルです。</p>
+    <p class="muted">実際にAIを使わなくても内容を確認できるサンプルです。
+      無課金でもご覧いただけます。</p>
     <div class="row" id="smList"><p class="muted">読み込み中…</p></div>
   </div>`);
   (async () => {
@@ -1950,7 +1955,7 @@ function sampleMaterialsCard(area, cardTitle, emptyLabel) {
     let items = [];
     try {
       items = await api.get(
-        `/api/learn/materials?area=${encodeURIComponent(area)}&limit=50`);
+        `/api/learn/samples?area=${encodeURIComponent(area)}&limit=50`);
     } catch (_) { /* 未ログイン等 */ }
     if (!items.length) {
       list.innerHTML = `<p class="muted">${escapeHtml(emptyLabel)}</p>`;
@@ -2559,6 +2564,8 @@ export async function listening(root) {
         <button class="btn good" id="save">記録</button>
       </div>
     </div>`;
+  root.appendChild(sampleMaterialsCard("listening",
+    "🎧 サンプルを見る", "サンプルがまだありません。"));
   let scriptText = "";
   // 内容理解問題トグル＋読み上げは英語のみ(englishOnly)で統一。
   const lDisp = (b) =>
