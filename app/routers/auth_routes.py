@@ -19,6 +19,16 @@ from ..services import auth
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
+# 2026-08-13〜: まだ試験公開中のため、新規登録の受付を一時停止する。
+# 既存ユーザーのログイン（/api/auth/login 以下）には一切影響しない。
+# 受付を再開するときはこの値を True に戻すだけでよい。
+SIGNUP_OPEN = False
+SIGNUP_CLOSED_MESSAGE = (
+    "現在は試験公開中のため、新規登録の受付を停止しています。"
+    "正式公開は2026年9月中を予定しております。"
+    "既にIDをお持ちの方はログインしてください。"
+)
+
 
 def _cookie_secure(request: Request) -> bool:
     """本番HTTPSでは Secure Cookie を必須にする。COOKIE_SECURE=1 で強制、
@@ -63,6 +73,10 @@ def signup(payload: SignupIn, request: Request, response: Response):
     username にはメアドをそのまま使うため、既存の /api/auth/login や
     authenticate() は一切変更不要（従来ユーザーのログイン経路と共存する）。
     """
+    if not SIGNUP_OPEN:
+        return JSONResponse(
+            {"ok": False, "error": SIGNUP_CLOSED_MESSAGE}, status_code=403,
+        )
     from ..services import charge_keys
 
     ip = auth.real_client_ip(request)
