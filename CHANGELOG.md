@@ -6,7 +6,7 @@
 コミットする。詳細な作業ログは非公開の`docs/TODO.md`/`docs/TODO_OLD.md`
 を参照）。
 
-## ver1.1.0-alpha28 (2026-08-13)
+## ver1.1.0-alpha28 (2026-08-13, commit `a731b18`)
 
 **🔴 重大バグ修正（設定画面が非管理者に完全に開けなかった）**: 2026-08-12の
 `GET /api/system/settings`管理者専用化のさい、`static/js/views.js`の
