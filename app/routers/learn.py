@@ -913,7 +913,8 @@ def tts_item(
                 content="読み上げる本文がありません（例文なし等）。",
                 status_code=422, media_type="text/plain",
             )
-        charge_error = ai.charge_playback_if_needed(item_type, item_id, text)
+        charge_error = ai.charge_playback_if_needed(
+            item_type, item_id, base, text)
         if charge_error:
             return Response(content=charge_error, status_code=402,
                             media_type="text/plain")

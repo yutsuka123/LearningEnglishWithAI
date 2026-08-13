@@ -623,9 +623,34 @@ PLAYBACK_MIN_CHARGE_JPY = 0.5
 # 再生時に課金する額 = 生成コスト(USD換算前)の何分の1にするか。
 PLAYBACK_CHARGE_DIVISOR = 10
 
+# --- 短時間の重複課金防止(2026-08-13〜) -------------------------------------
+# 同じユーザーが同じコンテンツを誤連打・二重送信しても、直近5分以内に
+# 既に課金済みなら再課金しない。プロセス内メモリのみ（デプロイでの
+# 再起動時にはクリアされるが、5分という短命さから実用上は問題ない）。
+_RECENT_CHARGE_TTL_SEC = 300  # 5分
+_recent_charges: dict[tuple, float] = {}  # (uid, key) -> 課金時刻(epoch秒)
+
+
+def _recent_charge_hit(uid: int, key: str) -> bool:
+    """直近5分以内に同一(uid, key)へ課金済みならTrue（かつ期限切れ掃除）。"""
+    import time
+
+    now = time.time()
+    expired = [k for k, ts in _recent_charges.items()
+               if now - ts > _RECENT_CHARGE_TTL_SEC]
+    for k in expired:
+        _recent_charges.pop(k, None)
+    return (uid, key) in _recent_charges
+
+
+def _recent_charge_mark(uid: int, key: str) -> None:
+    import time
+
+    _recent_charges[(uid, key)] = time.time()
+
 
 def charge_playback_if_needed(
-    item_type: str, item_id: int, text: str,
+    item_type: str, item_id: int, kind: str, text: str,
 ) -> str | None:
     """単語/フレーズ音声「再生」の課金ガード（2026-08-09〜）。
 
@@ -637,7 +662,11 @@ def charge_playback_if_needed(
     ログインを促すメッセージで拒否する（課金消費フローには乗せない）。
     管理者は課金対象外（動作確認用）。キャッシュ済み音声の再生でも、
     再生自体は毎回この課金対象になる（＝「生成は1回・再生は課金」という
-    APIコストとは別軸の収益化）。
+    APIコストとは別軸の収益化）。ただし2026-08-13〜: 同一ユーザーが
+    同一(item_type, item_id, kind)を直近5分以内に既に課金済みなら、
+    誤連打・確認のための聞き直し等では再課金しない（ユーザー指示）。
+    `kind`は"word"/"example"/"phrase"のいずれか(同じitem_idでも単語音声と
+    例文音声は別コンテンツなのでキーに含める)。
 
     戻り値: 課金不要/成功なら None、拒否する場合はユーザー向けエラー文言。
     """
@@ -670,6 +699,9 @@ def charge_playback_if_needed(
         u = get_user(conn, uid)
         if u and u.get("role") == "admin":
             return None
+        recent_key = f"{item_type}:{item_id}:{kind}"
+        if _recent_charge_hit(uid, recent_key):
+            return None
         settings = load_settings()
         gen_cost_usd = len(text) / 1000 * _TTS_USD_PER_1K_CHARS
         charge_jpy = max(
@@ -688,6 +720,7 @@ def charge_playback_if_needed(
             "UPDATE users SET balance_jpy = MAX(0, balance_jpy - ?) "
             "WHERE id = ?", (charge_jpy, uid),
         )
+        _recent_charge_mark(uid, recent_key)
         return None
 
 
