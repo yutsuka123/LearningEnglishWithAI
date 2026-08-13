@@ -6,7 +6,7 @@
 コミットする。詳細な作業ログは非公開の`docs/TODO.md`/`docs/TODO_OLD.md`
 を参照）。
 
-## ver1.1.0-alpha36 (2026-08-13)
+## ver1.1.0-alpha36 (2026-08-13, commit `6b7733d`)
 
 **🔴 バグ修正**: alpha35で追加した`/sitemap.xml`・`/llms.txt`が、本番
 (MULTIUSER=1)では未ログインアクセス時に`_AUTH_ALLOW`未登録のため
