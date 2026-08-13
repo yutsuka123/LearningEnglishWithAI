@@ -224,13 +224,24 @@ export async function say(text, opts = {}) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error("tts failed");
+    if (!res.ok) {
+      // サーバーが明示的に拒否(要ログイン/要チャージ等の402/422)した場合は
+      // ブラウザ音声へフォールバックしない。変な声で鳴るくらいなら案内
+      // メッセージの方がよい、というsayItemと同じ方針に揃える(2026-08-13、
+      // Reading/Listening/英会話/Writingがしわがれ声になっていた不具合対応)。
+      if (myToken === playSeq && paymentRequiredCb) {
+        const msg = await res.text().catch(() => "");
+        paymentRequiredCb(msg || "この音声は今は再生できません。");
+      }
+      return;
+    }
     const blob = await res.blob();
     if (myToken !== playSeq) return; // 新しい再生要求が来ていた→古い音声は捨てる
     await playBlob(blob, opts.rate);
     if (usageCb) usageCb();
   } catch (e) {
-    if (myToken === playSeq) browserSpeak(text, opts); // graceful fallback
+    // ここに来るのはネットワーク到達不能等、サーバー応答が得られない場合のみ。
+    if (myToken === playSeq) browserSpeak(text, opts);
   }
 }
 
@@ -247,13 +258,20 @@ export async function sayWithVoice(text, voice, opts = {}) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text, voice }),
     });
-    if (!res.ok) throw new Error("tts failed");
+    if (!res.ok) {
+      // say()と同じ方針: 意図的な拒否ではブラウザ音声へ逃げない(2026-08-13)。
+      if (myToken === playSeq && paymentRequiredCb) {
+        const msg = await res.text().catch(() => "");
+        paymentRequiredCb(msg || "この音声は今は再生できません。");
+      }
+      return;
+    }
     const blob = await res.blob();
     if (myToken !== playSeq) return; // 新しい再生要求が来ていた→古い音声は捨てる
     await playBlob(blob, opts.rate);
     if (usageCb) usageCb();
   } catch (e) {
-    if (myToken === playSeq) browserSpeak(text, opts); // graceful fallback
+    if (myToken === playSeq) browserSpeak(text, opts); // ネットワーク到達不能等のみ
   }
 }
 
@@ -309,6 +327,34 @@ export async function sayItem(
   } catch (e) {
     // ここに来るのはネットワーク到達不能等、サーバー応答が得られない場合のみ。
     if (myToken === playSeq && fallbackText) browserSpeak(fallbackText, opts);
+  }
+}
+
+// Play a public sample material(id)の読み上げ(2026-08-13)。サンプル教材は
+// 誰が読んでも同じ固定テキストなので/api/learn/samples/{id}/ttsが未ログイン・
+// 無課金でも無料(サーバー側でis_public_sample検証・単語/フレーズのsayItemと
+// 同じ「意図的なエラーはブラウザ音声へフォールバックしない」方針を踏襲)。
+export async function sayMaterial(materialId, voice, opts = {}) {
+  const myToken = ++playSeq;
+  try {
+    const q = new URLSearchParams({ voice });
+    const res = await fetch(
+      `/api/learn/samples/${materialId}/tts?${q.toString()}`);
+    if (!res.ok) {
+      if (paymentRequiredCb) {
+        const msg = await res.text().catch(() => "");
+        paymentRequiredCb(msg || "この音声は今は再生できません。");
+      }
+      return;
+    }
+    const blob = await res.blob();
+    if (myToken !== playSeq) return; // 新しい再生要求が来ていた→古い音声は捨てる
+    await playBlob(blob, opts.rate);
+    if (usageCb) usageCb();
+  } catch (e) {
+    // ネットワーク到達不能等。テキストは呼び出し側で保持していないため
+    // ブラウザ音声へのフォールバックはしない(sayItemと異なりfallbackText
+    // を受け取らない設計 — 案内なしの声質変化を避ける)。
   }
 }
 
@@ -507,8 +553,20 @@ export function speakAndWait(text, opts = {}) {
     fetch("/api/learn/tts", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
-    }).then((r) => r.ok ? r.blob() : Promise.reject(new Error("tts")))
-      .then((blob) => {
+    }).then(async (r) => {
+      if (!r.ok) {
+        // 意図的な拒否(402/422等)ではブラウザ音声へ逃げず、案内して
+        // 終える(sayItem/say()と同じ方針・2026-08-13)。
+        if (paymentRequiredCb) {
+          const msg = await r.text().catch(() => "");
+          paymentRequiredCb(msg || "この音声は今は再生できません。");
+        }
+        resolve();
+        return null;
+      }
+      return r.blob();
+    }).then((blob) => {
+        if (!blob) return; // 上のresolve()で既に終えている(意図的な拒否)
         stopSpeaking();
         const a = audioElement();
         try { if (a._objUrl) URL.revokeObjectURL(a._objUrl); } catch (e) {}
@@ -519,7 +577,7 @@ export function speakAndWait(text, opts = {}) {
         a.onerror = () => resolve();
         a.play();
         if (usageCb) usageCb();
-      }).catch(() => browser());
+      }).catch(() => browser()); // ネットワーク到達不能等のみブラウザ音声へ
   });
 }
 

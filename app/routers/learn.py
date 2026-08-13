@@ -315,6 +315,43 @@ def get_material(material_id: int):
         return dict(row)
 
 
+@router.get("/samples/{material_id}/tts")
+def sample_material_tts(material_id: int, voice: str = "ash"):
+    """公開サンプル教材(is_public_sample=1)の読み上げ(2026-08-13)。
+
+    単語/フレーズの「無料範囲」(`tts_item`)と同じ設計思想: 本文はDBの
+    material_idからサーバー側で引く(クライアント指定の任意テキストは
+    受け付けない＝任意文章の無料合成に悪用できない)。サンプル教材は
+    誰が読んでも同じ固定テキストなので、`ai.synthesize_speech`の内蔵
+    ディスクキャッシュにより一度誰かが再生すれば以後は生成コスト無料。
+    未キャッシュの初回合成についても`free_range=True`でユーザー別の
+    日次無料枠ガードを免除する — 未ログイン/無課金/課金いずれのユーザーも
+    同じ無料公開サンプルとして扱う(単語/フレーズの無料範囲と同じく、
+    課金ユーザーでもこの範囲は無料)。このpathは`/api/learn/samples`
+    接頭辞に含まれるため`_GUEST_READ_PREFIXES`(app/main.py)により
+    未ログインでも到達できる。"""
+    with db() as conn:
+        row = conn.execute(
+            "SELECT area, body FROM materials "
+            "WHERE id = ? AND is_public_sample = 1", (material_id,),
+        ).fetchone()
+    if not row:
+        return Response(content="not found", status_code=404,
+                        media_type="text/plain")
+    text = (row["body"] or "").strip()
+    if not text:
+        return Response(content="読み上げる本文がありません。",
+                        status_code=422, media_type="text/plain")
+    feature = ("listening_tts" if row["area"] == "listening"
+               else "reading_tts")
+    audio, error = ai.synthesize_speech(
+        text, voice, feature=feature, free_range=True)
+    if error:
+        return Response(content=error, status_code=422,
+                        media_type="text/plain")
+    return Response(content=audio, media_type="audio/mpeg")
+
+
 @router.delete("/materials/{material_id}", status_code=204)
 def delete_material(material_id: int):
     """教材の完全削除は管理者専用(2026-08-10〜)。教材本文はwords/phrases

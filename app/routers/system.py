@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 
 from fastapi import APIRouter, HTTPException
@@ -422,3 +423,86 @@ def admin_error_log(lines: int = 200):
     with path.open(encoding="utf-8", errors="replace") as f:
         all_lines = f.readlines()
     return {"lines": [ln.rstrip("\n") for ln in all_lines[-lines:]]}
+
+
+@router.get("/admin/access-log-summary")
+def admin_access_log_summary(days: int = 30):
+    """アクセスログ日次集計の表示（管理画面用・2026-08-13）。
+    scripts/analyze_access_log.py がVPS側でcron実行して生成する
+    data/analytics/access_summary.jsonl を読むだけ（ここでは集計しない）。
+    ファイルが無い場合(ローカル開発時・cron未実行時)は空配列。"""
+    _require_admin()
+    days = max(1, min(days, 365))
+    path = ROOT_DIR / "data" / "analytics" / "access_summary.jsonl"
+    if not path.exists():
+        return {"days": []}
+    records = []
+    with path.open(encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                records.append(json.loads(line))
+            except ValueError:
+                continue
+    records.sort(key=lambda r: r.get("date", ""))
+    return {"days": records[-days:]}
+
+
+@router.get("/admin/ai-usage-search")
+def admin_ai_usage_search(
+    user_id: int | None = None,
+    date_from: str = "",
+    date_to: str = "",
+    feature: str = "",
+    model: str = "",
+    ip: str = "",
+    limit: int = 100,
+    offset: int = 0,
+):
+    """ai_usageテーブルの検索・絞り込み（管理画面用・2026-08-13）。
+    テスト/開発起因のノイズと実利用を切り分けやすいよう、ユーザーID・
+    期間・機能・モデル・IPで絞り込み、該当件数と合計費用(USD)も返す。"""
+    _require_admin()
+    limit = max(1, min(limit, 500))
+    offset = max(0, offset)
+
+    where: list[str] = []
+    params: list = []
+    if user_id is not None:
+        where.append("user_id = ?")
+        params.append(user_id)
+    if date_from:
+        where.append("created_at >= ?")
+        params.append(date_from)
+    if date_to:
+        where.append("created_at <= ?")
+        params.append(date_to + " 23:59:59")
+    if feature:
+        where.append("feature = ?")
+        params.append(feature)
+    if model:
+        where.append("model = ?")
+        params.append(model)
+    if ip:
+        where.append("ip = ?")
+        params.append(ip)
+    clause = ("WHERE " + " AND ".join(where)) if where else ""
+
+    with db() as conn:
+        total = conn.execute(
+            f"SELECT COUNT(*) AS n, COALESCE(SUM(cost_usd), 0) AS cost "
+            f"FROM ai_usage {clause}", params,
+        ).fetchone()
+        rows = conn.execute(
+            f"SELECT id, user_id, ip, model, feature, prompt_tokens, "
+            f"output_tokens, cost_usd, created_at FROM ai_usage {clause} "
+            f"ORDER BY id DESC LIMIT ? OFFSET ?",
+            params + [limit, offset],
+        ).fetchall()
+    return {
+        "total_count": total["n"],
+        "total_cost_usd": total["cost"],
+        "rows": [dict(r) for r in rows],
+    }

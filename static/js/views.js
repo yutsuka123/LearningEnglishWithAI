@@ -380,6 +380,24 @@ function voiceButtons(getText) {
   return cell;
 }
 
+// サンプル教材専用の読み上げバー(2026-08-13)。未ログイン・無課金でも
+// 無料のOpenAI音声で聴けるよう、material.idベースの専用エンドポイント
+// (speech.sayMaterial、/api/learn/samples/{id}/tts)を使う。単語/フレーズと
+// 同じ男声(ash)/女声(nova)を選べ、速度(標準/ゆっくり/速い)も選べる。
+function sampleReadAloudBar(material) {
+  const bar = el(`<div class="row mt"></div>`);
+  const playM = el(`<button class="btn ghost">🔊 男声で再生</button>`);
+  const playF = el(`<button class="btn ghost">🔊 女声で再生</button>`);
+  const stop = el(`<button class="btn ghost">⏹ 停止</button>`);
+  playM.addEventListener("click",
+    () => speech.sayMaterial(material.id, MALE_VOICE));
+  playF.addEventListener("click",
+    () => speech.sayMaterial(material.id, FEMALE_VOICE));
+  stop.addEventListener("click", () => speech.stopSpeaking());
+  bar.append(playM, playF, stop, playbackSpeedControl());
+  return bar;
+}
+
 // 教材の長さ（5段階）。1=短め(1〜2文) … 5=長文(約2分)。
 const LENGTH_INSTR = {
   "1": "ごく短く1〜2文（約20語）で",
@@ -2068,7 +2086,7 @@ function sampleMaterialsCard(area, cardTitle, emptyLabel) {
         style="margin:2px">${escapeHtml(m.field || m.title)}</button>`);
       btn.addEventListener("click", () => {
         bodyBox.innerHTML = "";
-        bodyBox.appendChild(readAloudBar(() => m.body, "sample_tts"));
+        bodyBox.appendChild(sampleReadAloudBar(m));
         const b = el(`<div class="md mt"></div>`);
         b.innerHTML = md(m.body);
         bodyBox.appendChild(b);
@@ -3395,6 +3413,30 @@ export async function admin(root) {
     <div class="card">
       <h2>🐛 エラーログ（末尾200行・data/app.log）</h2>
       <div id="errorLogWrap" class="mt"><p class="muted">読み込み中…</p></div>
+    </div>
+    <div class="card">
+      <h2>📈 アクセスログ集計（日別・直近30日）</h2>
+      <p class="muted">Caddyのアクセスログをscripts/analyze_access_log.pyが
+        VPSのcronで日次集計したもの。AIクローラー/検索botを除いた
+        「人間らしきIP」が実際の訪問者の目安。</p>
+      <div id="accessLogWrap" class="mt"><p class="muted">読み込み中…</p></div>
+    </div>
+    <div class="card">
+      <h2>🔍 AI利用ログ検索</h2>
+      <p class="muted">ユーザーID・期間・機能・モデル・IPで絞り込み。
+        テスト/開発起因の利用と実利用の切り分けに使う。</p>
+      <div class="grid cols-4 mt">
+        <input type="number" id="auSearchUid" placeholder="ユーザーID" />
+        <input type="date" id="auSearchFrom" />
+        <input type="date" id="auSearchTo" />
+        <input type="text" id="auSearchFeature" placeholder="機能(feature)" />
+        <input type="text" id="auSearchModel" placeholder="モデル" />
+        <input type="text" id="auSearchIp" placeholder="IP" />
+        <button class="btn" id="auSearchBtn">検索</button>
+      </div>
+      <div id="aiUsageSearchWrap" class="mt">
+        <p class="muted">条件を指定して検索してください（未指定は全件）。</p>
+      </div>
     </div>`;
 
   api.get("/api/system/admin/login-log").then((rows) => {
@@ -3433,6 +3475,83 @@ export async function admin(root) {
     root.querySelector("#errorLogWrap").innerHTML =
       `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
   });
+
+  api.get("/api/system/admin/access-log-summary?days=30").then((res) => {
+    const wrap = root.querySelector("#accessLogWrap");
+    if (!res.days.length) {
+      wrap.innerHTML = `<p class="muted">まだ集計データがありません
+        （VPSでcronの初回実行を待つか、ローカル開発環境では対象外です）。</p>`;
+      return;
+    }
+    const rowsHtml = res.days.slice().reverse().map((d) => {
+      const topPages = (d.top_human_paths || []).slice(0, 3)
+        .map(([p, c]) => `${escapeHtml(p)}(${c})`).join(", ") || "—";
+      const topRef = (d.top_referrers || []).slice(0, 1)
+        .map(([r, c]) => escapeHtml(r) + "(" + c + ")").join("") || "—";
+      return `<tr>
+        <td class="muted">${d.date}</td>
+        <td>${d.total_requests}</td>
+        <td>${d.unique_ips}</td>
+        <td>${d.unique_human_ips}</td>
+        <td style="max-width:280px">${topPages}</td>
+        <td>${topRef}</td>
+      </tr>`;
+    }).join("");
+    wrap.innerHTML = `<table><thead><tr>
+      <th>日付</th><th>総リクエスト</th><th>ユニークIP</th>
+      <th>人間らしきIP</th><th>よく見られたページ</th><th>主な参照元</th>
+      </tr></thead><tbody>${rowsHtml}</tbody></table>`;
+  }).catch((e) => {
+    root.querySelector("#accessLogWrap").innerHTML =
+      `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+  });
+
+  async function runAiUsageSearch() {
+    const wrap = root.querySelector("#aiUsageSearchWrap");
+    wrap.innerHTML = `<p class="muted">検索中…</p>`;
+    const params = new URLSearchParams();
+    const uid = root.querySelector("#auSearchUid").value.trim();
+    if (uid) params.set("user_id", uid);
+    const from = root.querySelector("#auSearchFrom").value;
+    if (from) params.set("date_from", from);
+    const to = root.querySelector("#auSearchTo").value;
+    if (to) params.set("date_to", to);
+    const feature = root.querySelector("#auSearchFeature").value.trim();
+    if (feature) params.set("feature", feature);
+    const model = root.querySelector("#auSearchModel").value.trim();
+    if (model) params.set("model", model);
+    const ip = root.querySelector("#auSearchIp").value.trim();
+    if (ip) params.set("ip", ip);
+    params.set("limit", "200");
+    try {
+      const res = await api.get(
+        `/api/system/admin/ai-usage-search?${params.toString()}`);
+      if (!res.rows.length) {
+        wrap.innerHTML = `<p class="muted">該当する利用ログはありません。</p>`;
+        return;
+      }
+      wrap.innerHTML = `<p class="muted">該当 ${res.total_count}件 /
+        合計費用 $${res.total_cost_usd.toFixed(4)}
+        （先頭${res.rows.length}件を表示）</p>
+        <table><thead><tr>
+        <th>日時</th><th>ユーザーID</th><th>IP</th><th>モデル</th>
+        <th>機能</th><th>in</th><th>out</th><th>$</th>
+        </tr></thead><tbody>${res.rows.map((r) => `
+        <tr>
+          <td class="muted">${fmtDate(r.created_at)}</td>
+          <td>${r.user_id}</td>
+          <td class="muted">${escapeHtml(r.ip || "—")}</td>
+          <td>${escapeHtml(r.model)}</td>
+          <td>${escapeHtml(r.feature || "—")}</td>
+          <td>${r.prompt_tokens}</td>
+          <td>${r.output_tokens}</td>
+          <td>${r.cost_usd.toFixed(5)}</td>
+        </tr>`).join("")}</tbody></table>`;
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">検索失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  root.querySelector("#auSearchBtn").addEventListener("click", runAiUsageSearch);
 
   root.querySelectorAll(".iq-done").forEach((btn) => {
     btn.addEventListener("click", async () => {

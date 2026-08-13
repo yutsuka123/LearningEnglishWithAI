@@ -537,9 +537,9 @@ th { color: var(--muted); font-weight: 600; }
 .usage-balance { font-size: 12px; font-weight: 600; white-space: nowrap;
   transition: color .4s ease; }
 .ai-model { font-size: 11px; color: var(--muted); white-space: nowrap; }
-.app-ver { font-size: 10px; color: var(--muted); opacity: .7;
+.app-ver { font-size: 11px; color: var(--accent);
   text-decoration: none; }
-.app-ver:hover { opacity: 1; text-decoration: underline; }
+.app-ver:hover { text-decoration: underline; }
 
 /* 管理者ダッシュボードの状態バッジ */
 .badge-off, .badge-bad, .badge-warn, .badge-ok {
