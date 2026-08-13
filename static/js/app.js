@@ -275,6 +275,13 @@ export async function refreshCost() {
     state.isAdmin = isAdmin;       // 各ビューのロール別表示に使う
     state.multiuser = !!u.multiuser;
     state.isGuest = !!u.is_guest;
+    // 無料範囲外の語・フレーズを「実際に再生できるか」（🔒アイコン判定用・
+    // 2026-08-13）。管理者は常に課金対象外＝常に再生可。ゲストは残高の
+    // 概念自体が無く常に不可。それ以外（無課金/課金ログインユーザー）は
+    // 残高が少しでもあれば再生できる（1回の課金は最低0.5円程度の少額
+    // のため、厳密な残額計算ではなく「残高>0」で近似する）。
+    state.canPlayOutOfRange =
+      isAdmin || (!state.isGuest && (u.remaining_jpy || 0) > 0);
     if (!isAdmin) {
       // 非管理者(ゲスト・無課金/課金の一般ユーザー)は/api/system/settings
       // を読めない(api_key_masked等を含むため管理者専用・2026-08-12)。

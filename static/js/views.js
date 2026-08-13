@@ -420,23 +420,23 @@ function speedOpts(mode) {
 // 次回から無料。fallback はTTS不可時にブラウザ音声で読む英文。
 // getMode() は 'slow'|'std'|'native' を返す（省略時 'std'）。
 // isFreeRange===true のとき🆓表示（誰でも無料で再生できる範囲）。
-// isFreeRange===false のとき🔒表示（無料範囲外＝未ログイン/無課金では
-// 再生に制限がかかる語・フレーズ。押すこと自体は可能で、実際の可否は
-// サーバー側の判定に従う＝ここは事前の目印）。ただし管理者は動作確認用に
-// 課金対象外(`ai.charge_playback_if_needed`)のため、実際に誰でも再生
-// できてしまう🔒表示は紛らわしいという指摘(2026-08-13)により、管理者には
-// 🔒を出さず通常の🔊にする。
+// isFreeRange===false のとき、**実際にそのユーザーが再生できるかどうか**
+// (state.canPlayOutOfRange、app.jsのrefreshCost()参照)で🔒/🔊を出し分ける。
+// 「再生できるのに🔒が出るのは変・再生できないなら🔒でよい」という指摘
+// (2026-08-13)に沿い、ゲスト一律ではなく実際の可否(管理者=常に可・
+// ゲスト=常に不可・それ以外は残高の有無)で判定する。
 function voiceButtonsItem(itemType, id, kind, fallback, getMode, isFreeRange) {
-  const locked = isFreeRange === false && !state.isAdmin;
+  const locked = isFreeRange === false && !state.canPlayOutOfRange;
   const free = isFreeRange === true;
   const icon = locked ? "🔒" : (free ? "🆓" : "🔊");
   const lockNote = locked
-    ? "・🔒無料範囲外（未ログイン/無課金では聴けない場合があります）" : "";
+    ? "・🔒無料範囲外（ログインすると再生できる場合があります）" : "";
   const freeNote = free ? "・🆓誰でも無料で再生できます" : "";
+  const freeCls = free ? " free-icon" : "";
   const cell = el(`<div class="voice-cell">
-    <button class="btn voice-m" title="男性の声 (ash)${lockNote}${freeNote}">${
+    <button class="btn voice-m${freeCls}" title="男性の声 (ash)${lockNote}${freeNote}">${
       icon}</button>
-    <button class="btn voice-f" title="女性の声 (nova)${lockNote}${freeNote}">${
+    <button class="btn voice-f${freeCls}" title="女性の声 (nova)${lockNote}${freeNote}">${
       icon}</button></div>`);
   const [m, f] = cell.querySelectorAll("button");
   const play = (voice) => speech.sayItem(
