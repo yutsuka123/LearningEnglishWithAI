@@ -389,10 +389,22 @@ function sampleReadAloudBar(material) {
   const playM = el(`<button class="btn ghost">🔊 男声で再生</button>`);
   const playF = el(`<button class="btn ghost">🔊 女声で再生</button>`);
   const stop = el(`<button class="btn ghost">⏹ 停止</button>`);
-  playM.addEventListener("click",
-    () => speech.sayMaterial(material.id, MALE_VOICE));
-  playF.addEventListener("click",
-    () => speech.sayMaterial(material.id, FEMALE_VOICE));
+  // 初回再生は未キャッシュだとAI合成に数秒〜十数秒かかることがあり、
+  // 無表示だと固まって見える(2026-08-13ユーザー指摘)。押した瞬間から
+  // ボタンを無効化+「生成中…」表示にして、待ち時間を可視化する。
+  const playing = async (btn, label, voice) => {
+    const orig = btn.textContent;
+    playM.disabled = true; playF.disabled = true;
+    btn.textContent = "⏳ 生成中…";
+    try {
+      await speech.sayMaterial(material.id, voice);
+    } finally {
+      btn.textContent = orig;
+      playM.disabled = false; playF.disabled = false;
+    }
+  };
+  playM.addEventListener("click", () => playing(playM, "男声", MALE_VOICE));
+  playF.addEventListener("click", () => playing(playF, "女声", FEMALE_VOICE));
   stop.addEventListener("click", () => speech.stopSpeaking());
   bar.append(playM, playF, stop, playbackSpeedControl());
   return bar;
