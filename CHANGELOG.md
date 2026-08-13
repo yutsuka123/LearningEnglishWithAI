@@ -6,7 +6,7 @@
 コミットする。詳細な作業ログは非公開の`docs/TODO.md`/`docs/TODO_OLD.md`
 を参照）。
 
-## ver1.1.0-alpha33 (2026-08-13)
+## ver1.1.0-alpha33 (2026-08-13, commit `d4d7ac4`)
 
 **🔴 デプロイ事故の再発防止＋UI微修正**:
 1. **rsync --delete事故の再発防止**: alpha32の本番反映作業で、コード
