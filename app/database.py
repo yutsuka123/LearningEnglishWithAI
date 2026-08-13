@@ -140,6 +140,17 @@ CREATE TABLE IF NOT EXISTS landing_visits (
     created_at TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 
+-- ログイン試行ログ（成功/失敗とも記録・管理画面のログ確認用・
+-- 2026-08-13ユーザー要望）。失敗ロックの判定(auth.login_locked)は
+-- 従来通りメモリ上のカウンタで行い、こちらは可視化専用の記録。
+CREATE TABLE IF NOT EXISTS login_log (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    username   TEXT    NOT NULL,
+    ip         TEXT    DEFAULT '',
+    success    INTEGER NOT NULL,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS phrase_attempts (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     phrase_id  INTEGER NOT NULL REFERENCES phrases(id) ON DELETE CASCADE,

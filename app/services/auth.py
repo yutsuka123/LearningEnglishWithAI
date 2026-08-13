@@ -588,6 +588,17 @@ def record_login_failure(username: str, ip: str) -> None:
     _USERNAME_FAILS.setdefault(_username_key(username), []).append(now)
 
 
+def record_login_event(
+    conn: sqlite3.Connection, username: str, ip: str, success: bool
+) -> None:
+    """login_logへの記録（管理画面のログイン履歴表示用・2026-08-13）。
+    ロック判定自体は従来通りメモリ上のカウンタ(_LOGIN_FAILS等)で行う。"""
+    conn.execute(
+        "INSERT INTO login_log (username, ip, success) VALUES (?, ?, ?)",
+        (username.strip(), ip, 1 if success else 0),
+    )
+
+
 def clear_login_failures(username: str, ip: str) -> None:
     # 成功時は当該 user×IP の連続失敗のみ解除する。IPのsprayカウントも
     # username横断のsprayカウントも保持する（他IPからの同時進行中の攻撃を

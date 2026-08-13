@@ -3305,7 +3305,52 @@ export async function admin(root) {
         </tr>`).join("") :
         `<tr><td colspan="8" class="muted">まだありません。</td></tr>`}
       </tbody></table>
+    </div>
+    <div class="card">
+      <h2>🔑 ログイン履歴（直近100件）</h2>
+      <div id="loginLogWrap" class="mt"><p class="muted">読み込み中…</p></div>
+    </div>
+    <div class="card">
+      <h2>🐛 エラーログ（末尾200行・data/app.log）</h2>
+      <div id="errorLogWrap" class="mt"><p class="muted">読み込み中…</p></div>
     </div>`;
+
+  api.get("/api/system/admin/login-log").then((rows) => {
+    const wrap = root.querySelector("#loginLogWrap");
+    if (!rows.length) {
+      wrap.innerHTML = `<p class="muted">まだありません。</p>`;
+      return;
+    }
+    wrap.innerHTML = `<table><thead><tr>
+      <th>日時</th><th>ユーザー名</th><th>IP</th><th>結果</th>
+      </tr></thead><tbody>${rows.map((r) => `
+      <tr>
+        <td class="muted">${fmtDate(r.created_at)}</td>
+        <td>${escapeHtml(r.username)}</td>
+        <td class="muted">${escapeHtml(r.ip || "—")}</td>
+        <td>${r.success
+          ? '<span class="badge-ok">成功</span>'
+          : '<span class="badge-bad">失敗</span>'}</td>
+      </tr>`).join("")}</tbody></table>`;
+  }).catch((e) => {
+    root.querySelector("#loginLogWrap").innerHTML =
+      `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+  });
+
+  api.get("/api/system/admin/error-log").then((res) => {
+    const wrap = root.querySelector("#errorLogWrap");
+    if (!res.lines.length) {
+      wrap.innerHTML = `<p class="muted">まだありません。</p>`;
+      return;
+    }
+    wrap.innerHTML = `<pre style="max-height:320px; overflow:auto;
+      font-size:12px; white-space:pre-wrap; background:var(--panel-2);
+      padding:10px; border-radius:8px">${
+      escapeHtml(res.lines.join("\n"))}</pre>`;
+  }).catch((e) => {
+    root.querySelector("#errorLogWrap").innerHTML =
+      `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+  });
 
   root.querySelectorAll(".iq-done").forEach((btn) => {
     btn.addEventListener("click", async () => {

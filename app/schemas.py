@@ -48,6 +48,11 @@ class GenerateIn(BaseModel):
     field: str = ""
     instruction: str = ""
     difficulty: str = ""   # 例: "中級(TOEIC 600)"。空ならおまかせ。
+    # 教材ストック(2026-08-13・自分の生成物のみ対象、他ユーザーとの共有は
+    # 一切しない): reading/listeningでinstruction未指定なら、まだ未学習の
+    # 自分の既存教材があればAI呼び出しせず再利用する。強制的に新規生成
+    # したい場合はtrueにする。
+    force_new: bool = False
 
 
 class WritingFeedbackIn(BaseModel):

@@ -64,9 +64,46 @@ def context():
     return {"context": build_context(), "ai_enabled": ai.is_enabled()}
 
 
+_STOCK_AREAS = {"reading", "listening"}
+
+
+def _find_unstudied_stock(conn, uid: int, area: str, field: str) -> dict | None:
+    """教材ストック(2026-08-13): 自分がまだ学習していない(進捗行が無いか
+    last_studiedが未設定)、同じarea/fieldの既存教材があれば返す
+    （無ければNone）。**他ユーザーの教材は一切対象にしない**
+    (`m.user_id = ?`で厳密に自分の生成物のみに限定)。"""
+    row = conn.execute(
+        "SELECT m.id, m.area, m.field, m.title, m.body FROM materials m "
+        "LEFT JOIN user_material_progress ump "
+        "  ON ump.material_id = m.id AND ump.user_id = ? "
+        "WHERE m.user_id = ? AND m.area = ? AND COALESCE(m.field,'') = ? "
+        "  AND ump.last_studied IS NULL "
+        "ORDER BY m.id ASC LIMIT 1",
+        (uid, uid, area, field or ""),
+    ).fetchone()
+    return dict(row) if row else None
+
+
 @router.post("/generate")
 def generate(payload: GenerateIn):
-    """Generate study material for a given area/field and store it."""
+    """Generate study material for a given area/field and store it。
+    reading/listeningでinstruction未指定・force_new=falseの場合、まだ
+    未学習の自分の既存教材(教材ストック)があればAI呼び出しせず再利用する
+    （他ユーザーの生成物は対象外・完全に自分専用）。"""
+    from ..services.auth import current_user_id
+    uid = current_user_id()
+    # instructionは長さ指定等UIが自動で埋める定型文が多く含まれるため、
+    # 再利用の判定条件には使わない(area+fieldの一致のみで判定・field自体は
+    # テーマ選択で変わるため、同じテーマの繰り返し要求だけが再利用される)。
+    if payload.area in _STOCK_AREAS and not payload.force_new:
+        with db() as conn:
+            stock = _find_unstudied_stock(conn, uid, payload.area, payload.field)
+        if stock:
+            return {
+                "ok": True, "id": stock["id"], "title": stock["title"],
+                "body": stock["body"], "reused": True,
+            }
+
     area_label = {
         "news": "ニュース記事",
         "reading": "リーディング教材",
@@ -100,13 +137,11 @@ def generate(payload: GenerateIn):
         return {"ok": False, "error": result.error}
 
     title = f"{payload.field or area_label} ({date.today().isoformat()})"
-    from ..services.auth import current_user_id
     with db() as conn:
         cur = conn.execute(
             "INSERT INTO materials (area, field, title, body, user_id) "
             "VALUES (?, ?, ?, ?, ?)",
-            (payload.area, payload.field, title, result.text,
-             current_user_id()),
+            (payload.area, payload.field, title, result.text, uid),
         )
         material_id = cur.lastrowid
     return {"ok": True, "id": material_id, "title": title, "body": result.text}

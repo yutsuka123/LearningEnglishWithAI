@@ -394,3 +394,31 @@ def admin_force_logout(payload: ForceLogoutIn):
             raise HTTPException(404, "ユーザーが見つかりません。")
         epoch = auth.bump_session_epoch(conn, payload.user_id)
     return {"ok": True, "session_epoch": epoch}
+
+
+@router.get("/admin/login-log")
+def admin_login_log(limit: int = 100):
+    """直近のログイン試行ログ（成功/失敗とも・管理画面のログ確認用・
+    2026-08-13）。"""
+    _require_admin()
+    limit = max(1, min(limit, 500))
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT username, ip, success, created_at FROM login_log "
+            "ORDER BY id DESC LIMIT ?", (limit,),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+@router.get("/admin/error-log")
+def admin_error_log(lines: int = 200):
+    """アプリのエラーログ(data/app.log)の末尾を返す（管理画面のログ確認用・
+    2026-08-13）。ファイルが無い/空でも空配列を返す（起動直後等）。"""
+    _require_admin()
+    lines = max(1, min(lines, 1000))
+    path = ROOT_DIR / "data" / "app.log"
+    if not path.exists():
+        return {"lines": []}
+    with path.open(encoding="utf-8", errors="replace") as f:
+        all_lines = f.readlines()
+    return {"lines": [ln.rstrip("\n") for ln in all_lines[-lines:]]}

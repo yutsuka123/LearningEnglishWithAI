@@ -521,12 +521,13 @@ th { color: var(--muted); font-weight: 600; }
 .app-ver:hover { opacity: 1; text-decoration: underline; }
 
 /* 管理者ダッシュボードの状態バッジ */
-.badge-off, .badge-bad, .badge-warn {
+.badge-off, .badge-bad, .badge-warn, .badge-ok {
   display: inline-block; font-size: 10px; padding: 1px 6px;
   border-radius: 8px; white-space: nowrap; }
 .badge-off  { background: rgba(127,127,127,.3); color: var(--text); }
 .badge-bad  { background: rgba(226,80,59,.85); color: #fff; }
 .badge-warn { background: rgba(231,181,59,.85); color: #222; }
+.badge-ok   { background: rgba(54,201,141,.85); color: #063; }
 
 /* 🃏 フラッシュ単語 ---------------------------------------------------------- */
 .fc-wrap { display: flex; flex-direction: column; align-items: center; }

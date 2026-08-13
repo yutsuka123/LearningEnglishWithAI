@@ -156,11 +156,13 @@ def login(payload: LoginIn, request: Request, response: Response):
         u = auth.authenticate(conn, payload.username, payload.password)
         if not u:
             auth.record_login_failure(payload.username, ip)
+            auth.record_login_event(conn, payload.username, ip, False)
             return JSONResponse(
                 {"ok": False, "error": "ユーザー名かパスワードが違います。"},
                 status_code=401,
             )
         secret = auth.get_session_secret(conn)
+        auth.record_login_event(conn, payload.username, ip, True)
     auth.clear_login_failures(payload.username, ip)
     token = auth.make_session_token(
         secret, u["id"], u.get("session_epoch", 0), int(time.time()))
