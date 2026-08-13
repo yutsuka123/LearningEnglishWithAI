@@ -409,9 +409,13 @@ export async function refreshAiState() {
 // それ以外はログインが要る機能なのでnavに出さない(2026-08-11・B1本実装。
 // バックエンド側も個別に要ログインを強制しているので、これは表示上の案内
 // であり多重防御の一枚)。
+// reading/writing/conversation/listeningは2026-08-13にゲスト開放
+// （サンプル閲覧をサイドバーから直接できるように・ユーザー要望）。
+// 各ビューの生成・履歴系の操作は要ログインのまま(クリック時にエラー/
+// ログイン案内で自然にガードされる、サンプルカードのみ`/api/learn/samples`
+// 経由でゲストにも動作する)。
 const GUEST_HIDDEN_TABS = new Set([
-  "dashboard", "deck", "phrasedeck", "reading", "writing",
-  "conversation", "listening", "assess", "history", "settings",
+  "dashboard", "deck", "phrasedeck", "assess", "history", "settings",
 ]);
 
 async function boot() {

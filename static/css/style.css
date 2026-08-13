@@ -47,6 +47,12 @@ body {
   color: var(--text);
 }
 
+/* グローバルリンク色。指定が無いと閲覧済みリンクがブラウザ既定の紫のまま
+   になり、ダークモードの背景で読みにくいとの指摘(2026-08-13)により追加。 */
+a { color: var(--accent); }
+a:visited { color: var(--accent); }
+a:hover { color: var(--accent-2); }
+
 /* 文字の大きさ設定（既定=中。JS側で <html data-font-size="..."> を
    セット/localStorage保存する。ページ全体の個別font-sizeを書き換える
    代わりにzoomで一括拡大縮小する＝既存CSSの変更不要・2026-08-12）。

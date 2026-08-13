@@ -1952,15 +1952,18 @@ function materialView(title, sub, area, fields, histAreas) {
       if (field.startsWith("文学(")) genArea = "literature";
       else if (field.startsWith("ニュース(")) genArea = "news";
       const len = LENGTH_INSTR[root.querySelector("#flen").value] || "";
-      const r = await api.post("/api/learn/generate", {
-        area: genArea, field,
-        difficulty: root.querySelector("#fdiff").value,
-        instruction: (len ? `本文は${len}作成。` : "")
-          + root.querySelector("#inst").value,
-      });
-      if (!r.ok) { out.textContent = r.error; return; }
-      showInto(r.body);   // disp() で問題トグルを反映
-      refreshCost();
+      try {
+        const r = await api.post("/api/learn/generate", {
+          area: genArea, field,
+          difficulty: root.querySelector("#fdiff").value,
+          instruction: (len ? `本文は${len}作成。` : "")
+            + root.querySelector("#inst").value,
+        });
+        if (!r.ok) { out.textContent = r.error; return; }
+        showInto(r.body);   // disp() で問題トグルを反映
+        refreshCost();
+      } catch (e) { out.textContent = "生成にはログインが必要です。" +
+        "（" + e.message + "）"; }
     });
   };
 }
@@ -2041,15 +2044,18 @@ export async function writing(root) {
     const fb = root.querySelector("#fb");
     if (!state.aiEnabled) { fb.textContent = "AI未設定です。"; return; }
     fb.textContent = "添削中…";
-    const r = await api.post("/api/learn/writing-feedback", {
-      category: root.querySelector("#cat").value,
-      prompt: root.querySelector("#prompt").value,
-      text: txt,
-    });
-    fb.innerHTML = r.ok ? md(r.feedback) : escapeHtml(r.error);
-    if (r.ok) { const s = el(`<button class="btn ghost mt">🔊 読み上げ</button>`);
-      s.addEventListener("click", () => speech.speak(r.feedback)); fb.appendChild(s); }
-    refreshCost();
+    try {
+      const r = await api.post("/api/learn/writing-feedback", {
+        category: root.querySelector("#cat").value,
+        prompt: root.querySelector("#prompt").value,
+        text: txt,
+      });
+      fb.innerHTML = r.ok ? md(r.feedback) : escapeHtml(r.error);
+      if (r.ok) { const s = el(`<button class="btn ghost mt">🔊 読み上げ</button>`);
+        s.addEventListener("click", () => speech.speak(r.feedback)); fb.appendChild(s); }
+      refreshCost();
+    } catch (e) { fb.textContent = "添削にはログインが必要です。" +
+      "（" + e.message + "）"; }
   }, { lang: "en-US", placeholder: "英語で入力" }));
 }
 
@@ -2671,13 +2677,16 @@ export async function listening(root) {
       };
     }
     body.difficulty = diff;
-    const r = await api.post("/api/learn/generate", body);
-    if (!r.ok) { out.textContent = r.error; return; }
-    scriptText = r.body; out.innerHTML = md(lDisp(r.body));
-    const play = el(`<button class="btn mt">🔊 再生</button>`);
-    play.addEventListener("click", () => lSpeak(scriptText));
-    out.appendChild(play);
-    refreshCost();
+    try {
+      const r = await api.post("/api/learn/generate", body);
+      if (!r.ok) { out.textContent = r.error; return; }
+      scriptText = r.body; out.innerHTML = md(lDisp(r.body));
+      const play = el(`<button class="btn mt">🔊 再生</button>`);
+      play.addEventListener("click", () => lSpeak(scriptText));
+      out.appendChild(play);
+      refreshCost();
+    } catch (e) { out.textContent = "生成にはログインが必要です。" +
+      "（" + e.message + "）"; }
   });
   root.querySelector("#save").addEventListener("click", async () => {
     await api.post("/api/listening/study", {
@@ -3420,7 +3429,22 @@ function fsetGroupsHtml(groups, hiddenSet, prefix) {
 }
 
 export async function settings(root) {
-  const s = await api.get("/api/system/settings");
+  // /api/system/settingsは管理者専用API化されている(2026-08-12・
+  // マスク済みAPIキー等を含むため)。非管理者はここで403になり設定画面
+  // 自体が開けなくなる不具合が発生していたため、フォールバックする
+  // （2026-08-13修正）。値そのものは.admin-onlyカードでのみ使われ、
+  // それらは後段でmu.role!=='admin'のとき非表示にされるので実害無い。
+  let s;
+  try {
+    s = await api.get("/api/system/settings");
+  } catch (_) {
+    const mu2 = await api.get("/api/system/my-usage");
+    s = {
+      ai_enabled: mu2.ai_enabled, model: "", quality_model: "",
+      api_key_masked: "", host: "", port: "",
+      tokushoho_ready: true, version: mu2.version,
+    };
+  }
   // /api/system/usage is admin-only (全ユーザー横断の使用量のため); 一般
   // ユーザーは403になるので、その場合は空扱いにしてページ全体は描画する。
   let usage = {

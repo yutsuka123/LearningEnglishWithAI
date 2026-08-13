@@ -45,6 +45,13 @@ _AUTH_ALLOW = {
 _GUEST_READ_PREFIXES = (
     "/api/words", "/api/phrases", "/api/system/my-usage",
     "/api/learn/tts/item", "/api/learn/samples",
+    # 2026-08-13: reading/listening/writing/英会話タブのサンプル閲覧を
+    # サイドバーから直接できるようにするため追加。カテゴリ/トピック自体は
+    # 全ユーザー共有のマスタデータで、進捗だけがuser_id別
+    # (categories.py参照)。/study への書き込みもゲスト疑似ユーザー自身の
+    # 進捗を書くだけで既存のクイズ/デッキ同様に無害（訪問のたびリセット
+    # される想定は既存の案内文の通り）。
+    "/api/categories", "/api/listening",
 )
 
 # 特定商取引法ページ: 未記入欄のフォールバック文言(赤字表示)。
