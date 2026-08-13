@@ -269,12 +269,12 @@ export async function refreshCost() {
     const balEl = document.getElementById("usageBalance");
     if (balEl) {
       const remain = Math.max(0, Math.round(u.remaining_jpy || 0));
-      balEl.textContent = `¥${remain}`;
+      balEl.textContent = `${remain}pt`;
       balEl.style.color = _usageColor(remain);
       balEl.title = u.balance_jpy != null
-        ? `AI利用の残り目安: ¥${remain}（チャージ残高 ¥` +
-          `${Math.round(u.balance_jpy)} 含む）`
-        : `AI利用の残り目安: ¥${remain}`;
+        ? `AI利用の残り目安: ${remain}pt（チャージ残高 ` +
+          `${Math.round(u.balance_jpy)}pt 含む）`
+        : `AI利用の残り目安: ${remain}pt`;
     }
     // 管理者のみ金額表示。一般ユーザーは残量表示のみ。
     const badge = document.getElementById("costBadge");

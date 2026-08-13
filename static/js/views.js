@@ -118,7 +118,7 @@ export async function dashboard(root) {
   let costNum = "—", costLbl = "今日のAI費用";
   if (isAdmin && mu) { costNum = "¥" + mu.today_jpy; }
   else if (mu && mu.balance_jpy != null) {
-    costNum = "¥" + Math.round(mu.balance_jpy); costLbl = "チャージ残高";
+    costNum = Math.round(mu.balance_jpy) + "pt"; costLbl = "チャージ残高";
   }
   const w = p.words;
   const areaLabels = {
@@ -419,18 +419,25 @@ function speedOpts(mode) {
 // 番号(ID)で再生する2ボタン。保存済みなら無料、無ければ合成して保存し
 // 次回から無料。fallback はTTS不可時にブラウザ音声で読む英文。
 // getMode() は 'slow'|'std'|'native' を返す（省略時 'std'）。
+// isFreeRange===true のとき🆓表示（誰でも無料で再生できる範囲）。
 // isFreeRange===false のとき🔒表示（無料範囲外＝未ログイン/無課金では
 // 再生に制限がかかる語・フレーズ。押すこと自体は可能で、実際の可否は
-// サーバー側の判定に従う＝ここは事前の目印・2026-08-12）。
+// サーバー側の判定に従う＝ここは事前の目印）。ただし管理者は動作確認用に
+// 課金対象外(`ai.charge_playback_if_needed`)のため、実際に誰でも再生
+// できてしまう🔒表示は紛らわしいという指摘(2026-08-13)により、管理者には
+// 🔒を出さず通常の🔊にする。
 function voiceButtonsItem(itemType, id, kind, fallback, getMode, isFreeRange) {
-  const locked = isFreeRange === false;
+  const locked = isFreeRange === false && !state.isAdmin;
+  const free = isFreeRange === true;
+  const icon = locked ? "🔒" : (free ? "🆓" : "🔊");
   const lockNote = locked
     ? "・🔒無料範囲外（未ログイン/無課金では聴けない場合があります）" : "";
+  const freeNote = free ? "・🆓誰でも無料で再生できます" : "";
   const cell = el(`<div class="voice-cell">
-    <button class="btn voice-m" title="男性の声 (ash)${lockNote}">${
-      locked ? "🔒" : "🔊"}</button>
-    <button class="btn voice-f" title="女性の声 (nova)${lockNote}">${
-      locked ? "🔒" : "🔊"}</button></div>`);
+    <button class="btn voice-m" title="男性の声 (ash)${lockNote}${freeNote}">${
+      icon}</button>
+    <button class="btn voice-f" title="女性の声 (nova)${lockNote}${freeNote}">${
+      icon}</button></div>`);
   const [m, f] = cell.querySelectorAll("button");
   const play = (voice) => speech.sayItem(
     itemType, id, kind, voice, fallback(),
