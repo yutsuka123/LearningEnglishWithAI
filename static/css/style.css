@@ -309,9 +309,10 @@ h2 { font-size: 17px; margin: 22px 0 10px; }
 .btn.voice-m { background: #1f6fd6; color: #fff; padding: 3px 11px; font-size: 15px; }
 .btn.voice-f { background: #d6406a; color: #fff; padding: 3px 11px; font-size: 15px; }
 .voice-cell { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 5px; }
-/* 🆓は🔒/🔊より字面が小さく見えるとの指摘(2026-08-13)により1.2倍表示
-   （ボタンからはみ出さない範囲で、との指定）。 */
-.btn.free-icon { font-size: 18px; }
+/* 🆓は🔒/🔊より字面が小さく見えるとの指摘(2026-08-13)により中身の絵文字
+   だけ1.2倍表示（ボタン自体のfont-sizeを上げると外枠(パディング込みの
+   ボタン全体)まで大きくなってしまったため、内側のspanだけscaleする）。 */
+.free-icon-glyph { display: inline-block; transform: scale(1.2); }
 .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
 .stat {

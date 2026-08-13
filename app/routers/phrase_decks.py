@@ -238,6 +238,46 @@ def deck_phrases_list(deck_id: int):
         return [dict(r) for r in rows]
 
 
+class PhraseDeckAddPhrases(BaseModel):
+    # 個別追加: phrase_ids を指定。分野一括追加: scenes/levels を指定
+    # （word帳のDeckAddWordsと同じ設計・2026-08-13新設）。
+    scenes: list[str] = []
+    levels: list[str] = []
+    include_banned: bool = False
+    phrase_ids: list[int] = []
+
+
+@router.post("/{deck_id}/phrases")
+def add_deck_phrases(deck_id: int, payload: PhraseDeckAddPhrases):
+    """既存のフレーズ帳にフレーズを追加する（個別追加・シーン/レベル
+    一括追加の両方に対応）。無料(ログインのみ)ユーザーは合計100件まで。"""
+    with db() as conn:
+        _owned_deck(conn, deck_id)
+        creation_like = PhraseDeckCreate(
+            name="", scenes=payload.scenes, levels=payload.levels,
+            include_banned=payload.include_banned,
+            phrase_ids=payload.phrase_ids,
+        )
+        ids = _select_phrase_ids(conn, creation_like)
+        if not auth.is_charged_or_admin(conn, current_user_id()):
+            current = conn.execute(
+                "SELECT COUNT(*) c FROM deck_phrases WHERE deck_id = ?",
+                (deck_id,),
+            ).fetchone()["c"]
+            room = max(0, FREE_MAX_ITEMS - current)
+            if len(ids) > room:
+                ids = ids[:room]
+        conn.executemany(
+            "INSERT OR IGNORE INTO deck_phrases (deck_id, phrase_id) "
+            "VALUES (?, ?)",
+            [(deck_id, pid) for pid in ids],
+        )
+        row = conn.execute(
+            "SELECT * FROM phrase_decks WHERE id = ?", (deck_id,)
+        ).fetchone()
+        return _deck_summary(conn, row)
+
+
 @router.delete("/{deck_id}/phrases/{phrase_id}", status_code=204)
 def remove_deck_phrase(deck_id: int, phrase_id: int):
     """デッキからフレーズを除外する（フレーズ自体の削除ではない）。"""

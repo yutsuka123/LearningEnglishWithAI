@@ -432,12 +432,13 @@ function voiceButtonsItem(itemType, id, kind, fallback, getMode, isFreeRange) {
   const lockNote = locked
     ? "・🔒無料範囲外（ログインすると再生できる場合があります）" : "";
   const freeNote = free ? "・🆓誰でも無料で再生できます" : "";
-  const freeCls = free ? " free-icon" : "";
+  const iconHtml = free
+    ? `<span class="free-icon-glyph">${icon}</span>` : icon;
   const cell = el(`<div class="voice-cell">
-    <button class="btn voice-m${freeCls}" title="男性の声 (ash)${lockNote}${freeNote}">${
-      icon}</button>
-    <button class="btn voice-f${freeCls}" title="女性の声 (nova)${lockNote}${freeNote}">${
-      icon}</button></div>`);
+    <button class="btn voice-m" title="男性の声 (ash)${lockNote}${freeNote}">${
+      iconHtml}</button>
+    <button class="btn voice-f" title="女性の声 (nova)${lockNote}${freeNote}">${
+      iconHtml}</button></div>`);
   const [m, f] = cell.querySelectorAll("button");
   const play = (voice) => speech.sayItem(
     itemType, id, kind, voice, fallback(),
@@ -4163,11 +4164,39 @@ export async function decks(root) {
       body.appendChild(save);
 
       body.appendChild(el(`<hr class="mt" />`));
+      body.appendChild(el(`<h3>🎯 分野・レベルで一括追加</h3>`));
+      body.appendChild(el(`<div class="row" style="align-items:flex-start">
+        <div><div class="muted">分野(複数チェック可)</div>
+          <div id="addDomains" class="chkbox">${facets.domains.map((c) =>
+            `<label class="chk"><input type="checkbox" value="${escapeHtml(c)}"
+              /> ${escapeHtml(c)}</label>`).join("")}</div></div>
+        <div><div class="muted">レベル(複数チェック可)</div>
+          <div id="addLevels" class="chkbox">${facets.levels.map((l) =>
+            `<label class="chk"><input type="checkbox" value="${escapeHtml(l)}"
+              /> ${escapeHtml(l)}</label>`).join("")}</div></div>
+      </div>`));
+      const bulkAddBtn = el(
+        `<button class="btn good mt">選択した分野・レベルを全て追加</button>`);
+      const bulkAddOut = el(`<span class="muted mt"></span>`);
+      body.appendChild(bulkAddBtn);
+      body.appendChild(bulkAddOut);
+
+      body.appendChild(el(`<hr class="mt" />`));
+      body.appendChild(el(`<h3>🔍 単語を検索して個別に追加</h3>`));
+      body.appendChild(el(`<input id="addSearch"
+        placeholder="英語・日本語で検索（3文字以上）" style="width:260px" />`));
+      const addResults = el(`<div id="addResults" class="mt"></div>`);
+      body.appendChild(addResults);
+
+      body.appendChild(el(`<hr class="mt" />`));
       body.appendChild(el(`<h3>収録中の単語 (<span id="wcount">…</span>)</h3>`));
       const wlist = el(`<div id="wlist" class="mt"></div>`);
       body.appendChild(wlist);
+
+      let memberIds = new Set();
       const loadWords = async () => {
         const words = await api.get(`/api/decks/${d.id}/words`);
+        memberIds = new Set(words.map((w) => w.id));
         body.querySelector("#wcount").textContent = words.length;
         wlist.innerHTML = "";
         if (!words.length) {
@@ -4189,6 +4218,67 @@ export async function decks(root) {
           wlist.appendChild(row);
         });
       };
+
+      bulkAddBtn.addEventListener("click", async () => {
+        const domains = [...body.querySelectorAll("#addDomains input:checked")]
+          .map((o) => o.value);
+        const levels = [...body.querySelectorAll("#addLevels input:checked")]
+          .map((o) => o.value);
+        if (!domains.length && !levels.length) {
+          bulkAddOut.textContent = "分野かレベルを1つ以上選んでください。";
+          return;
+        }
+        bulkAddOut.textContent = "追加中…";
+        try {
+          const res = await api.post(`/api/decks/${d.id}/words`,
+            { domains, levels });
+          bulkAddOut.textContent = `現在 ${res.total}語（無料範囲では` +
+            `合計100語まで）。`;
+          loadWords();
+        } catch (e) { bulkAddOut.textContent = "失敗: " + e.message; }
+      });
+
+      const addSearchInput = body.querySelector("#addSearch");
+      let allWordsCache = null;   // 初回検索時にのみ全件取得してキャッシュ
+      const runAddSearch = async () => {
+        const term = addSearchInput.value.trim();
+        addResults.innerHTML = "";
+        if (term.length < 3) return;
+        if (!allWordsCache) {
+          addResults.appendChild(el(`<p class="muted">検索中…</p>`));
+          allWordsCache = await api.get("/api/words");
+          addResults.innerHTML = "";
+        }
+        const t = term.toLowerCase();
+        const matches = allWordsCache.filter((w) =>
+          w.english.toLowerCase().includes(t)
+          || (w.japanese || "").toLowerCase().includes(t)).slice(0, 30);
+        if (!matches.length) {
+          addResults.appendChild(el(`<p class="muted">見つかりません。</p>`));
+          return;
+        }
+        matches.forEach((w) => {
+          const inDeck = memberIds.has(w.id);
+          const row = el(`<div class="row"
+            style="justify-content:space-between;padding:4px 0">
+            <span>${escapeHtml(w.english)}
+              <span class="muted">${escapeHtml(w.japanese || "")}</span></span>
+            <button class="btn ${inDeck ? "ghost" : "good"}" ${
+              inDeck ? "disabled" : ""}>${
+              inDeck ? "追加済み" : "➕ 追加"}</button></div>`);
+          if (!inDeck) {
+            row.querySelector("button").addEventListener("click", async () => {
+              await api.post(`/api/decks/${d.id}/words`,
+                { word_ids: [w.id] });
+              loadWords();
+              runAddSearch();
+            });
+          }
+          addResults.appendChild(row);
+        });
+      };
+      addSearchInput.addEventListener("input", runAddSearch);
+
       loadWords();
     });
   }
@@ -4351,11 +4441,39 @@ export async function phraseDecks(root) {
       body.appendChild(save);
 
       body.appendChild(el(`<hr class="mt" />`));
+      body.appendChild(el(`<h3>🎯 シーン・レベルで一括追加</h3>`));
+      body.appendChild(el(`<div class="row" style="align-items:flex-start">
+        <div><div class="muted">シーン(複数チェック可)</div>
+          <div id="paddScenes" class="chkbox">${sceneFacets.scenes.map((s) =>
+            `<label class="chk"><input type="checkbox" value="${escapeHtml(s)}"
+              /> ${escapeHtml(s)}</label>`).join("")}</div></div>
+        <div><div class="muted">レベル(複数チェック可)</div>
+          <div id="paddLevels" class="chkbox">${levelFacets.range_levels.map((l) =>
+            `<label class="chk"><input type="checkbox" value="${escapeHtml(l)}"
+              /> ${escapeHtml(l)}</label>`).join("")}</div></div>
+      </div>`));
+      const pBulkAddBtn = el(
+        `<button class="btn good mt">選択したシーン・レベルを全て追加</button>`);
+      const pBulkAddOut = el(`<span class="muted mt"></span>`);
+      body.appendChild(pBulkAddBtn);
+      body.appendChild(pBulkAddOut);
+
+      body.appendChild(el(`<hr class="mt" />`));
+      body.appendChild(el(`<h3>🔍 フレーズを検索して個別に追加</h3>`));
+      body.appendChild(el(`<input id="paddSearch"
+        placeholder="英語・日本語で検索（3文字以上）" style="width:260px" />`));
+      const paddResults = el(`<div id="paddResults" class="mt"></div>`);
+      body.appendChild(paddResults);
+
+      body.appendChild(el(`<hr class="mt" />`));
       body.appendChild(el(`<h3>収録中のフレーズ (<span id="pcount">…</span>)</h3>`));
       const plist = el(`<div id="plist" class="mt"></div>`);
       body.appendChild(plist);
+
+      let pMemberIds = new Set();
       const loadPhrases = async () => {
         const items = await api.get(`/api/phrase-decks/${d.id}/phrases`);
+        pMemberIds = new Set(items.map((p) => p.id));
         body.querySelector("#pcount").textContent = items.length;
         plist.innerHTML = "";
         if (!items.length) {
@@ -4377,6 +4495,67 @@ export async function phraseDecks(root) {
           plist.appendChild(row);
         });
       };
+
+      pBulkAddBtn.addEventListener("click", async () => {
+        const scenes = [...body.querySelectorAll("#paddScenes input:checked")]
+          .map((o) => o.value);
+        const levels = [...body.querySelectorAll("#paddLevels input:checked")]
+          .map((o) => o.value);
+        if (!scenes.length && !levels.length) {
+          pBulkAddOut.textContent = "シーンかレベルを1つ以上選んでください。";
+          return;
+        }
+        pBulkAddOut.textContent = "追加中…";
+        try {
+          const res = await api.post(`/api/phrase-decks/${d.id}/phrases`,
+            { scenes, levels });
+          pBulkAddOut.textContent = `現在 ${res.total}件（無料範囲では` +
+            `合計100件まで）。`;
+          loadPhrases();
+        } catch (e) { pBulkAddOut.textContent = "失敗: " + e.message; }
+      });
+
+      const paddSearchInput = body.querySelector("#paddSearch");
+      let allPhrasesCache = null;
+      const runPaddSearch = async () => {
+        const term = paddSearchInput.value.trim();
+        paddResults.innerHTML = "";
+        if (term.length < 3) return;
+        if (!allPhrasesCache) {
+          paddResults.appendChild(el(`<p class="muted">検索中…</p>`));
+          allPhrasesCache = await api.get("/api/phrases");
+          paddResults.innerHTML = "";
+        }
+        const t = term.toLowerCase();
+        const matches = allPhrasesCache.filter((p) =>
+          p.english.toLowerCase().includes(t)
+          || (p.japanese || "").toLowerCase().includes(t)).slice(0, 30);
+        if (!matches.length) {
+          paddResults.appendChild(el(`<p class="muted">見つかりません。</p>`));
+          return;
+        }
+        matches.forEach((p) => {
+          const inDeck = pMemberIds.has(p.id);
+          const row = el(`<div class="row"
+            style="justify-content:space-between;padding:4px 0">
+            <span>${escapeHtml(p.english)}
+              <span class="muted">${escapeHtml(p.japanese || "")}</span></span>
+            <button class="btn ${inDeck ? "ghost" : "good"}" ${
+              inDeck ? "disabled" : ""}>${
+              inDeck ? "追加済み" : "➕ 追加"}</button></div>`);
+          if (!inDeck) {
+            row.querySelector("button").addEventListener("click", async () => {
+              await api.post(`/api/phrase-decks/${d.id}/phrases`,
+                { phrase_ids: [p.id] });
+              loadPhrases();
+              runPaddSearch();
+            });
+          }
+          paddResults.appendChild(row);
+        });
+      };
+      paddSearchInput.addEventListener("input", runPaddSearch);
+
       loadPhrases();
     });
   }

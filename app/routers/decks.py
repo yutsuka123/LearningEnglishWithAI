@@ -232,6 +232,45 @@ def deck_words_list(deck_id: int):
         return [dict(r) for r in rows]
 
 
+class DeckAddWords(BaseModel):
+    # 個別追加: word_ids を指定。分野一括追加: domains/levels を指定
+    # （word_ids指定時はそちらを優先、_select_word_idsと同じ判定ロジック）。
+    domains: list[str] = []
+    levels: list[str] = []
+    include_banned: bool = False
+    word_ids: list[int] = []
+
+
+@router.post("/{deck_id}/words")
+def add_deck_words(deck_id: int, payload: DeckAddWords):
+    """既存の単語帳に単語を追加する（個別追加・分野/レベル一括追加の両方に
+    対応、2026-08-13新設）。無料(ログインのみ)ユーザーは合計100語まで
+    （既存の作成時制限`FREE_MAX_ITEMS`と揃える）。"""
+    with db() as conn:
+        _owned_deck(conn, deck_id)
+        creation_like = DeckCreate(
+            name="", domains=payload.domains, levels=payload.levels,
+            include_banned=payload.include_banned, word_ids=payload.word_ids,
+        )
+        ids = _select_word_ids(conn, creation_like)
+        if not auth.is_charged_or_admin(conn, current_user_id()):
+            current = conn.execute(
+                "SELECT COUNT(*) c FROM deck_words WHERE deck_id = ?",
+                (deck_id,),
+            ).fetchone()["c"]
+            room = max(0, FREE_MAX_ITEMS - current)
+            if len(ids) > room:
+                ids = ids[:room]
+        conn.executemany(
+            "INSERT OR IGNORE INTO deck_words (deck_id, word_id) VALUES (?, ?)",
+            [(deck_id, wid) for wid in ids],
+        )
+        row = conn.execute(
+            "SELECT * FROM decks WHERE id = ?", (deck_id,)
+        ).fetchone()
+        return _deck_summary(conn, row)
+
+
 @router.delete("/{deck_id}/words/{word_id}", status_code=204)
 def remove_deck_word(deck_id: int, word_id: int):
     """デッキから単語を除外する（単語自体の削除ではない）。"""
