@@ -34,7 +34,7 @@ const TABS = [
   // ["tripprep", "🧳 出張・旅行準備"],
   ["assess", "🎯 判定・教材"],
   ["history", "📚 学習履歴"],
-  ["settings", "⚙️ 設定"],
+  ["settings", "⚙️ 設定・チャージ"],
   ["admin", "👑 管理者情報"],   // 管理者のみ表示（boot で非adminは隠す）
 ];
 
@@ -415,7 +415,7 @@ export async function refreshAiState() {
 // ログイン案内で自然にガードされる、サンプルカードのみ`/api/learn/samples`
 // 経由でゲストにも動作する)。
 const GUEST_HIDDEN_TABS = new Set([
-  "dashboard", "deck", "phrasedeck", "assess", "history", "settings",
+  "deck", "phrasedeck", "assess", "history", "settings",
 ]);
 
 async function boot() {

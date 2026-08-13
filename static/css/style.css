@@ -477,8 +477,14 @@ th { color: var(--muted); font-weight: 600; }
 .fset-section-p { border-left-color: var(--accent-2); }
 .fset-wrap { max-height: 480px; overflow-y: auto; border: 1px solid var(--line);
   border-radius: 8px; padding: 8px 12px; background: var(--panel); }
-.fset-group { margin: 4px 0; }
-.fset-group summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+.fset-group { margin: 4px 0; border-bottom: 1px solid var(--line); }
+/* 折りたたみ状態でも「クリックで開ける」ことが分かるよう、ブラウザ既定の
+   マーカーの代わりに開閉が明確な矢印を自前で表示する(2026-08-13)。 */
+.fset-group summary { cursor: pointer; font-weight: 600; padding: 8px 0;
+  list-style: none; }
+.fset-group summary::-webkit-details-marker { display: none; }
+.fset-group summary::before { content: "▶ "; color: var(--accent); }
+.fset-group[open] summary::before { content: "▼ "; }
 .fset-actions { margin: 4px 0 6px; display: flex; gap: 8px; }
 .fset-actions .btn { padding: 3px 8px; font-size: 12px; }
 .fset-items { display: flex; flex-wrap: wrap; gap: 2px 14px; padding: 2px 0 8px; }

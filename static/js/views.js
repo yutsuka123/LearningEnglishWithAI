@@ -17,7 +17,12 @@ function answerInput(onSubmit, { lang = "en-US", placeholder = "答えを入力"
   const wrap = el(`<div class="mt"></div>`);
   const ta = el(`<textarea placeholder="${placeholder}"></textarea>`);
   const row = el(`<div class="row"></div>`);
-  const sendBtn = el(`<button class="btn">✓ 送信</button>`);
+  // ゲスト(サンプル閲覧のみ)はAI呼び出し系の送信ができないため、押しても
+  // 401で固まる/紛らわしいエラーになる前に鍵表示で分かりやすく無効化する
+  // （2026-08-13）。
+  const sendBtn = el(state.isGuest
+    ? `<button class="btn" disabled>🔒 送信(要ログイン)</button>`
+    : `<button class="btn">✓ 送信</button>`);
   sendBtn.addEventListener("click", () => onSubmit(ta.value));
 
   if (state.inputMode === "voice") {
@@ -190,7 +195,11 @@ export async function dashboard(root) {
       </div>
     </div>
 
-    ${(deckSummary || phraseDeckSummary) ? `<div class="card">
+    ${state.isGuest ? `<div class="card">
+      <h2>📁 単語帳・フレーズ帳</h2>
+      <p class="muted">🔒 ログインすると使えます（自分専用の単語帳・
+        フレーズ帳を作って学習できます）。</p>
+    </div>` : (deckSummary || phraseDeckSummary) ? `<div class="card">
       <h2>単語帳の状況</h2>
       <div class="row" style="justify-content:space-between">
         <span class="muted">単語帳 全体(${deckSummary ? deckSummary.deck_count : 0}個・
@@ -1915,9 +1924,12 @@ function materialView(title, sub, area, fields, histAreas) {
           <label class="toggle" title="内容理解問題を表示(常に生成・保存)">
             <input type="checkbox" id="showQ" checked /> 内容理解問題</label>
           <input id="inst" placeholder="追加指示(任意)" style="width:160px" />
-          <button class="btn" id="gen" ${state.aiEnabled ? "" : "disabled"}>
-            生成</button>
-          <button class="btn ghost" id="histBtn">📚 履歴</button>
+          <button class="btn" id="gen"
+            ${(state.aiEnabled && !state.isGuest) ? "" : "disabled"}>${
+            state.isGuest ? "🔒 生成(要ログイン)" : "生成"}</button>
+          <button class="btn ghost" id="histBtn"
+            ${state.isGuest ? "disabled" : ""}>${
+            state.isGuest ? "🔒 履歴(要ログイン)" : "📚 履歴"}</button>
         </div>
       </div>
       <div id="histPanel" class="card" style="display:none"></div>
@@ -1987,7 +1999,9 @@ export const reading = (root) => materialView(
 
 // あらかじめ用意した「サンプル」教材(is_public_sample=1)だけを一覧表示
 // する共通カード。AI課金は発生しない（既存の保存済み教材を表示するのみ）。
-// クリックでモーダル表示。無課金/未ログインでも「どんな機能か」を確認
+// クリックでカード内に直接表示(2026-08-13・従来はポップアップ表示
+// だったが「課金ユーザーと同様に画面下に出したい」という指摘で変更)＋
+// 🔊読み上げボタン付き。無課金/未ログインでも「どんな機能か」を確認
 // できる（2026-08-12: 個人の生成履歴が混ざらないよう、専用の読み取り
 // 専用API `/api/learn/samples` を使う。ログイン有無を問わず同じ結果）。
 function sampleMaterialsCard(area, cardTitle, emptyLabel) {
@@ -1996,9 +2010,11 @@ function sampleMaterialsCard(area, cardTitle, emptyLabel) {
     <p class="muted">実際にAIを使わなくても内容を確認できるサンプルです。
       無課金でもご覧いただけます。</p>
     <div class="row" id="smList"><p class="muted">読み込み中…</p></div>
+    <div id="smBody" class="md mt"></div>
   </div>`);
   (async () => {
     const list = card.querySelector("#smList");
+    const bodyBox = card.querySelector("#smBody");
     let items = [];
     try {
       items = await api.get(
@@ -2013,7 +2029,12 @@ function sampleMaterialsCard(area, cardTitle, emptyLabel) {
       const btn = el(`<button class="btn ghost"
         style="margin:2px">${escapeHtml(m.field || m.title)}</button>`);
       btn.addEventListener("click", () => {
-        openModal(m.title, (box) => { box.innerHTML = md(m.body); });
+        bodyBox.innerHTML = "";
+        bodyBox.appendChild(readAloudBar(() => m.body, "sample_tts"));
+        const b = el(`<div class="md mt"></div>`);
+        b.innerHTML = md(m.body);
+        bodyBox.appendChild(b);
+        bodyBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
       });
       list.appendChild(btn);
     });
@@ -2088,7 +2109,9 @@ export async function conversation(root) {
     <div class="card" id="hfCard">
       <div class="row">
         <b>🎙️ ハンズフリー会話</b>
-        <button class="btn good" id="hfStart">▶ 開始</button>
+        <button class="btn good" id="hfStart"
+          ${state.isGuest ? "disabled" : ""}>${
+          state.isGuest ? "🔒 開始(要ログイン)" : "▶ 開始"}</button>
         <button class="btn bad" id="hfStop" style="display:none">⏹ 終了</button>
         <button class="btn" id="hfEnd" style="display:none">発話終了</button>
         <label class="toggle"><input type="checkbox" id="autoLog" />
@@ -2119,7 +2142,9 @@ export async function conversation(root) {
         </span>
         <label class="toggle"><input type="checkbox" id="autoTts" checked />
           AI返答を読み上げ</label>
-        <button class="btn secondary" id="start">AIから始める</button>
+        <button class="btn secondary" id="start"
+          ${state.isGuest ? "disabled" : ""}>${
+          state.isGuest ? "🔒 AIから始める(要ログイン)" : "AIから始める"}</button>
       </div>
       <div class="row mt">
         <label>🎤 認識言語:
@@ -2318,9 +2343,15 @@ export async function conversation(root) {
       <option value="en-US">🎤 英語</option>
       <option value="ja-JP">🎤 日本語</option></select>`);
     const mic = el(`<button class="btn good">🎤 録音</button>`);
-    const dk = el(`<button class="btn ghost">🤔 わからない</button>`);
-    const ex = el(`<button class="btn ghost">💡 返答例</button>`);
-    const sendBtn = el(`<button class="btn">✓ 送信</button>`);
+    const dk = el(state.isGuest
+      ? `<button class="btn ghost" disabled>🔒 わからない</button>`
+      : `<button class="btn ghost">🤔 わからない</button>`);
+    const ex = el(state.isGuest
+      ? `<button class="btn ghost" disabled>🔒 返答例</button>`
+      : `<button class="btn ghost">💡 返答例</button>`);
+    const sendBtn = el(state.isGuest
+      ? `<button class="btn" disabled>🔒 送信(要ログイン)</button>`
+      : `<button class="btn">✓ 送信</button>`);
     const auto = el(`<label class="toggle"><input type="checkbox" id="cAuto"
       ${speech.isVoiceAutoSubmit() ? "checked" : ""}/> 録音後に自動送信</label>`);
 
@@ -2587,9 +2618,13 @@ export async function listening(root) {
         </label>
         <label class="toggle" title="内容理解問題を表示(常に生成・保存)">
           <input type="checkbox" id="showQ" checked /> 内容理解問題</label>
-        <button class="btn" id="gen" ${state.aiEnabled ? "" : "disabled"}>
-          スクリプト生成</button>
-        <button class="btn ghost" id="histBtn">📚 履歴</button>
+        <button class="btn" id="gen"
+          ${(state.aiEnabled && !state.isGuest) ? "" : "disabled"}>${
+          state.isGuest ? "🔒 スクリプト生成(要ログイン)" : "スクリプト生成"}
+          </button>
+        <button class="btn ghost" id="histBtn"
+          ${state.isGuest ? "disabled" : ""}>${
+          state.isGuest ? "🔒 履歴(要ログイン)" : "📚 履歴"}</button>
       </div>
       <div class="row mt" style="border-top:1px solid var(--panel-2);
         padding-top:8px">
@@ -3407,7 +3442,7 @@ export async function admin(root) {
 // hiddenSet に入っている項目は未チェック(=非表示設定)で描画する。
 function fsetGroupsHtml(groups, hiddenSet, prefix) {
   return Object.entries(groups).map(([cat, items]) => `
-    <details class="fset-group" open>
+    <details class="fset-group">
       <summary>${escapeHtml(cat)}
         <span class="muted">(${items.length})</span></summary>
       <div class="fset-actions">
@@ -3584,8 +3619,8 @@ export async function settings(root) {
       <h2>💳 チャージ</h2>
       <p>現在の残高: <b id="ptBalance">-</b> pt</p>
       <div class="row">
-        <input id="ck_key" placeholder="XXXX-XXXXXXX-X-XXXX"
-          style="width:220px" />
+        <input id="ck_key" name="charge_key" autocomplete="off"
+          placeholder="XXXX-XXXXXXX-X-XXXX" style="width:220px" />
         <button class="btn good" id="ck_redeem">チャージする</button>
       </div>
       <p class="muted mt" id="ck_out"></p>

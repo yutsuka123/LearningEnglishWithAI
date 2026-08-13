@@ -51,7 +51,7 @@ _GUEST_READ_PREFIXES = (
     # (categories.py参照)。/study への書き込みもゲスト疑似ユーザー自身の
     # 進捗を書くだけで既存のクイズ/デッキ同様に無害（訪問のたびリセット
     # される想定は既存の案内文の通り）。
-    "/api/categories", "/api/listening",
+    "/api/categories", "/api/listening", "/api/system/progress",
 )
 
 # 特定商取引法ページ: 未記入欄のフォールバック文言(赤字表示)。
