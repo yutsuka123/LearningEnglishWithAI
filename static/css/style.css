@@ -52,8 +52,8 @@ body {
    代わりにzoomで一括拡大縮小する＝既存CSSの変更不要・2026-08-12）。
    未ログインでも使える設定にしたいという要望のため、topbarに常設。 */
 :root[data-font-size="small"] body { zoom: 0.88; }
-:root[data-font-size="large"] body { zoom: 1.15; }
-:root[data-font-size="xlarge"] body { zoom: 1.3; }
+:root[data-font-size="large"] body { zoom: 1.32; }
+:root[data-font-size="xlarge"] body { zoom: 1.63; }
 
 #app { display: flex; min-height: 100vh; }
 
@@ -323,6 +323,9 @@ h2 { font-size: 17px; margin: 22px 0 10px; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
 th { color: var(--muted); font-weight: 600; }
+/* ダークモードでは表ヘッダー(Lv/分野/習熟度等)が薄すぎて読みにくいとの
+   指摘(2026-08-13)により、ダークモード限定で本文と同じ明るさに強調。 */
+:root:not([data-theme="light"]) th { color: var(--text); }
 
 .pill {
   display: inline-block; padding: 2px 9px; border-radius: 12px;
