@@ -6,7 +6,7 @@
 コミットする。詳細な作業ログは非公開の`docs/TODO.md`/`docs/TODO_OLD.md`
 を参照）。
 
-## ver1.1.0-alpha38 (2026-08-13)
+## ver1.1.0-alpha38 (2026-08-13, commit `ae93003`)
 
 **🔴 重要バグ修正（無料範囲の音声で誤課金が起きうる抜け穴）**:
 `synthesize_speech()`内の`_maybe_deduct_balance()`呼び出しが
