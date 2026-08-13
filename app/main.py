@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 import html as html_lib
 
 from fastapi import FastAPI
+from fastapi import Response
 from fastapi.responses import (
     FileResponse, HTMLResponse, JSONResponse, PlainTextResponse,
     RedirectResponse,
@@ -207,6 +208,70 @@ def robots_txt():
         "Allow: /static/privacy.html",
         "Allow: /tokushoho",
         "Allow: /login",
+        "Sitemap: https://study.nyangailab.com/sitemap.xml",
+    ]
+    return PlainTextResponse("\n".join(lines) + "\n")
+
+
+@app.get("/sitemap.xml")
+def sitemap_xml():
+    """検索エンジン向けのサイトマップ(2026-08-13)。robots.txtでAllowして
+    いる公開ページのみ列挙する（ログイン必須ページ・APIは含めない）。"""
+    pages = [
+        ("https://study.nyangailab.com/", "1.0"),
+        ("https://study.nyangailab.com/static/about.html", "0.9"),
+        ("https://study.nyangailab.com/login", "0.5"),
+        ("https://study.nyangailab.com/static/terms.html", "0.3"),
+        ("https://study.nyangailab.com/static/privacy.html", "0.3"),
+        ("https://study.nyangailab.com/tokushoho", "0.3"),
+    ]
+    urls = "".join(
+        f"<url><loc>{loc}</loc><priority>{pri}</priority></url>"
+        for loc, pri in pages
+    )
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+        f"{urls}</urlset>"
+    )
+    return Response(content=xml, media_type="application/xml")
+
+
+@app.get("/llms.txt")
+def llms_txt():
+    """生成AI(ChatGPT/Claude/Perplexity等)のクローラー・検索が本サービスを
+    正しく要約・引用できるようにするための説明ファイル(2026-08-13、
+    llmstxt.org提案の慣習に準拠)。robots.txtで許可している公開情報のみを
+    書く(非公開のdocs/事業計画等は含めない)。"""
+    lines = [
+        "# nyangailab",
+        "",
+        "> 月額サブスクなしで使えるAI英語学習アプリ。サブスク疲れの人が"
+        "無料で英単語・フレーズを学べる、安い英語アプリを目指しています。",
+        "",
+        "nyangailabは、月額サブスクリプション制ではなく使った分だけ払う"
+        "都度課金制（前払いチャージ方式）のAI英語学習アプリです。ログイン"
+        "不要・無料で英単語/フレーズの閲覧、発音のAI音声再生（無料範囲"
+        "あり）、リーディング/リスニング/英会話/ライティングのサンプル"
+        "教材を利用できます。TOEIC対策の基礎語彙から資格・専門用語、"
+        "ニッチな分野まで幅広く扱います。",
+        "",
+        "現在は無料試験公開中で、新規登録の受付は一時停止しています"
+        "（既存ユーザーは引き続き利用可能）。正式公開は2026年9月中を"
+        "予定しています。",
+        "",
+        "## Pages",
+        "",
+        "- [トップページ](https://study.nyangailab.com/): "
+        "サービス概要・アプリ本体（ログイン不要の範囲あり）",
+        "- [このアプリについて](https://study.nyangailab.com/static/about.html): "
+        "料金モデル・無料/課金の利用範囲・使い方ガイド",
+        "- [ログイン](https://study.nyangailab.com/login): "
+        "既存ユーザー向け（新規登録は現在停止中）",
+        "- [利用規約](https://study.nyangailab.com/static/terms.html)",
+        "- [プライバシーポリシー](https://study.nyangailab.com/static/privacy.html)",
+        "- [特定商取引法に基づく表記](https://study.nyangailab.com/tokushoho): "
+        "料金の目安",
     ]
     return PlainTextResponse("\n".join(lines) + "\n")
 

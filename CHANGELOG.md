@@ -6,6 +6,23 @@
 コミットする。詳細な作業ログは非公開の`docs/TODO.md`/`docs/TODO_OLD.md`
 を参照）。
 
+## ver1.1.0-alpha35 (2026-08-13)
+
+**🟢 SEO/LLMO強化**: 「サブスク疲れ」「サブスクなし」「無料使用可能」
+「安い英語アプリ」等のキーワードでの発見性向上と、生成AI(ChatGPT/
+Claude/Perplexity等)からの参照性向上を目的に対応。
+- `GET /sitemap.xml` を新設（robots.txtのAllow対象と一致させた公開
+  ページのみ列挙）。robots.txtに`Sitemap:`行を追記。
+- `GET /llms.txt` を新設（llmstxt.org提案の慣習に準拠。サービス概要・
+  公開ページ一覧・現在新規登録停止中である旨をAIクローラー向けに明記）。
+- `static/about.html`: 「サブスクなし・無料使用可能」「安い英語アプリ」
+  を明記する段落を追加。あわせて、新規登録案内の文言が
+  「試験公開・招待制のためチャージキー入力が必要」のまま古くなって
+  いた（alpha32で新規登録自体を停止したため事実と不一致だった）のを
+  「新規登録を一時停止中・正式公開2026年9月予定」に修正。
+- 既存のtitle/meta description/OGP/JSON-LD(SoftwareApplication)は
+  既に「サブスク不要」等をカバーしていたため変更なし。
+
 ## ver1.1.0-alpha34 (2026-08-13, commit `0626c11`)
 
 **🔴 バグ修正（Reading/Listening/英会話/Writingの音声がしわがれ声になる）**:
