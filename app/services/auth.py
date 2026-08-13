@@ -306,12 +306,14 @@ def create_user(
     allow_banned: bool = False,
     full_name: str = "",
     furigana: str = "",
-    survey_occupation: str = "",
+    survey_occupation_category: str = "",
+    survey_occupation_detail: str = "",
     survey_age_group: str = "",
     survey_gender: str = "",
     survey_purpose: str = "",
     survey_referral: str = "",
     survey_free_text: str = "",
+    survey_interest_areas: str = "",
 ) -> int:
     """ユーザーを作成して id を返す。username は一意。
 
@@ -321,21 +323,29 @@ def create_user(
     ``full_name``/``furigana``/``survey_*`` は2026-08-13追加の登録画面
     拡充項目（氏名/フリガナは自己サインアップで必須、survey_*は任意
     アンケート）。管理者作成の従来ユーザーは既定空文字のまま。
+    ``survey_occupation_category``(大分類・単一選択)/
+    ``survey_occupation_detail``(小分類・複数選択+自由記入をカンマ区切り
+    文字列で結合したもの)/``survey_interest_areas``(興味のある分野・
+    複数選択をカンマ区切りで結合)は同日中に職業アンケートを拡張した際の
+    追加項目。
     """
     pw = hash_password(password) if password else ""
     cur = conn.execute(
         "INSERT INTO users (username, password_hash, role, display_name, "
         " email, daily_cost_cap_usd, monthly_cost_cap_usd, balance_jpy, "
-        " allow_banned, full_name, furigana, survey_occupation, "
-        " survey_age_group, survey_gender, survey_purpose, survey_referral, "
-        " survey_free_text) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        " allow_banned, full_name, furigana, survey_occupation_category, "
+        " survey_occupation_detail, survey_age_group, survey_gender, "
+        " survey_purpose, survey_referral, survey_free_text, "
+        " survey_interest_areas) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (username.strip(), pw, role, display_name or username.strip(),
          email.strip().lower(), daily_cap_usd, monthly_cap_usd, balance_jpy,
          1 if allow_banned else 0, full_name.strip(), furigana.strip(),
-         survey_occupation.strip(), survey_age_group.strip(),
+         survey_occupation_category.strip(),
+         survey_occupation_detail.strip(), survey_age_group.strip(),
          survey_gender.strip(), survey_purpose.strip(),
-         survey_referral.strip(), survey_free_text.strip()),
+         survey_referral.strip(), survey_free_text.strip(),
+         survey_interest_areas.strip()),
     )
     return int(cur.lastrowid)
 

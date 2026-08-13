@@ -604,9 +604,15 @@ def _migrate_multiuser(conn: sqlite3.Connection) -> None:
              "session_epoch INTEGER NOT NULL DEFAULT 0")
     # 登録画面拡充（2026-08-13・ユーザー指示）: 氏名/フリガナ(必須項目)＋
     # 任意アンケート(職業/年代/性別/目的/流入経路/自由記入欄)。
+    # survey_occupation_category/detail・survey_interest_areasは同日中に
+    # 職業の大分類→小分類(複数チェック)＋興味のある分野(複数チェック)へ
+    # 拡張した際の追加列（旧survey_occupationは新フォームでは未使用だが
+    # 列自体は互換のため残す）。
     for col in ("full_name", "furigana", "survey_occupation",
+                "survey_occupation_category", "survey_occupation_detail",
                 "survey_age_group", "survey_gender", "survey_purpose",
-                "survey_referral", "survey_free_text"):
+                "survey_referral", "survey_free_text",
+                "survey_interest_areas"):
         _add_col(conn, "users", col, f"{col} TEXT DEFAULT ''")
     _migrate_membership_status(conn)
     _migrate_public_samples(conn)

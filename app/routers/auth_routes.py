@@ -44,12 +44,14 @@ class SignupIn(BaseModel):
     display_name: str = ""
     full_name: str = ""
     furigana: str = ""
-    survey_occupation: str = ""
+    survey_occupation_category: str = ""
+    survey_occupation_detail: str = ""
     survey_age_group: str = ""
     survey_gender: str = ""
     survey_purpose: str = ""
     survey_referral: str = ""
     survey_free_text: str = ""
+    survey_interest_areas: str = ""
 
 
 @router.post("/signup")
@@ -110,12 +112,14 @@ def signup(payload: SignupIn, request: Request, response: Response):
                 conn, email, password,
                 email=email, display_name=payload.display_name or email,
                 full_name=full_name, furigana=furigana,
-                survey_occupation=payload.survey_occupation,
+                survey_occupation_category=payload.survey_occupation_category,
+                survey_occupation_detail=payload.survey_occupation_detail,
                 survey_age_group=payload.survey_age_group,
                 survey_gender=payload.survey_gender,
                 survey_purpose=payload.survey_purpose,
                 survey_referral=payload.survey_referral,
                 survey_free_text=payload.survey_free_text,
+                survey_interest_areas=payload.survey_interest_areas,
             )
             if payload.charge_key.strip():
                 charge_keys.redeem_key(conn, uid, payload.charge_key)
