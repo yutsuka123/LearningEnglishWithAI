@@ -6,6 +6,14 @@
 コミットする。詳細な作業ログは非公開の`docs/TODO.md`/`docs/TODO_OLD.md`
 を参照）。
 
+## ver1.1.0-alpha36 (2026-08-13)
+
+**🔴 バグ修正**: alpha35で追加した`/sitemap.xml`・`/llms.txt`が、本番
+(MULTIUSER=1)では未ログインアクセス時に`_AUTH_ALLOW`未登録のため
+`/login`へ307リダイレクトされ、検索エンジン/AIクローラーから読めない
+状態になっていた（ローカル開発はMULTIUSER=0のため気づけなかった）。
+`app/main.py`の`_AUTH_ALLOW`に両パスを追加して修正。
+
 ## ver1.1.0-alpha35 (2026-08-13, commit `050a557`)
 
 **🟢 SEO/LLMO強化**: 「サブスク疲れ」「サブスクなし」「無料使用可能」

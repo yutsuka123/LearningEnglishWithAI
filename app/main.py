@@ -29,6 +29,7 @@ from .services.spaced_repetition import apply_weekly_decay
 _AUTH_ALLOW = {
     "/login", "/api/auth/login", "/api/auth/signup", "/api/health",
     "/favicon.ico", "/tokushoho", "/robots.txt", "/api/system/taxonomy",
+    "/sitemap.xml", "/llms.txt",
 }
 
 # ①(未ログイン/ゲスト)でも読める(=①向け無料範囲で動く)APIのパス接頭辞
