@@ -101,7 +101,7 @@
       <input id="p" name="password" type="password"
         autocomplete="current-password" required />
       <button type="button" class="pwd-toggle" data-target="p"
-        aria-label="パスワードを表示">👁</button>
+        aria-label="パスワードを表示"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
     <button type="submit">ログイン</button>
     <div class="err" id="e"></div>
@@ -132,7 +132,7 @@
       <input id="sp" name="password" type="password" minlength="8"
         maxlength="32" autocomplete="new-password" required />
       <button type="button" class="pwd-toggle" data-target="sp"
-        aria-label="パスワードを表示">👁</button>
+        aria-label="パスワードを表示"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
     <p class="hint">8〜32文字。半角の英字・数字・記号が使えます
       （英字のみ・数字のみ・記号のみは不可、2種類以上を組み合わせて
@@ -142,7 +142,7 @@
       <input id="sp2" name="password_confirm" type="password" minlength="8"
         maxlength="32" autocomplete="new-password" required />
       <button type="button" class="pwd-toggle" data-target="sp2"
-        aria-label="パスワードを表示">👁</button>
+        aria-label="パスワードを表示"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
     <p class="hint">チャージ（pt購入）は登録後、設定画面の
       「💳 チャージ」からいつでも行えます。</p>
@@ -270,12 +270,26 @@
       fLogin.classList.remove('hidden');
     });
 
+    // 実写風に見えるとの声があった絵文字(👁/🙈)をやめ、一般的な
+    // パスワード表示切替でよく使われる線画アイコン(目/目に斜線)に統一。
+    const EYE_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" ' +
+      'fill="none" stroke="currentColor" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/>' +
+      '<circle cx="12" cy="12" r="3"/></svg>';
+    const EYE_OFF_ICON = '<svg viewBox="0 0 24 24" width="18" height="18" ' +
+      'fill="none" stroke="currentColor" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.8 ' +
+      '21.8 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 ' +
+      '8a21.77 21.77 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>' +
+      '<line x1="1" y1="1" x2="23" y2="23"/></svg>';
     document.querySelectorAll('.pwd-toggle').forEach((btn) => {
       btn.addEventListener('click', () => {
         const inp = document.getElementById(btn.dataset.target);
         const show = inp.type === 'password';
         inp.type = show ? 'text' : 'password';
-        btn.textContent = show ? '🙈' : '👁';
+        btn.innerHTML = show ? EYE_OFF_ICON : EYE_ICON;
         btn.setAttribute('aria-label',
           show ? 'パスワードを隠す' : 'パスワードを表示');
       });

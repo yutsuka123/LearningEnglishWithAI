@@ -8,6 +8,7 @@ env/
 
 # Environment / secrets
 .env
+deploy/.env.study
 
 # Runtime data (user's learning state — keep local)
 data/

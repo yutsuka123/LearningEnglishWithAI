@@ -6,6 +6,28 @@
 コミットする。詳細な作業ログは非公開の`docs/TODO.md`/`docs/TODO_OLD.md`
 を参照）。
 
+## ver1.1.0-alpha33 (2026-08-13)
+
+**🔴 デプロイ事故の再発防止＋UI微修正**:
+1. **rsync --delete事故の再発防止**: alpha32の本番反映作業で、コード
+   同期用の`rsync --delete`がVPS専用の`deploy/.env.study`（gitignore
+   対象・ローカルに存在しない秘密ファイル）を誤って削除する事故が発生
+   （稼働中コンテナから復元し復旧済み・本番影響なし）。再発防止として:
+   - `.gitignore`に`deploy/.env.study`を明示追加（今後ローカルに作成
+     しても誤コミットされないように）。
+   - `deploy/sync_code.sh`を新設。同期対象を`app/`/`static/`/
+     `templates/`等**明示列挙(allowlist)**する方式にし、`deploy/`
+     ディレクトリ自体を同期対象から外すことで`.env.study`に構造的に
+     触れられないようにした。接続先は`docs/deploy_target.local.sh`
+     （gitignore対象）に分離し、テンプレートは`deploy/deploy_target.example.sh`。
+   - 本番シークレット（SSH鍵・`.env.study`）をprivateリポジトリ
+     `business_plan`に追記のみの形でバックアップ（VPS/作業機いずれかの
+     消失に備える）。詳細はCLAUDE.md「🔗連携している private リポジトリ」
+     参照。
+2. **ログイン画面のパスワード表示切替アイコンを変更**: 絵文字(👁/🙈)が
+   環境によって実写風に表示され「怖い」との声があったため、一般的な
+   線画アイコン（目・目に斜線のSVG）に置き換えた。
+
 ## ver1.1.0-alpha32 (2026-08-13, commit `4b01d09`)
 
 **🔴 新規登録を一時停止（試験公開中のため）**: まだ試験公開中につき、

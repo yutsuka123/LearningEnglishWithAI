@@ -37,12 +37,16 @@ VPS の `~/eigo/` へ `rsync --delete` した際、ソース側に存在しな�
   可能なら`--delete`自体を避け、追加のみの同期にする。
 - rsyncコマンドを組み立てたら、実行前に**dry-run(`--dry-run`)で
   `deleting`と表示される対象を確認**してから本番に対して実行する。
-- 万一削除してしまった場合は、直ちにユーザーに報告し、**コンテナを
-  再作成する前に**復旧すること。稼働中コンテナが残っていれば
-  `docker inspect <container> --format '{{range .Config.Env}}...'`で
-  環境変数を復元できる可能性がある（ただしこの種の操作は秘密情報の
-  抜き出しにあたるため、Claude Code側の安全装置でブロックされうる。
-  その場合は無理に迂回せず、ユーザー自身のターミナルで実行してもらう）。
+- 万一削除してしまった場合、まずprivateリポジトリ`business_plan`の
+  `products/study_nyangailab/secrets_backup/env.study.backup`
+  （2026-08-13〜保管・下記「🔗連携している private リポジトリ」参照）を
+  VPSへ配置し直すのが最短の復旧手段。バックアップが古い/無い場合のみ、
+  稼働中コンテナが残っていれば`docker inspect <container> --format
+  '{{range .Config.Env}}...'`で環境変数を復元できる可能性があるが、
+  この種の操作は秘密情報の抜き出しにあたるためClaude Code側の安全装置
+  でブロックされうる。その場合は無理に迂回せず、ユーザー自身の
+  ターミナルで実行してもらう。**コンテナを再作成する前に**復旧すること
+  （再作成時に`.env.study`が読めないと本番が起動しなくなる）。
 
 ## 📌 バージョン管理・リリースノート（2026-08-08〜必須ルール）
 
@@ -101,8 +105,14 @@ VPS の `~/eigo/` へ `rsync --delete` した際、ソース側に存在しな�
     コピー**（`docs/TODO.md`の「🔧 運用リファレンス」がgit管理外＝
     このマシンにしかバックアップが無いため2026-08-09に開始）。
     **`docs/TODO.md`側を更新したら、このファイルも都度同期すること**。
-  - 実際の`.env`秘密情報（APIキー等）自体はここには置いていない
-    （ユーザーが別途安全な場所で管理する方針）。
+  - `secrets_backup/`（**2026-08-13〜**）: 本番VPS用SSH鍵ペアと
+    `deploy/.env.study`（`OPENAI_API_KEY`/`SESSION_SECRET`等の実値）の
+    バックアップ。rsync --deleteがVPS専用の`.env.study`を誤削除する
+    事故（下記ルール参照）を機に、VPS/作業機のどちらか一方が失われても
+    復旧できるよう追加した。**このリポジトリ側（LearningEnglishWithAI）
+    には実値は一切置かない**（本項目の通りbusiness_plan側のみに保管）。
+    値を更新したら都度手動で同期すること（詳細・復元手順は
+    `products/study_nyangailab/secrets_backup/README.md`参照）。
 
 ## その他
 
