@@ -600,7 +600,16 @@ def synthesize_speech(
             # 2026-08-12修正: 以前はここでチャージ残高を消費しておらず、
             # 無料枠を使い切った後もTTSだけ無制限に無料で使えてしまう
             # 抜け穴があった。
-            _maybe_deduct_balance(conn, uid, cost, feature, settings)
+            # 2026-08-13修正: 上記の巻き戻し防止だけを見ていたため、
+            # free_range=True(無料範囲の単語/フレーズ・公開サンプル教材)
+            # でも、無料枠¥0のユーザー(ゲスト/自己サインアップ)は
+            # _maybe_deduct_balance内の「上限超過」判定が常にTrueになり、
+            # 未キャッシュの初回合成でチャージ残高が課金されてしまう抜け穴が
+            # あった。free_rangeはガード免除だけでなく課金免除も意味する
+            # べきなのでスキップする(単語/フレーズ・公開サンプルいずれも
+            # 「課金ユーザーでも無料」という設計のため)。
+            if not free_range:
+                _maybe_deduct_balance(conn, uid, cost, feature, settings)
         return audio, None
     except Exception as exc:
         log.error("TTS 失敗 (voice=%s, model=%s): %s",
