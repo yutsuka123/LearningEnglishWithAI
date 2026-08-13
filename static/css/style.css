@@ -49,9 +49,12 @@ body {
 
 /* グローバルリンク色。指定が無いと閲覧済みリンクがブラウザ既定の紫のまま
    になり、ダークモードの背景で読みにくいとの指摘(2026-08-13)により追加。 */
-a { color: var(--accent); }
-a:visited { color: var(--accent); }
-a:hover { color: var(--accent-2); }
+/* .btn(ボタン風リンク、例:トップバーのログインボタン)は除外する。
+   a:visitedは擬似クラスの分だけ.btnより詳細度が高く、除外しないと訪問済み
+   リンクがボタン背景と同色になり文字が見えなくなる(2026-08-13発覚)。 */
+a:not(.btn) { color: var(--accent); }
+a:visited:not(.btn) { color: var(--accent); }
+a:hover:not(.btn) { color: var(--accent-2); }
 
 /* 文字の大きさ設定（既定=中。JS側で <html data-font-size="..."> を
    セット/localStorage保存する。ページ全体の個別font-sizeを書き換える
@@ -472,9 +475,15 @@ th { color: var(--muted); font-weight: 600; }
   background: var(--panel-2); border: 1px solid var(--line);
   border-radius: 10px; padding: 4px 14px 14px; border-left-width: 4px;
 }
-.fset-section h3 { margin-top: 14px; }
+.fset-section h3 { margin-top: 14px; display: inline; }
 .fset-section-w { border-left-color: var(--accent); }
 .fset-section-p { border-left-color: var(--accent-2); }
+/* セクション全体(英単語の分野/フレーズのシーン)も折りたためるように
+   (2026-08-13)。中の.fset-groupと同じ矢印表記で統一。 */
+.fset-section > summary { cursor: pointer; list-style: none; }
+.fset-section > summary::-webkit-details-marker { display: none; }
+.fset-section > summary::before { content: "▶ "; color: var(--accent); }
+.fset-section[open] > summary::before { content: "▼ "; }
 .fset-wrap { max-height: 480px; overflow-y: auto; border: 1px solid var(--line);
   border-radius: 8px; padding: 8px 12px; background: var(--panel); }
 .fset-group { margin: 4px 0; border-bottom: 1px solid var(--line); }

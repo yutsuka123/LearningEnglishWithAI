@@ -1103,12 +1103,14 @@ function runFlashcards(stage, initialQueue, opts) {
 export async function flashcard(root) {
   const facets = await api.get(
     "/api/words/facets" + (showBanned() ? "?include_banned=true" : ""));
+  const domainGroups = facets.domain_groups || {};
   // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定は
   // オフ(=含む)として扱う。
   const hideMasteredDefault = !!(await api.get("/api/system/user-settings")
     .catch(() => ({ settings: {} }))).settings?.hide_mastered;
-  const domOpts = ['<option value="">分野: すべて</option>']
-    .concat(facets.domains.map((d) => `<option>${escapeHtml(d)}</option>`))
+  const catOpts = ['<option value="">全カテゴリ</option>']
+    .concat(Object.keys(domainGroups).map((c) =>
+      `<option>${escapeHtml(c)}</option>`))
     .join("");
   const lvOpts = '<option value="">--</option>' + facets.range_levels
     .map((l) => `<option>${escapeHtml(l)}</option>`).join("");
@@ -1127,7 +1129,11 @@ export async function flashcard(root) {
           <option value="en2ja">英和（英→日）</option>
           <option value="ja2en">和英（日→英）</option>
         </select>
-        <select id="fcDom">${domOpts}</select>
+        <select id="fcCategory" title="大分類">${catOpts}</select>
+        <span class="cdrop">
+          <button type="button" class="btn ghost" id="fcDomainBtn">分野: 全て ▾</button>
+          <div class="cdrop-panel" id="fcDomainPanel"></div>
+        </span>
       </div>
       <div class="row mt">
         <span class="muted">レベル</span>
@@ -1170,7 +1176,21 @@ export async function flashcard(root) {
     if (e && v != null) e.value = v;
   };
   setVal("#fcDir", localStorage.getItem("fc_dir") || "en2ja");
-  setVal("#fcDom", localStorage.getItem("fc_dom") || "");
+  // 分野(複数選択可・大分類カスケード)。旧バージョンは単一分野文字列を
+  // "fc_dom"に保存していたが、カンマ区切りの複数分野に対応(2026-08-13・
+  // 一覧画面と同じinitCheckDropdownを流用)。
+  const selectedDomains = new Set(
+    (localStorage.getItem("fc_dom") || "").split(",").filter(Boolean));
+  const fcDomainDropdown = initCheckDropdown(root, "fcDomainBtn",
+    "fcDomainPanel", () => {
+      const cat = root.querySelector("#fcCategory").value;
+      return cat ? { [cat]: domainGroups[cat] || [] } : domainGroups;
+    }, selectedDomains, () => {}, "分野");
+  root.querySelector("#fcCategory").addEventListener("change", () => {
+    selectedDomains.clear();
+    fcDomainDropdown.renderPanel();
+    fcDomainDropdown.refreshLabel();
+  });
   setVal("#fcLvMin", localStorage.getItem("fc_lvmin") || "");
   setVal("#fcLvMax", localStorage.getItem("fc_lvmax") || "");
   // 「詳細設定」がONなら毎回「隠す」を既定にする(localStorageの過去の選択
@@ -1192,7 +1212,7 @@ export async function flashcard(root) {
 
   root.querySelector("#fcStart").addEventListener("click", async () => {
     const v = (id) => root.querySelector(id).value;
-    const dir = v("#fcDir"), dom = v("#fcDom");
+    const dir = v("#fcDir"), dom = [...selectedDomains].join(",");
     const lvmin = v("#fcLvMin"), lvmax = v("#fcLvMax");
     const mastered = v("#fcMastered"), size = v("#fcSize");
     const speed = v("#fcSpeed"), voice = v("#fcVoice");
@@ -1243,8 +1263,10 @@ export async function flashPhrase(root) {
   // オフ(=含む)として扱う。
   const hideMasteredDefault = !!(await api.get("/api/system/user-settings")
     .catch(() => ({ settings: {} }))).settings?.hide_mastered;
-  const sceneOpts = ['<option value="">シーン: すべて</option>']
-    .concat(sceneFacets.scenes.map((s) => `<option>${escapeHtml(s)}</option>`))
+  const sceneGroups = sceneFacets.scene_groups || {};
+  const catOpts = ['<option value="">全カテゴリ</option>']
+    .concat(Object.keys(sceneGroups).map((c) =>
+      `<option>${escapeHtml(c)}</option>`))
     .join("");
   const lvOpts = '<option value="">--</option>' + levelFacets.range_levels
     .map((l) => `<option>${escapeHtml(l)}</option>`).join("");
@@ -1263,7 +1285,11 @@ export async function flashPhrase(root) {
           <option value="en2ja">英和（英→日）</option>
           <option value="ja2en">和英（日→英）</option>
         </select>
-        <select id="fpScene">${sceneOpts}</select>
+        <select id="fpCategory" title="大分類">${catOpts}</select>
+        <span class="cdrop">
+          <button type="button" class="btn ghost" id="fpSceneBtn">シーン: 全て ▾</button>
+          <div class="cdrop-panel" id="fpScenePanel"></div>
+        </span>
       </div>
       <div class="row mt">
         <span class="muted">レベル</span>
@@ -1306,7 +1332,19 @@ export async function flashPhrase(root) {
     if (e && v != null) e.value = v;
   };
   setVal("#fpDir", localStorage.getItem("fp_dir") || "en2ja");
-  setVal("#fpScene", localStorage.getItem("fp_scene") || "");
+  // シーン(複数選択可・大分類カスケード)。flashcard()の分野と同じ設計。
+  const selectedScenes = new Set(
+    (localStorage.getItem("fp_scene") || "").split(",").filter(Boolean));
+  const fpSceneDropdown = initCheckDropdown(root, "fpSceneBtn",
+    "fpScenePanel", () => {
+      const cat = root.querySelector("#fpCategory").value;
+      return cat ? { [cat]: sceneGroups[cat] || [] } : sceneGroups;
+    }, selectedScenes, () => {}, "シーン");
+  root.querySelector("#fpCategory").addEventListener("change", () => {
+    selectedScenes.clear();
+    fpSceneDropdown.renderPanel();
+    fpSceneDropdown.refreshLabel();
+  });
   setVal("#fpLvMin", localStorage.getItem("fp_lvmin") || "");
   setVal("#fpLvMax", localStorage.getItem("fp_lvmax") || "");
   // 「詳細設定」がONなら毎回「隠す」を既定にする(理由はflashcard()と同じ)。
@@ -1325,7 +1363,7 @@ export async function flashPhrase(root) {
 
   root.querySelector("#fpStart").addEventListener("click", async () => {
     const v = (id) => root.querySelector(id).value;
-    const dir = v("#fpDir"), scene = v("#fpScene");
+    const dir = v("#fpDir"), scene = [...selectedScenes].join(",");
     const lvmin = v("#fpLvMin"), lvmax = v("#fpLvMax");
     const mastered = v("#fpMastered"), size = v("#fpSize");
     const speed = v("#fpSpeed"), voice = v("#fpVoice");
@@ -3526,9 +3564,9 @@ export async function settings(root) {
         フレーズ画面のフィルター候補から消えます（データ自体は削除され
         ません・いつでも再表示できます）。<b>チェックの変更はこのカードの
         「保存」を押すまで反映されません。</b></p>
-      <div class="fset-section fset-section-w mt">
-        <h3>🔤 英単語の分野</h3>
-        <div class="row">
+      <details class="fset-section fset-section-w mt">
+        <summary><h3 style="display:inline">🔤 英単語の分野</h3></summary>
+        <div class="row mt">
           <button type="button" class="btn ghost" id="fset_w_all1">全てON</button>
           <button type="button" class="btn ghost" id="fset_w_all0">全てOFF</button>
           <button type="button" class="btn ghost" id="fset_w_reset">デフォルトに戻す</button>
@@ -3536,10 +3574,10 @@ export async function settings(root) {
         <div class="fset-wrap mt" id="fset_words">
           ${fsetGroupsHtml(domainGroups, hiddenDomains, "w")}
         </div>
-      </div>
-      <div class="fset-section fset-section-p mt">
-        <h3>💬 フレーズのシーン</h3>
-        <div class="row">
+      </details>
+      <details class="fset-section fset-section-p mt">
+        <summary><h3 style="display:inline">💬 フレーズのシーン</h3></summary>
+        <div class="row mt">
           <button type="button" class="btn ghost" id="fset_p_all1">全てON</button>
           <button type="button" class="btn ghost" id="fset_p_all0">全てOFF</button>
           <button type="button" class="btn ghost" id="fset_p_reset">デフォルトに戻す</button>
@@ -3547,7 +3585,7 @@ export async function settings(root) {
         <div class="fset-wrap mt" id="fset_phrases">
           ${fsetGroupsHtml(sceneGroups, hiddenScenes, "p")}
         </div>
-      </div>
+      </details>
       <button class="btn good mt" id="fset_save">保存</button>
       <span class="muted mt" id="fset_out"></span>
     </div>
