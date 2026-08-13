@@ -15,6 +15,7 @@ import contextvars
 import hashlib
 import hmac
 import os
+import re
 import secrets
 import sqlite3
 from typing import Optional
@@ -250,6 +251,33 @@ def is_disposable_email_domain(email: str) -> bool:
     email = (email or "").strip().lower()
     domain = email.rsplit("@", 1)[-1] if "@" in email else ""
     return domain in _DISPOSABLE_EMAIL_DOMAINS
+
+
+# パスワードポリシー（2026-08-13〜）: 8〜32文字、英字(大小)/数字/記号
+# （一般的に使える記号）のみ許容し、そのうち2種類以上を組み合わせる必須。
+_PW_SYMBOLS = r"""!"#$%&'()*+,\-./:;<=>?@\[\]^_`{|}~"""
+_PW_ALLOWED_RE = re.compile(rf"^[A-Za-z0-9{_PW_SYMBOLS}]+$")
+_PW_LETTER_RE = re.compile(r"[A-Za-z]")
+_PW_DIGIT_RE = re.compile(r"[0-9]")
+_PW_SYMBOL_RE = re.compile(rf"[{_PW_SYMBOLS}]")
+
+
+def password_policy_error(password: str) -> Optional[str]:
+    """パスワードがポリシーに反していればエラー文言、OKならNoneを返す。"""
+    if not (8 <= len(password) <= 32):
+        return "パスワードは8文字以上32文字以下にしてください。"
+    if not _PW_ALLOWED_RE.match(password):
+        return ("パスワードに使用できない文字が含まれています"
+                "（半角の英字・数字・記号のみ使用できます）。")
+    kinds = sum([
+        bool(_PW_LETTER_RE.search(password)),
+        bool(_PW_DIGIT_RE.search(password)),
+        bool(_PW_SYMBOL_RE.search(password)),
+    ])
+    if kinds < 2:
+        return ("パスワードは英字・数字・記号のうち2種類以上を"
+                "組み合わせてください。")
+    return None
 
 
 def authenticate(

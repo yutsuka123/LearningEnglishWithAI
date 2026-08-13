@@ -35,6 +35,13 @@
     details.survey summary { cursor: pointer; font-size: 13px;
       color: var(--sub); padding: 8px 0; }
     details.survey label { margin-top: 10px; }
+    .pwd-wrap { position: relative; }
+    .pwd-wrap input { padding-right: 40px; }
+    .pwd-toggle { position: absolute; right: 4px; top: 50%;
+      transform: translateY(-50%); width: auto; margin: 0;
+      padding: 4px 8px; background: transparent; border: 0;
+      color: var(--sub); font-size: 16px; line-height: 1; cursor: pointer; }
+    .pwd-toggle:hover { background: transparent; color: var(--text); }
     button { width: 100%; margin-top: 20px; padding: 11px; border: 0;
       border-radius: 8px; background: var(--accent); color: #fff;
       font-size: 15px; cursor: pointer; }
@@ -58,8 +65,12 @@
     <label for="u">ユーザー名（メールアドレスでも可）</label>
     <input id="u" name="username" autocomplete="username" required />
     <label for="p">パスワード</label>
-    <input id="p" name="password" type="password"
-      autocomplete="current-password" required />
+    <div class="pwd-wrap">
+      <input id="p" name="password" type="password"
+        autocomplete="current-password" required />
+      <button type="button" class="pwd-toggle" data-target="p"
+        aria-label="パスワードを表示">👁</button>
+    </div>
     <button type="submit">ログイン</button>
     <div class="err" id="e"></div>
     <div class="toggle">
@@ -84,14 +95,30 @@
     <label for="su2">メールアドレス（確認）</label>
     <input id="su2" name="email_confirm" type="email" autocomplete="email"
       required />
-    <label for="sp">パスワード（8文字以上）</label>
-    <input id="sp" name="password" type="password" minlength="8"
-      autocomplete="new-password" required />
-    <label for="sk">チャージキー</label>
-    <input id="sk" name="charge_key" autocomplete="off" required
+    <label for="sp">パスワード</label>
+    <div class="pwd-wrap">
+      <input id="sp" name="password" type="password" minlength="8"
+        maxlength="32" autocomplete="new-password" required />
+      <button type="button" class="pwd-toggle" data-target="sp"
+        aria-label="パスワードを表示">👁</button>
+    </div>
+    <p class="hint">8〜32文字。半角の英字・数字・記号が使えます
+      （英字のみ・数字のみ・記号のみは不可、2種類以上を組み合わせて
+      ください）。</p>
+    <label for="sp2">パスワード（確認）</label>
+    <div class="pwd-wrap">
+      <input id="sp2" name="password_confirm" type="password" minlength="8"
+        maxlength="32" autocomplete="new-password" required />
+      <button type="button" class="pwd-toggle" data-target="sp2"
+        aria-label="パスワードを表示">👁</button>
+    </div>
+    <label for="sk">チャージキー（任意）</label>
+    <input id="sk" name="charge_key" autocomplete="off"
       placeholder="XXXX-XXXXXXX-X-XXXX" />
-    <p class="hint">BASE等で購入時にお送りしたキーを入力してください。
-      登録と同時にチャージ（pt付与）されます。</p>
+    <p class="hint">BASE等で購入したキーをお持ちの場合はここで入力すると、
+      登録と同時にチャージ（pt付与）されます。お持ちでない場合は空欄の
+      まま登録でき、後から設定画面の「💳 チャージ」でいつでも入力
+      できます。</p>
 
     <details class="survey">
       <summary>📋 アンケート（任意・サービス改善の参考にさせていただきます）</summary>
@@ -147,6 +174,37 @@
       fLogin.classList.remove('hidden');
     });
 
+    document.querySelectorAll('.pwd-toggle').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const inp = document.getElementById(btn.dataset.target);
+        const show = inp.type === 'password';
+        inp.type = show ? 'text' : 'password';
+        btn.textContent = show ? '🙈' : '👁';
+        btn.setAttribute('aria-label',
+          show ? 'パスワードを隠す' : 'パスワードを表示');
+      });
+    });
+
+    // サーバー側(app/services/auth.py password_policy_error)と同じルール。
+    // すぐに気づけるようクライアント側でも軽く事前チェックする。
+    function passwordPolicyError(pw) {
+      if (pw.length < 8 || pw.length > 32) {
+        return 'パスワードは8文字以上32文字以下にしてください。';
+      }
+      if (!/^[A-Za-z0-9!"#$%&'()*+,\-./:;<=>?@[\]^_`{|}~]+$/.test(pw)) {
+        return 'パスワードに使用できない文字が含まれています' +
+          '（半角の英字・数字・記号のみ使用できます）。';
+      }
+      const kinds = [/[A-Za-z]/, /[0-9]/,
+        /[!"#$%&'()*+,\-./:;<=>?@[\]^_`{|}~]/]
+        .filter((re) => re.test(pw)).length;
+      if (kinds < 2) {
+        return 'パスワードは英字・数字・記号のうち2種類以上を' +
+          '組み合わせてください。';
+      }
+      return null;
+    }
+
     fLogin.addEventListener('submit', async (ev) => {
       ev.preventDefault();
       const e = document.getElementById('e');
@@ -176,6 +234,14 @@
         se.textContent = 'メールアドレスが一致しません。';
         return;
       }
+      const password = document.getElementById('sp').value;
+      const passwordConfirm = document.getElementById('sp2').value;
+      if (password !== passwordConfirm) {
+        se.textContent = 'パスワードが一致しません。';
+        return;
+      }
+      const pwErr = passwordPolicyError(password);
+      if (pwErr) { se.textContent = pwErr; return; }
       try {
         const r = await fetch('/api/auth/signup', {
           method: 'POST',
@@ -184,7 +250,7 @@
             full_name: document.getElementById('sname').value,
             furigana: document.getElementById('skana').value,
             email: email,
-            password: document.getElementById('sp').value,
+            password: password,
             charge_key: document.getElementById('sk').value,
             survey_occupation: document.getElementById('s_occ').value,
             survey_age_group: document.getElementById('s_age').value,

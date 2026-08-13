@@ -165,6 +165,28 @@ function initFontSize() {
   });
 }
 
+// トップバーの残高(pt)表示をクリックしたらチャージ画面へ誘導する
+// （2026-08-13ユーザー指摘「ptをクリックしてもチャージしますかとポップアップ
+// を出してはい押下したら飛ぶように」）。要素自体はindex.htmlの静的DOMで
+// 一度きりなので、リスナーは起動時に一度だけ登録すればよい
+// （refreshCost()は毎回textContentを書き換えるだけ）。
+function initBalanceClick() {
+  const balEl = document.getElementById("usageBalance");
+  if (!balEl) return;
+  balEl.style.cursor = "pointer";
+  balEl.title = "クリックでチャージ画面へ";
+  balEl.addEventListener("click", () => {
+    if (state.isGuest) {
+      if (confirm("チャージにはログインが必要です。ログイン画面へ" +
+          "移動しますか？")) {
+        location.href = "/login";
+      }
+      return;
+    }
+    if (confirm("チャージしますか？")) go("settings");
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Routing
 // ---------------------------------------------------------------------------

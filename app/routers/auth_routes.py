@@ -40,7 +40,7 @@ class LoginIn(BaseModel):
 class SignupIn(BaseModel):
     email: str
     password: str
-    charge_key: str
+    charge_key: str = ""
     display_name: str = ""
     full_name: str = ""
     furigana: str = ""
@@ -54,8 +54,10 @@ class SignupIn(BaseModel):
 
 @router.post("/signup")
 def signup(payload: SignupIn, request: Request, response: Response):
-    """自己サインアップ（メアド+パス）。招待制を維持するため、有効な
-    未使用チャージキーの提示を必須にする（=登録がそのままキー償還になる）。
+    """自己サインアップ（メアド+パス）。チャージキーは任意（2026-08-13〜）:
+    入力があればその場で償還してpt付与、空なら残高0の②ログイン無課金
+    ユーザーとして登録する。チャージキーは設定画面の「💳 チャージ」
+    （`POST /api/billing/redeem`）から後でいつでも入力できる。
     username にはメアドをそのまま使うため、既存の /api/auth/login や
     authenticate() は一切変更不要（従来ユーザーのログイン経路と共存する）。
     """
@@ -80,11 +82,9 @@ def signup(payload: SignupIn, request: Request, response: Response):
             {"ok": False, "error": "使い捨てメールアドレスでは登録できません。"},
             status_code=400,
         )
-    if len(password) < 8:
-        return JSONResponse(
-            {"ok": False, "error": "パスワードは8文字以上にしてください。"},
-            status_code=400,
-        )
+    pw_error = auth.password_policy_error(password)
+    if pw_error:
+        return JSONResponse({"ok": False, "error": pw_error}, status_code=400)
     full_name = payload.full_name.strip()
     furigana = payload.furigana.strip()
     if not full_name or not furigana:
@@ -117,7 +117,8 @@ def signup(payload: SignupIn, request: Request, response: Response):
                 survey_referral=payload.survey_referral,
                 survey_free_text=payload.survey_free_text,
             )
-            charge_keys.redeem_key(conn, uid, payload.charge_key)
+            if payload.charge_key.strip():
+                charge_keys.redeem_key(conn, uid, payload.charge_key)
             secret = auth.get_session_secret(conn)
             u = auth.get_user(conn, uid)
     except charge_keys.ChargeKeyError as e:
