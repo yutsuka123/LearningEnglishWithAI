@@ -25,9 +25,16 @@
     h1 { font-size: 18px; margin: 0 0 20px; color: var(--text); }
     label { display: block; font-size: 13px; color: var(--sub);
       margin: 12px 0 4px; }
-    input { width: 100%; padding: 10px; border: 1px solid var(--border);
-      border-radius: 8px; box-sizing: border-box; font-size: 14px;
+    input, select, textarea { width: 100%; padding: 10px;
+      border: 1px solid var(--border); border-radius: 8px;
+      box-sizing: border-box; font-size: 14px; font-family: inherit;
       background: var(--bg); color: var(--text); }
+    textarea { resize: vertical; min-height: 60px; }
+    details.survey { margin-top: 16px; border: 1px solid var(--border);
+      border-radius: 8px; padding: 4px 12px; }
+    details.survey summary { cursor: pointer; font-size: 13px;
+      color: var(--sub); padding: 8px 0; }
+    details.survey label { margin-top: 10px; }
     button { width: 100%; margin-top: 20px; padding: 11px; border: 0;
       border-radius: 8px; background: var(--accent); color: #fff;
       font-size: 15px; cursor: pointer; }
@@ -66,8 +73,16 @@
 
   <form class="card hidden" id="fSignup">
     <h1>🐱 新規登録</h1>
+    <label for="sname">氏名</label>
+    <input id="sname" name="full_name" autocomplete="name" required />
+    <label for="skana">フリガナ</label>
+    <input id="skana" name="furigana" autocomplete="off" required
+      placeholder="ヤマダ タロウ" />
     <label for="su">メールアドレス</label>
     <input id="su" name="email" type="email" autocomplete="email"
+      required />
+    <label for="su2">メールアドレス（確認）</label>
+    <input id="su2" name="email_confirm" type="email" autocomplete="email"
       required />
     <label for="sp">パスワード（8文字以上）</label>
     <input id="sp" name="password" type="password" minlength="8"
@@ -77,6 +92,38 @@
       placeholder="XXXX-XXXXXXX-X-XXXX" />
     <p class="hint">BASE等で購入時にお送りしたキーを入力してください。
       登録と同時にチャージ（pt付与）されます。</p>
+
+    <details class="survey">
+      <summary>📋 アンケート（任意・サービス改善の参考にさせていただきます）</summary>
+      <label for="s_occ">ご職業</label>
+      <input id="s_occ" name="survey_occupation" autocomplete="off" />
+      <label for="s_age">年代</label>
+      <select id="s_age" name="survey_age_group">
+        <option value="">回答しない</option>
+        <option value="10代">10代</option>
+        <option value="20代">20代</option>
+        <option value="30代">30代</option>
+        <option value="40代">40代</option>
+        <option value="50代">50代</option>
+        <option value="60代">60代</option>
+        <option value="70代以上">70代以上</option>
+      </select>
+      <label for="s_gender">性別</label>
+      <select id="s_gender" name="survey_gender">
+        <option value="">回答しない</option>
+        <option value="男性">男性</option>
+        <option value="女性">女性</option>
+        <option value="その他">その他</option>
+      </select>
+      <label for="s_purpose">利用目的</label>
+      <input id="s_purpose" name="survey_purpose" autocomplete="off"
+        placeholder="例: 仕事で使う英語の勉強・趣味・資格対策 等" />
+      <label for="s_ref">このアプリを何で知りましたか？</label>
+      <input id="s_ref" name="survey_referral" autocomplete="off" />
+      <label for="s_free">ご自由にどうぞ（ご要望・ご意見など）</label>
+      <textarea id="s_free" name="survey_free_text"></textarea>
+    </details>
+
     <button type="submit">登録してはじめる</button>
     <div class="err" id="se"></div>
     <div class="toggle">
@@ -123,14 +170,28 @@
       ev.preventDefault();
       const se = document.getElementById('se');
       se.textContent = '';
+      const email = document.getElementById('su').value;
+      const emailConfirm = document.getElementById('su2').value;
+      if (email.trim().toLowerCase() !== emailConfirm.trim().toLowerCase()) {
+        se.textContent = 'メールアドレスが一致しません。';
+        return;
+      }
       try {
         const r = await fetch('/api/auth/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            email: document.getElementById('su').value,
+            full_name: document.getElementById('sname').value,
+            furigana: document.getElementById('skana').value,
+            email: email,
             password: document.getElementById('sp').value,
             charge_key: document.getElementById('sk').value,
+            survey_occupation: document.getElementById('s_occ').value,
+            survey_age_group: document.getElementById('s_age').value,
+            survey_gender: document.getElementById('s_gender').value,
+            survey_purpose: document.getElementById('s_purpose').value,
+            survey_referral: document.getElementById('s_ref').value,
+            survey_free_text: document.getElementById('s_free').value,
           }),
         });
         const d = await r.json();

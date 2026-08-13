@@ -276,21 +276,38 @@ def create_user(
     monthly_cap_usd: Optional[float] = None,
     balance_jpy: Optional[float] = None,
     allow_banned: bool = False,
+    full_name: str = "",
+    furigana: str = "",
+    survey_occupation: str = "",
+    survey_age_group: str = "",
+    survey_gender: str = "",
+    survey_purpose: str = "",
+    survey_referral: str = "",
+    survey_free_text: str = "",
 ) -> int:
     """ユーザーを作成して id を返す。username は一意。
 
     ``email`` は自己サインアップ(メアド+パス)ユーザー用（既定は空文字＝
     管理者(admin.py)作成の従来ユーザーと同じ扱い）。呼び出し元を増やさず
     後方互換を保つため、キーワード専用・既定空文字にしている。
+    ``full_name``/``furigana``/``survey_*`` は2026-08-13追加の登録画面
+    拡充項目（氏名/フリガナは自己サインアップで必須、survey_*は任意
+    アンケート）。管理者作成の従来ユーザーは既定空文字のまま。
     """
     pw = hash_password(password) if password else ""
     cur = conn.execute(
         "INSERT INTO users (username, password_hash, role, display_name, "
         " email, daily_cost_cap_usd, monthly_cost_cap_usd, balance_jpy, "
-        " allow_banned) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        " allow_banned, full_name, furigana, survey_occupation, "
+        " survey_age_group, survey_gender, survey_purpose, survey_referral, "
+        " survey_free_text) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (username.strip(), pw, role, display_name or username.strip(),
          email.strip().lower(), daily_cap_usd, monthly_cap_usd, balance_jpy,
-         1 if allow_banned else 0),
+         1 if allow_banned else 0, full_name.strip(), furigana.strip(),
+         survey_occupation.strip(), survey_age_group.strip(),
+         survey_gender.strip(), survey_purpose.strip(),
+         survey_referral.strip(), survey_free_text.strip()),
     )
     return int(cur.lastrowid)
 

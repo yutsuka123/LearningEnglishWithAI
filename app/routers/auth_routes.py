@@ -42,6 +42,14 @@ class SignupIn(BaseModel):
     password: str
     charge_key: str
     display_name: str = ""
+    full_name: str = ""
+    furigana: str = ""
+    survey_occupation: str = ""
+    survey_age_group: str = ""
+    survey_gender: str = ""
+    survey_purpose: str = ""
+    survey_referral: str = ""
+    survey_free_text: str = ""
 
 
 @router.post("/signup")
@@ -77,6 +85,13 @@ def signup(payload: SignupIn, request: Request, response: Response):
             {"ok": False, "error": "パスワードは8文字以上にしてください。"},
             status_code=400,
         )
+    full_name = payload.full_name.strip()
+    furigana = payload.furigana.strip()
+    if not full_name or not furigana:
+        return JSONResponse(
+            {"ok": False, "error": "氏名とフリガナを入力してください。"},
+            status_code=400,
+        )
     # 注意: ChargeKeyError は with ブロックの外で捕まえること。ブロック内で
     # catch して return してしまうと、db() の contextmanager からは
     # "例外なく正常終了" に見えて create_user の INSERT がロールバックされず
@@ -94,6 +109,13 @@ def signup(payload: SignupIn, request: Request, response: Response):
             uid = auth.create_user(
                 conn, email, password,
                 email=email, display_name=payload.display_name or email,
+                full_name=full_name, furigana=furigana,
+                survey_occupation=payload.survey_occupation,
+                survey_age_group=payload.survey_age_group,
+                survey_gender=payload.survey_gender,
+                survey_purpose=payload.survey_purpose,
+                survey_referral=payload.survey_referral,
+                survey_free_text=payload.survey_free_text,
             )
             charge_keys.redeem_key(conn, uid, payload.charge_key)
             secret = auth.get_session_secret(conn)

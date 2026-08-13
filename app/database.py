@@ -602,6 +602,12 @@ def _migrate_multiuser(conn: sqlite3.Connection) -> None:
     # 全セッションだけを一括で強制ログアウトできる。
     _add_col(conn, "users", "session_epoch",
              "session_epoch INTEGER NOT NULL DEFAULT 0")
+    # 登録画面拡充（2026-08-13・ユーザー指示）: 氏名/フリガナ(必須項目)＋
+    # 任意アンケート(職業/年代/性別/目的/流入経路/自由記入欄)。
+    for col in ("full_name", "furigana", "survey_occupation",
+                "survey_age_group", "survey_gender", "survey_purpose",
+                "survey_referral", "survey_free_text"):
+        _add_col(conn, "users", col, f"{col} TEXT DEFAULT ''")
     _migrate_membership_status(conn)
     _migrate_public_samples(conn)
 
