@@ -23,7 +23,7 @@ from ..config import load_settings
 from ..services import access_tiers, ai, audio_store, persistence, tracking
 from ..services.context_builder import build_context
 from ..services.metrics import toeic_estimate, word_buckets
-from ..services.spaced_repetition import select_for_review
+from ..services.spaced_repetition import banned_filter, select_for_review
 
 router = APIRouter(prefix="/api/learn", tags=["learn"])
 
@@ -596,17 +596,24 @@ def reply_examples(payload: ConversationIn):
 @router.get("/assess")
 def assess():
     """学習データから現在のレベルをAIが判定（品質モデルを使用）。"""
-    from ..services.auth import current_user_id
+    from ..services.auth import current_user_allow_banned, current_user_id
     from ..services.progress import user_items_subquery
     uid = current_user_id()
     src = user_items_subquery("words")
     with db() as conn:
         wb = word_buckets(conn, "words", user_id=uid)
         pb = word_buckets(conn, "phrases", user_id=uid)
+        # 禁止用語の学習履歴があってもAIプロンプト(ひいては診断文の応答)に
+        # 混入させない(2026-08-17セキュリティ修正・fable監査で発見)。
+        ban = (
+            "" if current_user_allow_banned()
+            else f" AND {banned_filter('words')}"
+        )
         studied = conn.execute(
             "SELECT english, japanese, times_asked, times_correct, "
             "ok_en2ja, ask_en2ja, ok_ja2en, ask_ja2en "
-            f"FROM {src} AS t WHERE times_asked > 0 ORDER BY times_asked DESC",
+            f"FROM {src} AS t WHERE times_asked > 0{ban} "
+            "ORDER BY times_asked DESC",
             (uid,),
         ).fetchall()
         convo = conn.execute(

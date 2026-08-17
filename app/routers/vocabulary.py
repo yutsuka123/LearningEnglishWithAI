@@ -418,8 +418,18 @@ def quiz(
 
 @router.post("/attempt")
 def attempt(payload: AttemptIn):
-    from ..services.auth import current_user_id
+    from ..services.auth import current_user_allow_banned, current_user_id
     with db() as conn:
+        # 禁止用語IDへの学習記録の直接書き込みも拒否する(2026-08-17・
+        # fable監査で発見: これを許すと`/api/learn/assess`のAI診断文
+        # 経由で禁止用語の英文/和訳が漏れる)。
+        if not current_user_allow_banned():
+            banned = conn.execute(
+                "SELECT 1 FROM words WHERE id = ? AND domain = ?",
+                (payload.word_id, BANNED_DOMAIN),
+            ).fetchone()
+            if banned:
+                raise HTTPException(404, "単語が見つかりません")
         try:
             result = record_attempt(
                 conn, payload.word_id, payload.direction, payload.correct,

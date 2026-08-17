@@ -247,7 +247,10 @@ def deck_phrases_list(deck_id: int):
         # 念のための二重チェック(2026-08-17)。追加時点(`_select_phrase_ids`)
         # で禁止用語は弾いているが、allow_banned停止後の閲覧など経路が
         # 増えても漏れないよう表示側でも常に絞り込む。
-        ban = "" if current_user_allow_banned() else f" AND {banned_filter('phrases')}"
+        ban = (
+            "" if current_user_allow_banned()
+            else f" AND {banned_filter('phrases')}"
+        )
         rows = conn.execute(
             f"SELECT * FROM {src} AS ph "
             "JOIN deck_phrases dph ON dph.phrase_id = ph.id "
@@ -357,7 +360,10 @@ def deck_quiz(deck_id: int, limit: int | None = None):
         n = limit or s.get("quiz_size", 10)
         # 禁止用語は出題選択肢にも一切出さない(2026-08-17・deck_phrases_list
         # と同じ二重チェック)。
-        ban = "" if current_user_allow_banned() else f" AND {banned_filter('phrases')}"
+        ban = (
+            "" if current_user_allow_banned()
+            else f" AND {banned_filter('phrases')}"
+        )
         rows = conn.execute(
             "SELECT ph.*, COALESCE(dp.correct_count,0) AS dp_correct, "
             "dp.done_at AS dp_done "
@@ -385,8 +391,19 @@ class PhraseDeckAttempt(BaseModel):
 
 @router.post("/{deck_id}/attempt")
 def deck_attempt(deck_id: int, payload: PhraseDeckAttempt):
+    from ..services.auth import current_user_allow_banned
     with db() as conn:
         drow = _owned_deck(conn, deck_id)
+        # 禁止用語IDへの学習記録の直接書き込みも拒否する(2026-08-17・
+        # fable監査で発見: これを許すと`/api/learn/assess`のAI診断文
+        # 経由で禁止用語の英文/和訳が漏れる)。
+        if not current_user_allow_banned():
+            banned = conn.execute(
+                "SELECT 1 FROM phrases WHERE id = ? AND scene LIKE '禁止%'",
+                (payload.phrase_id,),
+            ).fetchone()
+            if banned:
+                raise HTTPException(404, "フレーズが見つかりません")
         s = _settings(drow["settings"])
         # 忘却曲線ONなら per-user の mastery/SRS も更新。
         if s.get("use_srs", True):

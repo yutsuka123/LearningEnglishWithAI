@@ -493,8 +493,18 @@ def restore_progress(phrase_id: int, payload: PhraseRestoreIn):
 
 @router.post("/attempt")
 def attempt(payload: PhraseAttempt):
-    from ..services.auth import current_user_id
+    from ..services.auth import current_user_allow_banned, current_user_id
     with db() as conn:
+        # 禁止用語IDへの学習記録の直接書き込みも拒否する(2026-08-17・
+        # fable監査で発見: これを許すと`/api/learn/assess`のAI診断文
+        # 経由で禁止用語の英文/和訳が漏れる)。
+        if not current_user_allow_banned():
+            banned = conn.execute(
+                "SELECT 1 FROM phrases WHERE id = ? AND scene LIKE '禁止%'",
+                (payload.phrase_id,),
+            ).fetchone()
+            if banned:
+                raise HTTPException(404, "フレーズが見つかりません")
         try:
             result = record_attempt(
                 conn,
