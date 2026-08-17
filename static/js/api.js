@@ -19,11 +19,20 @@ async function req(method, path, body) {
   return data;
 }
 
+// 画面表示/ボタン押下の利用状況イベント記録（管理画面の分析用・
+// 2026-08-17）。呼び出し元の操作を絶対に妨げないよう、結果を待たず
+// 失敗も無視するfire-and-forget。
+function track(kind, category, label = "") {
+  req("POST", "/api/system/track", { kind, category, label })
+    .catch(() => { /* 記録失敗は無視（UIに影響させない） */ });
+}
+
 export const api = {
   get: (p) => req("GET", p),
   post: (p, b) => req("POST", p, b),
   put: (p, b) => req("PUT", p, b),
   del: (p) => req("DELETE", p),
+  track,
 
   // Streaming POST -> calls onChunk(textPiece) as data arrives.
   async stream(path, body, onChunk) {

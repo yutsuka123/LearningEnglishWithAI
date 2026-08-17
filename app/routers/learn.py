@@ -20,7 +20,7 @@ from ..schemas import (
     WritingFeedbackIn,
 )
 from ..config import load_settings
-from ..services import access_tiers, ai, audio_store, persistence
+from ..services import access_tiers, ai, audio_store, persistence, tracking
 from ..services.context_builder import build_context
 from ..services.metrics import toeic_estimate, word_buckets
 from ..services.spaced_repetition import select_for_review
@@ -349,6 +349,7 @@ def sample_material_tts(material_id: int, voice: str = "ash"):
     if error:
         return Response(content=error, status_code=422,
                         media_type="text/plain")
+    tracking.log_event("play", f"sample_{feature}", voice)
     return Response(content=audio, media_type="audio/mpeg")
 
 
@@ -863,6 +864,7 @@ def tts(payload: TtsIn):
     if error:
         # 422 lets the frontend fall back to the browser voice.
         return Response(content=error, status_code=422, media_type="text/plain")
+    tracking.log_event("play", feature, payload.voice)
     return Response(content=audio, media_type="audio/mpeg")
 
 
@@ -920,6 +922,8 @@ def tts_item(
                             media_type="text/plain")
         cached = audio_store.get(conn, item_type, item_id, skind, voice, text)
         if cached is not None:
+            tracking.log_event(
+                "play", item_type, f"{base}:{voice}:{speed}")
             return Response(content=cached, media_type="audio/mpeg")
         from ..services.auth import current_user_id, is_guest_user_id
         is_guest = is_guest_user_id(conn, current_user_id())
@@ -933,6 +937,7 @@ def tts_item(
                         media_type="text/plain")
     with db() as conn:
         audio_store.put(conn, item_type, item_id, skind, voice, text, audio)
+    tracking.log_event("play", item_type, f"{base}:{voice}:{speed}")
     return Response(content=audio, media_type="audio/mpeg")
 
 

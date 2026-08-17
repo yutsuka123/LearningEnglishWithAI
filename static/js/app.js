@@ -38,6 +38,8 @@ const TABS = [
   ["admin", "👑 管理者情報"],   // 管理者のみ表示（boot で非adminは隠す）
 ];
 
+const TAB_LABELS = Object.fromEntries(TABS);
+
 // ---------------------------------------------------------------------------
 // Small DOM / util helpers (shared, exported for view modules)
 // ---------------------------------------------------------------------------
@@ -246,6 +248,7 @@ export async function go(tab) {
   const myRoot = document.createElement("div");
   myRoot.innerHTML = '<p class="muted">読み込み中…</p>';
   view().replaceChildren(myRoot);
+  api.track("page", tab, TAB_LABELS[tab] || tab);
   try {
     await ROUTES[tab](myRoot);
   } catch (e) {
@@ -402,6 +405,25 @@ export async function refreshAiState() {
 }
 
 // ---------------------------------------------------------------------------
+// ボタン押下数の記録（管理画面の利用状況分析用・2026-08-17）。個別の
+// ボタンごとにハンドラを書き足す代わりに、document全体で1回だけ委譲する
+// （4800行超あるviews.jsの全ボタンを回らずに済む・textContentを label に
+// する設計上、動的な文言(クイズの選択肢等)は個別行に分散するが、ORDER BY
+// カウント降順+上位のみ表示なので、実際によく押される共通UIボタンは自然に
+// 上位へ集まる）。
+// ---------------------------------------------------------------------------
+
+function initClickTracking() {
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("button, a.btn");
+    if (!btn) return;
+    const label = (btn.textContent || "").trim().replace(/\s+/g, " ")
+      .slice(0, 60) || btn.id || btn.className || "?";
+    api.track("click", currentTab, label);
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Boot
 // ---------------------------------------------------------------------------
 
@@ -474,6 +496,7 @@ async function boot() {
     location.href = "/login";
   });
 
+  initClickTracking();
   speech.onUsage(refreshCost); // refresh cost after paid TTS calls
   speech.onPaymentRequired((msg) => toast(msg)); // 無料範囲外の再生でチャージ不足のとき
   // Pre-load voices for TTS.

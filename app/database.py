@@ -387,6 +387,29 @@ CREATE TABLE IF NOT EXISTS base_orders (
     detected_at    TEXT    NOT NULL DEFAULT (datetime('now')),
     delivered_at   TEXT
 );
+
+-- 利用状況イベントログ（2026-08-17・管理画面の分析用）。
+-- kind: 'page'(画面表示) | 'play'(音声再生) | 'click'(ボタン押下)。
+-- category/label の意味は kind により異なる（記録元を参照）:
+--   page:  category=タブID(例 'vocab') / label=タブの日本語名
+--   play:  category=再生機能(例 'word'/'word_example'/'phrase'/
+--          'reading_tts'/'listening_tts'/'tts') / label=声・速度等の詳細
+--   click: category=押されたときの画面(タブID) / label=ボタンの文言
+-- user_id は auth.current_user_id() をそのまま入れる（ゲストは疑似ユーザー
+-- idが入るため、users.username='guest'等で判別可能）。集計はSQL側で
+-- created_at/ip/user_id/category/labelを自由に組み合わせて行う。
+CREATE TABLE IF NOT EXISTS usage_events (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER,
+    ip         TEXT    DEFAULT '',
+    kind       TEXT    NOT NULL,
+    category   TEXT    NOT NULL DEFAULT '',
+    label      TEXT    NOT NULL DEFAULT '',
+    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_usage_events_kind
+    ON usage_events(kind, created_at);
+CREATE INDEX IF NOT EXISTS idx_usage_events_ip ON usage_events(ip);
 """
 
 

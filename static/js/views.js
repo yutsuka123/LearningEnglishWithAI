@@ -3449,6 +3449,26 @@ export async function admin(root) {
       <div id="aiUsageSearchWrap" class="mt">
         <p class="muted">条件を指定して検索してください（未指定は全件）。</p>
       </div>
+    </div>
+    <div class="card">
+      <h2>📊 利用状況分析（画面別・機能別再生・ボタン押下・IP別）</h2>
+      <p class="muted">アプリ内の操作ログ(usage_events)をその場で集計して
+        表示（保存済みの集計ではなく毎回最新の内容）。「更新」を押すと
+        再取得します。</p>
+      <div class="grid cols-4 mt" style="align-items:end">
+        <label>集計期間
+          <select id="uaDays">
+            <option value="7">直近7日</option>
+            <option value="30" selected>直近30日</option>
+            <option value="90">直近90日</option>
+            <option value="365">直近1年</option>
+          </select>
+        </label>
+        <button class="btn" id="uaRefreshBtn">🔄 更新</button>
+      </div>
+      <div id="usageAnalyticsWrap" class="mt">
+        <p class="muted">読み込み中…</p>
+      </div>
     </div>`;
 
   api.get("/api/system/admin/login-log").then((rows) => {
@@ -3603,6 +3623,70 @@ export async function admin(root) {
       } catch (e) { toast("失敗: " + e.message); }
     });
   });
+
+  // 利用状況分析（画面別/機能別再生/ボタン押下/IP別・2026-08-17）。
+  async function loadUsageAnalytics() {
+    const wrap = root.querySelector("#usageAnalyticsWrap");
+    const days = root.querySelector("#uaDays").value;
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    try {
+      const res = await api.get(
+        `/api/system/admin/usage-analytics?days=${days}`);
+      const groupTable = (title, rows, catLabel) => {
+        if (!rows.length) {
+          return `<h3>${title}</h3><p class="muted">まだありません。</p>`;
+        }
+        return `<h3>${title}</h3>
+          <table><thead><tr>
+            <th>${catLabel}</th><th>詳細</th><th>回数</th>
+            <th>ユニークIP</th><th>ユニークユーザー</th>
+          </tr></thead><tbody>${rows.map((r) => `
+            <tr>
+              <td>${escapeHtml(r.category)}</td>
+              <td class="muted">${escapeHtml(r.label || "—")}</td>
+              <td>${r.cnt}</td>
+              <td>${r.uniq_ip}</td>
+              <td>${r.uniq_user}</td>
+            </tr>`).join("")}</tbody></table>`;
+      };
+      const ipTable = res.ips.length ? `<h3>🌐 IPアドレス別</h3>
+        <table><thead><tr>
+          <th>IP</th><th>合計</th><th>画面表示</th><th>再生</th>
+          <th>クリック</th><th>ユーザー名</th><th>最終アクセス</th>
+        </tr></thead><tbody>${res.ips.map((r) => `
+          <tr>
+            <td class="muted">${escapeHtml(r.ip)}</td>
+            <td>${r.total}</td>
+            <td>${r.pages}</td>
+            <td>${r.plays}</td>
+            <td>${r.clicks}</td>
+            <td>${escapeHtml(r.usernames || "—")}</td>
+            <td class="muted">${fmtDate(r.last_seen)}</td>
+          </tr>`).join("")}</tbody></table>` :
+        `<h3>🌐 IPアドレス別</h3><p class="muted">まだありません。</p>`;
+      const dailyTable = res.daily.length ? `<h3>📅 日別推移</h3>
+        <table><thead><tr>
+          <th>日付</th><th>画面表示</th><th>再生</th><th>クリック</th>
+        </tr></thead><tbody>${res.daily.slice().reverse().map((d) => `
+          <tr><td class="muted">${d.date}</td><td>${d.pages}</td>
+            <td>${d.plays}</td><td>${d.clicks}</td></tr>`).join("")}
+        </tbody></table>` : "";
+      wrap.innerHTML = `<p class="muted">対象期間の総イベント数:
+          ${res.total_events}件</p>
+        ${groupTable("📄 画面別アクセス（page）", res.pages, "画面(タブ)")}
+        ${groupTable("🔊 機能別再生（play）", res.plays, "機能")}
+        ${groupTable("🖱️ ボタン押下数（click・上位50）", res.clicks, "画面(タブ)")}
+        ${ipTable}
+        ${dailyTable}`;
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  loadUsageAnalytics();
+  root.querySelector("#uaRefreshBtn")
+    .addEventListener("click", loadUsageAnalytics);
+  root.querySelector("#uaDays")
+    .addEventListener("change", loadUsageAnalytics);
 }
 
 // --- Settings (API key, model, nickname note, voices, usage) ---------------

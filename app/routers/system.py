@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from ..config import ROOT_DIR, load_settings
 from ..database import ACCENTS, NEWS_FIELDS, db
 from ..schemas import MemoryUpdateIn, SettingsIn
-from ..services import ai, auth, persistence
+from ..services import ai, auth, persistence, tracking
 
 router = APIRouter(prefix="/api/system", tags=["system"])
 
@@ -505,4 +505,86 @@ def admin_ai_usage_search(
         "total_count": total["n"],
         "total_cost_usd": total["cost"],
         "rows": [dict(r) for r in rows],
+    }
+
+
+class TrackEventIn(BaseModel):
+    kind: str
+    category: str = ""
+    label: str = ""
+
+
+@router.post("/track")
+def track_event(payload: TrackEventIn):
+    """画面表示・ボタン押下のイベント記録（管理画面の利用状況分析用・
+    2026-08-17）。音声再生(play)は実際に音声を返した時点でサーバー側
+    (learn.pyのtts系エンドポイント)が記録するため、ここではpage/click
+    のみ受け付ける。ゲストも記録対象(_GUEST_READ_PREFIXESに追加済み)。
+    記録失敗が画面操作を妨げないよう常に200を返すbest-effort。"""
+    if payload.kind in ("page", "click"):
+        tracking.log_event(payload.kind, payload.category, payload.label)
+    return {"ok": True}
+
+
+@router.get("/admin/usage-analytics")
+def admin_usage_analytics(days: int = 30):
+    """画面別アクセス・機能別再生・ボタン押下・IP別の集計（管理画面・
+    2026-08-17）。usage_eventsテーブルからその場で集計するため常に最新
+    （管理画面の「更新」ボタンはこのAPIを再取得するだけでよい）。"""
+    _require_admin()
+    days = max(1, min(days, 365))
+    since = f"-{days} days"
+
+    def _grouped(conn, kind: str, limit: int = 50) -> list[dict]:
+        rows = conn.execute(
+            "SELECT category, label, COUNT(*) AS cnt, "
+            "COUNT(DISTINCT ip) AS uniq_ip, "
+            "COUNT(DISTINCT user_id) AS uniq_user FROM usage_events "
+            "WHERE kind = ? AND created_at >= datetime('now', ?) "
+            "GROUP BY category, label ORDER BY cnt DESC LIMIT ?",
+            (kind, since, limit),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+    with db() as conn:
+        pages = _grouped(conn, "page")
+        plays = _grouped(conn, "play")
+        clicks = _grouped(conn, "click")
+
+        ip_rows = conn.execute(
+            "SELECT ue.ip AS ip, COUNT(*) AS total, "
+            "SUM(CASE WHEN ue.kind='page' THEN 1 ELSE 0 END) AS pages, "
+            "SUM(CASE WHEN ue.kind='play' THEN 1 ELSE 0 END) AS plays, "
+            "SUM(CASE WHEN ue.kind='click' THEN 1 ELSE 0 END) AS clicks, "
+            "GROUP_CONCAT(DISTINCT u.username) AS usernames, "
+            "MAX(ue.created_at) AS last_seen FROM usage_events ue "
+            "LEFT JOIN users u ON u.id = ue.user_id "
+            "WHERE ue.created_at >= datetime('now', ?) AND ue.ip != '' "
+            "GROUP BY ue.ip ORDER BY total DESC LIMIT 50",
+            (since,),
+        ).fetchall()
+
+        daily_rows = conn.execute(
+            "SELECT substr(created_at, 1, 10) AS date, "
+            "SUM(CASE WHEN kind='page' THEN 1 ELSE 0 END) AS pages, "
+            "SUM(CASE WHEN kind='play' THEN 1 ELSE 0 END) AS plays, "
+            "SUM(CASE WHEN kind='click' THEN 1 ELSE 0 END) AS clicks "
+            "FROM usage_events WHERE created_at >= datetime('now', ?) "
+            "GROUP BY date ORDER BY date",
+            (since,),
+        ).fetchall()
+
+        total_events = conn.execute(
+            "SELECT COUNT(*) FROM usage_events "
+            "WHERE created_at >= datetime('now', ?)", (since,),
+        ).fetchone()[0]
+
+    return {
+        "days": days,
+        "total_events": total_events,
+        "pages": pages,
+        "plays": plays,
+        "clicks": clicks,
+        "ips": [dict(r) for r in ip_rows],
+        "daily": [dict(r) for r in daily_rows],
     }
