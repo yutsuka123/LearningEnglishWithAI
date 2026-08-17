@@ -6,6 +6,41 @@
 コミットする。詳細な作業ログは非公開の`docs/TODO.md`/`docs/TODO_OLD.md`
 を参照）。
 
+## ver1.1.0-alpha41 (2026-08-17, commit `未記録`)
+
+**🔴 重要バグ修正（禁止用語(差別用語等)が非管理者に漏洩しうる複数経路）**:
+単語一覧で「範囲外」レベルを選択すると、禁止用語表示チェックを入れて
+いなくても禁止用語が表示されるバグをユーザーから報告された。原因は
+`app/routers/vocabulary.py`の`_word_filter`・`app/routers/phrases.py`の
+`_phrase_filter`/`list_phrases`の禁止用語除外条件が
+`(禁止用語でない OR レベル=範囲外)`というOR条件になっていたこと
+（実データ確認: 禁止用語90語は全件レベル='範囲外'だったため、範囲外
+チェック一つで全件漏洩する状態だった）。
+
+この報告を機に`current_user_allow_banned()`によるサーバー側強制が
+漏れている経路を横断調査し、以下も同時に修正した:
+- `app/services/context_builder.py`の`review_words_today()`が
+  `pick_weighted()`を`exclude_banned`未指定で呼んでおり、reading生成・
+  英会話・trip-prep・ライティング添削・session summary等ほぼ全AI機能の
+  プロンプトに禁止用語が混入しうる状態だった。
+- `word_detail`/`phrase_detail`（単語・フレーズ詳細AI生成）がID直指定
+  で一覧フィルタを迂回し、禁止用語の意味・例文を生成/返却していた。
+- `tts_item`（リスニング再生）も同様にID直指定でフィルタを迂回し、
+  禁止用語を音声合成・再生できていた。
+- `decks.py`/`phrase_decks.py`の`_select_word_ids`/`_select_phrase_ids`
+  が`word_ids`/`phrase_ids`明示指定時に`include_banned`判定を完全に
+  スキップしていた（単語帳/フレーズ帳への直接追加で迂回可能）。あわせて
+  `deck_words_list`/`deck_quiz`/`deck_phrases_list`/`deck_quiz`
+  （フレーズ帳側）にも読み出し側の二重チェックを追加。
+- `resolve_words`（類義語ジャンプ用API）がdomainチェックなしで禁止用語
+  の意味・例文を直接返していた。
+
+フラッシュ単語・フラッシュフレーズ(`/api/words/quiz`・`/api/phrases/quiz`)
+は元々`_word_filter`/`_phrase_filter`を正しく使っており、今回の修正で
+選択肢からも確実に除外される。全ファイルのimport確認・実データベースに
+対するSQLクエリ整合性確認・既存デッキに禁止用語が混入していないことを
+確認済み（本番デプロイは未実施）。
+
 ## ver1.1.0-alpha40 (2026-08-17, commit `52acdc7`)
 
 **🟢 管理画面に利用状況分析を追加**: ユーザー要望により、画面別アクセス数・

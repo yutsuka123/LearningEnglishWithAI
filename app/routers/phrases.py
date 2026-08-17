@@ -74,13 +74,10 @@ def _phrase_filter(
         where.append(cond)
         params += p
     if not include_banned:
-        if out_of_range:
-            where.append(
-                "(COALESCE(scene, '') NOT LIKE '禁止%' "
-                "OR COALESCE(level, '') = ?)")
-            params.append(OUT_OF_RANGE)
-        else:
-            where.append("COALESCE(scene, '') NOT LIKE '禁止%'")
+        # 「範囲外」レベルのチェックはレベル絞り込みにのみ作用させる。
+        # ここで緩めると、禁止用語チェックを入れていなくてもレベルが
+        # 「範囲外」の禁止用語が表示されてしまうため(2026-08-17修正)。
+        where.append("COALESCE(scene, '') NOT LIKE '禁止%'")
     if mastered == "only":
         where.append(f"mastery >= {MASTERED_THRESHOLD}")
     elif mastered == "hide":
@@ -164,13 +161,10 @@ def list_phrases(
         conds.append(cond)
         params += p
     if not include_banned:
-        if out_of_range:
-            conds.append(
-                "(COALESCE(scene, '') NOT LIKE '禁止%' "
-                "OR COALESCE(level, '') = ?)")
-            params.append(OUT_OF_RANGE)
-        else:
-            conds.append("COALESCE(scene, '') NOT LIKE '禁止%'")
+        # 「範囲外」レベルのチェックはレベル絞り込みにのみ作用させる。
+        # ここで緩めると、禁止用語チェックを入れていなくてもレベルが
+        # 「範囲外」の禁止用語が表示されてしまうため(2026-08-17修正)。
+        conds.append("COALESCE(scene, '') NOT LIKE '禁止%'")
     if mastered == "only":
         conds.append(f"mastery >= {MASTERED_THRESHOLD}")
     elif mastered == "hide":
@@ -352,7 +346,9 @@ def phrase_detail(phrase_id: int, regen: bool = False):
 
     from ..config import load_settings
     from ..services import ai
-    from ..services.auth import current_user_id, is_guest_user_id
+    from ..services.auth import (
+        current_user_allow_banned, current_user_id, is_guest_user_id,
+    )
 
     with db() as conn:
         row = conn.execute(
@@ -360,6 +356,13 @@ def phrase_detail(phrase_id: int, regen: bool = False):
             "WHERE id = ?", (phrase_id,)
         ).fetchone()
         if not row:
+            raise HTTPException(404, "フレーズが見つかりません")
+        # 一覧(`_phrase_filter`)を経由しないID直指定のため、ここでも
+        # 禁止用語チェックが必須(2026-08-17セキュリティ修正・IDを
+        # 知っていれば`allow_banned=False`のユーザーにも詳細生成/表示
+        # されてしまっていた)。
+        scene = row["scene"] or ""
+        if scene.startswith("禁止") and not current_user_allow_banned():
             raise HTTPException(404, "フレーズが見つかりません")
         # 詳細の閲覧は2026-08-11よりtierを問わず常時無料
         # （docs/ACCESS_TIERS.md「機能アクセス表」参照）。ただし**未生成の

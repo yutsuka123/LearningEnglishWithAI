@@ -110,14 +110,11 @@ def _word_filter(
         where.append(cond)
         params += p
     if not include_banned:
-        # 範囲外(=禁止用語)も見たい場合は、そのレベルだけ除外を緩める。
-        if out_of_range:
-            where.append(
-                "(COALESCE(domain, '') <> ? OR COALESCE(level, '') = ?)")
-            params += [BANNED_DOMAIN, OUT_OF_RANGE]
-        else:
-            where.append("COALESCE(domain, '') <> ?")
-            params.append(BANNED_DOMAIN)
+        # 「範囲外」レベルのチェックはレベル絞り込みにのみ作用させる。
+        # ここで緩めると、禁止用語チェックを入れていなくてもレベルが
+        # 「範囲外」の禁止用語が表示されてしまうため(2026-08-17修正)。
+        where.append("COALESCE(domain, '') <> ?")
+        params.append(BANNED_DOMAIN)
     if mastered == "only":
         where.append(f"mastery >= {MASTERED_THRESHOLD}")
     elif mastered == "hide":
@@ -517,14 +514,22 @@ def word_detail(word_id: int, regen: bool = False):
 
     from ..config import load_settings
     from ..services import ai
-    from ..services.auth import current_user_id, is_guest_user_id
+    from ..services.auth import (
+        current_user_allow_banned, current_user_id, is_guest_user_id,
+    )
 
     with db() as conn:
         row = conn.execute(
-            "SELECT english, japanese, example, detail FROM words "
+            "SELECT english, japanese, example, detail, domain FROM words "
             "WHERE id = ?", (word_id,)
         ).fetchone()
         if not row:
+            raise HTTPException(404, "単語が見つかりません")
+        # 一覧(`_word_filter`)を経由しないID直指定のため、ここでも
+        # 禁止用語チェックが必須(2026-08-17セキュリティ修正・IDを
+        # 知っていれば`allow_banned=False`のユーザーにも詳細生成/表示
+        # されてしまっていた)。
+        if row["domain"] == BANNED_DOMAIN and not current_user_allow_banned():
             raise HTTPException(404, "単語が見つかりません")
         # 詳細の閲覧は2026-08-11よりtierを問わず常時無料
         # （docs/ACCESS_TIERS.md「機能アクセス表」参照）。ただし**未生成の
@@ -606,14 +611,22 @@ def resolve_words(payload: ResolveIn):
             keys.append(k)
     if not keys:
         return {"found": {}}
+    from ..services.auth import current_user_allow_banned
     found: dict[str, list[dict]] = {}
     with db() as conn:
         # 小文字一致でまとめて引く（IN 句）。語数は詳細1件ぶんで小さい。
+        # 禁止用語は類義語ジャンプ用途でも意味・例文ごと漏れないよう除外
+        # する(2026-08-17セキュリティ修正)。
         qmarks = ",".join("?" * len(keys))
+        params = list(keys)
+        ban = ""
+        if not current_user_allow_banned():
+            ban = " AND COALESCE(domain, '') <> ?"
+            params.append(BANNED_DOMAIN)
         rows = conn.execute(
             f"SELECT id, english, japanese, level, example, domain, detail "
-            f"FROM words WHERE LOWER(english) IN ({qmarks}) "
-            f"ORDER BY id", keys
+            f"FROM words WHERE LOWER(english) IN ({qmarks}){ban} "
+            f"ORDER BY id", params
         ).fetchall()
     for r in rows:
         k = r["english"].strip().lower()

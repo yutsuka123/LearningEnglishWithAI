@@ -20,9 +20,12 @@ from .spaced_repetition import pick_weighted
 
 
 def review_words_today(limit: int = 10) -> list[dict]:
-    from .auth import current_user_id
+    from .auth import current_user_allow_banned, current_user_id
     with db() as conn:
-        rows = pick_weighted(conn, limit=limit, user_id=current_user_id())
+        rows = pick_weighted(
+            conn, limit=limit, user_id=current_user_id(),
+            exclude_banned=not current_user_allow_banned(),
+        )
         return [
             {
                 "id": r["id"],

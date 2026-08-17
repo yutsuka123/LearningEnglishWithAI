@@ -868,21 +868,33 @@ def tts(payload: TtsIn):
     return Response(content=audio, media_type="audio/mpeg")
 
 
-def _item_text(conn, item_type: str, item_id: int, kind: str) -> str | None:
-    """番号(ID)から読み上げ対象テキストを取得。"""
+def _item_text(
+    conn, item_type: str, item_id: int, kind: str, allow_banned: bool,
+) -> str | None:
+    """番号(ID)から読み上げ対象テキストを取得。ID直指定で一覧側の
+    禁止用語フィルタを経由しないため、ここでも`allow_banned`チェックが
+    必須(2026-08-17セキュリティ修正・IDを知っていれば禁止用語も音声
+    合成・再生できてしまっていた)。"""
     if item_type == "word":
         row = conn.execute(
-            "SELECT english, example FROM words WHERE id = ?", (item_id,)
+            "SELECT english, example, domain FROM words WHERE id = ?",
+            (item_id,),
         ).fetchone()
         if not row:
+            return None
+        if row["domain"] == "禁止用語" and not allow_banned:
             return None
         if kind == "example":
             return (row["example"] or "").strip() or None
         return (row["english"] or "").strip() or None
     if item_type == "phrase":
         row = conn.execute(
-            "SELECT english FROM phrases WHERE id = ?", (item_id,)
+            "SELECT english, scene FROM phrases WHERE id = ?", (item_id,)
         ).fetchone()
+        if not row:
+            return None
+        if (row["scene"] or "").startswith("禁止") and not allow_banned:
+            return None
         return (row["english"].strip() if row else None) or None
     return None
 
@@ -908,8 +920,11 @@ def tts_item(
     speed = "native" if speed == "native" else "learn"
     skind = audio_store.storage_kind(base, speed)
 
+    from ..services.auth import current_user_allow_banned
     with db() as conn:
-        text = _item_text(conn, item_type, item_id, base)
+        text = _item_text(
+            conn, item_type, item_id, base, current_user_allow_banned(),
+        )
         if not text:
             return Response(
                 content="読み上げる本文がありません（例文なし等）。",

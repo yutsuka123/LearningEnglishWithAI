@@ -148,10 +148,24 @@ class PhraseDeckCreate(BaseModel):
 
 
 def _select_phrase_ids(conn, p: PhraseDeckCreate) -> list[int]:
-    if p.phrase_ids:
-        return list(dict.fromkeys(p.phrase_ids))
     from ..services.auth import current_user_allow_banned
     include_banned = p.include_banned and current_user_allow_banned()
+    if p.phrase_ids:
+        ids = list(dict.fromkeys(p.phrase_ids))
+        if not include_banned:
+            # ID直指定でも禁止用語は除外する(2026-08-17セキュリティ修正・
+            # IDを知っていれば`include_banned`チェックを迂回してフレーズ帳に
+            # 追加できてしまっていた)。
+            ph = ",".join("?" * len(ids))
+            allowed = {
+                r["id"] for r in conn.execute(
+                    f"SELECT id FROM phrases WHERE id IN ({ph}) "
+                    f"AND {banned_filter('phrases')}",
+                    ids,
+                ).fetchall()
+            }
+            ids = [i for i in ids if i in allowed]
+        return ids
     where, params = [], []
     if p.scenes:
         ph = ",".join("?" * len(p.scenes))
@@ -225,14 +239,19 @@ def get_deck(deck_id: int):
 def deck_phrases_list(deck_id: int):
     """デッキ内のフレーズ一覧（編集画面: 個別に削除(デッキから除外)する
     ため）。"""
+    from ..services.auth import current_user_allow_banned
     from ..services.progress import user_items_subquery
     with db() as conn:
         _owned_deck(conn, deck_id)
         src = user_items_subquery("phrases")
+        # 念のための二重チェック(2026-08-17)。追加時点(`_select_phrase_ids`)
+        # で禁止用語は弾いているが、allow_banned停止後の閲覧など経路が
+        # 増えても漏れないよう表示側でも常に絞り込む。
+        ban = "" if current_user_allow_banned() else f" AND {banned_filter('phrases')}"
         rows = conn.execute(
             f"SELECT * FROM {src} AS ph "
             "JOIN deck_phrases dph ON dph.phrase_id = ph.id "
-            "WHERE dph.deck_id = ? ORDER BY ph.english COLLATE NOCASE",
+            f"WHERE dph.deck_id = ?{ban} ORDER BY ph.english COLLATE NOCASE",
             [current_user_id(), deck_id],
         ).fetchall()
         return [dict(r) for r in rows]
@@ -331,17 +350,21 @@ def delete_deck(deck_id: int):
 @router.get("/{deck_id}/quiz")
 def deck_quiz(deck_id: int, limit: int | None = None):
     """未習得(correct_count<pass_count)を優先して出題するフレーズを返す。"""
+    from ..services.auth import current_user_allow_banned
     with db() as conn:
         drow = _owned_deck(conn, deck_id)
         s = _settings(drow["settings"])
         n = limit or s.get("quiz_size", 10)
+        # 禁止用語は出題選択肢にも一切出さない(2026-08-17・deck_phrases_list
+        # と同じ二重チェック)。
+        ban = "" if current_user_allow_banned() else f" AND {banned_filter('phrases')}"
         rows = conn.execute(
             "SELECT ph.*, COALESCE(dp.correct_count,0) AS dp_correct, "
             "dp.done_at AS dp_done "
             "FROM deck_phrases dph JOIN phrases ph ON ph.id = dph.phrase_id "
             "LEFT JOIN phrase_deck_progress dp "
             "  ON dp.deck_id = dph.deck_id AND dp.phrase_id = dph.phrase_id "
-            "WHERE dph.deck_id = ?", (deck_id,),
+            f"WHERE dph.deck_id = ?{ban}", (deck_id,),
         ).fetchall()
         pool = [dict(r) for r in rows]
         undone = [p for p in pool if p["dp_done"] is None]
