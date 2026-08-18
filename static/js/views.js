@@ -3979,6 +3979,25 @@ export async function settings(root) {
       <p class="muted">TOEICは出題題材のレベルの手がかりにします（学習が進むと
         実績も加味）。名前はAIが会話で呼びかける際に使います。</p>
     </div>
+    <div class="card" id="chargeCard" style="display:none">
+      <h2>💳 チャージ</h2>
+      <p>現在の残高: <b id="ptBalance">-</b> pt</p>
+      <div class="row">
+        <input id="ck_key" name="charge_key" type="text"
+          autocomplete="one-time-code" autocapitalize="characters"
+          autocorrect="off" spellcheck="false" data-lpignore="true"
+          data-1p-ignore="true"
+          placeholder="XXXX-XXXXXXX-X-XXXX" style="width:220px" />
+        <button class="btn good" id="ck_redeem">チャージする</button>
+      </div>
+      <p class="muted mt" id="ck_out"></p>
+      <p class="muted">BASE等で購入したチャージキーを入力すると、
+        pt（1pt=1円）が残高に加算されます。AI英会話・reading・listening
+        等の生成でこの残高が消費されます（単語/フレーズのクイズは無料）。
+        消費ペースは為替やAI提供元のAPI価格改定により変動することが
+        あります。
+        <a href="/static/terms.html" target="_blank">利用規約・免責事項</a></p>
+    </div>
     <div class="card">
       <h2>表示する分野・シーン</h2>
       <p class="muted">興味のない分野・シーンのチェックを外すと、英単語/
@@ -4103,25 +4122,6 @@ export async function settings(root) {
         <button class="btn ghost" id="advMasteryReset">既定値に戻す</button>
         <span class="muted" id="advMasteryOut"></span>
       </div>
-    </div>
-    <div class="card" id="chargeCard" style="display:none">
-      <h2>💳 チャージ</h2>
-      <p>現在の残高: <b id="ptBalance">-</b> pt</p>
-      <div class="row">
-        <input id="ck_key" name="charge_key" type="text"
-          autocomplete="one-time-code" autocapitalize="characters"
-          autocorrect="off" spellcheck="false" data-lpignore="true"
-          data-1p-ignore="true"
-          placeholder="XXXX-XXXXXXX-X-XXXX" style="width:220px" />
-        <button class="btn good" id="ck_redeem">チャージする</button>
-      </div>
-      <p class="muted mt" id="ck_out"></p>
-      <p class="muted">BASE等で購入したチャージキーを入力すると、
-        pt（1pt=1円）が残高に加算されます。AI英会話・reading・listening
-        等の生成でこの残高が消費されます（単語/フレーズのクイズは無料）。
-        消費ペースは為替やAI提供元のAPI価格改定により変動することが
-        あります。
-        <a href="/static/terms.html" target="_blank">利用規約・免責事項</a></p>
     </div>
     <div class="card" id="securityCard" style="display:none">
       <h2>🔒 セキュリティ</h2>
