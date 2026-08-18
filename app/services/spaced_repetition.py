@@ -31,9 +31,13 @@ from datetime import date, timedelta
 MASTERY_MIN = 0
 MASTERY_MAX = 200
 CORRECT_BOTH_BONUS = 5
-WEEKLY_DECAY = 1            # 週あたりの減衰（忘却曲線）。旧デフォルト値。
-MASTERED_THRESHOLD = 100   # これ以上で「覚えた」。旧デフォルト値。
-KNOWN_MASTERY = 200        # 「覚えた」ボタン押下時の値（満点）。旧デフォルト値。
+WEEKLY_DECAY = 1            # 1日あたりの減衰(既定値)。旧名だが単位は日。
+MASTERED_THRESHOLD = 100   # これ以上で「覚えた」。
+KNOWN_MASTERY = 125        # 「覚えた」ボタン押下時の加点(既定値・2026-08-18
+                           # 変更: 200→125。閾値100を少し超えるだけにして、
+                           # レビューしないと1日1pt減衰で約25日後に閾値を
+                           # 割るようにした。満点固定したい場合は「卒業」を
+                           # 使う設計に統一)。
 VAGUE_BONUS = 25           # 「うろ覚え」ボタンで加点する mastery(既定値)。
 
 # Forgetting-curve intervals in days, indexed by review level (box).
@@ -48,12 +52,13 @@ _DIRECTIONS = ("ja2en", "en2ja")
 # user_settings(JSON)の以下キーで上書き可能。未設定時はDEFAULTを使う。
 #   mastery_max          : 満点(0..この値)。既定200、100〜300の範囲。
 #   mastered_threshold   : これ以上で「覚えた」。既定100。
-#   known_bonus          : 「覚えた」ボタンでの加点。既定200(=旧KNOWN_MASTERY
-#                           と同じ実効挙動。満点でクランプされるため)。
-#   vague_bonus          : 「うろ覚え」ボタンでの加点。既定30。
+#   known_bonus          : 「覚えた」ボタンでの加点。既定125(閾値100を
+#                           少し超えるだけにして、レビューしないと
+#                           約25日で閾値を割る設計・2026-08-18)。
+#   vague_bonus          : 「うろ覚え」ボタンでの加点。既定25。
 #   decay_amount         : 忘却曲線の減衰量(pt)。既定1。
-#   decay_interval_days  : 何日ごとに上の量を減衰させるか。既定7日
-#                           (=旧WEEKLY_DECAYと同じ実効挙動)。
+#   decay_interval_days  : 何日ごとに上の量を減衰させるか。既定1日
+#                           (2026-08-18変更: 7日→1日)。
 # ---------------------------------------------------------------------------
 @dataclass(frozen=True)
 class MasteryConfig:
@@ -62,7 +67,7 @@ class MasteryConfig:
     known_bonus: int = KNOWN_MASTERY
     vague_bonus: int = VAGUE_BONUS
     decay_amount: int = WEEKLY_DECAY
-    decay_interval_days: int = 7
+    decay_interval_days: int = 1
 
 
 DEFAULT_MASTERY_CONFIG = MasteryConfig()

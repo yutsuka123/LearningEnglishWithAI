@@ -14,8 +14,8 @@ const bannedParam = (on) => (on ? "include_banned=true" : "");
 // 習熟度(mastery)設定の既定値。app/services/spaced_repetition.py の
 // DEFAULT_MASTERY_CONFIG と同じ値に保つこと(2026-08-18)。
 const MASTERY_DEFAULTS = {
-  mastery_max: 200, mastered_threshold: 100, known_bonus: 200,
-  vague_bonus: 25, decay_amount: 1, decay_interval_days: 7,
+  mastery_max: 200, mastered_threshold: 100, known_bonus: 125,
+  vague_bonus: 25, decay_amount: 1, decay_interval_days: 1,
 };
 
 // 分野/レベル等の複数チェック可チェックボックス一覧(.chkbox)に添える
