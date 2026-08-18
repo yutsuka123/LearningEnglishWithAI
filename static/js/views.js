@@ -4482,8 +4482,18 @@ export async function settings(root) {
     settings.decay_amount = num("#advDecayAmount");
     settings.decay_interval_days = num("#advDecayIntervalDays");
     await api.put("/api/system/user-settings", { settings });
-    root.querySelector("#advMasteryOut").textContent =
-      "保存しました（値は安全な範囲に自動調整されます）";
+    const out = root.querySelector("#advMasteryOut");
+    // 「覚えた」の加点が「覚えた」判定の基準を下回ると、ボタンを押しても
+    // 基準に届かない本末転倒になるため警告(保存自体は妨げない・2026-08-18)。
+    if (settings.known_bonus < settings.mastered_threshold) {
+      out.textContent = "保存しました。ただし「覚えたボタンでの加点」が"
+        + "「覚えたと判定するpt」を下回っているため、「覚えた」を押しても"
+        + "「覚えた」判定にならない場合があります。ご注意ください。";
+      out.style.color = "var(--danger, #e5534b)";
+    } else {
+      out.textContent = "保存しました（値は安全な範囲に自動調整されます）";
+      out.style.color = "";
+    }
   });
 
   const advMasteryReset = root.querySelector("#advMasteryReset");
