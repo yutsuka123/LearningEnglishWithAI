@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 
 # アプリのバージョン（UI表示用）。バージョンを上げたら CHANGELOG.md に追記し、
 # 必ず git commit + push をセットで行うこと（CLAUDE.md参照）。
-APP_VERSION = "ver1.1.0-alpha42"
+APP_VERSION = "ver1.1.0-alpha43"
 
 # Project root = the directory that contains the "app" package.
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -169,6 +169,15 @@ def load_settings() -> Settings:
 
 
 settings = load_settings()
+
+
+def load_admin_known_ips() -> set[str]:
+    """管理者自身の既知ログイン元IP(.envのADMIN_KNOWN_IPS・カンマ区切り)。
+    管理画面の利用状況分析で「これは管理者自身のアクセス」と識別する
+    参考情報として使う(2026-08-18)。"""
+    load_dotenv(ROOT_DIR / ".env", override=True)
+    raw = os.getenv("ADMIN_KNOWN_IPS", "")
+    return {ip.strip() for ip in raw.split(",") if ip.strip()}
 
 
 def load_tokushoho_info() -> dict[str, str]:

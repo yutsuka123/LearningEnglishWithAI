@@ -22,7 +22,7 @@ from .routers import (
     phrase_decks, phrases, system, vocabulary,
 )
 from .services import auth as auth_svc
-from .services.spaced_repetition import apply_weekly_decay
+from .services.spaced_repetition import apply_forgetting_decay
 
 # 認証なしで許可するパス（MULTIUSER=1 のとき）。
 # 注: /static 配下は下の判定で別途常に許可される（terms.html もそこに置く）。
@@ -89,7 +89,7 @@ async def lifespan(app: FastAPI):
     # Initialise DB + seed data, then apply the weekly forgetting decay.
     init_db()
     with db() as conn:
-        apply_weekly_decay(conn)
+        apply_forgetting_decay(conn)
     yield
 
 

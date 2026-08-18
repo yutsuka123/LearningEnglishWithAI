@@ -25,7 +25,7 @@ _MAP = {
 _PROGRESS_COLS = (
     "mastery", "last_studied", "times_asked", "times_correct",
     "ask_en2ja", "ok_en2ja", "ask_ja2en", "ok_ja2en",
-    "review_level", "next_review",
+    "review_level", "next_review", "perfect",
 )
 
 
@@ -49,7 +49,8 @@ def user_items_subquery(table: str) -> str:
             " COALESCE(p.ask_ja2en,0) AS ask_ja2en, "
             " COALESCE(p.ok_ja2en,0) AS ok_ja2en, "
             " COALESCE(p.review_level,0) AS review_level, "
-            " p.next_review AS next_review "
+            " p.next_review AS next_review, "
+            " COALESCE(p.perfect,0) AS perfect "
             " FROM words w "
             " LEFT JOIN user_word_progress p "
             "   ON p.word_id = w.id AND p.user_id = ?)"
@@ -67,7 +68,8 @@ def user_items_subquery(table: str) -> str:
             " COALESCE(p.ask_ja2en,0) AS ask_ja2en, "
             " COALESCE(p.ok_ja2en,0) AS ok_ja2en, "
             " COALESCE(p.review_level,0) AS review_level, "
-            " p.next_review AS next_review "
+            " p.next_review AS next_review, "
+            " COALESCE(p.perfect,0) AS perfect "
             " FROM phrases ph "
             " LEFT JOIN user_phrase_progress p "
             "   ON p.phrase_id = ph.id AND p.user_id = ?)"

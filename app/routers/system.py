@@ -8,7 +8,7 @@ import re
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from ..config import ROOT_DIR, load_settings
+from ..config import ROOT_DIR, load_admin_known_ips, load_settings
 from ..database import ACCENTS, NEWS_FIELDS, db
 from ..schemas import MemoryUpdateIn, SettingsIn
 from ..services import ai, auth, persistence, tracking
@@ -447,7 +447,24 @@ def admin_access_log_summary(days: int = 30):
             except ValueError:
                 continue
     records.sort(key=lambda r: r.get("date", ""))
-    return {"days": records[-days:]}
+    picked = records[-days:]
+
+    # 各日の categories(集計値はあるが従来UI未表示だった内訳: 人間らしき
+    # アクセス/AIクローラー/検索bot/その他bot)を期間合計してサマリ化
+    # (2026-08-18)。個々のカテゴリキーは classify_ua() の戻り値そのもの
+    # (例 "ai_crawler:GPTBot")なので、先頭区分だけにまとめて表示する。
+    totals = {"human": 0, "ai_crawler": 0, "search_bot": 0,
+              "other_bot": 0, "unknown": 0}
+    total_requests = 0
+    for r in picked:
+        total_requests += r.get("total_requests", 0)
+        for cat, cnt in (r.get("categories") or {}).items():
+            bucket = cat.split(":", 1)[0]
+            if bucket not in totals:
+                bucket = "unknown"
+            totals[bucket] += cnt
+    summary = {"total_requests": total_requests, "by_category": totals}
+    return {"days": picked, "summary": summary}
 
 
 @router.get("/admin/ai-usage-search")
@@ -579,12 +596,20 @@ def admin_usage_analytics(days: int = 30):
             "WHERE created_at >= datetime('now', ?)", (since,),
         ).fetchone()[0]
 
+    # 管理者自身の既知IP(.env の ADMIN_KNOWN_IPS)には is_admin フラグを
+    # 立てる。実訪問者と管理者自身のテスト操作を見分けやすくするため
+    # (2026-08-18・ユーザーからのフィードバック契機)。
+    admin_ips = load_admin_known_ips()
+    ip_list = [dict(r) for r in ip_rows]
+    for row in ip_list:
+        row["is_admin"] = row["ip"] in admin_ips
+
     return {
         "days": days,
         "total_events": total_events,
         "pages": pages,
         "plays": plays,
         "clicks": clicks,
-        "ips": [dict(r) for r in ip_rows],
+        "ips": ip_list,
         "daily": [dict(r) for r in daily_rows],
     }

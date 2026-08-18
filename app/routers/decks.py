@@ -18,11 +18,8 @@ from pydantic import BaseModel
 from ..database import db
 from ..services import auth
 from ..services.auth import current_user_id
-from ..services.spaced_repetition import (
-    MASTERED_THRESHOLD,
-    banned_filter,
-    record_attempt,
-)
+from ..services.spaced_repetition import banned_filter
+from .vocabulary import _current_mastery_cfg
 
 router = APIRouter(prefix="/api/decks", tags=["decks"])
 
@@ -63,12 +60,9 @@ def _owned_deck(conn, deck_id: int):
     return row
 
 
-DEFAULT_SETTINGS = {
-    "directions": "both",   # 'both' | 'en2ja' | 'ja2en'
-    "pass_count": 2,        # N回正解で「習得(done)」
-    "use_srs": True,        # 忘却曲線(グローバルmastery/SRS)も更新するか
-    "quiz_size": 10,
-}
+# 2026-08-18: directions/pass_count/use_srs/quiz_sizeは撤去(上のコメント
+# 参照)。settingsは将来の拡張用に空dictのまま許容しておく。
+DEFAULT_SETTINGS: dict = {}
 
 
 def _settings(raw: str | None) -> dict:
@@ -84,26 +78,21 @@ def _deck_summary(conn, row) -> dict:
     total = conn.execute(
         "SELECT COUNT(*) c FROM deck_words WHERE deck_id = ?", (row["id"],)
     ).fetchone()["c"]
-    done = conn.execute(
-        "SELECT COUNT(*) c FROM deck_progress "
-        "WHERE deck_id = ? AND done_at IS NOT NULL", (row["id"],)
-    ).fetchone()["c"]
-    # 2026-08-09: 達成率はダッシュボード等と同じグローバルmastery基準
-    # (mastery>=MASTERED_THRESHOLD)に統一する。`done`(デッキ内N回正解)は
-    # デッキ内クイズの優先出題に引き続き使うため別途保持する。
+    # 達成率はダッシュボード等と同じグローバルmastery基準
+    # (mastery>=mastered_threshold・詳細設定でユーザーが調整可能)に統一。
+    cfg = _current_mastery_cfg(conn)
     mastered = conn.execute(
         "SELECT COUNT(*) c FROM deck_words dw "
         "JOIN user_word_progress p ON p.word_id = dw.word_id "
         "  AND p.user_id = (SELECT user_id FROM decks WHERE id = ?) "
         "WHERE dw.deck_id = ? AND p.mastery >= ?",
-        (row["id"], row["id"], MASTERED_THRESHOLD),
+        (row["id"], row["id"], cfg.mastered_threshold),
     ).fetchone()["c"]
     return {
         "id": row["id"],
         "name": row["name"],
         "settings": _settings(row["settings"]),
         "total": total,
-        "done": done,
         "mastered": mastered,
         "created_at": row["created_at"],
     }
@@ -111,6 +100,7 @@ def _deck_summary(conn, row) -> dict:
 
 def _overall_summary(conn) -> dict:
     uid = current_user_id()
+    cfg = _current_mastery_cfg(conn)
     row = conn.execute(
         "SELECT COUNT(DISTINCT dw.word_id) AS total, "
         "SUM(CASE WHEN COALESCE(p.mastery, 0) >= ? THEN 1 ELSE 0 END) "
@@ -119,7 +109,7 @@ def _overall_summary(conn) -> dict:
         "LEFT JOIN user_word_progress p "
         "  ON p.word_id = dw.word_id AND p.user_id = d.user_id "
         "WHERE d.user_id = ?",
-        (MASTERED_THRESHOLD, uid),
+        (cfg.mastered_threshold, uid),
     ).fetchone()
     total = row["total"] or 0
     mastered = row["mastered"] or 0
@@ -342,96 +332,12 @@ def delete_deck(deck_id: int):
             raise HTTPException(404, "単語帳が見つかりません")
 
 
-@router.get("/{deck_id}/quiz")
-def deck_quiz(deck_id: int, limit: int | None = None):
-    """未習得(correct_count<pass_count)を優先して出題する単語を返す。"""
-    from ..services.auth import current_user_allow_banned
-    with db() as conn:
-        drow = _owned_deck(conn, deck_id)
-        s = _settings(drow["settings"])
-        n = limit or s.get("quiz_size", 10)
-        # 禁止用語は出題選択肢にも一切出さない(2026-08-17・deck_words_list
-        # と同じ二重チェック)。
-        ban = (
-            "" if current_user_allow_banned()
-            else f" AND {banned_filter('words')}"
-        )
-        rows = conn.execute(
-            "SELECT w.*, COALESCE(dp.correct_count,0) AS dp_correct, "
-            "dp.done_at AS dp_done "
-            "FROM deck_words dw JOIN words w ON w.id = dw.word_id "
-            "LEFT JOIN deck_progress dp "
-            "  ON dp.deck_id = dw.deck_id AND dp.word_id = dw.word_id "
-            f"WHERE dw.deck_id = ?{ban}", (deck_id,),
-        ).fetchall()
-        pool = [dict(r) for r in rows]
-        undone = [w for w in pool if w["dp_done"] is None]
-        src = undone if undone else pool
-        random.shuffle(src)
-        out = src[:n]
-        for w in out:
-            w["deck_correct"] = w.pop("dp_correct", 0)
-        return {"settings": s, "items": out}
-
-
-class DeckAttempt(BaseModel):
-    word_id: int
-    direction: str            # 'ja2en' | 'en2ja'
-    correct: bool
-    result: str | None = None  # 'correct' | 'vague' | 'wrong'
-
-
-@router.post("/{deck_id}/attempt")
-def deck_attempt(deck_id: int, payload: DeckAttempt):
-    from ..services.auth import current_user_allow_banned
-    with db() as conn:
-        drow = _owned_deck(conn, deck_id)
-        # 禁止用語IDへの学習記録の直接書き込みも拒否する(2026-08-17・
-        # fable監査で発見: これを許すと`/api/learn/assess`のAI診断文
-        # 経由で禁止用語の英文/和訳が漏れる)。
-        if not current_user_allow_banned():
-            banned = conn.execute(
-                "SELECT 1 FROM words WHERE id = ? AND domain = ?",
-                (payload.word_id, "禁止用語"),
-            ).fetchone()
-            if banned:
-                raise HTTPException(404, "単語が見つかりません")
-        s = _settings(drow["settings"])
-        # 忘却曲線ONなら per-user の mastery/SRS も更新。
-        if s.get("use_srs", True):
-            try:
-                record_attempt(
-                    conn, payload.word_id, payload.direction,
-                    payload.correct, result=payload.result,
-                    user_id=current_user_id(),
-                )
-            except ValueError:
-                pass
-        # デッキ別の正解カウント（'correct' のみ加算）。
-        is_correct = (payload.result or
-                      ("correct" if payload.correct else "wrong")) == "correct"
-        conn.execute(
-            "INSERT OR IGNORE INTO deck_progress (deck_id, word_id) "
-            "VALUES (?, ?)", (deck_id, payload.word_id),
-        )
-        if is_correct:
-            conn.execute(
-                "UPDATE deck_progress SET correct_count = correct_count + 1 "
-                "WHERE deck_id = ? AND word_id = ?",
-                (deck_id, payload.word_id),
-            )
-        prow = conn.execute(
-            "SELECT correct_count, done_at FROM deck_progress "
-            "WHERE deck_id = ? AND word_id = ?", (deck_id, payload.word_id),
-        ).fetchone()
-        cc = prow["correct_count"]
-        done = prow["done_at"] is not None
-        if not done and cc >= int(s.get("pass_count", 2)):
-            conn.execute(
-                "UPDATE deck_progress SET done_at = datetime('now') "
-                "WHERE deck_id = ? AND word_id = ?",
-                (deck_id, payload.word_id),
-            )
-            done = True
-        return {"correct_count": cc, "done": done,
-                "pass_count": int(s.get("pass_count", 2))}
+# 2026-08-18: 専用のデッキ内クイズ/採点(`/quiz`・`/attempt`、pass_count・
+# quiz_size・use_srs・directions・deck_progress)は、フラッシュ単語画面が
+# `deck_id`で単語帳を直接絞り込めるようになった(`/api/words/quiz?deck_id=`)
+# ことで完全に不要になっていた(フロントエンドはどちらのエンドポイントも
+# 一度も呼んでおらず、pass_count/quiz_size/use_srs/directionsも編集画面での
+# 表示・保存にしか使われていなかった。実際の「覚えた」判定は常にグローバルな
+# mastery点数(詳細設定で調整可能なmastered_threshold)で行われる)。ユーザー
+# 指摘により発覚・撤去した。deck_progressテーブル自体は残すが書き込み元が
+# 無くなる。

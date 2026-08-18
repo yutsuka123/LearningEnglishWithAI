@@ -12,15 +12,20 @@ from pydantic import BaseModel, Field
 from ..database import db
 from ..services.taxonomy import PHRASE_CATEGORIES, group_by_category
 from ..services.spaced_repetition import (
+    DEFAULT_MASTERY_CONFIG,
     MASTERED_THRESHOLD,
+    MasteryConfig,
     clamp,
     mark_vague as _mark_vague,
     record_attempt,
     selection_weight,
     select_for_review,
     set_known,
+    set_perfect,
 )
-from .vocabulary import LEVEL_ORDER, OUT_OF_RANGE, _level_range
+from .vocabulary import (
+    LEVEL_ORDER, OUT_OF_RANGE, _current_mastery_cfg, _level_range,
+)
 
 router = APIRouter(prefix="/api/phrases", tags=["phrases"])
 
@@ -46,6 +51,7 @@ def _phrase_filter(
     scene: str | None, level_min: str | None, level_max: str | None,
     out_of_range: bool, include_banned: bool, mastered: str | None,
     category: str | None = None,
+    mastered_threshold: int = MASTERED_THRESHOLD,
 ) -> tuple[list[str], list]:
     """フレーズ一覧/フラッシュフレーズ共通のフィルタWHERE句を組み立てる
     （単語版`_word_filter`のフレーズ版）。列は素の名前(scene/level/mastery)
@@ -79,19 +85,23 @@ def _phrase_filter(
         # 「範囲外」の禁止用語が表示されてしまうため(2026-08-17修正)。
         where.append("COALESCE(scene, '') NOT LIKE '禁止%'")
     if mastered == "only":
-        where.append(f"mastery >= {MASTERED_THRESHOLD}")
+        where.append(f"mastery >= {mastered_threshold}")
     elif mastered == "hide":
-        where.append(f"mastery < {MASTERED_THRESHOLD}")
+        where.append(f"mastery < {mastered_threshold}")
     return where, params
 
 
-def _phrase_dict(row, free_ids: set[int] | None = None) -> dict:
+def _phrase_dict(
+    row, free_ids: set[int] | None = None,
+    cfg: MasteryConfig = DEFAULT_MASTERY_CONFIG,
+) -> dict:
     d = dict(row)
     # detail(JSON)は一覧では送らず、有無フラグだけ返す（応答を軽く保つ、
     # 単語(words)と同じ扱い）。
     d["has_detail"] = bool((d.pop("detail", "") or "").strip())
-    d["selection_priority"] = selection_weight(d["mastery"])
-    d["mastered"] = d["mastery"] >= MASTERED_THRESHOLD
+    d["selection_priority"] = selection_weight(d["mastery"], cfg.mastered_threshold)
+    d["mastered"] = d["mastery"] >= cfg.mastered_threshold
+    d["perfect"] = bool(d.get("perfect", 0))
     d["accuracy"] = (
         round(d["times_correct"] / d["times_asked"] * 100)
         if d["times_asked"]
@@ -165,16 +175,17 @@ def list_phrases(
         # ここで緩めると、禁止用語チェックを入れていなくてもレベルが
         # 「範囲外」の禁止用語が表示されてしまうため(2026-08-17修正)。
         conds.append("COALESCE(scene, '') NOT LIKE '禁止%'")
-    if mastered == "only":
-        conds.append(f"mastery >= {MASTERED_THRESHOLD}")
-    elif mastered == "hide":
-        conds.append(f"mastery < {MASTERED_THRESHOLD}")
     from ..services import access_tiers
     from ..services.auth import current_user_id, is_guest_user_id
     from ..services.progress import user_items_subquery
     src = user_items_subquery("phrases")  # 先頭 ? = user_id
     with db() as conn:
         uid = current_user_id()
+        cfg = _current_mastery_cfg(conn)
+        if mastered == "only":
+            conds.append(f"mastery >= {cfg.mastered_threshold}")
+        elif mastered == "hide":
+            conds.append(f"mastery < {cfg.mastered_threshold}")
         is_guest = is_guest_user_id(conn, uid)
         if deck_id is not None:
             owned = conn.execute(
@@ -201,7 +212,7 @@ def list_phrases(
         ).fetchall()
         free_ids = access_tiers.free_range_ids(
             conn, "phrase", guest=is_guest)
-        return [_phrase_dict(r, free_ids) for r in rows]
+        return [_phrase_dict(r, free_ids, cfg) for r in rows]
 
 
 @router.get("/facets")
@@ -266,8 +277,9 @@ def create_phrase(payload: PhraseCreate):
 
 @router.post("/{phrase_id}/known")
 def mark_known(phrase_id: int, payload: KnownIn):
-    """「覚えた」ボタン(per-user): mastery を満点(200)に、復習間隔も最長へ。
-    known=false で解除（mastery/間隔とも復活させる）。"""
+    """「覚えた」ボタン(per-user): mastery を加点(既定+200・満点でクランプ)、
+    復習間隔も最長へ。known=false で解除（mastery/間隔とも復活させる）。
+    加点量・満点は詳細設定でユーザーが調整可能(2026-08-18)。"""
     from ..services.auth import current_user_id
     with db() as conn:
         exists = conn.execute(
@@ -276,14 +288,36 @@ def mark_known(phrase_id: int, payload: KnownIn):
         if not exists:
             raise HTTPException(404, "フレーズが見つかりません")
         r = set_known(conn, phrase_id, payload.known, table="phrases",
-                      user_id=current_user_id())
+                      user_id=current_user_id(), cfg=_current_mastery_cfg(conn))
     return {"ok": True, "known": payload.known, **r}
+
+
+class PerfectIn(BaseModel):
+    perfect: bool = True
+
+
+@router.post("/{phrase_id}/perfect")
+def mark_perfect(phrase_id: int, payload: PerfectIn):
+    """「完全に覚えた」ボタン(per-user): 満点に固定し、以後は忘却曲線で
+    減らなくなる。perfect=falseで解除すると通常の「覚えた」相当に戻り、
+    忘却曲線の対象にも戻る(2026-08-18)。"""
+    from ..services.auth import current_user_id
+    with db() as conn:
+        exists = conn.execute(
+            "SELECT id FROM phrases WHERE id = ?", (phrase_id,)
+        ).fetchone()
+        if not exists:
+            raise HTTPException(404, "フレーズが見つかりません")
+        r = set_perfect(conn, phrase_id, payload.perfect, table="phrases",
+                        user_id=current_user_id(), cfg=_current_mastery_cfg(conn))
+    return {"ok": True, **r}
 
 
 @router.post("/{phrase_id}/vague")
 def mark_vague(phrase_id: int):
-    """「うろ覚え」ボタン(per-user): mastery を +10（0..200でクランプ）、
-    復習間隔も約2日後に更新する。"""
+    """「うろ覚え」ボタン(per-user): mastery を加点(既定+30・満点でクランプ)、
+    復習間隔も約2日後に更新する。加点量は詳細設定でユーザーが調整可能
+    (2026-08-18)。"""
     from ..services.auth import current_user_id
     with db() as conn:
         exists = conn.execute(
@@ -292,7 +326,7 @@ def mark_vague(phrase_id: int):
         if not exists:
             raise HTTPException(404, "フレーズが見つかりません")
         r = _mark_vague(conn, phrase_id, table="phrases",
-                        user_id=current_user_id())
+                        user_id=current_user_id(), cfg=_current_mastery_cfg(conn))
     return {"ok": True, **r}
 
 
@@ -432,20 +466,37 @@ def quiz(
     out_of_range: bool = False,
     mastered: str | None = None,   # 'only' | 'hide' | None
     free_range_only: bool = False,  # 🔊無料で再生できる範囲のみ(2026-08-12)
+    deck_id: int | None = None,    # 自分のフレーズ帳で絞り込み(2026-08-18)
 ):
     """フラッシュフレーズと共用。シーン/レベル/覚えた状態でフィルタ可能
-    （単語版`/api/words/quiz`と同じインタフェース、列だけscene違い）。"""
+    （単語版`/api/words/quiz`と同じインタフェース、列だけscene違い）。
+    deck_idを指定すると、そのフレーズ帳(自分の所有分のみ)に含まれる
+    フレーズだけに絞り込む(シーン/レベル等の他条件と併用可)。"""
     from ..services import access_tiers
     from ..services.auth import (
         current_user_allow_banned, current_user_id, is_guest_user_id,
     )
     include_banned = include_banned and current_user_allow_banned()
-    where, params = _phrase_filter(
-        scene, level_min, level_max, out_of_range, include_banned, mastered,
-    )
     with db() as conn:
         uid = current_user_id()
+        cfg = _current_mastery_cfg(conn)
+        where, params = _phrase_filter(
+            scene, level_min, level_max, out_of_range, include_banned,
+            mastered, mastered_threshold=cfg.mastered_threshold,
+        )
         is_guest = is_guest_user_id(conn, uid)
+        if deck_id is not None:
+            owned = conn.execute(
+                "SELECT 1 FROM phrase_decks WHERE id = ? AND user_id = ?",
+                (deck_id, uid),
+            ).fetchone()
+            if not owned:
+                raise HTTPException(404, "フレーズ帳が見つかりません")
+            where = where + [
+                "id IN (SELECT phrase_id FROM deck_phrases "
+                "WHERE deck_id = ?)"
+            ]
+            params = params + [deck_id]
         if free_range_only:
             fr_clause, fr_params = access_tiers.free_range_id_filter(
                 "phrase", guest=is_guest,
@@ -458,10 +509,11 @@ def quiz(
             exclude_banned=False,  # banned は _phrase_filter 側で処理済み
             user_id=uid,
             where_extra=where_extra, params_extra=tuple(params),
+            cfg=cfg,
         )
         free_ids = access_tiers.free_range_ids(
             conn, "phrase", guest=is_guest)
-        return [_phrase_dict(r, free_ids) for r in rows]
+        return [_phrase_dict(r, free_ids, cfg) for r in rows]
 
 
 class PhraseRestoreIn(BaseModel):
@@ -476,16 +528,18 @@ def restore_progress(phrase_id: int, payload: PhraseRestoreIn):
     `restore_progress`(vocabulary.py)と同じ方式。"""
     from ..services.auth import current_user_id
     from ..services import progress as P
-    fields: dict = {"mastery": clamp(payload.mastery)}
-    if payload.review_level is not None:
-        fields["review_level"] = payload.review_level
-    fields["next_review"] = payload.next_review
     with db() as conn:
         exists = conn.execute(
             "SELECT id FROM phrases WHERE id = ?", (phrase_id,)
         ).fetchone()
         if not exists:
             raise HTTPException(404, "フレーズが見つかりません")
+        cfg = _current_mastery_cfg(conn)
+        fields: dict = {"mastery": clamp(payload.mastery, cfg.mastery_max),
+                        "perfect": 0}
+        if payload.review_level is not None:
+            fields["review_level"] = payload.review_level
+        fields["next_review"] = payload.next_review
         P.upsert_progress(
             conn, current_user_id(), "phrases", phrase_id, **fields)
     return {"ok": True, "mastery": fields["mastery"]}
@@ -516,6 +570,7 @@ def attempt(payload: PhraseAttempt):
                 attempts_table="phrase_attempts",
                 id_column="phrase_id",
                 user_id=current_user_id(),
+                cfg=_current_mastery_cfg(conn),
             )
         except ValueError as exc:
             raise HTTPException(400, str(exc))

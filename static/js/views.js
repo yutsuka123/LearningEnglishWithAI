@@ -11,6 +11,42 @@ import {
 // 禁止用語クエリ: include_banned を付ける/付けないを返す小ヘルパー。
 const bannedParam = (on) => (on ? "include_banned=true" : "");
 
+// 習熟度(mastery)設定の既定値。app/services/spaced_repetition.py の
+// DEFAULT_MASTERY_CONFIG と同じ値に保つこと(2026-08-18)。
+const MASTERY_DEFAULTS = {
+  mastery_max: 200, mastered_threshold: 100, known_bonus: 200,
+  vague_bonus: 25, decay_amount: 1, decay_interval_days: 7,
+};
+
+// 分野/レベル等の複数チェック可チェックボックス一覧(.chkbox)に添える
+// 「すべてチェック」「選択済み全クリア」ボタン(2026-08-18・ユーザー要望・
+// 単語帳/フレーズ帳の一括追加UIで項目数が多く手動チェックが大変だった
+// ため)。targetId は対象の.chkboxを持つ要素のid。呼び出し側は生成した
+// HTMLをその.chkbox要素の直前に挿入し、同じscope(rootまたはモーダルの
+// body)に対して wireChkAllClear() を一度呼ぶ。
+function chkAllClearHtml(targetId) {
+  return `<div class="row" style="gap:6px; margin:2px 0 4px">
+    <button type="button" class="btn ghost chk-all-btn" data-target="${targetId}"
+      style="padding:2px 8px; font-size:12px">すべてチェック</button>
+    <button type="button" class="btn ghost chk-clear-btn" data-target="${targetId}"
+      style="padding:2px 8px; font-size:12px">選択済み全クリア</button>
+  </div>`;
+}
+function wireChkAllClear(scope) {
+  scope.querySelectorAll(".chk-all-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      scope.querySelectorAll(`#${btn.dataset.target} input[type="checkbox"]`)
+        .forEach((c) => { c.checked = true; });
+    });
+  });
+  scope.querySelectorAll(".chk-clear-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      scope.querySelectorAll(`#${btn.dataset.target} input[type="checkbox"]`)
+        .forEach((c) => { c.checked = false; });
+    });
+  });
+}
+
 // --- shared answer-input helper (voice or text) ----------------------------
 
 function answerInput(onSubmit, { lang = "en-US", placeholder = "答えを入力" } = {}) {
@@ -545,8 +581,11 @@ function masteryCell(item) {
   else if (m <= 20) { color = "#ffb454"; w = 8 + (m / 20) * 92; }
   else if (m <= 50) { color = "#36c98d"; w = 100; }
   else { color = "#3b82f6"; w = 100; cls = " blue"; }
-  const badge = item.mastered
-    ? `<span class="pill mastered">✅ 覚えた</span>` : "";
+  const badge = item.perfect
+    ? `<span class="pill mastered" title="完全に覚えた(忘却曲線の対象外)">
+        🔒 完全に覚えた</span>`
+    : item.mastered
+      ? `<span class="pill mastered">✅ 覚えた</span>` : "";
   return `<div class="mbar${cls}">
     <span style="width:${w}%;background:${color}"></span></div>
     <small class="muted">${m}</small> ${badge}`;
@@ -558,7 +597,8 @@ function knownButton(base, item, onChange) {
   const paint = () => {
     btn.textContent = item.mastered ? "戻す" : "覚えた";
     btn.title = item.mastered
-      ? "覚えた状態を解除（閾値直下に戻す）" : "覚えた（満点200・出題を抑制）";
+      ? "覚えた状態を解除（「覚えた」の基準の少し手前に戻す）"
+      : "覚えた（満点付近まで加点・出題を抑制。加点量は詳細設定で調整可）";
   };
   paint();
   btn.addEventListener("click", async () => {
@@ -566,7 +606,8 @@ function knownButton(base, item, onChange) {
     try {
       const r = await api.post(`${base}/${item.id}/known`, { known: next });
       item.mastery = r.mastery;
-      item.mastered = r.known;
+      item.mastered = r.mastered;
+      item.perfect = !!r.perfect;
       paint();
       if (onChange) onChange();
     } catch (e) { toast("更新に失敗しました"); }
@@ -574,20 +615,76 @@ function knownButton(base, item, onChange) {
   return btn;
 }
 
-// 「うろ覚え」ボタン: 押すと mastery +10。base は /api/words or /api/phrases。
+// 「うろ覚え」ボタン: 押すと mastery が少し加点される(既定+30・詳細設定で
+// 調整可)。base は /api/words or /api/phrases。
 function vagueButton(base, item, onChange) {
   const btn = el(`<button class="btn vague-btn"
-    title="うろ覚え（+10ポイント）">うろ覚え</button>`);
+    title="うろ覚え（少し加点。加点量は詳細設定で調整可）">うろ覚え</button>`);
   btn.addEventListener("click", async () => {
     try {
+      const before = item.mastery;
       const r = await api.post(`${base}/${item.id}/vague`);
       item.mastery = r.mastery;
-      item.mastered = item.mastery >= 100;
+      item.mastered = r.mastered;
+      item.perfect = !!r.perfect;
       if (onChange) onChange();
-      toast("うろ覚え +10");
+      toast(`うろ覚え +${r.mastery - before}`);
     } catch (e) { toast("更新に失敗しました"); }
   });
   return btn;
+}
+
+// 「完全に覚えた」ボタン: 満点に固定し、以後は忘却曲線で減らなくなる
+// (2026-08-18)。base は /api/words or /api/phrases。
+function perfectButton(base, item, onChange) {
+  const btn = el(`<button class="btn ghost"></button>`);
+  const paint = () => {
+    btn.textContent = item.perfect ? "🔒解除" : "🔒完全に覚えた";
+    btn.title = item.perfect
+      ? "「完全に覚えた」を解除する（忘却曲線の対象に戻す）"
+      : "満点で固定する（以後、忘却曲線で自然に減らなくなります）";
+  };
+  paint();
+  btn.addEventListener("click", async () => {
+    const next = !item.perfect;
+    try {
+      const r = await api.post(`${base}/${item.id}/perfect`,
+        { perfect: next });
+      item.mastery = r.mastery;
+      item.mastered = r.mastered;
+      item.perfect = r.perfect;
+      paint();
+      if (onChange) onChange();
+    } catch (e) { toast("更新に失敗しました"); }
+  });
+  return btn;
+}
+
+// 「クリア」ボタン: 習熟度を0ptにリセットする（1pt以上のときだけ表示）。
+// base は /api/words or /api/phrases。
+function clearButton(base, item, onChange) {
+  const btn = el(`<button class="btn ghost"
+    title="習熟度を0ptにリセットします">クリア</button>`);
+  const paint = () => {
+    btn.style.display = item.mastery >= 1 ? "" : "none";
+  };
+  paint();
+  btn.addEventListener("click", async () => {
+    if (!confirm(`「${item.english}」の習熟度を0ptにリセットしますか？`)) {
+      return;
+    }
+    try {
+      const r = await api.post(`${base}/${item.id}/restore`,
+        { mastery: 0, review_level: 0, next_review: null });
+      item.mastery = r.mastery;
+      item.mastered = false;
+      item.perfect = false;
+      paint();
+      if (onChange) onChange();
+      toast("クリアしました");
+    } catch (e) { toast("更新に失敗しました"); }
+  });
+  return { btn, paint };
 }
 
 // 削除ボタン: ゴミ箱マーク＋二重確認。基本は削除させたくないので、押し間違い
@@ -1138,6 +1235,14 @@ export async function flashcard(root) {
   // オフ(=含む)として扱う。
   const hideMasteredDefault = !!(await api.get("/api/system/user-settings")
     .catch(() => ({ settings: {} }))).settings?.hide_mastered;
+  // 自分の単語帳から選んでフラッシュする(2026-08-18・ユーザー要望:「作った
+  // 単語帳のフラッシュをやることが多い」)。未ログイン/単語帳0件では
+  // セレクタ自体を出さない。
+  const deckList = await api.get("/api/decks").catch(() => []);
+  const deckOpts = ['<option value="">-- 単語帳を使わない(分野・レベルで選ぶ) --</option>']
+    .concat(deckList.map((d) =>
+      `<option value="${d.id}">${escapeHtml(d.name)}（${d.total}語）</option>`))
+    .join("");
   const catOpts = ['<option value="">全カテゴリ</option>']
     .concat(Object.keys(domainGroups).map((c) =>
       `<option>${escapeHtml(c)}</option>`))
@@ -1165,6 +1270,10 @@ export async function flashcard(root) {
           <div class="cdrop-panel" id="fcDomainPanel"></div>
         </span>
       </div>
+      ${deckList.length ? `<div class="row mt">
+        <select id="fcDeck" title="自分の単語帳から選んでフラッシュする
+          （選ぶと分野・レベルの絞り込みと併用できます）">${deckOpts}</select>
+      </div>` : ""}
       <div class="row mt">
         <span class="muted">レベル</span>
         <select id="fcLvMin">${lvOpts}</select>
@@ -1221,6 +1330,14 @@ export async function flashcard(root) {
     fcDomainDropdown.renderPanel();
     fcDomainDropdown.refreshLabel();
   });
+  // 前回選んだ単語帳が今も存在する場合のみ復元(削除済みIDで空扱いになる
+  // のを防ぐため、optionが実在するかをvalue設定後に確認)。
+  const fcDeckSel = root.querySelector("#fcDeck");
+  if (fcDeckSel) {
+    const savedDeck = localStorage.getItem("fc_deck") || "";
+    fcDeckSel.value = savedDeck;
+    if (fcDeckSel.value !== savedDeck) fcDeckSel.value = "";
+  }
   setVal("#fcLvMin", localStorage.getItem("fc_lvmin") || "");
   setVal("#fcLvMax", localStorage.getItem("fc_lvmax") || "");
   // 「詳細設定」がONなら毎回「隠す」を既定にする(localStorageの過去の選択
@@ -1248,6 +1365,7 @@ export async function flashcard(root) {
     const speed = v("#fcSpeed"), voice = v("#fcVoice");
     const auto = root.querySelector("#fcAuto").checked;
     const freeOnly = root.querySelector("#fcFreeOnly").checked;
+    const deckId = fcDeckSel ? fcDeckSel.value : "";
     localStorage.setItem("fc_dir", dir);
     localStorage.setItem("fc_dom", dom);
     localStorage.setItem("fc_lvmin", lvmin);
@@ -1258,6 +1376,7 @@ export async function flashcard(root) {
     localStorage.setItem("fc_voice", voice);
     localStorage.setItem("fc_auto", auto ? "1" : "0");
     localStorage.setItem("fc_free_only", freeOnly ? "1" : "0");
+    localStorage.setItem("fc_deck", deckId);
 
     const q = new URLSearchParams({ limit: size });
     if (dom) q.set("domain", dom);
@@ -1266,6 +1385,7 @@ export async function flashcard(root) {
     if (mastered) q.set("mastered", mastered);
     if (showBanned()) q.set("include_banned", "true");
     if (freeOnly) q.set("free_range_only", "true");
+    if (deckId) q.set("deck_id", deckId);
     const qs = q.toString();
 
     const stage = root.querySelector("#fcStage");
@@ -1293,6 +1413,13 @@ export async function flashPhrase(root) {
   // オフ(=含む)として扱う。
   const hideMasteredDefault = !!(await api.get("/api/system/user-settings")
     .catch(() => ({ settings: {} }))).settings?.hide_mastered;
+  // 自分のフレーズ帳から選んでフラッシュする(2026-08-18・フラッシュ単語と
+  // 同じ理由)。未ログイン/フレーズ帳0件ではセレクタ自体を出さない。
+  const deckList = await api.get("/api/phrase-decks").catch(() => []);
+  const deckOpts = ['<option value="">-- フレーズ帳を使わない(シーン・レベルで選ぶ) --</option>']
+    .concat(deckList.map((d) =>
+      `<option value="${d.id}">${escapeHtml(d.name)}（${d.total}件）</option>`))
+    .join("");
   const sceneGroups = sceneFacets.scene_groups || {};
   const catOpts = ['<option value="">全カテゴリ</option>']
     .concat(Object.keys(sceneGroups).map((c) =>
@@ -1321,6 +1448,10 @@ export async function flashPhrase(root) {
           <div class="cdrop-panel" id="fpScenePanel"></div>
         </span>
       </div>
+      ${deckList.length ? `<div class="row mt">
+        <select id="fpDeck" title="自分のフレーズ帳から選んでフラッシュする
+          （選ぶとシーン・レベルの絞り込みと併用できます）">${deckOpts}</select>
+      </div>` : ""}
       <div class="row mt">
         <span class="muted">レベル</span>
         <select id="fpLvMin">${lvOpts}</select>
@@ -1375,6 +1506,14 @@ export async function flashPhrase(root) {
     fpSceneDropdown.renderPanel();
     fpSceneDropdown.refreshLabel();
   });
+  // 前回選んだフレーズ帳が今も存在する場合のみ復元(削除済みIDで空扱いに
+  // なるのを防ぐ・flashcard()と同じ方式)。
+  const fpDeckSel = root.querySelector("#fpDeck");
+  if (fpDeckSel) {
+    const savedDeck = localStorage.getItem("fp_deck") || "";
+    fpDeckSel.value = savedDeck;
+    if (fpDeckSel.value !== savedDeck) fpDeckSel.value = "";
+  }
   setVal("#fpLvMin", localStorage.getItem("fp_lvmin") || "");
   setVal("#fpLvMax", localStorage.getItem("fp_lvmax") || "");
   // 「詳細設定」がONなら毎回「隠す」を既定にする(理由はflashcard()と同じ)。
@@ -1399,6 +1538,7 @@ export async function flashPhrase(root) {
     const speed = v("#fpSpeed"), voice = v("#fpVoice");
     const auto = root.querySelector("#fpAuto").checked;
     const freeOnly = root.querySelector("#fpFreeOnly").checked;
+    const deckId = fpDeckSel ? fpDeckSel.value : "";
     localStorage.setItem("fp_dir", dir);
     localStorage.setItem("fp_scene", scene);
     localStorage.setItem("fp_lvmin", lvmin);
@@ -1409,6 +1549,7 @@ export async function flashPhrase(root) {
     localStorage.setItem("fp_voice", voice);
     localStorage.setItem("fp_auto", auto ? "1" : "0");
     localStorage.setItem("fp_free_only", freeOnly ? "1" : "0");
+    localStorage.setItem("fp_deck", deckId);
 
     const q = new URLSearchParams({ limit: size });
     if (scene) q.set("scene", scene);
@@ -1417,6 +1558,7 @@ export async function flashPhrase(root) {
     if (mastered) q.set("mastered", mastered);
     if (showBanned()) q.set("include_banned", "true");
     if (freeOnly) q.set("free_range_only", "true");
+    if (deckId) q.set("deck_id", deckId);
     const qs = q.toString();
 
     const stage = root.querySelector("#fpStage");
@@ -1616,10 +1758,14 @@ export async function vocab(root) {
       const mc = tr.querySelector("[data-mc]");
       const ex = el(`<button class="btn good">詳細</button>`);
       ex.addEventListener("click", () => showWordDetail(w));
-      const repaint = () => { mc.innerHTML = masteryCell(w); };
-      const vague = vagueButton("/api/words", w, repaint);
-      const known = knownButton("/api/words", w, repaint);
-      ops.append(ex, vague, known);
+      let onChange = () => {};
+      const { btn: clearBtn, paint: paintClear } =
+        clearButton("/api/words", w, () => onChange());
+      onChange = () => { mc.innerHTML = masteryCell(w); paintClear(); };
+      const vague = vagueButton("/api/words", w, onChange);
+      const known = knownButton("/api/words", w, onChange);
+      const perfect = perfectButton("/api/words", w, onChange);
+      ops.append(ex, vague, known, perfect, clearBtn);
       rowsBody.appendChild(tr);
     });
   };
@@ -1836,10 +1982,14 @@ export async function phrases(root) {
       const mc = tr.querySelector("[data-mc]");
       const det = el(`<button class="btn good">詳細</button>`);
       det.addEventListener("click", () => showPhraseDetail(p));
-      const repaint = () => { mc.innerHTML = masteryCell(p); };
-      const vague = vagueButton("/api/phrases", p, repaint);
-      const known = knownButton("/api/phrases", p, repaint);
-      ops.append(det, vague, known);
+      let onChange = () => {};
+      const { btn: clearBtn, paint: paintClear } =
+        clearButton("/api/phrases", p, () => onChange());
+      onChange = () => { mc.innerHTML = masteryCell(p); paintClear(); };
+      const vague = vagueButton("/api/phrases", p, onChange);
+      const known = knownButton("/api/phrases", p, onChange);
+      const perfect = perfectButton("/api/phrases", p, onChange);
+      ops.append(det, vague, known, perfect, clearBtn);
       rows.appendChild(tr);
     });
   };
@@ -3515,23 +3665,45 @@ export async function admin(root) {
         （VPSでcronの初回実行を待つか、ローカル開発環境では対象外です）。</p>`;
       return;
     }
+    const cat = (res.summary && res.summary.by_category) || {};
+    const summaryHtml = `<div class="grid cols-4 mt">
+      <div class="stat"><div class="num">${cat.human ?? 0}</div>
+        <div class="lbl">人間らしきアクセス(合計)</div></div>
+      <div class="stat"><div class="num">${cat.ai_crawler ?? 0}</div>
+        <div class="lbl">AIクローラー(合計)</div></div>
+      <div class="stat"><div class="num">${cat.search_bot ?? 0}</div>
+        <div class="lbl">検索bot(合計)</div></div>
+      <div class="stat"><div class="num">${cat.other_bot ?? 0}</div>
+        <div class="lbl">その他bot(合計)</div></div>
+    </div>`;
     const rowsHtml = res.days.slice().reverse().map((d) => {
       const topPages = (d.top_human_paths || []).slice(0, 3)
         .map(([p, c]) => `${escapeHtml(p)}(${c})`).join(", ") || "—";
       const topRef = (d.top_referrers || []).slice(0, 1)
         .map(([r, c]) => escapeHtml(r) + "(" + c + ")").join("") || "—";
+      const dcat = d.categories || {};
+      const aiCrawlerCnt = Object.entries(dcat)
+        .filter(([k]) => k.startsWith("ai_crawler:"))
+        .reduce((sum, [, v]) => sum + v, 0);
+      const searchBotCnt = Object.entries(dcat)
+        .filter(([k]) => k.startsWith("search_bot:"))
+        .reduce((sum, [, v]) => sum + v, 0);
       return `<tr>
         <td class="muted">${d.date}</td>
         <td>${d.total_requests}</td>
         <td>${d.unique_ips}</td>
         <td>${d.unique_human_ips}</td>
-        <td style="max-width:280px">${topPages}</td>
+        <td>${aiCrawlerCnt}</td>
+        <td>${searchBotCnt}</td>
+        <td style="max-width:260px">${topPages}</td>
         <td>${topRef}</td>
       </tr>`;
     }).join("");
-    wrap.innerHTML = `<table><thead><tr>
+    wrap.innerHTML = `${summaryHtml}
+      <table class="mt"><thead><tr>
       <th>日付</th><th>総リクエスト</th><th>ユニークIP</th>
-      <th>人間らしきIP</th><th>よく見られたページ</th><th>主な参照元</th>
+      <th>人間らしきIP</th><th>AIクローラー</th><th>検索bot</th>
+      <th>よく見られたページ</th><th>主な参照元</th>
       </tr></thead><tbody>${rowsHtml}</tbody></table>`;
   }).catch((e) => {
     root.querySelector("#accessLogWrap").innerHTML =
@@ -3655,7 +3827,8 @@ export async function admin(root) {
           <th>クリック</th><th>ユーザー名</th><th>最終アクセス</th>
         </tr></thead><tbody>${res.ips.map((r) => `
           <tr>
-            <td class="muted">${escapeHtml(r.ip)}</td>
+            <td class="muted">${escapeHtml(r.ip)}
+              ${r.is_admin ? '<span class="badge-warn" title="管理者の既知IP(.envのADMIN_KNOWN_IPS)">👑管理者</span>' : ""}</td>
             <td>${r.total}</td>
             <td>${r.pages}</td>
             <td>${r.plays}</td>
@@ -3866,6 +4039,36 @@ export async function settings(root) {
       <div class="row mt">
         <button class="btn good" id="adv_save">保存</button>
         <span class="muted" id="adv_out"></span>
+      </div>
+
+      <hr class="mt" />
+      <h3>🧠 習熟度(mastery)・忘却曲線の設定</h3>
+      <p class="muted">単語・フレーズの習熟度は0〜満点のpt(ポイント)で管理し、
+        設定したpt以上を「覚えた」と判定します。「覚えた」「うろ覚え」
+        ボタンでの加点量、時間経過で自然に減っていく忘却曲線の強さも
+        ここで調整できます。ここでの変更は単語帳・フレーズ帳・
+        フラッシュカードなど、アカウント全体の学習機能に共通で反映されます
+        （単語帳/フレーズ帳ごとには設定しません）。数値は保存時に安全な
+        範囲へ自動調整されます。</p>
+      <div class="grid cols-2 mt">
+        <label>満点(上限pt・100〜300): <input id="advMasteryMax"
+          type="number" min="100" max="300" style="width:80px" /></label>
+        <label>「覚えた」と判定するpt: <input id="advMasteredThreshold"
+          type="number" min="10" style="width:80px" /></label>
+        <label>「覚えた」ボタンでの加点(pt): <input id="advKnownBonus"
+          type="number" min="1" max="300" style="width:80px" /></label>
+        <label>「うろ覚え」ボタンでの加点(pt): <input id="advVagueBonus"
+          type="number" min="1" max="300" style="width:80px" /></label>
+      </div>
+      <p class="mt">忘却曲線: <input id="advDecayAmount" type="number"
+          min="0" max="100" style="width:70px" />pt を
+        <input id="advDecayIntervalDays" type="number" min="1" max="90"
+          style="width:70px" />日ごとに自動で減らす
+        （0にすると忘却曲線をオフにできます）</p>
+      <div class="row mt">
+        <button class="btn good" id="advMasterySave">保存</button>
+        <button class="btn ghost" id="advMasteryReset">既定値に戻す</button>
+        <span class="muted" id="advMasteryOut"></span>
       </div>
     </div>
     <div class="card" id="chargeCard" style="display:none">
@@ -4190,6 +4393,20 @@ export async function settings(root) {
     if (toeic) toeic.value = us.toeic_self || "";
     const advHide = root.querySelector("#advHideMastered");
     if (advHide) advHide.checked = !!us.hide_mastered;
+    const mmax = root.querySelector("#advMasteryMax");
+    if (mmax) {
+      mmax.value = us.mastery_max ?? MASTERY_DEFAULTS.mastery_max;
+      root.querySelector("#advMasteredThreshold").value =
+        us.mastered_threshold ?? MASTERY_DEFAULTS.mastered_threshold;
+      root.querySelector("#advKnownBonus").value =
+        us.known_bonus ?? MASTERY_DEFAULTS.known_bonus;
+      root.querySelector("#advVagueBonus").value =
+        us.vague_bonus ?? MASTERY_DEFAULTS.vague_bonus;
+      root.querySelector("#advDecayAmount").value =
+        us.decay_amount ?? MASTERY_DEFAULTS.decay_amount;
+      root.querySelector("#advDecayIntervalDays").value =
+        us.decay_interval_days ?? MASTERY_DEFAULTS.decay_interval_days;
+    }
     // 管理者表示。一般ユーザーには管理者向けカードを隠す。
     const badge = root.querySelector("#roleBadge");
     if (mu && mu.role === "admin") {
@@ -4251,6 +4468,48 @@ export async function settings(root) {
       root.querySelector("#advHideMastered").checked;
     await api.put("/api/system/user-settings", { settings });
     root.querySelector("#adv_out").textContent = "保存しました";
+  });
+
+  const advMasterySave = root.querySelector("#advMasterySave");
+  if (advMasterySave) advMasterySave.addEventListener("click", async () => {
+    const settings = {};
+    try { Object.assign(settings,
+      (await api.get("/api/system/user-settings")).settings || {}); }
+    catch (_) { /* */ }
+    const num = (id) => parseInt(root.querySelector(id).value, 10);
+    settings.mastery_max = num("#advMasteryMax");
+    settings.mastered_threshold = num("#advMasteredThreshold");
+    settings.known_bonus = num("#advKnownBonus");
+    settings.vague_bonus = num("#advVagueBonus");
+    settings.decay_amount = num("#advDecayAmount");
+    settings.decay_interval_days = num("#advDecayIntervalDays");
+    await api.put("/api/system/user-settings", { settings });
+    root.querySelector("#advMasteryOut").textContent =
+      "保存しました（値は安全な範囲に自動調整されます）";
+  });
+
+  const advMasteryReset = root.querySelector("#advMasteryReset");
+  if (advMasteryReset) advMasteryReset.addEventListener("click", async () => {
+    if (!confirm("習熟度・忘却曲線の設定を既定値に戻しますか？")) return;
+    const settings = {};
+    try { Object.assign(settings,
+      (await api.get("/api/system/user-settings")).settings || {}); }
+    catch (_) { /* */ }
+    for (const k of ["mastery_max", "mastered_threshold", "known_bonus",
+      "vague_bonus", "decay_amount", "decay_interval_days"]) {
+      delete settings[k];
+    }
+    await api.put("/api/system/user-settings", { settings });
+    root.querySelector("#advMasteryMax").value = MASTERY_DEFAULTS.mastery_max;
+    root.querySelector("#advMasteredThreshold").value =
+      MASTERY_DEFAULTS.mastered_threshold;
+    root.querySelector("#advKnownBonus").value = MASTERY_DEFAULTS.known_bonus;
+    root.querySelector("#advVagueBonus").value = MASTERY_DEFAULTS.vague_bonus;
+    root.querySelector("#advDecayAmount").value =
+      MASTERY_DEFAULTS.decay_amount;
+    root.querySelector("#advDecayIntervalDays").value =
+      MASTERY_DEFAULTS.decay_interval_days;
+    root.querySelector("#advMasteryOut").textContent = "既定値に戻しました";
   });
 
   const logoutAllBtn = root.querySelector("#logoutAllBtn");
@@ -4374,7 +4633,8 @@ export async function decks(root) {
   root.innerHTML = `
     <h1>単語帳</h1>
     <p class="sub">分野・レベルから自分用の単語帳(デッキ)を作って学習。
-      デッキ別に出題方向や合格条件を設定できます。
+      出題方向や忘却曲線・「覚えた」の基準は設定画面の詳細設定で
+      アカウント共通に調整できます。
       無料範囲では1個・100語まで、チャージ済みなら個数・件数とも無制限です。</p>
     <div class="card">
       <h2>単語帳 全体の達成率</h2>
@@ -4390,10 +4650,12 @@ export async function decks(root) {
       <input id="dname" placeholder="単語帳の名前" style="width:240px" />
       <div class="row mt" style="align-items:flex-start">
         <div><div class="muted">分野(複数チェック可)</div>
+          ${chkAllClearHtml("ddomains")}
           <div id="ddomains" class="chkbox">${facets.domains.map((d) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(d)}"
               /> ${escapeHtml(d)}</label>`).join("")}</div></div>
         <div><div class="muted">レベル(複数チェック可)</div>
+          ${chkAllClearHtml("dlevels")}
           <div id="dlevels" class="chkbox">${facets.levels.map((l) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(l)}"
               /> ${escapeHtml(l)}</label>`).join("")}</div></div>
@@ -4401,16 +4663,8 @@ export async function decks(root) {
       <div class="row mt">
         <label>件数(お任せ): <input id="dlimit" type="number" value="50"
           style="width:80px" min="1" /></label>
-        <label>出題方向: <select id="ddir">
-          <option value="both">両方向</option>
-          <option value="en2ja">英→日</option>
-          <option value="ja2en">日→英</option></select></label>
-        <label>N回正解で習得: <input id="dpass" type="number" value="2"
-          style="width:60px" min="1" /></label>
-        <label class="toggle"><input type="checkbox" id="dsrs" checked />
-          忘却曲線を使う</label>
-        <label>1回の出題数: <input id="dsize" type="number" value="10"
-          style="width:60px" min="1" /></label>
+        <label class="toggle"><input type="checkbox" id="dlimitAll" />
+          全件</label>
       </div>
       <div class="row mt">
         ${state.isAdmin ? `<label class="toggle">
@@ -4420,9 +4674,15 @@ export async function decks(root) {
         <span id="dcreateOut" class="muted"></span>
       </div>
       <p class="muted mt">分野・レベルを選ばなければ全体から、件数ぶんランダムに
-        「お任せ」で作ります。</p>
+        「お任せ」で作ります（「全件」を選ぶと件数を無視して該当する
+        すべての単語を追加します）。</p>
     </div>
     <div id="deckList" class="mt"></div>`;
+  wireChkAllClear(root);
+  const dlimitInput = root.querySelector("#dlimit");
+  root.querySelector("#dlimitAll").addEventListener("change", (e) => {
+    dlimitInput.disabled = e.target.checked;
+  });
 
   const sels = (id) =>
     [...root.querySelectorAll(id + " input:checked")].map((o) => o.value);
@@ -4436,16 +4696,11 @@ export async function decks(root) {
     }
     decksArr.forEach((d) => {
       const pct = d.total ? Math.round(d.mastered / d.total * 100) : 0;
-      const dirLabel = { both: "両方向", en2ja: "英→日", ja2en: "日→英" }[
-        d.settings.directions] || "両方向";
       const card = el(`<div class="card">
         <div class="row" style="justify-content:space-between">
           <b>${escapeHtml(d.name)}</b>
           <span class="muted">${d.mastered}/${d.total} 習得 (${pct}%)</span></div>
         <div class="bar mt"><span style="width:${pct}%"></span></div>
-        <div class="muted mt">${dirLabel} ・ ${d.settings.pass_count}回正解で
-          クイズ優先度リセット ・ 忘却曲線${d.settings.use_srs ? "ON" : "OFF"}
-          ・ 出題${d.settings.quiz_size}</div>
         <div class="row mt">
           <button class="btn ghost" data-act="edit">✏️ 編集</button>
           <button class="btn ghost del-btn" data-act="del"
@@ -4468,18 +4723,14 @@ export async function decks(root) {
     const out = root.querySelector("#dcreateOut");
     out.textContent = "作成中…";
     try {
+      const limitAll = root.querySelector("#dlimitAll").checked;
       const d = await api.post("/api/decks", {
         name: name || "新しい単語帳",
         domains: sels("#ddomains"),
         levels: sels("#dlevels"),
         include_banned: !!root.querySelector("#dbanned")?.checked,
-        limit: parseInt(root.querySelector("#dlimit").value, 10) || null,
-        settings: {
-          directions: root.querySelector("#ddir").value,
-          pass_count: parseInt(root.querySelector("#dpass").value, 10) || 2,
-          use_srs: root.querySelector("#dsrs").checked,
-          quiz_size: parseInt(root.querySelector("#dsize").value, 10) || 10,
-        },
+        limit: limitAll ? null
+          : (parseInt(root.querySelector("#dlimit").value, 10) || null),
       });
       out.textContent = `作成: ${d.name} (${d.total}語)`;
       go("deck");
@@ -4488,33 +4739,16 @@ export async function decks(root) {
 
   function editDeck(d) {
     openModal("編集: " + d.name, (body) => {
-      const s = d.settings;
       body.appendChild(el(`<div class="row">
         <label>名前: <input id="en" value="${escapeHtml(d.name)}"
           style="width:200px" /></label></div>`));
-      body.appendChild(el(`<div class="row mt">
-        <label>出題方向: <select id="edir">
-          <option value="both">両方向</option>
-          <option value="en2ja">英→日</option>
-          <option value="ja2en">日→英</option></select></label>
-        <label>N回正解でクイズ優先度リセット: <input id="epass" type="number"
-          value="${s.pass_count}" style="width:60px" min="1" /></label></div>`));
-      body.appendChild(el(`<div class="row mt">
-        <label class="toggle"><input type="checkbox" id="esrs"
-          ${s.use_srs ? "checked" : ""} /> 忘却曲線を使う</label>
-        <label>出題数: <input id="esize" type="number" value="${s.quiz_size}"
-          style="width:60px" min="1" /></label></div>`));
-      body.querySelector("#edir").value = s.directions;
+      body.appendChild(el(`<p class="muted mt">出題方向・忘却曲線・
+        「覚えた」の基準はデッキごとではなく、設定画面の詳細設定で
+        アカウント共通に調整します。</p>`));
       const save = el(`<button class="btn good mt">保存</button>`);
       save.addEventListener("click", async () => {
         await api.put("/api/decks/" + d.id, {
           name: body.querySelector("#en").value.trim() || d.name,
-          settings: {
-            directions: body.querySelector("#edir").value,
-            pass_count: parseInt(body.querySelector("#epass").value, 10) || 2,
-            use_srs: body.querySelector("#esrs").checked,
-            quiz_size: parseInt(body.querySelector("#esize").value, 10) || 10,
-          },
         });
         go("deck");
       });
@@ -4524,14 +4758,17 @@ export async function decks(root) {
       body.appendChild(el(`<h3>🎯 分野・レベルで一括追加</h3>`));
       body.appendChild(el(`<div class="row" style="align-items:flex-start">
         <div><div class="muted">分野(複数チェック可)</div>
+          ${chkAllClearHtml("addDomains")}
           <div id="addDomains" class="chkbox">${facets.domains.map((c) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(c)}"
               /> ${escapeHtml(c)}</label>`).join("")}</div></div>
         <div><div class="muted">レベル(複数チェック可)</div>
+          ${chkAllClearHtml("addLevels")}
           <div id="addLevels" class="chkbox">${facets.levels.map((l) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(l)}"
               /> ${escapeHtml(l)}</label>`).join("")}</div></div>
       </div>`));
+      wireChkAllClear(body);
       const bulkAddBtn = el(
         `<button class="btn good mt">選択した分野・レベルを全て追加</button>`);
       const bulkAddOut = el(`<span class="muted mt"></span>`);
@@ -4651,7 +4888,8 @@ export async function phraseDecks(root) {
   root.innerHTML = `
     <h1>フレーズ帳</h1>
     <p class="sub">シーン・レベルから自分用のフレーズ帳(デッキ)を作って学習。
-      デッキ別に出題方向や合格条件を設定できます。
+      出題方向や忘却曲線・「覚えた」の基準は設定画面の詳細設定で
+      アカウント共通に調整できます。
       無料範囲では1個・100件まで、チャージ済みなら個数・件数とも無制限です。</p>
     <div class="card">
       <h2>フレーズ帳 全体の達成率</h2>
@@ -4667,10 +4905,12 @@ export async function phraseDecks(root) {
       <input id="pdname" placeholder="フレーズ帳の名前" style="width:240px" />
       <div class="row mt" style="align-items:flex-start">
         <div><div class="muted">シーン(複数チェック可)</div>
+          ${chkAllClearHtml("pdscenes")}
           <div id="pdscenes" class="chkbox">${sceneFacets.scenes.map((s) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(s)}"
               /> ${escapeHtml(s)}</label>`).join("")}</div></div>
         <div><div class="muted">レベル(複数チェック可)</div>
+          ${chkAllClearHtml("pdlevels")}
           <div id="pdlevels" class="chkbox">${levelFacets.range_levels.map((l) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(l)}"
               /> ${escapeHtml(l)}</label>`).join("")}</div></div>
@@ -4678,16 +4918,8 @@ export async function phraseDecks(root) {
       <div class="row mt">
         <label>件数(お任せ): <input id="pdlimit" type="number" value="50"
           style="width:80px" min="1" /></label>
-        <label>出題方向: <select id="pddir">
-          <option value="both">両方向</option>
-          <option value="en2ja">英→日</option>
-          <option value="ja2en">日→英</option></select></label>
-        <label>N回正解でクイズ優先度リセット: <input id="pdpass" type="number"
-          value="2" style="width:60px" min="1" /></label>
-        <label class="toggle"><input type="checkbox" id="pdsrs" checked />
-          忘却曲線を使う</label>
-        <label>1回の出題数: <input id="pdsize" type="number" value="10"
-          style="width:60px" min="1" /></label>
+        <label class="toggle"><input type="checkbox" id="pdlimitAll" />
+          全件</label>
       </div>
       <div class="row mt">
         ${state.isAdmin ? `<label class="toggle">
@@ -4697,9 +4929,15 @@ export async function phraseDecks(root) {
         <span id="pdcreateOut" class="muted"></span>
       </div>
       <p class="muted mt">シーン・レベルを選ばなければ全体から、件数ぶんランダムに
-        「お任せ」で作ります。</p>
+        「お任せ」で作ります（「全件」を選ぶと件数を無視して該当する
+        すべてのフレーズを追加します）。</p>
     </div>
     <div id="phraseDeckList" class="mt"></div>`;
+  wireChkAllClear(root);
+  const pdlimitInput = root.querySelector("#pdlimit");
+  root.querySelector("#pdlimitAll").addEventListener("change", (e) => {
+    pdlimitInput.disabled = e.target.checked;
+  });
 
   const sels = (id) =>
     [...root.querySelectorAll(id + " input:checked")].map((o) => o.value);
@@ -4713,16 +4951,11 @@ export async function phraseDecks(root) {
     }
     decksArr.forEach((d) => {
       const pct = d.total ? Math.round(d.mastered / d.total * 100) : 0;
-      const dirLabel = { both: "両方向", en2ja: "英→日", ja2en: "日→英" }[
-        d.settings.directions] || "両方向";
       const card = el(`<div class="card">
         <div class="row" style="justify-content:space-between">
           <b>${escapeHtml(d.name)}</b>
           <span class="muted">${d.mastered}/${d.total} 習得 (${pct}%)</span></div>
         <div class="bar mt"><span style="width:${pct}%"></span></div>
-        <div class="muted mt">${dirLabel} ・ ${d.settings.pass_count}回正解で
-          クイズ優先度リセット ・ 忘却曲線${d.settings.use_srs ? "ON" : "OFF"}
-          ・ 出題${d.settings.quiz_size}</div>
         <div class="row mt">
           <button class="btn ghost" data-act="edit">✏️ 編集</button>
           <button class="btn ghost del-btn" data-act="del"
@@ -4745,18 +4978,14 @@ export async function phraseDecks(root) {
     const out = root.querySelector("#pdcreateOut");
     out.textContent = "作成中…";
     try {
+      const limitAll = root.querySelector("#pdlimitAll").checked;
       const d = await api.post("/api/phrase-decks", {
         name: name || "新しいフレーズ帳",
         scenes: sels("#pdscenes"),
         levels: sels("#pdlevels"),
         include_banned: !!root.querySelector("#pdbanned")?.checked,
-        limit: parseInt(root.querySelector("#pdlimit").value, 10) || null,
-        settings: {
-          directions: root.querySelector("#pddir").value,
-          pass_count: parseInt(root.querySelector("#pdpass").value, 10) || 2,
-          use_srs: root.querySelector("#pdsrs").checked,
-          quiz_size: parseInt(root.querySelector("#pdsize").value, 10) || 10,
-        },
+        limit: limitAll ? null
+          : (parseInt(root.querySelector("#pdlimit").value, 10) || null),
       });
       out.textContent = `作成: ${d.name} (${d.total}件)`;
       go("phrasedeck");
@@ -4765,33 +4994,16 @@ export async function phraseDecks(root) {
 
   function editDeck(d) {
     openModal("編集: " + d.name, (body) => {
-      const s = d.settings;
       body.appendChild(el(`<div class="row">
         <label>名前: <input id="pen" value="${escapeHtml(d.name)}"
           style="width:200px" /></label></div>`));
-      body.appendChild(el(`<div class="row mt">
-        <label>出題方向: <select id="pedir">
-          <option value="both">両方向</option>
-          <option value="en2ja">英→日</option>
-          <option value="ja2en">日→英</option></select></label>
-        <label>N回正解でクイズ優先度リセット: <input id="pepass" type="number"
-          value="${s.pass_count}" style="width:60px" min="1" /></label></div>`));
-      body.appendChild(el(`<div class="row mt">
-        <label class="toggle"><input type="checkbox" id="pesrs"
-          ${s.use_srs ? "checked" : ""} /> 忘却曲線を使う</label>
-        <label>出題数: <input id="pesize" type="number" value="${s.quiz_size}"
-          style="width:60px" min="1" /></label></div>`));
-      body.querySelector("#pedir").value = s.directions;
+      body.appendChild(el(`<p class="muted mt">出題方向・忘却曲線・
+        「覚えた」の基準はデッキごとではなく、設定画面の詳細設定で
+        アカウント共通に調整します。</p>`));
       const save = el(`<button class="btn good mt">保存</button>`);
       save.addEventListener("click", async () => {
         await api.put("/api/phrase-decks/" + d.id, {
           name: body.querySelector("#pen").value.trim() || d.name,
-          settings: {
-            directions: body.querySelector("#pedir").value,
-            pass_count: parseInt(body.querySelector("#pepass").value, 10) || 2,
-            use_srs: body.querySelector("#pesrs").checked,
-            quiz_size: parseInt(body.querySelector("#pesize").value, 10) || 10,
-          },
         });
         go("phrasedeck");
       });
@@ -4801,14 +5013,17 @@ export async function phraseDecks(root) {
       body.appendChild(el(`<h3>🎯 シーン・レベルで一括追加</h3>`));
       body.appendChild(el(`<div class="row" style="align-items:flex-start">
         <div><div class="muted">シーン(複数チェック可)</div>
+          ${chkAllClearHtml("paddScenes")}
           <div id="paddScenes" class="chkbox">${sceneFacets.scenes.map((s) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(s)}"
               /> ${escapeHtml(s)}</label>`).join("")}</div></div>
         <div><div class="muted">レベル(複数チェック可)</div>
+          ${chkAllClearHtml("paddLevels")}
           <div id="paddLevels" class="chkbox">${levelFacets.range_levels.map((l) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(l)}"
               /> ${escapeHtml(l)}</label>`).join("")}</div></div>
       </div>`));
+      wireChkAllClear(body);
       const pBulkAddBtn = el(
         `<button class="btn good mt">選択したシーン・レベルを全て追加</button>`);
       const pBulkAddOut = el(`<span class="muted mt"></span>`);

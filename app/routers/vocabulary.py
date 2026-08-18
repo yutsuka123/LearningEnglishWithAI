@@ -9,23 +9,38 @@ from ..database import db
 from ..schemas import AttemptIn, WordCreate, WordUpdate
 from ..services.taxonomy import WORD_CATEGORIES, group_by_category
 from ..services.spaced_repetition import (
+    DEFAULT_MASTERY_CONFIG,
     MASTERED_THRESHOLD,
+    MasteryConfig,
     clamp,
     mark_vague as _mark_vague,
+    mastery_config_from_settings,
     record_attempt,
     selection_weight,
     set_known,
+    set_perfect,
 )
 
 router = APIRouter(prefix="/api/words", tags=["vocabulary"])
 
 
-def _word_dict(row, free_ids: set[int] | None = None) -> dict:
+def _current_mastery_cfg(conn) -> MasteryConfig:
+    """現在ユーザーのmastery設定(詳細設定で調整可能・2026-08-18)を読む。"""
+    from ..services.auth import current_user_id, get_user_settings
+    settings = get_user_settings(conn, current_user_id())
+    return mastery_config_from_settings(settings)
+
+
+def _word_dict(
+    row, free_ids: set[int] | None = None,
+    cfg: MasteryConfig = DEFAULT_MASTERY_CONFIG,
+) -> dict:
     d = dict(row)
     # detail(JSON)は一覧では送らず、有無フラグだけ返す（応答を軽く保つ）。
     d["has_detail"] = bool((d.pop("detail", "") or "").strip())
-    d["selection_priority"] = selection_weight(d["mastery"])
-    d["mastered"] = d["mastery"] >= MASTERED_THRESHOLD
+    d["selection_priority"] = selection_weight(d["mastery"], cfg.mastered_threshold)
+    d["mastered"] = d["mastery"] >= cfg.mastered_threshold
+    d["perfect"] = bool(d.get("perfect", 0))
     accuracy = (
         round(d["times_correct"] / d["times_asked"] * 100)
         if d["times_asked"]
@@ -65,6 +80,7 @@ def _word_filter(
     level_min: str | None, level_max: str | None,
     out_of_range: bool, include_banned: bool, mastered: str | None,
     category: str | None = None,
+    mastered_threshold: int = MASTERED_THRESHOLD,
 ) -> tuple[list[str], list]:
     """単語一覧/フラッシュカード共通のフィルタ WHERE 句を組み立てる。
     列は素の名前(domain/level/mastery)で参照（一覧の `AS words`・選抜の `AS t`
@@ -116,9 +132,9 @@ def _word_filter(
         where.append("COALESCE(domain, '') <> ?")
         params.append(BANNED_DOMAIN)
     if mastered == "only":
-        where.append(f"mastery >= {MASTERED_THRESHOLD}")
+        where.append(f"mastery >= {mastered_threshold}")
     elif mastered == "hide":
-        where.append(f"mastery < {MASTERED_THRESHOLD}")
+        where.append(f"mastery < {mastered_threshold}")
     return where, params
 
 
@@ -154,15 +170,16 @@ def list_words(
     }.get(sort, "mastery")
     direction = "DESC" if desc else "ASC"
     order = f"{col} {direction}, english COLLATE NOCASE ASC"
-    where, params = _word_filter(
-        domain, level, level_min, level_max, out_of_range,
-        include_banned, mastered, category,
-    )
     from ..services.progress import user_items_subquery
     src = user_items_subquery("words")  # 先頭の ? = user_id
     from ..services import access_tiers
     with db() as conn:
         uid = current_user_id()
+        cfg = _current_mastery_cfg(conn)
+        where, params = _word_filter(
+            domain, level, level_min, level_max, out_of_range,
+            include_banned, mastered, category, cfg.mastered_threshold,
+        )
         is_guest = is_guest_user_id(conn, uid)
         if deck_id is not None:
             owned = conn.execute(
@@ -188,7 +205,7 @@ def list_words(
             [uid, *params],
         ).fetchall()
         free_ids = access_tiers.free_range_ids(conn, "word", guest=is_guest)
-        return [_word_dict(r, free_ids) for r in rows]
+        return [_word_dict(r, free_ids, cfg) for r in rows]
 
 
 @router.get("/facets")
@@ -383,22 +400,37 @@ def quiz(
     out_of_range: bool = False,
     mastered: str | None = None,   # 'only' | 'hide' | None
     free_range_only: bool = False,  # 🔊無料で再生できる範囲のみ(2026-08-12)
+    deck_id: int | None = None,    # 自分の単語帳で絞り込み(2026-08-18)
 ):
     """Return a weighted set of words to quiz (probability ∝ 100 - mastery).
-    分野/レベル/覚えた状態でフィルタ可能（フラッシュカードと共用）。"""
+    分野/レベル/覚えた状態でフィルタ可能（フラッシュカードと共用）。
+    deck_idを指定すると、その単語帳(自分の所有分のみ)に含まれる単語だけに
+    絞り込む(分野/レベル等の他条件と併用可)。"""
     from ..services import access_tiers
     from ..services.auth import (
         current_user_allow_banned, current_user_id, is_guest_user_id,
     )
     include_banned = include_banned and current_user_allow_banned()
     from ..services.spaced_repetition import select_for_review
-    where, params = _word_filter(
-        domain, level, level_min, level_max, out_of_range,
-        include_banned, mastered,
-    )
     with db() as conn:
         uid = current_user_id()
+        cfg = _current_mastery_cfg(conn)
+        where, params = _word_filter(
+            domain, level, level_min, level_max, out_of_range,
+            include_banned, mastered, mastered_threshold=cfg.mastered_threshold,
+        )
         is_guest = is_guest_user_id(conn, uid)
+        if deck_id is not None:
+            owned = conn.execute(
+                "SELECT 1 FROM decks WHERE id = ? AND user_id = ?",
+                (deck_id, uid),
+            ).fetchone()
+            if not owned:
+                raise HTTPException(404, "単語帳が見つかりません")
+            where = where + [
+                "id IN (SELECT word_id FROM deck_words WHERE deck_id = ?)"
+            ]
+            params = params + [deck_id]
         if free_range_only:
             fr_clause, fr_params = access_tiers.free_range_id_filter(
                 "word", guest=is_guest,
@@ -411,9 +443,10 @@ def quiz(
             exclude_banned=False,  # banned は _word_filter 側で処理済み
             user_id=uid,
             where_extra=where_extra, params_extra=tuple(params),
+            cfg=cfg,
         )
         free_ids = access_tiers.free_range_ids(conn, "word", guest=is_guest)
-        return [_word_dict(r, free_ids) for r in rows]
+        return [_word_dict(r, free_ids, cfg) for r in rows]
 
 
 @router.post("/attempt")
@@ -434,6 +467,7 @@ def attempt(payload: AttemptIn):
             result = record_attempt(
                 conn, payload.word_id, payload.direction, payload.correct,
                 result=payload.result, user_id=current_user_id(),
+                cfg=_current_mastery_cfg(conn),
             )
         except ValueError as exc:
             raise HTTPException(400, str(exc))
@@ -446,8 +480,9 @@ class KnownIn(BaseModel):
 
 @router.post("/{word_id}/known")
 def mark_known(word_id: int, payload: KnownIn):
-    """「覚えた」ボタン(per-user): mastery を満点(200)に、復習間隔も最長へ。
-    known=false で解除（mastery/間隔とも復活させる）。"""
+    """「覚えた」ボタン(per-user): mastery を加点(既定+200・満点でクランプ)、
+    復習間隔も最長へ。known=false で解除（mastery/間隔とも復活させる）。
+    加点量・満点は詳細設定でユーザーが調整可能(2026-08-18)。"""
     from ..services.auth import current_user_id
     with db() as conn:
         exists = conn.execute(
@@ -456,14 +491,36 @@ def mark_known(word_id: int, payload: KnownIn):
         if not exists:
             raise HTTPException(404, "単語が見つかりません")
         r = set_known(conn, word_id, payload.known, table="words",
-                      user_id=current_user_id())
+                      user_id=current_user_id(), cfg=_current_mastery_cfg(conn))
     return {"ok": True, "known": payload.known, **r}
+
+
+class PerfectIn(BaseModel):
+    perfect: bool = True
+
+
+@router.post("/{word_id}/perfect")
+def mark_perfect(word_id: int, payload: PerfectIn):
+    """「完全に覚えた」ボタン(per-user): 満点に固定し、以後は忘却曲線
+    (apply_forgetting_decay)で減らなくなる。perfect=falseで解除すると
+    通常の「覚えた」相当に戻り、忘却曲線の対象にも戻る(2026-08-18)。"""
+    from ..services.auth import current_user_id
+    with db() as conn:
+        exists = conn.execute(
+            "SELECT id FROM words WHERE id = ?", (word_id,)
+        ).fetchone()
+        if not exists:
+            raise HTTPException(404, "単語が見つかりません")
+        r = set_perfect(conn, word_id, payload.perfect, table="words",
+                        user_id=current_user_id(), cfg=_current_mastery_cfg(conn))
+    return {"ok": True, **r}
 
 
 @router.post("/{word_id}/vague")
 def mark_vague(word_id: int):
-    """「うろ覚え」ボタン(per-user): mastery を +10（0..200でクランプ）、
-    復習間隔も約2日後に更新する。"""
+    """「うろ覚え」ボタン(per-user): mastery を加点(既定+30・満点でクランプ)、
+    復習間隔も約2日後に更新する。加点量は詳細設定でユーザーが調整可能
+    (2026-08-18)。"""
     from ..services.auth import current_user_id
     with db() as conn:
         exists = conn.execute(
@@ -472,7 +529,7 @@ def mark_vague(word_id: int):
         if not exists:
             raise HTTPException(404, "単語が見つかりません")
         r = _mark_vague(conn, word_id, table="words",
-                        user_id=current_user_id())
+                        user_id=current_user_id(), cfg=_current_mastery_cfg(conn))
     return {"ok": True, **r}
 
 
@@ -485,20 +542,26 @@ class RestoreIn(BaseModel):
 @router.post("/{word_id}/restore")
 def restore_progress(word_id: int, payload: RestoreIn):
     """直前の採点を取り消す（フラッシュカードの「戻る」）。採点前にクライアントが
-    控えた習得度/復習レベル/次回日を per-user 進捗へ書き戻す。"""
+    控えた習得度/復習レベル/次回日を per-user 進捗へ書き戻す。単語一覧の
+    「クリア」ボタン（mastery=0を明示送信）もこのエンドポイントを使う。
+    mastery/次回日を直接上書きする操作のため「完全に覚えた」も解除する
+    (2026-08-18・perfect=1だけ中途半端に残るのを防ぐ。フラッシュカードの
+    採点は元々perfectを付与しないため、通常の「戻る」用途には影響しない)。"""
     from ..services.auth import current_user_id
     from ..services import progress as P
-    fields: dict = {"mastery": clamp(payload.mastery)}
-    if payload.review_level is not None:
-        fields["review_level"] = payload.review_level
-    # next_review は None(未学習に戻す) も許容して上書きする。
-    fields["next_review"] = payload.next_review
     with db() as conn:
         exists = conn.execute(
             "SELECT id FROM words WHERE id = ?", (word_id,)
         ).fetchone()
         if not exists:
             raise HTTPException(404, "単語が見つかりません")
+        cfg = _current_mastery_cfg(conn)
+        fields: dict = {"mastery": clamp(payload.mastery, cfg.mastery_max),
+                        "perfect": 0}
+        if payload.review_level is not None:
+            fields["review_level"] = payload.review_level
+        # next_review は None(未学習に戻す) も許容して上書きする。
+        fields["next_review"] = payload.next_review
         P.upsert_progress(conn, current_user_id(), "words", word_id, **fields)
     return {"ok": True, "mastery": fields["mastery"]}
 

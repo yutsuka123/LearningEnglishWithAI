@@ -279,6 +279,9 @@ CREATE TABLE IF NOT EXISTS user_word_progress (
     ok_ja2en      INTEGER NOT NULL DEFAULT 0,
     review_level  INTEGER NOT NULL DEFAULT 0,
     next_review   TEXT,
+    -- 「完全に覚えた」フラグ(2026-08-18)。1のときは忘却曲線の対象から
+    -- 除外される(apply_forgetting_decayが減衰させない)。「解除」で0に戻す。
+    perfect       INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (user_id, word_id)
 );
 
@@ -338,6 +341,7 @@ CREATE TABLE IF NOT EXISTS user_phrase_progress (
     ok_ja2en      INTEGER NOT NULL DEFAULT 0,
     review_level  INTEGER NOT NULL DEFAULT 0,
     next_review   TEXT,
+    perfect       INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (user_id, phrase_id)
 );
 
@@ -598,6 +602,11 @@ def _migrate(conn: sqlite3.Connection) -> None:
         conn.execute(
             "ALTER TABLE audio_blobs ADD COLUMN text_hash "
             "TEXT DEFAULT ''")
+    # 「完全に覚えた」フラグ(2026-08-18・忘却曲線から除外する用)。
+    _add_col(conn, "user_word_progress", "perfect",
+             "perfect INTEGER NOT NULL DEFAULT 0")
+    _add_col(conn, "user_phrase_progress", "perfect",
+             "perfect INTEGER NOT NULL DEFAULT 0")
     _migrate_multiuser(conn)
 
 
