@@ -3544,6 +3544,12 @@ export async function admin(root) {
     <h1>👑 管理者情報</h1>
     <p class="sub">ユーザー別の利用状況・上限・残高・問題の把握（管理者専用）。</p>
     <div class="card">
+      <h2>🧾 フルフィルメント管理</h2>
+      <p class="muted">BASE注文の記録・チャージキー発行・配送管理はこちら
+        （URLを直接知っていても管理者以外はアクセスできません）。</p>
+      <a class="btn good" href="/admin/fulfillment">フルフィルメント管理を開く →</a>
+    </div>
+    <div class="card">
       <h2>セキュリティ</h2>
       <div class="grid cols-4">
         <div class="stat"><div class="num">${sec.locked_accounts ?? 0}</div>
