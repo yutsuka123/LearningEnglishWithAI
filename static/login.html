@@ -264,14 +264,19 @@
     const fLogin = document.getElementById('f');
     const fSignup = document.getElementById('fSignup');
     // 2026-08-18〜: リリース前最終テストのため新規登録を再開。
-    document.getElementById('toSignup').addEventListener('click', () => {
+    function showSignup() {
       fLogin.classList.add('hidden');
       fSignup.classList.remove('hidden');
-    });
-    document.getElementById('toLogin').addEventListener('click', () => {
+    }
+    function showLogin() {
       fSignup.classList.add('hidden');
       fLogin.classList.remove('hidden');
-    });
+    }
+    document.getElementById('toSignup').addEventListener('click', showSignup);
+    document.getElementById('toLogin').addEventListener('click', showLogin);
+    // /login#signup で新規登録フォームを直接開けるようにする(このアプリ
+    // についてページ等から一発リンクしたいという要望・2026-08-19)。
+    if (location.hash === '#signup') showSignup();
 
     // 実写風に見えるとの声があった絵文字(👁/🙈)をやめ、一般的な
     // パスワード表示切替でよく使われる線画アイコン(目/目に斜線)に統一。
