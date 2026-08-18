@@ -374,10 +374,15 @@ def set_caps(
 
 
 def add_balance(
-    conn: sqlite3.Connection, user_id: int, delta_jpy: float
+    conn: sqlite3.Connection, user_id: int, delta_jpy: float, *,
+    reason: str, note: str = "",
+    charge_key_id: Optional[int] = None,
+    admin_user_id: Optional[int] = None,
 ) -> float:
     """前払い残高を増減（チャージ/控除）し、更新後の残高を返す。
-    残高 NULL（残高制を使っていない）の場合は delta から開始する。"""
+    残高 NULL（残高制を使っていない）の場合は delta から開始する。
+    reason は必須（監査用のbalance_ledgerに必ず1行残す。万が一の不正/入力
+    ミス調査で「いつ誰の残高が何によっていくら変わったか」を追える用）。"""
     row = conn.execute(
         "SELECT balance_jpy FROM users WHERE id = ?", (user_id,)
     ).fetchone()
@@ -385,6 +390,13 @@ def add_balance(
     new = float(cur) + float(delta_jpy)
     conn.execute(
         "UPDATE users SET balance_jpy = ? WHERE id = ?", (new, user_id)
+    )
+    conn.execute(
+        "INSERT INTO balance_ledger (user_id, delta_jpy, balance_after, "
+        " reason, note, charge_key_id, admin_user_id) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (user_id, float(delta_jpy), new, reason, note,
+         charge_key_id, admin_user_id),
     )
     return new
 

@@ -8,7 +8,7 @@ import re
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from ..config import ROOT_DIR, load_admin_known_ips, load_settings
+from ..config import ROOT_DIR, load_admin_known_ips, load_settings, log
 from ..database import ACCENTS, NEWS_FIELDS, db
 from ..schemas import MemoryUpdateIn, SettingsIn
 from ..services import ai, auth, persistence, tracking
@@ -356,17 +356,23 @@ def admin_overview():
 class ChargeIn(BaseModel):
     user_id: int
     amount_jpy: float
+    note: str = ""
 
 
 @router.post("/admin/charge")
 def admin_charge(payload: ChargeIn):
-    """管理者が対象ユーザーの前払い残高をチャージ（1回 ¥1〜¥1000）。
-    残高は日次/月次の無料枠とは別管理で、枠到達後の利用で消費される。"""
+    """管理者が対象ユーザーの前払い残高を手動で増減する（1回 ±¥10,000まで）。
+    残高は日次/月次の無料枠とは別管理で、枠到達後の利用で消費される。
+    2026-08-18〜: チャージキー不具合等の万が一の是正のため負の値（減額調整）
+    も許可。理由(note)は必須にし、balance_ledgerに監査記録を残す。"""
     from ..database import db
     from ..services import auth
     amt = payload.amount_jpy
-    if amt <= 0 or amt > 1000:
-        raise HTTPException(400, "1回のチャージは ¥1〜¥1000 です。")
+    note = payload.note.strip()
+    if amt == 0 or abs(amt) > 10000:
+        raise HTTPException(400, "1回の変更額は ¥1〜¥10,000（減額は-¥10,000〜-¥1）です。")
+    if not note:
+        raise HTTPException(400, "理由(note)の入力は必須です。")
     with db() as conn:
         me = auth.get_user(conn, auth.current_user_id())
         if not me or me.get("role") != "admin":
@@ -374,8 +380,37 @@ def admin_charge(payload: ChargeIn):
         target = auth.get_user(conn, payload.user_id)
         if not target:
             raise HTTPException(404, "ユーザーが見つかりません。")
-        new = auth.add_balance(conn, payload.user_id, amt)
+        new = auth.add_balance(
+            conn, payload.user_id, amt,
+            reason="admin_adjustment", note=note, admin_user_id=me["id"])
+    log.info("admin_charge: uid=%s delta=%s note=%s by_admin=%s new_balance=%s",
+              payload.user_id, amt, note, me["id"], new)
     return {"ok": True, "balance_jpy": round(new, 1)}
+
+
+@router.get("/admin/balance-ledger")
+def admin_balance_ledger(user_id: int | None = None, limit: int = 50):
+    """残高変更履歴（監査用）。user_id指定でその人のみ、未指定で全体の直近分。"""
+    from ..database import db
+    from ..services import auth
+    limit = max(1, min(limit, 200))
+    with db() as conn:
+        me = auth.get_user(conn, auth.current_user_id())
+        if not me or me.get("role") != "admin":
+            raise HTTPException(403, "管理者のみ操作できます。")
+        where = "WHERE l.user_id = ?" if user_id else ""
+        args = (user_id,) if user_id else ()
+        rows = conn.execute(
+            "SELECT l.id, l.user_id, u.username, l.delta_jpy, "
+            " l.balance_after, l.reason, l.note, l.charge_key_id, "
+            " l.admin_user_id, a.username AS admin_username, l.created_at "
+            "FROM balance_ledger l "
+            "JOIN users u ON u.id = l.user_id "
+            "LEFT JOIN users a ON a.id = l.admin_user_id "
+            f"{where} ORDER BY l.id DESC LIMIT ?",
+            (*args, limit),
+        ).fetchall()
+    return {"ok": True, "entries": [dict(r) for r in rows]}
 
 
 class ForceLogoutIn(BaseModel):

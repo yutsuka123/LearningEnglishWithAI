@@ -360,6 +360,22 @@ CREATE TABLE IF NOT EXISTS charge_keys (
     used_by_user_id INTEGER REFERENCES users(id)
 );
 
+-- 残高(balance_jpy)増減の台帳（2026-08-18・不正/入力ミスがあったとき
+-- 「いつ・誰の残高が・何によって・いくら変わったか」を追跡できるようにする
+-- 目的。auth.add_balance() を呼ぶ全経路（キー償還・管理者による手動調整）が
+-- 必ず1行ずつ記録する。delta_jpyは符号付き（マイナス=減額調整）。
+CREATE TABLE IF NOT EXISTS balance_ledger (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id        INTEGER NOT NULL REFERENCES users(id),
+    delta_jpy      REAL    NOT NULL,
+    balance_after  REAL    NOT NULL,
+    reason         TEXT    NOT NULL,  -- 'charge_key_redeem' | 'admin_adjustment'
+    note           TEXT    NOT NULL DEFAULT '',
+    charge_key_id  INTEGER REFERENCES charge_keys(id),
+    admin_user_id  INTEGER REFERENCES users(id),
+    created_at     TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
 -- お問い合わせ・要望フォーム（2026-08-06・手動対応前提。自動振り分け等は
 -- 将来検討）。管理者が一覧で確認し、status を手動で更新する運用。
 CREATE TABLE IF NOT EXISTS inquiries (
@@ -607,6 +623,9 @@ def _migrate(conn: sqlite3.Connection) -> None:
              "perfect INTEGER NOT NULL DEFAULT 0")
     _add_col(conn, "user_phrase_progress", "perfect",
              "perfect INTEGER NOT NULL DEFAULT 0")
+    # チャージキーの無効化(2026-08-18・注文の再発行時に旧キーを失効させ、
+    # 1注文につき常に「有効なキーは最大1本」にするため)。
+    _add_col(conn, "charge_keys", "revoked_at", "revoked_at TEXT")
     _migrate_multiuser(conn)
 
 

@@ -59,8 +59,14 @@
     <div class="note">
       使い方: ①BASEで注文通知が来たら「注文を追加」で記録 → ②「キー発行」で
       表示されたキーをコピー → ③BASEの取引メッセージに貼付 → ④「配送済み」を押す。
-      キーは発行時に一度だけ表示され、保存されません（控え損ねたら再発行可）。
+      キーは発行時に一度だけ表示され、保存されません。再発行すると古いキーは
+      自動的に無効化されるため、1注文につき有効なキーは常に最大1本です。
       <span id="ohint"></span>
+    </div>
+
+    <div class="card" id="statsCard">
+      <h2>チャージキー発行状況</h2>
+      <div id="statsBody" class="muted">読み込み中…</div>
     </div>
 
     <div class="card">
@@ -146,10 +152,15 @@
     function actions(o) {
       if (o.status === 'cancelled') return '<span class="muted">—</span>';
       let h = '';
-      if (o.status === 'pending')
-        h += '<button class="ghost" onclick="issue(' + o.id + ')">キー発行</button> '
+      if (o.status === 'pending') {
+        const label = o.charge_key_public_id ? '再発行' : 'キー発行';
+        h += '<button class="ghost" id="issueBtn-' + o.id + '" '
+          + 'onclick="issue(' + o.id + ',' + o.pt_to_grant + ','
+          + (o.charge_key_public_id ? 'true' : 'false') + ')">' + label
+          + '</button> '
           + '<button onclick="deliver(' + o.id + ')">配送済み</button> '
           + '<button class="warn" onclick="cancelOrder(' + o.id + ')">取消</button>';
+      }
       return h;
     }
 
@@ -160,8 +171,21 @@
       return '<span class="muted">未発行</span>';
     }
 
+    async function loadStats() {
+      try {
+        const s = await api('/stats');
+        $('statsBody').innerHTML =
+          '発行済み合計 <b>' + s.total + '</b>本 ／ '
+          + '未使用（有効） <b>' + s.live + '</b>本'
+          + '（合計 ¥' + s.live_amount_jpy + '相当） ／ '
+          + '使用済み <b>' + s.used + '</b>本 ／ '
+          + '無効化済み <b>' + s.revoked + '</b>本';
+      } catch (e) { $('statsBody').textContent = e.message; }
+    }
+
     async function load() {
       $('listErr').textContent = '';
+      loadStats();
       try {
         const d = await api('/orders?status=' + curStatus);
         $('c-pending').textContent = d.pending ? '(' + d.pending + ')' : '';
@@ -188,14 +212,28 @@
       } catch (e) { $('listErr').textContent = e.message; }
     }
 
-    async function issue(id) {
+    async function issue(id, pt, hasKey) {
+      const msg = hasKey
+        ? ('この注文には既にキーが発行済みです。再発行すると古いキーは'
+          + '無効化され、新しい' + pt + 'pt分のキーが1本だけ発行されます。'
+          + '本当に再発行しますか？')
+        : (pt + 'pt分のチャージキーを新規発行します。よろしいですか？'
+          + '（1注文につき有効なキーは常に1本のみです）');
+      if (!confirm(msg)) return;
+      const btn = $('issueBtn-' + id);
+      if (btn) { btn.disabled = true; btn.textContent = '発行中…'; }
       try {
-        const d = await api('/orders/' + id + '/issue_key', { method: 'POST' });
+        const d = await api('/orders/' + id + '/issue_key'
+          + (hasKey ? '?reissue=true' : ''), { method: 'POST' });
         const cell = $('key-' + id);
         cell.innerHTML = '<div class="keybox" id="kv-' + id + '">' + esc(d.charge_key)
           + '</div><button class="ghost" style="margin-top:6px" onclick="copyKey(' + id
           + ')">📋 コピー</button>';
-      } catch (e) { $('listErr').textContent = e.message; }
+        loadStats();
+      } catch (e) {
+        $('listErr').textContent = e.message;
+        if (btn) { btn.disabled = false; btn.textContent = hasKey ? '再発行' : 'キー発行'; }
+      }
     }
 
     function copyKey(id) {

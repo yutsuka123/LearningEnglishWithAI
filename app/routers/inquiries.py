@@ -34,13 +34,16 @@ def create_inquiry(payload: InquiryIn):
     content = payload.content.strip()
     if not content:
         raise HTTPException(400, "内容を入力してください。")
+    email = payload.email.strip().lower()
+    if not email or "@" not in email or "." not in email.split("@")[-1]:
+        raise HTTPException(
+            400, "メールアドレス（返信先）を正しく入力してください。")
     kind = payload.kind if payload.kind in KINDS else "その他"
     with db() as conn:
         conn.execute(
             "INSERT INTO inquiries (user_id, kind, name, email, content) "
             "VALUES (?, ?, ?, ?, ?)",
-            (current_user_id(), kind, payload.name.strip(),
-             payload.email.strip(), content),
+            (current_user_id(), kind, payload.name.strip(), email, content),
         )
     return {"ok": True}
 

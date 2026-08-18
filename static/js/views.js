@@ -3497,10 +3497,16 @@ export async function admin(root) {
       <td>¥${u.today_jpy} / ${dcap}</td>
       <td>¥${u.month_jpy} / ${mcap}</td>
       <td>${bal}</td>
-      <td><input type="number" class="chg-amt" data-uid="${u.id}"
-        value="1000" min="1" max="1000" step="100" style="width:74px" />
+      <td>
+        <input type="number" class="chg-amt" data-uid="${u.id}"
+          value="1000" min="-10000" max="10000" step="100" style="width:74px" />
+        <input type="text" class="chg-note" data-uid="${u.id}"
+          placeholder="理由(必須)" style="width:110px" />
         <button class="btn good chg-btn" data-uid="${u.id}"
-        style="padding:3px 8px">＋</button></td>
+        style="padding:3px 8px">適用</button>
+        <button class="btn ghost chg-log-btn" data-uid="${u.id}"
+        style="padding:3px 8px">履歴</button>
+      </td>
       <td>${u.calls}</td>
       <td>${fmtDate(u.last_used)}</td>
       <td>${u.word_quizzes}</td>
@@ -3764,19 +3770,48 @@ export async function admin(root) {
     });
   });
 
-  // チャージ（1回最大¥1000）。
+  // 残高の手動調整（±¥10,000まで・理由必須・万が一の是正用）。
   root.querySelectorAll(".chg-btn").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const uid = parseInt(btn.dataset.uid, 10);
       const inp = root.querySelector(`.chg-amt[data-uid="${uid}"]`);
+      const noteInp = root.querySelector(`.chg-note[data-uid="${uid}"]`);
       let amt = parseInt(inp.value, 10);
-      if (!Number.isFinite(amt) || amt <= 0) { toast("金額を入力"); return; }
-      if (amt > 1000) { amt = 1000; toast("1回の上限は¥1000です"); }
+      const note = (noteInp.value || "").trim();
+      if (!Number.isFinite(amt) || amt === 0) { toast("金額を入力"); return; }
+      if (Math.abs(amt) > 10000) {
+        amt = Math.sign(amt) * 10000; toast("1回の上限は±¥10,000です");
+      }
+      if (!note) { toast("理由を入力してください"); return; }
+      const verb = amt > 0 ? "増額" : "減額";
+      if (!confirm(`残高を¥${amt}（${verb}）調整します。\n理由: ${note}\n`
+        + `よろしいですか？`)) return;
+      btn.disabled = true;
       try {
         const r = await api.post("/api/system/admin/charge",
-          { user_id: uid, amount_jpy: amt });
-        toast(`チャージ完了: 残高 ¥${Math.round(r.balance_jpy)}`);
+          { user_id: uid, amount_jpy: amt, note });
+        toast(`調整完了: 残高 ¥${Math.round(r.balance_jpy)}`);
         go("admin");  // 再描画
+      } catch (e) { toast("失敗: " + e.message); btn.disabled = false; }
+    });
+  });
+
+  // 残高変更履歴（監査用・直近20件）。
+  root.querySelectorAll(".chg-log-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const uid = parseInt(btn.dataset.uid, 10);
+      try {
+        const r = await api.get(
+          `/api/system/admin/balance-ledger?user_id=${uid}&limit=20`);
+        if (!r.entries.length) { alert("変更履歴はありません。"); return; }
+        const lines = r.entries.map((e) => {
+          const sign = e.delta_jpy > 0 ? "+" : "";
+          const who = e.admin_username ? `管理者:${e.admin_username}` : "本人";
+          return `${fmtDate(e.created_at)}  ${sign}¥${e.delta_jpy}`
+            + `  → 残高¥${e.balance_after}  [${e.reason}/${who}]`
+            + (e.note ? `  ${e.note}` : "");
+        });
+        alert(lines.join("\n"));
       } catch (e) { toast("失敗: " + e.message); }
     });
   });
@@ -4073,7 +4108,10 @@ export async function settings(root) {
       <h2>💳 チャージ</h2>
       <p>現在の残高: <b id="ptBalance">-</b> pt</p>
       <div class="row">
-        <input id="ck_key" name="charge_key" autocomplete="off"
+        <input id="ck_key" name="charge_key" type="text"
+          autocomplete="one-time-code" autocapitalize="characters"
+          autocorrect="off" spellcheck="false" data-lpignore="true"
+          data-1p-ignore="true"
           placeholder="XXXX-XXXXXXX-X-XXXX" style="width:220px" />
         <button class="btn good" id="ck_redeem">チャージする</button>
       </div>
@@ -4125,7 +4163,7 @@ export async function settings(root) {
              .join("")}
         </select>
         <input id="iq_name" placeholder="お名前(任意)" style="width:140px" />
-        <input id="iq_email" placeholder="メール(任意・返信が必要な場合)"
+        <input id="iq_email" placeholder="メール(必須・返信先)"
           style="width:220px" />
       </div>
       <textarea id="iq_content" class="mt" style="min-height:80px"
@@ -4268,12 +4306,16 @@ export async function settings(root) {
 
   sq("#iq_send").addEventListener("click", async () => {
     const content = sq("#iq_content").value.trim();
+    const email = sq("#iq_email").value.trim();
     if (!content) { toast("内容を入力してください"); return; }
+    if (!email || !email.includes("@") || !email.split("@").pop().includes(".")) {
+      toast("メールアドレス（返信先）を入力してください"); return;
+    }
     try {
       await api.post("/api/inquiries", {
         kind: sq("#iq_kind").value,
         name: sq("#iq_name").value.trim(),
-        email: sq("#iq_email").value.trim(),
+        email,
         content,
       });
       sq("#iq_out").textContent = "送信しました。ありがとうございます！";

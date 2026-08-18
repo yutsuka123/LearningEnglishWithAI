@@ -132,20 +132,38 @@ def list_orders(status: str = "pending"):
 
 
 @router.post("/orders/{order_id}/issue_key")
-def issue_key(order_id: int):
+def issue_key(order_id: int, reissue: bool = False):
     """この注文に対しチャージキーを1つ発行し、平文キーを一度だけ返す。
-    平文はDBに保存されない（charge_key_id で参照のみ保持）。控え損ねた場合は
-    再発行してよい（未償還の旧キーは無害）。"""
+    平文はDBに保存されない（charge_key_id で参照のみ保持）。
+
+    二重発行防止(2026-08-18): 既にこの注文に有効な(未使用・未失効)キーが
+    紐付いている場合、reissue=true を明示しない限り409で拒否する。管理画面
+    はコピーし損ねた等で再発行が必要なとき、確認ダイアログを出したうえで
+    reissue=true を付けて呼び直す。再発行時は旧キーを失効させてから新しい
+    キーを発行するため、1注文につき常に「償還可能なキーは最大1本」になる
+    （古いキーが生き残ったまま新キーも生きる、という二重発行状態を防ぐ）。"""
     with db() as conn:
         _require_admin(conn)
         row = conn.execute(
-            "SELECT amount_jpy, pt_to_grant, status FROM base_orders "
-            "WHERE id = ?", (order_id,),
+            "SELECT amount_jpy, pt_to_grant, status, charge_key_id "
+            "FROM base_orders WHERE id = ?", (order_id,),
         ).fetchone()
         if not row:
             raise HTTPException(404, "注文が見つかりません。")
         if row["status"] == "cancelled":
             raise HTTPException(400, "キャンセル済みの注文には発行できません。")
+        if row["charge_key_id"]:
+            existing = conn.execute(
+                "SELECT id FROM charge_keys WHERE id = ? "
+                "AND used_at IS NULL AND revoked_at IS NULL",
+                (row["charge_key_id"],),
+            ).fetchone()
+            if existing and not reissue:
+                raise HTTPException(
+                    409, "この注文には既に有効なキーが発行済みです。"
+                    "再発行すると古いキーは無効化されます。")
+            if existing:
+                charge_keys.revoke_key_by_id(conn, existing["id"])
         _pt, pattern = _pt_and_pattern(row["amount_jpy"])
         plain = charge_keys.generate_key(
             conn, pattern=pattern, amount_jpy=int(row["pt_to_grant"]))
@@ -160,6 +178,14 @@ def issue_key(order_id: int):
                 (krow["id"], order_id),
             )
     return {"ok": True, "charge_key": plain, "pt": int(row["pt_to_grant"])}
+
+
+@router.get("/stats")
+def stats():
+    """チャージキーの発行状況サマリ（管理画面の見出しに表示・発行数管理用）。"""
+    with db() as conn:
+        _require_admin(conn)
+        return {"ok": True, **charge_keys.issuance_stats(conn)}
 
 
 class StatusUpdate(BaseModel):

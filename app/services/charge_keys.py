@@ -244,7 +244,7 @@ def redeem_key(
         ).fetchone()
         if not row:
             raise ChargeKeyError(_INVALID_KEY_MSG)
-        if row["used_at"]:
+        if row["used_at"] or row["revoked_at"]:
             raise ChargeKeyError(_INVALID_KEY_MSG)
         if not auth.verify_password(secret, row["secret_hash"]):
             raise ChargeKeyError(_INVALID_KEY_MSG)
@@ -260,7 +260,9 @@ def redeem_key(
         _record_redeem_failure(user_id)
         raise
     _clear_redeem_failures(user_id)
-    return auth.add_balance(conn, user_id, float(row["amount_jpy"]))
+    return auth.add_balance(
+        conn, user_id, float(row["amount_jpy"]),
+        reason="charge_key_redeem", charge_key_id=int(row["id"]))
 
 
 def mask_key_id(key_id: str) -> str:
@@ -269,3 +271,37 @@ def mask_key_id(key_id: str) -> str:
     if len(key_id) != KEY_ID_DIGITS:
         return "*" * len(key_id)
     return key_id[:FIXED_DIGITS] + "*" * (KEY_ID_DIGITS - FIXED_DIGITS)
+
+
+def revoke_key_by_id(conn: sqlite3.Connection, charge_key_row_id: int) -> bool:
+    """指定した内部id(charge_keys.id)のキーを失効させる（再発行時に旧キーを
+    無効化し、1注文につき有効なキーが常に1本以下になるようにする用）。
+    既に使用済み/失効済みなら何もしない（Trueは新規に失効させた場合のみ）。"""
+    cur = conn.execute(
+        "UPDATE charge_keys SET revoked_at = datetime('now') "
+        "WHERE id = ? AND used_at IS NULL AND revoked_at IS NULL",
+        (charge_key_row_id,),
+    )
+    return cur.rowcount > 0
+
+
+def issuance_stats(conn: sqlite3.Connection) -> dict:
+    """管理画面向けの発行状況サマリ（総発行数・未使用数・未使用分の合計pt等）。"""
+    row = conn.execute(
+        "SELECT "
+        " COUNT(*) AS total, "
+        " SUM(CASE WHEN used_at IS NULL AND revoked_at IS NULL "
+        "      THEN 1 ELSE 0 END) AS live, "
+        " SUM(CASE WHEN used_at IS NULL AND revoked_at IS NULL "
+        "      THEN amount_jpy ELSE 0 END) AS live_amount_jpy, "
+        " SUM(CASE WHEN used_at IS NOT NULL THEN 1 ELSE 0 END) AS used, "
+        " SUM(CASE WHEN revoked_at IS NOT NULL THEN 1 ELSE 0 END) AS revoked "
+        "FROM charge_keys"
+    ).fetchone()
+    return {
+        "total": int(row["total"] or 0),
+        "live": int(row["live"] or 0),
+        "live_amount_jpy": int(row["live_amount_jpy"] or 0),
+        "used": int(row["used"] or 0),
+        "revoked": int(row["revoked"] or 0),
+    }
