@@ -118,13 +118,16 @@ def progress():
     from ..database import db
     from ..services.auth import current_user_id
     from ..services.metrics import toeic_estimate, word_buckets
+    from ..services.spaced_repetition import mastery_config_from_settings
 
     from ..services.auth import get_user_settings
     uid = current_user_id()
     with db() as conn:
-        words = word_buckets(conn, "words", user_id=uid)
-        phrases = word_buckets(conn, "phrases", user_id=uid)
-        self_toeic = get_user_settings(conn, uid).get("toeic_self")
+        us = get_user_settings(conn, uid)
+        cfg = mastery_config_from_settings(us)
+        words = word_buckets(conn, "words", user_id=uid, cfg=cfg)
+        phrases = word_buckets(conn, "phrases", user_id=uid, cfg=cfg)
+        self_toeic = us.get("toeic_self")
         # 会話/読/書/文学: エリア別の平均習熟度（per-user、他ユーザーの
         # 学習は混ざらない。2026-08-08にcategories直書きから分離）。
         area_rows = conn.execute(

@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from ..database import db
 from ..schemas import AttemptIn, WordCreate, WordUpdate
 from ..services.taxonomy import WORD_CATEGORIES, group_by_category
+from ..services.metrics import vague_floor
 from ..services.spaced_repetition import (
     DEFAULT_MASTERY_CONFIG,
     MASTERED_THRESHOLD,
@@ -41,6 +42,8 @@ def _word_dict(
     d["selection_priority"] = selection_weight(d["mastery"], cfg.mastered_threshold)
     d["mastered"] = d["mastery"] >= cfg.mastered_threshold
     d["perfect"] = bool(d.get("perfect", 0))
+    d["vague"] = (not d["mastered"]
+                  and d["mastery"] >= vague_floor(cfg.mastered_threshold))
     accuracy = (
         round(d["times_correct"] / d["times_asked"] * 100)
         if d["times_asked"]
@@ -923,7 +926,7 @@ def stats():
 
     uid = current_user_id()
     with db() as conn:
-        b = word_buckets(conn, "words", user_id=uid)
+        b = word_buckets(conn, "words", user_id=uid, cfg=_current_mastery_cfg(conn))
         self_toeic = get_user_settings(conn, uid).get("toeic_self")
     b["toeic_estimate"] = toeic_estimate(
         b["avg_mastery"], b["mastered"], b["total"],

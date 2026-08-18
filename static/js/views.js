@@ -583,9 +583,11 @@ function masteryCell(item) {
   else { color = "#3b82f6"; w = 100; cls = " blue"; }
   const badge = item.perfect
     ? `<span class="pill mastered" title="完全に覚えた(忘却曲線の対象外)">
-        ◎習得</span>`
+        ◎卒業</span>`
     : item.mastered
-      ? `<span class="pill mastered">○覚えた</span>` : "";
+      ? `<span class="pill mastered">○覚えた</span>`
+      : item.vague
+        ? `<span class="pill vague">△うろ覚え</span>` : "";
   return `<div class="mbar${cls}">
     <span style="width:${w}%;background:${color}"></span></div>
     <small class="muted">${m}</small> ${badge}`;
@@ -595,7 +597,7 @@ function masteryCell(item) {
 function knownButton(base, item, onChange) {
   const btn = el(`<button class="btn blue"></button>`);
   const paint = () => {
-    btn.textContent = item.mastered ? "戻す" : "○覚えた";
+    btn.textContent = item.mastered ? "戻す" : "覚えた";
     btn.title = item.mastered
       ? "覚えた状態を解除（「覚えた」の基準の少し手前に戻す）"
       : "覚えた（満点付近まで加点・出題を抑制。加点量は詳細設定で調整可）";
@@ -619,7 +621,7 @@ function knownButton(base, item, onChange) {
 // 調整可)。base は /api/words or /api/phrases。
 function vagueButton(base, item, onChange) {
   const btn = el(`<button class="btn vague-btn"
-    title="うろ覚え（少し加点。加点量は詳細設定で調整可）">△うろ覚え</button>`);
+    title="うろ覚え（少し加点。加点量は詳細設定で調整可）">うろ覚え</button>`);
   btn.addEventListener("click", async () => {
     try {
       const before = item.mastery;
@@ -634,14 +636,15 @@ function vagueButton(base, item, onChange) {
   return btn;
 }
 
-// 「完全に覚えた」ボタン: 満点に固定し、以後は忘却曲線で減らなくなる
-// (2026-08-18)。片方向のみ(解除ボタンは無し・「クリア」してから「覚えた」
-// を押せば通常の覚えた状態に戻せるため・ユーザー指示)。
+// 「卒業」ボタン(完全に覚えた): 満点に固定し、以後は忘却曲線で減らなく
+// なる(2026-08-18)。「習得」は既存の「覚えた」表示(習得数/習得済み等)と
+// 意味が被るため「卒業」を採用(ユーザー指示)。片方向のみ(解除ボタンは
+// 無し・「クリア」してから「覚えた」を押せば通常の覚えた状態に戻せる)。
 // base は /api/words or /api/phrases。
 function perfectButton(base, item, onChange) {
   const btn = el(`<button class="btn good" title="満点で固定する
     （以後、忘却曲線で自然に減らなくなります。解除したいときは
-    「クリア」を押してください）">◎習得</button>`);
+    「クリア」を押してください）">卒業</button>`);
   btn.addEventListener("click", async () => {
     try {
       const r = await api.post(`${base}/${item.id}/perfect`,

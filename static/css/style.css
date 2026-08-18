@@ -411,6 +411,9 @@ th { color: var(--muted); font-weight: 600; }
 .pill.mastered { background: var(--accent-2); color: #042016;
   font-weight: 600; }
 
+/* 「うろ覚え」バッジ(2026-08-18) */
+.pill.vague { background: var(--warn); color: #3a2600; font-weight: 600; }
+
 /* 習熟度バー（一覧用）: 全長は従来の約半分。色は inline で段階を表す。 */
 .mbar {
   width: 100%; max-width: 110px; height: 8px; background: var(--panel-2);

@@ -596,13 +596,17 @@ def reply_examples(payload: ConversationIn):
 @router.get("/assess")
 def assess():
     """学習データから現在のレベルをAIが判定（品質モデルを使用）。"""
-    from ..services.auth import current_user_allow_banned, current_user_id
+    from ..services.auth import (
+        current_user_allow_banned, current_user_id, get_user_settings,
+    )
     from ..services.progress import user_items_subquery
+    from ..services.spaced_repetition import mastery_config_from_settings
     uid = current_user_id()
     src = user_items_subquery("words")
     with db() as conn:
-        wb = word_buckets(conn, "words", user_id=uid)
-        pb = word_buckets(conn, "phrases", user_id=uid)
+        cfg = mastery_config_from_settings(get_user_settings(conn, uid))
+        wb = word_buckets(conn, "words", user_id=uid, cfg=cfg)
+        pb = word_buckets(conn, "phrases", user_id=uid, cfg=cfg)
         # 禁止用語の学習履歴があってもAIプロンプト(ひいては診断文の応答)に
         # 混入させない(2026-08-17セキュリティ修正・fable監査で発見)。
         ban = (

@@ -13,27 +13,37 @@ from __future__ import annotations
 
 import sqlite3
 
-from .spaced_repetition import MASTERED_THRESHOLD
+from .spaced_repetition import DEFAULT_MASTERY_CONFIG, MASTERED_THRESHOLD, MasteryConfig
 
-# 「習得」のしきい値は spaced_repetition.MASTERED_THRESHOLD と統一する
-# （以前は本モジュール独自に 80 を定義しており、一覧/フラッシュカードの
-#  「覚えた」判定=100以上とダッシュボードの「習得」判定=80以上がズレていた）。
-MASTERED = MASTERED_THRESHOLD  # これ以上を「習得」
-VAGUE = 40      # これ以上 MASTERED 未満を「うろ覚え」
+# 「習得」のしきい値は詳細設定のmastered_threshold(既定はspaced_repetition.
+# MASTERED_THRESHOLD)と統一する（以前は本モジュール独自に80を定義しており、
+# 一覧/フラッシュカードの「覚えた」判定とダッシュボードの「習得」判定が
+# ズレていた）。VAGUE_RATIOはmastered_thresholdに対する「うろ覚え」下限の
+# 比率(2026-08-18・単語一覧の△バッジと同じ基準)。
+MASTERED = MASTERED_THRESHOLD  # 後方互換用(未指定時の既定しきい値)。
+VAGUE_RATIO = 0.4
+
+
+def vague_floor(mastered_threshold: int) -> int:
+    return round(mastered_threshold * VAGUE_RATIO)
 
 
 def word_buckets(
-    conn: sqlite3.Connection, table: str = "words", *, user_id: int
+    conn: sqlite3.Connection, table: str = "words", *, user_id: int,
+    cfg: MasteryConfig | None = None,
 ) -> dict:
     """当該 user の習熟バケツ集計（進捗は per-user テーブルからマージ）。"""
     from .progress import user_items_subquery
+    cfg = cfg or DEFAULT_MASTERY_CONFIG
+    threshold = cfg.mastered_threshold
+    vfloor = vague_floor(threshold)
     src = user_items_subquery(table)  # 先頭 ? = user_id
     row = conn.execute(
         f"SELECT "
         f"COUNT(*) AS total, "
         f"SUM(CASE WHEN times_asked > 0 THEN 1 ELSE 0 END) AS studied, "
-        f"SUM(CASE WHEN mastery >= {MASTERED} THEN 1 ELSE 0 END) AS mastered, "
-        f"SUM(CASE WHEN mastery >= {VAGUE} AND mastery < {MASTERED} "
+        f"SUM(CASE WHEN mastery >= {threshold} THEN 1 ELSE 0 END) AS mastered, "
+        f"SUM(CASE WHEN mastery >= {vfloor} AND mastery < {threshold} "
         f"         THEN 1 ELSE 0 END) AS vague, "
         f"COALESCE(AVG(mastery), 0) AS avg_mastery "
         f"FROM {src} AS t",

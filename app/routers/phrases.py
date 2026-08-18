@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 
 from ..database import db
 from ..services.taxonomy import PHRASE_CATEGORIES, group_by_category
+from ..services.metrics import vague_floor
 from ..services.spaced_repetition import (
     DEFAULT_MASTERY_CONFIG,
     MASTERED_THRESHOLD,
@@ -102,6 +103,8 @@ def _phrase_dict(
     d["selection_priority"] = selection_weight(d["mastery"], cfg.mastered_threshold)
     d["mastered"] = d["mastery"] >= cfg.mastered_threshold
     d["perfect"] = bool(d.get("perfect", 0))
+    d["vague"] = (not d["mastered"]
+                  and d["mastery"] >= vague_floor(cfg.mastered_threshold))
     d["accuracy"] = (
         round(d["times_correct"] / d["times_asked"] * 100)
         if d["times_asked"]
