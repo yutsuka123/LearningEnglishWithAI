@@ -309,7 +309,7 @@ def llms_txt():
         "- [このアプリについて](https://study.nyangailab.com/static/about.html): "
         "料金モデル・無料/課金の利用範囲・使い方ガイド",
         "- [ログイン](https://study.nyangailab.com/login): "
-        "既存ユーザー向け（新規登録は現在停止中）",
+        "既存ユーザーのログイン、および新規登録（受付中）",
         "- [利用規約](https://study.nyangailab.com/static/terms.html)",
         "- [プライバシーポリシー](https://study.nyangailab.com/static/privacy.html)",
         "- [特定商取引法に基づく表記](https://study.nyangailab.com/tokushoho): "
