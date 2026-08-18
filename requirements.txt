@@ -14,3 +14,8 @@ python-multipart>=0.0.9
 
 # OpenAI (optional at runtime — app works without a key)
 openai>=1.59
+
+# HTTP client for server-to-server API calls (e.g. BASE API OAuth token
+# exchange). Already a transitive dep of openai/fastapi, pinned explicitly
+# since app/routers/base_oauth.py imports it directly.
+httpx>=0.27

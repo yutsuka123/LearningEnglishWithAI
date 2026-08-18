@@ -8,7 +8,7 @@ import re
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from ..config import ROOT_DIR, load_admin_known_ips, load_settings, log
+from ..config import ROOT_DIR, load_admin_known_ips, load_settings, log, paths
 from ..database import ACCENTS, NEWS_FIELDS, db
 from ..schemas import MemoryUpdateIn, SettingsIn
 from ..services import ai, auth, persistence, tracking
@@ -455,7 +455,7 @@ def admin_error_log(lines: int = 200):
     2026-08-13）。ファイルが無い/空でも空配列を返す（起動直後等）。"""
     _require_admin()
     lines = max(1, min(lines, 1000))
-    path = ROOT_DIR / "data" / "app.log"
+    path = paths.data_dir / "app.log"
     if not path.exists():
         return {"lines": []}
     with path.open(encoding="utf-8", errors="replace") as f:
@@ -471,7 +471,7 @@ def admin_access_log_summary(days: int = 30):
     ファイルが無い場合(ローカル開発時・cron未実行時)は空配列。"""
     _require_admin()
     days = max(1, min(days, 365))
-    path = ROOT_DIR / "data" / "analytics" / "access_summary.jsonl"
+    path = paths.data_dir / "analytics" / "access_summary.jsonl"
     if not path.exists():
         return {"days": []}
     records = []

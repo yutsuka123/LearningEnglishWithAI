@@ -389,6 +389,18 @@ CREATE TABLE IF NOT EXISTS inquiries (
     created_at TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 
+-- BASE API連携のOAuthトークン保管（2026-08-18・注文自動検知用）。
+-- 単一ショップ運用のため1行のみ想定(id=1固定)。平文で保持するが本テーブルは
+-- 管理者専用API/内部処理からしか読めない(通常のuser向けAPIには一切露出しない)。
+CREATE TABLE IF NOT EXISTS base_api_tokens (
+    id            INTEGER PRIMARY KEY CHECK (id = 1),
+    access_token  TEXT    NOT NULL,
+    refresh_token TEXT    NOT NULL,
+    expires_at    TEXT    NOT NULL,
+    scope         TEXT    NOT NULL DEFAULT '',
+    updated_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
 -- BASE注文のフルフィルメント台帳（2026-08-09・チャージキーの手動/半自動
 -- 配送を「見逃さない」ための管理用）。base_order_id はBASE APIまたは手入力で
 -- 記録。charge_key_id は割り当てたキーの参照のみ（平文はここに保存しない・

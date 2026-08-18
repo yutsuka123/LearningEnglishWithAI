@@ -18,8 +18,8 @@ from fastapi.staticfiles import StaticFiles
 from .config import load_tokushoho_info, log, paths
 from .database import OWNER_USER_ID, db, init_db
 from .routers import (
-    auth_routes, billing, categories, decks, fulfillment, inquiries, learn,
-    phrase_decks, phrases, system, vocabulary,
+    auth_routes, base_oauth, billing, categories, decks, fulfillment,
+    inquiries, learn, phrase_decks, phrases, system, vocabulary,
 )
 from .services import auth as auth_svc
 from .services.spaced_repetition import apply_forgetting_decay
@@ -188,6 +188,7 @@ app.include_router(auth_routes.router)
 app.include_router(billing.router)
 app.include_router(inquiries.router)
 app.include_router(fulfillment.router)
+app.include_router(base_oauth.router)
 
 
 @app.get("/api/health")
