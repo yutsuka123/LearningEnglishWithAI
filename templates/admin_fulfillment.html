@@ -69,6 +69,11 @@
       <div id="statsBody" class="muted">読み込み中…</div>
     </div>
 
+    <div class="card" id="baseConnCard">
+      <h2>🔗 BASE API連携（注文自動検知・準備中）</h2>
+      <div id="baseConnBody" class="muted">読み込み中…</div>
+    </div>
+
     <div class="card">
       <h2>注文を追加（手入力）</h2>
       <div class="row">
@@ -183,9 +188,30 @@
       } catch (e) { $('statsBody').textContent = e.message; }
     }
 
+    async function loadBaseConn() {
+      const box = $('baseConnBody');
+      try {
+        const r = await fetch('/admin/base-oauth/status');
+        const s = await r.json();
+        if (!r.ok) throw new Error(s.detail || 'エラー');
+        if (!s.client_configured) {
+          box.innerHTML = 'BASE_CLIENT_ID/SECRETが.envに未設定です。'
+            + 'developers.thebase.comでアプリ登録後、値を設定してください。';
+        } else if (s.connected) {
+          box.innerHTML = '✅ 連携済み（有効期限: ' + esc(s.expires_at)
+            + ' ／ scope: ' + esc(s.scope) + '）　'
+            + '<a href="/admin/base-oauth/start">再連携する</a>';
+        } else {
+          box.innerHTML = '<a class="btn" href="/admin/base-oauth/start">'
+            + 'BASEと連携する</a>';
+        }
+      } catch (e) { box.textContent = '取得失敗: ' + e.message; }
+    }
+
     async function load() {
       $('listErr').textContent = '';
       loadStats();
+      loadBaseConn();
       try {
         const d = await api('/orders?status=' + curStatus);
         $('c-pending').textContent = d.pending ? '(' + d.pending + ')' : '';
