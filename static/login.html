@@ -255,15 +255,10 @@
 
     const fLogin = document.getElementById('f');
     const fSignup = document.getElementById('fSignup');
-    // 2026-08-13〜: まだ試験公開中のため新規登録を一時停止中。新規登録
-    // 画面へは遷移させず、ポップアップでその旨を知らせる（サーバー側
-    // /api/auth/signup も同時に403を返すようにしてある。既にIDをお持ちの
-    // 方のログインには影響しない）。再開するときはここを元の
-    // fLogin/fSignup 表示切替に戻す。
+    // 2026-08-18〜: リリース前最終テストのため新規登録を再開。
     document.getElementById('toSignup').addEventListener('click', () => {
-      alert('現在は試験公開中のため、新規登録の受付を停止しています。\n'
-        + '正式公開は2026年9月中を予定しております。\n'
-        + '既にIDをお持ちの方はログインしてください。');
+      fLogin.classList.add('hidden');
+      fSignup.classList.remove('hidden');
     });
     document.getElementById('toLogin').addEventListener('click', () => {
       fSignup.classList.add('hidden');
