@@ -33,11 +33,7 @@ MASTERY_MAX = 200
 CORRECT_BOTH_BONUS = 5
 WEEKLY_DECAY = 1            # 1日あたりの減衰(既定値)。旧名だが単位は日。
 MASTERED_THRESHOLD = 100   # これ以上で「覚えた」。
-KNOWN_MASTERY = 125        # 「覚えた」ボタン押下時の加点(既定値・2026-08-18
-                           # 変更: 200→125。閾値100を少し超えるだけにして、
-                           # レビューしないと1日1pt減衰で約25日後に閾値を
-                           # 割るようにした。満点固定したい場合は「卒業」を
-                           # 使う設計に統一)。
+KNOWN_MASTERY = 125        # 「覚えた」ボタン押下時の加点(既定値)。
 VAGUE_BONUS = 25           # 「うろ覚え」ボタンで加点する mastery(既定値)。
 
 # Forgetting-curve intervals in days, indexed by review level (box).
@@ -256,12 +252,17 @@ def mark_vague(
     cfg: MasteryConfig | None = None,
 ) -> dict:
     """「うろ覚え」ボタン(per-user、words/phrases共通)。mastery を
-    cfg.vague_bonus 加点し、復習間隔も VAGUE_REVIEW_LEVEL（≒2日後）に更新する
-    （以前はmasteryのみでフラッシュカード経由だと間隔が停滞していた）。"""
+    cfg.vague_bonus 加点するが、「覚えた」基準(cfg.mastered_threshold)を
+    超えては伸びない(何度押しても閾値ちょうどで頭打ち。「うろ覚え」の
+    連打だけで「覚えた」を明示的に押した扱いにはしない設計・2026-08-18)。
+    既に閾値以上(「覚えた」「卒業」等)ならその値のまま変えない(下げない)。
+    復習間隔も VAGUE_REVIEW_LEVEL（≒2日後）に更新する（以前はmasteryのみで
+    フラッシュカード経由だと間隔が停滞していた）。"""
     from . import progress as P
     cfg = cfg or DEFAULT_MASTERY_CONFIG
     cur = P.get_progress(conn, user_id, table, item_id)
-    new_mastery = clamp(cur["mastery"] + cfg.vague_bonus, cfg.mastery_max)
+    capped = min(cur["mastery"] + cfg.vague_bonus, cfg.mastered_threshold)
+    new_mastery = clamp(max(cur["mastery"], capped), cfg.mastery_max)
     next_review = _next_review_date(VAGUE_REVIEW_LEVEL)
     P.upsert_progress(conn, user_id, table, item_id, mastery=new_mastery,
                       review_level=VAGUE_REVIEW_LEVEL, next_review=next_review)
@@ -393,18 +394,20 @@ def set_known(
     table: str = "words", user_id: int,
     cfg: MasteryConfig | None = None,
 ) -> dict:
-    """「覚えた」ボタン(per-user)。known=True で cfg.known_bonus 加点
-    (満点でクランプ)、False で解除(cfg.mastered_threshold - 5)。
-    復習間隔も連動させる: known=True は最長間隔(150日、以前はフラッシュ
-    カード経由だと更新されず間隔が停滞するバグがあった)、known=False
-    （「戻す」＝復活）は最短間隔（すぐ出題対象に戻す）。known=Falseは
-    「完全に覚えた」(perfect)も解除する(2026-08-18・中途半端に
-    perfect=1だけ残る状態を防ぐ)。"""
+    """「覚えた」ボタン(per-user)。known=True で mastery を
+    max(現在値, cfg.known_bonus) にする(既に基準以上ならそのまま・下げない。
+    加算ではないため「戻す→覚えた」を繰り返しても既定125を超えて積み上がる
+    ことはない。「卒業」ボタンとの差を保つための設計・2026-08-18)。
+    known=Falseで解除(cfg.mastered_threshold - 5)。復習間隔も連動させる:
+    known=True は最長間隔(150日、以前はフラッシュカード経由だと更新されず
+    間隔が停滞するバグがあった)、known=False（「戻す」＝復活）は最短間隔
+    （すぐ出題対象に戻す）。known=Falseは「完全に覚えた」(perfect)も解除する
+    (2026-08-18・中途半端にperfect=1だけ残る状態を防ぐ)。"""
     from . import progress as P
     cfg = cfg or DEFAULT_MASTERY_CONFIG
     if known:
         cur = P.get_progress(conn, user_id, table, item_id)
-        new_mastery = clamp(cur["mastery"] + cfg.known_bonus, cfg.mastery_max)
+        new_mastery = clamp(max(cur["mastery"], cfg.known_bonus), cfg.mastery_max)
     else:
         new_mastery = max(MASTERY_MIN, cfg.mastered_threshold - 5)
     new_level = (len(REVIEW_INTERVALS) - 1) if known else 0
