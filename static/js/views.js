@@ -3628,14 +3628,42 @@ export async function admin(root) {
       <div id="loginLogWrap" class="mt"><p class="muted">読み込み中…</p></div>
     </div>
     <div class="card">
-      <h2>🐛 エラーログ（末尾200行・data/app.log）</h2>
+      <h2>🐛 エラーログ（data/app.log）</h2>
+      <div class="row">
+        <label>表示件数:
+          <select id="errLogLines">
+            <option value="50">直近50件</option>
+            <option value="100">直近100件</option>
+            <option value="200" selected>直近200件</option>
+            <option value="500">直近500件</option>
+            <option value="1000">直近1000件</option>
+          </select></label>
+        <button class="btn ghost" id="errLogReload"
+          style="padding:3px 10px">再読み込み</button>
+      </div>
       <div id="errorLogWrap" class="mt"><p class="muted">読み込み中…</p></div>
     </div>
     <div class="card">
-      <h2>📈 アクセスログ集計（日別・直近30日）</h2>
+      <h2>📈 アクセスログ集計（日別）</h2>
       <p class="muted">Caddyのアクセスログをscripts/analyze_access_log.pyが
         VPSのcronで日次集計したもの。AIクローラー/検索botを除いた
         「人間らしきIP」が実際の訪問者の目安。</p>
+      <div class="row">
+        <label>直近:
+          <select id="accLogDays">
+            <option value="7">7日</option>
+            <option value="30" selected>30日</option>
+            <option value="90">90日</option>
+            <option value="365">1年</option>
+          </select></label>
+        <span class="muted">または期間で指定:</span>
+        <label>から <input type="date" id="accLogFrom" style="width:150px" /></label>
+        <label>まで <input type="date" id="accLogTo" style="width:150px" /></label>
+        <button class="btn ghost" id="accLogReload"
+          style="padding:3px 10px">再読み込み</button>
+        <button class="btn ghost" id="accLogClearRange"
+          style="padding:3px 10px">期間指定をクリア</button>
+      </div>
       <div id="accessLogWrap" class="mt"><p class="muted">読み込み中…</p></div>
     </div>
     <div class="card">
@@ -3698,23 +3726,45 @@ export async function admin(root) {
       `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
   });
 
-  api.get("/api/system/admin/error-log").then((res) => {
+  async function loadErrorLog() {
     const wrap = root.querySelector("#errorLogWrap");
-    if (!res.lines.length) {
-      wrap.innerHTML = `<p class="muted">まだありません。</p>`;
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    const lines = root.querySelector("#errLogLines").value;
+    try {
+      const res = await api.get(
+        `/api/system/admin/error-log?lines=${lines}`);
+      if (!res.lines.length) {
+        wrap.innerHTML = `<p class="muted">まだありません。</p>`;
+        return;
+      }
+      wrap.innerHTML = `<pre style="max-height:320px; overflow:auto;
+        font-size:12px; white-space:pre-wrap; background:var(--panel-2);
+        padding:10px; border-radius:8px">${
+        escapeHtml(res.lines.join("\n"))}</pre>`;
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  loadErrorLog();
+  root.querySelector("#errLogReload").addEventListener("click", loadErrorLog);
+  root.querySelector("#errLogLines").addEventListener("change", loadErrorLog);
+
+  async function loadAccessLog() {
+    const wrap = root.querySelector("#accessLogWrap");
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    const from = root.querySelector("#accLogFrom").value;
+    const to = root.querySelector("#accLogTo").value;
+    const days = root.querySelector("#accLogDays").value;
+    const qs = (from || to)
+      ? `date_from=${encodeURIComponent(from)}&date_to=${encodeURIComponent(to)}`
+      : `days=${days}`;
+    let res;
+    try {
+      res = await api.get(`/api/system/admin/access-log-summary?${qs}`);
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
       return;
     }
-    wrap.innerHTML = `<pre style="max-height:320px; overflow:auto;
-      font-size:12px; white-space:pre-wrap; background:var(--panel-2);
-      padding:10px; border-radius:8px">${
-      escapeHtml(res.lines.join("\n"))}</pre>`;
-  }).catch((e) => {
-    root.querySelector("#errorLogWrap").innerHTML =
-      `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
-  });
-
-  api.get("/api/system/admin/access-log-summary?days=30").then((res) => {
-    const wrap = root.querySelector("#accessLogWrap");
     if (!res.days.length) {
       wrap.innerHTML = `<p class="muted">まだ集計データがありません
         （VPSでcronの初回実行を待つか、ローカル開発環境では対象外です）。</p>`;
@@ -3760,9 +3810,14 @@ export async function admin(root) {
       <th>人間らしきIP</th><th>AIクローラー</th><th>検索bot</th>
       <th>よく見られたページ</th><th>主な参照元</th>
       </tr></thead><tbody>${rowsHtml}</tbody></table>`;
-  }).catch((e) => {
-    root.querySelector("#accessLogWrap").innerHTML =
-      `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+  }
+  loadAccessLog();
+  root.querySelector("#accLogReload").addEventListener("click", loadAccessLog);
+  root.querySelector("#accLogDays").addEventListener("change", loadAccessLog);
+  root.querySelector("#accLogClearRange").addEventListener("click", () => {
+    root.querySelector("#accLogFrom").value = "";
+    root.querySelector("#accLogTo").value = "";
+    loadAccessLog();
   });
 
   async function runAiUsageSearch() {

@@ -464,11 +464,15 @@ def admin_error_log(lines: int = 200):
 
 
 @router.get("/admin/access-log-summary")
-def admin_access_log_summary(days: int = 30):
+def admin_access_log_summary(
+    days: int = 30, date_from: str = "", date_to: str = "",
+):
     """アクセスログ日次集計の表示（管理画面用・2026-08-13）。
     scripts/analyze_access_log.py がVPS側でcron実行して生成する
     data/analytics/access_summary.jsonl を読むだけ（ここでは集計しない）。
-    ファイルが無い場合(ローカル開発時・cron未実行時)は空配列。"""
+    ファイルが無い場合(ローカル開発時・cron未実行時)は空配列。
+    date_from/date_toを指定すると(YYYY-MM-DD)、daysより優先してその
+    範囲（両端含む）で絞り込む（2026-08-18・年月日での期間指定に対応）。"""
     _require_admin()
     days = max(1, min(days, 365))
     path = paths.data_dir / "analytics" / "access_summary.jsonl"
@@ -485,7 +489,16 @@ def admin_access_log_summary(days: int = 30):
             except ValueError:
                 continue
     records.sort(key=lambda r: r.get("date", ""))
-    picked = records[-days:]
+    date_from = date_from.strip()
+    date_to = date_to.strip()
+    if date_from or date_to:
+        picked = [
+            r for r in records
+            if (not date_from or r.get("date", "") >= date_from)
+            and (not date_to or r.get("date", "") <= date_to)
+        ]
+    else:
+        picked = records[-days:]
 
     # 各日の categories(集計値はあるが従来UI未表示だった内訳: 人間らしき
     # アクセス/AIクローラー/検索bot/その他bot)を期間合計してサマリ化
