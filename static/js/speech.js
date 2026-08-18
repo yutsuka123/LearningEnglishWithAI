@@ -609,7 +609,10 @@ export function vadSupported() {
 
 export async function createVADSession(opts = {}) {
   const baseSilenceMs = opts.baseSilenceMs || 2000;   // 無音しきい値(既定2s)
-  const noSpeechEndMs = opts.noSpeechEndMs || 20000;  // 20s無音で自動終了
+  const noSpeechEndMs = opts.noSpeechEndMs || 120000;  // 無音が続いたら自動終了(既定2分)
+  // 無音・発話の有無に関わらず、つけっぱなしによる課金を防ぐための上限
+  // (既定15分・2026-08-18)。0/未指定で上限なし。
+  const maxSessionMs = opts.maxSessionMs || 0;
   const manual = !!opts.manual;                       // 手動発話終了モード
   if (!vadSupported()) throw new Error("ハンズフリーに未対応のブラウザです");
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -625,6 +628,7 @@ export async function createVADSession(opts = {}) {
   let mr = null, chunks = [];
   let speechStart = 0, lastVoice = 0, lastUtterDur = 0;
   let noSpeechStart = 0, timer = null, ambient = 0.008;
+  let sessionStart = 0;
 
   const rms = () => {
     analyser.getFloatTimeDomainData(buf);
@@ -649,8 +653,15 @@ export async function createVADSession(opts = {}) {
     try { mr.stop(); } catch (e) { /* ignore */ }
   };
   const tick = () => {
-    if (!running || paused) return;
+    if (!running) return;
     const now = performance.now();
+    // 無音・発話(AI応答中含む)の別なく、つけっぱなしによる課金を防ぐ上限。
+    if (maxSessionMs && now - sessionStart >= maxSessionMs) {
+      if (opts.onMaxDuration) opts.onMaxDuration();
+      stop();
+      return;
+    }
+    if (paused) return;
     const level = rms();
     const speaking = level > Math.max(0.013, ambient * 2.5 + 0.012);
     if (speaking) {
@@ -684,6 +695,7 @@ export async function createVADSession(opts = {}) {
     if (ac.state === "suspended") { try { await ac.resume(); } catch (e) {} }
     await calibrate();
     running = true; noSpeechStart = performance.now();
+    sessionStart = performance.now();
     timer = setInterval(tick, 60);
   };
   const stop = () => {

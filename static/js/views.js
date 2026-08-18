@@ -2365,8 +2365,21 @@ export async function conversation(root) {
             style="width:64px" /></label>
         <label class="toggle"><input type="checkbox" id="hfManual" />
           発話終了ボタンで応答(手動)</label>
-        <span class="muted">・20秒無音で自動終了。声の切れ目を音量で判定します。</span>
+        <span class="muted">・声の切れ目を音量で判定します。</span>
       </div>
+      <div class="row mt">
+        <label>無音で自動終了(分):
+          <input id="hfNoSpeechMin" type="number" value="2" step="0.5" min="0.5"
+            style="width:64px" /></label>
+        <label>最大会話時間(分):
+          <input id="hfMaxMin" type="number" value="15" step="1" min="1"
+            style="width:64px" /></label>
+        <span class="muted">・話しかけないまま一定時間経つと自動終了します。
+          発話中でも最大時間で自動終了し、つけっぱなしによる課金を防ぎます。</span>
+      </div>
+      <p class="muted mt">⚠️ 使い終わったら「⏹ 終了」を押すことをおすすめします
+        （自動終了はあくまで保険です。つけっぱなしは利用料がかかり続ける
+        原因になります）。</p>
     </div>
     <div class="card">
       <div class="row">
@@ -2785,10 +2798,15 @@ export async function conversation(root) {
     }
     const sil = Math.max(0.5,
       parseFloat(root.querySelector("#hfSil").value) || 2) * 1000;
+    const noSpeechMin = Math.max(0.5,
+      parseFloat(root.querySelector("#hfNoSpeechMin").value) || 2);
+    const maxMin = Math.max(1,
+      parseFloat(root.querySelector("#hfMaxMin").value) || 15);
     const manual = root.querySelector("#hfManual").checked;
     try {
       hf = await speech.createVADSession({
-        baseSilenceMs: sil, noSpeechEndMs: 20000, manual,
+        baseSilenceMs: sil, noSpeechEndMs: noSpeechMin * 60000,
+        maxSessionMs: maxMin * 60000, manual,
         onSpeechStart: () => setHfStatus("🎤 聞き取り中…"),
         onUtterance: async (blob) => {
           if (!hf) return;
@@ -2805,7 +2823,11 @@ export async function conversation(root) {
           }
         },
         onNoSpeechEnd: () => {
-          setHfStatus("20秒無音で自動終了しました"); stopHF();
+          setHfStatus(`${noSpeechMin}分無音のため自動終了しました`); stopHF();
+        },
+        onMaxDuration: () => {
+          setHfStatus(`最大会話時間(${maxMin}分)に達したため自動終了しました`);
+          stopHF();
         },
       });
       await hf.start();
