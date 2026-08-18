@@ -583,9 +583,9 @@ function masteryCell(item) {
   else { color = "#3b82f6"; w = 100; cls = " blue"; }
   const badge = item.perfect
     ? `<span class="pill mastered" title="完全に覚えた(忘却曲線の対象外)">
-        🔒 完全に覚えた</span>`
+        ◎習得</span>`
     : item.mastered
-      ? `<span class="pill mastered">✅ 覚えた</span>` : "";
+      ? `<span class="pill mastered">○覚えた</span>` : "";
   return `<div class="mbar${cls}">
     <span style="width:${w}%;background:${color}"></span></div>
     <small class="muted">${m}</small> ${badge}`;
@@ -595,7 +595,7 @@ function masteryCell(item) {
 function knownButton(base, item, onChange) {
   const btn = el(`<button class="btn blue"></button>`);
   const paint = () => {
-    btn.textContent = item.mastered ? "戻す" : "覚えた";
+    btn.textContent = item.mastered ? "戻す" : "○覚えた";
     btn.title = item.mastered
       ? "覚えた状態を解除（「覚えた」の基準の少し手前に戻す）"
       : "覚えた（満点付近まで加点・出題を抑制。加点量は詳細設定で調整可）";
@@ -619,7 +619,7 @@ function knownButton(base, item, onChange) {
 // 調整可)。base は /api/words or /api/phrases。
 function vagueButton(base, item, onChange) {
   const btn = el(`<button class="btn vague-btn"
-    title="うろ覚え（少し加点。加点量は詳細設定で調整可）">うろ覚え</button>`);
+    title="うろ覚え（少し加点。加点量は詳細設定で調整可）">△うろ覚え</button>`);
   btn.addEventListener("click", async () => {
     try {
       const before = item.mastery;
@@ -635,25 +635,20 @@ function vagueButton(base, item, onChange) {
 }
 
 // 「完全に覚えた」ボタン: 満点に固定し、以後は忘却曲線で減らなくなる
-// (2026-08-18)。base は /api/words or /api/phrases。
+// (2026-08-18)。片方向のみ(解除ボタンは無し・「クリア」してから「覚えた」
+// を押せば通常の覚えた状態に戻せるため・ユーザー指示)。
+// base は /api/words or /api/phrases。
 function perfectButton(base, item, onChange) {
-  const btn = el(`<button class="btn ghost"></button>`);
-  const paint = () => {
-    btn.textContent = item.perfect ? "🔒解除" : "🔒完全に覚えた";
-    btn.title = item.perfect
-      ? "「完全に覚えた」を解除する（忘却曲線の対象に戻す）"
-      : "満点で固定する（以後、忘却曲線で自然に減らなくなります）";
-  };
-  paint();
+  const btn = el(`<button class="btn good" title="満点で固定する
+    （以後、忘却曲線で自然に減らなくなります。解除したいときは
+    「クリア」を押してください）">◎習得</button>`);
   btn.addEventListener("click", async () => {
-    const next = !item.perfect;
     try {
       const r = await api.post(`${base}/${item.id}/perfect`,
-        { perfect: next });
+        { perfect: true });
       item.mastery = r.mastery;
       item.mastered = r.mastered;
       item.perfect = r.perfect;
-      paint();
       if (onChange) onChange();
     } catch (e) { toast("更新に失敗しました"); }
   });
