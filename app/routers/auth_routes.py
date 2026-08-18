@@ -14,15 +14,15 @@ from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from ..config import log
 from ..database import db
 from ..services import auth
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
-# 2026-08-13〜: まだ試験公開中のため、新規登録の受付を一時停止する。
-# 既存ユーザーのログイン（/api/auth/login 以下）には一切影響しない。
-# 受付を再開するときはこの値を True に戻すだけでよい。
-SIGNUP_OPEN = False
+# 2026-08-18〜: リリース前の最終テスト（本人によるテストアカウント登録）
+# のため受付を再開。停止するときはこの値を False に戻すだけでよい。
+SIGNUP_OPEN = True
 SIGNUP_CLOSED_MESSAGE = (
     "現在は試験公開中のため、新規登録の受付を停止しています。"
     "正式公開は2026年9月中を予定しております。"
@@ -81,6 +81,7 @@ def signup(payload: SignupIn, request: Request, response: Response):
 
     ip = auth.real_client_ip(request)
     if charge_keys.signup_redeem_locked(ip):
+        log.warning("signup: rate-limited ip=%s", ip)
         return JSONResponse(
             {"ok": False, "error": "失敗が続いたため、しばらく時間をおいて"
              "から再試行してください。"},
@@ -89,21 +90,26 @@ def signup(payload: SignupIn, request: Request, response: Response):
     email = payload.email.strip().lower()
     password = payload.password
     if "@" not in email or "." not in email.split("@")[-1]:
+        log.warning("signup: invalid email format ip=%s email=%r", ip, email)
         return JSONResponse(
             {"ok": False, "error": "メールアドレスの形式が正しくありません。"},
             status_code=400,
         )
     if auth.is_disposable_email_domain(email):
+        log.warning("signup: disposable email domain ip=%s email=%s", ip, email)
         return JSONResponse(
             {"ok": False, "error": "使い捨てメールアドレスでは登録できません。"},
             status_code=400,
         )
     pw_error = auth.password_policy_error(password)
     if pw_error:
+        log.warning("signup: password policy error ip=%s email=%s reason=%s",
+                     ip, email, pw_error)
         return JSONResponse({"ok": False, "error": pw_error}, status_code=400)
     full_name = payload.full_name.strip()
     furigana = payload.furigana.strip()
     if not full_name or not furigana:
+        log.warning("signup: missing name/furigana ip=%s email=%s", ip, email)
         return JSONResponse(
             {"ok": False, "error": "氏名とフリガナを入力してください。"},
             status_code=400,
@@ -143,7 +149,10 @@ def signup(payload: SignupIn, request: Request, response: Response):
         # 「メール登録済み」はチャージキー総当たりとは無関係なので数えない。
         if str(e) != "このメールアドレスは既に登録されています。":
             charge_keys.record_signup_redeem_failure(ip)
+        log.warning("signup: failed ip=%s email=%s reason=%s", ip, email, e)
         return JSONResponse({"ok": False, "error": str(e)}, status_code=400)
+    log.info("signup: ok ip=%s email=%s uid=%s charge_key=%s",
+              ip, email, uid, bool(payload.charge_key.strip()))
     token = auth.make_session_token(
         secret, uid, u.get("session_epoch", 0), int(time.time()))
     resp = JSONResponse({"ok": True, "user": {
@@ -163,6 +172,7 @@ def login(payload: LoginIn, request: Request, response: Response):
     ip = auth.real_client_ip(request)
     locked = auth.login_locked(payload.username, ip)
     if locked:
+        log.warning("login: rate-limited ip=%s username=%s", ip, payload.username)
         return JSONResponse(
             {"ok": False, "error": "試行が多すぎます。しばらく待って"
              "から再試行してください。"}, status_code=429)
@@ -171,12 +181,14 @@ def login(payload: LoginIn, request: Request, response: Response):
         if not u:
             auth.record_login_failure(payload.username, ip)
             auth.record_login_event(conn, payload.username, ip, False)
+            log.warning("login: failed ip=%s username=%s", ip, payload.username)
             return JSONResponse(
                 {"ok": False, "error": "ユーザー名かパスワードが違います。"},
                 status_code=401,
             )
         secret = auth.get_session_secret(conn)
         auth.record_login_event(conn, payload.username, ip, True)
+    log.info("login: ok ip=%s username=%s uid=%s", ip, payload.username, u["id"])
     auth.clear_login_failures(payload.username, ip)
     token = auth.make_session_token(
         secret, u["id"], u.get("session_epoch", 0), int(time.time()))

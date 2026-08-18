@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from ..config import log
 from ..database import db
 from ..services import charge_keys
 from ..services.auth import current_user_id
@@ -23,6 +24,7 @@ def redeem(payload: RedeemIn):
     （app/services/charge_keys.py の redeem_locked 参照）。"""
     uid = current_user_id()
     if charge_keys.redeem_locked(uid):
+        log.warning("billing/redeem: rate-limited uid=%s", uid)
         raise HTTPException(
             429, "失敗が続いたため、しばらく時間をおいてから再試行して"
             "ください。")
@@ -30,5 +32,7 @@ def redeem(payload: RedeemIn):
         try:
             new_balance = charge_keys.redeem_key(conn, uid, payload.key)
         except charge_keys.ChargeKeyError as e:
+            log.warning("billing/redeem: failed uid=%s reason=%s", uid, e)
             raise HTTPException(400, str(e))
+    log.info("billing/redeem: ok uid=%s new_balance=%s", uid, new_balance)
     return {"ok": True, "balance_jpy": round(new_balance, 1)}
