@@ -25,19 +25,11 @@ function micErrorMessage(e) {
   const name = e && e.name;
   if (name === "NotAllowedError" || name === "SecurityError"
     || /denied/i.test(e && e.message || "")) {
-    return "マイクの使用が許可されていません。ブラウザとOSのマイク設定を"
-      + "ご確認のうえ、ページを再読み込みしてください。\n\n"
-      + "【ブラウザ側の設定】\n"
-      + "・Chrome/Edge: アドレスバーのサイト情報アイコン→"
-      + "「サイトの設定」→マイクを「許可」\n"
-      + "・Firefox: アドレスバーのアイコン→権限からマイクを許可\n"
-      + "・Safari: 上部メニューの「設定」→「Webサイト」→「マイク」で"
-      + "このサイトを許可\n\n"
-      + "【OS側の設定】\n"
-      + "・Mac: システム設定 > プライバシーとセキュリティ > マイク で"
-      + "お使いのブラウザを許可\n"
-      + "・Windows: 設定 > プライバシーとセキュリティ > マイク で"
-      + "マイクへのアクセスとお使いのブラウザを許可";
+    return "マイクの使用が許可されていません。ブラウザまたはOSの設定で"
+      + "このサイトのマイクがブロックされている可能性があります。\n\n"
+      + "詳しい確認手順（Chrome/Edge/Firefox/Safari・Windows/Mac/"
+      + "iOS/Android）はこちら:\n"
+      + "https://study.nyangailab.com/static/about.html#trouble-mic";
   }
   if (name === "NotFoundError") {
     return "マイクが見つかりません。マイクが接続されているかご確認ください。";
