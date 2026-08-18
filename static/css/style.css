@@ -195,6 +195,10 @@ h2 { font-size: 17px; margin: 22px 0 10px; }
   .grid.cols-4, .grid.cols-3, .grid.cols-2 { grid-template-columns: 1fr; }
   .nav-toggle { display: inline-flex; }
   .topbar-brand { display: inline-flex; font-size: 15px; }
+  /* topbar-right は項目数が多く、幅の狭いスマホ縦画面では1行に収まらず
+     ログイン/ログアウトボタンが画面外にはみ出て見切れていた
+     (2026-08-19ユーザー報告)。折り返し可にして複数行に展開する。 */
+  .topbar-right { flex-wrap: wrap; row-gap: 8px; }
   /* サイドバーは既定で画面外（オフキャンバス）。.open で右へスライドイン。
      狭い画面で本文を圧迫していた「幅64pxに縮めて文字だけ残す」旧方式は廃止。 */
   .sidebar {

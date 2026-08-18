@@ -329,6 +329,11 @@ export async function refreshCost() {
   } catch (e) { /* ignore */ }
 }
 
+async function doLogout() {
+  try { await api.post("/api/auth/logout"); } catch (_) { /* */ }
+  location.href = "/login";
+}
+
 function setInputMode(mode) {
   state.inputMode = mode === "voice" ? "voice" : "text";
   localStorage.setItem("inputMode", state.inputMode);
@@ -478,6 +483,23 @@ async function boot() {
     '<a class="nav-item" href="/static/about.html">'
     + "📄 このアプリについて</a>",
   ));
+  // ログイン/ログアウトもサイドバー(ハンバーガーメニュー)に常設する。
+  // トップバー右側は項目数が多くスマホ縦画面で折り返し/はみ出しが起き
+  // やすいため、テーマ(ライト/ダーク)によらずどの画面幅でも確実に
+  // たどり着ける経路をサイドバーにも用意する(2026-08-19ユーザー要望)。
+  // 表示条件はトップバーのログイン/ログアウトボタンと同じ
+  // (マルチユーザー時のみ・ゲストはログインのみ、ログイン済みはログアウトのみ)。
+  if (state.multiuser) {
+    if (state.isGuest) {
+      nav.appendChild(el(
+        '<a class="nav-item" href="/login">🔑 ログイン</a>',
+      ));
+    } else {
+      const navLogout = el('<button class="nav-item">🚪 ログアウト</button>');
+      navLogout.addEventListener("click", doLogout);
+      nav.appendChild(navLogout);
+    }
+  }
 
   // スマホ向けハンバーガーメニュー: ボタン/背景タップで開閉。
   document.getElementById("navToggle")
@@ -491,10 +513,7 @@ async function boot() {
     .addEventListener("change", (e) => setInputMode(e.target.value));
   document.getElementById("micCmd").addEventListener("click", runCommand);
   const logoutBtn = document.getElementById("logoutBtn");
-  if (logoutBtn) logoutBtn.addEventListener("click", async () => {
-    try { await api.post("/api/auth/logout"); } catch (_) { /* */ }
-    location.href = "/login";
-  });
+  if (logoutBtn) logoutBtn.addEventListener("click", doLogout);
 
   initClickTracking();
   speech.onUsage(refreshCost); // refresh cost after paid TTS calls
