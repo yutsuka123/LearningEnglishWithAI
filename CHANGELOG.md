@@ -6,7 +6,7 @@
 コミットする。詳細な作業ログは非公開の`docs/TODO.md`/`docs/TODO_OLD.md`
 を参照）。
 
-## ver1.1.0-beta01 (2026-08-18)
+## ver1.1.0-beta01 (2026-08-18, commit `dab78e1`)
 
 **🆕 リリース前最終テストのため新規登録を再開**: `SIGNUP_OPEN`を`True`に
 戻し、本人によるテストアカウント登録ができるようにした。signup/login/
