@@ -18,6 +18,29 @@ const MASTERY_DEFAULTS = {
   vague_bonus: 25, decay_amount: 1, decay_interval_days: 1,
 };
 
+// マイク利用時のエラーを分かりやすい日本語に変換する(2026-08-18・
+// getUserMediaの生の英語メッセージ(例:"Permission denied")がそのまま
+// トーストに出て何をすればよいか分からない、との報告があったため)。
+function micErrorMessage(e) {
+  const name = e && e.name;
+  if (name === "NotAllowedError" || name === "SecurityError"
+    || /denied/i.test(e && e.message || "")) {
+    return "マイクの使用が許可されていません。ブラウザのアドレスバー"
+      + "左側のアイコンからこのサイトのマイク権限を「許可」に変更し、"
+      + "ページを再読み込みしてください（Macの場合はさらに、"
+      + "システム設定 > プライバシーとセキュリティ > マイク で、"
+      + "お使いのブラウザ自体が許可されているかもご確認ください）。";
+  }
+  if (name === "NotFoundError") {
+    return "マイクが見つかりません。マイクが接続されているかご確認ください。";
+  }
+  if (name === "NotReadableError") {
+    return "マイクを他のアプリが使用中の可能性があります。"
+      + "他のアプリ/タブでマイクを使っていないかご確認ください。";
+  }
+  return (e && e.message) || "マイクを利用できません";
+}
+
 // 分野/レベル等の複数チェック可チェックボックス一覧(.chkbox)に添える
 // 「すべてチェック」「選択済み全クリア」ボタン(2026-08-18・ユーザー要望・
 // 単語帳/フレーズ帳の一括追加UIで項目数が多く手動チェックが大変だった
@@ -74,7 +97,7 @@ function answerInput(onSubmit, { lang = "en-US", placeholder = "答えを入力"
           recording = true;
           mic.textContent = "⏹ 停止して回答";
           mic.classList.remove("good"); mic.classList.add("bad");
-        } catch (e) { toast(e.message); }
+        } catch (e) { alert(micErrorMessage(e)); }
       } else {
         recording = false;
         mic.disabled = true; mic.textContent = "認識中…";
@@ -2591,7 +2614,7 @@ export async function conversation(root) {
             : speech.createRecorder(langSel.value);
           recorder.start(); recording = true;
           mic.textContent = "⏹ 停止"; mic.classList.replace("good", "bad");
-        } catch (e) { toast(e.message); }
+        } catch (e) { alert(micErrorMessage(e)); }
       } else {
         recording = false; mic.disabled = true; mic.textContent = "認識中…";
         const said = await recorder.stop();
@@ -2789,7 +2812,7 @@ export async function conversation(root) {
       hfStart.style.display = "none"; hfStop.style.display = "";
       hfEnd.style.display = manual ? "" : "none";
       setHfStatus("🎤 どうぞ話してください");
-    } catch (e) { toast(e.message || "マイクを利用できません"); }
+    } catch (e) { alert(micErrorMessage(e)); }
   });
   hfStop.addEventListener("click", () => {
     stopHF(); setHfStatus("終了しました");
