@@ -3999,7 +3999,7 @@ export async function admin(root) {
         `<h3>🌐 IPアドレス別</h3><p class="muted">まだありません。</p>`;
       const dailyTable = res.daily.length ? `<h3>📅 日別推移</h3>
         <table><thead><tr>
-          <th>日付</th><th>画面表示</th><th>再生</th><th>クリック</th>
+          <th>日付(JST)</th><th>画面表示</th><th>再生</th><th>クリック</th>
         </tr></thead><tbody>${res.daily.slice().reverse().map((d) => `
           <tr><td class="muted">${d.date}</td><td>${d.pages}</td>
             <td>${d.plays}</td><td>${d.clicks}</td></tr>`).join("")}

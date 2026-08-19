@@ -632,8 +632,12 @@ def admin_usage_analytics(days: int = 30):
             (since,),
         ).fetchall()
 
+        # created_atはSQLiteのdatetime('now')由来でUTC。日付の区切り
+        # (0時境界)を日本時間で見たいので、集計キーだけ+9時間ずらして
+        # から日付部分を取り出す(2026-08-19・UTC日境界のままだった不具合
+        # を修正)。
         daily_rows = conn.execute(
-            "SELECT substr(created_at, 1, 10) AS date, "
+            "SELECT substr(datetime(created_at, '+9 hours'), 1, 10) AS date, "
             "SUM(CASE WHEN kind='page' THEN 1 ELSE 0 END) AS pages, "
             "SUM(CASE WHEN kind='play' THEN 1 ELSE 0 END) AS plays, "
             "SUM(CASE WHEN kind='click' THEN 1 ELSE 0 END) AS clicks "

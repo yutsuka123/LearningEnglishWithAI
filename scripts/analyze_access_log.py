@@ -24,8 +24,13 @@ import json
 import os
 import sys
 from collections import Counter, defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse
+
+# 日本時間(UTC+9、夏時間なし)の日付境界で集計する(2026-08-19〜)。
+# zoneinfo("Asia/Tokyo")はVPSホスト側にtzdataが無いと失敗しうるため、
+# 固定オフセットで代用する(JSTはDSTが無いのでこれで常に正確)。
+JST = timezone(timedelta(hours=9))
 
 # LLMO(生成AIに見つかる/引用される)観点で特に把握したいAIクローラー。
 AI_CRAWLERS = [
@@ -84,7 +89,7 @@ def aggregate(lines) -> dict:
         ts = d.get("ts")
         if ts is None:
             continue
-        day = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d")
+        day = datetime.fromtimestamp(ts, tz=JST).strftime("%Y-%m-%d")
         req = d.get("request", {}) or {}
         ip = req.get("remote_ip", "") or ""
         uri = (req.get("uri", "") or "").split("?")[0]
