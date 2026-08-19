@@ -8,6 +8,26 @@
 （例: 1.1.0→1.1.1）。ユーザーから別途指示があった場合のみ上位の桁を
 上げる。
 
+## ver1.2.0 (2026-08-19)
+
+**🆕 利用状況分析を項目別に分割 + 単語分野別・フレーズ分野別・年代/性別クロス集計を追加**
+
+- 管理画面「📊 利用状況分析」を、画面別・機能別再生・ボタン押下・
+  IP別・単語分野別・フレーズ分野別・日別推移・年代/性別クロス集計の
+  各項目ごとに折りたたみ表示へ再構成（データ取得は従来通り1回のAPI
+  呼び出しにまとめ、表示だけを分割）。
+- `app/services/tracking.py`: `usage_events.kind`に`word_domain`
+  （単語の`words.domain`）・`phrase_scene`（フレーズの`phrases.scene`）
+  を追加。単語・フレーズの音声再生時(`app/routers/learn.py`の
+  `tts_item`)に、再生した項目の分野/シーンを記録するようにした
+  （2026-08-19以降の再生から集計対象・過去分は遡って集計できない）。
+- `GET /api/system/admin/usage-analytics`に`word_domains`・
+  `phrase_scenes`・`demographics`を追加。`demographics`は
+  サインアップ時の任意アンケート(`users.survey_age_group`/
+  `survey_gender`)と`usage_events.user_id`を突き合わせたクロス集計
+  （「40代男性はどの分野をよく使っているか」等を後から分析できる
+  ようにする用途。未回答は「(未回答)」にまとめる）。
+
 ## ver1.1.9 (2026-08-19)
 
 **🆕 ログ・バックアップの容量方針を確定（100ユーザー・1GB予算）**

@@ -685,10 +685,43 @@ def admin_usage_analytics(days: int = 30):
         ).fetchall()
         return [dict(r) for r in rows]
 
+    def _grouped_by_category(conn, kind: str, limit: int = 50) -> list[dict]:
+        """category単体での集計（word_domain/phrase_sceneはlabelを
+        使わないため、page/play/clickと違いcategoryだけでまとめる）。"""
+        rows = conn.execute(
+            "SELECT category, COUNT(*) AS cnt, "
+            "COUNT(DISTINCT ip) AS uniq_ip, "
+            "COUNT(DISTINCT user_id) AS uniq_user FROM usage_events "
+            "WHERE kind = ? AND created_at >= datetime('now', ?) "
+            "GROUP BY category ORDER BY cnt DESC LIMIT ?",
+            (kind, since, limit),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
     with db() as conn:
         pages = _grouped(conn, "page")
         plays = _grouped(conn, "play")
         clicks = _grouped(conn, "click")
+        word_domains = _grouped_by_category(conn, "word_domain")
+        phrase_scenes = _grouped_by_category(conn, "phrase_scene")
+
+        # 年代・性別 × 分野/シーンのクロス集計（2026-08-19・「40代男性は
+        # こんな分野をよく使っている」等を後から分析できるようにする用途）。
+        # サインアップ時の任意アンケート(users.survey_age_group/gender)と
+        # usage_events.user_idを突き合わせる。未回答は「(未回答)」扱い。
+        demo_rows = conn.execute(
+            "SELECT "
+            " COALESCE(NULLIF(u.survey_age_group, ''), '(未回答)') AS age_group, "
+            " COALESCE(NULLIF(u.survey_gender, ''), '(未回答)') AS gender, "
+            " ue.kind AS kind, ue.category AS category, "
+            " COUNT(*) AS cnt, COUNT(DISTINCT ue.user_id) AS uniq_user "
+            "FROM usage_events ue JOIN users u ON u.id = ue.user_id "
+            "WHERE ue.kind IN ('word_domain', 'phrase_scene') "
+            " AND ue.created_at >= datetime('now', ?) "
+            "GROUP BY age_group, gender, ue.kind, ue.category "
+            "ORDER BY cnt DESC LIMIT 300",
+            (since,),
+        ).fetchall()
 
         ip_rows = conn.execute(
             "SELECT ue.ip AS ip, COUNT(*) AS total, "
@@ -736,6 +769,9 @@ def admin_usage_analytics(days: int = 30):
         "pages": pages,
         "plays": plays,
         "clicks": clicks,
+        "word_domains": word_domains,
+        "phrase_scenes": phrase_scenes,
+        "demographics": [dict(r) for r in demo_rows],
         "ips": ip_list,
         "daily": [dict(r) for r in daily_rows],
     }

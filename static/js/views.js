@@ -3705,9 +3705,11 @@ export async function admin(root) {
       </details>
 
       <details class="log-group" id="logUsageAnalyticsDetails">
-        <summary>📊 利用状況分析（画面別・機能別再生・ボタン押下・IP別）</summary>
+        <summary>📊 利用状況分析（画面別・機能別再生・ボタン押下・IP別・
+          分野別・年代/性別）</summary>
         <p class="muted mt">アプリ内の操作ログ(usage_events)をその場で
-          集計して表示（保存済みの集計ではなく毎回最新の内容）。</p>
+          集計して表示（保存済みの集計ではなく毎回最新の内容）。項目ごとに
+          折りたたんであるので、見たいものだけ開いてください。</p>
         <div class="grid cols-4 mt" style="align-items:end">
           <label>集計期間
             <select id="uaDays">
@@ -3719,9 +3721,43 @@ export async function admin(root) {
           </label>
           <button class="btn" id="uaRefreshBtn">🔄 更新</button>
         </div>
-        <div id="usageAnalyticsWrap" class="mt">
-          <p class="muted">未読み込み</p>
-        </div>
+        <p id="uaSummaryWrap" class="muted mt">未読み込み</p>
+
+        <details class="log-group">
+          <summary>📄 画面別アクセス（page）</summary>
+          <div id="uaPagesWrap" class="mt"><p class="muted">未読み込み</p></div>
+        </details>
+        <details class="log-group">
+          <summary>🔊 機能別再生（play）</summary>
+          <div id="uaPlaysWrap" class="mt"><p class="muted">未読み込み</p></div>
+        </details>
+        <details class="log-group">
+          <summary>🖱️ ボタン押下（click・上位50）</summary>
+          <div id="uaClicksWrap" class="mt"><p class="muted">未読み込み</p></div>
+        </details>
+        <details class="log-group">
+          <summary>🔤 単語分野別（再生ベース）</summary>
+          <div id="uaWordDomainsWrap" class="mt"><p class="muted">未読み込み</p></div>
+        </details>
+        <details class="log-group">
+          <summary>💬 フレーズ分野別（シーン・再生ベース）</summary>
+          <div id="uaPhraseScenesWrap" class="mt"><p class="muted">未読み込み</p></div>
+        </details>
+        <details class="log-group">
+          <summary>🌐 IPアドレス別</summary>
+          <div id="uaIpsWrap" class="mt"><p class="muted">未読み込み</p></div>
+        </details>
+        <details class="log-group">
+          <summary>📅 日別推移</summary>
+          <div id="uaDailyWrap" class="mt"><p class="muted">未読み込み</p></div>
+        </details>
+        <details class="log-group">
+          <summary>🧑‍🤝‍🧑 年代・性別 × 単語分野/フレーズシーン</summary>
+          <p class="muted mt">サインアップ時の任意アンケート回答と
+            突き合わせたクロス集計。回答が無いユーザーは「(未回答)」に
+            まとめています。</p>
+          <div id="uaDemoWrap" class="mt"><p class="muted">未読み込み</p></div>
+        </details>
       </details>
     </div>
 
@@ -3980,64 +4016,103 @@ export async function admin(root) {
   }
   root.querySelector("#auSearchBtn").addEventListener("click", runAiUsageSearch);
 
-  // 利用状況分析（画面別/機能別再生/ボタン押下/IP別・2026-08-17）。
+  // 利用状況分析（画面別/機能別再生/ボタン押下/IP別/分野別/年代・性別・
+  // 2026-08-17新設、2026-08-19に項目ごとの折りたたみ表示へ再構成）。
   async function loadUsageAnalytics() {
-    const wrap = root.querySelector("#usageAnalyticsWrap");
+    const setAll = (msg) => {
+      ["uaPagesWrap", "uaPlaysWrap", "uaClicksWrap", "uaWordDomainsWrap",
+        "uaPhraseScenesWrap", "uaIpsWrap", "uaDailyWrap", "uaDemoWrap",
+      ].forEach((id) => {
+        const el2 = root.querySelector(`#${id}`);
+        if (el2) el2.innerHTML = `<p class="muted">${msg}</p>`;
+      });
+    };
     const days = root.querySelector("#uaDays").value;
-    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    root.querySelector("#uaSummaryWrap").textContent = "読み込み中…";
+    setAll("読み込み中…");
+    let res;
     try {
-      const res = await api.get(
-        `/api/system/admin/usage-analytics?days=${days}`);
-      const groupTable = (title, rows, catLabel) => {
-        if (!rows.length) {
-          return `<h3>${title}</h3><p class="muted">まだありません。</p>`;
-        }
-        return `<h3>${title}</h3>
-          <table><thead><tr>
-            <th>${catLabel}</th><th>詳細</th><th>回数</th>
-            <th>ユニークIP</th><th>ユニークユーザー</th>
-          </tr></thead><tbody>${rows.map((r) => `
-            <tr>
-              <td>${escapeHtml(r.category)}</td>
-              <td class="muted">${escapeHtml(r.label || "—")}</td>
-              <td>${r.cnt}</td>
-              <td>${r.uniq_ip}</td>
-              <td>${r.uniq_user}</td>
-            </tr>`).join("")}</tbody></table>`;
-      };
-      const ipTable = res.ips.length ? `<h3>🌐 IPアドレス別</h3>
-        <table><thead><tr>
-          <th>IP</th><th>合計</th><th>画面表示</th><th>再生</th>
-          <th>クリック</th><th>ユーザー名</th><th>最終アクセス(JST)</th>
-        </tr></thead><tbody>${res.ips.map((r) => `
-          <tr>
-            <td class="muted">${escapeHtml(r.ip)}
-              ${r.is_admin ? '<span class="badge-warn" title="管理者の既知IP(.envのADMIN_KNOWN_IPS)">👑管理者</span>' : ""}</td>
-            <td>${r.total}</td>
-            <td>${r.pages}</td>
-            <td>${r.plays}</td>
-            <td>${r.clicks}</td>
-            <td>${escapeHtml(r.usernames || "—")}</td>
-            <td class="muted">${fmtDate(r.last_seen)}</td>
-          </tr>`).join("")}</tbody></table>` :
-        `<h3>🌐 IPアドレス別</h3><p class="muted">まだありません。</p>`;
-      const dailyTable = res.daily.length ? `<h3>📅 日別推移</h3>
-        <table><thead><tr>
-          <th>日付(JST)</th><th>画面表示</th><th>再生</th><th>クリック</th>
-        </tr></thead><tbody>${res.daily.slice().reverse().map((d) => `
-          <tr><td class="muted">${d.date}</td><td>${d.pages}</td>
-            <td>${d.plays}</td><td>${d.clicks}</td></tr>`).join("")}
-        </tbody></table>` : "";
-      wrap.innerHTML = `<p class="muted">対象期間の総イベント数:
-          ${res.total_events}件</p>
-        ${groupTable("📄 画面別アクセス（page）", res.pages, "画面(タブ)")}
-        ${groupTable("🔊 機能別再生（play）", res.plays, "機能")}
-        ${groupTable("🖱️ ボタン押下数（click・上位50）", res.clicks, "画面(タブ)")}
-        ${ipTable}
-        ${dailyTable}`;
+      res = await api.get(`/api/system/admin/usage-analytics?days=${days}`);
     } catch (e) {
-      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+      const msg = `取得失敗: ${escapeHtml(e.message)}`;
+      root.querySelector("#uaSummaryWrap").innerHTML = msg;
+      setAll(msg);
+      return;
     }
+    root.querySelector("#uaSummaryWrap").textContent =
+      `対象期間の総イベント数: ${res.total_events}件`;
+
+    const groupTable = (rows, catLabel, opts) => {
+      opts = opts || {};
+      if (!rows.length) return `<p class="muted">まだありません。</p>`;
+      const labelCol = opts.noLabel ? "" : "<th>詳細</th>";
+      return `<table><thead><tr>
+          <th>${catLabel}</th>${labelCol}<th>回数</th>
+          <th>ユニークIP</th><th>ユニークユーザー</th>
+        </tr></thead><tbody>${rows.map((r) => `
+          <tr>
+            <td>${escapeHtml(r.category)}</td>
+            ${opts.noLabel ? "" :
+              `<td class="muted">${escapeHtml(r.label || "—")}</td>`}
+            <td>${r.cnt}</td>
+            <td>${r.uniq_ip}</td>
+            <td>${r.uniq_user}</td>
+          </tr>`).join("")}</tbody></table>`;
+    };
+    root.querySelector("#uaPagesWrap").innerHTML =
+      groupTable(res.pages, "画面(タブ)");
+    root.querySelector("#uaPlaysWrap").innerHTML =
+      groupTable(res.plays, "機能");
+    root.querySelector("#uaClicksWrap").innerHTML =
+      groupTable(res.clicks, "画面(タブ)");
+    root.querySelector("#uaWordDomainsWrap").innerHTML =
+      groupTable(res.word_domains || [], "単語の分野", { noLabel: true });
+    root.querySelector("#uaPhraseScenesWrap").innerHTML =
+      groupTable(res.phrase_scenes || [], "フレーズのシーン",
+        { noLabel: true });
+
+    root.querySelector("#uaIpsWrap").innerHTML = res.ips.length ?
+      `<table><thead><tr>
+        <th>IP</th><th>合計</th><th>画面表示</th><th>再生</th>
+        <th>クリック</th><th>ユーザー名</th><th>最終アクセス(JST)</th>
+      </tr></thead><tbody>${res.ips.map((r) => `
+        <tr>
+          <td class="muted">${escapeHtml(r.ip)}
+            ${r.is_admin ? '<span class="badge-warn" title="管理者の既知IP(.envのADMIN_KNOWN_IPS)">👑管理者</span>' : ""}</td>
+          <td>${r.total}</td>
+          <td>${r.pages}</td>
+          <td>${r.plays}</td>
+          <td>${r.clicks}</td>
+          <td>${escapeHtml(r.usernames || "—")}</td>
+          <td class="muted">${fmtDate(r.last_seen)}</td>
+        </tr>`).join("")}</tbody></table>` :
+      `<p class="muted">まだありません。</p>`;
+
+    root.querySelector("#uaDailyWrap").innerHTML = res.daily.length ?
+      `<table><thead><tr>
+        <th>日付(JST)</th><th>画面表示</th><th>再生</th><th>クリック</th>
+      </tr></thead><tbody>${res.daily.slice().reverse().map((d) => `
+        <tr><td class="muted">${d.date}</td><td>${d.pages}</td>
+          <td>${d.plays}</td><td>${d.clicks}</td></tr>`).join("")}
+      </tbody></table>` : `<p class="muted">まだありません。</p>`;
+
+    const demo = res.demographics || [];
+    const kindLabel = { word_domain: "単語", phrase_scene: "フレーズ" };
+    root.querySelector("#uaDemoWrap").innerHTML = demo.length ?
+      `<table><thead><tr>
+        <th>年代</th><th>性別</th><th>種別</th><th>分野/シーン</th>
+        <th>回数</th><th>ユニークユーザー</th>
+      </tr></thead><tbody>${demo.map((r) => `
+        <tr>
+          <td>${escapeHtml(r.age_group)}</td>
+          <td>${escapeHtml(r.gender)}</td>
+          <td class="muted">${kindLabel[r.kind] || escapeHtml(r.kind)}</td>
+          <td>${escapeHtml(r.category)}</td>
+          <td>${r.cnt}</td>
+          <td>${r.uniq_user}</td>
+        </tr>`).join("")}</tbody></table>` :
+      `<p class="muted">まだありません（サインアップ時のアンケートに
+        回答したユーザーの再生履歴が必要です）。</p>`;
   }
   root.querySelector("#uaRefreshBtn")
     .addEventListener("click", loadUsageAnalytics);

@@ -14,7 +14,13 @@ from . import auth
 
 log = logging.getLogger(__name__)
 
-VALID_KINDS = {"page", "play", "click"}
+VALID_KINDS = {
+    "page", "play", "click",
+    # 単語/フレーズの分野・シーン別の利用状況分析用(2026-08-19)。
+    # 音声再生のタイミングでitem_id→分野/シーンを引いて記録する
+    # (app/routers/learn.pyのtts_item)。
+    "word_domain", "phrase_scene",
+}
 
 
 def log_event(kind: str, category: str = "", label: str = "") -> None:

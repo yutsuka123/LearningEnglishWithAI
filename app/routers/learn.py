@@ -910,6 +910,30 @@ def _item_text(
     return None
 
 
+def _log_item_domain(conn, item_type: str, item_id: int) -> None:
+    """単語の分野(words.domain)・フレーズのシーン(phrases.scene)を
+    再生イベントとして記録する（管理画面の「単語分野別」「フレーズ分野別」
+    利用状況分析用・2026-08-19）。失敗しても再生自体は妨げないよう
+    呼び出し側と同様best-effort。"""
+    try:
+        if item_type == "word":
+            row = conn.execute(
+                "SELECT domain FROM words WHERE id = ?", (item_id,),
+            ).fetchone()
+            value = (row["domain"] or "").strip() if row else ""
+            if value:
+                tracking.log_event("word_domain", value)
+        elif item_type == "phrase":
+            row = conn.execute(
+                "SELECT scene FROM phrases WHERE id = ?", (item_id,),
+            ).fetchone()
+            value = (row["scene"] or "").strip() if row else ""
+            if value:
+                tracking.log_event("phrase_scene", value)
+    except Exception:
+        pass
+
+
 @router.get("/tts/item")
 def tts_item(
     item_type: str, item_id: int, voice: str = "ash", kind: str = "",
@@ -950,6 +974,7 @@ def tts_item(
         if cached is not None:
             tracking.log_event(
                 "play", item_type, f"{base}:{voice}:{speed}")
+            _log_item_domain(conn, item_type, item_id)
             return Response(content=cached, media_type="audio/mpeg")
         from ..services.auth import current_user_id, is_guest_user_id
         is_guest = is_guest_user_id(conn, current_user_id())
@@ -963,7 +988,8 @@ def tts_item(
                         media_type="text/plain")
     with db() as conn:
         audio_store.put(conn, item_type, item_id, skind, voice, text, audio)
-    tracking.log_event("play", item_type, f"{base}:{voice}:{speed}")
+        tracking.log_event("play", item_type, f"{base}:{voice}:{speed}")
+        _log_item_domain(conn, item_type, item_id)
     return Response(content=audio, media_type="audio/mpeg")
 
 
