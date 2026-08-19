@@ -166,12 +166,19 @@ def generate_key(
     return key_id + secret
 
 
-# キーが「存在しない/使用済み/シークレット不一致」のどれであるかを応答から
-# 区別できると、攻撃者が「有効かつ未償還のkey_id」だけに絞って総当たり対象を
+# キーが「存在しない/シークレット不一致」のどちらであるかを応答から区別
+# できると、攻撃者が「有効かつ未償還のkey_id」だけに絞って総当たり対象を
 # 絞り込めてしまう（error oracle）。2026-08-08: 不正利用分析で指摘され、
-# この3ケースは同一の汎用メッセージに統一した（形式不正・CRC不一致は
+# この2ケースは同一の汎用メッセージに統一した（形式不正・CRC不一致は
 # DBに触れる前に分かる純粋な入力ミスなので区別してよい）。
+#
+# 「使用済み/失効済み」はこれとは別枠で区別してよい（2026-08-19・ユーザー
+# 要望で分離）。used_at/revoked_atの判定はシークレット照合より前に行う
+# ため、この応答は「secretを知らなくても分かる」情報しか漏らさない
+# ＝使用済みキーは既に価値を失っている（誰かが償還済み）ので、それを
+# 名指ししても未償還の価値あるキーの総当たりには使えない。
 _INVALID_KEY_MSG = "キーが無効です。入力内容をご確認ください。"
+_USED_KEY_MSG = "このキーは使用済みです。すでにチャージ済みの可能性があります。"
 
 # ---------------------------------------------------------------------------
 # 償還の総当たり対策（簡易・プロセス内メモリ。ログイン総当たり対策
@@ -226,6 +233,32 @@ def _clear_redeem_failures(user_id: int) -> None:
     _REDEEM_FAILS.pop(user_id, None)
 
 
+def _key_id_hash(key_id: str) -> str:
+    """key_id部分(secretは含まない)の一方向ハッシュ。DBに存在しないkey_idの
+    試行でも「同じキーへの再試行か」を追えるようにする用（2026-08-19）。
+    secretを含めないため、このハッシュからオフライン総当たりの近道には
+    ならない（未償還の価値あるキーの安全性を損なわない）。"""
+    return hashlib.sha256(key_id.encode("utf-8")).hexdigest()
+
+
+def _log_attempt(
+    conn: sqlite3.Connection, user_id: int, result: str, *,
+    charge_key_id: int | None = None, key_id_hash: str = "",
+) -> None:
+    """チャージキー入力の試行ログ(charge_key_attempts)に1行残す（無期限
+    保持・2026-08-19ユーザー要望）。記録失敗で本来の償還処理を妨げない
+    よう best-effort。"""
+    try:
+        conn.execute(
+            "INSERT INTO charge_key_attempts "
+            "(user_id, ip, result, charge_key_id, key_id_hash) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (user_id, auth.current_ip(), result, charge_key_id, key_id_hash),
+        )
+    except Exception:
+        pass
+
+
 def redeem_key(
     conn: sqlite3.Connection, user_id: int, raw_key: str
 ) -> float:
@@ -235,18 +268,28 @@ def redeem_key(
     try:
         raw = _normalize(raw_key)
         if len(raw) != TOTAL_DIGITS or any(c not in _CHAR_VALUE for c in raw):
+            _log_attempt(conn, user_id, "invalid")
             raise ChargeKeyError("キーの形式が正しくありません。")
         key_id, secret = raw[:KEY_ID_DIGITS], raw[KEY_ID_DIGITS:]
+        khash = _key_id_hash(key_id)
         if _crc_char(key_id[:-1]) != key_id[-1]:
+            _log_attempt(conn, user_id, "invalid", key_id_hash=khash)
             raise ChargeKeyError("キーが正しくありません（入力ミスの可能性）。")
         row = conn.execute(
             "SELECT * FROM charge_keys WHERE key_id = ?", (key_id,)
         ).fetchone()
         if not row:
+            _log_attempt(conn, user_id, "invalid", key_id_hash=khash)
             raise ChargeKeyError(_INVALID_KEY_MSG)
         if row["used_at"] or row["revoked_at"]:
-            raise ChargeKeyError(_INVALID_KEY_MSG)
+            _log_attempt(
+                conn, user_id, "used", charge_key_id=int(row["id"]),
+                key_id_hash=khash)
+            raise ChargeKeyError(_USED_KEY_MSG)
         if not auth.verify_password(secret, row["secret_hash"]):
+            _log_attempt(
+                conn, user_id, "invalid", charge_key_id=int(row["id"]),
+                key_id_hash=khash)
             raise ChargeKeyError(_INVALID_KEY_MSG)
         cur = conn.execute(
             "UPDATE charge_keys SET used_at = datetime('now'), "
@@ -255,11 +298,17 @@ def redeem_key(
         )
         if cur.rowcount == 0:
             # 同時償還などの競合。ここに来た時点で二重付与は防げている。
+            _log_attempt(
+                conn, user_id, "invalid", charge_key_id=int(row["id"]),
+                key_id_hash=khash)
             raise ChargeKeyError(_INVALID_KEY_MSG)
     except ChargeKeyError:
         _record_redeem_failure(user_id)
         raise
     _clear_redeem_failures(user_id)
+    _log_attempt(
+        conn, user_id, "redeemed", charge_key_id=int(row["id"]),
+        key_id_hash=khash)
     return auth.add_balance(
         conn, user_id, float(row["amount_jpy"]),
         reason="charge_key_redeem", charge_key_id=int(row["id"]))
@@ -286,17 +335,22 @@ def revoke_key_by_id(conn: sqlite3.Connection, charge_key_row_id: int) -> bool:
 
 
 def issuance_stats(conn: sqlite3.Connection) -> dict:
-    """管理画面向けの発行状況サマリ（総発行数・未使用数・未使用分の合計pt等）。"""
+    """管理画面向けの発行状況サマリ（総発行数・未使用数・未使用分の合計pt等）。
+    管理者自身がテストで償還したキーは実際の購入者の動向ではないため
+    集計から除外する（2026-08-19ユーザー要望）。"""
     row = conn.execute(
         "SELECT "
         " COUNT(*) AS total, "
-        " SUM(CASE WHEN used_at IS NULL AND revoked_at IS NULL "
+        " SUM(CASE WHEN k.used_at IS NULL AND k.revoked_at IS NULL "
         "      THEN 1 ELSE 0 END) AS live, "
-        " SUM(CASE WHEN used_at IS NULL AND revoked_at IS NULL "
-        "      THEN amount_jpy ELSE 0 END) AS live_amount_jpy, "
-        " SUM(CASE WHEN used_at IS NOT NULL THEN 1 ELSE 0 END) AS used, "
-        " SUM(CASE WHEN revoked_at IS NOT NULL THEN 1 ELSE 0 END) AS revoked "
-        "FROM charge_keys"
+        " SUM(CASE WHEN k.used_at IS NULL AND k.revoked_at IS NULL "
+        "      THEN k.amount_jpy ELSE 0 END) AS live_amount_jpy, "
+        " SUM(CASE WHEN k.used_at IS NOT NULL THEN 1 ELSE 0 END) AS used, "
+        " SUM(CASE WHEN k.revoked_at IS NOT NULL "
+        "      THEN 1 ELSE 0 END) AS revoked "
+        "FROM charge_keys k "
+        "LEFT JOIN users u ON u.id = k.used_by_user_id "
+        "WHERE k.used_by_user_id IS NULL OR COALESCE(u.role, '') != 'admin'"
     ).fetchone()
     return {
         "total": int(row["total"] or 0),

@@ -389,6 +389,47 @@ CREATE TABLE IF NOT EXISTS balance_ledger (
     created_at     TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 
+-- チャージキー入力の試行ログ（成功/失敗とも・2026-08-19・ユーザー要望
+-- 「キー関係は無期限でログを残す」。app.logはローテーション
+-- (10MB×15世代)で古い分が消えるため、監査目的ではこちらのDBテーブルを
+-- 正とする（pruneスクリプトの対象にも入れない＝無期限保持）。
+-- result: 'redeemed'(成功) | 'used'(使用済み/失効済み)
+--         | 'invalid'(存在しない/シークレット不一致・入力ミス含む)。
+-- charge_key_idはkey_idがDB上の既存キーに一致した場合のみ埋まる
+-- (redeemed/usedは常に埋まる。invalidはシークレット不一致なら埋まり、
+-- key_id自体が存在しなければNULL)。key_id_hashは平文のキー番号を残さず
+-- 「同じキーへの再試行か」を追えるようにするための一方向ハッシュ
+-- (secretは含めない＝ハッシュからオフライン総当たりの近道にならない)。
+CREATE TABLE IF NOT EXISTS charge_key_attempts (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id        INTEGER REFERENCES users(id),
+    ip             TEXT    DEFAULT '',
+    result         TEXT    NOT NULL,
+    charge_key_id  INTEGER REFERENCES charge_keys(id),
+    key_id_hash    TEXT    DEFAULT '',
+    created_at     TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_charge_key_attempts_user
+    ON charge_key_attempts(user_id, created_at);
+
+-- BASE注文フルフィルメントの操作ログ（2026-08-19・ユーザー要望「無期限で
+-- 残す」）。base_orders自体は元々削除されない設計だが、「誰が/いつ」
+-- 発行・配送済み・キャンセルにしたかは記録していなかったため追加する。
+-- action: 'added'(注文追加・手入力) | 'synced'(BASE API自動検知)
+--         | 'issued'(キー発行) | 'reissued'(再発行) | 'delivered'(配送済み)
+--         | 'cancelled'(キャンセル)。admin_user_idは自動同期(synced)では
+-- NULL(人手の操作ではないため)。
+CREATE TABLE IF NOT EXISTS base_order_actions (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id       INTEGER NOT NULL REFERENCES base_orders(id) ON DELETE CASCADE,
+    action         TEXT    NOT NULL,
+    admin_user_id  INTEGER REFERENCES users(id),
+    note           TEXT    DEFAULT '',
+    created_at     TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_base_order_actions_order
+    ON base_order_actions(order_id, created_at);
+
 -- お問い合わせ・要望フォーム（2026-08-06・手動対応前提。自動振り分け等は
 -- 将来検討）。管理者が一覧で確認し、status を手動で更新する運用。
 CREATE TABLE IF NOT EXISTS inquiries (

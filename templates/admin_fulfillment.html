@@ -170,8 +170,8 @@
     }
 
     function actions(o) {
-      if (o.status === 'cancelled') return '<span class="muted">—</span>';
-      let h = '';
+      let h = '<button class="ghost" onclick="toggleHistory(' + o.id + ')">履歴</button> ';
+      if (o.status === 'cancelled') return h;
       if (o.status === 'pending') {
         const label = o.charge_key_public_id ? '再発行' : 'キー発行';
         h += '<button class="ghost" id="issueBtn-' + o.id + '" '
@@ -184,11 +184,54 @@
       return h;
     }
 
+    // キー状態(発行日時・チャージ(使用)日時も含む・2026-08-19ユーザー
+    // 要望「発行済み・使用済みもわかるといい」「発行日時・チャージ日時も
+    // 管理したい」)。key_idそのものはsecretを含まない公開識別子なので
+    // 常時表示してよい(app/services/charge_keys.pyのdocstring参照)。
+    const KEY_STATUS_BADGE = {
+      unissued: ['b-cancelled', '未発行'],
+      issued: ['b-pending', '発行済み(未使用)'],
+      used: ['b-delivered', '使用済み'],
+      revoked: ['b-cancelled', '失効'],
+    };
     function keyCell(o) {
-      if (o.charge_key_public_id)
-        return '<span class="muted">発行済 ' + esc(o.charge_key_public_id)
-          + '…</span>';
-      return '<span class="muted">未発行</span>';
+      const [cls, label] = KEY_STATUS_BADGE[o.key_status] || KEY_STATUS_BADGE.unissued;
+      let h = '<span class="badge ' + cls + '">' + label + '</span>';
+      if (o.charge_key_public_id) {
+        h += '<br><span class="muted">' + esc(o.charge_key_public_id) + '…</span>';
+        h += '<br><span class="muted">発行: ' + esc(fmt(o.charge_key_issued_at)) + '</span>';
+        if (o.charge_key_used_at) {
+          h += '<br><span class="muted">使用: ' + esc(fmt(o.charge_key_used_at)) + '</span>';
+        }
+      }
+      return h;
+    }
+
+    async function toggleHistory(id) {
+      const existing = document.getElementById('hist-' + id);
+      if (existing) { existing.remove(); return; }
+      const row = document.querySelector('tr[data-order-id="' + id + '"]');
+      if (!row) return;
+      const tr = document.createElement('tr');
+      tr.id = 'hist-' + id;
+      const td = document.createElement('td');
+      td.colSpan = 7;
+      td.innerHTML = '<span class="muted">読み込み中…</span>';
+      tr.appendChild(td);
+      row.after(tr);
+      try {
+        const d = await api('/orders/' + id + '/actions');
+        const ACTION_LABEL = { added: '注文追加', synced: 'BASE自動検知',
+          issued: 'キー発行', reissued: 'キー再発行', delivered: '配送済み',
+          cancelled: 'キャンセル' };
+        td.innerHTML = !d.actions.length ? '<span class="muted">履歴なし</span>' :
+          '<div style="font-size:12px">' + d.actions.map((a) =>
+            '<div>' + esc(fmt(a.created_at)) + ' ・ '
+            + (ACTION_LABEL[a.action] || esc(a.action))
+            + (a.admin_username ? ' ・ ' + esc(a.admin_username) : ' ・ 自動')
+            + (a.note ? ' ・ ' + esc(a.note) : '') + '</div>'
+          ).join('') + '</div>';
+      } catch (e) { td.innerHTML = '<span class="muted">取得失敗: ' + esc(e.message) + '</span>'; }
     }
 
     async function loadStats() {
@@ -261,6 +304,7 @@
         }
         for (const o of d.orders) {
           const tr = document.createElement('tr');
+          tr.dataset.orderId = o.id;
           if (o.overdue) tr.className = 'overdue';
           tr.innerHTML =
             '<td>' + esc(fmt(o.detected_at)) + '</td>' +

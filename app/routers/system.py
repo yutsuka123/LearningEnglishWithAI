@@ -520,6 +520,27 @@ def admin_login_log(limit: int = 100):
         return [dict(r) for r in rows]
 
 
+@router.get("/admin/charge-key-log")
+def admin_charge_key_log(limit: int = 100):
+    """チャージキー入力の試行ログ（成功/失敗とも・無期限保持・
+    2026-08-19ユーザー要望「キー関係は無期限でログを残す」）。管理者自身の
+    テスト操作は実際の購入者の動向ではないため対象外にする
+    （2026-08-19ユーザー要望）。"""
+    _require_admin()
+    limit = max(1, min(limit, 500))
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT a.result, a.key_id_hash, a.created_at, "
+            " u.username AS username, k.key_id AS charge_key_public_id "
+            "FROM charge_key_attempts a "
+            "LEFT JOIN users u ON u.id = a.user_id "
+            "LEFT JOIN charge_keys k ON k.id = a.charge_key_id "
+            "WHERE COALESCE(u.role, '') != 'admin' "
+            "ORDER BY a.id DESC LIMIT ?", (limit,),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
 @router.get("/admin/error-log")
 def admin_error_log(lines: int = 200):
     """アプリのエラーログ(data/app.log)の末尾を返す（管理画面のログ確認用・
@@ -872,6 +893,7 @@ _TABLE_GROUPS = {
         "usage_events", "ai_usage", "login_log", "balance_ledger",
         "landing_visits", "conversation_log", "phrase_attempts",
         "word_attempts", "study_sessions", "inquiries",
+        "charge_key_attempts", "base_order_actions",
     ],
 }
 

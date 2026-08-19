@@ -55,7 +55,34 @@ def _row_to_dict(r) -> dict:
     d = dict(r)
     # 未配送かつ検知から OVERDUE_HOURS 超過なら overdue=True。
     d["overdue"] = bool(d.pop("_overdue", 0)) and d["status"] == "pending"
+    # キーの状態を1つの文字列にまとめる（2026-08-19ユーザー要望「発行済み・
+    # 使用済みもわかるといい」・管理画面の表示用）。
+    if not d.get("charge_key_id"):
+        d["key_status"] = "unissued"
+    elif d.pop("charge_key_revoked_at", None):
+        d["key_status"] = "revoked"
+    elif d.get("charge_key_used_at"):
+        d["key_status"] = "used"
+    else:
+        d["key_status"] = "issued"
     return d
+
+
+def _log_action(
+    conn, order_id: int, action: str, *,
+    admin_user_id: int | None = None, note: str = "",
+) -> None:
+    """base_order_actionsに1行残す（無期限保持・2026-08-19ユーザー要望
+    「フルフィルメント管理も無期限で」）。記録失敗で本来の操作を妨げない
+    よう best-effort。"""
+    try:
+        conn.execute(
+            "INSERT INTO base_order_actions "
+            "(order_id, action, admin_user_id, note) VALUES (?, ?, ?, ?)",
+            (order_id, action, admin_user_id, note),
+        )
+    except Exception:
+        log.warning("base_order_actions記録に失敗", exc_info=True)
 
 
 class OrderIn(BaseModel):
@@ -95,6 +122,9 @@ def add_order(payload: OrderIn):
              payload.product_label.strip(), payload.buyer_name.strip(),
              payload.buyer_email.strip(), payload.note.strip()),
         )
+        _log_action(
+            conn, int(cur.lastrowid), "added",
+            admin_user_id=current_user_id())
     return {"ok": True, "id": int(cur.lastrowid)}
 
 
@@ -116,6 +146,9 @@ def list_orders(status: str = "pending"):
             " o.product_label, o.buyer_name, o.buyer_email, o.charge_key_id, "
             " o.status, o.note, o.detected_at, o.delivered_at, "
             " k.key_id AS charge_key_public_id, "
+            " k.created_at AS charge_key_issued_at, "
+            " k.used_at AS charge_key_used_at, "
+            " k.revoked_at AS charge_key_revoked_at, "
             " CASE WHEN (julianday('now') - julianday(o.detected_at)) * 24 "
             "      > ? THEN 1 ELSE 0 END AS _overdue "
             "FROM base_orders o "
@@ -181,6 +214,10 @@ def issue_key(order_id: int, reissue: bool = False):
                 "UPDATE base_orders SET charge_key_id = ? WHERE id = ?",
                 (krow["id"], order_id),
             )
+        _log_action(
+            conn, order_id, "reissued" if reissue else "issued",
+            admin_user_id=current_user_id(),
+            note=key_id_public)
     return {"ok": True, "charge_key": plain, "pt": int(row["pt_to_grant"])}
 
 
@@ -209,6 +246,9 @@ def deliver(order_id: int, payload: StatusUpdate | None = None):
         )
         if cur.rowcount == 0:
             raise HTTPException(404, "見つからないか、キャンセル済みです。")
+        _log_action(
+            conn, order_id, "delivered", admin_user_id=current_user_id(),
+            note=(payload.note.strip() if payload else ""))
     return {"ok": True}
 
 
@@ -223,7 +263,26 @@ def cancel(order_id: int):
         )
         if cur.rowcount == 0:
             raise HTTPException(404, "見つかりません。")
+        _log_action(
+            conn, order_id, "cancelled", admin_user_id=current_user_id())
     return {"ok": True}
+
+
+@router.get("/orders/{order_id}/actions")
+def order_actions(order_id: int):
+    """この注文に対する操作履歴（誰が/いつ何をしたか・無期限保持・
+    2026-08-19ユーザー要望）。"""
+    with db() as conn:
+        _require_admin(conn)
+        rows = conn.execute(
+            "SELECT a.action, a.note, a.created_at, "
+            " u.username AS admin_username "
+            "FROM base_order_actions a "
+            "LEFT JOIN users u ON u.id = a.admin_user_id "
+            "WHERE a.order_id = ? ORDER BY a.id DESC",
+            (order_id,),
+        ).fetchall()
+        return {"actions": [dict(r) for r in rows]}
 
 
 # --- Phase B: BASE APIからの注文自動検知（2026-08-19）--------------------
@@ -317,13 +376,16 @@ def sync_orders_from_base(conn) -> dict:
             str(it.get("title", "")) for it in items if it.get("title")
         )[:200]
         try:
-            conn.execute(
+            cur = conn.execute(
                 "INSERT INTO base_orders (base_order_id, amount_jpy, "
                 " pt_to_grant, product_label, buyer_name, buyer_email, note) "
                 "VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (unique_key, amount, pt, product_label, buyer_name,
                  buyer_email, "BASE APIで自動検知"),
             )
+            _log_action(
+                conn, int(cur.lastrowid), "synced",
+                note=f"BASE API unique_key={unique_key}")
             existing_ids.add(unique_key)
             new_count += 1
         except Exception as e:  # UNIQUE制約競合等はスキップして続行

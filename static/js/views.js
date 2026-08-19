@@ -3652,6 +3652,13 @@ export async function admin(root) {
         <div id="loginLogWrap" class="mt"><p class="muted">未読み込み</p></div>
       </details>
 
+      <details class="log-group" id="logChargeKeyDetails">
+        <summary>🧾 チャージキー入力ログ（直近100件・無期限保持）</summary>
+        <p class="muted mt">キー番号(secretを含まない公開部分)は無期限保持
+          しています。</p>
+        <div id="chargeKeyLogWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
+
       <details class="log-group" id="logErrorDetails">
         <summary>🐛 エラーログ（data/app.log）</summary>
         <div class="row mt">
@@ -3874,6 +3881,38 @@ export async function admin(root) {
           <td>${r.success
             ? '<span class="badge-ok">成功</span>'
             : '<span class="badge-bad">失敗</span>'}</td>
+        </tr>`).join("")}</tbody></table>`;
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+
+  async function loadChargeKeyLog() {
+    const wrap = root.querySelector("#chargeKeyLogWrap");
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    try {
+      const rows = await api.get("/api/system/admin/charge-key-log");
+      if (!rows.length) {
+        wrap.innerHTML = `<p class="muted">まだありません。</p>`;
+        return;
+      }
+      const RESULT_LABEL = {
+        redeemed: '<span class="badge-ok">チャージ成功</span>',
+        used: '<span class="badge-bad">使用済み(再利用試行)</span>',
+        invalid: '<span class="badge-bad">無効なキー</span>',
+      };
+      wrap.innerHTML = `<table><thead><tr>
+        <th>日時(JST)</th><th>ユーザー</th><th>結果</th><th>キー番号</th>
+        </tr></thead><tbody>${rows.map((r) => `
+        <tr>
+          <td class="muted">${fmtDate(r.created_at)}</td>
+          <td>${escapeHtml(r.username || "—")}</td>
+          <td>${RESULT_LABEL[r.result] || escapeHtml(r.result)}</td>
+          <td class="muted">${escapeHtml(
+            r.charge_key_public_id
+              ? r.charge_key_public_id + "…"
+              : (r.key_id_hash ? r.key_id_hash.slice(0, 12) + "…" : "—"))}
+          </td>
         </tr>`).join("")}</tbody></table>`;
     } catch (e) {
       wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
@@ -4175,6 +4214,7 @@ export async function admin(root) {
   // 併せて管理画面を開くたび無条件に5本のAPIを叩いていたのを解消)。
   const lazySections = [
     ["#logLoginDetails", loadLoginLog],
+    ["#logChargeKeyDetails", loadChargeKeyLog],
     ["#logErrorDetails", loadErrorLog],
     ["#logAccessDetails", loadAccessLog],
     ["#logUsageAnalyticsDetails", loadUsageAnalytics],
