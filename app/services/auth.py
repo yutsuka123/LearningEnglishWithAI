@@ -404,6 +404,21 @@ def add_balance(
 def set_balance(
     conn: sqlite3.Connection, user_id: int, balance_jpy: Optional[float]
 ) -> None:
+    """残高を絶対値で強制設定する（`scripts/admin.py setbalance`用）。
+    差分計算できる場合（新旧とも数値）は`add_balance()`と同じ台帳
+    (balance_ledger)に記録し、他の残高変更と同様に追跡できるようにする
+    (2026-08-19・従来はここだけ無記録で上書きできる抜け穴だった)。"""
+    row = conn.execute(
+        "SELECT balance_jpy FROM users WHERE id = ?", (user_id,)
+    ).fetchone()
+    cur = row["balance_jpy"] if row else None
+    if cur is not None and balance_jpy is not None:
+        add_balance(
+            conn, user_id, float(balance_jpy) - float(cur),
+            reason="admin_force_set",
+            note=f"setbalance: {cur} -> {balance_jpy}",
+        )
+        return
     conn.execute(
         "UPDATE users SET balance_jpy = ? WHERE id = ?",
         (balance_jpy, user_id),

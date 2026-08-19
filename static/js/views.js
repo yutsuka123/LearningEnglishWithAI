@@ -4106,6 +4106,15 @@ export async function settings(root) {
       <p class="muted">TOEICは出題題材のレベルの手がかりにします（学習が進むと
         実績も加味）。名前はAIが会話で呼びかける際に使います。</p>
     </div>
+    <div class="card">
+      <h2>🛟 設定のバックアップ</h2>
+      <p class="muted">設定を保存するたび、直前の内容を自動で残します
+        （直近3件まで）。誤操作等で設定がおかしくなったら、ここから
+        戻せます。</p>
+      <div id="settingsBackupWrap" class="mt">
+        <p class="muted">読み込み中…</p>
+      </div>
+    </div>
     <div class="card" id="chargeCard" style="display:none">
       <h2>💳 チャージ</h2>
       <p>現在の残高: <b id="ptBalance">-</b> pt</p>
@@ -4797,6 +4806,48 @@ export async function settings(root) {
     toast("声: " + (name || "なし"));
     speech.speak(TEST_LINE);
   });
+
+  // 設定のバックアップ一覧・復元（2026-08-19）。
+  async function loadSettingsBackups() {
+    const wrap = root.querySelector("#settingsBackupWrap");
+    if (!wrap) return;
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    try {
+      const res = await api.get("/api/system/user-settings/backups");
+      if (!res.backups.length) {
+        wrap.innerHTML = `<p class="muted">まだバックアップはありません
+          （設定を保存すると次回から残ります）。</p>`;
+        return;
+      }
+      wrap.innerHTML = `<ul class="links">${res.backups.map((b) => `
+        <li style="justify-content:space-between; display:flex;
+          align-items:center; gap:10px">
+          <span>${fmtDateJST(b.created_at)} 時点の設定</span>
+          <button class="btn ghost restore-settings-btn" data-id="${b.id}"
+            style="padding:3px 10px">この内容に戻す</button>
+        </li>`).join("")}</ul>`;
+      wrap.querySelectorAll(".restore-settings-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          if (!confirm("表示中の設定を、選んだ時点の内容に戻します。"
+            + "（今の内容も自動でバックアップされるので、やり直せます）"
+            + "よろしいですか？")) return;
+          btn.disabled = true;
+          try {
+            await api.post("/api/system/user-settings/restore",
+              { backup_id: parseInt(btn.dataset.id, 10) });
+            toast("設定を復元しました。画面を再読み込みします。");
+            go("settings");
+          } catch (e) {
+            toast("復元に失敗: " + e.message);
+            btn.disabled = false;
+          }
+        });
+      });
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  loadSettingsBackups();
 }
 
 // --- 単語帳(デッキ) --------------------------------------------------------

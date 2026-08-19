@@ -187,12 +187,41 @@ def get_study_log():
 
 
 # --- per-user UI 設定（端末非依存・サーバ保存）---
+# 上書きのたび変更前の値を user_settings_backups に退避し、直近3件だけ
+# 残す(2026-08-19・誤操作/バグからの復旧用)。書き込み経路はここ1箇所に
+# 集約し、PUT保存/復元のどちらもこの関数を通す。
+_SETTINGS_BACKUP_KEEP = 3
+
+
+def _save_user_settings(conn, user_id: int, settings: dict) -> None:
+    prev = conn.execute(
+        "SELECT settings FROM user_settings WHERE user_id = ?", (user_id,),
+    ).fetchone()
+    if prev is not None:
+        conn.execute(
+            "INSERT INTO user_settings_backups (user_id, settings) "
+            "VALUES (?, ?)",
+            (user_id, prev["settings"]),
+        )
+        conn.execute(
+            "DELETE FROM user_settings_backups "
+            "WHERE user_id = ? AND id NOT IN ("
+            " SELECT id FROM user_settings_backups WHERE user_id = ? "
+            " ORDER BY id DESC LIMIT ?)",
+            (user_id, user_id, _SETTINGS_BACKUP_KEEP),
+        )
+    conn.execute(
+        "INSERT INTO user_settings (user_id, settings, updated_at) "
+        "VALUES (?, ?, datetime('now')) "
+        "ON CONFLICT(user_id) DO UPDATE SET "
+        "settings=excluded.settings, updated_at=excluded.updated_at",
+        (user_id, json.dumps(settings)),
+    )
+
+
 @router.get("/user-settings")
 def get_user_settings():
     """現在ユーザーのUI設定(JSON)。クライアントの localStorage 同期先。"""
-    import json
-
-    from ..database import db
     from ..services.auth import current_user_id
     with db() as conn:
         row = conn.execute(
@@ -212,19 +241,61 @@ class UserSettingsIn(BaseModel):
 
 @router.put("/user-settings")
 def put_user_settings(payload: UserSettingsIn):
-    import json
-
-    from ..database import db
     from ..services.auth import current_user_id
     with db() as conn:
-        conn.execute(
-            "INSERT INTO user_settings (user_id, settings, updated_at) "
-            "VALUES (?, ?, datetime('now')) "
-            "ON CONFLICT(user_id) DO UPDATE SET "
-            "settings=excluded.settings, updated_at=excluded.updated_at",
-            (current_user_id(), json.dumps(payload.settings)),
-        )
+        _save_user_settings(conn, current_user_id(), payload.settings)
     return {"ok": True}
+
+
+@router.get("/user-settings/backups")
+def list_user_settings_backups():
+    """現在ユーザー自身の設定バックアップ一覧（直近3件・新しい順）。
+    誤操作/バグで設定が壊れたとき、自分で見て復元できるようにする
+    (2026-08-19)。"""
+    from ..services.auth import current_user_id
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT id, settings, created_at FROM user_settings_backups "
+            "WHERE user_id = ? ORDER BY id DESC LIMIT ?",
+            (current_user_id(), _SETTINGS_BACKUP_KEEP),
+        ).fetchall()
+    out = []
+    for r in rows:
+        try:
+            data = json.loads(r["settings"])
+        except (ValueError, TypeError):
+            data = {}
+        out.append({
+            "id": r["id"], "created_at": r["created_at"], "settings": data,
+        })
+    return {"backups": out}
+
+
+class RestoreSettingsIn(BaseModel):
+    backup_id: int
+
+
+@router.post("/user-settings/restore")
+def restore_user_settings(payload: RestoreSettingsIn):
+    """指定バックアップの内容を現在の設定として復元する。復元前の現在値も
+    同じ仕組みで退避されるので、復元自体もやり直しがきく。他ユーザーの
+    バックアップは復元できない(user_idで絞り込み)。"""
+    from ..services.auth import current_user_id
+    uid = current_user_id()
+    with db() as conn:
+        row = conn.execute(
+            "SELECT settings FROM user_settings_backups "
+            "WHERE id = ? AND user_id = ?",
+            (payload.backup_id, uid),
+        ).fetchone()
+        if not row:
+            raise HTTPException(404, "指定のバックアップが見つかりません。")
+        try:
+            data = json.loads(row["settings"])
+        except (ValueError, TypeError):
+            raise HTTPException(400, "バックアップの内容を読み込めません。")
+        _save_user_settings(conn, uid, data)
+    return {"ok": True, "settings": data}
 
 
 @router.get("/my-usage")

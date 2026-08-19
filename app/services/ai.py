@@ -306,7 +306,7 @@ def _maybe_deduct_balance(
     接続内で対象のai_usage行を既にINSERTしている前提
     （`_user_cost_usd`はコミット済み分を見るため、直前＝このコール分を
     除いた累計になる）。"""
-    from .auth import get_user
+    from .auth import add_balance, get_user
 
     u = get_user(conn, uid)
     if not u or u.get("balance_jpy") is None:
@@ -318,10 +318,15 @@ def _maybe_deduct_balance(
     if not over:
         return
     charge = _compute_charge_jpy(cost_usd, s.usd_jpy_rate, feature)
-    conn.execute(
-        "UPDATE users SET balance_jpy = MAX(0, balance_jpy - ?) WHERE id = ?",
-        (charge, uid),
-    )
+    # 0円未満にはしない(旧UPDATE文のMAX(0,...)相当)。add_balance()は単純な
+    # 加減算のみ行うため、ここで下限をクランプしてから渡す。
+    cur = float(u.get("balance_jpy") or 0)
+    delta = -min(charge, cur)
+    if delta != 0:
+        add_balance(
+            conn, uid, delta, reason="ai_usage",
+            note=f"{feature} (${cost_usd:.5f})",
+        )
 
 
 def _record_usage(
@@ -671,7 +676,7 @@ def charge_playback_if_needed(
     戻り値: 課金不要/成功なら None、拒否する場合はユーザー向けエラー文言。
     """
     from . import access_tiers
-    from .auth import current_user_id, get_user, is_guest_user_id
+    from .auth import add_balance, current_user_id, get_user, is_guest_user_id
 
     with db() as conn:
         uid = current_user_id()
@@ -716,10 +721,12 @@ def charge_playback_if_needed(
                 f"（必要額: 約¥{charge_jpy:.1f}・残高: ¥{balance:.1f}）。"
                 "設定画面からチャージしてください。"
             )
-        conn.execute(
-            "UPDATE users SET balance_jpy = MAX(0, balance_jpy - ?) "
-            "WHERE id = ?", (charge_jpy, uid),
-        )
+        delta = -min(charge_jpy, balance)
+        if delta != 0:
+            add_balance(
+                conn, uid, delta, reason="tts_playback",
+                note=f"{item_type}:{item_id}:{kind}",
+            )
         _recent_charge_mark(uid, recent_key)
         return None
 

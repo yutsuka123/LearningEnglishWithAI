@@ -326,6 +326,19 @@ CREATE TABLE IF NOT EXISTS user_settings (
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- user_settingsの変更前スナップショット(直近3件・2026-08-19)。設定の
+-- 誤操作/バグからの復旧用。上書きのたび古い値をここへ退避し、4件目
+-- 以降は古い順に削除する
+-- (app/routers/system.pyの_save_user_settings)。
+CREATE TABLE IF NOT EXISTS user_settings_backups (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    settings   TEXT    NOT NULL,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_user_settings_backups_user
+    ON user_settings_backups(user_id, created_at);
+
 -- フレーズの進捗（per-user）。
 CREATE TABLE IF NOT EXISTS user_phrase_progress (
     user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
