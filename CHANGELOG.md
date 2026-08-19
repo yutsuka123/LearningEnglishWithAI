@@ -8,6 +8,38 @@
 （例: 1.1.0→1.1.1）。ユーザーから別途指示があった場合のみ上位の桁を
 上げる。
 
+## ver1.1.7 (2026-08-19)
+
+**🆕 BASE注文の自動検知（Phase B）**
+
+BASE APIのClient ID/Secretが発行され.envに設定済みだったため、従来
+OAuth連携のみだった`app/routers/base_oauth.py`に続き、実際に注文を
+検知して自動投入する部分(Phase B)を実装。
+
+- `app/services/base_api.py`(新設): BASE API(`GET /1/orders`・
+  `GET /1/orders/detail`)のクライアント。アクセストークンは1時間で
+  失効するため、期限切れ間近なら`refresh_token`で自動更新（BASEの
+  リフレッシュトークンは使用のたびローテーションするため都度DBへ
+  保存し直す）。
+- `app/routers/fulfillment.py`: `sync_orders_from_base()`を追加。
+  直近注文を取得し、支払い済み(dispatch_status=ordered)かつ未登録の
+  注文のみ`base_orders`へ自動投入（`base_order_id`のUNIQUE制約で
+  冪等）。前回同期時刻を`app_state`に記録し、次回は2日分の重なりを
+  持たせて取りこぼしを防ぐ。`POST /api/fulfillment/base-sync`
+  エンドポイントを追加し、管理画面に「今すぐ同期」ボタンを設置。
+- `scripts/sync_base_orders.py`(新設): 同じ同期処理をcronから無人実行
+  するためのスクリプト。VPSのcrontabに30分おきの実行を追加
+  （`*/30 * * * * ... eigo_base_order_sync`、既存のcron設定は変更なし）。
+- ついでに`templates/admin_fulfillment.html`の日時表示がUTCのまま
+  だったのをJSTに修正（他画面と同様の不具合）。
+
+**現状の制約**: BASE側の認可(OAuth連携)は管理者本人がブラウザで
+「BASEと連携する」を1回実行する必要があり、これはコード側では
+代行できない。また新規注文の検知はキュー(base_orders)への自動投入
+までで、メール/LINE等へのプッシュ通知は未実装（送信手段が未設定の
+ため）。管理画面を定期的に確認するか、次のステップとして通知を
+追加するかは別途検討。
+
 ## ver1.1.6 (2026-08-19)
 
 **🆕 管理者情報画面を再構成（タブ分割）**

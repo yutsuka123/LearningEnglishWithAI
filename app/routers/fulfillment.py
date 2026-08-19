@@ -1,7 +1,8 @@
-"""BASE注文フルフィルメント管理（2026-08-09・Phase A）。
+"""BASE注文フルフィルメント管理（2026-08-09・Phase A、2026-08-19 Phase B）。
 
 チャージキーの手動/半自動配送を「見逃さない」ための管理用API。
-- 注文を台帳(base_orders)に記録（当面は手入力。Phase BでBASE APIから自動投入）。
+- 注文を台帳(base_orders)に記録（手入力に加え、Phase B(2026-08-19〜)で
+  BASE API(GET /1/orders・GET /1/orders/detail)から自動投入もできる）。
 - 未配送一覧を古い順で返し、検知から一定時間を超えたものに overdue フラグを付ける。
 - 注文に対しチャージキーを発行（平文は応答で一度だけ返す・DBには保存しない）。
 - 配送済み/キャンセルに状態を更新する。
@@ -11,11 +12,14 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from ..config import log
 from ..database import db
-from ..services import charge_keys
+from ..services import base_api, charge_keys
 from ..services.auth import current_user_id
 
 router = APIRouter(prefix="/api/fulfillment", tags=["fulfillment"])
@@ -220,3 +224,132 @@ def cancel(order_id: int):
         if cur.rowcount == 0:
             raise HTTPException(404, "見つかりません。")
     return {"ok": True}
+
+
+# --- Phase B: BASE APIからの注文自動検知（2026-08-19）--------------------
+
+# app_state のキー。最後に同期できた注文日時(ISO)を覚えておき、次回は
+# そこから少し余裕を持って(_SYNC_OVERLAP)遡って取り直す(取りこぼし防止)。
+_SYNC_STATE_KEY = "base_orders_last_synced_at"
+_SYNC_OVERLAP = timedelta(days=2)
+_SYNC_INITIAL_LOOKBACK = timedelta(days=35)
+# 自動投入の対象にするdispatch_status（支払い済みで発送待ちの状態のみ。
+# unpaid=未入金・cancelled=キャンセル・dispatched=発送済み は対象外）。
+_SYNC_TARGET_STATUSES = {"ordered"}
+
+
+def _sync_window(conn) -> tuple[str, str]:
+    row = conn.execute(
+        "SELECT value FROM app_state WHERE key = ?", (_SYNC_STATE_KEY,),
+    ).fetchone()
+    now = datetime.now(timezone.utc)
+    if row and row["value"]:
+        try:
+            last = datetime.fromisoformat(row["value"])
+            start = last - _SYNC_OVERLAP
+        except ValueError:
+            start = now - _SYNC_INITIAL_LOOKBACK
+    else:
+        start = now - _SYNC_INITIAL_LOOKBACK
+    return start.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d")
+
+
+def _mark_synced(conn, when: datetime) -> None:
+    conn.execute(
+        "INSERT INTO app_state (key, value) VALUES (?, ?) "
+        "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+        (_SYNC_STATE_KEY, when.isoformat()),
+    )
+
+
+def sync_orders_from_base(conn) -> dict:
+    """BASE APIから直近の注文を取得し、未登録かつ支払い済みのものを
+    base_ordersへ自動投入する(冪等・base_order_idのUNIQUE制約で重複防止)。
+    管理画面の「今すぐ同期」ボタンとcronの両方から呼ばれる共通ロジック。"""
+    access_token = base_api.get_valid_access_token(conn)
+    start, end = _sync_window(conn)
+    raw_orders = base_api.list_orders(access_token, start, end)
+
+    existing_ids = {
+        r["base_order_id"] for r in conn.execute(
+            "SELECT base_order_id FROM base_orders "
+            "WHERE base_order_id IS NOT NULL",
+        ).fetchall()
+    }
+
+    checked = 0
+    new_count = 0
+    skipped_status: dict[str, int] = {}
+    errors: list[str] = []
+    for o in raw_orders:
+        unique_key = str(o.get("unique_key") or "").strip()
+        if not unique_key:
+            continue
+        checked += 1
+        if unique_key in existing_ids:
+            continue
+        status = o.get("dispatch_status", "")
+        if status not in _SYNC_TARGET_STATUSES:
+            skipped_status[status] = skipped_status.get(status, 0) + 1
+            continue
+        try:
+            detail = base_api.get_order_detail(access_token, unique_key)
+        except base_api.BaseApiError as e:
+            log.warning("base_api: detail fetch failed unique_key=%s: %s",
+                        unique_key, e)
+            errors.append(f"{unique_key}: {e}")
+            continue
+        amount = detail.get("total") or o.get("total") or 0
+        try:
+            amount = int(amount)
+        except (TypeError, ValueError):
+            amount = 0
+        if amount <= 0:
+            continue
+        pt, _pattern = _pt_and_pattern(amount)
+        buyer_name = " ".join(filter(None, [
+            detail.get("last_name") or o.get("last_name") or "",
+            detail.get("first_name") or o.get("first_name") or "",
+        ])).strip()
+        buyer_email = (detail.get("mail_address") or "").strip()
+        items = detail.get("order_items") or []
+        product_label = ", ".join(
+            str(it.get("title", "")) for it in items if it.get("title")
+        )[:200]
+        try:
+            conn.execute(
+                "INSERT INTO base_orders (base_order_id, amount_jpy, "
+                " pt_to_grant, product_label, buyer_name, buyer_email, note) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (unique_key, amount, pt, product_label, buyer_name,
+                 buyer_email, "BASE APIで自動検知"),
+            )
+            existing_ids.add(unique_key)
+            new_count += 1
+        except Exception as e:  # UNIQUE制約競合等はスキップして続行
+            log.warning("base_api: insert failed unique_key=%s: %s",
+                        unique_key, e)
+            errors.append(f"{unique_key}: 登録に失敗しました")
+
+    _mark_synced(conn, datetime.now(timezone.utc))
+    log.info(
+        "base_api: sync done checked=%s new=%s skipped=%s errors=%s",
+        checked, new_count, skipped_status, len(errors),
+    )
+    return {
+        "ok": True, "checked": checked, "new_orders": new_count,
+        "skipped_status": skipped_status, "errors": errors,
+        "window": {"start": start, "end": end},
+    }
+
+
+@router.post("/base-sync")
+def base_sync():
+    """BASE APIから注文を取得し、未登録の支払い済み注文を自動投入する
+    （管理画面の「今すぐ同期」ボタン用）。"""
+    with db() as conn:
+        _require_admin(conn)
+        try:
+            return sync_orders_from_base(conn)
+        except base_api.BaseApiError as e:
+            raise HTTPException(400, str(e))

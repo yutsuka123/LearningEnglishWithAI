@@ -70,7 +70,7 @@
     </div>
 
     <div class="card" id="baseConnCard">
-      <h2>🔗 BASE API連携（注文自動検知・準備中）</h2>
+      <h2>🔗 BASE API連携（注文自動検知）</h2>
       <div id="baseConnBody" class="muted">読み込み中…</div>
     </div>
 
@@ -144,7 +144,22 @@
         c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
     }
 
-    function fmt(dt) { return dt ? dt.replace('T', ' ').slice(0, 16) : ''; }
+    // detected_at/delivered_at はSQLiteのdatetime('now')由来でUTCのnaive
+    // 文字列。他画面(static/js/app.jsのfmtDateJST)と同様、明示的にUTCとして
+    // パースしJSTに変換して表示する(2026-08-19・表記だけUTCのまま残って
+    // いた不具合の修正)。
+    function fmt(dt) {
+      if (!dt) return '';
+      const iso = String(dt).trim().replace(' ', 'T');
+      const withZone = /Z$|[+-]\d{2}:?\d{2}$/.test(iso) ? iso : iso + 'Z';
+      const d = new Date(withZone);
+      if (Number.isNaN(d.getTime())) return dt;
+      const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+      const p = (n) => String(n).padStart(2, '0');
+      return jst.getUTCFullYear() + '-' + p(jst.getUTCMonth() + 1) + '-'
+        + p(jst.getUTCDate()) + ' ' + p(jst.getUTCHours()) + ':'
+        + p(jst.getUTCMinutes());
+    }
 
     function statusBadge(s, overdue) {
       if (overdue) return '<span class="badge b-over">⚠️未配送(超過)</span>';
@@ -198,9 +213,31 @@
           box.innerHTML = 'BASE_CLIENT_ID/SECRETが.envに未設定です。'
             + 'developers.thebase.comでアプリ登録後、値を設定してください。';
         } else if (s.connected) {
-          box.innerHTML = '✅ 連携済み（有効期限: ' + esc(s.expires_at)
+          box.innerHTML = '✅ 連携済み（有効期限: ' + esc(fmt(s.expires_at))
             + ' ／ scope: ' + esc(s.scope) + '）　'
-            + '<a href="/admin/base-oauth/start">再連携する</a>';
+            + '<a href="/admin/base-oauth/start">再連携する</a>　'
+            + '<button id="baseSyncBtn" type="button">今すぐ同期</button>'
+            + '<div id="baseSyncResult" class="muted" style="margin-top:8px"></div>';
+          $('baseSyncBtn').addEventListener('click', async () => {
+            const out = $('baseSyncResult');
+            $('baseSyncBtn').disabled = true;
+            out.textContent = '同期中…';
+            try {
+              const res = await api('/base-sync', { method: 'POST' });
+              out.textContent = `確認 ${res.checked}件 / 新規登録 `
+                + `${res.new_orders}件（対象期間: ${res.window.start} `
+                + `〜 ${res.window.end}）`;
+              if (res.errors && res.errors.length) {
+                out.textContent += ` / エラー${res.errors.length}件`
+                  + '（app.log参照）';
+              }
+              if (res.new_orders > 0) load();
+            } catch (e) {
+              out.textContent = '同期失敗: ' + e.message;
+            } finally {
+              $('baseSyncBtn').disabled = false;
+            }
+          });
         } else {
           box.innerHTML = '<a class="btn" href="/admin/base-oauth/start">'
             + 'BASEと連携する</a>';
