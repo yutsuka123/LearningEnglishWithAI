@@ -723,6 +723,16 @@ def admin_usage_analytics(days: int = 30):
             (since,),
         ).fetchall()
 
+        # 登録時アンケート「このアプリを何で知りましたか」の集計（2026-08-19
+        # ・複数選択のためsurvey_referralは", "区切りの文字列。Python側で
+        # 分解してから件数を数える）。集計期間はusers.created_atで絞る。
+        referral_text_rows = conn.execute(
+            "SELECT survey_referral FROM users "
+            "WHERE survey_referral != '' AND username != 'guest' "
+            "AND created_at >= datetime('now', ?)",
+            (since,),
+        ).fetchall()
+
         ip_rows = conn.execute(
             "SELECT ue.ip AS ip, COUNT(*) AS total, "
             "SUM(CASE WHEN ue.kind='page' THEN 1 ELSE 0 END) AS pages, "
@@ -750,6 +760,16 @@ def admin_usage_analytics(days: int = 30):
             (since,),
         ).fetchall()
 
+        # 日別の新規登録数（2026-08-19・ユーザー要望。ゲスト疑似ユーザー
+        # は起動時に一度だけ作られる行なので実登録者数を歪めないよう除外）。
+        signup_rows = conn.execute(
+            "SELECT substr(datetime(created_at, '+9 hours'), 1, 10) AS date, "
+            "COUNT(*) AS signups FROM users "
+            "WHERE created_at >= datetime('now', ?) AND username != 'guest' "
+            "GROUP BY date ORDER BY date",
+            (since,),
+        ).fetchall()
+
         total_events = conn.execute(
             "SELECT COUNT(*) FROM usage_events "
             "WHERE created_at >= datetime('now', ?)", (since,),
@@ -763,6 +783,35 @@ def admin_usage_analytics(days: int = 30):
     for row in ip_list:
         row["is_admin"] = row["ip"] in admin_ips
 
+    # usage_events由来(pages/plays/clicks)とusers由来(signups)は別集計
+    # なので、日付をキーにマージする(どちらか一方にしか無い日も0埋めで
+    # 出す)。
+    daily_map: dict[str, dict] = {}
+    for r in daily_rows:
+        daily_map[r["date"]] = {
+            "date": r["date"], "pages": r["pages"], "plays": r["plays"],
+            "clicks": r["clicks"], "signups": 0,
+        }
+    for r in signup_rows:
+        d = daily_map.setdefault(r["date"], {
+            "date": r["date"], "pages": 0, "plays": 0, "clicks": 0,
+            "signups": 0,
+        })
+        d["signups"] = r["signups"]
+    daily_list = [daily_map[d] for d in sorted(daily_map)]
+
+    # 複数選択のsurvey_referralを", "区切りで分解して件数化。
+    referral_counts: dict[str, int] = {}
+    for r in referral_text_rows:
+        for v in (r["survey_referral"] or "").split(", "):
+            v = v.strip()
+            if v:
+                referral_counts[v] = referral_counts.get(v, 0) + 1
+    referrals = sorted(
+        ({"label": k, "cnt": v} for k, v in referral_counts.items()),
+        key=lambda x: -x["cnt"],
+    )
+
     return {
         "days": days,
         "total_events": total_events,
@@ -773,7 +822,8 @@ def admin_usage_analytics(days: int = 30):
         "phrase_scenes": phrase_scenes,
         "demographics": [dict(r) for r in demo_rows],
         "ips": ip_list,
-        "daily": [dict(r) for r in daily_rows],
+        "daily": daily_list,
+        "referrals": referrals,
     }
 
 

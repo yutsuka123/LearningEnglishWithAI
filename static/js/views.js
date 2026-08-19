@@ -3520,6 +3520,13 @@ export async function admin(root) {
   let inquiries = [];
   try { inquiries = (await api.get("/api/inquiries")).inquiries || []; }
   catch (_) { /* */ }
+  // 購入キー発行待ち(BASE注文)の件数。フルフィルメント画面に行かなくても
+  // 管理者情報画面の更新だけで気づけるようにする(2026-08-19ユーザー要望)。
+  let pendingOrders = 0;
+  try {
+    pendingOrders =
+      (await api.get("/api/fulfillment/orders?status=pending")).pending || 0;
+  } catch (_) { /* */ }
   const sec = d.security || {};
   const fmtDate = fmtDateJST;
   const pendingInquiries =
@@ -3583,7 +3590,7 @@ export async function admin(root) {
     ["user-usage", "📊 ユーザー別使用状況"],
     ["logs", `📜 ログ`],
     ["inquiries", `📮 問い合わせ対応${pendingInquiries ? ` (${pendingInquiries})` : ""}`],
-    ["charge-keys", "🧾 購入チャージキー対応"],
+    ["charge-keys", `🧾 購入チャージキー対応${pendingOrders ? ` (${pendingOrders})` : ""}`],
     ["other", "🗂️ その他"],
   ];
 
@@ -3748,8 +3755,15 @@ export async function admin(root) {
           <div id="uaIpsWrap" class="mt"><p class="muted">未読み込み</p></div>
         </details>
         <details class="log-group">
-          <summary>📅 日別推移</summary>
+          <summary>📅 日別推移（画面表示・再生・クリック・新規登録）</summary>
           <div id="uaDailyWrap" class="mt"><p class="muted">未読み込み</p></div>
+        </details>
+        <details class="log-group">
+          <summary>🔗 流入経路（登録時アンケート）</summary>
+          <p class="muted mt">サインアップ時「このアプリを何で知りましたか」
+            の回答を集計（複数選択可のため延べ数）。Referer(参照元URL)の
+            日別集計は上の「📈 アクセスログ集計（日別）」も参照。</p>
+          <div id="uaReferralsWrap" class="mt"><p class="muted">未読み込み</p></div>
         </details>
         <details class="log-group">
           <summary>🧑‍🤝‍🧑 年代・性別 × 単語分野/フレーズシーン</summary>
@@ -3790,7 +3804,12 @@ export async function admin(root) {
       <div class="card">
         <h2>🧾 購入チャージキー対応</h2>
         <p class="muted">BASE注文の記録・チャージキー発行・配送管理はこちら
-          （URLを直接知っていても管理者以外はアクセスできません）。</p>
+          （URLを直接知っていても管理者以外はアクセスできません）。
+          BASE注文は30分おきに自動同期されるため、この画面を開いた時点の
+          未配送件数がそのまま最新の目安になります。</p>
+        <p>${pendingOrders ?
+          `<span class="badge-warn">未配送 ${pendingOrders}件</span>` :
+          `<span class="muted">未配送はありません。</span>`}</p>
         <a class="btn good" href="/admin/fulfillment">フルフィルメント管理を開く →</a>
       </div>
     </div>
@@ -4022,6 +4041,7 @@ export async function admin(root) {
     const setAll = (msg) => {
       ["uaPagesWrap", "uaPlaysWrap", "uaClicksWrap", "uaWordDomainsWrap",
         "uaPhraseScenesWrap", "uaIpsWrap", "uaDailyWrap", "uaDemoWrap",
+        "uaReferralsWrap",
       ].forEach((id) => {
         const el2 = root.querySelector(`#${id}`);
         if (el2) el2.innerHTML = `<p class="muted">${msg}</p>`;
@@ -4091,10 +4111,20 @@ export async function admin(root) {
     root.querySelector("#uaDailyWrap").innerHTML = res.daily.length ?
       `<table><thead><tr>
         <th>日付(JST)</th><th>画面表示</th><th>再生</th><th>クリック</th>
+        <th>新規登録</th>
       </tr></thead><tbody>${res.daily.slice().reverse().map((d) => `
         <tr><td class="muted">${d.date}</td><td>${d.pages}</td>
-          <td>${d.plays}</td><td>${d.clicks}</td></tr>`).join("")}
+          <td>${d.plays}</td><td>${d.clicks}</td>
+          <td>${d.signups || 0}</td></tr>`).join("")}
       </tbody></table>` : `<p class="muted">まだありません。</p>`;
+
+    const referrals = res.referrals || [];
+    root.querySelector("#uaReferralsWrap").innerHTML = referrals.length ?
+      `<table><thead><tr><th>回答</th><th>件数</th></tr></thead><tbody>
+        ${referrals.map((r) => `
+        <tr><td>${escapeHtml(r.label)}</td><td>${r.cnt}</td></tr>`).join("")}
+      </tbody></table>` :
+      `<p class="muted">まだありません（対象期間に登録した回答者がいません）。</p>`;
 
     const demo = res.demographics || [];
     const kindLabel = { word_domain: "単語", phrase_scene: "フレーズ" };
