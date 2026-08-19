@@ -34,7 +34,7 @@ router = APIRouter(prefix="/admin/base-oauth", tags=["base-oauth"])
 AUTHORIZE_URL = "https://api.thebase.in/1/oauth/authorize"
 TOKEN_URL = "https://api.thebase.in/1/oauth/token"
 REDIRECT_URI = "https://study.nyangailab.com/admin/base-oauth/callback"
-DEFAULT_SCOPE = "read_orders,read_users"
+DEFAULT_SCOPE = "read_orders read_users"
 
 # CSRF対策のstateをプロセス内メモリで一時保持（単一管理者・低頻度操作の
 # 前提。数分で失効するのでDB化までは不要）。

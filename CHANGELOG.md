@@ -8,6 +8,16 @@
 （例: 1.1.0→1.1.1）。ユーザーから別途指示があった場合のみ上位の桁を
 上げる。
 
+## ver1.1.8 (2026-08-19)
+
+**🐛 BASE OAuth連携の認可画面が404になる不具合を修正**: `base_oauth.py`の
+`DEFAULT_SCOPE`がカンマ区切り(`"read_orders,read_users"`)になっていたが、
+BASE公式ドキュメント(docs.thebase.in/api/oauth/authorize/)によると
+scopeパラメータは**スペース区切り**が正しい仕様だった。実際に「BASEと
+連携する」を実行したところBASE側の認可画面(admin.thebase.com)が404に
+なる不具合が発生し、原因調査の結果この区切り文字の誤りが判明したため
+`"read_orders read_users"`に修正。
+
 ## ver1.1.7 (2026-08-19)
 
 **🆕 BASE注文の自動検知（Phase B）**
