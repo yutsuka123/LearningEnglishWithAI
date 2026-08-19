@@ -62,6 +62,24 @@ export function escapeHtml(s) {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 }
 
+// バックエンドはSQLiteのdatetime('now')等でUTCのnaive文字列
+// ("YYYY-MM-DD HH:MM:SS" または "...THH:MM:SS"、タイムゾーン表記なし)を
+// 返す。素の文字列をそのまま表示するとUTCのまま出てしまい、管理画面の
+// 各種ログ(ログイン履歴・AI利用ログ・お問い合わせ日時・最終アクセス等)が
+// JSTより9時間遅れて見えていた(2026-08-19ユーザー指摘)。明示的にUTCとして
+// パースし、常にJST(UTC+9)で "YYYY-MM-DD HH:MM" 表示する。
+export function fmtDateJST(s) {
+  if (!s) return "—";
+  const iso = String(s).trim().replace(" ", "T");
+  const withZone = /Z$|[+-]\d{2}:?\d{2}$/.test(iso) ? iso : iso + "Z";
+  const d = new Date(withZone);
+  if (Number.isNaN(d.getTime())) return s;
+  const jst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  const p = (n) => String(n).padStart(2, "0");
+  return `${jst.getUTCFullYear()}-${p(jst.getUTCMonth() + 1)}-`
+    + `${p(jst.getUTCDate())} ${p(jst.getUTCHours())}:${p(jst.getUTCMinutes())}`;
+}
+
 // Minimal Markdown -> HTML (headings, bold, bullets, line breaks).
 export function md(text) {
   const lines = escapeHtml(text || "").split("\n");

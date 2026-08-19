@@ -6,6 +6,7 @@ import { quizRunner } from "./quiz.js";
 import {
   el, md, escapeHtml, toast, state, go, refreshCost, refreshAiState,
   showBanned, setShowBanned, testBanned, setTestBanned, onLeaveView,
+  fmtDateJST,
 } from "./app.js";
 
 // 禁止用語クエリ: include_banned を付ける/付けないを返す小ヘルパー。
@@ -3520,7 +3521,7 @@ export async function admin(root) {
   try { inquiries = (await api.get("/api/inquiries")).inquiries || []; }
   catch (_) { /* */ }
   const sec = d.security || {};
-  const fmtDate = (s) => s ? s.replace("T", " ").slice(0, 16) : "—";
+  const fmtDate = fmtDateJST;
   const rows = d.users.map((u) => {
     const flags = [];
     if (!u.is_active) flags.push('<span class="badge-off">無効</span>');
@@ -3592,7 +3593,7 @@ export async function admin(root) {
         <th>担当者 / ID</th><th>権限</th><th>今日 / 上限</th>
         <th>今月 / 上限</th><th>残高</th><th>チャージ(¥)</th>
         <th>AI回数</th><th>AI最終利用</th>
-        <th>単語クイズ数</th><th>フレーズクイズ数</th><th>最終学習</th>
+        <th>単語クイズ数</th><th>フレーズクイズ数</th><th>最終学習(JST)</th>
         <th>状態</th><th>操作</th>
       </tr></thead><tbody>${rows}</tbody></table>
       <p class="muted mt">残高は日次/月次の<b>無料枠（上限）とは別管理</b>で、枠に
@@ -3605,7 +3606,7 @@ export async function admin(root) {
       <h2>📮 お問い合わせ・ご要望</h2>
       <p class="muted">ユーザーからの送信を新しい順に表示（手動対応）。</p>
       <table class="mt"><thead><tr>
-        <th>日時</th><th>ログインID</th><th>種別</th><th>お名前</th>
+        <th>日時(JST)</th><th>ログインID</th><th>種別</th><th>お名前</th>
         <th>メール</th><th>内容</th><th>状態</th><th>操作</th>
       </tr></thead><tbody>${inquiries.length ? inquiries.map((q) => `
         <tr>
@@ -3711,7 +3712,7 @@ export async function admin(root) {
       return;
     }
     wrap.innerHTML = `<table><thead><tr>
-      <th>日時</th><th>ユーザー名</th><th>IP</th><th>結果</th>
+      <th>日時(JST)</th><th>ユーザー名</th><th>IP</th><th>結果</th>
       </tr></thead><tbody>${rows.map((r) => `
       <tr>
         <td class="muted">${fmtDate(r.created_at)}</td>
@@ -3726,6 +3727,25 @@ export async function admin(root) {
       `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
   });
 
+  // app.logの行頭タイムスタンプ("YYYY-MM-DD HH:MM:SS,mmm")はサーバー
+  // (コンテナ)のシステム時刻=UTCで書かれている。行の他の書式には触れず、
+  // 行頭だけJSTに変換して表示する(2026-08-19・ユーザー指摘: 他のログと
+  // 同様UTCのまま出ていた)。
+  function errLineToJst(line) {
+    const m = line.match(
+      /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2}),(\d{3})(.*)$/s);
+    if (!m) return line;
+    const [, y, mo, da, h, mi, se, ms, rest] = m;
+    const utc = Date.UTC(+y, +mo - 1, +da, +h, +mi, +se, +ms);
+    const jst = new Date(utc + 9 * 60 * 60 * 1000);
+    const p = (n, w = 2) => String(n).padStart(w, "0");
+    const stamp = `${jst.getUTCFullYear()}-${p(jst.getUTCMonth() + 1)}-`
+      + `${p(jst.getUTCDate())} ${p(jst.getUTCHours())}:`
+      + `${p(jst.getUTCMinutes())}:${p(jst.getUTCSeconds())},`
+      + `${p(jst.getUTCMilliseconds(), 3)}`;
+    return stamp + rest;
+  }
+
   async function loadErrorLog() {
     const wrap = root.querySelector("#errorLogWrap");
     wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
@@ -3737,10 +3757,11 @@ export async function admin(root) {
         wrap.innerHTML = `<p class="muted">まだありません。</p>`;
         return;
       }
-      wrap.innerHTML = `<pre style="max-height:320px; overflow:auto;
+      wrap.innerHTML = `<p class="muted">日時はJST表記です。</p>
+        <pre style="max-height:320px; overflow:auto;
         font-size:12px; white-space:pre-wrap; background:var(--panel-2);
         padding:10px; border-radius:8px">${
-        escapeHtml(res.lines.join("\n"))}</pre>`;
+        escapeHtml(res.lines.map(errLineToJst).join("\n"))}</pre>`;
     } catch (e) {
       wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
     }
@@ -3848,7 +3869,7 @@ export async function admin(root) {
         合計費用 $${res.total_cost_usd.toFixed(4)}
         （先頭${res.rows.length}件を表示）</p>
         <table><thead><tr>
-        <th>日時</th><th>ユーザーID</th><th>IP</th><th>モデル</th>
+        <th>日時(JST)</th><th>ユーザーID</th><th>IP</th><th>モデル</th>
         <th>機能</th><th>in</th><th>out</th><th>$</th>
         </tr></thead><tbody>${res.rows.map((r) => `
         <tr>
@@ -3917,7 +3938,7 @@ export async function admin(root) {
             + `  → 残高¥${e.balance_after}  [${e.reason}/${who}]`
             + (e.note ? `  ${e.note}` : "");
         });
-        alert(lines.join("\n"));
+        alert("日時はJST表記です。\n\n" + lines.join("\n"));
       } catch (e) { toast("失敗: " + e.message); }
     });
   });
@@ -3963,7 +3984,7 @@ export async function admin(root) {
       const ipTable = res.ips.length ? `<h3>🌐 IPアドレス別</h3>
         <table><thead><tr>
           <th>IP</th><th>合計</th><th>画面表示</th><th>再生</th>
-          <th>クリック</th><th>ユーザー名</th><th>最終アクセス</th>
+          <th>クリック</th><th>ユーザー名</th><th>最終アクセス(JST)</th>
         </tr></thead><tbody>${res.ips.map((r) => `
           <tr>
             <td class="muted">${escapeHtml(r.ip)}
@@ -4363,9 +4384,9 @@ export async function settings(root) {
          / 呼び出し ${usage.calls} 回</p>
       <p class="muted">為替レート: ¥${usage.jpy_rate}/$（${usage.jpy_as_of} 時点・
         .env の USD_JPY_RATE で更新可。週1回見直し推奨）</p>
-      <table><thead><tr><th>日時</th><th>機能</th><th>モデル</th>
+      <table><thead><tr><th>日時(JST)</th><th>機能</th><th>モデル</th>
         <th>in</th><th>out</th><th>費用</th></tr></thead><tbody>
-        ${usage.recent.map((r) => `<tr><td class="muted">${r.created_at}</td>
+        ${usage.recent.map((r) => `<tr><td class="muted">${fmtDateJST(r.created_at)}</td>
           <td>${r.feature}</td><td>${r.model}</td><td>${r.prompt_tokens}</td>
           <td>${r.output_tokens}</td><td>$${r.cost_usd.toFixed(4)}</td></tr>`)
           .join("")}</tbody></table>
