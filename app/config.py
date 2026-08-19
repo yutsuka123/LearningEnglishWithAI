@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 
 # アプリのバージョン（UI表示用）。バージョンを上げたら CHANGELOG.md に追記し、
 # 必ず git commit + push をセットで行うこと（CLAUDE.md参照）。
-APP_VERSION = "ver1.1.8"
+APP_VERSION = "ver1.1.9"
 
 # Project root = the directory that contains the "app" package.
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -210,9 +210,11 @@ def setup_logging() -> logging.Logger:
     fmt = logging.Formatter(
         "%(asctime)s %(levelname)s %(name)s: %(message)s"
     )
+    # 100ユーザー規模で3ヶ月保持を狙って10MB×15世代(最大150MB)に拡張
+    # (2026-08-19・旧1MB×3世代=最大4MBでは突発的なエラー多発時に不足しうる)。
     fh = RotatingFileHandler(
         paths.data_dir / "app.log",
-        maxBytes=1_000_000, backupCount=3, encoding="utf-8",
+        maxBytes=10_000_000, backupCount=15, encoding="utf-8",
     )
     fh.setFormatter(fmt)
     sh = logging.StreamHandler()

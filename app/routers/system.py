@@ -739,3 +739,95 @@ def admin_usage_analytics(days: int = 30):
         "ips": ip_list,
         "daily": [dict(r) for r in daily_rows],
     }
+
+
+# ログ/バックアップ用に割り当てたディスク予算（2026-08-19・管理画面の
+# 目安表示にのみ使う。強制的な上限ではない）。
+_DISK_BUDGET_MB = 1024
+
+# DB内のテーブルを用途別にグルーピングして表示する（管理画面の
+# 「内容別使用量」用）。dbstat仮想テーブルが使えるSQLiteビルドでのみ
+# 内訳を出せる（無ければテーブル合計サイズのみ返す）。
+_TABLE_GROUPS = {
+    "shared_content": [
+        "words", "phrases", "materials", "categories", "listening_topics",
+        "audio_blobs", "word_domain_tags",
+    ],
+    "user_data": [
+        "users", "user_settings", "user_settings_backups",
+        "user_word_progress", "user_phrase_progress",
+        "user_material_progress", "user_listening_progress",
+        "user_category_progress",
+        "decks", "deck_words", "deck_progress",
+        "phrase_decks", "deck_phrases", "phrase_deck_progress",
+    ],
+    "logs_history": [
+        "usage_events", "ai_usage", "login_log", "balance_ledger",
+        "landing_visits", "conversation_log", "phrase_attempts",
+        "word_attempts", "study_sessions", "inquiries",
+    ],
+}
+
+
+def _dir_size_bytes(path) -> int:
+    if not path.exists():
+        return 0
+    return sum(f.stat().st_size for f in path.rglob("*") if f.is_file())
+
+
+@router.get("/admin/disk-usage")
+def admin_disk_usage():
+    """ログ・バックアップ用に確保したディスク予算(既定1GB)に対する
+    現在の使用量（管理画面の「その他」タブ表示用・2026-08-19）。
+    Caddyのアクセスログは別コンテナ上にあるため集計対象外
+    （件数等は「ログ」タブのアクセスログ集計を参照）。"""
+    _require_admin()
+
+    app_log_bytes = sum(
+        f.stat().st_size for f in paths.data_dir.glob("app.log*")
+        if f.is_file()
+    )
+    backups_dir = paths.data_dir / "backups"
+    backups_bytes = _dir_size_bytes(backups_dir)
+    db_file_bytes = (
+        paths.db_file.stat().st_size if paths.db_file.exists() else 0
+    )
+
+    group_mb: dict[str, float] = {}
+    dbstat_available = True
+    with db() as conn:
+        try:
+            sizes = dict(conn.execute(
+                "SELECT name, SUM(pgsize) FROM dbstat GROUP BY name"
+            ).fetchall())
+        except Exception:
+            dbstat_available = False
+            sizes = {}
+        if dbstat_available:
+            grouped_tables: set[str] = set()
+            for group, tables in _TABLE_GROUPS.items():
+                total = sum(sizes.get(t, 0) for t in tables)
+                group_mb[group] = round(total / 1024 / 1024, 2)
+                grouped_tables.update(tables)
+            other_bytes = sum(
+                v for k, v in sizes.items() if k not in grouped_tables
+            )
+            group_mb["other"] = round(other_bytes / 1024 / 1024, 2)
+
+    app_log_mb = round(app_log_bytes / 1024 / 1024, 2)
+    backups_mb = round(backups_bytes / 1024 / 1024, 2)
+    db_total_mb = round(db_file_bytes / 1024 / 1024, 2)
+    tracked_total_mb = round(app_log_mb + backups_mb, 2)  # DB本体は別枠表示
+
+    return {
+        "budget_mb": _DISK_BUDGET_MB,
+        "app_log_mb": app_log_mb,
+        "user_data_backups_mb": backups_mb,
+        "tracked_total_mb": tracked_total_mb,
+        "db_file_total_mb": db_total_mb,
+        "db_breakdown_mb": group_mb,
+        "dbstat_available": dbstat_available,
+        "note": "Caddyのアクセスログは別コンテナ上にあるためここには含み"
+                "ません（件数等は「ログ」タブを参照）。DB本体(音声等の"
+                "共有コンテンツ含む)は予算の対象外の目安表示です。",
+    }

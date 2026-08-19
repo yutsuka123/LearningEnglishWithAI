@@ -3775,6 +3775,13 @@ export async function admin(root) {
         <p class="muted mt">ログイン3回連続失敗→5分ロック / 1IP15回失敗→15分
           ロック / 同一ユーザー名を複数IPから計8回失敗→15分ロック。</p>
       </div>
+      <div class="card">
+        <h2>💾 ディスク使用量（ログ・バックアップ）</h2>
+        <p class="muted">ログ・バックアップ用に確保した予算に対する使用量。
+          DB本体（単語/フレーズ/音声等の共有コンテンツ含む・数GB規模）は
+          予算の対象外で参考表示です。</p>
+        <div id="diskUsageWrap" class="mt"><p class="muted">読み込み中…</p></div>
+      </div>
     </div>`;
 
   // タブ切替（既に描画済みのDOMを表示/非表示するだけ・再取得なし）。
@@ -4053,6 +4060,50 @@ export async function admin(root) {
       if (el2.open && !loaded) { loaded = true; loader(); }
     });
   });
+
+  // ディスク使用量（「その他」タブを開いたときだけ取得・2026-08-19）。
+  async function loadDiskUsage() {
+    const wrap = root.querySelector("#diskUsageWrap");
+    if (!wrap) return;
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    try {
+      const res = await api.get("/api/system/admin/disk-usage");
+      const pct = Math.min(
+        100, Math.round(res.tracked_total_mb / res.budget_mb * 100));
+      const g = res.db_breakdown_mb || {};
+      const groupLabel = {
+        shared_content: "共有コンテンツ(単語/フレーズ/音声等)",
+        user_data: "ユーザーデータ(設定/単語帳/進捗等)",
+        logs_history: "ログ・履歴(usage_events/ai_usage等)",
+        other: "その他",
+      };
+      wrap.innerHTML = `
+        <p><b>${res.tracked_total_mb}MB</b> / ${res.budget_mb}MB
+          予算（${pct}%使用）</p>
+        <div class="bar mt"><span style="width:${pct}%"></span></div>
+        <div class="grid cols-4 mt">
+          <div class="stat"><div class="num">${res.app_log_mb}</div>
+            <div class="lbl">app.log(MB)</div></div>
+          <div class="stat"><div class="num">${res.user_data_backups_mb}</div>
+            <div class="lbl">ユーザーデータ バックアップ(MB)</div></div>
+          <div class="stat"><div class="num">${res.db_file_total_mb}</div>
+            <div class="lbl">DB本体 合計(MB・参考)</div></div>
+        </div>
+        ${res.dbstat_available ? `
+        <h3 class="mt">DB本体の内訳（内容別・参考）</h3>
+        <table><tbody>${Object.entries(g).map(([k, v]) => `
+          <tr><td>${escapeHtml(groupLabel[k] || k)}</td>
+            <td>${v}MB</td></tr>`).join("")}</tbody></table>` : ""}
+        <p class="muted mt">${escapeHtml(res.note)}</p>`;
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  let diskUsageLoaded = false;
+  root.querySelector('.step-chip[data-sec="other"]')
+    ?.addEventListener("click", () => {
+      if (!diskUsageLoaded) { diskUsageLoaded = true; loadDiskUsage(); }
+    });
 
   root.querySelectorAll(".iq-done").forEach((btn) => {
     btn.addEventListener("click", async () => {

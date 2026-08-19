@@ -27,11 +27,13 @@ study.nyangailab.com {
     # 同一 Docker 網 aipoc_default の eigo-app:8000 へ（owners-app と同方式）。
     reverse_proxy eigo-app:8000
 
-    # アクセスログ（fail2ban 連携や監視に）。
+    # アクセスログ（fail2ban 連携や監視に）。100ユーザー規模を想定した
+    # トラフィック見積り(約4.5万リクエスト/日・生ログ約1.5KB/件)で
+    # 約3ヶ月分(≒4GB生ログ)保持できるようサイズを調整（2026-08-19）。
     log {
         output file /var/log/caddy/study.log {
-            roll_size 10mb
-            roll_keep 5
+            roll_size 100mb
+            roll_keep 40
         }
     }
 }
