@@ -770,6 +770,19 @@ def admin_usage_analytics(days: int = 30):
             (since,),
         ).fetchall()
 
+        # 時間帯別(0〜23時・JST)の利用率（2026-08-19・ユーザー要望。対象
+        # 期間全体を通した時間帯ごとの合計で、日をまたいで集計する）。
+        hourly_rows = conn.execute(
+            "SELECT CAST(substr(datetime(created_at, '+9 hours'), 12, 2) "
+            " AS INTEGER) AS hour, "
+            "SUM(CASE WHEN kind='page' THEN 1 ELSE 0 END) AS pages, "
+            "SUM(CASE WHEN kind='play' THEN 1 ELSE 0 END) AS plays, "
+            "SUM(CASE WHEN kind='click' THEN 1 ELSE 0 END) AS clicks "
+            "FROM usage_events WHERE created_at >= datetime('now', ?) "
+            "GROUP BY hour ORDER BY hour",
+            (since,),
+        ).fetchall()
+
         total_events = conn.execute(
             "SELECT COUNT(*) FROM usage_events "
             "WHERE created_at >= datetime('now', ?)", (since,),
@@ -800,6 +813,13 @@ def admin_usage_analytics(days: int = 30):
         d["signups"] = r["signups"]
     daily_list = [daily_map[d] for d in sorted(daily_map)]
 
+    # 0〜23時を0件でも埋めて返す(グラフ表示等で穴が空かないように)。
+    hourly_map = {int(r["hour"]): dict(r) for r in hourly_rows}
+    hourly_list = [
+        hourly_map.get(h, {"hour": h, "pages": 0, "plays": 0, "clicks": 0})
+        for h in range(24)
+    ]
+
     # 複数選択のsurvey_referralを", "区切りで分解して件数化。
     referral_counts: dict[str, int] = {}
     for r in referral_text_rows:
@@ -823,6 +843,7 @@ def admin_usage_analytics(days: int = 30):
         "demographics": [dict(r) for r in demo_rows],
         "ips": ip_list,
         "daily": daily_list,
+        "hourly": hourly_list,
         "referrals": referrals,
     }
 

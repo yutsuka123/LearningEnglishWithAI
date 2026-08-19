@@ -3759,6 +3759,10 @@ export async function admin(root) {
           <div id="uaDailyWrap" class="mt"><p class="muted">未読み込み</p></div>
         </details>
         <details class="log-group">
+          <summary>⏰ 時間帯別（0〜23時・JST・期間合計）</summary>
+          <div id="uaHourlyWrap" class="mt"><p class="muted">未読み込み</p></div>
+        </details>
+        <details class="log-group">
           <summary>🔗 流入経路（登録時アンケート）</summary>
           <p class="muted mt">サインアップ時「このアプリを何で知りましたか」
             の回答を集計（複数選択可のため延べ数）。Referer(参照元URL)の
@@ -4040,8 +4044,8 @@ export async function admin(root) {
   async function loadUsageAnalytics() {
     const setAll = (msg) => {
       ["uaPagesWrap", "uaPlaysWrap", "uaClicksWrap", "uaWordDomainsWrap",
-        "uaPhraseScenesWrap", "uaIpsWrap", "uaDailyWrap", "uaDemoWrap",
-        "uaReferralsWrap",
+        "uaPhraseScenesWrap", "uaIpsWrap", "uaDailyWrap", "uaHourlyWrap",
+        "uaDemoWrap", "uaReferralsWrap",
       ].forEach((id) => {
         const el2 = root.querySelector(`#${id}`);
         if (el2) el2.innerHTML = `<p class="muted">${msg}</p>`;
@@ -4117,6 +4121,23 @@ export async function admin(root) {
           <td>${d.plays}</td><td>${d.clicks}</td>
           <td>${d.signups || 0}</td></tr>`).join("")}
       </tbody></table>` : `<p class="muted">まだありません。</p>`;
+
+    const hourly = res.hourly || [];
+    const hourlyMax = Math.max(1, ...hourly.map((h) =>
+      h.pages + h.plays + h.clicks));
+    root.querySelector("#uaHourlyWrap").innerHTML = hourly.length ?
+      `<table><thead><tr>
+        <th>時</th><th>画面表示</th><th>再生</th><th>クリック</th>
+        <th>合計</th><th></th>
+      </tr></thead><tbody>${hourly.map((h) => {
+        const total = h.pages + h.plays + h.clicks;
+        const pct = Math.round(total / hourlyMax * 100);
+        return `<tr><td class="muted">${h.hour}時</td>
+          <td>${h.pages}</td><td>${h.plays}</td><td>${h.clicks}</td>
+          <td>${total}</td>
+          <td style="width:120px"><div class="bar">
+            <span style="width:${pct}%"></span></div></td></tr>`;
+      }).join("")}</tbody></table>` : `<p class="muted">まだありません。</p>`;
 
     const referrals = res.referrals || [];
     root.querySelector("#uaReferralsWrap").innerHTML = referrals.length ?
