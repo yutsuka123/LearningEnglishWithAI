@@ -3522,7 +3522,12 @@ export async function admin(root) {
   catch (_) { /* */ }
   const sec = d.security || {};
   const fmtDate = fmtDateJST;
-  const rows = d.users.map((u) => {
+  const pendingInquiries =
+    inquiries.filter((q) => q.status !== "対応済み").length;
+
+  // ユーザー別管理(操作)とユーザー別使用状況(閲覧)で列を分ける
+  // (2026-08-19・従来は1つの表に混在していて見づらかった)。
+  const flagsFor = (u) => {
     const flags = [];
     if (!u.is_active) flags.push('<span class="badge-off">無効</span>');
     if (u.balance_empty) flags.push('<span class="badge-bad">残高切れ</span>');
@@ -3533,16 +3538,15 @@ export async function admin(root) {
       flags.push(`<span class="badge-warn" title="直近30日のAI利用IP数">
         IP${u.distinct_ips_30d}種</span>`);
     }
-    const bal = u.balance_jpy == null ? "—" : "¥" + Math.round(u.balance_jpy);
-    const dcap = u.daily_cap_jpy ? "¥" + u.daily_cap_jpy : "—";
-    const mcap = u.monthly_cap_jpy ? "¥" + u.monthly_cap_jpy : "—";
-    return `<tr>
-      <td>${escapeHtml(u.display_name || u.username)}<br>
-        <span class="muted">${escapeHtml(u.username)}</span></td>
+    return flags.join(" ") || "—";
+  };
+  const nameCell = (u) => `${escapeHtml(u.display_name || u.username)}<br>
+    <span class="muted">${escapeHtml(u.username)}</span>`;
+
+  const mgmtRows = d.users.map((u) => `<tr>
+      <td>${nameCell(u)}</td>
       <td>${u.role}</td>
-      <td>¥${u.today_jpy} / ${dcap}</td>
-      <td>¥${u.month_jpy} / ${mcap}</td>
-      <td>${bal}</td>
+      <td>${flagsFor(u)}</td>
       <td>
         <input type="number" class="chg-amt" data-uid="${u.id}"
           value="1000" min="-10000" max="10000" step="100" style="width:74px" />
@@ -3553,179 +3557,262 @@ export async function admin(root) {
         <button class="btn ghost chg-log-btn" data-uid="${u.id}"
         style="padding:3px 8px">履歴</button>
       </td>
+      <td><button class="btn ghost force-logout-btn" data-uid="${u.id}"
+        style="padding:3px 8px">強制ログアウト</button></td>
+    </tr>`).join("");
+
+  const usageRows = d.users.map((u) => {
+    const bal = u.balance_jpy == null ? "—" : "¥" + Math.round(u.balance_jpy);
+    const dcap = u.daily_cap_jpy ? "¥" + u.daily_cap_jpy : "—";
+    const mcap = u.monthly_cap_jpy ? "¥" + u.monthly_cap_jpy : "—";
+    return `<tr>
+      <td>${nameCell(u)}</td>
+      <td>¥${u.today_jpy} / ${dcap}</td>
+      <td>¥${u.month_jpy} / ${mcap}</td>
+      <td>${bal}</td>
       <td>${u.calls}</td>
       <td>${fmtDate(u.last_used)}</td>
       <td>${u.word_quizzes}</td>
       <td>${u.phrase_quizzes}</td>
       <td>${fmtDate(u.last_studied)}</td>
-      <td>${flags.join(" ") || "—"}</td>
-      <td><button class="btn ghost force-logout-btn" data-uid="${u.id}"
-        style="padding:3px 8px">強制ログアウト</button></td>
     </tr>`;
   }).join("");
+
+  const TABS = [
+    ["user-manage", "👤 ユーザー別管理"],
+    ["user-usage", "📊 ユーザー別使用状況"],
+    ["logs", `📜 ログ`],
+    ["inquiries", `📮 問い合わせ対応${pendingInquiries ? ` (${pendingInquiries})` : ""}`],
+    ["charge-keys", "🧾 購入チャージキー対応"],
+    ["other", "🗂️ その他"],
+  ];
+
   root.innerHTML = `
     <h1>👑 管理者情報</h1>
     <p class="sub">ユーザー別の利用状況・上限・残高・問題の把握（管理者専用）。</p>
-    <div class="card">
-      <h2>🧾 フルフィルメント管理</h2>
-      <p class="muted">BASE注文の記録・チャージキー発行・配送管理はこちら
-        （URLを直接知っていても管理者以外はアクセスできません）。</p>
-      <a class="btn good" href="/admin/fulfillment">フルフィルメント管理を開く →</a>
+    <div class="steps" id="adminTabs">${TABS.map(([key, label], i) => `
+      <button type="button" class="step-chip${i === 0 ? " active" : ""}"
+        data-sec="${key}">${label}</button>`).join("")}
     </div>
-    <div class="card">
-      <h2>セキュリティ</h2>
-      <div class="grid cols-4">
-        <div class="stat"><div class="num">${sec.locked_accounts ?? 0}</div>
-          <div class="lbl">ロック中アカウント</div></div>
-        <div class="stat"><div class="num">${sec.locked_ips ?? 0}</div>
-          <div class="lbl">ロック中IP(スプレー)</div></div>
-        <div class="stat"><div class="num">${sec.locked_usernames ?? 0}</div>
-          <div class="lbl">ロック中ユーザー名(分散スプレー)</div></div>
-        <div class="stat"><div class="num">${d.users.length}</div>
-          <div class="lbl">登録ユーザー数</div></div>
-      </div>
-      <p class="muted mt">ログイン3回連続失敗→5分ロック / 1IP15回失敗→15分
-        ロック / 同一ユーザー名を複数IPから計8回失敗→15分ロック。</p>
-    </div>
-    <div class="card">
-      <h2>ユーザー別 利用状況</h2>
-      <table class="mt"><thead><tr>
-        <th>担当者 / ID</th><th>権限</th><th>今日 / 上限</th>
-        <th>今月 / 上限</th><th>残高</th><th>チャージ(¥)</th>
-        <th>AI回数</th><th>AI最終利用</th>
-        <th>単語クイズ数</th><th>フレーズクイズ数</th><th>最終学習(JST)</th>
-        <th>状態</th><th>操作</th>
-      </tr></thead><tbody>${rows}</tbody></table>
-      <p class="muted mt">残高は日次/月次の<b>無料枠（上限）とは別管理</b>で、枠に
-        到達した後の利用で消費されます。チャージは<b>1回 最大¥1000</b>。
-        「残高切れ/日上限/月上限」は利用が止まっている目安です。「AI回数」は
-        会話等のAI機能利用のみを表し、無料の単語/フレーズクイズは含まない
-        （そちらは「単語クイズ数」「フレーズクイズ数」「最終学習」列を参照）。</p>
-    </div>
-    <div class="card">
-      <h2>📮 お問い合わせ・ご要望</h2>
-      <p class="muted">ユーザーからの送信を新しい順に表示（手動対応）。</p>
-      <table class="mt"><thead><tr>
-        <th>日時(JST)</th><th>ログインID</th><th>種別</th><th>お名前</th>
-        <th>メール</th><th>内容</th><th>状態</th><th>操作</th>
-      </tr></thead><tbody>${inquiries.length ? inquiries.map((q) => `
-        <tr>
-          <td class="muted">${fmtDate(q.created_at)}</td>
-          <td>${escapeHtml(q.display_name || q.username || "—")}</td>
-          <td>${escapeHtml(q.kind)}</td>
-          <td>${escapeHtml(q.name || "—")}</td>
-          <td>${escapeHtml(q.email || "—")}</td>
-          <td style="white-space:pre-wrap">${escapeHtml(q.content)}</td>
-          <td class="iq-status" data-id="${q.id}">${escapeHtml(q.status)}</td>
-          <td>${q.status === "対応済み" ? "" :
-            `<button class="btn ghost iq-done" data-id="${q.id}"
-              style="padding:3px 8px">対応済みにする</button>`}</td>
-        </tr>`).join("") :
-        `<tr><td colspan="8" class="muted">まだありません。</td></tr>`}
-      </tbody></table>
-    </div>
-    <div class="card">
-      <h2>🔑 ログイン履歴（直近100件）</h2>
-      <div id="loginLogWrap" class="mt"><p class="muted">読み込み中…</p></div>
-    </div>
-    <div class="card">
-      <h2>🐛 エラーログ（data/app.log）</h2>
-      <div class="row">
-        <label>表示件数:
-          <select id="errLogLines">
-            <option value="50">直近50件</option>
-            <option value="100">直近100件</option>
-            <option value="200" selected>直近200件</option>
-            <option value="500">直近500件</option>
-            <option value="1000">直近1000件</option>
-          </select></label>
-        <button class="btn ghost" id="errLogReload"
-          style="padding:3px 10px">再読み込み</button>
-      </div>
-      <div id="errorLogWrap" class="mt"><p class="muted">読み込み中…</p></div>
-    </div>
-    <div class="card">
-      <h2>📈 アクセスログ集計（日別）</h2>
-      <p class="muted">Caddyのアクセスログをscripts/analyze_access_log.pyが
-        VPSのcronで日次集計したもの。AIクローラー/検索botを除いた
-        「人間らしきIP」が実際の訪問者の目安。</p>
-      <div class="row">
-        <label>直近:
-          <select id="accLogDays">
-            <option value="7">7日</option>
-            <option value="30" selected>30日</option>
-            <option value="90">90日</option>
-            <option value="365">1年</option>
-          </select></label>
-        <span class="muted">または期間で指定:</span>
-        <label>から <input type="date" id="accLogFrom" style="width:150px" /></label>
-        <label>まで <input type="date" id="accLogTo" style="width:150px" /></label>
-        <button class="btn ghost" id="accLogReload"
-          style="padding:3px 10px">再読み込み</button>
-        <button class="btn ghost" id="accLogClearRange"
-          style="padding:3px 10px">期間指定をクリア</button>
-      </div>
-      <div id="accessLogWrap" class="mt"><p class="muted">読み込み中…</p></div>
-    </div>
-    <div class="card">
-      <h2>🔍 AI利用ログ検索</h2>
-      <p class="muted">ユーザーID・期間・機能・モデル・IPで絞り込み。
-        テスト/開発起因の利用と実利用の切り分けに使う。</p>
-      <div class="grid cols-4 mt">
-        <input type="number" id="auSearchUid" placeholder="ユーザーID" />
-        <input type="date" id="auSearchFrom" />
-        <input type="date" id="auSearchTo" />
-        <input type="text" id="auSearchFeature" placeholder="機能(feature)" />
-        <input type="text" id="auSearchModel" placeholder="モデル" />
-        <input type="text" id="auSearchIp" placeholder="IP" />
-        <button class="btn" id="auSearchBtn">検索</button>
-      </div>
-      <div id="aiUsageSearchWrap" class="mt">
-        <p class="muted">条件を指定して検索してください（未指定は全件）。</p>
+
+    <div class="admin-sec" data-sec="user-manage">
+      <div class="card">
+        <h2>👤 ユーザー別管理</h2>
+        <p class="muted">残高調整・強制ログアウトなど、ユーザーへの操作。</p>
+        <table class="mt"><thead><tr>
+          <th>担当者 / ID</th><th>権限</th><th>状態</th>
+          <th>チャージ(¥)</th><th>操作</th>
+        </tr></thead><tbody>${mgmtRows}</tbody></table>
+        <p class="muted mt">チャージは<b>1回 最大¥1000</b>・理由必須。
+          「残高切れ/日上限/月上限」は利用が止まっている目安です。</p>
       </div>
     </div>
-    <div class="card">
-      <h2>📊 利用状況分析（画面別・機能別再生・ボタン押下・IP別）</h2>
-      <p class="muted">アプリ内の操作ログ(usage_events)をその場で集計して
-        表示（保存済みの集計ではなく毎回最新の内容）。「更新」を押すと
-        再取得します。</p>
-      <div class="grid cols-4 mt" style="align-items:end">
-        <label>集計期間
-          <select id="uaDays">
-            <option value="7">直近7日</option>
-            <option value="30" selected>直近30日</option>
-            <option value="90">直近90日</option>
-            <option value="365">直近1年</option>
-          </select>
-        </label>
-        <button class="btn" id="uaRefreshBtn">🔄 更新</button>
+
+    <div class="admin-sec" data-sec="user-usage" style="display:none">
+      <div class="card">
+        <h2>📊 ユーザー別使用状況</h2>
+        <p class="muted">閲覧専用。残高は日次/月次の無料枠（上限）とは
+          別管理で、枠に到達した後の利用で消費されます。「AI回数」は
+          会話等のAI機能利用のみを表し、無料の単語/フレーズクイズは
+          含みません（そちらは「単語クイズ数」「フレーズクイズ数」列）。</p>
+        <table class="mt"><thead><tr>
+          <th>担当者 / ID</th><th>今日 / 上限</th><th>今月 / 上限</th>
+          <th>残高</th><th>AI回数</th><th>AI最終利用(JST)</th>
+          <th>単語クイズ数</th><th>フレーズクイズ数</th><th>最終学習(JST)</th>
+        </tr></thead><tbody>${usageRows}</tbody></table>
       </div>
-      <div id="usageAnalyticsWrap" class="mt">
-        <p class="muted">読み込み中…</p>
+    </div>
+
+    <div class="admin-sec" data-sec="logs" style="display:none">
+      <div class="card">
+        <h2>📜 ログ（概要）</h2>
+        <div class="grid cols-4">
+          <div class="stat"><div class="num">${pendingInquiries}</div>
+            <div class="lbl">未対応の問い合わせ</div></div>
+          <div class="stat"><div class="num">${sec.locked_accounts ?? 0}</div>
+            <div class="lbl">ロック中アカウント</div></div>
+          <div class="stat"><div class="num">${sec.locked_ips ?? 0}</div>
+            <div class="lbl">ロック中IP(スプレー)</div></div>
+          <div class="stat"><div class="num">${d.users.length}</div>
+            <div class="lbl">登録ユーザー数</div></div>
+        </div>
+        <p class="muted mt">詳細は下の各項目を開いてください（開いたときに
+          データを取得します）。期間・件数はそれぞれの項目内で指定できます。</p>
+      </div>
+
+      <details class="log-group" id="logLoginDetails">
+        <summary>🔑 ログイン履歴（直近100件）</summary>
+        <div id="loginLogWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
+
+      <details class="log-group" id="logErrorDetails">
+        <summary>🐛 エラーログ（data/app.log）</summary>
+        <div class="row mt">
+          <label>表示件数:
+            <select id="errLogLines">
+              <option value="50">直近50件</option>
+              <option value="100">直近100件</option>
+              <option value="200" selected>直近200件</option>
+              <option value="500">直近500件</option>
+              <option value="1000">直近1000件</option>
+            </select></label>
+          <button class="btn ghost" id="errLogReload"
+            style="padding:3px 10px">再読み込み</button>
+        </div>
+        <div id="errorLogWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
+
+      <details class="log-group" id="logAccessDetails">
+        <summary>📈 アクセスログ集計（日別）</summary>
+        <p class="muted mt">Caddyのアクセスログをscripts/analyze_access_log.py
+          がVPSのcronで日次集計したもの。AIクローラー/検索botを除いた
+          「人間らしきIP」が実際の訪問者の目安。</p>
+        <div class="row">
+          <label>直近:
+            <select id="accLogDays">
+              <option value="7">7日</option>
+              <option value="30" selected>30日</option>
+              <option value="90">90日</option>
+              <option value="365">1年</option>
+            </select></label>
+          <span class="muted">または期間で指定:</span>
+          <label>から <input type="date" id="accLogFrom" style="width:150px" /></label>
+          <label>まで <input type="date" id="accLogTo" style="width:150px" /></label>
+          <button class="btn ghost" id="accLogReload"
+            style="padding:3px 10px">再読み込み</button>
+          <button class="btn ghost" id="accLogClearRange"
+            style="padding:3px 10px">期間指定をクリア</button>
+        </div>
+        <div id="accessLogWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
+
+      <details class="log-group" id="logAiSearchDetails">
+        <summary>🔍 AI利用ログ検索</summary>
+        <p class="muted mt">ユーザーID・期間・機能・モデル・IPで絞り込み。
+          テスト/開発起因の利用と実利用の切り分けに使う。</p>
+        <div class="grid cols-4 mt">
+          <input type="number" id="auSearchUid" placeholder="ユーザーID" />
+          <input type="date" id="auSearchFrom" />
+          <input type="date" id="auSearchTo" />
+          <input type="text" id="auSearchFeature" placeholder="機能(feature)" />
+          <input type="text" id="auSearchModel" placeholder="モデル" />
+          <input type="text" id="auSearchIp" placeholder="IP" />
+          <button class="btn" id="auSearchBtn">検索</button>
+        </div>
+        <div id="aiUsageSearchWrap" class="mt">
+          <p class="muted">条件を指定して検索してください（未指定は全件）。</p>
+        </div>
+      </details>
+
+      <details class="log-group" id="logUsageAnalyticsDetails">
+        <summary>📊 利用状況分析（画面別・機能別再生・ボタン押下・IP別）</summary>
+        <p class="muted mt">アプリ内の操作ログ(usage_events)をその場で
+          集計して表示（保存済みの集計ではなく毎回最新の内容）。</p>
+        <div class="grid cols-4 mt" style="align-items:end">
+          <label>集計期間
+            <select id="uaDays">
+              <option value="7">直近7日</option>
+              <option value="30" selected>直近30日</option>
+              <option value="90">直近90日</option>
+              <option value="365">直近1年</option>
+            </select>
+          </label>
+          <button class="btn" id="uaRefreshBtn">🔄 更新</button>
+        </div>
+        <div id="usageAnalyticsWrap" class="mt">
+          <p class="muted">未読み込み</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="admin-sec" data-sec="inquiries" style="display:none">
+      <div class="card">
+        <h2>📮 お問い合わせ・ご要望</h2>
+        <p class="muted">ユーザーからの送信を新しい順に表示（手動対応）。</p>
+        <table class="mt"><thead><tr>
+          <th>日時(JST)</th><th>ログインID</th><th>種別</th><th>お名前</th>
+          <th>メール</th><th>内容</th><th>状態</th><th>操作</th>
+        </tr></thead><tbody>${inquiries.length ? inquiries.map((q) => `
+          <tr>
+            <td class="muted">${fmtDate(q.created_at)}</td>
+            <td>${escapeHtml(q.display_name || q.username || "—")}</td>
+            <td>${escapeHtml(q.kind)}</td>
+            <td>${escapeHtml(q.name || "—")}</td>
+            <td>${escapeHtml(q.email || "—")}</td>
+            <td style="white-space:pre-wrap">${escapeHtml(q.content)}</td>
+            <td class="iq-status" data-id="${q.id}">${escapeHtml(q.status)}</td>
+            <td>${q.status === "対応済み" ? "" :
+              `<button class="btn ghost iq-done" data-id="${q.id}"
+                style="padding:3px 8px">対応済みにする</button>`}</td>
+          </tr>`).join("") :
+          `<tr><td colspan="8" class="muted">まだありません。</td></tr>`}
+        </tbody></table>
+      </div>
+    </div>
+
+    <div class="admin-sec" data-sec="charge-keys" style="display:none">
+      <div class="card">
+        <h2>🧾 購入チャージキー対応</h2>
+        <p class="muted">BASE注文の記録・チャージキー発行・配送管理はこちら
+          （URLを直接知っていても管理者以外はアクセスできません）。</p>
+        <a class="btn good" href="/admin/fulfillment">フルフィルメント管理を開く →</a>
+      </div>
+    </div>
+
+    <div class="admin-sec" data-sec="other" style="display:none">
+      <div class="card">
+        <h2>セキュリティ</h2>
+        <div class="grid cols-4">
+          <div class="stat"><div class="num">${sec.locked_accounts ?? 0}</div>
+            <div class="lbl">ロック中アカウント</div></div>
+          <div class="stat"><div class="num">${sec.locked_ips ?? 0}</div>
+            <div class="lbl">ロック中IP(スプレー)</div></div>
+          <div class="stat"><div class="num">${sec.locked_usernames ?? 0}</div>
+            <div class="lbl">ロック中ユーザー名(分散スプレー)</div></div>
+          <div class="stat"><div class="num">${d.users.length}</div>
+            <div class="lbl">登録ユーザー数</div></div>
+        </div>
+        <p class="muted mt">ログイン3回連続失敗→5分ロック / 1IP15回失敗→15分
+          ロック / 同一ユーザー名を複数IPから計8回失敗→15分ロック。</p>
       </div>
     </div>`;
 
-  api.get("/api/system/admin/login-log").then((rows) => {
-    const wrap = root.querySelector("#loginLogWrap");
-    if (!rows.length) {
-      wrap.innerHTML = `<p class="muted">まだありません。</p>`;
-      return;
-    }
-    wrap.innerHTML = `<table><thead><tr>
-      <th>日時(JST)</th><th>ユーザー名</th><th>IP</th><th>結果</th>
-      </tr></thead><tbody>${rows.map((r) => `
-      <tr>
-        <td class="muted">${fmtDate(r.created_at)}</td>
-        <td>${escapeHtml(r.username)}</td>
-        <td class="muted">${escapeHtml(r.ip || "—")}</td>
-        <td>${r.success
-          ? '<span class="badge-ok">成功</span>'
-          : '<span class="badge-bad">失敗</span>'}</td>
-      </tr>`).join("")}</tbody></table>`;
-  }).catch((e) => {
-    root.querySelector("#loginLogWrap").innerHTML =
-      `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+  // タブ切替（既に描画済みのDOMを表示/非表示するだけ・再取得なし）。
+  root.querySelectorAll("#adminTabs .step-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      root.querySelectorAll("#adminTabs .step-chip")
+        .forEach((b) => b.classList.toggle("active", b === btn));
+      const target = btn.dataset.sec;
+      root.querySelectorAll(".admin-sec").forEach((secEl) => {
+        secEl.style.display = secEl.dataset.sec === target ? "" : "none";
+      });
+    });
   });
+
+  async function loadLoginLog() {
+    const wrap = root.querySelector("#loginLogWrap");
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    try {
+      const rows = await api.get("/api/system/admin/login-log");
+      if (!rows.length) {
+        wrap.innerHTML = `<p class="muted">まだありません。</p>`;
+        return;
+      }
+      wrap.innerHTML = `<table><thead><tr>
+        <th>日時(JST)</th><th>ユーザー名</th><th>IP</th><th>結果</th>
+        </tr></thead><tbody>${rows.map((r) => `
+        <tr>
+          <td class="muted">${fmtDate(r.created_at)}</td>
+          <td>${escapeHtml(r.username)}</td>
+          <td class="muted">${escapeHtml(r.ip || "—")}</td>
+          <td>${r.success
+            ? '<span class="badge-ok">成功</span>'
+            : '<span class="badge-bad">失敗</span>'}</td>
+        </tr>`).join("")}</tbody></table>`;
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
 
   // app.logの行頭タイムスタンプ("YYYY-MM-DD HH:MM:SS,mmm")はサーバー
   // (コンテナ)のシステム時刻=UTCで書かれている。行の他の書式には触れず、
@@ -3766,7 +3853,6 @@ export async function admin(root) {
       wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
     }
   }
-  loadErrorLog();
   root.querySelector("#errLogReload").addEventListener("click", loadErrorLog);
   root.querySelector("#errLogLines").addEventListener("change", loadErrorLog);
 
@@ -3832,7 +3918,6 @@ export async function admin(root) {
       <th>よく見られたページ</th><th>主な参照元</th>
       </tr></thead><tbody>${rowsHtml}</tbody></table>`;
   }
-  loadAccessLog();
   root.querySelector("#accLogReload").addEventListener("click", loadAccessLog);
   root.querySelector("#accLogDays").addEventListener("change", loadAccessLog);
   root.querySelector("#accLogClearRange").addEventListener("click", () => {
@@ -3887,6 +3972,87 @@ export async function admin(root) {
     }
   }
   root.querySelector("#auSearchBtn").addEventListener("click", runAiUsageSearch);
+
+  // 利用状況分析（画面別/機能別再生/ボタン押下/IP別・2026-08-17）。
+  async function loadUsageAnalytics() {
+    const wrap = root.querySelector("#usageAnalyticsWrap");
+    const days = root.querySelector("#uaDays").value;
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    try {
+      const res = await api.get(
+        `/api/system/admin/usage-analytics?days=${days}`);
+      const groupTable = (title, rows, catLabel) => {
+        if (!rows.length) {
+          return `<h3>${title}</h3><p class="muted">まだありません。</p>`;
+        }
+        return `<h3>${title}</h3>
+          <table><thead><tr>
+            <th>${catLabel}</th><th>詳細</th><th>回数</th>
+            <th>ユニークIP</th><th>ユニークユーザー</th>
+          </tr></thead><tbody>${rows.map((r) => `
+            <tr>
+              <td>${escapeHtml(r.category)}</td>
+              <td class="muted">${escapeHtml(r.label || "—")}</td>
+              <td>${r.cnt}</td>
+              <td>${r.uniq_ip}</td>
+              <td>${r.uniq_user}</td>
+            </tr>`).join("")}</tbody></table>`;
+      };
+      const ipTable = res.ips.length ? `<h3>🌐 IPアドレス別</h3>
+        <table><thead><tr>
+          <th>IP</th><th>合計</th><th>画面表示</th><th>再生</th>
+          <th>クリック</th><th>ユーザー名</th><th>最終アクセス(JST)</th>
+        </tr></thead><tbody>${res.ips.map((r) => `
+          <tr>
+            <td class="muted">${escapeHtml(r.ip)}
+              ${r.is_admin ? '<span class="badge-warn" title="管理者の既知IP(.envのADMIN_KNOWN_IPS)">👑管理者</span>' : ""}</td>
+            <td>${r.total}</td>
+            <td>${r.pages}</td>
+            <td>${r.plays}</td>
+            <td>${r.clicks}</td>
+            <td>${escapeHtml(r.usernames || "—")}</td>
+            <td class="muted">${fmtDate(r.last_seen)}</td>
+          </tr>`).join("")}</tbody></table>` :
+        `<h3>🌐 IPアドレス別</h3><p class="muted">まだありません。</p>`;
+      const dailyTable = res.daily.length ? `<h3>📅 日別推移</h3>
+        <table><thead><tr>
+          <th>日付(JST)</th><th>画面表示</th><th>再生</th><th>クリック</th>
+        </tr></thead><tbody>${res.daily.slice().reverse().map((d) => `
+          <tr><td class="muted">${d.date}</td><td>${d.pages}</td>
+            <td>${d.plays}</td><td>${d.clicks}</td></tr>`).join("")}
+        </tbody></table>` : "";
+      wrap.innerHTML = `<p class="muted">対象期間の総イベント数:
+          ${res.total_events}件</p>
+        ${groupTable("📄 画面別アクセス（page）", res.pages, "画面(タブ)")}
+        ${groupTable("🔊 機能別再生（play）", res.plays, "機能")}
+        ${groupTable("🖱️ ボタン押下数（click・上位50）", res.clicks, "画面(タブ)")}
+        ${ipTable}
+        ${dailyTable}`;
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  root.querySelector("#uaRefreshBtn")
+    .addEventListener("click", loadUsageAnalytics);
+  root.querySelector("#uaDays")
+    .addEventListener("change", loadUsageAnalytics);
+
+  // ログの各項目は開いたときに初めて取得する(2026-08-19・「概要をまず
+  // だし、細かい項目は最初はたたんでおき」というユーザー要望に対応。
+  // 併せて管理画面を開くたび無条件に5本のAPIを叩いていたのを解消)。
+  const lazySections = [
+    ["#logLoginDetails", loadLoginLog],
+    ["#logErrorDetails", loadErrorLog],
+    ["#logAccessDetails", loadAccessLog],
+    ["#logUsageAnalyticsDetails", loadUsageAnalytics],
+  ];
+  lazySections.forEach(([sel, loader]) => {
+    const el2 = root.querySelector(sel);
+    let loaded = false;
+    el2.addEventListener("toggle", () => {
+      if (el2.open && !loaded) { loaded = true; loader(); }
+    });
+  });
 
   root.querySelectorAll(".iq-done").forEach((btn) => {
     btn.addEventListener("click", async () => {
@@ -3955,71 +4121,6 @@ export async function admin(root) {
       } catch (e) { toast("失敗: " + e.message); }
     });
   });
-
-  // 利用状況分析（画面別/機能別再生/ボタン押下/IP別・2026-08-17）。
-  async function loadUsageAnalytics() {
-    const wrap = root.querySelector("#usageAnalyticsWrap");
-    const days = root.querySelector("#uaDays").value;
-    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
-    try {
-      const res = await api.get(
-        `/api/system/admin/usage-analytics?days=${days}`);
-      const groupTable = (title, rows, catLabel) => {
-        if (!rows.length) {
-          return `<h3>${title}</h3><p class="muted">まだありません。</p>`;
-        }
-        return `<h3>${title}</h3>
-          <table><thead><tr>
-            <th>${catLabel}</th><th>詳細</th><th>回数</th>
-            <th>ユニークIP</th><th>ユニークユーザー</th>
-          </tr></thead><tbody>${rows.map((r) => `
-            <tr>
-              <td>${escapeHtml(r.category)}</td>
-              <td class="muted">${escapeHtml(r.label || "—")}</td>
-              <td>${r.cnt}</td>
-              <td>${r.uniq_ip}</td>
-              <td>${r.uniq_user}</td>
-            </tr>`).join("")}</tbody></table>`;
-      };
-      const ipTable = res.ips.length ? `<h3>🌐 IPアドレス別</h3>
-        <table><thead><tr>
-          <th>IP</th><th>合計</th><th>画面表示</th><th>再生</th>
-          <th>クリック</th><th>ユーザー名</th><th>最終アクセス(JST)</th>
-        </tr></thead><tbody>${res.ips.map((r) => `
-          <tr>
-            <td class="muted">${escapeHtml(r.ip)}
-              ${r.is_admin ? '<span class="badge-warn" title="管理者の既知IP(.envのADMIN_KNOWN_IPS)">👑管理者</span>' : ""}</td>
-            <td>${r.total}</td>
-            <td>${r.pages}</td>
-            <td>${r.plays}</td>
-            <td>${r.clicks}</td>
-            <td>${escapeHtml(r.usernames || "—")}</td>
-            <td class="muted">${fmtDate(r.last_seen)}</td>
-          </tr>`).join("")}</tbody></table>` :
-        `<h3>🌐 IPアドレス別</h3><p class="muted">まだありません。</p>`;
-      const dailyTable = res.daily.length ? `<h3>📅 日別推移</h3>
-        <table><thead><tr>
-          <th>日付(JST)</th><th>画面表示</th><th>再生</th><th>クリック</th>
-        </tr></thead><tbody>${res.daily.slice().reverse().map((d) => `
-          <tr><td class="muted">${d.date}</td><td>${d.pages}</td>
-            <td>${d.plays}</td><td>${d.clicks}</td></tr>`).join("")}
-        </tbody></table>` : "";
-      wrap.innerHTML = `<p class="muted">対象期間の総イベント数:
-          ${res.total_events}件</p>
-        ${groupTable("📄 画面別アクセス（page）", res.pages, "画面(タブ)")}
-        ${groupTable("🔊 機能別再生（play）", res.plays, "機能")}
-        ${groupTable("🖱️ ボタン押下数（click・上位50）", res.clicks, "画面(タブ)")}
-        ${ipTable}
-        ${dailyTable}`;
-    } catch (e) {
-      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
-    }
-  }
-  loadUsageAnalytics();
-  root.querySelector("#uaRefreshBtn")
-    .addEventListener("click", loadUsageAnalytics);
-  root.querySelector("#uaDays")
-    .addEventListener("change", loadUsageAnalytics);
 }
 
 // --- Settings (API key, model, nickname note, voices, usage) ---------------

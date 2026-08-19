@@ -501,6 +501,16 @@ th { color: var(--muted); font-weight: 600; }
 .fset-group summary::-webkit-details-marker { display: none; }
 .fset-group summary::before { content: "▶ "; color: var(--accent); }
 .fset-group[open] summary::before { content: "▼ "; }
+
+/* 管理者情報タブ内のログ小項目（2026-08-19）。既定は折りたたみ、
+   開いたときだけデータを取得する(lazy load)。矢印表記はfset-groupと統一。 */
+.log-group { margin: 4px 0 14px; border: 1px solid var(--line);
+  border-radius: 10px; padding: 4px 14px 14px; background: var(--panel-2); }
+.log-group summary { cursor: pointer; font-weight: 600; padding: 10px 0;
+  list-style: none; }
+.log-group summary::-webkit-details-marker { display: none; }
+.log-group summary::before { content: "▶ "; color: var(--accent); }
+.log-group[open] summary::before { content: "▼ "; }
 .fset-actions { margin: 4px 0 6px; display: flex; gap: 8px; }
 .fset-actions .btn { padding: 3px 8px; font-size: 12px; }
 .fset-items { display: flex; flex-wrap: wrap; gap: 2px 14px; padding: 2px 0 8px; }
