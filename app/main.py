@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import asyncio
 import time
 from contextlib import asynccontextmanager
 
 import html as html_lib
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi import Response
 from fastapi.responses import (
     FileResponse, HTMLResponse, JSONResponse, PlainTextResponse,
@@ -22,6 +23,8 @@ from .routers import (
     inquiries, learn, phrase_decks, phrases, system, vocabulary,
 )
 from .services import auth as auth_svc
+from .services import geoip
+from .services.errors import error_response
 from .services.spaced_repetition import apply_forgetting_decay
 
 # 認証なしで許可するパス（MULTIUSER=1 のとき）。
@@ -31,6 +34,23 @@ _AUTH_ALLOW = {
     "/favicon.ico", "/tokushoho", "/robots.txt", "/api/system/taxonomy",
     "/sitemap.xml", "/llms.txt",
 }
+
+# 未ログイン訪問をlanding_visitsへ記録するパス（2026-08-20拡張・管理画面
+# 「未登録アクセス状況」の「このアプリをみたか」判定用にabout.htmlを追加）。
+_LANDING_LOG_PATHS = {"/", "/static/about.html"}
+
+# fire-and-forgetのIPエンリッチタスクへの強参照を保持する集合。asyncioの
+# イベントループはタスクを弱参照でしか保持しないため、変数に代入せず
+# asyncio.create_task()しただけだと完了前にGCで消えることがある
+# （公式ドキュメントで明示的に警告されている既知の落とし穴）。
+_background_tasks: set[asyncio.Task] = set()
+
+
+def _spawn_ip_enrich(ip: str) -> None:
+    task = asyncio.create_task(asyncio.to_thread(geoip.enrich_ip, ip))
+    _background_tasks.add(task)
+    task.add_done_callback(_background_tasks.discard)
+
 
 # ①(未ログイン/ゲスト)でも読める(=①向け無料範囲で動く)APIのパス接頭辞
 # （2026-08-11・B1本実装）。単語/フレーズカタログの閲覧・詳細・音声
@@ -96,6 +116,21 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="English Learning with AI", lifespan=lifespan)
 
 
+@app.exception_handler(Exception)
+async def _unhandled_exception_handler(request: Request, exc: Exception):
+    """想定外の未処理例外（バグ・DBロック等）を必ず data/app.log に記録する
+    （2026-08-20発覚: 素のFastAPI/Starletteは500を返すだけでアプリ側の
+    ロガーには何も残さず、管理画面の「エラーログ」でも検知できなかった。
+    実際に未処理例外を発生させて app.log が空のままになることを確認して
+    発覚した穴）。クライアントへは内部詳細を返さず、共通エラーコード
+    7999(アプリ/未分類の内部エラー)のみ返す。"""
+    log.error(
+        "unhandled exception path=%s method=%s", request.url.path,
+        request.method, exc_info=exc,
+    )
+    return error_response("7999")
+
+
 @app.middleware("http")
 async def _auth_context(request, call_next):
     """リクエスト毎に「現在のユーザー」を contextvar に設定する（§A）。
@@ -127,10 +162,11 @@ async def _auth_context(request, call_next):
                         uid = p_uid
         if uid is None:
             path = request.url.path
-            if path == "/":
+            if path in _LANDING_LOG_PATHS:
                 # 未ログインの訪問をIPで軽く記録する（2026-08-11・B1本
-                # 実装。ログ書き込み失敗はトップページ表示自体を妨げない
-                # よう握りつぶす。DBロック等の一過性エラー想定）。
+                # 実装、2026-08-20にabout.html閲覧も対象に拡張。ログ
+                # 書き込み失敗はページ表示自体を妨げないよう握りつぶす
+                # （DBロック等の一過性エラー想定）。
                 try:
                     with db() as conn:
                         conn.execute(
@@ -139,6 +175,10 @@ async def _auth_context(request, call_next):
                             (client_ip, path,
                              request.headers.get("user-agent", "")[:300]),
                         )
+                    # 国・場所・接続元組織名の非同期エンリッチ（未キャッ
+                    # シュのIPのみ実際に外部API呼び出しが走る・失敗しても
+                    # ここで完結し表示への影響なし）。
+                    _spawn_ip_enrich(client_ip)
                 except Exception:
                     log.warning("landing_visits記録に失敗", exc_info=True)
             allowed = (
@@ -155,9 +195,7 @@ async def _auth_context(request, call_next):
                     uid = auth_svc.ensure_guest_user_id(conn)
             elif not allowed:
                 if path.startswith("/api"):
-                    return JSONResponse(
-                        {"ok": False, "error": "要ログイン"},
-                        status_code=401)
+                    return error_response("2003", "要ログイン")
                 return RedirectResponse("/login")
     token = auth_svc.set_current_user_id(
         uid if uid is not None else OWNER_USER_ID)

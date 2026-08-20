@@ -611,6 +611,71 @@ def admin_charge_key_log(
         return [dict(r) for r in rows]
 
 
+@router.get("/admin/anon-access")
+def admin_anon_access(days: int = 30, limit: int = 500):
+    """未ログイン(未登録)訪問者のアクセス状況（IP単位・2026-08-20
+    ユーザー要望）。landing_visits(トップ/about.htmlの閲覧・新規登録の
+    試行成否)を集計し、ip_geo_cache(国/地域/市区/接続元組織名・
+    scripts不要でリクエスト時にバックグラウンド収集済みのものを読むだけ)
+    と突き合わせて返す。
+
+    注意（IP単位の限界）: 同一Wi-Fi/会社等でIPを共有する複数人は1行に
+    まとまり、逆に同じ人がモバイル回線切替等でIPが変われば複数行に
+    分かれる。真の「端末単位」には別途トラッキングCookieの導入が必要
+    （プライバシーポリシーの更新を伴うため未実装・必要なら別途検討）。"""
+    _require_admin()
+    days = max(1, min(days, 365))
+    limit = max(1, min(limit, 2000))
+    since = f"-{days} days"
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT ip, "
+            " MIN(created_at) AS first_seen, MAX(created_at) AS last_seen, "
+            " SUM(CASE WHEN kind='visit' THEN 1 ELSE 0 END) AS visit_count, "
+            " MAX(CASE WHEN kind='visit' AND path='/static/about.html' "
+            "      THEN 1 ELSE 0 END) AS viewed_about, "
+            " MAX(CASE WHEN kind='signup' THEN 1 ELSE 0 END) "
+            "     AS signup_attempted, "
+            " MAX(CASE WHEN kind='signup' AND success=1 THEN 1 ELSE 0 END) "
+            "     AS signup_succeeded "
+            "FROM landing_visits "
+            "WHERE created_at >= datetime('now', ?) AND ip != '' "
+            "GROUP BY ip ORDER BY last_seen DESC LIMIT ?",
+            (since, limit),
+        ).fetchall()
+        geo_rows = conn.execute(
+            "SELECT ip, country, region, city, org, hostname "
+            "FROM ip_geo_cache",
+        ).fetchall()
+        summary = conn.execute(
+            "SELECT COUNT(*) AS total_visits, COUNT(DISTINCT ip) AS "
+            "unique_ips FROM landing_visits "
+            "WHERE kind='visit' AND created_at >= datetime('now', ?)",
+            (since,),
+        ).fetchone()
+
+    geo_map = {r["ip"]: dict(r) for r in geo_rows}
+    admin_ips = load_admin_known_ips()
+    items = []
+    for r in rows:
+        d = dict(r)
+        geo = geo_map.get(d["ip"], {})
+        d["country"] = geo.get("country", "")
+        d["region"] = geo.get("region", "")
+        d["city"] = geo.get("city", "")
+        d["org"] = geo.get("org", "")
+        d["hostname"] = geo.get("hostname", "")
+        d["is_admin"] = d["ip"] in admin_ips
+        items.append(d)
+
+    return {
+        "days": days,
+        "total_visits": summary["total_visits"] if summary else 0,
+        "unique_ips": summary["unique_ips"] if summary else 0,
+        "items": items,
+    }
+
+
 @router.get("/admin/error-log")
 def admin_error_log(lines: int = 200):
     """アプリのエラーログ(data/app.log)の末尾を返す（管理画面のログ確認用・

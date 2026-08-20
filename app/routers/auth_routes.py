@@ -16,7 +16,8 @@ from pydantic import BaseModel
 
 from ..config import log
 from ..database import db
-from ..services import auth
+from ..services import auth, geoip
+from ..services.errors import error_response
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -42,6 +43,26 @@ def _cookie_secure(request: Request) -> bool:
     return request.url.scheme == "https" or xfp == "https"
 
 
+def _record_signup_attempt(
+    request: Request, ip: str, success: bool,
+    background_tasks: BackgroundTasks,
+) -> None:
+    """新規登録の試行(成否問わず)をlanding_visitsに記録する（2026-08-20・
+    管理画面「未登録アクセス状況」の「登録しようとしたか」判定用）。
+    書き込み失敗は登録処理自体を妨げないよう握りつぶす。"""
+    try:
+        with db() as conn:
+            conn.execute(
+                "INSERT INTO landing_visits "
+                "(ip, kind, success, user_agent) VALUES (?, 'signup', ?, ?)",
+                (ip, 1 if success else 0,
+                 request.headers.get("user-agent", "")[:300]),
+            )
+        background_tasks.add_task(geoip.enrich_ip, ip)
+    except Exception:
+        log.warning("landing_visits(signup)記録に失敗", exc_info=True)
+
+
 class LoginIn(BaseModel):
     username: str
     password: str
@@ -65,7 +86,10 @@ class SignupIn(BaseModel):
 
 
 @router.post("/signup")
-def signup(payload: SignupIn, request: Request, response: Response):
+def signup(
+    payload: SignupIn, request: Request, response: Response,
+    background_tasks: BackgroundTasks,
+):
     """自己サインアップ（メアド+パス）。チャージキーは任意（2026-08-13〜）:
     入力があればその場で償還してpt付与、空なら残高0の②ログイン無課金
     ユーザーとして登録する。チャージキーは設定画面の「💳 チャージ」
@@ -73,47 +97,38 @@ def signup(payload: SignupIn, request: Request, response: Response):
     username にはメアドをそのまま使うため、既存の /api/auth/login や
     authenticate() は一切変更不要（従来ユーザーのログイン経路と共存する）。
     """
-    if not SIGNUP_OPEN:
-        return JSONResponse(
-            {"ok": False, "error": SIGNUP_CLOSED_MESSAGE}, status_code=403,
-        )
     from ..services import charge_keys
 
     ip = auth.real_client_ip(request)
+
+    def fail(code: str, message: str | None = None):
+        _record_signup_attempt(request, ip, False, background_tasks)
+        return error_response(code, message)
+
+    if not SIGNUP_OPEN:
+        return fail("2016", SIGNUP_CLOSED_MESSAGE)
     if charge_keys.signup_redeem_locked(ip):
         log.warning("signup: rate-limited ip=%s", ip)
-        return JSONResponse(
-            {"ok": False, "error": "失敗が続いたため、しばらく時間をおいて"
-             "から再試行してください。"},
-            status_code=429,
-        )
+        return fail("2015")
     email = payload.email.strip().lower()
     password = payload.password
     if "@" not in email or "." not in email.split("@")[-1]:
         log.warning("signup: invalid email format ip=%s email=%r", ip, email)
-        return JSONResponse(
-            {"ok": False, "error": "メールアドレスの形式が正しくありません。"},
-            status_code=400,
-        )
+        return fail("2010")
     if auth.is_disposable_email_domain(email):
-        log.warning("signup: disposable email domain ip=%s email=%s", ip, email)
-        return JSONResponse(
-            {"ok": False, "error": "使い捨てメールアドレスでは登録できません。"},
-            status_code=400,
-        )
+        log.warning(
+            "signup: disposable email domain ip=%s email=%s", ip, email)
+        return fail("2011")
     pw_error = auth.password_policy_error(password)
     if pw_error:
         log.warning("signup: password policy error ip=%s email=%s reason=%s",
                      ip, email, pw_error)
-        return JSONResponse({"ok": False, "error": pw_error}, status_code=400)
+        return fail("2012", pw_error)
     full_name = payload.full_name.strip()
     furigana = payload.furigana.strip()
     if not full_name or not furigana:
         log.warning("signup: missing name/furigana ip=%s email=%s", ip, email)
-        return JSONResponse(
-            {"ok": False, "error": "氏名とフリガナを入力してください。"},
-            status_code=400,
-        )
+        return fail("2013")
     # 注意: ChargeKeyError は with ブロックの外で捕まえること。ブロック内で
     # catch して return してしまうと、db() の contextmanager からは
     # "例外なく正常終了" に見えて create_user の INSERT がロールバックされず
@@ -147,12 +162,14 @@ def signup(payload: SignupIn, request: Request, response: Response):
             u = auth.get_user(conn, uid)
     except charge_keys.ChargeKeyError as e:
         # 「メール登録済み」はチャージキー総当たりとは無関係なので数えない。
-        if str(e) != "このメールアドレスは既に登録されています。":
+        is_dup_email = str(e) == "このメールアドレスは既に登録されています。"
+        if not is_dup_email:
             charge_keys.record_signup_redeem_failure(ip)
         log.warning("signup: failed ip=%s email=%s reason=%s", ip, email, e)
-        return JSONResponse({"ok": False, "error": str(e)}, status_code=400)
+        return fail("2014" if is_dup_email else "3001", str(e))
     log.info("signup: ok ip=%s email=%s uid=%s charge_key=%s",
               ip, email, uid, bool(payload.charge_key.strip()))
+    _record_signup_attempt(request, ip, True, background_tasks)
     token = auth.make_session_token(
         secret, uid, u.get("session_epoch", 0), int(time.time()))
     resp = JSONResponse({"ok": True, "user": {
@@ -175,21 +192,18 @@ def login(
     ip = auth.real_client_ip(request)
     locked = auth.login_locked(payload.username, ip)
     if locked:
-        log.warning("login: rate-limited ip=%s username=%s", ip, payload.username)
-        return JSONResponse(
-            {"ok": False, "error": "試行が多すぎます。しばらく待って"
-             "から再試行してください。"}, status_code=429)
+        log.warning(
+            "login: rate-limited ip=%s username=%s", ip, payload.username)
+        return error_response("2002")
     with db() as conn:
         u = auth.authenticate(conn, payload.username, payload.password)
         if not u:
             auth.record_login_failure(payload.username, ip)
-            log_id = auth.record_login_event(conn, payload.username, ip, False)
+            log_id = auth.record_login_event(
+                conn, payload.username, ip, False)
             background_tasks.add_task(auth.update_login_hostname, log_id, ip)
             log.warning("login: failed ip=%s username=%s", ip, payload.username)
-            return JSONResponse(
-                {"ok": False, "error": "ユーザー名かパスワードが違います。"},
-                status_code=401,
-            )
+            return error_response("2001")
         secret = auth.get_session_secret(conn)
         log_id = auth.record_login_event(conn, payload.username, ip, True)
         background_tasks.add_task(auth.update_login_hostname, log_id, ip)
@@ -239,8 +253,7 @@ def me():
         u = auth.get_user(conn, uid)
         tier = auth.user_tier(conn, uid) if u else None
     if not u:
-        return JSONResponse({"ok": False, "error": "未ログイン"},
-                            status_code=401)
+        return error_response("2003", "未ログイン")
     return {"ok": True, "user": {
         "id": u["id"], "username": u["username"], "role": u["role"],
         "display_name": u["display_name"], "email": u["email"],

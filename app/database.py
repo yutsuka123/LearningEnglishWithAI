@@ -132,12 +132,35 @@ CREATE TABLE IF NOT EXISTS word_domain_tags (
 -- 未ログイン訪問者向けランディング(このアプリについて)ページのアクセス
 -- ログ（2026-08-11・B1着手前の状況把握用）。IPで同一人物かどうかの
 -- 目安を付ける（厳密な識別ではないが最低限の可視化には十分）。
+-- 2026-08-20〜: kind列を追加し、ページ閲覧('visit'・pathに実際のパス)に
+-- 加えて新規登録の試行('signup'・successに成否)も同じテーブルに記録する
+-- ようにした（管理画面「未登録アクセス状況」の「登録しようとしたか」用）。
 CREATE TABLE IF NOT EXISTS landing_visits (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     ip         TEXT    DEFAULT '',
     path       TEXT    DEFAULT '',
     user_agent TEXT    DEFAULT '',
+    kind       TEXT    NOT NULL DEFAULT 'visit',
+    success    INTEGER,
     created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_landing_visits_ip ON landing_visits(ip);
+
+-- IPごとの位置情報キャッシュ（2026-08-20・外部ジオロケーションAPIの
+-- 結果を保存し、同じIPへの再問い合わせを避ける。private/loopback等は
+-- 対象外＝行自体を作らない）。org はISP/ホスティング事業者名（「サーバー
+-- 会社もしくは名前」表示に使う。空ならhostname(PTR逆引き)にフォール
+-- バック）。fetched_atは再取得の要否判断に使う想定（現状は無期限
+-- キャッシュ・必要になれば期限判定を追加）。
+CREATE TABLE IF NOT EXISTS ip_geo_cache (
+    ip         TEXT PRIMARY KEY,
+    country    TEXT DEFAULT '',
+    region     TEXT DEFAULT '',
+    city       TEXT DEFAULT '',
+    org        TEXT DEFAULT '',
+    hostname   TEXT DEFAULT '',
+    error      TEXT DEFAULT '',
+    fetched_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
 -- ログイン試行ログ（成功/失敗とも記録・管理画面のログ確認用・
@@ -700,6 +723,11 @@ def _migrate(conn: sqlite3.Connection) -> None:
     # テストアカウントを除外表示できるようにするため。管理者(role=admin)
     # ・メール未登録の招待ユーザーと合わせて3種類の独立したフィルタ軸)。
     _add_col(conn, "users", "is_test", "is_test INTEGER NOT NULL DEFAULT 0")
+    # landing_visitsをページ閲覧に加えて登録試行も記録できるように拡張
+    # (2026-08-20・管理画面「未登録アクセス状況」用)。
+    _add_col(conn, "landing_visits", "kind",
+             "kind TEXT NOT NULL DEFAULT 'visit'")
+    _add_col(conn, "landing_visits", "success", "success INTEGER")
     _migrate_multiuser(conn)
 
 

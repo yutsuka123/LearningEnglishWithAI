@@ -13,8 +13,13 @@ async function req(method, path, body) {
   if (!res.ok) {
     const msg = (data && (data.detail || data.error)) || res.statusText;
     const text2 = typeof msg === "string" ? msg : JSON.stringify(msg);
-    console.error(`API ${method} ${path} -> ${res.status}: ${text2}`);
-    throw new Error(text2);
+    // サーバー側が付与する4桁エラーコード(X-Error-Codeヘッダ)。問い合わせ
+    // 時にユーザーがこのコードを伝えられるよう、メッセージ末尾に付記する
+    // （2026-08-20〜共通エラーコード体系、docs/ERROR_CODES.md参照）。
+    const code = res.headers.get("X-Error-Code");
+    const withCode = code ? `${text2} (E${code})` : text2;
+    console.error(`API ${method} ${path} -> ${res.status}: ${withCode}`);
+    throw new Error(withCode);
   }
   return data;
 }

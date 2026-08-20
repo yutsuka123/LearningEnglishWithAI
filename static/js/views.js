@@ -3695,6 +3695,28 @@ export async function admin(root) {
         <div id="loginLogWrap" class="mt"><p class="muted">未読み込み</p></div>
       </details>
 
+      <details class="log-group" id="logAnonAccessDetails">
+        <summary>👤 未登録アクセス状況（未ログイン訪問者）</summary>
+        <p class="muted mt">トップページ/取扱説明書(このアプリについて)の
+          閲覧と新規登録の試行をIP単位で集計。国・場所・接続元組織名は
+          外部API(ipapi.co)の結果をキャッシュしたもの（初回アクセス時は
+          未取得で空欄のことがあり、少し待って再読み込みすると埋まる）。
+          同一IPを共有する複数人は1行にまとまる/同じ人でもIPが変われば
+          複数行に分かれる、というIP単位ならではの目安であることに注意。</p>
+        <div class="row">
+          <label>直近:
+            <select id="anonAccessDays">
+              <option value="7">7日</option>
+              <option value="30" selected>30日</option>
+              <option value="90">90日</option>
+              <option value="365">1年</option>
+            </select></label>
+          <button class="btn ghost" id="anonAccessReload"
+            style="padding:3px 10px">再読み込み</button>
+        </div>
+        <div id="anonAccessWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
+
       <details class="log-group" id="logChargeKeyDetails">
         <summary>🧾 チャージキー入力ログ（直近100件・無期限保持）</summary>
         <p class="muted mt">キー番号(secretを含まない公開部分)は無期限保持
@@ -3978,6 +4000,52 @@ export async function admin(root) {
       wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
     }
   }
+
+  async function loadAnonAccess() {
+    const wrap = root.querySelector("#anonAccessWrap");
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    const days = root.querySelector("#anonAccessDays").value;
+    try {
+      const res = await api.get(`/api/system/admin/anon-access?days=${days}`);
+      const items = res.items || [];
+      const summary = `<p class="muted">期間内の未ログインアクセス
+        合計 <strong>${res.total_visits}</strong> 回
+        （ユニークIP <strong>${res.unique_ips}</strong> 件）。</p>`;
+      if (!items.length) {
+        wrap.innerHTML = summary + `<p class="muted">まだありません。</p>`;
+        return;
+      }
+      const place = (r) => [r.country, r.region, r.city]
+        .filter(Boolean).join(" / ") || "—";
+      wrap.innerHTML = summary + `<table><thead><tr>
+        <th>IP</th><th>国/地域/市区</th><th>接続元組織・ホスト名</th>
+        <th>初回</th><th>最終</th><th>回数</th><th>説明書閲覧</th>
+        <th>登録試行</th>
+        </tr></thead><tbody>${items.map((r) => `
+        <tr>
+          <td class="muted">${escapeHtml(r.ip)}${
+            r.is_admin ? ' <span title="管理者の既知IP">👑</span>' : ""}</td>
+          <td class="muted">${escapeHtml(place(r))}</td>
+          <td class="muted">${escapeHtml(r.org || r.hostname || "—")}</td>
+          <td class="muted">${fmtDate(r.first_seen)}</td>
+          <td class="muted">${fmtDate(r.last_seen)}</td>
+          <td>${r.visit_count}</td>
+          <td>${r.viewed_about
+            ? '<span class="badge-ok">見た</span>' : "—"}</td>
+          <td>${r.signup_attempted
+            ? (r.signup_succeeded
+              ? '<span class="badge-ok">成功</span>'
+              : '<span class="badge-bad">試行(未成立)</span>')
+            : "—"}</td>
+        </tr>`).join("")}</tbody></table>`;
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  root.querySelector("#anonAccessReload")
+    .addEventListener("click", loadAnonAccess);
+  root.querySelector("#anonAccessDays")
+    .addEventListener("change", loadAnonAccess);
 
   async function loadChargeKeyLog() {
     const wrap = root.querySelector("#chargeKeyLogWrap");
@@ -4309,6 +4377,7 @@ export async function admin(root) {
   const lazySections = [
     ["#logServerStatusDetails", loadServerStatus],
     ["#logLoginDetails", loadLoginLog],
+    ["#logAnonAccessDetails", loadAnonAccess],
     ["#logChargeKeyDetails", loadChargeKeyLog],
     ["#logErrorDetails", loadErrorLog],
     ["#logAccessDetails", loadAccessLog],
