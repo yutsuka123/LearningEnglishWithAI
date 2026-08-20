@@ -3620,8 +3620,9 @@ export async function admin(root) {
 
     <div class="card">
       <p class="muted">以下の集計フィルタは、ユーザー別管理/使用状況・
-        利用状況分析・サーバー状態の同時アクセス数に共通で効きます
-        （集計自体は全ユーザー分を保持しており、表示のみの絞り込みです）。</p>
+        利用状況分析・サーバー状態の同時アクセス数・ログイン履歴・
+        チャージキー入力ログに共通で効きます（集計自体は全ユーザー分を
+        保持しており、表示のみの絞り込みです）。</p>
       <div class="row">
         <label><input type="checkbox" id="aggIncludeAdmin"
           ${adminAggFilters.include_admin ? "checked" : ""} />
@@ -3954,7 +3955,8 @@ export async function admin(root) {
     const wrap = root.querySelector("#loginLogWrap");
     wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
     try {
-      const rows = await api.get("/api/system/admin/login-log");
+      const rows = await api.get(
+        `/api/system/admin/login-log?${adminAggQuery()}`);
       if (!rows.length) {
         wrap.innerHTML = `<p class="muted">まだありません。</p>`;
         return;
@@ -3981,7 +3983,8 @@ export async function admin(root) {
     const wrap = root.querySelector("#chargeKeyLogWrap");
     wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
     try {
-      const rows = await api.get("/api/system/admin/charge-key-log");
+      const rows = await api.get(
+        `/api/system/admin/charge-key-log?${adminAggQuery()}`);
       if (!rows.length) {
         wrap.innerHTML = `<p class="muted">まだありません。</p>`;
         return;

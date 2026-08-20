@@ -558,29 +558,46 @@ def admin_force_logout(payload: ForceLogoutIn):
 
 
 @router.get("/admin/login-log")
-def admin_login_log(limit: int = 100):
+def admin_login_log(
+    limit: int = 100, include_admin: bool = False,
+    include_invited: bool = False, include_test: bool = False,
+):
     """直近のログイン試行ログ（成功/失敗とも・管理画面のログ確認用・
     2026-08-13。hostnameはIPのDNS逆引き結果・2026-08-20追加。ログイン
     直後はBackgroundTasksでの解決前のため空のことがあり、しばらくして
-    再読み込みすると埋まる）。"""
+    再読み込みすると埋まる）。既定では他の集計と同じく管理者/招待
+    ユーザー/テストユーザーの行を除外する（2026-08-20・login_logは
+    user_idを持たずusernameで記録するため、usersとusernameでJOIN。
+    存在しないユーザー名への誤ログイン試行はu.idがNULLになり、
+    不正アクセス監視のため常に表示対象に含める）。"""
     _require_admin()
     limit = max(1, min(limit, 500))
+    filter_sql = _user_filter_sql(include_admin, include_invited,
+                                   include_test)
     with db() as conn:
         rows = conn.execute(
-            "SELECT username, ip, hostname, success, created_at "
-            "FROM login_log ORDER BY id DESC LIMIT ?", (limit,),
+            "SELECT l.username, l.ip, l.hostname, l.success, l.created_at "
+            "FROM login_log l LEFT JOIN users u ON u.username = l.username "
+            f"WHERE {filter_sql} "
+            "ORDER BY l.id DESC LIMIT ?", (limit,),
         ).fetchall()
         return [dict(r) for r in rows]
 
 
 @router.get("/admin/charge-key-log")
-def admin_charge_key_log(limit: int = 100):
+def admin_charge_key_log(
+    limit: int = 100, include_admin: bool = False,
+    include_invited: bool = False, include_test: bool = False,
+):
     """チャージキー入力の試行ログ（成功/失敗とも・無期限保持・
-    2026-08-19ユーザー要望「キー関係は無期限でログを残す」）。管理者自身の
-    テスト操作は実際の購入者の動向ではないため対象外にする
-    （2026-08-19ユーザー要望）。"""
+    2026-08-19ユーザー要望「キー関係は無期限でログを残す」）。既定では
+    他の集計と同じく管理者/招待ユーザー/テストユーザーを除外する
+    （2026-08-20・従来は管理者のみ固定除外だったのを他の集計と揃えて
+    切り替え可能にした）。"""
     _require_admin()
     limit = max(1, min(limit, 500))
+    filter_sql = _user_filter_sql(include_admin, include_invited,
+                                   include_test)
     with db() as conn:
         rows = conn.execute(
             "SELECT a.result, a.key_id_hash, a.created_at, "
@@ -588,7 +605,7 @@ def admin_charge_key_log(limit: int = 100):
             "FROM charge_key_attempts a "
             "LEFT JOIN users u ON u.id = a.user_id "
             "LEFT JOIN charge_keys k ON k.id = a.charge_key_id "
-            "WHERE COALESCE(u.role, '') != 'admin' "
+            f"WHERE {filter_sql} "
             "ORDER BY a.id DESC LIMIT ?", (limit,),
         ).fetchall()
         return [dict(r) for r in rows]
