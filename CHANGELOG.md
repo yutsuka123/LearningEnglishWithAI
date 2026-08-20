@@ -41,8 +41,12 @@
   グローバル例外ハンドラのみ実装、残り約80箇所は次回以降に順次展開。
 - ローカルでcurl/Playwright実機確認済み（登録成功/失敗・ログイン成功/
   失敗でのコード付与、未処理例外での7999付与とapp.log記録、管理画面
-  新セクションの表示・データ取得、コンソールエラー0）。**本番デプロイは
-  未実施**（次回デプロイ時の運用手順に従うこと）。
+  新セクションの表示・データ取得、コンソールエラー0）。**本番デプロイ
+  済み**（`deploy/sync_code.sh`→dry-runで削除対象なし確認→
+  `docker compose -f deploy/docker-compose.study.yml up -d --build`。
+  起動ログにエラーなし＝DBマイグレーション(landing_visits拡張・
+  ip_geo_cache新設)も正常適用。`/`・`/login`・`/api/health`・
+  `/static/about.html`いずれも200、ailab 302で無影響を確認済み）。
 
 ## ver1.2.6 (2026-08-20・commit `531b84e`)
 
