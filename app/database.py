@@ -696,6 +696,10 @@ def _migrate(conn: sqlite3.Connection) -> None:
     # ログイン元IPのDNS逆引きホスト名(2026-08-20・管理画面のログイン
     # 履歴でアクセス元をざっくり把握するため)。
     _add_col(conn, "login_log", "hostname", "hostname TEXT DEFAULT ''")
+    # テストユーザーフラグ(2026-08-20・管理画面の各種集計から開発用
+    # テストアカウントを除外表示できるようにするため。管理者(role=admin)
+    # ・メール未登録の招待ユーザーと合わせて3種類の独立したフィルタ軸)。
+    _add_col(conn, "users", "is_test", "is_test INTEGER NOT NULL DEFAULT 0")
     _migrate_multiuser(conn)
 
 

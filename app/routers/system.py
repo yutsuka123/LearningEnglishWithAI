@@ -36,6 +36,46 @@ def _require_admin() -> None:
         raise HTTPException(403, "管理者のみ利用できます。")
 
 
+def _user_filter_sql(
+    include_admin: bool, include_invited: bool, include_test: bool,
+    alias: str = "u",
+) -> str:
+    """管理画面の各種集計から管理者/招待ユーザー/テストユーザーを除外する
+    SQL条件（2026-08-20ユーザー要望・usersテーブルに`alias`でJOIN済みが
+    前提）。行の主体がusersでない場合(usage_eventsの未ログイン操作等)は
+    `{alias}.id IS NULL`になるため、常にフィルタの対象外＝含める。
+    - include_admin=False: role='admin'を除外
+    - include_invited=False: 「メール以外の招待ユーザー」= 自己サイン
+      アップ(email列あり)ではない従来ユーザーを除外
+    - include_test=False: 開発用テストアカウント(is_test=1)を除外
+    """
+    conds = []
+    if not include_admin:
+        conds.append(f"({alias}.role IS NULL OR {alias}.role != 'admin')")
+    if not include_invited:
+        conds.append(f"({alias}.id IS NULL OR {alias}.email != '')")
+    if not include_test:
+        conds.append(f"({alias}.id IS NULL OR {alias}.is_test = 0)")
+    return " AND ".join(conds) if conds else "1=1"
+
+
+@router.post("/admin/users/{user_id}/test-flag")
+def admin_set_test_flag(user_id: int, payload: dict):
+    """ユーザーの「テストユーザー」フラグを切り替える（管理画面の各種
+    集計フィルタ用・2026-08-20）。開発用に作成したアカウントかどうかは
+    機械的に判定できないため、管理者が手動でマークする設計。"""
+    _require_admin()
+    is_test = bool(payload.get("is_test"))
+    with db() as conn:
+        if not auth.get_user(conn, user_id):
+            raise HTTPException(404, "ユーザーが見つかりません。")
+        conn.execute(
+            "UPDATE users SET is_test = ? WHERE id = ?",
+            (1 if is_test else 0, user_id),
+        )
+    return {"ok": True, "user_id": user_id, "is_test": is_test}
+
+
 @router.get("/taxonomy")
 def taxonomy():
     """Selectable lists for UI dropdowns (news fields, accents, models)."""
@@ -354,9 +394,15 @@ def my_usage():
 
 
 @router.get("/admin/overview")
-def admin_overview():
+def admin_overview(
+    include_admin: bool = False, include_invited: bool = False,
+    include_test: bool = False,
+):
     """管理者ダッシュボード: 全ユーザーの使用量・残高・上限・状態と、
-    不正/問題の手がかり（上限到達・残高切れ・ログインロック）。管理者専用。"""
+    不正/問題の手がかり（上限到達・残高切れ・ログインロック）。管理者専用。
+    既定では管理者自身/メール未登録の招待ユーザー/テストユーザーを一覧
+    から除外する（2026-08-20ユーザー要望・include_*で個別に含められる。
+    どのみち全ユーザー分を集計はしており、表示のみのフィルタ）。"""
     from ..database import db
     from ..services import auth
     s = load_settings()
@@ -365,8 +411,11 @@ def admin_overview():
         me = auth.get_user(conn, auth.current_user_id())
         if not me or me.get("role") != "admin":
             raise HTTPException(403, "管理者のみ閲覧できます。")
+        filter_sql = _user_filter_sql(include_admin, include_invited,
+                                       include_test)
         rows = conn.execute(
             "SELECT u.id, u.username, u.display_name, u.role, u.is_active, "
+            " u.email, u.is_test, "
             " u.daily_cost_cap_usd dcap, u.monthly_cost_cap_usd mcap, "
             " u.balance_jpy, u.allow_banned, "
             " (SELECT COALESCE(SUM(cost_usd),0) FROM ai_usage a WHERE "
@@ -392,7 +441,7 @@ def admin_overview():
             "   SELECT MAX(created_at) FROM phrase_attempts "
             "    WHERE user_id=u.id"
             "  )) last_studied "
-            "FROM users u ORDER BY u.id"
+            f"FROM users u WHERE {filter_sql} ORDER BY u.id"
         ).fetchall()
     users = []
     for r in rows:
@@ -407,6 +456,8 @@ def admin_overview():
             "id": r["id"], "username": r["username"],
             "display_name": r["display_name"], "role": r["role"],
             "is_active": bool(r["is_active"]),
+            "has_email": bool(r["email"]),
+            "is_test": bool(r["is_test"]),
             "allow_banned": bool(r["allow_banned"]),
             "today_jpy": round(today_jpy, 1),
             "month_jpy": round(month_jpy, 1),
@@ -689,20 +740,30 @@ def track_event(payload: TrackEventIn):
 
 
 @router.get("/admin/usage-analytics")
-def admin_usage_analytics(days: int = 30):
+def admin_usage_analytics(
+    days: int = 30, include_admin: bool = False,
+    include_invited: bool = False, include_test: bool = False,
+):
     """画面別アクセス・機能別再生・ボタン押下・IP別の集計（管理画面・
     2026-08-17）。usage_eventsテーブルからその場で集計するため常に最新
-    （管理画面の「更新」ボタンはこのAPIを再取得するだけでよい）。"""
+    （管理画面の「更新」ボタンはこのAPIを再取得するだけでよい）。
+    既定では管理者自身/メール未登録の招待ユーザー/テストユーザーの
+    イベントを集計から除外する（2026-08-20ユーザー要望・include_*で
+    個別に含められる。未ログイン操作(user_id NULL)は常に含む）。"""
     _require_admin()
     days = max(1, min(days, 365))
     since = f"-{days} days"
+    filter_sql = _user_filter_sql(include_admin, include_invited,
+                                   include_test)
 
     def _grouped(conn, kind: str, limit: int = 50) -> list[dict]:
         rows = conn.execute(
             "SELECT category, label, COUNT(*) AS cnt, "
             "COUNT(DISTINCT ip) AS uniq_ip, "
-            "COUNT(DISTINCT user_id) AS uniq_user FROM usage_events "
-            "WHERE kind = ? AND created_at >= datetime('now', ?) "
+            "COUNT(DISTINCT user_id) AS uniq_user FROM usage_events ue "
+            "LEFT JOIN users u ON u.id = ue.user_id "
+            "WHERE ue.kind = ? AND ue.created_at >= datetime('now', ?) "
+            f"AND {filter_sql} "
             "GROUP BY category, label ORDER BY cnt DESC LIMIT ?",
             (kind, since, limit),
         ).fetchall()
@@ -714,8 +775,10 @@ def admin_usage_analytics(days: int = 30):
         rows = conn.execute(
             "SELECT category, COUNT(*) AS cnt, "
             "COUNT(DISTINCT ip) AS uniq_ip, "
-            "COUNT(DISTINCT user_id) AS uniq_user FROM usage_events "
-            "WHERE kind = ? AND created_at >= datetime('now', ?) "
+            "COUNT(DISTINCT user_id) AS uniq_user FROM usage_events ue "
+            "LEFT JOIN users u ON u.id = ue.user_id "
+            "WHERE ue.kind = ? AND ue.created_at >= datetime('now', ?) "
+            f"AND {filter_sql} "
             "GROUP BY category ORDER BY cnt DESC LIMIT ?",
             (kind, since, limit),
         ).fetchall()
@@ -740,7 +803,7 @@ def admin_usage_analytics(days: int = 30):
             " COUNT(*) AS cnt, COUNT(DISTINCT ue.user_id) AS uniq_user "
             "FROM usage_events ue JOIN users u ON u.id = ue.user_id "
             "WHERE ue.kind IN ('word_domain', 'phrase_scene') "
-            " AND ue.created_at >= datetime('now', ?) "
+            f" AND ue.created_at >= datetime('now', ?) AND {filter_sql} "
             "GROUP BY age_group, gender, ue.kind, ue.category "
             "ORDER BY cnt DESC LIMIT 300",
             (since,),
@@ -750,9 +813,9 @@ def admin_usage_analytics(days: int = 30):
         # ・複数選択のためsurvey_referralは", "区切りの文字列。Python側で
         # 分解してから件数を数える）。集計期間はusers.created_atで絞る。
         referral_text_rows = conn.execute(
-            "SELECT survey_referral FROM users "
+            "SELECT survey_referral FROM users u "
             "WHERE survey_referral != '' AND username != 'guest' "
-            "AND created_at >= datetime('now', ?)",
+            f"AND created_at >= datetime('now', ?) AND {filter_sql}",
             (since,),
         ).fetchall()
 
@@ -765,6 +828,7 @@ def admin_usage_analytics(days: int = 30):
             "MAX(ue.created_at) AS last_seen FROM usage_events ue "
             "LEFT JOIN users u ON u.id = ue.user_id "
             "WHERE ue.created_at >= datetime('now', ?) AND ue.ip != '' "
+            f"AND {filter_sql} "
             "GROUP BY ue.ip ORDER BY total DESC LIMIT 50",
             (since,),
         ).fetchall()
@@ -774,11 +838,14 @@ def admin_usage_analytics(days: int = 30):
         # から日付部分を取り出す(2026-08-19・UTC日境界のままだった不具合
         # を修正)。
         daily_rows = conn.execute(
-            "SELECT substr(datetime(created_at, '+9 hours'), 1, 10) AS date, "
+            "SELECT substr(datetime(ue.created_at, '+9 hours'), 1, 10) "
+            " AS date, "
             "SUM(CASE WHEN kind='page' THEN 1 ELSE 0 END) AS pages, "
             "SUM(CASE WHEN kind='play' THEN 1 ELSE 0 END) AS plays, "
             "SUM(CASE WHEN kind='click' THEN 1 ELSE 0 END) AS clicks "
-            "FROM usage_events WHERE created_at >= datetime('now', ?) "
+            "FROM usage_events ue LEFT JOIN users u ON u.id = ue.user_id "
+            "WHERE ue.created_at >= datetime('now', ?) "
+            f"AND {filter_sql} "
             "GROUP BY date ORDER BY date",
             (since,),
         ).fetchall()
@@ -787,8 +854,9 @@ def admin_usage_analytics(days: int = 30):
         # は起動時に一度だけ作られる行なので実登録者数を歪めないよう除外）。
         signup_rows = conn.execute(
             "SELECT substr(datetime(created_at, '+9 hours'), 1, 10) AS date, "
-            "COUNT(*) AS signups FROM users "
+            "COUNT(*) AS signups FROM users u "
             "WHERE created_at >= datetime('now', ?) AND username != 'guest' "
+            f"AND {filter_sql} "
             "GROUP BY date ORDER BY date",
             (since,),
         ).fetchall()
@@ -796,19 +864,23 @@ def admin_usage_analytics(days: int = 30):
         # 時間帯別(0〜23時・JST)の利用率（2026-08-19・ユーザー要望。対象
         # 期間全体を通した時間帯ごとの合計で、日をまたいで集計する）。
         hourly_rows = conn.execute(
-            "SELECT CAST(substr(datetime(created_at, '+9 hours'), 12, 2) "
+            "SELECT CAST(substr(datetime(ue.created_at, '+9 hours'), 12, 2) "
             " AS INTEGER) AS hour, "
             "SUM(CASE WHEN kind='page' THEN 1 ELSE 0 END) AS pages, "
             "SUM(CASE WHEN kind='play' THEN 1 ELSE 0 END) AS plays, "
             "SUM(CASE WHEN kind='click' THEN 1 ELSE 0 END) AS clicks "
-            "FROM usage_events WHERE created_at >= datetime('now', ?) "
+            "FROM usage_events ue LEFT JOIN users u ON u.id = ue.user_id "
+            "WHERE ue.created_at >= datetime('now', ?) "
+            f"AND {filter_sql} "
             "GROUP BY hour ORDER BY hour",
             (since,),
         ).fetchall()
 
         total_events = conn.execute(
-            "SELECT COUNT(*) FROM usage_events "
-            "WHERE created_at >= datetime('now', ?)", (since,),
+            "SELECT COUNT(*) FROM usage_events ue "
+            "LEFT JOIN users u ON u.id = ue.user_id "
+            f"WHERE ue.created_at >= datetime('now', ?) AND {filter_sql}",
+            (since,),
         ).fetchone()[0]
 
     # 管理者自身の既知IP(.env の ADMIN_KNOWN_IPS)には is_admin フラグを
@@ -857,6 +929,9 @@ def admin_usage_analytics(days: int = 30):
 
     return {
         "days": days,
+        "include_admin": include_admin,
+        "include_invited": include_invited,
+        "include_test": include_test,
         "total_events": total_events,
         "pages": pages,
         "plays": plays,
@@ -965,7 +1040,10 @@ def admin_disk_usage():
 
 
 @router.get("/admin/server-status")
-def admin_server_status():
+def admin_server_status(
+    include_admin: bool = False, include_invited: bool = False,
+    include_test: bool = False,
+):
     """VPSホストのCPU/RAM/ディスク負荷＋直近アクティブユーザー数
     （サーバー状態監視・2026-08-20ユーザー要望）。サクラVPSはn8n・ecopy
     等の他dockerプロジェクトと相乗りのため、コンテナ内からはホスト
@@ -973,7 +1051,9 @@ def admin_server_status():
     collect_server_stats.py がVPSホストのcronで定期収集して書き出す
     data/server_stats.jsonl の最新行を読むだけ（ここでは計測しない・
     analyze_access_log.py と同じ流儀）。ファイルが無い場合(ローカル
-    開発時・cron未設定時)は host=null で返す。"""
+    開発時・cron未設定時)は host=null で返す。同時アクセス数は既定で
+    管理者/招待ユーザー/テストユーザーを除く（他の集計と同じフィルタ・
+    2026-08-20）。"""
     _require_admin()
     path = paths.data_dir / "server_stats.jsonl"
     latest = None
@@ -987,10 +1067,13 @@ def admin_server_status():
                     latest = json.loads(line)
                 except ValueError:
                     continue
+    filter_sql = _user_filter_sql(include_admin, include_invited,
+                                   include_test)
     with db() as conn:
         row = conn.execute(
-            "SELECT COUNT(DISTINCT user_id) AS c FROM usage_events "
-            "WHERE created_at >= datetime('now', '-5 minutes') "
-            "AND user_id IS NOT NULL"
+            "SELECT COUNT(DISTINCT ue.user_id) AS c FROM usage_events ue "
+            "JOIN users u ON u.id = ue.user_id "
+            "WHERE ue.created_at >= datetime('now', '-5 minutes') "
+            f"AND {filter_sql}"
         ).fetchone()
     return {"host": latest, "active_users_5min": row["c"]}

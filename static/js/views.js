@@ -12,6 +12,19 @@ import {
 // 禁止用語クエリ: include_banned を付ける/付けないを返す小ヘルパー。
 const bannedParam = (on) => (on ? "include_banned=true" : "");
 
+// 管理画面の各種集計フィルタ（2026-08-20ユーザー要望）。既定は管理者
+// 自身/メール未登録の招待ユーザー/テストユーザーを除外(=実際の一般
+// ユーザーの動向だけを見る)。管理者情報画面を開いている間・go("admin")
+// での再描画をまたいで状態を保持するためモジュールレベルに置く。
+const adminAggFilters = {
+  include_admin: false, include_invited: false, include_test: false,
+};
+function adminAggQuery() {
+  return `include_admin=${adminAggFilters.include_admin}`
+    + `&include_invited=${adminAggFilters.include_invited}`
+    + `&include_test=${adminAggFilters.include_test}`;
+}
+
 // 習熟度(mastery)設定の既定値。app/services/spaced_repetition.py の
 // DEFAULT_MASTERY_CONFIG と同じ値に保つこと(2026-08-18)。
 const MASTERY_DEFAULTS = {
@@ -3511,7 +3524,7 @@ export async function history(root) {
 export async function admin(root) {
   let d;
   try {
-    d = await api.get("/api/system/admin/overview");
+    d = await api.get(`/api/system/admin/overview?${adminAggQuery()}`);
   } catch (e) {
     root.innerHTML = `<h1>管理者情報</h1>
       <p class="muted">管理者のみ閲覧できます（${escapeHtml(e.message)}）。</p>`;
@@ -3554,6 +3567,9 @@ export async function admin(root) {
       <td>${nameCell(u)}</td>
       <td>${u.role}</td>
       <td>${flagsFor(u)}</td>
+      <td><label style="white-space:nowrap"><input type="checkbox"
+        class="test-flag-cb" data-uid="${u.id}"
+        ${u.is_test ? "checked" : ""} /> テスト</label></td>
       <td>
         <input type="number" class="chg-amt" data-uid="${u.id}"
           value="1000" min="-10000" max="10000" step="100" style="width:74px" />
@@ -3602,12 +3618,29 @@ export async function admin(root) {
         data-sec="${key}">${label}</button>`).join("")}
     </div>
 
+    <div class="card">
+      <p class="muted">以下の集計フィルタは、ユーザー別管理/使用状況・
+        利用状況分析・サーバー状態の同時アクセス数に共通で効きます
+        （集計自体は全ユーザー分を保持しており、表示のみの絞り込みです）。</p>
+      <div class="row">
+        <label><input type="checkbox" id="aggIncludeAdmin"
+          ${adminAggFilters.include_admin ? "checked" : ""} />
+          管理者を含める</label>
+        <label><input type="checkbox" id="aggIncludeInvited"
+          ${adminAggFilters.include_invited ? "checked" : ""} />
+          招待ユーザー(メール未登録)を含める</label>
+        <label><input type="checkbox" id="aggIncludeTest"
+          ${adminAggFilters.include_test ? "checked" : ""} />
+          テストユーザーを含める</label>
+      </div>
+    </div>
+
     <div class="admin-sec" data-sec="user-manage">
       <div class="card">
         <h2>👤 ユーザー別管理</h2>
         <p class="muted">残高調整・強制ログアウトなど、ユーザーへの操作。</p>
         <table class="mt"><thead><tr>
-          <th>担当者 / ID</th><th>権限</th><th>状態</th>
+          <th>担当者 / ID</th><th>権限</th><th>状態</th><th>テスト扱い</th>
           <th>チャージ(¥)</th><th>操作</th>
         </tr></thead><tbody>${mgmtRows}</tbody></table>
         <p class="muted mt">チャージは<b>1回 最大¥1000</b>・理由必須。
@@ -3875,7 +3908,8 @@ export async function admin(root) {
     const wrap = root.querySelector("#serverStatusWrap");
     wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
     try {
-      const res = await api.get("/api/system/admin/server-status");
+      const res = await api.get(
+        `/api/system/admin/server-status?${adminAggQuery()}`);
       const h = res.host;
       if (!h) {
         wrap.innerHTML = `<p class="muted">まだ収集されていません
@@ -4151,7 +4185,8 @@ export async function admin(root) {
     setAll("読み込み中…");
     let res;
     try {
-      res = await api.get(`/api/system/admin/usage-analytics?days=${days}`);
+      res = await api.get(
+        `/api/system/admin/usage-analytics?days=${days}&${adminAggQuery()}`);
     } catch (e) {
       const msg = `取得失敗: ${escapeHtml(e.message)}`;
       root.querySelector("#uaSummaryWrap").innerHTML = msg;
@@ -4393,6 +4428,40 @@ export async function admin(root) {
         await api.post("/api/system/admin/force-logout", { user_id: uid });
         toast("強制ログアウトしました");
       } catch (e) { toast("失敗: " + e.message); }
+    });
+  });
+
+  // 個々のユーザーの「テストユーザー」フラグ切り替え（2026-08-20・
+  // 集計フィルタで除外/含める対象を管理者が手動で指定する）。
+  root.querySelectorAll(".test-flag-cb").forEach((cb) => {
+    cb.addEventListener("change", async () => {
+      const uid = parseInt(cb.dataset.uid, 10);
+      cb.disabled = true;
+      try {
+        await api.post(`/api/system/admin/users/${uid}/test-flag`,
+          { is_test: cb.checked });
+        toast(cb.checked ? "テストユーザーに設定しました"
+          : "テストユーザー扱いを解除しました");
+        go("admin");
+      } catch (e) {
+        toast("失敗: " + e.message);
+        cb.checked = !cb.checked;
+        cb.disabled = false;
+      }
+    });
+  });
+
+  // 集計フィルタ（管理者/招待ユーザー/テストユーザーを含めるか）。
+  // 変更したら状態を保持したまま画面全体を再描画する(2026-08-20)。
+  const aggFilterBoxes = [
+    ["aggIncludeAdmin", "include_admin"],
+    ["aggIncludeInvited", "include_invited"],
+    ["aggIncludeTest", "include_test"],
+  ];
+  aggFilterBoxes.forEach(([elId, key]) => {
+    root.querySelector(`#${elId}`).addEventListener("change", (e) => {
+      adminAggFilters[key] = e.target.checked;
+      go("admin");
     });
   });
 }
