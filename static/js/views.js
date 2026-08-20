@@ -3647,6 +3647,15 @@ export async function admin(root) {
           データを取得します）。期間・件数はそれぞれの項目内で指定できます。</p>
       </div>
 
+      <details class="log-group" id="logServerStatusDetails">
+        <summary>🖥️ サーバー状態（CPU/RAM/ディスク・同時アクセス）</summary>
+        <p class="muted mt">サクラVPSはn8n・ecopy等の他プロジェクトと相乗り
+          のため、ホスト全体の負荷をscripts/collect_server_stats.pyが
+          VPS側cronで5分おきに収集したものを表示します。上位プランへの
+          乗り換えが必要かどうかの判断材料用です。</p>
+        <div id="serverStatusWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
+
       <details class="log-group" id="logLoginDetails">
         <summary>🔑 ログイン履歴（直近100件）</summary>
         <div id="loginLogWrap" class="mt"><p class="muted">未読み込み</p></div>
@@ -3862,6 +3871,51 @@ export async function admin(root) {
     });
   });
 
+  async function loadServerStatus() {
+    const wrap = root.querySelector("#serverStatusWrap");
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    try {
+      const res = await api.get("/api/system/admin/server-status");
+      const h = res.host;
+      if (!h) {
+        wrap.innerHTML = `<p class="muted">まだ収集されていません
+          （VPS側のcron設定が必要です）。</p>
+          <div class="grid cols-4 mt">
+            <div class="stat"><div class="num">${res.active_users_5min}</div>
+              <div class="lbl">同時アクセス(直近5分)</div></div>
+          </div>`;
+        return;
+      }
+      const containerRows = h.containers
+        ? Object.entries(h.containers).map(([name, c]) => `
+          <tr><td>${escapeHtml(name)}</td>
+            <td>${c.cpu_pct ?? "—"}%</td>
+            <td>${escapeHtml(c.mem || "—")}</td></tr>`).join("")
+        : "";
+      wrap.innerHTML = `
+        <p class="muted">最終収集: ${fmtDate(h.ts)}（JST）</p>
+        <div class="grid cols-4 mt">
+          <div class="stat"><div class="num">${h.load1}</div>
+            <div class="lbl">load average(1分・${h.cpu_count}コア)</div></div>
+          <div class="stat"><div class="num">${h.mem_pct}%</div>
+            <div class="lbl">RAM使用率</div></div>
+          <div class="stat"><div class="num">${h.disk_pct}%</div>
+            <div class="lbl">ディスク使用率</div></div>
+          <div class="stat"><div class="num">${res.active_users_5min}</div>
+            <div class="lbl">同時アクセス(直近5分)</div></div>
+        </div>
+        <p class="muted mt">RAM: ${h.mem_used_mb}MB / ${h.mem_total_mb}MB
+          ・ディスク: ${h.disk_used_gb}GB / ${h.disk_total_gb}GB</p>
+        ${containerRows ? `<h3 class="mt">コンテナ別
+          （相乗りの他プロジェクト含む）</h3>
+          <table><thead><tr><th>コンテナ</th><th>CPU%</th>
+            <th>メモリ</th></tr></thead>
+            <tbody>${containerRows}</tbody></table>` : ""}`;
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+
   async function loadLoginLog() {
     const wrap = root.querySelector("#loginLogWrap");
     wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
@@ -3872,12 +3926,14 @@ export async function admin(root) {
         return;
       }
       wrap.innerHTML = `<table><thead><tr>
-        <th>日時(JST)</th><th>ユーザー名</th><th>IP</th><th>結果</th>
+        <th>日時(JST)</th><th>ユーザー名</th><th>IP</th><th>ホスト名</th>
+        <th>結果</th>
         </tr></thead><tbody>${rows.map((r) => `
         <tr>
           <td class="muted">${fmtDate(r.created_at)}</td>
           <td>${escapeHtml(r.username)}</td>
           <td class="muted">${escapeHtml(r.ip || "—")}</td>
+          <td class="muted">${escapeHtml(r.hostname || "—")}</td>
           <td>${r.success
             ? '<span class="badge-ok">成功</span>'
             : '<span class="badge-bad">失敗</span>'}</td>
@@ -4213,6 +4269,7 @@ export async function admin(root) {
   // だし、細かい項目は最初はたたんでおき」というユーザー要望に対応。
   // 併せて管理画面を開くたび無条件に5本のAPIを叩いていたのを解消)。
   const lazySections = [
+    ["#logServerStatusDetails", loadServerStatus],
     ["#logLoginDetails", loadLoginLog],
     ["#logChargeKeyDetails", loadChargeKeyLog],
     ["#logErrorDetails", loadErrorLog],

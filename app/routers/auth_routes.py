@@ -10,7 +10,7 @@ from __future__ import annotations
 import os
 import time
 
-from fastapi import APIRouter, Request, Response
+from fastapi import APIRouter, BackgroundTasks, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -168,7 +168,10 @@ def signup(payload: SignupIn, request: Request, response: Response):
 
 
 @router.post("/login")
-def login(payload: LoginIn, request: Request, response: Response):
+def login(
+    payload: LoginIn, request: Request, response: Response,
+    background_tasks: BackgroundTasks,
+):
     ip = auth.real_client_ip(request)
     locked = auth.login_locked(payload.username, ip)
     if locked:
@@ -180,14 +183,16 @@ def login(payload: LoginIn, request: Request, response: Response):
         u = auth.authenticate(conn, payload.username, payload.password)
         if not u:
             auth.record_login_failure(payload.username, ip)
-            auth.record_login_event(conn, payload.username, ip, False)
+            log_id = auth.record_login_event(conn, payload.username, ip, False)
+            background_tasks.add_task(auth.update_login_hostname, log_id, ip)
             log.warning("login: failed ip=%s username=%s", ip, payload.username)
             return JSONResponse(
                 {"ok": False, "error": "ユーザー名かパスワードが違います。"},
                 status_code=401,
             )
         secret = auth.get_session_secret(conn)
-        auth.record_login_event(conn, payload.username, ip, True)
+        log_id = auth.record_login_event(conn, payload.username, ip, True)
+        background_tasks.add_task(auth.update_login_hostname, log_id, ip)
     log.info("login: ok ip=%s username=%s uid=%s", ip, payload.username, u["id"])
     auth.clear_login_failures(payload.username, ip)
     token = auth.make_session_token(

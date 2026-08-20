@@ -509,13 +509,15 @@ def admin_force_logout(payload: ForceLogoutIn):
 @router.get("/admin/login-log")
 def admin_login_log(limit: int = 100):
     """直近のログイン試行ログ（成功/失敗とも・管理画面のログ確認用・
-    2026-08-13）。"""
+    2026-08-13。hostnameはIPのDNS逆引き結果・2026-08-20追加。ログイン
+    直後はBackgroundTasksでの解決前のため空のことがあり、しばらくして
+    再読み込みすると埋まる）。"""
     _require_admin()
     limit = max(1, min(limit, 500))
     with db() as conn:
         rows = conn.execute(
-            "SELECT username, ip, success, created_at FROM login_log "
-            "ORDER BY id DESC LIMIT ?", (limit,),
+            "SELECT username, ip, hostname, success, created_at "
+            "FROM login_log ORDER BY id DESC LIMIT ?", (limit,),
         ).fetchall()
         return [dict(r) for r in rows]
 
@@ -960,3 +962,35 @@ def admin_disk_usage():
                 "ません（件数等は「ログ」タブを参照）。DB本体(音声等の"
                 "共有コンテンツ含む)は予算の対象外の目安表示です。",
     }
+
+
+@router.get("/admin/server-status")
+def admin_server_status():
+    """VPSホストのCPU/RAM/ディスク負荷＋直近アクティブユーザー数
+    （サーバー状態監視・2026-08-20ユーザー要望）。サクラVPSはn8n・ecopy
+    等の他dockerプロジェクトと相乗りのため、コンテナ内からはホスト
+    全体の負荷が見えない。CPU/RAM/ディスクは scripts/
+    collect_server_stats.py がVPSホストのcronで定期収集して書き出す
+    data/server_stats.jsonl の最新行を読むだけ（ここでは計測しない・
+    analyze_access_log.py と同じ流儀）。ファイルが無い場合(ローカル
+    開発時・cron未設定時)は host=null で返す。"""
+    _require_admin()
+    path = paths.data_dir / "server_stats.jsonl"
+    latest = None
+    if path.exists():
+        with path.open(encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    latest = json.loads(line)
+                except ValueError:
+                    continue
+    with db() as conn:
+        row = conn.execute(
+            "SELECT COUNT(DISTINCT user_id) AS c FROM usage_events "
+            "WHERE created_at >= datetime('now', '-5 minutes') "
+            "AND user_id IS NOT NULL"
+        ).fetchone()
+    return {"host": latest, "active_users_5min": row["c"]}

@@ -147,6 +147,7 @@ CREATE TABLE IF NOT EXISTS login_log (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     username   TEXT    NOT NULL,
     ip         TEXT    DEFAULT '',
+    hostname   TEXT    DEFAULT '',
     success    INTEGER NOT NULL,
     created_at TEXT    NOT NULL DEFAULT (datetime('now'))
 );
@@ -692,6 +693,9 @@ def _migrate(conn: sqlite3.Connection) -> None:
     # チャージキーの無効化(2026-08-18・注文の再発行時に旧キーを失効させ、
     # 1注文につき常に「有効なキーは最大1本」にするため)。
     _add_col(conn, "charge_keys", "revoked_at", "revoked_at TEXT")
+    # ログイン元IPのDNS逆引きホスト名(2026-08-20・管理画面のログイン
+    # 履歴でアクセス元をざっくり把握するため)。
+    _add_col(conn, "login_log", "hostname", "hostname TEXT DEFAULT ''")
     _migrate_multiuser(conn)
 
 

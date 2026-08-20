@@ -17,10 +17,11 @@ import hmac
 import os
 import re
 import secrets
+import socket
 import sqlite3
 from typing import Optional
 
-from ..database import OWNER_USER_ID
+from ..database import OWNER_USER_ID, db
 
 # pbkdf2 パラメータ（保存形式: ``pbkdf2_sha256$<iters>$<salt_hex>$<hash_hex>``）。
 _PBKDF2_ALGO = "sha256"
@@ -617,13 +618,45 @@ def record_login_failure(username: str, ip: str) -> None:
 
 def record_login_event(
     conn: sqlite3.Connection, username: str, ip: str, success: bool
-) -> None:
+) -> int:
     """login_logへの記録（管理画面のログイン履歴表示用・2026-08-13）。
-    ロック判定自体は従来通りメモリ上のカウンタ(_LOGIN_FAILS等)で行う。"""
-    conn.execute(
+    ロック判定自体は従来通りメモリ上のカウンタ(_LOGIN_FAILS等)で行う。
+    戻り値は挿入したレコードのid（DNS逆引きホスト名を後から
+    update_login_hostname()で埋めるためのキー・2026-08-20）。"""
+    cur = conn.execute(
         "INSERT INTO login_log (username, ip, success) VALUES (?, ?, ?)",
         (username.strip(), ip, 1 if success else 0),
     )
+    return cur.lastrowid
+
+
+def reverse_dns(ip: str, timeout: float = 1.5) -> str:
+    """IPアドレスのDNS逆引き(PTRレコード)。失敗/タイムアウトは空文字を
+    返す（多くの動的IP・モバイル回線はPTR未設定のため空になりやすい）。"""
+    if not ip or ip == "?":
+        return ""
+    prev = socket.getdefaulttimeout()
+    try:
+        socket.setdefaulttimeout(timeout)
+        return socket.gethostbyaddr(ip)[0]
+    except Exception:
+        return ""
+    finally:
+        socket.setdefaulttimeout(prev)
+
+
+def update_login_hostname(log_id: int, ip: str) -> None:
+    """login_logへDNS逆引きホスト名を後から埋める（2026-08-20）。
+    DNS解決はブロッキングI/Oで数百ms〜timeout秒かかりうるため、
+    ログインAPIのレスポンス経路から外し、BackgroundTasksから呼ぶ想定。"""
+    hostname = reverse_dns(ip)
+    if not hostname:
+        return
+    with db() as conn:
+        conn.execute(
+            "UPDATE login_log SET hostname = ? WHERE id = ?",
+            (hostname, log_id),
+        )
 
 
 def clear_login_failures(username: str, ip: str) -> None:
