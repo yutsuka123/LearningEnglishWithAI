@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from ..config import ROOT_DIR, load_admin_known_ips, load_settings, log, paths
 from ..database import ACCENTS, NEWS_FIELDS, db
 from ..schemas import MemoryUpdateIn, SettingsIn
-from ..services import ai, auth, persistence, tracking
+from ..services import ai, auth, persistence, tracking, visitor_kind
 
 router = APIRouter(prefix="/api/system", tags=["system"])
 
@@ -647,6 +647,14 @@ def admin_anon_access(days: int = 30, limit: int = 500):
             "SELECT ip, country, region, city, org, hostname "
             "FROM ip_geo_cache",
         ).fetchall()
+        # 訪問者種別(※1〜※4)の判定材料。1つのIPが複数のUAを名乗ることが
+        # あるので DISTINCT で全部拾う（GROUP_CONCATはUA中のカンマで
+        # 壊れるので使わない）。
+        ua_rows = conn.execute(
+            "SELECT DISTINCT ip, user_agent FROM landing_visits "
+            "WHERE created_at >= datetime('now', ?) AND ip != ''",
+            (since,),
+        ).fetchall()
         summary = conn.execute(
             "SELECT COUNT(*) AS total_visits, COUNT(DISTINCT ip) AS "
             "unique_ips FROM landing_visits "
@@ -655,8 +663,12 @@ def admin_anon_access(days: int = 30, limit: int = 500):
         ).fetchone()
 
     geo_map = {r["ip"]: dict(r) for r in geo_rows}
+    ua_map: dict[str, list[str]] = {}
+    for r in ua_rows:
+        ua_map.setdefault(r["ip"], []).append(r["user_agent"] or "")
     admin_ips = load_admin_known_ips()
     items = []
+    mark_counts = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
     for r in rows:
         d = dict(r)
         geo = geo_map.get(d["ip"], {})
@@ -666,12 +678,19 @@ def admin_anon_access(days: int = 30, limit: int = 500):
         d["org"] = geo.get("org", "")
         d["hostname"] = geo.get("hostname", "")
         d["is_admin"] = d["ip"] in admin_ips
+        # ※1〜※4 の推定（印なし=0＝人間が意識的に閲覧したとみなす）。
+        d["mark"], d["mark_reason"] = visitor_kind.classify(
+            ua_map.get(d["ip"], []), d["org"], d["hostname"], d["is_admin"],
+        )
+        mark_counts[d["mark"]] += 1
         items.append(d)
 
     return {
         "days": days,
         "total_visits": summary["total_visits"] if summary else 0,
         "unique_ips": summary["unique_ips"] if summary else 0,
+        # 印ごとのIP数。0=印なし(人間とみなすもの)。画面のサマリで使う。
+        "mark_counts": {str(k): v for k, v in mark_counts.items()},
         "items": items,
     }
 

@@ -3699,8 +3699,10 @@ export async function admin(root) {
         <summary>👤 未登録アクセス状況（未ログイン訪問者）</summary>
         <p class="muted mt">トップページ/取扱説明書(このアプリについて)の
           閲覧と新規登録の試行をIP単位で集計。国・場所・接続元組織名は
-          外部API(ipapi.co)の結果をキャッシュしたもの（初回アクセス時は
-          未取得で空欄のことがあり、少し待って再読み込みすると埋まる）。
+          外部API(ipapi.co・失敗時はipwho.is)の結果をキャッシュしたもの
+          （初回アクセス時は未取得で空欄のことがあり、少し待って再読み込み
+          すると埋まる。過去分はscripts/backfill_geoip.pyで補完できる）。
+          IPの右の「※1〜※4」は訪問者種別の推定（意味は表の下に記載）。
           同一IPを共有する複数人は1行にまとまる/同じ人でもIPが変われば
           複数行に分かれる、というIP単位ならではの目安であることに注意。</p>
         <div class="row">
@@ -4008,22 +4010,37 @@ export async function admin(root) {
     try {
       const res = await api.get(`/api/system/admin/anon-access?days=${days}`);
       const items = res.items || [];
+      const mc = res.mark_counts || {};
       const summary = `<p class="muted">期間内の未ログインアクセス
         合計 <strong>${res.total_visits}</strong> 回
-        （ユニークIP <strong>${res.unique_ips}</strong> 件）。</p>`;
+        （ユニークIP <strong>${res.unique_ips}</strong> 件）。
+        うち<strong>印なし＝人間が意識的に閲覧したとみなせるIPは
+        ${mc[0] || 0} 件</strong>（残りは下記※1〜※4）。</p>`;
       if (!items.length) {
         wrap.innerHTML = summary + `<p class="muted">まだありません。</p>`;
         return;
       }
       const place = (r) => [r.country, r.region, r.city]
         .filter(Boolean).join(" / ") || "—";
-      // 管理者本人のIPは列を増やさず「※1」の印＋欄外の備考で示す
+      // 訪問者種別は列を増やさず「※1〜※4」の印＋欄外の備考で示す
       // （2026-08-21ユーザー要望・表が横に伸びるのを避けるため）。
-      const adminNote = items.some((r) => r.is_admin)
-        ? `<p class="muted">※1 管理者本人の既知IP（.env の
-            ADMIN_KNOWN_IPS に登録済み）。訪問者数の目安から
-            除いて見てください。</p>`
-        : "";
+      const MARKS = {
+        1: "管理者自身",
+        2: "検索エンジン等のクローラーの可能性",
+        3: "AI検索クローラーの可能性",
+        4: "その他、普通のユーザーではないものの可能性",
+      };
+      const legend = `<p class="muted" style="font-size:.9em">
+        <strong>※印の見かた</strong>（User-Agentと接続元組織からの<u>推定</u>）:
+        ${[1, 2, 3, 4].map((n) => `※${n} ${MARKS[n]}
+          <span class="muted">(${mc[n] || 0}件)</span>`).join(" ／ ")}
+        ／ <strong>印なし</strong> …
+        たまたま・興味を持って等を問わず、<strong>人間が意識的に閲覧した</strong>
+        とみなせるもの <span class="muted">(${mc[0] || 0}件)</span>。<br>
+        判定材料はUser-Agentと接続元組織だけなので確実ではありません。UAは
+        詐称できますし、VPN経由の人間が※4になることもあります。
+        「印なし＝機械的アクセスの兆候が見つからなかった」という意味で
+        読んでください。各印にマウスを乗せると判定理由が出ます。</p>`;
       wrap.innerHTML = summary + `<table><thead><tr>
         <th>IP</th><th>国/地域/市区</th><th>接続元組織・ホスト名</th>
         <th>初回</th><th>最終</th><th>回数</th><th>説明書閲覧</th>
@@ -4031,8 +4048,9 @@ export async function admin(root) {
         </tr></thead><tbody>${items.map((r) => `
         <tr>
           <td class="muted">${escapeHtml(r.ip)}${
-            r.is_admin
-              ? ' <sup title="管理者本人の既知IP">※1</sup>' : ""}</td>
+            r.mark
+              ? ` <sup title="${escapeHtml(MARKS[r.mark])}: ${
+                escapeHtml(r.mark_reason || "")}">※${r.mark}</sup>` : ""}</td>
           <td class="muted">${escapeHtml(place(r))}</td>
           <td class="muted">${escapeHtml(r.org || r.hostname || "—")}</td>
           <td class="muted">${fmtDate(r.first_seen)}</td>
@@ -4045,7 +4063,7 @@ export async function admin(root) {
               ? '<span class="badge-ok">成功</span>'
               : '<span class="badge-bad">試行(未成立)</span>')
             : "—"}</td>
-        </tr>`).join("")}</tbody></table>` + adminNote;
+        </tr>`).join("")}</tbody></table>` + legend;
     } catch (e) {
       wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
     }
