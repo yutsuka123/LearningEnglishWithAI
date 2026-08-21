@@ -4017,6 +4017,13 @@ export async function admin(root) {
       }
       const place = (r) => [r.country, r.region, r.city]
         .filter(Boolean).join(" / ") || "—";
+      // 管理者本人のIPは列を増やさず「※1」の印＋欄外の備考で示す
+      // （2026-08-21ユーザー要望・表が横に伸びるのを避けるため）。
+      const adminNote = items.some((r) => r.is_admin)
+        ? `<p class="muted">※1 管理者本人の既知IP（.env の
+            ADMIN_KNOWN_IPS に登録済み）。訪問者数の目安から
+            除いて見てください。</p>`
+        : "";
       wrap.innerHTML = summary + `<table><thead><tr>
         <th>IP</th><th>国/地域/市区</th><th>接続元組織・ホスト名</th>
         <th>初回</th><th>最終</th><th>回数</th><th>説明書閲覧</th>
@@ -4024,7 +4031,8 @@ export async function admin(root) {
         </tr></thead><tbody>${items.map((r) => `
         <tr>
           <td class="muted">${escapeHtml(r.ip)}${
-            r.is_admin ? ' <span title="管理者の既知IP">👑</span>' : ""}</td>
+            r.is_admin
+              ? ' <sup title="管理者本人の既知IP">※1</sup>' : ""}</td>
           <td class="muted">${escapeHtml(place(r))}</td>
           <td class="muted">${escapeHtml(r.org || r.hostname || "—")}</td>
           <td class="muted">${fmtDate(r.first_seen)}</td>
@@ -4037,7 +4045,7 @@ export async function admin(root) {
               ? '<span class="badge-ok">成功</span>'
               : '<span class="badge-bad">試行(未成立)</span>')
             : "—"}</td>
-        </tr>`).join("")}</tbody></table>`;
+        </tr>`).join("")}</tbody></table>` + adminNote;
     } catch (e) {
       wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
     }
