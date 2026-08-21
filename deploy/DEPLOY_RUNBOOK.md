@@ -1,5 +1,23 @@
 # study.nyangailab.com デプロイ手順（準備済・実行は後日）
 
+> **作業機のプラットフォーム別ファイル（2026-08-21〜）**
+> 作業機が macOS と Windows の2系統になったため、実行系スクリプトを分離した。
+> 自分の環境に対応する方を使うこと。**片方を変更したら必ずもう片方も揃える。**
+>
+> | | macOS/Linux | Windows |
+> |---|---|---|
+> | コード同期 | `deploy/macos/sync_code.sh` | `deploy/windows/sync_code.ps1` |
+> | 接続設定テンプレ | `deploy/macos/deploy_target.example.sh` | `deploy/windows/deploy_target.example.ps1` |
+> | 実値の置き場所（gitignore） | `docs/deploy_target.local.sh` | `docs/deploy_target.local.ps1` |
+>
+> `deploy/` 直下の `docker-compose.study.yml` / `Caddyfile.study.snippet` /
+> `.env.study.example` / 本ファイルは**両環境共通**。
+>
+> Windows版は rsync が標準に無いため **WSL(Ubuntu) の rsync を呼ぶラッパー**。
+> また CLAUDE.md の「`--delete` は必ず dry-run で確認してから」を構造的に
+> 強制するため、**既定が dry-run**（実行は `-Execute` を明示）。Mac版は従来
+> どおり即実行なので挙動が異なる点に注意。
+
 > 2026-06-16 作成。**ailab(n8n) に一切影響を与えない**ことを最優先にした手順。
 > 原則: **既存物は触らず「追加」だけ**／**ポート非公開**／**Caddyは reload(無瞬断)**。
 > DNS は設定済（`study → A → <VPS_IP>`）。実行はユーザー合図後。
@@ -42,13 +60,22 @@ git clone <repo> ~/eigo-app   # もしくは rsync -a（.git/.venv/data/docs 除
 
 ## 3. データ転送（ローカル → VPS）★最重要
 ローカルの `data/`（vocabulary.db ＋ audio 約0.8GB）を VPS の bind 先へ。
+
+**macOS/Linux 作業機**
 ```bash
 # ローカルPCで実行（VPSのホストパスへ rsync）
 rsync -avz --progress \
-  /Users/ytsuka/mydata/src/LearningEnglishWithAI/data/ \
+  <REPO_ROOT>/data/ \
   USER@<VPS_IP>:/home/USER/eigo/data/
 # 含まれるもの: vocabulary.db（移行済・詳細キャッシュ込）, audio/（mp3 27,660）
 # 除外してよいもの: *.pre-multiuser.*.db バックアップ, build_*.out ログ
+```
+
+**Windows 作業機**（rsync が無いので WSL の rsync を使う。`\` は `/mnt/c/...` に変換）
+```powershell
+wsl -d Ubuntu -- rsync -avz --progress `
+  "$(wsl wslpath -a "$PWD\data")/" `
+  "USER@<VPS_IP>:/home/USER/eigo/data/"
 ```
 
 ## 4. env 準備（秘密はVPSのみ）

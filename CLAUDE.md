@@ -23,7 +23,7 @@
 
 ## 🚫 本番VPSへの rsync で `--delete` を使うときの必須ルール（2026-08-13再発防止）
 
-コード更新のため `/Users/ytsuka/mydata/src/LearningEnglishWithAI/` を
+コード更新のため作業機のリポジトリルート（`<REPO_ROOT>/`）を
 VPS の `~/eigo/` へ `rsync --delete` した際、ソース側に存在しない
 `deploy/.env.study`（本番の`OPENAI_API_KEY`/`SESSION_SECRET`等）が
 **「余分なファイル」として削除されてしまう事故**が発生した（稼働中
@@ -97,8 +97,9 @@ VPS の `~/eigo/` へ `rsync --delete` した際、ソース側に存在しな�
 このプロジェクト（`LearningEnglishWithAI`・public）は、事業戦略・インフラ
 バックアップ用に以下のprivateリポジトリと連携している。
 
-- **場所**: ローカル `/Users/ytsuka/mydata/project/private/business_plan`
-  ／GitHub `yutsuka123/business_plan`（private確認済み・公開APIで404）。
+- **場所**: GitHub `yutsuka123/business_plan`（private確認済み・公開APIで404）。
+  ローカルの clone 先は作業機ごとに異なる（上記「💻 作業機が macOS /
+  Windows の2系統になった」参照）。実パスは公開リポジトリに書かない。
 - **本プロジェクト用フォルダ**: `products/study_nyangailab/`
   - `README.md`: 事業サマリ（詳細はこちら側の`docs/`参照という設計）。
   - `運用リファレンス.md`: 本番VPSのIP/SSH鍵パス/デプロイ手順の**バックアップ
@@ -114,7 +115,61 @@ VPS の `~/eigo/` へ `rsync --delete` した際、ソース側に存在しな�
     値を更新したら都度手動で同期すること（詳細・復元手順は
     `products/study_nyangailab/secrets_backup/README.md`参照）。
 
+## 💻 作業機が macOS / Windows の2系統になった（2026-08-21〜）
+
+従来は macOS 1台のみで作業していたが、Windows 機でも作業するようになった。
+**プラットフォーム依存のファイルは必ず OS ごとにディレクトリを分けて
+git 管理する**（片方だけ直して他方が壊れる事故を防ぐため）。
+
+### ディレクトリ分割のルール
+- 実行系（シェルスクリプト等）で OS 依存するものは
+  `deploy/macos/` と `deploy/windows/` に分ける。
+  新しくスクリプトを追加するときも同じ方針に従うこと。
+  - macOS/Linux: `deploy/macos/sync_code.sh` ＋
+    `deploy/macos/deploy_target.example.sh`
+  - Windows: `deploy/windows/sync_code.ps1` ＋
+    `deploy/windows/deploy_target.example.ps1`
+- OS に依存しないもの（`docker-compose.study.yml`・`Caddyfile.study.snippet`・
+  `.env.study.example`・`DEPLOY_RUNBOOK.md` 等）は `deploy/` 直下に据え置く。
+  VPS 上で動くもの＝Linux前提なので分割不要。
+- **片方を変更したらもう片方も必ず同じ内容に揃える**（同期対象の allowlist、
+  `--delete` の扱い等がズレると本番事故に直結する）。
+
+### 改行コード（CRLF）事故に注意
+Windows の git は既定で `core.autocrlf=true` のため、チェックアウト時に
+LF → CRLF へ勝手に変換される。**シェルスクリプト・SSH秘密鍵・Dockerfile が
+CRLF になると Linux/OpenSSH 側で動かない**（秘密鍵は `invalid format` で拒否）。
+- 本リポジトリは [.gitattributes](.gitattributes) で拡張子ごとに改行コードを
+  固定済み。新しい種類のファイルを追加するときは必要に応じて追記すること。
+- private リポジトリ `business_plan` の `secrets_backup/` も同様に
+  `.gitattributes` で保護してある（詳細は下記「🔗連携している private
+  リポジトリ」参照）。
+
+### Windows 固有の事情
+- **rsync が無い**（Git Bash にも同梱されていない）。WSL(Ubuntu) の rsync を
+  呼び出すラッパー方式にしてある。scp/tar では `--delete` 相当の差分削除が
+  できず Mac 版と挙動が変わってしまうため。
+- `deploy/windows/sync_code.ps1` は上記「rsync `--delete` の必須ルール」を
+  構造的に強制するため **既定が dry-run**。実行するには `-Execute` を明示する。
+  （Mac 版は従来どおり即実行なので挙動が異なる）
+- 本番VPSへは `ssh eigo-vps` で入れる（`~/.ssh/config` にエイリアス設定済み。
+  実IPを打たずに済むので、コマンド履歴や会話ログへのIP露出を防げる）。
+  rsync も `eigo-vps:/home/<user>/eigo/` の形で書けば実IPを書かずに済む。
+
+### 環境ごとに異なるパス（手順書に実パスを書かない理由）
+- 本リポジトリの clone 先も、連携先 `business_plan` の clone 先も、**作業機
+  ごとにパスが異なる**（`business_plan` は Mac と Windows で階層自体が違う）。
+  そのため手順書・スクリプトに実パスを直書きせず、スクリプト自身の位置から
+  相対で解決するか、gitignore 対象の設定ファイルに逃がすこと。
+  実パスが必要なメモは `docs/`（git管理外）か `business_plan` 側に置く。
+- `docs/` は `.gitignore` 対象＝**git経由では他マシンに来ない**。新しい作業機
+  では `docs/DESIGN.md` `docs/TODO.md` が存在しないので、手動コピーが必要。
+  代替として `business_plan` 側の `運用リファレンス.md` を参照する。
+
 ## その他
 
 - 新しいセッションを始めるときは、まず [docs/DESIGN.md](docs/DESIGN.md)
   と [docs/TODO.md](docs/TODO.md) を読む。
+  **ただし `docs/` は git 管理外**なので、作業機によっては存在しない。
+  無い場合は `business_plan` の `products/study_nyangailab/運用リファレンス.md`
+  を代わりに読む。

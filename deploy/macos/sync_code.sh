@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-# 本番VPS(study.nyangailab.com)へアプリのコードだけを同期する。
+# 本番VPS(study.nyangailab.com)へアプリのコードだけを同期する。【macOS/Linux用】
+#
+# Windows作業機からは deploy/windows/sync_code.ps1 を使うこと
+# （同じ同期対象・同じ --delete 挙動を WSL の rsync 経由で再現している）。
 #
 # 2026-08-13: リポジトリ全体を rsync --delete で丸ごとミラーしていたため、
 # ローカルに存在しない(=gitignore対象で意図的にVPSにしか無い)
@@ -9,9 +12,9 @@
 # には構造的に触れられない。
 #
 # 使い方:
-#   1. deploy/deploy_target.example.sh を docs/deploy_target.local.sh に
+#   1. deploy/macos/deploy_target.example.sh を docs/deploy_target.local.sh に
 #      コピーして実値を埋める（docs/ は .gitignore 対象＝コミットされない）。
-#   2. ./deploy/sync_code.sh を実行する（コード同期のみ。反映には別途
+#   2. ./deploy/macos/sync_code.sh を実行する（コード同期のみ。反映には別途
 #      VPS側で docker compose -f deploy/docker-compose.study.yml up -d
 #      --build が必要）。
 #

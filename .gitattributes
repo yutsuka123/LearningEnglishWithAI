@@ -1,0 +1,31 @@
+# 改行コードの固定（2026-08-21〜: 作業機が macOS と Windows の2系統になったため）
+#
+# Windows の git は既定で core.autocrlf=true になっていることが多く、
+# チェックアウト時に LF → CRLF へ勝手に変換する。これは2つの問題を起こす:
+#
+#   1. シェルスクリプトが CRLF になると Linux/VPS 側で
+#      「予期しないトークン `$'do\r'`」等の構文エラーで動かなくなる。
+#      （実際に Windows 機の初回 clone 後 deploy/macos/sync_code.sh が壊れていた）
+#   2. デプロイは git 経由ではなく作業ツリーからの rsync なので、
+#      CRLF のまま本番VPSへ送られてしまう（static/ templates/ が同期対象）。
+#
+# このリポジトリは元々 macOS 単独で開発しており、コミット済みの実体
+# （index）は全ファイル LF である。それを唯一の正としてどの OS でも
+# LF で取り出すよう固定する。**メイン開発機である Mac 側の体裁は変わらない。**
+#
+# 新しい種類のファイルを追加しても下の catch-all で自動的に LF になる。
+# バイナリは git が自動判定して変換対象から外す（text=auto の効果）。
+* text=auto eol=lf
+
+# --- 以下は catch-all を上書きしたい場合のための明示指定 -----------------
+# Linux/VPS 上で実行されるもの・コンテナに入るもの（LF 必須）
+*.sh        text eol=lf
+*.py        text eol=lf
+Dockerfile  text eol=lf
+
+# Windows 専用ファイルも LF に統一する。
+# PowerShell 7 は LF のスクリプトを問題なく実行できる一方、CRLF を混ぜると
+# Mac 側の体裁が崩れて無意味な差分が出るため。
+# ※ .bat / .cmd を追加する場合だけは CRLF 必須なので個別指定すること。
+#   例) *.bat text eol=crlf
+*.ps1       text eol=lf
