@@ -10,6 +10,14 @@
   <file|dir> : Claude が生成した訳 [{english, example_ja}] を detail.example_ja に
            マージ(--force で既存も上書き)。english 小文字一致・他キー不変。
 
+【注意・2026-08-22】このスクリプトは **英単語名だけで突き合わせる** ため、
+訳を作った後に words.example を差し替えると、詳細画面で「例文」と「訳」が
+別の文になる（本番で2,452件発生・`scripts/fix_example_ja.py` で修復済み）。
+そのため書き込み時に `detail.example_ja_src`（訳が対応する英文）を必ず記録し、
+表示側(`app/routers/vocabulary.py` の `_resolve_example_ja`)で不一致なら
+訳を出さないようにしてある。訳JSONを渡すときは **その時点の example に対する訳**
+であることを必ず確認すること。
+
 使い方:
   python scripts/backfill_example_ja.py --auto
   python scripts/backfill_example_ja.py data/example_ja_batches/
@@ -61,6 +69,10 @@ def run_auto() -> int:
                     break
             if ja:
                 d["example_ja"] = ja
+                # その訳が「どの英文に対するものか」を必ず残す。これが無いと
+                # 後で words.example を差し替えたときに古い訳が残ったままに
+                # なり、詳細画面で例文と訳が食い違う（2026-08-22の事故）。
+                d["example_ja_src"] = ex
                 conn.execute(
                     "UPDATE words SET detail = ? WHERE id = ?",
                     (json.dumps(d, ensure_ascii=False), r["id"]),
@@ -109,6 +121,12 @@ def run_merge(path: Path, force: bool) -> int:
                 skipped += 1
                 continue
             d["example_ja"] = ja
+            # 訳の対応先を記録（run_auto と同じ理由・2026-08-22）。
+            ex_now = conn.execute(
+                "SELECT example FROM words WHERE id = ?", (row["id"],)
+            ).fetchone()
+            d["example_ja_src"] = (
+                (ex_now["example"] or "").strip() if ex_now else "")
             conn.execute(
                 "UPDATE words SET detail = ? WHERE id = ?",
                 (json.dumps(d, ensure_ascii=False), row["id"]),

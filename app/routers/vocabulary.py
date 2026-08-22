@@ -581,6 +581,56 @@ def _json_object(text: str) -> dict | None:
         return None
 
 
+def _norm_example(text: str) -> str:
+    """例文の同一判定用の正規化（前後空白・末尾の句読点・大小文字を無視）。"""
+    import re
+    s = (text or "").strip().lower()
+    return re.sub(r"[\s　]+", " ", s).rstrip(".!?").strip()
+
+
+def _resolve_example_ja(detail: dict, example: str) -> dict:
+    """詳細JSONの `example_ja` が **いま表示している例文の訳か** を検証する。
+
+    2026-08-22: 詳細画面で「例文」と「訳」が別の文になっている語が
+    多数見つかった（本番12,085語中2,452件）。原因は、例文の訳が
+    `detail.example_ja` に、例文本体が `words.example` にと別々に
+    保存されており、後から例文を差し替えても訳が古いまま残るため
+    （`scripts/backfill_example_ja.py` が英単語名だけで訳をマージする
+    作りだった）。データ側は `scripts/fix_example_ja.py` で一括修復
+    済みだが、**同じ事故が再発しても画面に出さない**ための多重防御
+    としてここでも検証する。
+
+    判定の順序:
+      1. `example_ja_src`（その訳が対応する英文）が今の例文と一致 → そのまま出す
+      2. `examples[]` に今の例文と同じ英文があれば、その `ja` を使う
+         （同じAI呼び出しで en/ja が対で作られているので信頼できる）
+      3. どちらでもない → **訳を出さない**（間違った訳を見せない）
+    """
+    if not isinstance(detail, dict):
+        return detail
+    ex = (example or "").strip()
+    if not ex:
+        return detail
+    src = detail.get("example_ja_src")
+    if isinstance(src, str) and _norm_example(src) == _norm_example(ex):
+        return detail
+    for e in (detail.get("examples") or []):
+        if isinstance(e, dict) and _norm_example(e.get("en")) == \
+                _norm_example(ex):
+            ja = (e.get("ja") or "").strip()
+            if ja:
+                out = dict(detail)
+                out["example_ja"] = ja
+                out["example_ja_src"] = ex
+                return out
+            break
+    if detail.get("example_ja"):
+        out = dict(detail)
+        out["example_ja"] = ""
+        return out
+    return detail
+
+
 @router.post("/{word_id}/detail")
 def word_detail(word_id: int, regen: bool = False):
     """単語の詳細情報(品詞/意味複数/例文/派生/類義語/対義語/由来/豆知識/解説)を
@@ -614,7 +664,8 @@ def word_detail(word_id: int, regen: bool = False):
         if row["detail"] and not regen:
             try:
                 return {"ok": True, "cached": True,
-                        "detail": _json.loads(row["detail"])}
+                        "detail": _resolve_example_ja(
+                            _json.loads(row["detail"]), row["example"])}
             except ValueError:
                 pass
         if is_guest_user_id(conn, current_user_id()):
@@ -655,6 +706,11 @@ def word_detail(word_id: int, regen: bool = False):
     data = _json_object(r.text)
     if not data:
         return {"ok": False, "error": "詳細の生成に失敗しました。"}
+    # 生成した訳が「どの例文に対する訳か」を必ず記録しておく（後で例文を
+    # 差し替えたときに古い訳が残っているのを検出できるようにするため・
+    # `_resolve_example_ja` 参照）。
+    if (row["example"] or "").strip() and str(data.get("example_ja") or "").strip():
+        data["example_ja_src"] = (row["example"] or "").strip()
     with db() as conn:
         conn.execute(
             "UPDATE words SET detail = ? WHERE id = ?",

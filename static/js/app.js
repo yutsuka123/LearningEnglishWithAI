@@ -35,6 +35,9 @@ const TABS = [
   ["assess", "🎯 判定・教材"],
   ["history", "📚 学習履歴"],
   ["settings", "⚙️ 設定・チャージ"],
+  // バージョン情報（更新履歴・メンテナンス予定）。未ログインでも見られる
+  // ようにする（2026-08-22ユーザー要望）。
+  ["release", "🆕 バージョン情報"],
   ["admin", "👑 管理者情報"],   // 管理者のみ表示（boot で非adminは隠す）
 ];
 
@@ -208,6 +211,48 @@ function initBalanceClick() {
 }
 
 // ---------------------------------------------------------------------------
+// メンテナンス予定のお知らせ（2026-08-22ユーザー要望）
+//
+// 予定はサーバー側のDB(app_state)に入っており、管理画面から変更すると
+// **アプリを再起動せずに**利用者へ反映される。ここは表示だけを担当する。
+// 「閉じる」を押した内容は localStorage に覚えて再表示しない（内容が
+// 変わればまた出る）。
+// ---------------------------------------------------------------------------
+
+export async function refreshMaintenanceBanner() {
+  const box = document.getElementById("maintBanner");
+  if (!box) return;
+  try {
+    const m = await api.get("/api/system/maintenance");
+    const n = (m && m.notice) || {};
+    if (!n.show || !n.text) { box.style.display = "none"; return; }
+    if (localStorage.getItem("maintDismissed") === n.text) {
+      box.style.display = "none";
+      return;
+    }
+    box.className = "maint-banner"
+      + (n.state === "in_progress" ? " in-progress" : "");
+    box.innerHTML = "";
+    const icon = document.createElement("span");
+    icon.textContent = n.state === "in_progress" ? "🛠️" : "🗓️";
+    const text = document.createElement("span");
+    text.textContent = n.text;
+    const close = document.createElement("button");
+    close.className = "maint-close";
+    close.title = "このお知らせを閉じる";
+    close.textContent = "✕";
+    close.addEventListener("click", () => {
+      localStorage.setItem("maintDismissed", n.text);
+      box.style.display = "none";
+    });
+    box.append(icon, text, close);
+    box.style.display = "";
+  } catch (e) {
+    box.style.display = "none";
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Routing
 // ---------------------------------------------------------------------------
 
@@ -228,6 +273,7 @@ const ROUTES = {
   assess: views.assess,
   history: views.history,
   settings: views.settings,
+  release: views.release,
   admin: views.admin,
 };
 
@@ -534,6 +580,7 @@ async function boot() {
   if (logoutBtn) logoutBtn.addEventListener("click", doLogout);
 
   initClickTracking();
+  refreshMaintenanceBanner();
   speech.onUsage(refreshCost); // refresh cost after paid TTS calls
   speech.onPaymentRequired((msg) => toast(msg)); // 無料範囲外の再生でチャージ不足のとき
   // Pre-load voices for TTS.

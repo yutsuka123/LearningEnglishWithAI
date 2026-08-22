@@ -141,6 +141,40 @@ docker exec <caddy_container> caddy reload --config /etc/caddy/Caddyfile
 - 更新: コード更新は `up -d --build`、Caddy/n8n は無関係。
 - セキュリティ詳細は docs/DEPLOY_COHOST.md §7。
 
+## 11. 再起動を減らす運用 / 予約デプロイ（2026-08-22〜）
+
+**再起動が要らない更新**（DBやdata/だけを変えるもの）は、いつやってもよい:
+- 単語・フレーズ・訳・詳細の修正（保守スクリプトを `docker cp` → `docker exec`）
+- メンテナンス予定の変更（管理画面から。`app_state` に入るだけ）
+- リリースノートの差し替え（`data/release_notes.json` を `docker cp` するだけ。
+  置けばリポジトリ同梱版より優先される）
+
+**再起動が要る更新**（`app/`・`static/`・`templates/`・`.env.study`）は、
+定期メンテナンス枠（既定: **毎週月曜 03:00〜03:30 JST**）にまとめる。
+`deploy/scheduled_deploy.sh` を使うと予告した時刻に自動で反映できる。
+
+```bash
+# 1) VPS に置く（sync_code.* は deploy/ を同期しないので個別に転送する）
+scp deploy/scheduled_deploy.sh <VPS>:~/eigo/deploy/scheduled_deploy.sh
+ssh <VPS> 'chmod +x ~/eigo/deploy/scheduled_deploy.sh'
+
+# 2) cron に登録（VPS上で crontab -e）
+#    */5 * * * * /home/<user>/eigo/deploy/scheduled_deploy.sh #       >> /home/<user>/eigo/data/scheduled_deploy_cron.log 2>&1
+
+# 3) 作業機で先にコードを同期しておく（このスクリプトはコードを取りに行かない）
+.\deploy\windows\sync_code.ps1            # dry-run
+.\deploy\windows\sync_code.ps1 -Execute
+
+# 4) 予約を入れる（管理画面「バージョン情報」→ メンテナンス予定 →
+#    臨時メンテナンス →「この時刻に自動デプロイする」でも可）
+ssh <VPS> 'echo "{\"run_at\":\"2026-08-25 03:00\",\"note\":\"ver1.2.10\"}"   > ~/eigo/data/deploy_request.json'
+```
+
+スクリプトの動き: DBバックアップ → 現行イメージを `eigo-app:prev` に退避 →
+`up -d --build` → ヘルスチェック（最大60秒）→ **失敗したら自動で
+`eigo-app:prev` に戻して起動し直す**。結果は `data/deploy_log.jsonl` に
+追記され、管理画面のメンテナンス欄にも「前回の実行」として表示される。
+
 ## チェックリスト
 - [ ] VPS で網名・Caddy 構成・空き容量を確認（手順1）
 - [ ] compose の network 名 / data ホストパスを実環境に修正
@@ -151,3 +185,4 @@ docker exec <caddy_container> caddy reload --config /etc/caddy/Caddyfile
 - [ ] 管理者/ユーザー作成
 - [ ] study 動作確認 ＋ **ailab 無影響を確認**
 - [ ] バックアップ cron 設定
+- [ ] `deploy/scheduled_deploy.sh` を配置 + cron 登録（予約デプロイを使う場合）

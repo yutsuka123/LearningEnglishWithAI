@@ -142,6 +142,15 @@ function audioElement() {
   if (!audioEl) {
     audioEl = new Audio();
     try { audioEl.setAttribute("playsinline", ""); } catch (e) { /* ignore */ }
+    // 再生速度を変えても音程(ピッチ)は変えない。既定でtrueのブラウザが
+    // ほとんどだが、明示しておかないと環境によっては声が高く/低くなり
+    // 「早送り」に聞こえてしまう（2026-08-22・ネイティブ速度の調整時）。
+    // 旧仕様のベンダー接頭辞付きプロパティにも同じ値を入れておく。
+    try {
+      audioEl.preservesPitch = true;
+      audioEl.mozPreservesPitch = true;
+      audioEl.webkitPreservesPitch = true;
+    } catch (e) { /* ignore */ }
   }
   return audioEl;
 }

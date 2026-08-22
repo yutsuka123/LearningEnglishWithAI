@@ -6,7 +6,7 @@ import { quizRunner } from "./quiz.js";
 import {
   el, md, escapeHtml, toast, state, go, refreshCost, refreshAiState,
   showBanned, setShowBanned, testBanned, setTestBanned, onLeaveView,
-  fmtDateJST,
+  fmtDateJST, refreshMaintenanceBanner,
 } from "./app.js";
 
 // 禁止用語クエリ: include_banned を付ける/付けないを返す小ヘルパー。
@@ -522,8 +522,24 @@ function stripQuestions(body) {
 
 // 速度モード → sayItem オプション。learn音声/native音声＋再生速度を決める。
 //   slow=学習ゆっくり / std=学習標準 / native=ネイティブ音声(自然な速さ)
+//
+// 【なぜ native に 1.15 を掛けるか（2026-08-22）】
+// 「ネイティブ速度が標準とあまり変わらない」というユーザー指摘を受けて、
+// 本番のTTSを実測した（scripts/tts_speed_test.py・12件×5条件）。結果:
+//     learn         129.7 WPM
+//     native(現行)  136.6 WPM  ← learn比 1.07倍。ほぼ差が無い＝指摘は正しい
+//     指示文を強化   140.1 WPM  ← 1.11倍。効果が小さく、ばらつきも大きい
+//                                （1語のとき無音同然になる事故も発生）
+//     ＋速度1.15倍  151.2 WPM  ← 自然な会話の速さ(140〜170 WPM)に入る
+//     ＋速度1.25倍  174.2 WPM  ← 速すぎ寄り
+// TTS指示文を変えると (モデル,声,指示文,本文) のキャッシュが全部無効になり、
+// 既にストックしてある native 音声 37,568件を作り直す費用が出る。一方、
+// 再生速度は音程を保ったまま（speech.js の preservesPitch）即座に効き、
+// 費用もかからないため、**指示文はそのまま・再生速度1.15倍**を採用した。
+// 「ただ早送りにする」のとは違い、元音声は native 指示文で合成された
+// リンキング・リズムのあるものなので、速さだけが会話の速度に寄る。
 function speedOpts(mode) {
-  if (mode === "native") return { speed: "native", rate: 1.0 };
+  if (mode === "native") return { speed: "native", rate: 1.15 };
   if (mode === "slow") return { speed: "learn", rate: 0.8 };
   return { speed: "learn", rate: 1.0 };
 }
@@ -597,7 +613,11 @@ function pagerBar(total, page, pages, onPrev, onNext) {
 }
 
 // 速度セレクト（ゆっくり/標準/ネイティブ）。value は slow/std/native。
-// withNative=false で「ネイティブ」を出さない（単語は native音声が無い）。
+// 2026-08-22: 単語・フラッシュカードにも「ネイティブ」を出すようにした
+// （従来は「単語には native音声が無い」として隠していたが、実際には
+// audio_store が word_native を保存できるので、押されたときに合成して
+// 貯まる。ユーザーから「英単語のネイティブ速度が分からない」という
+// 指摘があったのは、そもそも選択肢が無かったため）。
 function speedSelect(id, withNative = true) {
   const nat = withNative
     ? `<option value="native">速度: ネイティブ</option>` : "";
@@ -1326,7 +1346,7 @@ export async function flashcard(root) {
           <option value="50">50枚</option>
           <option value="100">100枚</option>
         </select>
-        ${speedSelect("fcSpeed", false)}
+        ${speedSelect("fcSpeed")}
         <select id="fcVoice" title="読み上げの声（自然な声ONのとき）">
           ${voiceOpts}</select>
         <label class="toggle"><input type="checkbox" id="fcAuto"/>
@@ -1504,7 +1524,7 @@ export async function flashPhrase(root) {
           <option value="50">50枚</option>
           <option value="100">100枚</option>
         </select>
-        ${speedSelect("fpSpeed", false)}
+        ${speedSelect("fpSpeed")}
         <select id="fpVoice" title="読み上げの声（自然な声ONのとき）">
           ${voiceOpts}</select>
         <label class="toggle"><input type="checkbox" id="fpAuto"/>
@@ -1734,7 +1754,7 @@ export async function vocab(root) {
           <option value="hide">覚えた: 隠す</option>
           <option value="only">覚えた: のみ</option>
         </select>
-        ${speedSelect("wSpeed", false)}
+        ${speedSelect("wSpeed")}
         ${pageSizeSelect("wPage")}
         ${state.isAdmin ? `<label class="toggle"
           title="禁止用語(注意喚起)を一覧に表示">
@@ -3521,6 +3541,206 @@ export async function history(root) {
 }
 
 // --- 管理者ダッシュボード（管理者のみ）---------------------------------------
+// ---------------------------------------------------------------------------
+// バージョン情報（2026-08-22ユーザー要望）
+//
+// 最新バージョンと修正内容を先頭に出し、それ以前は「更新履歴」を開くと
+// 見えるようにする。一般ユーザーには当たり障りのない内容(public)だけ、
+// 管理者にはそれに加えて細かい内容(admin)も出す。管理者の画面では、
+// 一般ユーザーにも見えている行を**赤文字**、管理者だけに見える行を
+// 通常の文字色で表示して区別する（ユーザー指定）。
+//
+// 掲載データはサーバーの release_notes.json（data/ に置けば再起動なしで
+// 差し替え可能）。
+// ---------------------------------------------------------------------------
+
+function releaseEntryHtml(v, isAdmin, showHeading) {
+  const pub = (v.public || []).map((t) =>
+    `<li class="rel-public">${escapeHtml(t)}</li>`).join("");
+  const adm = isAdmin
+    ? (v.admin || []).map((t) =>
+      `<li class="rel-admin">${escapeHtml(t)}</li>`).join("")
+    : "";
+  const heading = showHeading
+    ? `<h3 style="margin:0 0 2px">${escapeHtml(v.version)}
+        <span class="muted" style="font-weight:normal">
+          ${escapeHtml(v.date || "")}</span></h3>` : "";
+  return `<div class="rel-entry">
+    ${heading}
+    ${v.title ? `<p class="muted" style="margin:0 0 4px">${
+      escapeHtml(v.title)}</p>` : ""}
+    ${pub ? `<ul>${pub}</ul>` : ""}
+    ${adm ? `<p class="muted" style="margin:6px 0 0">管理者向けの詳細</p>
+      <ul>${adm}</ul>` : ""}
+  </div>`;
+}
+
+export async function release(root) {
+  root.innerHTML = `<h1>バージョン情報</h1>
+    <p class="sub">更新内容とメンテナンス予定のお知らせ。</p>
+    <div id="relBody"><p class="muted">読み込み中…</p></div>`;
+  const body = root.querySelector("#relBody");
+  let res;
+  try {
+    res = await api.get("/api/system/release-notes");
+  } catch (e) {
+    body.innerHTML = `<p class="muted">取得できませんでした: ${
+      escapeHtml(e.message)}</p>`;
+    return;
+  }
+  const list = res.versions || [];
+  const latest = list[0];
+  const rest = list.slice(1);
+  const isAdmin = !!res.is_admin;
+
+  let html = "";
+  // --- メンテナンス予定 ---
+  html += `<div class="card" id="relMaint">
+    <h2>🗓️ メンテナンス予定</h2>
+    <p class="muted">読み込み中…</p></div>`;
+  // --- 最新バージョン ---
+  html += `<div class="card">
+    <h2>最新バージョン <span class="muted">${
+      escapeHtml(res.current || "")}</span></h2>
+    ${latest
+      ? `<p class="muted" style="margin:0 0 8px">${escapeHtml(latest.version)}
+          ・${escapeHtml(latest.date || "")}</p>`
+        + releaseEntryHtml(latest, isAdmin, false)
+      : `<p class="muted">情報がありません。</p>`}
+    ${isAdmin
+      ? `<p class="muted" style="font-size:.9em">
+          <span class="rel-public">赤文字</span>＝一般ユーザーにも表示される
+          内容 ／ 通常色＝管理者にだけ表示される詳細。</p>` : ""}
+  </div>`;
+  // --- 履歴 ---
+  if (rest.length) {
+    html += `<div class="card"><details>
+      <summary>これまでの更新履歴（${rest.length}件）</summary>
+      <div class="mt">${rest.map((v) =>
+        releaseEntryHtml(v, isAdmin, true)).join("")}</div>
+    </details></div>`;
+  }
+  body.innerHTML = html;
+
+  // メンテナンス予定は別APIから（管理者はその場で編集できる）。
+  const mbox = body.querySelector("#relMaint");
+  try {
+    const m = await api.get("/api/system/maintenance");
+    const WD = ["月", "火", "水", "木", "金", "土", "日"];
+    const notice = (m.notice && m.notice.show)
+      ? `<p><strong>${escapeHtml(m.notice.text)}</strong></p>` : "";
+    const regular = m.regular_enabled
+      ? `毎週${WD[m.regular_weekday] || "月"}曜 ${
+        escapeHtml(m.regular_start)}〜${escapeHtml(m.regular_end)}（日本時間）`
+      : "設定なし";
+    const adhoc = (m.adhoc_enabled && m.adhoc_start)
+      ? `${escapeHtml(m.adhoc_start)}〜${escapeHtml(m.adhoc_end || "")}`
+        + (m.adhoc_note ? `（${escapeHtml(m.adhoc_note)}）` : "")
+      : "予定なし";
+    mbox.innerHTML = `<h2>🗓️ メンテナンス予定</h2>
+      ${notice}
+      <p>定期メンテナンス: <strong>${regular}</strong><br>
+      臨時メンテナンス: <strong>${adhoc}</strong></p>
+      <p class="muted" style="font-size:.9em">
+        メンテナンス中は数分程度つながりにくくなることがあります。
+        （現在の日本時間 ${escapeHtml(m.now_jst || "")}）</p>
+      ${isAdmin ? maintenanceEditorHtml(m) : ""}`;
+    if (isAdmin) wireMaintenanceEditor(mbox);
+  } catch (e) {
+    mbox.innerHTML = `<h2>🗓️ メンテナンス予定</h2>
+      <p class="muted">取得できませんでした。</p>`;
+  }
+}
+
+// 管理者用のメンテナンス予定エディタ。保存はDBに書くだけなので
+// **アプリの再起動なしで**利用者側に反映される（2026-08-22の要件）。
+function maintenanceEditorHtml(m) {
+  const WD = ["月", "火", "水", "木", "金", "土", "日"];
+  return `<details class="mt"><summary>✏️ 予定を変更する（管理者）</summary>
+    <div class="mt">
+      <p class="muted">保存するとすぐ反映されます（再起動不要）。</p>
+      <div class="row">
+        <label><input type="checkbox" id="mRegOn"
+          ${m.regular_enabled ? "checked" : ""}> 定期メンテナンスを行う</label>
+        <label>曜日:
+          <select id="mRegWd">${WD.map((w, i) =>
+    `<option value="${i}" ${i === m.regular_weekday ? "selected" : ""}>${
+      w}曜</option>`).join("")}</select></label>
+        <label>開始: <input id="mRegStart" type="time"
+          value="${escapeHtml(m.regular_start || "03:00")}"></label>
+        <label>終了: <input id="mRegEnd" type="time"
+          value="${escapeHtml(m.regular_end || "03:30")}"></label>
+      </div>
+      <div class="row mt">
+        <input id="mRegNote" style="flex:1" placeholder="定期メンテナンスの補足"
+          value="${escapeHtml(m.regular_note || "")}">
+      </div>
+      <div class="row mt">
+        <label><input type="checkbox" id="mAdOn"
+          ${m.adhoc_enabled ? "checked" : ""}> 臨時メンテナンスの予定あり</label>
+        <label>開始: <input id="mAdStart" type="datetime-local"
+          value="${escapeHtml((m.adhoc_start || "").replace(" ", "T"))}"></label>
+        <label>終了: <input id="mAdEnd" type="datetime-local"
+          value="${escapeHtml((m.adhoc_end || "").replace(" ", "T"))}"></label>
+      </div>
+      <div class="row mt">
+        <input id="mAdNote" style="flex:1" placeholder="臨時メンテナンスの理由・補足"
+          value="${escapeHtml(m.adhoc_note || "")}">
+      </div>
+      <div class="row mt">
+        <label title="VPS側のcron(deploy/scheduled_deploy.sh)が予約時刻に
+docker compose up -d --build を実行します。コードは事前に同期しておくこと。"
+          ><input type="checkbox" id="mAdDeploy"
+          ${m.adhoc_auto_deploy ? "checked" : ""}>
+          この時刻に自動デプロイする（要: 事前のコード同期）</label>
+      </div>
+      <p class="muted" style="font-size:.9em;margin:2px 0 0">
+        ${m.deploy && m.deploy.scheduled
+          ? `予約中: ${escapeHtml(m.deploy.scheduled.run_at || "")}` : "予約なし"}
+        ${m.deploy && m.deploy.last
+          ? ` ／ 前回の実行: ${escapeHtml(m.deploy.last.status || "")}
+              （${escapeHtml(m.deploy.last.at || "")} UTC
+              ${escapeHtml(m.deploy.last.message || "")}）` : ""}
+      </p>
+      <div class="row mt">
+        <label>お知らせを出す時間:
+          <input id="mLead" type="number" min="0" max="336" style="width:80px"
+            value="${Number(m.notice_hours_before || 24)}"> 時間前から</label>
+        <button class="btn" id="mSave">保存</button>
+        <span id="mSaved" class="muted"></span>
+      </div>
+    </div></details>`;
+}
+
+function wireMaintenanceEditor(box) {
+  const q = (id) => box.querySelector(id);
+  q("#mSave").addEventListener("click", async () => {
+    const payload = {
+      regular_enabled: q("#mRegOn").checked,
+      regular_weekday: Number(q("#mRegWd").value),
+      regular_start: q("#mRegStart").value,
+      regular_end: q("#mRegEnd").value,
+      regular_note: q("#mRegNote").value,
+      adhoc_enabled: q("#mAdOn").checked,
+      adhoc_start: q("#mAdStart").value.replace("T", " "),
+      adhoc_end: q("#mAdEnd").value.replace("T", " "),
+      adhoc_note: q("#mAdNote").value,
+      adhoc_auto_deploy: q("#mAdDeploy").checked,
+      notice_hours_before: Number(q("#mLead").value),
+    };
+    q("#mSaved").textContent = "保存中…";
+    try {
+      await api.put("/api/system/maintenance", payload);
+      q("#mSaved").textContent = "保存しました（すぐ反映されます）";
+      // 画面上部のバナーも即座に更新する。
+      refreshMaintenanceBanner();
+    } catch (e) {
+      q("#mSaved").textContent = "保存できませんでした: " + e.message;
+    }
+  });
+}
+
+
 export async function admin(root) {
   let d;
   try {
@@ -3716,7 +3936,25 @@ export async function admin(root) {
           <button class="btn ghost" id="anonAccessReload"
             style="padding:3px 10px">再読み込み</button>
         </div>
-        <div id="anonAccessWrap" class="mt"><p class="muted">未読み込み</p></div>
+        <div id="anonAccessSummary" class="mt">
+          <p class="muted">未読み込み</p></div>
+        <details id="anonAccessDetailBox" class="log-group mt">
+          <summary>📋 IPごとの明細（絞り込み・並べ替え）</summary>
+          <div class="row mt" id="anonAccessFilters">
+            <span class="muted">表示する種別:</span>
+            <label><input type="checkbox" class="anon-mark" value="0" checked>
+              人間（印なし）</label>
+            <label><input type="checkbox" class="anon-mark" value="1">
+              ※1 管理者</label>
+            <label><input type="checkbox" class="anon-mark" value="2">
+              ※2 機械クローラー</label>
+            <label><input type="checkbox" class="anon-mark" value="3">
+              ※3 AIクローラー</label>
+            <label><input type="checkbox" class="anon-mark" value="4">
+              ※4 その他</label>
+          </div>
+          <div id="anonAccessWrap" class="mt"><p class="muted">未読み込み</p></div>
+        </details>
       </details>
 
       <details class="log-group" id="logChargeKeyDetails">
@@ -4003,75 +4241,139 @@ export async function admin(root) {
     }
   }
 
-  async function loadAnonAccess() {
+  // 訪問者種別（※1〜※4）の見出し。表を横に伸ばさないため、一覧では
+  // IPの右に上付きの印だけを出し、意味はサマリと欄外の備考で説明する。
+  const ANON_MARKS = {
+    0: "人間とみなせるアクセス（印なし）",
+    1: "※1 管理者自身",
+    2: "※2 機械クローラー（検索エンジン・SNSのリンクプレビュー等）",
+    3: "※3 AIクローラー（生成AIの検索/学習用）",
+    4: "※4 その他（人間の普通のアクセスではないもの）",
+  };
+  // 一覧の並べ替え状態（列キーと昇順/降順）。既定は最終アクセスの新しい順。
+  let anonSort = { key: "last_seen", asc: false };
+  let anonData = null;   // 直近に取得したレスポンス（再描画用に保持）
+
+  function anonSelectedMarks() {
+    return new Set(Array.from(
+      root.querySelectorAll(".anon-mark:checked"), (c) => Number(c.value)));
+  }
+
+  // 明細だけを描き直す（絞り込み・並べ替えのたびに再取得しないで済む）。
+  function renderAnonRows() {
     const wrap = root.querySelector("#anonAccessWrap");
-    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    if (!anonData) { wrap.innerHTML = `<p class="muted">未読み込み</p>`; return; }
+    const marks = anonSelectedMarks();
+    const rows = (anonData.items || []).filter((r) => marks.has(r.mark || 0));
+    if (!rows.length) {
+      wrap.innerHTML = `<p class="muted">この条件に当てはまるIPはありません。
+        （上のチェックで種別を追加してください）</p>`;
+      return;
+    }
+    const place = (r) => [r.country, r.region, r.city]
+      .filter(Boolean).join(" / ") || "—";
+    const val = (r, k) => {
+      if (k === "place") return place(r);
+      if (k === "org") return r.org || r.hostname || "";
+      if (k === "signup") return (r.signup_attempted ? 1 : 0)
+        + (r.signup_succeeded ? 1 : 0);
+      if (k === "viewed_about") return r.viewed_about ? 1 : 0;
+      return r[k];
+    };
+    rows.sort((a, b) => {
+      const x = val(a, anonSort.key), y = val(b, anonSort.key);
+      let c;
+      if (typeof x === "number" && typeof y === "number") c = x - y;
+      else c = String(x ?? "").localeCompare(String(y ?? ""), "ja");
+      return anonSort.asc ? c : -c;
+    });
+    const COLS = [
+      ["ip", "IP"], ["place", "国/地域/市区"], ["org", "接続元組織・ホスト名"],
+      ["first_seen", "初回"], ["last_seen", "最終"], ["visit_count", "回数"],
+      ["viewed_about", "説明書閲覧"], ["signup", "登録試行"],
+    ];
+    const head = COLS.map(([k, label]) => {
+      const arrow = anonSort.key === k ? (anonSort.asc ? " ▲" : " ▼") : "";
+      return `<th class="anon-sort" data-key="${k}"
+        style="cursor:pointer;user-select:none"
+        title="クリックで並べ替え">${label}${arrow}</th>`;
+    }).join("");
+    wrap.innerHTML = `<p class="muted">表示中 ${rows.length} 件
+      / 期間内 ${(anonData.items || []).length} 件</p>
+      <table><thead><tr>${head}</tr></thead><tbody>${rows.map((r) => `
+      <tr>
+        <td class="muted">${escapeHtml(r.ip)}${
+          r.mark
+            ? ` <sup title="${escapeHtml(ANON_MARKS[r.mark])}: ${
+              escapeHtml(r.mark_reason || "")}">※${r.mark}</sup>` : ""}</td>
+        <td class="muted">${escapeHtml(place(r))}</td>
+        <td class="muted">${escapeHtml(r.org || r.hostname || "—")}</td>
+        <td class="muted">${fmtDate(r.first_seen)}</td>
+        <td class="muted">${fmtDate(r.last_seen)}</td>
+        <td>${r.visit_count}</td>
+        <td>${r.viewed_about
+          ? '<span class="badge-ok">見た</span>' : "—"}</td>
+        <td>${r.signup_attempted
+          ? (r.signup_succeeded
+            ? '<span class="badge-ok">成功</span>'
+            : '<span class="badge-bad">試行(未成立)</span>')
+          : "—"}</td>
+      </tr>`).join("")}</tbody></table>
+      <p class="muted" style="font-size:.9em">判定材料はUser-Agentと接続元組織
+      だけなので確実ではありません。UAは詐称できますし、VPN経由の人間が
+      ※4になることもあります。「印なし＝機械的アクセスの兆候が
+      見つからなかった」という意味で読んでください。各印にマウスを乗せると
+      判定理由が出ます。</p>`;
+    wrap.querySelectorAll(".anon-sort").forEach((th) => {
+      th.addEventListener("click", () => {
+        const k = th.dataset.key;
+        if (anonSort.key === k) anonSort.asc = !anonSort.asc;
+        else anonSort = { key: k, asc: k === "ip" || k === "org" };
+        renderAnonRows();
+      });
+    });
+  }
+
+  async function loadAnonAccess() {
+    const sumBox = root.querySelector("#anonAccessSummary");
+    const wrap = root.querySelector("#anonAccessWrap");
+    sumBox.innerHTML = `<p class="muted">読み込み中…</p>`;
+    wrap.innerHTML = "";
     const days = root.querySelector("#anonAccessDays").value;
     try {
       const res = await api.get(`/api/system/admin/anon-access?days=${days}`);
-      const items = res.items || [];
+      anonData = res;
       const mc = res.mark_counts || {};
-      const summary = `<p class="muted">期間内の未ログインアクセス
-        合計 <strong>${res.total_visits}</strong> 回
-        （ユニークIP <strong>${res.unique_ips}</strong> 件）。
-        うち<strong>印なし＝人間が意識的に閲覧したとみなせるIPは
-        ${mc[0] || 0} 件</strong>（残りは下記※1〜※4）。</p>`;
-      if (!items.length) {
-        wrap.innerHTML = summary + `<p class="muted">まだありません。</p>`;
-        return;
-      }
-      const place = (r) => [r.country, r.region, r.city]
-        .filter(Boolean).join(" / ") || "—";
-      // 訪問者種別は列を増やさず「※1〜※4」の印＋欄外の備考で示す
-      // （2026-08-21ユーザー要望・表が横に伸びるのを避けるため）。
-      const MARKS = {
-        1: "管理者自身",
-        2: "検索エンジン等のクローラーの可能性",
-        3: "AI検索クローラーの可能性",
-        4: "その他、普通のユーザーではないものの可能性",
-      };
-      const legend = `<p class="muted" style="font-size:.9em">
-        <strong>※印の見かた</strong>（User-Agentと接続元組織からの<u>推定</u>）:
-        ${[1, 2, 3, 4].map((n) => `※${n} ${MARKS[n]}
-          <span class="muted">(${mc[n] || 0}件)</span>`).join(" ／ ")}
-        ／ <strong>印なし</strong> …
-        たまたま・興味を持って等を問わず、<strong>人間が意識的に閲覧した</strong>
-        とみなせるもの <span class="muted">(${mc[0] || 0}件)</span>。<br>
-        判定材料はUser-Agentと接続元組織だけなので確実ではありません。UAは
-        詐称できますし、VPN経由の人間が※4になることもあります。
-        「印なし＝機械的アクセスの兆候が見つからなかった」という意味で
-        読んでください。各印にマウスを乗せると判定理由が出ます。</p>`;
-      wrap.innerHTML = summary + `<table><thead><tr>
-        <th>IP</th><th>国/地域/市区</th><th>接続元組織・ホスト名</th>
-        <th>初回</th><th>最終</th><th>回数</th><th>説明書閲覧</th>
-        <th>登録試行</th>
-        </tr></thead><tbody>${items.map((r) => `
-        <tr>
-          <td class="muted">${escapeHtml(r.ip)}${
-            r.mark
-              ? ` <sup title="${escapeHtml(MARKS[r.mark])}: ${
-                escapeHtml(r.mark_reason || "")}">※${r.mark}</sup>` : ""}</td>
-          <td class="muted">${escapeHtml(place(r))}</td>
-          <td class="muted">${escapeHtml(r.org || r.hostname || "—")}</td>
-          <td class="muted">${fmtDate(r.first_seen)}</td>
-          <td class="muted">${fmtDate(r.last_seen)}</td>
-          <td>${r.visit_count}</td>
-          <td>${r.viewed_about
-            ? '<span class="badge-ok">見た</span>' : "—"}</td>
-          <td>${r.signup_attempted
-            ? (r.signup_succeeded
-              ? '<span class="badge-ok">成功</span>'
-              : '<span class="badge-bad">試行(未成立)</span>')
-            : "—"}</td>
-        </tr>`).join("")}</tbody></table>` + legend;
+      const mv = res.mark_visits || {};
+      // 総数は**先頭に固定**で出す（下の絞り込みや並べ替えの影響を受けない・
+      // 2026-08-22ユーザー要望）。IP数と延べ回数の両方を出す。
+      const cell = (n) => `<td>${mc[n] || 0} IP</td><td>${mv[n] || 0} 回</td>`;
+      sumBox.innerHTML = `
+        <p><strong>直近${res.days}日の合計:
+          延べアクセス ${res.total_visits} 回 ／
+          IP総数 ${res.unique_ips} 件</strong></p>
+        <table><thead><tr><th>種別</th><th>IP数</th><th>延べ回数</th></tr>
+        </thead><tbody>
+          <tr><td>👤 人間のアクセス（管理者を除く・印なし）</td>${cell(0)}</tr>
+          <tr><td class="muted">※1 管理者自身</td>${cell(1)}</tr>
+          <tr><td>🤖 ※2 機械クローラー</td>${cell(2)}</tr>
+          <tr><td>🧠 ※3 AIクローラー</td>${cell(3)}</tr>
+          <tr><td>❓ ※4 その他（人間の普通のアクセスではないもの）</td>
+            ${cell(4)}</tr>
+        </tbody></table>`;
+      renderAnonRows();
     } catch (e) {
-      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+      anonData = null;
+      sumBox.innerHTML =
+        `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
     }
   }
   root.querySelector("#anonAccessReload")
     .addEventListener("click", loadAnonAccess);
   root.querySelector("#anonAccessDays")
     .addEventListener("change", loadAnonAccess);
+  root.querySelectorAll(".anon-mark").forEach((c) =>
+    c.addEventListener("change", renderAnonRows));
 
   async function loadChargeKeyLog() {
     const wrap = root.querySelector("#chargeKeyLogWrap");

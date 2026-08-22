@@ -33,7 +33,9 @@ VALID_TYPES = ("word", "phrase")
 # （例: phrase / phrase_native / example / example_native）。
 VALID_KINDS = (
     "word", "example", "phrase",
-    "example_native", "phrase_native",
+    # 2026-08-22: 単語にもネイティブ速度の選択肢を出したので word_native を
+    # 追加（押されたときに合成して貯まる。既存の音声在庫には影響しない）。
+    "word_native", "example_native", "phrase_native",
 )
 
 

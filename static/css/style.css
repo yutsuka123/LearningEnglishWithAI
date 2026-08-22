@@ -610,3 +610,41 @@ th { color: var(--muted); font-weight: 600; }
 @media (max-width: 760px) {
   .fc-card { min-height: 240px; padding: 22px 16px; }
 }
+
+
+/* メンテナンス予定のお知らせバナー（2026-08-22）。予定は黄色、作業中は赤。
+   目立たせつつ、閉じられる（同じ内容は再表示しない）。 */
+.maint-banner {
+  margin: 10px 16px 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #d9a441;
+  background: rgba(217, 164, 65, .14);
+  color: inherit;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.5;
+}
+.maint-banner.in-progress {
+  border-color: #e5534b;
+  background: rgba(229, 83, 75, .16);
+}
+.maint-banner .maint-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1.1em;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+/* バージョン情報ページ。管理者には「一般ユーザー向け＝赤／管理者用＝通常色」
+   の2種類を並べて出す（2026-08-22ユーザー指定）。 */
+.rel-public { color: #e5534b; }
+.rel-admin { color: inherit; }
+.rel-entry { margin: 0 0 18px; }
+.rel-entry ul { margin: 4px 0 8px 1.2em; padding: 0; }
+.rel-entry li { margin: 2px 0; }

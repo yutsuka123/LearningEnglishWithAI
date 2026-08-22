@@ -393,6 +393,274 @@ def my_usage():
     }
 
 
+# ---------------------------------------------------------------------------
+# バージョン情報 / メンテナンス予定（2026-08-22ユーザー要望）
+#
+# どちらも「アプリを再起動せずに変えられること」を要件にしている:
+#   - リリースノートは data/release_notes.json を置けばそちらが優先される
+#     （docker cp で入れるだけ。イメージの作り直し＝再起動が不要）
+#   - メンテナンス予定は app_state テーブル（DB）に持つ
+# ---------------------------------------------------------------------------
+
+# メンテナンス予定を入れておく app_state のキー。
+MAINTENANCE_KEY = "maintenance_plan"
+
+# 定期メンテナンス枠の既定値（2026-08-21のメンテナンス計画で検討した
+# 「毎週月曜 日本時間 03:00〜03:30」。ユーザーが画面から変更できる）。
+DEFAULT_MAINTENANCE = {
+    "regular_enabled": True,
+    "regular_weekday": 0,      # 0=月曜（Python の weekday と同じ）
+    "regular_start": "03:00",  # JST
+    "regular_end": "03:30",    # JST
+    "regular_note": "定期メンテナンス枠です。数分程度つながりにくくなる"
+                    "ことがあります。",
+    # 不定期メンテナンス（1件だけ持つ。予定が無いときは start が空）。
+    "adhoc_enabled": False,
+    "adhoc_start": "",         # "2026-08-25 03:00" 形式（JST）
+    "adhoc_end": "",
+    "adhoc_note": "",
+    # 臨時メンテナンスの時刻に、VPS側のcron(deploy/scheduled_deploy.sh)で
+    # 自動デプロイまで行うか（コードは事前にrsync済みであることが前提）。
+    "adhoc_auto_deploy": False,
+    # 利用者向けバナーを何時間前から出すか。
+    "notice_hours_before": 24,
+}
+
+# VPS側の deploy/scheduled_deploy.sh が見張るファイル。data/ は永続ボリューム
+# でホストからも見えるので、アプリ（コンテナ内）から予約を書ける。
+DEPLOY_REQUEST_FILE = "deploy_request.json"
+DEPLOY_LOG_FILE = "deploy_log.jsonl"
+
+_WEEKDAY_JA = ["月", "火", "水", "木", "金", "土", "日"]
+
+
+def _now_jst():
+    from datetime import datetime, timedelta, timezone
+    return datetime.now(timezone(timedelta(hours=9)))
+
+
+def _parse_jst(text: str):
+    """「2026-08-25 03:00」「2026-08-25T03:00」をJSTのdatetimeにする。"""
+    from datetime import datetime, timedelta, timezone
+    t = (text or "").strip().replace("T", " ")
+    for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(t, fmt).replace(
+                tzinfo=timezone(timedelta(hours=9)))
+        except ValueError:
+            continue
+    return None
+
+
+def _load_release_notes() -> dict:
+    """リリースノートを読む。data/release_notes.json があればそれを優先。
+
+    data/ は永続ボリュームなので、`docker cp` でこのファイルを差し替える
+    だけで**コンテナを作り直さずに**掲載内容を更新できる（再起動を減らす
+    という2026-08-22の方針）。無ければリポジトリ同梱版を読む。
+    """
+    for path in (paths.data_dir / "release_notes.json",
+                 ROOT_DIR / "release_notes.json"):
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if isinstance(data, dict) and isinstance(data.get("versions"), list):
+            return data
+    return {"versions": []}
+
+
+@router.get("/release-notes")
+def release_notes():
+    """バージョン情報ページの中身。一般ユーザーには public だけ、
+    管理者には admin（詳細）も返す。ゲストでも見られる。"""
+    from ..config import APP_VERSION
+    with db() as conn:
+        me = auth.get_user(conn, auth.current_user_id())
+    is_admin = bool(me and me.get("role") == "admin")
+    out = []
+    for v in _load_release_notes().get("versions", []):
+        if not isinstance(v, dict):
+            continue
+        item = {
+            "version": v.get("version", ""),
+            "date": v.get("date", ""),
+            "title": v.get("title", ""),
+            "public": [str(x) for x in (v.get("public") or [])],
+        }
+        if is_admin:
+            item["admin"] = [str(x) for x in (v.get("admin") or [])]
+        out.append(item)
+    return {"current": APP_VERSION, "is_admin": is_admin, "versions": out}
+
+
+def _load_maintenance() -> dict:
+    with db() as conn:
+        row = conn.execute(
+            "SELECT value FROM app_state WHERE key = ?", (MAINTENANCE_KEY,),
+        ).fetchone()
+    plan = dict(DEFAULT_MAINTENANCE)
+    if row and (row["value"] or "").strip():
+        try:
+            saved = json.loads(row["value"])
+            if isinstance(saved, dict):
+                plan.update({k: saved[k] for k in saved if k in plan})
+        except ValueError:
+            pass
+    return plan
+
+
+def _maintenance_notice(plan: dict) -> dict:
+    """いま利用者に出すべきお知らせ（無ければ show=False）。
+
+    - 不定期メンテナンス: 予定の notice_hours_before 時間前から告知し、
+      時間帯に入っている間は「作業中」として出し続ける。
+    - 定期メンテナンス枠: 毎週のことなので常時は出さず、開始の
+      notice_hours_before 時間前になってから出す。
+    """
+    from datetime import timedelta
+    now = _now_jst()
+    lead = timedelta(hours=int(plan.get("notice_hours_before") or 0))
+    if plan.get("adhoc_enabled"):
+        start = _parse_jst(plan.get("adhoc_start", ""))
+        end = _parse_jst(plan.get("adhoc_end", ""))
+        if start and end is None:
+            end = start + timedelta(minutes=30)
+        if start and now <= end:
+            note = plan.get("adhoc_note") or ""
+            if now >= start:
+                return {
+                    "show": True, "state": "in_progress", "kind": "adhoc",
+                    "text": (f"ただいまメンテナンス作業中です"
+                             f"（{start:%m/%d %H:%M}〜{end:%H:%M}"
+                             f"・日本時間）。{note}"),
+                }
+            if now >= start - lead:
+                return {
+                    "show": True, "state": "upcoming", "kind": "adhoc",
+                    "text": (f"メンテナンス予定: {start:%Y/%m/%d %H:%M}〜"
+                             f"{end:%H:%M}（日本時間）。{note}"),
+                }
+    if plan.get("regular_enabled"):
+        wd = max(0, min(int(plan.get("regular_weekday") or 0), 6))
+        hh, _, mm = (plan.get("regular_start") or "03:00").partition(":")
+        try:
+            days_ahead = (wd - now.weekday()) % 7
+            start = (now + timedelta(days=days_ahead)).replace(
+                hour=int(hh), minute=int(mm or 0), second=0, microsecond=0)
+        except ValueError:
+            return {"show": False}
+        if start < now:
+            start += timedelta(days=7)
+        if now >= start - lead:
+            return {
+                "show": True, "state": "upcoming", "kind": "regular",
+                "text": (f"定期メンテナンス予定: {start:%Y/%m/%d}"
+                         f"（{_WEEKDAY_JA[wd]}）{plan.get('regular_start')}〜"
+                         f"{plan.get('regular_end')}（日本時間）。"
+                         f"{plan.get('regular_note') or ''}"),
+            }
+    return {"show": False}
+
+
+@router.get("/maintenance")
+def get_maintenance():
+    """メンテナンス予定（誰でも取得可・利用者へのお知らせに使う）。"""
+    plan = _load_maintenance()
+    plan["now_jst"] = _now_jst().strftime("%Y-%m-%d %H:%M")
+    plan["notice"] = _maintenance_notice(plan)
+    plan["deploy"] = _deploy_status()
+    return plan
+
+
+def _sync_deploy_request(plan: dict) -> None:
+    """自動デプロイの予約ファイルを作る/消す（VPSのcronが拾う）。
+
+    アプリのコンテナからは docker コマンドを叩けないので、**予約だけを
+    data/ に書き**、実際の入れ替えはホスト側の cron
+    (`deploy/scheduled_deploy.sh`) に任せる。予約を消すのは「臨時
+    メンテナンスを取り消した／自動デプロイのチェックを外した」とき。
+    """
+    req = paths.data_dir / DEPLOY_REQUEST_FILE
+    want = (bool(plan.get("adhoc_enabled"))
+            and bool(plan.get("adhoc_auto_deploy"))
+            and bool((plan.get("adhoc_start") or "").strip()))
+    try:
+        if want:
+            req.write_text(json.dumps({
+                "run_at": (plan.get("adhoc_start") or "").strip(),
+                "note": plan.get("adhoc_note") or "",
+                "requested_at": _now_jst().strftime("%Y-%m-%d %H:%M"),
+            }, ensure_ascii=False), encoding="utf-8")
+        elif req.exists():
+            req.unlink()
+    except OSError as e:
+        log.error("自動デプロイ予約の書き込みに失敗: %s", e)
+
+
+def _deploy_status() -> dict:
+    """自動デプロイの予約状況と直近の実行結果（管理画面の表示用）。"""
+    out: dict = {"scheduled": None, "last": None}
+    req = paths.data_dir / DEPLOY_REQUEST_FILE
+    try:
+        if req.exists():
+            out["scheduled"] = json.loads(req.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        pass
+    try:
+        lines = (paths.data_dir / DEPLOY_LOG_FILE).read_text(
+            encoding="utf-8").strip().splitlines()
+        for line in reversed(lines[-50:]):
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                continue
+            if rec.get("status") in (
+                    "success", "error", "fatal", "rolled_back"):
+                out["last"] = rec
+                break
+    except OSError:
+        pass
+    return out
+
+
+class MaintenanceIn(BaseModel):
+    regular_enabled: bool | None = None
+    regular_weekday: int | None = None
+    regular_start: str | None = None
+    regular_end: str | None = None
+    regular_note: str | None = None
+    adhoc_enabled: bool | None = None
+    adhoc_start: str | None = None
+    adhoc_end: str | None = None
+    adhoc_note: str | None = None
+    adhoc_auto_deploy: bool | None = None
+    notice_hours_before: int | None = None
+
+
+@router.put("/maintenance")
+def put_maintenance(payload: MaintenanceIn):
+    """メンテナンス予定の更新（管理者専用）。DBに書くだけなので
+    **アプリの再起動は不要**、保存した瞬間から利用者側に反映される。"""
+    _require_admin()
+    plan = _load_maintenance()
+    for k, v in payload.model_dump(exclude_none=True).items():
+        plan[k] = v
+    plan["regular_weekday"] = max(0, min(int(plan["regular_weekday"]), 6))
+    plan["notice_hours_before"] = max(
+        0, min(int(plan["notice_hours_before"]), 24 * 14))
+    with db() as conn:
+        conn.execute(
+            "INSERT OR REPLACE INTO app_state (key, value) VALUES (?, ?)",
+            (MAINTENANCE_KEY, json.dumps(plan, ensure_ascii=False)),
+        )
+    _sync_deploy_request(plan)
+    plan["now_jst"] = _now_jst().strftime("%Y-%m-%d %H:%M")
+    plan["notice"] = _maintenance_notice(plan)
+    plan["deploy"] = _deploy_status()
+    return plan
+
+
 @router.get("/admin/overview")
 def admin_overview(
     include_admin: bool = False, include_invited: bool = False,
@@ -640,8 +908,8 @@ def admin_anon_access(days: int = 30, limit: int = 500):
             "     AS signup_succeeded "
             "FROM landing_visits "
             "WHERE created_at >= datetime('now', ?) AND ip != '' "
-            "GROUP BY ip ORDER BY last_seen DESC LIMIT ?",
-            (since, limit),
+            "GROUP BY ip ORDER BY last_seen DESC",
+            (since,),
         ).fetchall()
         geo_rows = conn.execute(
             "SELECT ip, country, region, city, org, hostname "
@@ -668,7 +936,11 @@ def admin_anon_access(days: int = 30, limit: int = 500):
         ua_map.setdefault(r["ip"], []).append(r["user_agent"] or "")
     admin_ips = load_admin_known_ips()
     items = []
+    # 印ごとのIP数と延べアクセス回数。画面先頭の「総数」に使うので、
+    # 表示件数(limit)で切る前の**期間内の全IP**を数える（2026-08-22:
+    # フィルタや表示件数に関わらず総数が変わらないこと、というユーザー要望）。
     mark_counts = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
+    mark_visits = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0}
     for r in rows:
         d = dict(r)
         geo = geo_map.get(d["ip"], {})
@@ -683,7 +955,10 @@ def admin_anon_access(days: int = 30, limit: int = 500):
             ua_map.get(d["ip"], []), d["org"], d["hostname"], d["is_admin"],
         )
         mark_counts[d["mark"]] += 1
+        mark_visits[d["mark"]] += d["visit_count"] or 0
         items.append(d)
+    # 集計は期間内の全IPで行い、表示だけ limit で切る。
+    items = items[:limit]
 
     return {
         "days": days,
@@ -691,6 +966,9 @@ def admin_anon_access(days: int = 30, limit: int = 500):
         "unique_ips": summary["unique_ips"] if summary else 0,
         # 印ごとのIP数。0=印なし(人間とみなすもの)。画面のサマリで使う。
         "mark_counts": {str(k): v for k, v in mark_counts.items()},
+        # 印ごとの延べアクセス回数（IP数だけだと、管理者自身の大量アクセスの
+        # ような偏りが見えないため・2026-08-22ユーザー要望）。
+        "mark_visits": {str(k): v for k, v in mark_visits.items()},
         "items": items,
     }
 
