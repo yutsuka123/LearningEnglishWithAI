@@ -42,7 +42,7 @@ source "$TARGET_CONF"
 # 同期対象は明示的に列挙(allowlist)。deploy/・docs/・data/・.env 等は
 # 意図的に対象外（deploy/.env.study を守るため。Dockerfileが実際に
 # COPYしている範囲に合わせてある）。
-SYNC_ITEMS=(app static templates scripts run.py requirements.txt Dockerfile CHANGELOG.md)
+SYNC_ITEMS=(app static templates scripts run.py requirements.txt Dockerfile CHANGELOG.md release_notes.json)
 
 echo "同期先: ${VPS_HOST}:${VPS_APP_DIR}/"
 for item in "${SYNC_ITEMS[@]}"; do

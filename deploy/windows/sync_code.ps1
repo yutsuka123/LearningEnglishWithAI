@@ -113,7 +113,8 @@ try {
 # deploy/・docs/・data/・.env 等は意図的に対象外（deploy/.env.study を守るため。
 # Dockerfile が実際に COPY している範囲に合わせてある）。
 $SyncItems = @('app', 'static', 'templates', 'scripts', 'run.py',
-               'requirements.txt', 'Dockerfile', 'CHANGELOG.md')
+               'requirements.txt', 'Dockerfile', 'CHANGELOG.md',
+               'release_notes.json')
 
 $DryRunFlag = if ($Execute) { '' } else { '--dry-run ' }
 if (-not $Execute) {

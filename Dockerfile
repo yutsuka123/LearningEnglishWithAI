@@ -25,6 +25,9 @@ COPY templates ./templates
 COPY scripts ./scripts
 COPY run.py ./run.py
 COPY CHANGELOG.md .
+# アプリ内「バージョン情報」ページの掲載元(2026-08-22)。data/release_notes.json
+# を置けばそちらが優先されるので、緊急時は再ビルドせずに差し替えられる。
+COPY release_notes.json .
 
 # 非rootユーザーで実行（セキュリティ）。/data はマウント先なので所有権付与。
 RUN useradd -r -u 10001 appuser \
