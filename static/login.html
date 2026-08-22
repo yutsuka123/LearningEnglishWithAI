@@ -119,11 +119,14 @@
 
   <form class="card hidden" id="fSignup">
     <h1>🐱 新規登録</h1>
-    <label for="sname">氏名</label>
-    <input id="sname" name="full_name" autocomplete="name" required />
-    <label for="skana">フリガナ</label>
-    <input id="skana" name="furigana" autocomplete="off" required
-      placeholder="ヤマダ タロウ" />
+    <label for="sdisplay">呼んでほしいお名前</label>
+    <input id="sdisplay" name="display_name" autocomplete="nickname"
+      required placeholder="例: たろう、タロさん、Taro など" />
+    <label for="sdisplayKana">フリガナ</label>
+    <input id="sdisplayKana" name="display_name_furigana" autocomplete="off"
+      required placeholder="タロウ" />
+    <p class="hint">チャージキーの発行など、こちらからご連絡する際の宛名に
+      使用します。<b>本名でなくて構いません</b>（仮名・ニックネーム可）。</p>
     <label for="su">メールアドレス</label>
     <input id="su" name="email" type="email" autocomplete="email"
       required />
@@ -160,6 +163,11 @@
 
     <details class="survey" open>
       <summary>📋 アンケート（任意・サービス改善の参考にさせていただきます）</summary>
+      <label for="sname">氏名（任意）</label>
+      <input id="sname" name="full_name" autocomplete="name" />
+      <label for="skana">フリガナ（任意）</label>
+      <input id="skana" name="furigana" autocomplete="off"
+        placeholder="ヤマダ タロウ" />
       <label for="s_occ_cat">職業分類</label>
       <select id="s_occ_cat">
         <option value="">回答しない</option>
@@ -450,6 +458,9 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            display_name: document.getElementById('sdisplay').value,
+            display_name_furigana:
+              document.getElementById('sdisplayKana').value,
             full_name: document.getElementById('sname').value,
             furigana: document.getElementById('skana').value,
             email: email,

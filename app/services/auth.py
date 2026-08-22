@@ -300,6 +300,7 @@ def create_user(
     *,
     role: str = "user",
     display_name: str = "",
+    display_name_furigana: str = "",
     email: str = "",
     daily_cap_usd: Optional[float] = None,
     monthly_cap_usd: Optional[float] = None,
@@ -321,9 +322,13 @@ def create_user(
     ``email`` は自己サインアップ(メアド+パス)ユーザー用（既定は空文字＝
     管理者(admin.py)作成の従来ユーザーと同じ扱い）。呼び出し元を増やさず
     後方互換を保つため、キーワード専用・既定空文字にしている。
-    ``full_name``/``furigana``/``survey_*`` は2026-08-13追加の登録画面
-    拡充項目（氏名/フリガナは自己サインアップで必須、survey_*は任意
-    アンケート）。管理者作成の従来ユーザーは既定空文字のまま。
+    ``display_name_furigana``/``full_name``/``furigana``/``survey_*`` は
+    2026-08-13追加の登録画面拡充項目（2026-08-22に必須項目を入れ替え:
+    「呼んでほしいお名前」(``display_name``、仮名・ニックネーム可)＋その
+    フリガナ(``display_name_furigana``)を自己サインアップの必須項目とし、
+    チャージキー発行等の連絡時の宛名に使う。旧来の必須項目だった
+    ``full_name``/``furigana``(本名)は任意アンケートへ移動）。
+    管理者作成の従来ユーザーは既定空文字のまま。
     ``survey_occupation_category``(大分類・単一選択)/
     ``survey_occupation_detail``(小分類・複数選択+自由記入をカンマ区切り
     文字列で結合したもの)/``survey_interest_areas``(興味のある分野・
@@ -333,13 +338,15 @@ def create_user(
     pw = hash_password(password) if password else ""
     cur = conn.execute(
         "INSERT INTO users (username, password_hash, role, display_name, "
+        " display_name_furigana, "
         " email, daily_cost_cap_usd, monthly_cost_cap_usd, balance_jpy, "
         " allow_banned, full_name, furigana, survey_occupation_category, "
         " survey_occupation_detail, survey_age_group, survey_gender, "
         " survey_purpose, survey_referral, survey_free_text, "
         " survey_interest_areas) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
         (username.strip(), pw, role, display_name or username.strip(),
+         display_name_furigana.strip(),
          email.strip().lower(), daily_cap_usd, monthly_cap_usd, balance_jpy,
          1 if allow_banned else 0, full_name.strip(), furigana.strip(),
          survey_occupation_category.strip(),

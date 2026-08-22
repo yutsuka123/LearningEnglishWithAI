@@ -73,6 +73,7 @@ class SignupIn(BaseModel):
     password: str
     charge_key: str = ""
     display_name: str = ""
+    display_name_furigana: str = ""
     full_name: str = ""
     furigana: str = ""
     survey_occupation_category: str = ""
@@ -124,11 +125,14 @@ def signup(
         log.warning("signup: password policy error ip=%s email=%s reason=%s",
                      ip, email, pw_error)
         return fail("2012", pw_error)
+    display_name = payload.display_name.strip()
+    display_name_furigana = payload.display_name_furigana.strip()
+    if not display_name or not display_name_furigana:
+        log.warning("signup: missing display_name/furigana ip=%s email=%s",
+                     ip, email)
+        return fail("2013")
     full_name = payload.full_name.strip()
     furigana = payload.furigana.strip()
-    if not full_name or not furigana:
-        log.warning("signup: missing name/furigana ip=%s email=%s", ip, email)
-        return fail("2013")
     # 注意: ChargeKeyError は with ブロックの外で捕まえること。ブロック内で
     # catch して return してしまうと、db() の contextmanager からは
     # "例外なく正常終了" に見えて create_user の INSERT がロールバックされず
@@ -145,7 +149,8 @@ def signup(
                     "このメールアドレスは既に登録されています。")
             uid = auth.create_user(
                 conn, email, password,
-                email=email, display_name=payload.display_name or email,
+                email=email, display_name=display_name,
+                display_name_furigana=display_name_furigana,
                 full_name=full_name, furigana=furigana,
                 survey_occupation_category=payload.survey_occupation_category,
                 survey_occupation_detail=payload.survey_occupation_detail,

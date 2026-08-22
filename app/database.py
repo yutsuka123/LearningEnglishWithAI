@@ -778,6 +778,11 @@ def _migrate_multiuser(conn: sqlite3.Connection) -> None:
                 "survey_referral", "survey_free_text",
                 "survey_interest_areas"):
         _add_col(conn, "users", col, f"{col} TEXT DEFAULT ''")
+    # 2026-08-22: 必須項目を「氏名(本名)」から「呼んでほしいお名前」(仮名・
+    # ニックネーム可、チャージキー発行等の連絡時の宛名に使う)へ入れ替え。
+    # 名前自体は display_name 列(既存)を再利用し、読み方だけこの列に追加。
+    _add_col(conn, "users", "display_name_furigana",
+             "display_name_furigana TEXT DEFAULT ''")
     _migrate_membership_status(conn)
     _migrate_public_samples(conn)
 
