@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from ..config import ROOT_DIR, load_admin_known_ips, load_settings, log, paths
 from ..database import ACCENTS, NEWS_FIELDS, db
 from ..schemas import MemoryUpdateIn, SettingsIn
-from ..services import ai, auth, persistence, tracking, visitor_kind
+from ..services import ai, auth, persistence, tracking, ua_parse, visitor_kind
 
 router = APIRouter(prefix="/api/system", tags=["system"])
 
@@ -885,7 +885,10 @@ def admin_anon_access(days: int = 30, limit: int = 500):
     ユーザー要望）。landing_visits(トップ/about.htmlの閲覧・新規登録の
     試行成否)を集計し、ip_geo_cache(国/地域/市区/接続元組織名・
     scripts不要でリクエスト時にバックグラウンド収集済みのものを読むだけ)
-    と突き合わせて返す。
+    と突き合わせて返す。端末・ブラウザ(iPad/Android/Windows/Mac、
+    Chrome/Safari/Edge等)はlanding_visitsに記録済みのUser-Agentを
+    ua_parse.summarize()で解析して付与する(2026-08-23ユーザー要望・
+    IPからの国/組織解析に加えて端末種別も分かるように)。
 
     注意（IP単位の限界）: 同一Wi-Fi/会社等でIPを共有する複数人は1行に
     まとまり、逆に同じ人がモバイル回線切替等でIPが変われば複数行に
@@ -954,6 +957,9 @@ def admin_anon_access(days: int = 30, limit: int = 500):
         d["mark"], d["mark_reason"] = visitor_kind.classify(
             ua_map.get(d["ip"], []), d["org"], d["hostname"], d["is_admin"],
         )
+        # 端末・ブラウザ（2026-08-23・IPからの国/組織解析に加えて
+        # 「iPad/Android/Windows/Macが分かるといい」という要望対応）。
+        d["device"], d["browser"] = ua_parse.summarize(ua_map.get(d["ip"], []))
         mark_counts[d["mark"]] += 1
         mark_visits[d["mark"]] += d["visit_count"] or 0
         items.append(d)

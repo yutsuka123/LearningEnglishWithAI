@@ -8,6 +8,28 @@
 （例: 1.1.0→1.1.1）。ユーザーから別途指示があった場合のみ上位の桁を
 上げる。
 
+## ver1.2.14 (2026-08-23・commit未定)
+
+**🆕 管理画面「未登録アクセス状況」に端末・ブラウザの推定表示を追加 + about.htmlの法的リンクを目立たせる**
+
+- 新規`app/services/ua_parse.py`を追加。User-Agentから端末
+  (iPad/iPhone/Android/Windows/Mac/Linux/ChromeOS)とブラウザ
+  (Chrome/Safari/Edge/Firefox/Opera/Samsung Internet)を判定する
+  `parse_ua()`/`summarize()`を新設（外部ライブラリ不使用、既存の
+  `visitor_kind.py`のボット判定と同じ部分一致方式）。iPadOS Safariが
+  既定でMacと同じUAを名乗るため区別できない、という既知の限界も
+  コメントで明記。
+- `/api/admin/anon-access`(`app/routers/system.py`)のレスポンスに
+  `device`/`browser`を追加し、管理画面の「未登録アクセス状況」表
+  (`static/js/views.js`)に「端末」「ブラウザ」列を追加。既存の
+  国/地域/接続元組織の解析に加えて端末種別も分かるように
+  （ユーザー要望: IPからの解析に加えて端末・ブラウザも知りたい）。
+- `static/about.html`の利用規約・特定商取引法リンクを、目立たない
+  テキストリンクから「アプリを開く」よりやや小さめの明確なボタンに
+  変更（読んでもらいやすくする目的・ユーザー要望）。
+- ローカルで`ua_parse`の判定ロジックを実データ・代表的なUA文字列で
+  動作確認済み（クラッシュなし）。
+
 ## ver1.2.13 (2026-08-23・commit `47d6788`)
 
 **🔧 スマホでの見やすさ・分かりやすさの改善（ユーザーのスクリーンショットベースのフィードバック多数対応）**

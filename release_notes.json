@@ -15,6 +15,17 @@
  ],
  "versions": [
   {
+   "version": "ver1.2.14",
+   "date": "2026-08-23",
+   "title": "アプリ紹介ページの法的リンクを強化 + 管理画面の分析機能を拡充",
+   "public": [
+    "アプリ紹介ページ（このアプリについて）の利用規約・特定商取引法に基づく表記へのリンクを、より分かりやすいボタン表示に変更しました。"
+   ],
+   "admin": [
+    "新規app/services/ua_parse.pyでUser-Agentから端末(iPad/iPhone/Android/Windows/Mac/Linux/ChromeOS)とブラウザ(Chrome/Safari/Edge/Firefox/Opera/Samsung Internet)を判定。/api/admin/anon-accessに device/browser を追加し、管理画面「未登録アクセス状況」表に端末・ブラウザ列を追加（IPからの国/組織解析に加えて端末種別も把握できるように）。iPadOS Safari既定UAはMacと区別不可という限界あり。"
+   ]
+  },
+  {
    "version": "ver1.2.13",
    "date": "2026-08-23",
    "title": "スマホでの見やすさ・分かりやすさを改善",

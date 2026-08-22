@@ -3943,6 +3943,7 @@ export async function admin(root) {
           外部API(ipapi.co・失敗時はipwho.is)の結果をキャッシュしたもの
           （初回アクセス時は未取得で空欄のことがあり、少し待って再読み込み
           すると埋まる。過去分はscripts/backfill_geoip.pyで補完できる）。
+          端末・ブラウザはUser-Agentからの推定表示です。
           IPの右の「※1〜※4」は訪問者種別の推定（意味は表の下に記載）。
           同一IPを共有する複数人は1行にまとまる/同じ人でもIPが変われば
           複数行に分かれる、というIP単位ならではの目安であることに注意。</p>
@@ -4310,6 +4311,7 @@ export async function admin(root) {
     });
     const COLS = [
       ["ip", "IP"], ["place", "国/地域/市区"], ["org", "接続元組織・ホスト名"],
+      ["device", "端末"], ["browser", "ブラウザ"],
       ["first_seen", "初回"], ["last_seen", "最終"], ["visit_count", "回数"],
       ["viewed_about", "説明書閲覧"], ["signup", "登録試行"],
     ];
@@ -4329,6 +4331,8 @@ export async function admin(root) {
               escapeHtml(r.mark_reason || "")}">※${r.mark}</sup>` : ""}</td>
         <td class="muted">${escapeHtml(place(r))}</td>
         <td class="muted">${escapeHtml(r.org || r.hostname || "—")}</td>
+        <td class="muted">${escapeHtml(r.device || "—")}</td>
+        <td class="muted">${escapeHtml(r.browser || "—")}</td>
         <td class="muted">${fmtDate(r.first_seen)}</td>
         <td class="muted">${fmtDate(r.last_seen)}</td>
         <td>${r.visit_count}</td>
@@ -4344,7 +4348,9 @@ export async function admin(root) {
       だけなので確実ではありません。UAは詐称できますし、VPN経由の人間が
       ※4になることもあります。「印なし＝機械的アクセスの兆候が
       見つからなかった」という意味で読んでください。各印にマウスを乗せると
-      判定理由が出ます。</p>`;
+      判定理由が出ます。端末・ブラウザもUAからの推定で、iPadOSのSafariは
+      既定でMacと同じ名乗り方をするため区別できません。同一IPに複数
+      端末/ブラウザが混ざる場合は「/」区切りで並べて表示します。</p>`;
     wrap.querySelectorAll(".anon-sort").forEach((th) => {
       th.addEventListener("click", () => {
         const k = th.dataset.key;

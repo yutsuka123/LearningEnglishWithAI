@@ -57,6 +57,13 @@
       background: #3b6fd4; color: #fff; text-decoration: none;
       border-radius: 8px; font-size: 15px; font-weight: 600; }
     .cta:hover { background: #2f5bb8; }
+    .legal-row { display: flex; gap: 10px; flex-wrap: wrap;
+      margin: 12px 0 0; }
+    .cta-legal { display: inline-block; padding: 10px 20px;
+      background: #eef2fb; color: #2f5bb8; text-decoration: none;
+      border: 1px solid #c7d4ef; border-radius: 8px; font-size: 14px;
+      font-weight: 600; }
+    .cta-legal:hover { background: #e0e8f9; }
     a.back { display: inline-block; margin-top: 24px; font-size: 13px;
       color: #3b6fd4; text-decoration: none; }
     a.back:hover { text-decoration: underline; }
@@ -122,11 +129,10 @@
       </ul>
 
       <a class="cta" href="/">アプリを開く（トップ画面へ）→</a>
-      <p class="muted" style="margin:10px 0 0">
-        <a href="/static/terms.html" target="_blank">利用規約・免責事項</a>
-        ・
-        <a href="/tokushoho" target="_blank">特定商取引法に基づく表記</a>
-      </p>
+      <div class="legal-row">
+        <a class="cta-legal" href="/static/terms.html" target="_blank">📄 利用規約・免責事項</a>
+        <a class="cta-legal" href="/tokushoho" target="_blank">🧾 特定商取引法に基づく表記</a>
+      </div>
     </div>
 
     <div class="card" id="toc">
