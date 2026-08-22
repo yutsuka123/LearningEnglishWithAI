@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 
 # アプリのバージョン（UI表示用）。バージョンを上げたら CHANGELOG.md に追記し、
 # 必ず git commit + push をセットで行うこと（CLAUDE.md参照）。
-APP_VERSION = "ver1.2.11"
+APP_VERSION = "ver1.2.12"
 
 # Project root = the directory that contains the "app" package.
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -70,6 +70,7 @@ class Settings:
     tts_model: str
     stt_model: str      # 音声認識(文字起こし)モデル
     quality_model: str  # 判定・教材生成など品質重視の処理に使うモデル
+    conversation_model: str  # 英会話専用モデル（速度重視・2026-08-22新設）
     usd_jpy_rate: float
     usd_jpy_as_of: str
     # コスト暴走ガード（不意の高額課金を防ぐ）。.env で調整可能。
@@ -128,6 +129,11 @@ def load_settings() -> Settings:
     stt = os.getenv("OPENAI_STT_MODEL", "whisper-1").strip()
     # 品質重視の処理用。未設定なら通常モデルにフォールバック。
     quality = os.getenv("OPENAI_QUALITY_MODEL", "").strip()
+    # 英会話専用（速度重視）。未設定なら通常モデルにフォールバック
+    # （2026-08-22: ベンチマークの結果gpt-4o-miniがgpt-5.6-lunaより
+    # 速く安いと判明したため新設。当面は管理者のみに適用し様子を見る
+    # 方針、`app/routers/learn.py`の`_conversation_model()`参照）。
+    conversation = os.getenv("OPENAI_CONVERSATION_MODEL", "").strip()
     rate = _parse_float(os.getenv("USD_JPY_RATE", ""), DEFAULT_USD_JPY)
     as_of = os.getenv("USD_JPY_AS_OF", "").strip() or DEFAULT_USD_JPY_AS_OF
     cap = _parse_float(
@@ -157,6 +163,7 @@ def load_settings() -> Settings:
         tts_model=tts or "gpt-4o-mini-tts",
         stt_model=stt or "whisper-1",
         quality_model=quality or (model or "gpt-5.4-mini"),
+        conversation_model=conversation or (model or "gpt-5.4-mini"),
         usd_jpy_rate=rate,
         usd_jpy_as_of=as_of,
         ai_daily_cost_cap_usd=max(0.0, cap),

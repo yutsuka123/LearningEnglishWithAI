@@ -69,6 +69,9 @@ class ConversationIn(BaseModel):
     # B16: 状況入力型パーソナライズ生成の「困難な相手とのロールプレイ」用。
     # 空文字なら従来通り(grp/topicベース)の挙動。指定時のみ人物像を上書き。
     persona: str = ""
+    # 2026-08-22: 応答速度優先チェックボックス。既定False(=通常モデル)。
+    # Trueで会話専用の高速モデル(settings.conversation_model)を使う。
+    fast: bool = False
 
 
 class TripPrepIn(BaseModel):

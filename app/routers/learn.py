@@ -486,12 +486,21 @@ def _log_conversation(role: str, content: str, mode: str) -> None:
         )
 
 
+def _conversation_model(payload: ConversationIn) -> str | None:
+    """`fast`チェックボックスON時だけ会話専用の高速モデルを使う
+    （2026-08-22新設。既定はNone=通常モデルのまま・完全にopt-in）。"""
+    if not payload.fast:
+        return None
+    return load_settings().conversation_model
+
+
 @router.post("/conversation")
 def conversation(payload: ConversationIn):
     """Non-streaming conversation turn (used as a fallback)."""
     system, user = _conversation_prompts(payload)
     result = ai.chat(
-        system, user, temperature=0.8, max_tokens=700, feature="conversation"
+        system, user, temperature=0.8, max_tokens=700, feature="conversation",
+        model=_conversation_model(payload),
     )
     return {"ok": result.ok, "reply": result.text, "error": result.error}
 
@@ -501,6 +510,7 @@ def conversation_stream(payload: ConversationIn):
     """Streamed conversation turn for responsiveness (text/plain chunks)."""
     system, user = _conversation_prompts(payload)
     mode = "free" if _is_free_mode(payload) else (payload.topic or payload.grp)
+    model = _conversation_model(payload)
 
     def gen():
         # Log the learner's message (real production for level judging).
@@ -509,7 +519,7 @@ def conversation_stream(payload: ConversationIn):
         full = []
         for chunk in ai.chat_stream(
             system, user, temperature=0.8,
-            max_tokens=700, feature="conversation",
+            max_tokens=700, feature="conversation", model=model,
         ):
             full.append(chunk)
             yield chunk

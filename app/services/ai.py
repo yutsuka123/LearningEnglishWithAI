@@ -437,12 +437,15 @@ def chat_stream(
     temperature: float = 0.7,
     max_tokens: int = 800,
     feature: str = "",
+    model: str | None = None,
 ) -> Iterator[str]:
     """Yield text chunks as they arrive (improves perceived responsiveness).
 
     Yields plain text deltas. The final usage/cost is recorded at the end and
     is NOT yielded as text; callers stream text and can fetch usage separately.
-    """
+    ``model`` overrides the configured chat model (2026-08-22: 会話の
+    「応答速度優先」チェックボックス用に追加。未指定時は従来通り
+    ``settings.openai_model``)。"""
     client, settings = _client()
     if client is None:
         yield "[AI未設定] OPENAI_API_KEY を設定すると会話できます。"
@@ -453,16 +456,17 @@ def chat_stream(
         yield f"[停止] {refusal}"
         return
 
+    use_model = model or settings.openai_model
     try:
         stream = client.chat.completions.create(
-            model=settings.openai_model,
+            model=use_model,
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            **_temperature_kwarg(settings.openai_model, temperature),
+            **_temperature_kwarg(use_model, temperature),
             **_token_kwarg(
-                settings.openai_model,
+                use_model,
                 min(max_tokens, settings.ai_max_output_tokens),
             ),
             stream=True,
@@ -479,7 +483,7 @@ def chat_stream(
             if delta and delta.content:
                 yield delta.content
         if ptok or otok:
-            _record_usage(settings.openai_model, ptok, otok, feature)
+            _record_usage(use_model, ptok, otok, feature)
     except Exception as exc:
         log.error("chat_stream 失敗 (feature=%s): %s", feature, exc)
         yield f"\n[エラー] {exc}"

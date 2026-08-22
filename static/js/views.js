@@ -2428,6 +2428,8 @@ export async function conversation(root) {
         </span>
         <label class="toggle"><input type="checkbox" id="autoTts" checked />
           AI返答を読み上げ</label>
+        <label class="toggle"><input type="checkbox" id="fastMode" />
+          ⚡ 応答を高速化（試験運用）</label>
         <button class="btn secondary" id="start"
           ${state.isGuest ? "disabled" : ""}>${
           state.isGuest ? "🔒 AIから始める(要ログイン)" : "AIから始める"}</button>
@@ -2591,6 +2593,7 @@ export async function conversation(root) {
       grp: s.grp, topic: s.topic, history, persona: s.persona || "",
       message: kickoff
         ? "(会話を自然に始めてください。まず1つ質問してください)" : text,
+      fast: root.querySelector("#fastMode").checked,
     };
     const target = addMsg("ai", kickoff ? "…" : "");
     let full = "";
@@ -2701,7 +2704,8 @@ export async function conversation(root) {
     let full = "";
     await api.stream("/api/learn/conversation/stream",
       { grp: s.grp, topic: s.topic, history, persona: s.persona || "",
-        message: text }, (chunk) => {
+        message: text, fast: root.querySelector("#fastMode").checked },
+      (chunk) => {
         full += chunk; target.textContent = full;
         chat.scrollTop = chat.scrollHeight;
       });
