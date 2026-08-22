@@ -42,6 +42,11 @@
     <aside class="sidebar" id="sidebar">
       <div class="brand">📘 English<br />Learning AI</div>
       <nav id="nav"></nav>
+      <!-- メンテナンス予定のお知らせ（2026-08-22導入・2026-08-23メニュー内へ
+           移動）。スマホでは本文を圧迫するとの指摘を受け、常時表示の
+           バナーではなくメニュー(ハンバーガー)の中に置く。未読の場合は
+           navToggleに小さな丸印(has-notice)で気付けるようにする。 -->
+      <div id="maintBanner" class="maint-banner" style="display:none"></div>
     </aside>
     <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
@@ -81,10 +86,6 @@
             style="display:none;padding:4px 10px">ログイン</a>
         </div>
       </header>
-
-      <!-- メンテナンス予定のお知らせ（2026-08-22）。内容はDB(app_state)から
-           取得するのでアプリの再起動なしで出し入れできる。 -->
-      <div id="maintBanner" class="maint-banner" style="display:none"></div>
 
       <section id="view" class="view"></section>
     </main>

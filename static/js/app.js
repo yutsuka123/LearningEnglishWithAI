@@ -27,6 +27,7 @@ const TABS = [
   ["phrases", "💬 ミニフレーズ"],
   ["flashphrase", "🃏 フラッシュフレーズ"],
   ["phrasedeck", "🗂️ フレーズ帳"],
+  ["quiz", "📝 クイズ"],
   ["reading", "📖 リーディング"],
   ["writing", "✍️ ライティング"],
   ["conversation", "🗣️ 英会話"],
@@ -222,12 +223,22 @@ function initBalanceClick() {
 export async function refreshMaintenanceBanner() {
   const box = document.getElementById("maintBanner");
   if (!box) return;
+  // お知らせはメニュー内にあり閉じたままだと気付けないため、ハンバーガー
+  // ボタンに小さな丸印を出す(2026-08-23・お知らせがメイン画面を圧迫する
+  // という指摘でメニュー内へ移動した際、気付けなくなるのを防ぐ対応)。
+  const toggle = document.getElementById("navToggle");
+  const setDot = (on, urgent) => {
+    if (!toggle) return;
+    toggle.classList.toggle("has-notice", on);
+    toggle.classList.toggle("in-progress", on && !!urgent);
+  };
   try {
     const m = await api.get("/api/system/maintenance");
     const n = (m && m.notice) || {};
-    if (!n.show || !n.text) { box.style.display = "none"; return; }
+    if (!n.show || !n.text) { box.style.display = "none"; setDot(false); return; }
     if (localStorage.getItem("maintDismissed") === n.text) {
       box.style.display = "none";
+      setDot(false);
       return;
     }
     box.className = "maint-banner"
@@ -244,11 +255,14 @@ export async function refreshMaintenanceBanner() {
     close.addEventListener("click", () => {
       localStorage.setItem("maintDismissed", n.text);
       box.style.display = "none";
+      setDot(false);
     });
     box.append(icon, text, close);
     box.style.display = "";
+    setDot(true, n.state === "in_progress");
   } catch (e) {
     box.style.display = "none";
+    setDot(false);
   }
 }
 
@@ -265,6 +279,7 @@ const ROUTES = {
   phrases: views.phrases,
   flashphrase: views.flashPhrase,
   phrasedeck: views.phraseDecks,
+  quiz: views.quiz,
   reading: views.reading,
   writing: views.writing,
   conversation: views.conversation,
@@ -342,12 +357,14 @@ export async function refreshCost() {
     state.isAdmin = isAdmin;       // 各ビューのロール別表示に使う
     state.multiuser = !!u.multiuser;
     state.isGuest = !!u.is_guest;
-    // 無料範囲外の語・フレーズを「実際に再生できるか」（🔒アイコン判定用・
-    // 2026-08-13）。管理者は常に課金対象外＝常に再生可。ゲストは残高の
-    // 概念自体が無く常に不可。それ以外（無課金/課金ログインユーザー）は
-    // 残高が少しでもあれば再生できる（1回の課金は最低0.5円程度の少額
-    // のため、厳密な残額計算ではなく「残高>0」で近似する）。
-    state.canPlayOutOfRange =
+    // AI呼び出し(会話・生成)や無料範囲外の語・フレーズ再生を「実際に
+    // 使えるか」（🔒アイコン判定用・2026-08-13、要ログイン/要課金の
+    // 出し分け用に2026-08-23汎用化）。管理者は常に課金対象外＝常に可。
+    // ゲストは残高の概念自体が無く常に不可。それ以外（無課金/課金
+    // ログインユーザー）は残高が少しでもあれば使える（1回の課金は
+    // 最低0.5円程度の少額のため、厳密な残額計算ではなく「残高>0」で
+    // 近似する）。
+    state.hasAiBalance =
       isAdmin || (!state.isGuest && (u.remaining_jpy || 0) > 0);
     if (!isAdmin) {
       // 非管理者(ゲスト・無課金/課金の一般ユーザー)は/api/system/settings

@@ -90,11 +90,12 @@ function answerInput(onSubmit, { lang = "en-US", placeholder = "答えを入力"
   const wrap = el(`<div class="mt"></div>`);
   const ta = el(`<textarea placeholder="${placeholder}"></textarea>`);
   const row = el(`<div class="row"></div>`);
-  // ゲスト(サンプル閲覧のみ)はAI呼び出し系の送信ができないため、押しても
-  // 401で固まる/紛らわしいエラーになる前に鍵表示で分かりやすく無効化する
-  // （2026-08-13）。
-  const sendBtn = el(state.isGuest
-    ? `<button class="btn" disabled>🔒 送信(要ログイン)</button>`
+  // ゲスト(サンプル閲覧のみ)や残高0のログインユーザーはAI呼び出し系の
+  // 送信ができないため、押しても401/402で固まる/紛らわしいエラーになる
+  // 前に鍵表示で分かりやすく無効化する（2026-08-13・要課金の案内は
+  // 2026-08-23追加）。
+  const sendBtn = el(aiGateDisabled()
+    ? `<button class="btn" disabled>${aiGateLabel("送信")}</button>`
     : `<button class="btn">✓ 送信</button>`);
   sendBtn.addEventListener("click", () => onSubmit(ta.value));
 
@@ -134,6 +135,19 @@ function answerInput(onSubmit, { lang = "en-US", placeholder = "答えを入力"
 function aiBadgeNote() {
   return state.aiEnabled ? ""
     : `<p class="muted">⚠️ AI未設定のため、この機能は設定でAPIキーを登録すると使えます。</p>`;
+}
+
+// AI呼び出し(生成・会話開始等、必ず課金が絡む操作)を行うボタンのラベル/
+// 無効化判定(2026-08-23)。「要ログイン」とだけ書くとログインさえすれば
+// 使えるように見えるが、実際はログイン後も残高(pt)が無いと使えないため、
+// ログイン済みかつ残高0の場合は「要課金」と案内する（ユーザー指摘）。
+function aiGateLabel(label) {
+  if (state.isGuest) return `🔒 ${label}(要ログイン)`;
+  if (!state.hasAiBalance) return `🔒 ${label}(要課金)`;
+  return label;
+}
+function aiGateDisabled() {
+  return state.isGuest || !state.hasAiBalance;
 }
 
 // Keep mostly-English lines (skip Japanese-only lines & markdown headers) so
@@ -229,7 +243,7 @@ export async function dashboard(root) {
     <h1>ダッシュボード</h1>
     <p class="sub">今日の学習を始めましょう。1回 約10分でOK。</p>
 
-    <div class="grid cols-3">
+    <div class="grid cols-3 stats-wrap">
       <div class="card stat">
         <div class="num">${toeic}</div>
         <div class="lbl">TOEIC換算(目安)</div></div>
@@ -243,7 +257,7 @@ export async function dashboard(root) {
 
     <div class="card">
       <h2>単語の状況</h2>
-      <div class="grid cols-3">
+      <div class="grid cols-3 stats-wrap">
         <div class="stat"><div class="num">${w.total}</div>
           <div class="lbl">全件数</div></div>
         <div class="stat"><div class="num">${w.studied}</div>
@@ -258,14 +272,8 @@ export async function dashboard(root) {
           <div class="lbl">フレーズ全件</div></div>
       </div>
       <p class="muted mt">※全件数は単語を追加すると増えます。TOEIC換算は学習データに
-        基づく目安です。</p>
-    </div>
-
-    <div class="card">
-      <h2>クイックスタート</h2>
-      <div class="row">
-        <button class="btn secondary" id="goConv">🗣️ 英会話する</button>
-      </div>
+        基づくあくまで目安です。実際のTOEICテストのスコアとの対応を
+        保証するものではありません。</p>
     </div>
 
     ${state.isGuest ? `<div class="card">
@@ -301,8 +309,6 @@ export async function dashboard(root) {
 
     <h2>項目別の習熟度</h2>
     <div class="grid cols-2">${areaCards}</div>`;
-  root.querySelector("#goConv").addEventListener("click",
-    () => go("conversation"));
   root.querySelector("#goDeck")?.addEventListener("click", () => go("deck"));
   root.querySelector("#goPhraseDeck")?.addEventListener("click",
     () => go("phrasedeck"));
@@ -549,12 +555,12 @@ function speedOpts(mode) {
 // getMode() は 'slow'|'std'|'native' を返す（省略時 'std'）。
 // isFreeRange===true のとき🆓表示（誰でも無料で再生できる範囲）。
 // isFreeRange===false のとき、**実際にそのユーザーが再生できるかどうか**
-// (state.canPlayOutOfRange、app.jsのrefreshCost()参照)で🔒/🔊を出し分ける。
+// (state.hasAiBalance、app.jsのrefreshCost()参照)で🔒/🔊を出し分ける。
 // 「再生できるのに🔒が出るのは変・再生できないなら🔒でよい」という指摘
 // (2026-08-13)に沿い、ゲスト一律ではなく実際の可否(管理者=常に可・
 // ゲスト=常に不可・それ以外は残高の有無)で判定する。
 function voiceButtonsItem(itemType, id, kind, fallback, getMode, isFreeRange) {
-  const locked = isFreeRange === false && !state.canPlayOutOfRange;
+  const locked = isFreeRange === false && !state.hasAiBalance;
   const free = isFreeRange === true;
   const icon = locked ? "🔒" : (free ? "🆓" : "🔊");
   const lockNote = locked
@@ -1698,20 +1704,13 @@ export async function vocab(root) {
   const us = (await api.get("/api/system/user-settings")
     .catch(() => ({ settings: {} }))).settings || {};
   const dfw = us.default_word_filters || {};
-  const hideMasteredDefault = !!us.hide_mastered;
   const dfwActive = !!(dfw.category || dfw.level_min || dfw.level_max
     || dfw.mastered);
   root.innerHTML = `
-    <h1>英単語</h1>
-    <p class="sub">両方向(英→日 / 日→英)で出題。習熟度・正答率・忘却曲線を管理。</p>
-    <div class="row">
-      <button class="btn" id="quiz">クイズ開始 (10語)</button>
-      <span class="muted">単語の追加・一括インポートは ⚙️設定 に移動しました。</span>
-    </div>
+    <h1 id="pageTitle">英単語</h1>
     ${dfwActive ? `<p class="muted">⚙️ 設定の既定フィルターを適用中です。
       この画面でその場変更もできます。</p>` : ""}
     <div class="card">
-      <h2 id="listTitle">単語一覧</h2>
       <div class="row">
         <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:200px" />
         <select id="fCategory" title="大分類"><option value="">全カテゴリ</option>
@@ -1770,7 +1769,7 @@ export async function vocab(root) {
     </div>`;
 
   const rowsBody = root.querySelector("#rows");
-  const title = root.querySelector("#listTitle");
+  const title = root.querySelector("#pageTitle");
   const kw = root.querySelector("#kw");
   const pagerEl = root.querySelector("#pager");
   let curWords = [];
@@ -1781,7 +1780,7 @@ export async function vocab(root) {
     const size = root.querySelector("#wPage").value;
     const { slice, page, pages } = pageSlice(curWords, wPage, size);
     wPage = page;
-    title.textContent = `単語一覧 (${curWords.length})`;
+    title.textContent = `英単語 (${curWords.length})`;
     renderTable(slice);
     pagerEl.innerHTML = "";
     pagerEl.appendChild(pagerBar(curWords.length, page, pages,
@@ -1897,19 +1896,6 @@ export async function vocab(root) {
     if (dfw.mastered) root.querySelector("#fMastered").value = dfw.mastered;
   }
   load();
-
-  root.querySelector("#quiz").addEventListener("click", async () => {
-    const tb = testBanned() ? "&include_banned=true" : "";
-    const mb = hideMasteredDefault ? "&mastered=hide" : "";
-    const items = await api.get("/api/words/quiz?limit=10" + tb + mb);
-    const c = root; c.innerHTML = `<h1>単語クイズ</h1>`;
-    const holder = el(`<div></div>`); c.appendChild(holder);
-    quizRunner({ container: holder, items, kind: "word", appState: state,
-      onDone: () => {
-        const b = el(`<button class="btn mt">単語一覧へ戻る</button>`);
-        b.addEventListener("click", () => go("vocab")); holder.appendChild(b);
-      } });
-  });
 }
 
 // --- Phrases ----------------------------------------------------------------
@@ -1927,16 +1913,13 @@ export async function phrases(root) {
   const usP = (await api.get("/api/system/user-settings")
     .catch(() => ({ settings: {} }))).settings || {};
   const dfp = usP.default_phrase_filters || {};
-  const hideMasteredDefault = !!usP.hide_mastered;
   const dfpActive = !!(dfp.category || dfp.level_min || dfp.level_max
     || dfp.mastered);
   root.innerHTML = `
-    <h1>ミニフレーズ</h1>
-    <p class="sub">場面別の短い表現。単語と同じく両方向＋忘却曲線で管理。</p>
+    <h1 id="pageTitle">ミニフレーズ (${list.length})</h1>
     ${dfpActive ? `<p class="muted">⚙️ 設定の既定フィルターを適用中です。
       この画面でその場変更もできます。</p>` : ""}
     <div class="row">
-      <button class="btn" id="quiz">クイズ開始 (10フレーズ)</button>
       <select id="sceneCategory" title="大分類"><option value="">全カテゴリ</option>
         ${Object.keys(sceneGroups).map((c) =>
           `<option>${escapeHtml(c)}</option>`).join("")}</select>
@@ -1950,11 +1933,7 @@ export async function phrases(root) {
         ${showBanned() ? "checked" : ""} />
         🔞 禁止用語も表示</label>` : ""}
     </div>
-    <div class="row">
-      <span class="muted">フレーズの追加は ⚙️設定 に移動しました。</span>
-    </div>
     <div class="card">
-      <h2 id="listTitle">一覧 (${list.length})</h2>
       <div class="row">
         <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:180px" />
         <span class="muted">Lv</span>
@@ -1999,7 +1978,7 @@ export async function phrases(root) {
       <div id="pager" class="mt"></div>
     </div>`;
 
-  const title = root.querySelector("#listTitle");
+  const title = root.querySelector("#pageTitle");
   const kw = root.querySelector("#kw");
   const pagerEl = root.querySelector("#pager");
   let curList = [];
@@ -2010,7 +1989,7 @@ export async function phrases(root) {
     const size = root.querySelector("#pPage").value;
     const { slice, page, pages } = pageSlice(curList, pPage, size);
     pPage = page;
-    title.textContent = `一覧 (${curList.length})`;
+    title.textContent = `ミニフレーズ (${curList.length})`;
     renderRows(slice);
     pagerEl.innerHTML = "";
     pagerEl.appendChild(pagerBar(curList.length, page, pages,
@@ -2121,8 +2100,46 @@ export async function phrases(root) {
     if (dfp.mastered) root.querySelector("#fMastered").value = dfp.mastered;
     load();
   }
+}
 
-  root.querySelector("#quiz").addEventListener("click", async () => {
+// --- Quiz (単語/フレーズ) -----------------------------------------------------
+// 元は単語一覧・フレーズ一覧の画面内にボタンとして埋め込んでいたが、
+// 一覧画面のスペースを圧迫するとの指摘(2026-08-23)を受け、独立したメニュー
+// 項目に分離した。
+
+export async function quiz(root) {
+  const us = (await api.get("/api/system/user-settings")
+    .catch(() => ({ settings: {} }))).settings || {};
+  const hideMasteredDefault = !!us.hide_mastered;
+  root.innerHTML = `
+    <h1>クイズ</h1>
+    <p class="sub">10問ランダム出題。英単語・フレーズどちらも両方向で出題します。</p>
+    <div class="card">
+      <div class="row">
+        <b>🔤 英単語クイズ</b>
+        <button class="btn" id="quizWord">クイズ開始 (10語)</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row">
+        <b>💬 フレーズクイズ</b>
+        <button class="btn" id="quizPhrase">クイズ開始 (10フレーズ)</button>
+      </div>
+    </div>`;
+
+  root.querySelector("#quizWord").addEventListener("click", async () => {
+    const tb = testBanned() ? "&include_banned=true" : "";
+    const mb = hideMasteredDefault ? "&mastered=hide" : "";
+    const items = await api.get("/api/words/quiz?limit=10" + tb + mb);
+    root.innerHTML = `<h1>単語クイズ</h1>`;
+    const holder = el(`<div></div>`); root.appendChild(holder);
+    quizRunner({ container: holder, items, kind: "word", appState: state,
+      onDone: () => {
+        const b = el(`<button class="btn mt">クイズに戻る</button>`);
+        b.addEventListener("click", () => go("quiz")); holder.appendChild(b);
+      } });
+  });
+  root.querySelector("#quizPhrase").addEventListener("click", async () => {
     const tb = testBanned() ? "&include_banned=true" : "";
     const mb = hideMasteredDefault ? "&mastered=hide" : "";
     const items = await api.get("/api/phrases/quiz?limit=10" + tb + mb);
@@ -2130,8 +2147,8 @@ export async function phrases(root) {
     const holder = el(`<div></div>`); root.appendChild(holder);
     quizRunner({ container: holder, items, kind: "phrase", appState: state,
       onDone: () => {
-        const b = el(`<button class="btn mt">一覧へ戻る</button>`);
-        b.addEventListener("click", () => go("phrases")); holder.appendChild(b);
+        const b = el(`<button class="btn mt">クイズに戻る</button>`);
+        b.addEventListener("click", () => go("quiz")); holder.appendChild(b);
       } });
   });
 }
@@ -2198,8 +2215,8 @@ function materialView(title, sub, area, fields, histAreas) {
             <input type="checkbox" id="showQ" checked /> 内容理解問題</label>
           <input id="inst" placeholder="追加指示(任意)" style="width:160px" />
           <button class="btn" id="gen"
-            ${(state.aiEnabled && !state.isGuest) ? "" : "disabled"}>${
-            state.isGuest ? "🔒 生成(要ログイン)" : "生成"}</button>
+            ${(state.aiEnabled && !aiGateDisabled()) ? "" : "disabled"}>${
+            aiGateLabel("生成")}</button>
           <button class="btn ghost" id="histBtn"
             ${state.isGuest ? "disabled" : ""}>${
             state.isGuest ? "🔒 履歴(要ログイン)" : "📚 履歴"}</button>
@@ -2383,8 +2400,8 @@ export async function conversation(root) {
       <div class="row">
         <b>🎙️ ハンズフリー会話</b>
         <button class="btn good" id="hfStart"
-          ${state.isGuest ? "disabled" : ""}>${
-          state.isGuest ? "🔒 開始(要ログイン)" : "▶ 開始"}</button>
+          ${aiGateDisabled() ? "disabled" : ""}>${
+          aiGateDisabled() ? aiGateLabel("開始") : "▶ 開始"}</button>
         <button class="btn bad" id="hfStop" style="display:none">⏹ 終了</button>
         <button class="btn" id="hfEnd" style="display:none">発話終了</button>
         <label class="toggle"><input type="checkbox" id="autoLog" />
@@ -2431,8 +2448,8 @@ export async function conversation(root) {
         <label class="toggle"><input type="checkbox" id="fastMode" />
           ⚡ 応答を高速化（試験運用）</label>
         <button class="btn secondary" id="start"
-          ${state.isGuest ? "disabled" : ""}>${
-          state.isGuest ? "🔒 AIから始める(要ログイン)" : "AIから始める"}</button>
+          ${aiGateDisabled() ? "disabled" : ""}>${
+          aiGateLabel("AIから始める")}</button>
       </div>
       <div class="row mt">
         <label>🎤 認識言語:
@@ -2918,8 +2935,8 @@ export async function listening(root) {
         <label class="toggle" title="内容理解問題を表示(常に生成・保存)">
           <input type="checkbox" id="showQ" checked /> 内容理解問題</label>
         <button class="btn" id="gen"
-          ${(state.aiEnabled && !state.isGuest) ? "" : "disabled"}>${
-          state.isGuest ? "🔒 スクリプト生成(要ログイン)" : "スクリプト生成"}
+          ${(state.aiEnabled && !aiGateDisabled()) ? "" : "disabled"}>${
+          aiGateLabel("スクリプト生成")}
           </button>
         <button class="btn ghost" id="histBtn"
           ${state.isGuest ? "disabled" : ""}>${
