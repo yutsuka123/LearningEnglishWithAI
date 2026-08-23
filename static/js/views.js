@@ -3955,6 +3955,15 @@ export async function admin(root) {
               <option value="90">90日</option>
               <option value="365">1年</option>
             </select></label>
+          <label>表示件数（明細）:
+            <select id="anonAccessLimit">
+              <option value="50">50件</option>
+              <option value="100">100件</option>
+              <option value="200">200件</option>
+              <option value="500" selected>500件</option>
+              <option value="1000">1000件</option>
+              <option value="2000">2000件</option>
+            </select></label>
           <button class="btn ghost" id="anonAccessReload"
             style="padding:3px 10px">再読み込み</button>
         </div>
@@ -4367,8 +4376,10 @@ export async function admin(root) {
     sumBox.innerHTML = `<p class="muted">読み込み中…</p>`;
     wrap.innerHTML = "";
     const days = root.querySelector("#anonAccessDays").value;
+    const limit = root.querySelector("#anonAccessLimit").value;
     try {
-      const res = await api.get(`/api/system/admin/anon-access?days=${days}`);
+      const res = await api.get(
+        `/api/system/admin/anon-access?days=${days}&limit=${limit}`);
       anonData = res;
       const mc = res.mark_counts || {};
       const mv = res.mark_visits || {};
@@ -4398,6 +4409,8 @@ export async function admin(root) {
   root.querySelector("#anonAccessReload")
     .addEventListener("click", loadAnonAccess);
   root.querySelector("#anonAccessDays")
+    .addEventListener("change", loadAnonAccess);
+  root.querySelector("#anonAccessLimit")
     .addEventListener("change", loadAnonAccess);
   root.querySelectorAll(".anon-mark").forEach((c) =>
     c.addEventListener("change", renderAnonRows));

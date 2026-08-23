@@ -44,10 +44,10 @@
       box-sizing: border-box; font-size: 14px; font-family: inherit;
       background: var(--bg); color: var(--text); }
     textarea { resize: vertical; min-height: 60px; }
-    details.survey { margin-top: 16px; border: 1px solid var(--border);
+    details.survey { margin-top: 16px; border: 2px solid var(--accent);
       border-radius: 8px; padding: 4px 12px; }
     details.survey summary { cursor: pointer; font-size: 13px;
-      color: var(--sub); padding: 8px 0; }
+      font-weight: 700; color: var(--accent); padding: 8px 0; }
     details.survey label { margin-top: 10px; }
     .pwd-wrap { position: relative; }
     .pwd-wrap input { padding-right: 40px; }
@@ -69,6 +69,12 @@
       border-radius: 8px; background: var(--accent); color: #fff;
       font-size: 15px; cursor: pointer; }
     button:hover { background: var(--accent-hover); }
+    .btn-secondary { margin-top: 10px; background: transparent;
+      border: 1px solid var(--accent); color: var(--accent); }
+    .btn-secondary:hover { background: var(--accent); color: #fff; }
+    .free-note { font-size: 13px; color: var(--sub); text-align: center;
+      margin: 16px 0 0; }
+    .free-note b { color: var(--text); }
     .err { color: var(--err); font-size: 13px; margin-top: 12px;
       min-height: 18px; }
     .toggle { text-align: center; margin-top: 16px; }
@@ -105,9 +111,8 @@
     </div>
     <button type="submit">ログイン</button>
     <div class="err" id="e"></div>
-    <div class="toggle">
-      <a id="toSignup">アカウントをお持ちでない方はこちら（新規登録）</a>
-    </div>
+    <p class="free-note">初めての方は<b>無料</b>で登録できます（1分・カード情報不要）</p>
+    <button type="button" class="btn-secondary" id="toSignup">新規登録（無料）</button>
     <div class="toggle">
       <a href="/">ログインせずにお試しで使ってみる →</a>
     </div>
@@ -119,6 +124,8 @@
 
   <form class="card hidden" id="fSignup">
     <h1>🐱 新規登録</h1>
+    <p class="free-note" style="margin-top:0">✅ <b>登録は無料</b>です。
+      課金は任意で、あとから設定画面でいつでも設定できます。</p>
     <label for="sdisplay">呼んでほしいお名前</label>
     <input id="sdisplay" name="display_name" autocomplete="nickname"
       required placeholder="例: たろう、タロさん、Taro など" />
@@ -161,7 +168,7 @@
       BASE株式会社によって運営・認定・保証されたものではなく、
       提携関係もありません。</p>
 
-    <details class="survey" open>
+    <details class="survey">
       <summary>📋 アンケート（任意・サービス改善の参考にさせていただきます）</summary>
       <label for="sname">氏名（任意）</label>
       <input id="sname" name="full_name" autocomplete="name" />
