@@ -466,15 +466,34 @@ th { color: var(--muted); font-weight: 600; }
   display: flex; align-items: center; justify-content: center;
 }
 .welcome-card {
-  max-width: 560px; text-align: center; padding: 36px 28px;
+  max-width: 560px; width: 100%; min-width: 0; box-sizing: border-box;
+  text-align: center; padding: 36px 28px;
   background: linear-gradient(160deg, var(--panel) 0%, var(--panel-2) 100%);
 }
 .welcome-emoji { font-size: 22px; font-weight: 700; }
 .welcome-pills { justify-content: center; margin: 18px 0 22px; }
 .welcome-pills .pill { padding: 4px 12px; font-size: 13px; }
+/* 主CTA(登録ボタン)がピル(バッジ)や副ボタンに埋もれず一目でクリック対象と
+   分かるよう強調する(2026-08-24ユーザー指摘: 「他もボタンに見える」)。 */
+.welcome-cta {
+  font-size: 17px; font-weight: 700; padding: 14px 30px;
+  box-shadow: 0 4px 18px rgba(77, 163, 255, .4);
+}
 @media (max-width: 640px) {
   .welcome-hero { min-height: 0; }
   .welcome-pills { flex-direction: column; align-items: stretch; }
+}
+/* 収録語彙分野/機能の一覧(2026-08-24)。場所を取らずに「多さ」を見せたい
+   というユーザー要望のため、縦に並べず横スクロール(スマホはスワイプ)の
+   1本の帯にする。 */
+.welcome-scroll-label { font-size: 13px; margin: 0 0 6px; text-align: left; }
+.welcome-scroll-row {
+  flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto;
+  gap: 6px; padding-bottom: 8px; margin-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+.welcome-scroll-row .pill {
+  flex: 0 0 auto; white-space: nowrap; font-size: 12px; padding: 3px 10px;
 }
 
 /* 習熟度バー（一覧用）: 全長は従来の約半分。色は inline で段階を表す。 */

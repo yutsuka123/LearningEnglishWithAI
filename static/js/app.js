@@ -16,7 +16,7 @@ export const state = {
   tripPrepPersona: null,
 };
 
-const TABS = [
+export const TABS = [
   ["welcome", "🏠 ようこそ"],   // 未ログインのみ表示（boot で挿入判定）
   ["dashboard", "🏠 ダッシュボード"],
   // 2026-08-09: ユーザー指示により当面非表示（機能・ルートは温存、再表示は
@@ -502,6 +502,14 @@ export async function refreshAiState() {
 // 上位へ集まる）。
 // ---------------------------------------------------------------------------
 
+// ゲストが学習操作をある程度行った時点で「記録は保存されない」ことに
+// 気づいてもらうナッジ(2026-08-24・ユーザー承認)。about.htmlには同種の
+// 文言が既にあるが、実際に使っている最中に出す方が効果的という判断。
+// 1セッションに1回だけ(タブ再読み込みでリセット)。
+const STUDY_TABS = new Set(["vocab", "flashcard", "phrases", "flashphrase", "quiz"]);
+let guestStudyClicks = 0;
+let guestNudgeShown = false;
+
 function initClickTracking() {
   document.addEventListener("click", (e) => {
     const btn = e.target.closest("button, a.btn");
@@ -509,6 +517,13 @@ function initClickTracking() {
     const label = (btn.textContent || "").trim().replace(/\s+/g, " ")
       .slice(0, 60) || btn.id || btn.className || "?";
     api.track("click", currentTab, label);
+    if (state.isGuest && !guestNudgeShown && STUDY_TABS.has(currentTab)) {
+      guestStudyClicks++;
+      if (guestStudyClicks >= 5) {
+        guestNudgeShown = true;
+        toast("💡 学習の記録は保存されていません。ログイン(無料・30秒)で失われなくなります");
+      }
+    }
   });
 }
 

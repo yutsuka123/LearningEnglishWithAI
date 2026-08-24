@@ -111,7 +111,8 @@
     </div>
     <button type="submit">ログイン</button>
     <div class="err" id="e"></div>
-    <p class="free-note">初めての方は<b>無料</b>で登録できます（1分・カード情報不要）</p>
+    <p class="free-note">初めての方は<b>無料</b>で登録できます
+      （1分・カード不要・お名前はニックネームでOK）</p>
     <button type="button" class="btn-secondary" id="toSignup">新規登録（無料）</button>
     <div class="toggle">
       <a href="/">ログインせずにお試しで使ってみる →</a>
@@ -129,11 +130,12 @@
     <label for="sdisplay">呼んでほしいお名前</label>
     <input id="sdisplay" name="display_name" autocomplete="nickname"
       required placeholder="例: たろう、タロさん、Taro など" />
-    <label for="sdisplayKana">フリガナ</label>
+    <label for="sdisplayKana">フリガナ（任意）</label>
     <input id="sdisplayKana" name="display_name_furigana" autocomplete="off"
-      required placeholder="タロウ" />
+      placeholder="タロウ" />
     <p class="hint">チャージキーの発行など、こちらからご連絡する際の宛名に
-      使用します。<b>本名でなくて構いません</b>（仮名・ニックネーム可）。</p>
+      使用します。<b>本名でなくて構いません</b>（仮名・ニックネーム可）。
+      フリガナは分かる場合のみで結構です。</p>
     <label for="su">メールアドレス</label>
     <input id="su" name="email" type="email" autocomplete="email"
       required />
@@ -282,12 +284,29 @@
       applyFontSize(v);
     });
 
+    // 離脱分析用の軽量トラッキング(2026-08-24)。このページはSPA外の独立
+    // ページのため static/js/api.js は使わず、同じ /api/system/track を
+    // 直接叩く（失敗しても画面操作を妨げないbest-effort。ゲストも記録
+    // 対象になっている・system.pyのtrack_event参照）。
+    function track(kind, category, label) {
+      try {
+        fetch('/api/system/track', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ kind, category, label }),
+        });
+      } catch (e) { /* ignore */ }
+    }
+    track('page', 'login_page',
+      location.hash === '#signup' ? 'via_signup_hash' : 'direct');
+
     const fLogin = document.getElementById('f');
     const fSignup = document.getElementById('fSignup');
     // 2026-08-18〜: リリース前最終テストのため新規登録を再開。
     function showSignup() {
       fLogin.classList.add('hidden');
       fSignup.classList.remove('hidden');
+      track('click', 'signup_form', 'opened');
     }
     function showLogin() {
       fSignup.classList.add('hidden');

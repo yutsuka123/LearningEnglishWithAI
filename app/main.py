@@ -36,8 +36,11 @@ _AUTH_ALLOW = {
 }
 
 # 未ログイン訪問をlanding_visitsへ記録するパス（2026-08-20拡張・管理画面
-# 「未登録アクセス状況」の「このアプリをみたか」判定用にabout.htmlを追加）。
-_LANDING_LOG_PATHS = {"/", "/static/about.html"}
+# 「未登録アクセス状況」の「このアプリをみたか」判定用にabout.htmlを追加。
+# 2026-08-24: /login到達率が見えず離脱分析ができなかったため追加
+# 　　（訪問→/login到達→登録フォームを開く→送信、の各段階を追えるように
+# 　　するため。/loginは元々_AUTH_ALLOWで認証不要だが記録対象ではなかった）。
+_LANDING_LOG_PATHS = {"/", "/static/about.html", "/login"}
 
 # fire-and-forgetのIPエンリッチタスクへの強参照を保持する集合。asyncioの
 # イベントループはタスクを弱参照でしか保持しないため、変数に代入せず

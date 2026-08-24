@@ -6,7 +6,7 @@ import { quizRunner } from "./quiz.js";
 import {
   el, md, escapeHtml, toast, state, go, refreshCost, refreshAiState,
   showBanned, setShowBanned, testBanned, setTestBanned, onLeaveView,
-  fmtDateJST, refreshMaintenanceBanner,
+  fmtDateJST, refreshMaintenanceBanner, TABS,
 } from "./app.js";
 
 // 禁止用語クエリ: include_banned を付ける/付けないを返す小ヘルパー。
@@ -193,7 +193,25 @@ function readAloudBar(getText, feature) {
 // 無しでいきなり単語一覧ツールが出て離脱を招いていた問題への対応。文章量は
 // 抑え、詳しい説明はabout.htmlへ誘導する）------------------------------------
 
-export function welcome(root) {
+// メタ/ユーティリティ系タブは「収録機能」として数える意味が薄いので除外。
+const WELCOME_HIDDEN_FEATURE_TABS = new Set([
+  "welcome", "dashboard", "admin", "settings", "history", "release",
+]);
+
+export async function welcome(root) {
+  let domains = [], domainCounts = {};
+  try {
+    const facets = await api.get("/api/words/facets");
+    domains = facets.domains || [];
+    domainCounts = facets.domain_counts || {};
+  } catch (e) { /* 取得失敗しても本体の表示は妨げない */ }
+  const domainChips = domains.map((d) =>
+    `<span class="pill">${escapeHtml(d)} ${domainCounts[d] ?? 0}</span>`)
+    .join("");
+  const featureChips = TABS
+    .filter(([tab]) => !WELCOME_HIDDEN_FEATURE_TABS.has(tab))
+    .map(([, label]) => `<span class="pill">${escapeHtml(label)}</span>`)
+    .join("");
   root.innerHTML = `
     <div class="welcome-hero">
       <div class="card welcome-card">
@@ -209,13 +227,26 @@ export function welcome(root) {
           <span class="pill mastered">🦉 専門用語からニッチな語彙まで</span>
           <span class="pill vague">📖 語源・豆知識つきの詳しい解説</span>
         </div>
+        <p class="muted" style="font-size:13px">
+          例: 物理・天文・法律・医療・料理・アニメ・
+          「失礼にならない言い方」・名言 など</p>
         <div class="row" style="justify-content:center; gap:12px">
-          <a class="btn" href="/login">30秒で無料登録</a>
+          <a class="btn welcome-cta" href="/login#signup">
+            👉 30秒で無料登録 →</a>
           <button class="btn ghost" id="welcomeTryBtn">
             登録せず単語を見る</button>
         </div>
+        <p class="muted" style="font-size:13px; margin:8px 0 0">
+          カード不要・お名前はニックネームでOK</p>
         <p class="muted mt">
           <a href="/static/about.html">詳しい説明・料金の目安を見る →</a></p>
+
+        <p class="muted welcome-scroll-label" style="margin-top:28px">
+          収録語彙分野一覧（${domains.length}分野・スワイプで見られます）</p>
+        <div class="row welcome-scroll-row">${domainChips}</div>
+
+        <p class="muted welcome-scroll-label">収録機能一覧</p>
+        <div class="row welcome-scroll-row">${featureChips}</div>
       </div>
     </div>`;
   root.querySelector("#welcomeTryBtn")

@@ -222,12 +222,13 @@ def facets(include_banned: bool = False, include_hidden: bool = False):
         current_user_id, get_user_settings
     include_banned = include_banned and current_user_allow_banned()
     with db() as conn:
-        domains = [
-            r["domain"] for r in conn.execute(
-                "SELECT DISTINCT domain FROM words "
-                "WHERE COALESCE(domain, '') <> '' ORDER BY domain"
-            ).fetchall()
-        ]
+        domain_count_rows = conn.execute(
+            "SELECT domain, COUNT(*) AS cnt FROM words "
+            "WHERE COALESCE(domain, '') <> '' "
+            "GROUP BY domain ORDER BY domain"
+        ).fetchall()
+        domains = [r["domain"] for r in domain_count_rows]
+        domain_counts = {r["domain"]: r["cnt"] for r in domain_count_rows}
         # 既定では禁止用語を分野候補から除外（表示トグルONなら含める）。
         if not include_banned:
             domains = [d for d in domains if d != BANNED_DOMAIN]
@@ -254,6 +255,10 @@ def facets(include_banned: bool = False, include_hidden: bool = False):
         "domains": domains, "levels": levels,
         "range_levels": range_levels,
         "domain_groups": domain_groups,
+        # 分野ごとの語数（2026-08-24・ようこそ画面の「収録語彙分野一覧」で
+        # 「多さ」を具体的な数字で見せるため追加。domainsに絞られた後の
+        # 分野のみキーを持てば十分なので、フィルタ済みdomainsに合わせて絞る）。
+        "domain_counts": {d: domain_counts.get(d, 0) for d in domains},
     }
 
 

@@ -126,9 +126,12 @@ def signup(
                      ip, email, pw_error)
         return fail("2012", pw_error)
     display_name = payload.display_name.strip()
+    # フリガナは任意（2026-08-24・登録の入力項目を減らして離脱を防ぐ
+    # ユーザー方針。お名前(呼んでほしい名前)は宛名として必要なため必須の
+    # まま、フリガナだけ任意化）。
     display_name_furigana = payload.display_name_furigana.strip()
-    if not display_name or not display_name_furigana:
-        log.warning("signup: missing display_name/furigana ip=%s email=%s",
+    if not display_name:
+        log.warning("signup: missing display_name ip=%s email=%s",
                      ip, email)
         return fail("2013")
     full_name = payload.full_name.strip()
