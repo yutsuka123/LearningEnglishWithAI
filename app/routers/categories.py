@@ -5,7 +5,9 @@ from __future__ import annotations
 
 from datetime import date
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+
+from ..services import errors
 
 from ..database import db
 from ..schemas import CategoryStudyIn, ListeningStudyIn
@@ -46,7 +48,7 @@ def study_category(payload: CategoryStudyIn):
             "SELECT id FROM categories WHERE id = ?", (payload.category_id,)
         ).fetchone()
         if not cat:
-            raise HTTPException(404, "カテゴリが見つかりません")
+            raise errors.http_error("7001", "カテゴリが見つかりません")
         cur = conn.execute(
             "SELECT mastery FROM user_category_progress "
             "WHERE user_id = ? AND category_id = ?",
@@ -98,7 +100,7 @@ def study_listening(payload: ListeningStudyIn):
             (payload.topic_id,),
         ).fetchone()
         if not topic:
-            raise HTTPException(404, "トピックが見つかりません")
+            raise errors.http_error("7001", "トピックが見つかりません")
         cur = conn.execute(
             "SELECT comprehension, weak_areas FROM user_listening_progress "
             "WHERE user_id = ? AND topic_id = ?",

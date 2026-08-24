@@ -7,7 +7,9 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+
+from ..services import errors
 from pydantic import BaseModel
 
 from ..database import db
@@ -33,11 +35,11 @@ class InquiryIn(BaseModel):
 def create_inquiry(payload: InquiryIn):
     content = payload.content.strip()
     if not content:
-        raise HTTPException(400, "内容を入力してください。")
+        raise errors.http_error("7002", "内容を入力してください。")
     email = payload.email.strip().lower()
     if not email or "@" not in email or "." not in email.split("@")[-1]:
-        raise HTTPException(
-            400, "メールアドレス（返信先）を正しく入力してください。")
+        raise errors.http_error(
+            "2010", "メールアドレス（返信先）を正しく入力してください。")
     kind = payload.kind if payload.kind in KINDS else "その他"
     with db() as conn:
         conn.execute(
@@ -52,7 +54,7 @@ def _require_admin(conn) -> None:
     from ..services import auth
     me = auth.get_user(conn, current_user_id())
     if not me or me.get("role") != "admin":
-        raise HTTPException(403, "管理者のみ閲覧できます。")
+        raise errors.http_error("2004", "管理者のみ閲覧できます。")
 
 
 @router.get("")
@@ -83,5 +85,5 @@ def update_status(inquiry_id: int, payload: StatusIn):
             (payload.status, inquiry_id),
         )
         if cur.rowcount == 0:
-            raise HTTPException(404, "見つかりません。")
+            raise errors.http_error("7001", "見つかりません。")
     return {"ok": True}

@@ -6,7 +6,9 @@ per-direction accuracy, and a forgetting-curve schedule.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+
+from ..services import errors
 from pydantic import BaseModel, Field
 
 from ..database import db
@@ -196,7 +198,7 @@ def list_phrases(
                 (deck_id, uid),
             ).fetchone()
             if not owned:
-                raise HTTPException(404, "フレーズ帳が見つかりません")
+                raise errors.http_error("7001", "フレーズ帳が見つかりません")
             conds = conds + [
                 "phrases.id IN (SELECT phrase_id FROM deck_phrases "
                 "WHERE deck_id = ?)"
@@ -267,7 +269,7 @@ def create_phrase(payload: PhraseCreate):
     with db() as conn:
         me = auth.get_user(conn, auth.current_user_id())
         if not me or me.get("role") != "admin":
-            raise HTTPException(403, "フレーズの追加は管理者のみ行えます。")
+            raise errors.http_error("2004", "フレーズの追加は管理者のみ行えます。")
         cur = conn.execute(
             "INSERT INTO phrases (english, japanese, scene) VALUES (?, ?, ?)",
             (payload.english, payload.japanese, payload.scene),
@@ -289,7 +291,7 @@ def mark_known(phrase_id: int, payload: KnownIn):
             "SELECT id FROM phrases WHERE id = ?", (phrase_id,)
         ).fetchone()
         if not exists:
-            raise HTTPException(404, "フレーズが見つかりません")
+            raise errors.http_error("7001", "フレーズが見つかりません")
         r = set_known(conn, phrase_id, payload.known, table="phrases",
                       user_id=current_user_id(), cfg=_current_mastery_cfg(conn))
     return {"ok": True, "known": payload.known, **r}
@@ -310,7 +312,7 @@ def mark_perfect(phrase_id: int, payload: PerfectIn):
             "SELECT id FROM phrases WHERE id = ?", (phrase_id,)
         ).fetchone()
         if not exists:
-            raise HTTPException(404, "フレーズが見つかりません")
+            raise errors.http_error("7001", "フレーズが見つかりません")
         r = set_perfect(conn, phrase_id, payload.perfect, table="phrases",
                         user_id=current_user_id(), cfg=_current_mastery_cfg(conn))
     return {"ok": True, **r}
@@ -327,7 +329,7 @@ def mark_vague(phrase_id: int):
             "SELECT id FROM phrases WHERE id = ?", (phrase_id,)
         ).fetchone()
         if not exists:
-            raise HTTPException(404, "フレーズが見つかりません")
+            raise errors.http_error("7001", "フレーズが見つかりません")
         r = _mark_vague(conn, phrase_id, table="phrases",
                         user_id=current_user_id(), cfg=_current_mastery_cfg(conn))
     return {"ok": True, **r}
@@ -344,19 +346,19 @@ def delete_phrase(phrase_id: int):
     with db() as conn:
         me = auth.get_user(conn, auth.current_user_id())
         if not me or me.get("role") != "admin":
-            raise HTTPException(403, "フレーズの削除は管理者のみ行えます。")
+            raise errors.http_error("2004", "フレーズの削除は管理者のみ行えます。")
         has_progress = conn.execute(
             "SELECT 1 FROM user_phrase_progress WHERE phrase_id = ? LIMIT 1",
             (phrase_id,),
         ).fetchone()
         if has_progress:
-            raise HTTPException(
-                409, "このフレーズには学習記録があるため削除できません。"
+            raise errors.http_error(
+                "7004", "このフレーズには学習記録があるため削除できません。"
                 "一覧から除外したい場合は、シーンを「禁止」で始まる名前に"
                 "変更してください。")
         cur = conn.execute("DELETE FROM phrases WHERE id = ?", (phrase_id,))
         if cur.rowcount == 0:
-            raise HTTPException(404, "フレーズが見つかりません")
+            raise errors.http_error("7001", "フレーズが見つかりません")
 
 
 def _json_object(text: str) -> dict | None:
@@ -393,14 +395,14 @@ def phrase_detail(phrase_id: int, regen: bool = False):
             "WHERE id = ?", (phrase_id,)
         ).fetchone()
         if not row:
-            raise HTTPException(404, "フレーズが見つかりません")
+            raise errors.http_error("7001", "フレーズが見つかりません")
         # 一覧(`_phrase_filter`)を経由しないID直指定のため、ここでも
         # 禁止用語チェックが必須(2026-08-17セキュリティ修正・IDを
         # 知っていれば`allow_banned=False`のユーザーにも詳細生成/表示
         # されてしまっていた)。
         scene = row["scene"] or ""
         if scene.startswith("禁止") and not current_user_allow_banned():
-            raise HTTPException(404, "フレーズが見つかりません")
+            raise errors.http_error("7001", "フレーズが見つかりません")
         # 詳細の閲覧は2026-08-11よりtierを問わず常時無料
         # （docs/ACCESS_TIERS.md「機能アクセス表」参照）。ただし**未生成の
         # 詳細を新たにAIで作る**のは実コストが発生するため、未ログインの
@@ -494,7 +496,7 @@ def quiz(
                 (deck_id, uid),
             ).fetchone()
             if not owned:
-                raise HTTPException(404, "フレーズ帳が見つかりません")
+                raise errors.http_error("7001", "フレーズ帳が見つかりません")
             where = where + [
                 "id IN (SELECT phrase_id FROM deck_phrases "
                 "WHERE deck_id = ?)"
@@ -536,7 +538,7 @@ def restore_progress(phrase_id: int, payload: PhraseRestoreIn):
             "SELECT id FROM phrases WHERE id = ?", (phrase_id,)
         ).fetchone()
         if not exists:
-            raise HTTPException(404, "フレーズが見つかりません")
+            raise errors.http_error("7001", "フレーズが見つかりません")
         cfg = _current_mastery_cfg(conn)
         fields: dict = {"mastery": clamp(payload.mastery, cfg.mastery_max),
                         "perfect": 0}
@@ -561,7 +563,7 @@ def attempt(payload: PhraseAttempt):
                 (payload.phrase_id,),
             ).fetchone()
             if banned:
-                raise HTTPException(404, "フレーズが見つかりません")
+                raise errors.http_error("7001", "フレーズが見つかりません")
         try:
             result = record_attempt(
                 conn,
@@ -576,5 +578,5 @@ def attempt(payload: PhraseAttempt):
                 cfg=_current_mastery_cfg(conn),
             )
         except ValueError as exc:
-            raise HTTPException(400, str(exc))
+            raise errors.http_error("7002", str(exc))
         return result

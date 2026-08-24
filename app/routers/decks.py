@@ -15,7 +15,9 @@ from __future__ import annotations
 import json
 import random
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+
+from ..services import errors
 from pydantic import BaseModel
 
 from ..database import db
@@ -41,8 +43,8 @@ def _enforce_free_tier_limits(conn, p: "DeckCreate") -> "DeckCreate":
         "SELECT COUNT(*) c FROM decks WHERE user_id = ?", (current_user_id(),)
     ).fetchone()["c"]
     if existing >= FREE_MAX_DECKS:
-        raise HTTPException(
-            403, f"無料範囲では単語帳は{FREE_MAX_DECKS}個までです。"
+        raise errors.http_error(
+            "3016", f"無料範囲では単語帳は{FREE_MAX_DECKS}個までです。"
             "追加で作るには設定画面からチャージしてください。",
         )
     if p.word_ids:
@@ -59,7 +61,7 @@ def _owned_deck(conn, deck_id: int):
         (deck_id, current_user_id()),
     ).fetchone()
     if not row:
-        raise HTTPException(404, "単語帳が見つかりません")
+        raise errors.http_error("7001", "単語帳が見つかりません")
     return row
 
 
@@ -332,7 +334,7 @@ def delete_deck(deck_id: int):
             (deck_id, current_user_id()),
         )
         if cur.rowcount == 0:
-            raise HTTPException(404, "単語帳が見つかりません")
+            raise errors.http_error("7001", "単語帳が見つかりません")
 
 
 # 2026-08-18: 専用のデッキ内クイズ/採点(`/quiz`・`/attempt`、pass_count・

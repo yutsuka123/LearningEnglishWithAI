@@ -6,7 +6,9 @@ from __future__ import annotations
 import json
 from datetime import date
 
-from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile
+from fastapi import APIRouter, File, Form, Response, UploadFile
+
+from ..services import errors
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
@@ -363,7 +365,7 @@ def delete_material(material_id: int):
     with db() as conn:
         me = auth.get_user(conn, auth.current_user_id())
         if not me or me.get("role") != "admin":
-            raise HTTPException(403, "教材の削除は管理者のみ行えます。")
+            raise errors.http_error("2004", "教材の削除は管理者のみ行えます。")
         conn.execute("DELETE FROM materials WHERE id = ?", (material_id,))
 
 
@@ -376,7 +378,7 @@ def _own_or_public_material(conn, material_id: int, uid: int) -> None:
         (material_id, uid),
     ).fetchone()
     if not row:
-        raise HTTPException(404, "教材が見つかりません")
+        raise errors.http_error("7001", "教材が見つかりません")
 
 
 def _material_set_mastery(conn, material_id: int, mastery: int) -> None:
@@ -724,8 +726,8 @@ def generate_items(payload: GenItemsIn):
     with db() as conn:
         me = auth.get_user(conn, auth.current_user_id())
         if not me or me.get("role") != "admin":
-            raise HTTPException(
-                403, "単語/フレーズの自動生成は管理者のみ行えます。")
+            raise errors.http_error(
+                "2004", "単語/フレーズの自動生成は管理者のみ行えます。")
     if not ai.is_enabled():
         return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
     n = max(1, min(payload.count, 30))

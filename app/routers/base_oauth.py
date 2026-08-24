@@ -22,7 +22,9 @@ from datetime import datetime, timedelta, timezone
 from urllib.parse import urlencode
 
 import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+
+from ..services import errors
 from fastapi.responses import RedirectResponse
 
 from ..config import log
@@ -45,7 +47,7 @@ _STATE_TTL = 600.0
 def _require_admin(conn) -> dict:
     me = get_user(conn, current_user_id())
     if not me or me.get("role") != "admin":
-        raise HTTPException(403, "管理者のみ操作できます。")
+        raise errors.http_error("2004", "管理者のみ操作できます。")
     return me
 
 
@@ -85,8 +87,8 @@ def start():
         _require_admin(conn)
     client_id = os.getenv("BASE_CLIENT_ID", "").strip()
     if not client_id:
-        raise HTTPException(
-            400, "BASE_CLIENT_IDが.envに未設定です。先に設定してください。")
+        raise errors.http_error(
+            "3014", "BASE_CLIENT_IDが.envに未設定です。先に設定してください。")
     _cleanup_states()
     state = secrets.token_urlsafe(24)
     _pending_states[state] = time.monotonic()
@@ -107,20 +109,20 @@ def callback(code: str = "", state: str = "", error: str = ""):
         me = _require_admin(conn)
     if error:
         log.warning("base_oauth: authorize error=%s", error)
-        raise HTTPException(400, f"BASE側で認可が拒否/失敗しました: {error}")
+        raise errors.http_error("3014", f"BASE側で認可が拒否/失敗しました: {error}")
     if not code or not state:
-        raise HTTPException(400, "code/stateが不足しています。")
+        raise errors.http_error("3014", "code/stateが不足しています。")
     _cleanup_states()
     issued_at = _pending_states.pop(state, None)
     if issued_at is None:
-        raise HTTPException(
-            400, "無効または期限切れのstateです。もう一度"
+        raise errors.http_error(
+            "3014", "無効または期限切れのstateです。もう一度"
             "「BASEと連携する」からやり直してください。")
 
     client_id = os.getenv("BASE_CLIENT_ID", "").strip()
     client_secret = os.getenv("BASE_CLIENT_SECRET", "").strip()
     if not client_id or not client_secret:
-        raise HTTPException(400, "BASE_CLIENT_ID/SECRETが.envに未設定です。")
+        raise errors.http_error("3014", "BASE_CLIENT_ID/SECRETが.envに未設定です。")
 
     try:
         resp = httpx.post(TOKEN_URL, data={
@@ -132,13 +134,13 @@ def callback(code: str = "", state: str = "", error: str = ""):
         }, timeout=15.0)
     except httpx.HTTPError as e:
         log.warning("base_oauth: token exchange request failed: %s", e)
-        raise HTTPException(502, "BASEへの接続に失敗しました。")
+        raise errors.http_error("3015", "BASEへの接続に失敗しました。")
 
     if resp.status_code != 200:
         log.warning("base_oauth: token exchange failed status=%s body=%s",
                     resp.status_code, resp.text[:500])
-        raise HTTPException(
-            502, f"BASEとのトークン交換に失敗しました(status={resp.status_code})。"
+        raise errors.http_error(
+            "3015", f"BASEとのトークン交換に失敗しました(status={resp.status_code})。"
             "app.logに詳細を記録したので確認してください。")
 
     data = resp.json()
@@ -149,8 +151,8 @@ def callback(code: str = "", state: str = "", error: str = ""):
     if not access_token or not refresh_token:
         log.warning("base_oauth: unexpected token response keys=%s",
                     list(data.keys()))
-        raise HTTPException(
-            502, "BASEのトークン応答にaccess_token/refresh_tokenが"
+        raise errors.http_error(
+            "3015", "BASEのトークン応答にaccess_token/refresh_tokenが"
             "含まれていません。app.logで実際のレスポンス内容を確認してください。")
 
     try:

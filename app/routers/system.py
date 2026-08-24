@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 import re
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+
+from ..services import errors
 from pydantic import BaseModel
 
 from ..config import ROOT_DIR, load_admin_known_ips, load_settings, log, paths
@@ -33,7 +35,7 @@ def _require_admin() -> None:
     with db() as conn:
         me = auth.get_user(conn, auth.current_user_id())
     if not me or me.get("role") != "admin":
-        raise HTTPException(403, "管理者のみ利用できます。")
+        raise errors.http_error("2004", "管理者のみ利用できます。")
 
 
 def _user_filter_sql(
@@ -68,7 +70,7 @@ def admin_set_test_flag(user_id: int, payload: dict):
     is_test = bool(payload.get("is_test"))
     with db() as conn:
         if not auth.get_user(conn, user_id):
-            raise HTTPException(404, "ユーザーが見つかりません。")
+            raise errors.http_error("7001", "ユーザーが見つかりません。")
         conn.execute(
             "UPDATE users SET is_test = ? WHERE id = ?",
             (1 if is_test else 0, user_id),
@@ -329,11 +331,11 @@ def restore_user_settings(payload: RestoreSettingsIn):
             (payload.backup_id, uid),
         ).fetchone()
         if not row:
-            raise HTTPException(404, "指定のバックアップが見つかりません。")
+            raise errors.http_error("7001", "指定のバックアップが見つかりません。")
         try:
             data = json.loads(row["settings"])
         except (ValueError, TypeError):
-            raise HTTPException(400, "バックアップの内容を読み込めません。")
+            raise errors.http_error("7002", "バックアップの内容を読み込めません。")
         _save_user_settings(conn, uid, data)
     return {"ok": True, "settings": data}
 
@@ -678,7 +680,7 @@ def admin_overview(
     with db() as conn:
         me = auth.get_user(conn, auth.current_user_id())
         if not me or me.get("role") != "admin":
-            raise HTTPException(403, "管理者のみ閲覧できます。")
+            raise errors.http_error("2004", "管理者のみ閲覧できます。")
         filter_sql = _user_filter_sql(include_admin, include_invited,
                                        include_test)
         rows = conn.execute(
@@ -760,16 +762,16 @@ def admin_charge(payload: ChargeIn):
     amt = payload.amount_jpy
     note = payload.note.strip()
     if amt == 0 or abs(amt) > 10000:
-        raise HTTPException(400, "1回の変更額は ¥1〜¥10,000（減額は-¥10,000〜-¥1）です。")
+        raise errors.http_error("3005", "1回の変更額は ¥1〜¥10,000（減額は-¥10,000〜-¥1）です。")
     if not note:
-        raise HTTPException(400, "理由(note)の入力は必須です。")
+        raise errors.http_error("3006", "理由(note)の入力は必須です。")
     with db() as conn:
         me = auth.get_user(conn, auth.current_user_id())
         if not me or me.get("role") != "admin":
-            raise HTTPException(403, "管理者のみ操作できます。")
+            raise errors.http_error("2004", "管理者のみ操作できます。")
         target = auth.get_user(conn, payload.user_id)
         if not target:
-            raise HTTPException(404, "ユーザーが見つかりません。")
+            raise errors.http_error("7001", "ユーザーが見つかりません。")
         new = auth.add_balance(
             conn, payload.user_id, amt,
             reason="admin_adjustment", note=note, admin_user_id=me["id"])
@@ -787,7 +789,7 @@ def admin_balance_ledger(user_id: int | None = None, limit: int = 50):
     with db() as conn:
         me = auth.get_user(conn, auth.current_user_id())
         if not me or me.get("role") != "admin":
-            raise HTTPException(403, "管理者のみ操作できます。")
+            raise errors.http_error("2004", "管理者のみ操作できます。")
         where = "WHERE l.user_id = ?" if user_id else ""
         args = (user_id,) if user_id else ()
         rows = conn.execute(
@@ -817,10 +819,10 @@ def admin_force_logout(payload: ForceLogoutIn):
     with db() as conn:
         me = auth.get_user(conn, auth.current_user_id())
         if not me or me.get("role") != "admin":
-            raise HTTPException(403, "管理者のみ操作できます。")
+            raise errors.http_error("2004", "管理者のみ操作できます。")
         target = auth.get_user(conn, payload.user_id)
         if not target:
-            raise HTTPException(404, "ユーザーが見つかりません。")
+            raise errors.http_error("7001", "ユーザーが見つかりません。")
         epoch = auth.bump_session_epoch(conn, payload.user_id)
     return {"ok": True, "session_epoch": epoch}
 

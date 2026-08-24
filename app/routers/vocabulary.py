@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+
+from ..services import errors
 from pydantic import BaseModel
 
 from ..database import db
@@ -190,7 +192,7 @@ def list_words(
                 (deck_id, uid),
             ).fetchone()
             if not owned:
-                raise HTTPException(404, "単語帳が見つかりません")
+                raise errors.http_error("7001", "単語帳が見つかりません")
             where = where + [
                 "words.id IN (SELECT word_id FROM deck_words "
                 "WHERE deck_id = ?)"
@@ -270,7 +272,7 @@ def _require_admin(conn) -> None:
     from ..services import auth
     me = auth.get_user(conn, auth.current_user_id())
     if not me or me.get("role") != "admin":
-        raise HTTPException(403, "単語の追加・変更は管理者のみ行えます。")
+        raise errors.http_error("2004", "単語の追加・変更は管理者のみ行えます。")
 
 
 @router.post("", status_code=201)
@@ -292,7 +294,7 @@ def create_word(payload: WordCreate):
 def update_word(word_id: int, payload: WordUpdate):
     fields = {k: v for k, v in payload.model_dump().items() if v is not None}
     if not fields:
-        raise HTTPException(400, "更新する項目がありません")
+        raise errors.http_error("7002", "更新する項目がありません")
     sets = ", ".join(f"{k} = ?" for k in fields)
     with db() as conn:
         _require_admin(conn)
@@ -301,7 +303,7 @@ def update_word(word_id: int, payload: WordUpdate):
             (*fields.values(), word_id),
         )
         if cur.rowcount == 0:
-            raise HTTPException(404, "単語が見つかりません")
+            raise errors.http_error("7001", "単語が見つかりません")
         row = conn.execute("SELECT * FROM words WHERE id = ?", (word_id,)).fetchone()
         return _word_dict(row)
 
@@ -322,19 +324,19 @@ def delete_word(word_id: int):
     with db() as conn:
         me = auth.get_user(conn, auth.current_user_id())
         if not me or me.get("role") != "admin":
-            raise HTTPException(403, "単語の削除は管理者のみ行えます。")
+            raise errors.http_error("2004", "単語の削除は管理者のみ行えます。")
         has_progress = conn.execute(
             "SELECT 1 FROM user_word_progress WHERE word_id = ? LIMIT 1",
             (word_id,),
         ).fetchone()
         if has_progress:
-            raise HTTPException(
-                409, "この単語には学習記録があるため削除できません。"
+            raise errors.http_error(
+                "7004", "この単語には学習記録があるため削除できません。"
                 "一覧から除外したい場合は、分野を「禁止用語」に変更して"
                 "ください。")
         cur = conn.execute("DELETE FROM words WHERE id = ?", (word_id,))
         if cur.rowcount == 0:
-            raise HTTPException(404, "単語が見つかりません")
+            raise errors.http_error("7001", "単語が見つかりません")
 
 
 class DomainTagIn(BaseModel):
@@ -350,7 +352,7 @@ def list_word_tags(word_id: int):
             "SELECT id FROM words WHERE id = ?", (word_id,)
         ).fetchone()
         if not row:
-            raise HTTPException(404, "単語が見つかりません")
+            raise errors.http_error("7001", "単語が見つかりません")
         rows = conn.execute(
             "SELECT domain FROM word_domain_tags WHERE word_id = ? "
             "ORDER BY domain", (word_id,),
@@ -364,17 +366,17 @@ def add_word_tag(word_id: int, payload: DomainTagIn):
     管理者専用）。既存の主分類(words.domain)と同じ値は追加不要のため拒否。"""
     domain = payload.domain.strip()
     if not domain:
-        raise HTTPException(400, "domainを指定してください。")
+        raise errors.http_error("7002", "domainを指定してください。")
     with db() as conn:
         _require_admin(conn)
         row = conn.execute(
             "SELECT domain FROM words WHERE id = ?", (word_id,)
         ).fetchone()
         if not row:
-            raise HTTPException(404, "単語が見つかりません")
+            raise errors.http_error("7001", "単語が見つかりません")
         if (row["domain"] or "") == domain:
-            raise HTTPException(
-                400, "既に主分類として設定されている分野です。")
+            raise errors.http_error(
+                "7002", "既に主分類として設定されている分野です。")
         conn.execute(
             "INSERT OR IGNORE INTO word_domain_tags (word_id, domain) "
             "VALUES (?, ?)", (word_id, domain),
@@ -434,7 +436,7 @@ def quiz(
                 (deck_id, uid),
             ).fetchone()
             if not owned:
-                raise HTTPException(404, "単語帳が見つかりません")
+                raise errors.http_error("7001", "単語帳が見つかりません")
             where = where + [
                 "id IN (SELECT word_id FROM deck_words WHERE deck_id = ?)"
             ]
@@ -470,7 +472,7 @@ def attempt(payload: AttemptIn):
                 (payload.word_id, BANNED_DOMAIN),
             ).fetchone()
             if banned:
-                raise HTTPException(404, "単語が見つかりません")
+                raise errors.http_error("7001", "単語が見つかりません")
         try:
             result = record_attempt(
                 conn, payload.word_id, payload.direction, payload.correct,
@@ -478,7 +480,7 @@ def attempt(payload: AttemptIn):
                 cfg=_current_mastery_cfg(conn),
             )
         except ValueError as exc:
-            raise HTTPException(400, str(exc))
+            raise errors.http_error("7002", str(exc))
         return result
 
 
@@ -497,7 +499,7 @@ def mark_known(word_id: int, payload: KnownIn):
             "SELECT id FROM words WHERE id = ?", (word_id,)
         ).fetchone()
         if not exists:
-            raise HTTPException(404, "単語が見つかりません")
+            raise errors.http_error("7001", "単語が見つかりません")
         r = set_known(conn, word_id, payload.known, table="words",
                       user_id=current_user_id(), cfg=_current_mastery_cfg(conn))
     return {"ok": True, "known": payload.known, **r}
@@ -518,7 +520,7 @@ def mark_perfect(word_id: int, payload: PerfectIn):
             "SELECT id FROM words WHERE id = ?", (word_id,)
         ).fetchone()
         if not exists:
-            raise HTTPException(404, "単語が見つかりません")
+            raise errors.http_error("7001", "単語が見つかりません")
         r = set_perfect(conn, word_id, payload.perfect, table="words",
                         user_id=current_user_id(), cfg=_current_mastery_cfg(conn))
     return {"ok": True, **r}
@@ -535,7 +537,7 @@ def mark_vague(word_id: int):
             "SELECT id FROM words WHERE id = ?", (word_id,)
         ).fetchone()
         if not exists:
-            raise HTTPException(404, "単語が見つかりません")
+            raise errors.http_error("7001", "単語が見つかりません")
         r = _mark_vague(conn, word_id, table="words",
                         user_id=current_user_id(), cfg=_current_mastery_cfg(conn))
     return {"ok": True, **r}
@@ -562,7 +564,7 @@ def restore_progress(word_id: int, payload: RestoreIn):
             "SELECT id FROM words WHERE id = ?", (word_id,)
         ).fetchone()
         if not exists:
-            raise HTTPException(404, "単語が見つかりません")
+            raise errors.http_error("7001", "単語が見つかりません")
         cfg = _current_mastery_cfg(conn)
         fields: dict = {"mastery": clamp(payload.mastery, cfg.mastery_max),
                         "perfect": 0}
@@ -655,13 +657,13 @@ def word_detail(word_id: int, regen: bool = False):
             "WHERE id = ?", (word_id,)
         ).fetchone()
         if not row:
-            raise HTTPException(404, "単語が見つかりません")
+            raise errors.http_error("7001", "単語が見つかりません")
         # 一覧(`_word_filter`)を経由しないID直指定のため、ここでも
         # 禁止用語チェックが必須(2026-08-17セキュリティ修正・IDを
         # 知っていれば`allow_banned=False`のユーザーにも詳細生成/表示
         # されてしまっていた)。
         if row["domain"] == BANNED_DOMAIN and not current_user_allow_banned():
-            raise HTTPException(404, "単語が見つかりません")
+            raise errors.http_error("7001", "単語が見つかりません")
         # 詳細の閲覧は2026-08-11よりtierを問わず常時無料
         # （docs/ACCESS_TIERS.md「機能アクセス表」参照）。ただし**未生成の
         # 詳細を新たにAIで作る**のは実コストが発生するため、未ログインの

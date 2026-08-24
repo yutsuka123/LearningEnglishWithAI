@@ -8,6 +8,43 @@
 （例: 1.1.0→1.1.1）。ユーザーから別途指示があった場合のみ上位の桁を
 上げる。
 
+## ver1.2.19 (2026-08-25)
+
+**🆕 エラーコード体系の全展開完了 + BASEフルフィルメントPhase C(未配送メール通知)を新設**
+
+- **4桁エラーコード体系: 残り82箇所を全ファイルへ展開**（2026-08-20の
+  auth_routes.py実装以来止まっていた残タスク）。`base_oauth.py`・
+  `billing.py`・`categories.py`・`decks.py`・`fulfillment.py`・
+  `inquiries.py`・`learn.py`・`phrase_decks.py`・`phrases.py`・
+  `system.py`・`vocabulary.py`の生`raise HTTPException(...)`を全て
+  `errors.http_error(code, message)`に置換（文言は既存のものを維持し
+  つつコードのみ付与）。新規コード7件を`errors.py`に追加（3011〜3016:
+  注文重複/キャンセル済み発行不可/キー発行済み/BASE連携失敗/BASE通信
+  失敗/無料範囲上限、7004: 学習記録がある削除保護）。既存コードと文言が
+  一致するものは再利用（2004管理者専用・7001見つかりません・7002入力
+  不正・3005/3006金額変更等）。置換後、未使用になった`HTTPException`
+  importを全ファイルから削除し、`app/`配下の生HTTPExceptionは0件に。
+  `scripts/export_error_codes.py`で`docs/ERROR_CODES.md`/`.csv`再生成。
+  TestClientで動作確認済み（削除済みフレーズID指定で404+
+  `X-Error-Code: 7001`を確認）。
+- **BASEフルフィルメントPhase C(未配送メール通知)を新設**: 新規
+  `app/services/mailer.py`（Gmail SMTP経由・`GMAIL_ADDRESS`/
+  `GMAIL_APP_PASSWORD`未設定時は送信をスキップするのみで同期処理自体は
+  継続、送信失敗も同期を止めないbest-effort設計）。
+  `app/routers/fulfillment.py`の`sync_orders_from_base()`（Phase B・
+  2026-08-19実装済みで本番cronにより30分おきに自動稼働中）に、新規注文
+  検知時の即時メール通知と、`OVERDUE_HOURS`(24h)超過の未配送が残る場合の
+  リマインド（再送間隔12h・`app_state`でスロットリング）を追加。
+  未設定時は通知がスキップされるだけで既存のPhase B自動同期には影響しない
+  ことをTestClient/独立した一時DBで確認済み。`.env.example`・
+  `deploy/.env.study.example`に設定キー名を追記（実値は書かない）。
+- 調査の過程で、BASE Phase B（BASE API自動検知）が2026-08-19に実装済み・
+  本番で既に自動稼働中（VPS cron 30分おき）であることが判明。
+  `docs/TODO.md`の「Phase B未着手」という記載は単なる更新漏れだったため
+  修正した。
+- `docs/TODO.md`を整理（削除はせず、完了済みセッションログ約900+216行を
+  `docs/TODO_OLD.md`へ移動・散在していた未完了項目を集約）。
+
 ## ver1.2.18 (2026-08-24・commit `da15997`)
 
 **🆕 管理画面に「訪問者数の推移」グラフを新設 + ようこそ画面の分野一覧をタップ操作に対応**

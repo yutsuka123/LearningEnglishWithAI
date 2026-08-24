@@ -14,12 +14,14 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
+
+from ..services import errors
 from pydantic import BaseModel
 
 from ..config import log
 from ..database import db
-from ..services import base_api, charge_keys
+from ..services import base_api, charge_keys, mailer
 from ..services.auth import current_user_id
 
 router = APIRouter(prefix="/api/fulfillment", tags=["fulfillment"])
@@ -48,7 +50,7 @@ def _require_admin(conn) -> None:
     from ..services import auth
     me = auth.get_user(conn, current_user_id())
     if not me or me.get("role") != "admin":
-        raise HTTPException(403, "管理者のみ操作できます。")
+        raise errors.http_error("2004", "管理者のみ操作できます。")
 
 
 def _row_to_dict(r) -> dict:
@@ -99,11 +101,11 @@ class OrderIn(BaseModel):
 def add_order(payload: OrderIn):
     """注文を台帳に追加（手入力）。付与ptは未指定なら金額表から自動決定。"""
     if payload.amount_jpy <= 0:
-        raise HTTPException(400, "金額は正の整数で入力してください。")
+        raise errors.http_error("7002", "金額は正の整数で入力してください。")
     default_pt, _ = _pt_and_pattern(payload.amount_jpy)
     pt = payload.pt_to_grant if payload.pt_to_grant is not None else default_pt
     if pt <= 0:
-        raise HTTPException(400, "付与ポイントは正の整数にしてください。")
+        raise errors.http_error("7002", "付与ポイントは正の整数にしてください。")
     base_order_id = payload.base_order_id.strip() or None
     with db() as conn:
         _require_admin(conn)
@@ -113,7 +115,7 @@ def add_order(payload: OrderIn):
                 (base_order_id,),
             ).fetchone()
             if dup:
-                raise HTTPException(409, "この注文IDは既に登録済みです。")
+                raise errors.http_error("3011", "この注文IDは既に登録済みです。")
         cur = conn.execute(
             "INSERT INTO base_orders (base_order_id, amount_jpy, pt_to_grant, "
             " product_label, buyer_name, buyer_email, note) "
@@ -186,9 +188,9 @@ def issue_key(order_id: int, reissue: bool = False):
             "FROM base_orders WHERE id = ?", (order_id,),
         ).fetchone()
         if not row:
-            raise HTTPException(404, "注文が見つかりません。")
+            raise errors.http_error("7001", "注文が見つかりません。")
         if row["status"] == "cancelled":
-            raise HTTPException(400, "キャンセル済みの注文には発行できません。")
+            raise errors.http_error("3012", "キャンセル済みの注文には発行できません。")
         if row["charge_key_id"]:
             existing = conn.execute(
                 "SELECT id FROM charge_keys WHERE id = ? "
@@ -196,8 +198,8 @@ def issue_key(order_id: int, reissue: bool = False):
                 (row["charge_key_id"],),
             ).fetchone()
             if existing and not reissue:
-                raise HTTPException(
-                    409, "この注文には既に有効なキーが発行済みです。"
+                raise errors.http_error(
+                    "3013", "この注文には既に有効なキーが発行済みです。"
                     "再発行すると古いキーは無効化されます。")
             if existing:
                 charge_keys.revoke_key_by_id(conn, existing["id"])
@@ -245,7 +247,7 @@ def deliver(order_id: int, payload: StatusUpdate | None = None):
             (order_id,),
         )
         if cur.rowcount == 0:
-            raise HTTPException(404, "見つからないか、キャンセル済みです。")
+            raise errors.http_error("7001", "見つからないか、キャンセル済みです。")
         _log_action(
             conn, order_id, "delivered", admin_user_id=current_user_id(),
             note=(payload.note.strip() if payload else ""))
@@ -262,7 +264,7 @@ def cancel(order_id: int):
             (order_id,),
         )
         if cur.rowcount == 0:
-            raise HTTPException(404, "見つかりません。")
+            raise errors.http_error("7001", "見つかりません。")
         _log_action(
             conn, order_id, "cancelled", admin_user_id=current_user_id())
     return {"ok": True}
@@ -340,6 +342,7 @@ def sync_orders_from_base(conn) -> dict:
     new_count = 0
     skipped_status: dict[str, int] = {}
     errors: list[str] = []
+    new_orders_detail: list[dict] = []
     for o in raw_orders:
         unique_key = str(o.get("unique_key") or "").strip()
         if not unique_key:
@@ -388,6 +391,11 @@ def sync_orders_from_base(conn) -> dict:
                 note=f"BASE API unique_key={unique_key}")
             existing_ids.add(unique_key)
             new_count += 1
+            new_orders_detail.append({
+                "id": int(cur.lastrowid), "amount_jpy": amount,
+                "pt_to_grant": pt, "buyer_name": buyer_name,
+                "product_label": product_label,
+            })
         except Exception as e:  # UNIQUE制約競合等はスキップして続行
             log.warning("base_api: insert failed unique_key=%s: %s",
                         unique_key, e)
@@ -398,11 +406,96 @@ def sync_orders_from_base(conn) -> dict:
         "base_api: sync done checked=%s new=%s skipped=%s errors=%s",
         checked, new_count, skipped_status, len(errors),
     )
+    if new_orders_detail:
+        _notify_new_orders(new_orders_detail)
+    _notify_overdue_if_needed(conn)
     return {
         "ok": True, "checked": checked, "new_orders": new_count,
         "skipped_status": skipped_status, "errors": errors,
         "window": {"start": start, "end": end},
     }
+
+
+# --- Phase C: メール通知（2026-08-25）--------------------------------------
+# 送信は常にbest-effort（失敗しても同期処理自体は成功として扱う・
+# mailer.send_email()自体が例外を握りつぶす設計と二重に保護）。
+
+_OVERDUE_NOTIFY_STATE_KEY = "base_orders_last_overdue_notified_at"
+# 未配送リマインドの再送間隔（毎回のcron(30分おき)で送ると鬱陶しいため、
+# overdue(=OVERDUE_HOURS超過)が残っている限りこの間隔でダイジェストのみ送る）。
+_OVERDUE_NOTIFY_INTERVAL_HOURS = 12
+
+
+def _notify_new_orders(new_orders_detail: list[dict]) -> None:
+    lines = [
+        f"BASEで新しい注文を{len(new_orders_detail)}件検知しました"
+        "（自動投入済み・要キー発行）。",
+        "",
+    ]
+    for o in new_orders_detail:
+        lines.append(
+            f"- 注文#{o['id']}: ¥{o['amount_jpy']:,} → {o['pt_to_grant']}pt"
+            f" / 購入者: {o['buyer_name'] or '(未取得)'}"
+            f" / 商品: {o['product_label'] or '(未取得)'}"
+        )
+    lines.append("")
+    lines.append("管理画面(フルフィルメント管理)からキーを発行してください。")
+    try:
+        mailer.send_email(
+            f"[nyangailab] 新規注文{len(new_orders_detail)}件を検知",
+            "\n".join(lines),
+        )
+    except Exception:
+        log.warning("base_api: 新規注文メール通知に失敗", exc_info=True)
+
+
+def _notify_overdue_if_needed(conn) -> None:
+    row = conn.execute(
+        "SELECT id, base_order_id, amount_jpy, buyer_name, detected_at "
+        "FROM base_orders WHERE status = 'pending' "
+        "AND (julianday('now') - julianday(detected_at)) * 24 > ? "
+        "ORDER BY detected_at ASC",
+        (OVERDUE_HOURS,),
+    ).fetchall()
+    if not row:
+        return
+    state = conn.execute(
+        "SELECT value FROM app_state WHERE key = ?",
+        (_OVERDUE_NOTIFY_STATE_KEY,),
+    ).fetchone()
+    now = datetime.now(timezone.utc)
+    if state and state["value"]:
+        try:
+            last = datetime.fromisoformat(state["value"])
+            if (now - last) < timedelta(hours=_OVERDUE_NOTIFY_INTERVAL_HOURS):
+                return
+        except ValueError:
+            pass
+    lines = [
+        f"未配送のまま{OVERDUE_HOURS}時間を超えた注文が{len(row)}件あります。",
+        "",
+    ]
+    for o in row:
+        lines.append(
+            f"- 注文#{o['id']} (検知: {o['detected_at']}): "
+            f"¥{o['amount_jpy']:,} / {o['buyer_name'] or '(未取得)'}"
+        )
+    lines.append("")
+    lines.append("管理画面(フルフィルメント管理)から対応してください。")
+    try:
+        sent = mailer.send_email(
+            f"[nyangailab] 未配送の注文が{len(row)}件たまっています",
+            "\n".join(lines),
+        )
+    except Exception:
+        sent = False
+        log.warning("base_api: 未配送リマインドメール送信に失敗", exc_info=True)
+    if sent:
+        conn.execute(
+            "INSERT INTO app_state (key, value) VALUES (?, ?) "
+            "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            (_OVERDUE_NOTIFY_STATE_KEY, now.isoformat()),
+        )
 
 
 @router.post("/base-sync")
@@ -414,4 +507,4 @@ def base_sync():
         try:
             return sync_orders_from_base(conn)
         except base_api.BaseApiError as e:
-            raise HTTPException(400, str(e))
+            raise errors.http_error("3014", str(e))
