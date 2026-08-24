@@ -17,6 +17,7 @@ export const state = {
 };
 
 const TABS = [
+  ["welcome", "🏠 ようこそ"],   // 未ログインのみ表示（boot で挿入判定）
   ["dashboard", "🏠 ダッシュボード"],
   // 2026-08-09: ユーザー指示により当面非表示（機能・ルートは温存、再表示は
   // この2行のコメントアウトを外すだけでよい）。
@@ -271,6 +272,7 @@ export async function refreshMaintenanceBanner() {
 // ---------------------------------------------------------------------------
 
 const ROUTES = {
+  welcome: views.welcome,
   dashboard: views.dashboard,
   daily: views.daily,
   vocab: views.vocab,
@@ -313,6 +315,7 @@ export async function go(tab) {
     try { fn(); } catch (e) { /* ignore */ }
   }
   currentTab = tab;
+  document.body.classList.toggle("tab-welcome", tab === "welcome");
   speech.stopSpeaking();
   document.querySelectorAll(".nav-item").forEach((b) =>
     b.classList.toggle("active", b.dataset.tab === tab));
@@ -552,6 +555,7 @@ async function boot() {
   const nav = document.getElementById("nav");
   TABS.forEach(([tab, label]) => {
     if (tab === "admin" && !state.isAdmin) return;
+    if (tab === "welcome" && !state.isGuest) return;
     if (state.isGuest && GUEST_HIDDEN_TABS.has(tab)) return;
     const b = el(`<button class="nav-item" data-tab="${tab}">${label}</button>`);
     b.addEventListener("click", () => go(tab));
@@ -606,7 +610,7 @@ async function boot() {
 
   // 上記の非同期処理中にユーザーが既に別タブへナビゲートしていたら、
   // ダッシュボードで上書きしない（レースコンディション対策）。
-  if (!userNavigated) go(state.isGuest ? "vocab" : "dashboard");
+  if (!userNavigated) go(state.isGuest ? "welcome" : "dashboard");
 }
 
 boot();

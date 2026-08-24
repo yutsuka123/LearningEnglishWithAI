@@ -366,13 +366,13 @@ def llms_txt():
     return PlainTextResponse("\n".join(lines) + "\n")
 
 
-@app.get("/login")
+@app.api_route("/login", methods=["GET", "HEAD"])
 def login_page():
     """ログイン画面（MULTIUSER=1 用）。単一ユーザー時は使われない。"""
     return FileResponse(str(paths.static_dir / "login.html"))
 
 
-@app.get("/tokushoho")
+@app.api_route("/tokushoho", methods=["GET", "HEAD"])
 def tokushoho_page():
     """特定商取引法に基づく表記。個人情報は .env(TOKUSHOHO_*)から読み込み、
     未記入の項目だけ赤字の案内文にフォールバックする（本文には一切書かない・
@@ -415,6 +415,6 @@ app.mount(
 )
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def index():
     return FileResponse(str(paths.static_dir / "index.html"))

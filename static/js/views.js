@@ -189,6 +189,39 @@ function readAloudBar(getText, feature) {
   return bar;
 }
 
+// --- Welcome（未ログインの初期表示。2026-08-24: ルート直アクセス時に説明
+// 無しでいきなり単語一覧ツールが出て離脱を招いていた問題への対応。文章量は
+// 抑え、詳しい説明はabout.htmlへ誘導する）------------------------------------
+
+export function welcome(root) {
+  root.innerHTML = `
+    <div class="welcome-hero">
+      <div class="card welcome-card">
+        <div class="welcome-emoji">🐱 nyangailab</div>
+        <h1 class="mt">月額サブスクなし。ニッチな語彙まで詳しく学べる
+          英語学習アプリ</h1>
+        <p class="muted" style="max-width:480px; margin:0 auto 18px">
+          妖怪・絶滅種などマニアックな分野から専門用語まで、語源・豆知識
+          つきの詳しい解説とAIのネイティブ音声で学べます。使った分だけの
+          前払いチャージ制。</p>
+        <div class="row welcome-pills">
+          <span class="pill info">💰 サブスクなし・使った分だけ</span>
+          <span class="pill mastered">🦉 専門用語からニッチな語彙まで</span>
+          <span class="pill vague">📖 語源・豆知識つきの詳しい解説</span>
+        </div>
+        <div class="row" style="justify-content:center; gap:12px">
+          <a class="btn" href="/login">30秒で無料登録</a>
+          <button class="btn ghost" id="welcomeTryBtn">
+            登録せず単語を見る</button>
+        </div>
+        <p class="muted mt">
+          <a href="/static/about.html">詳しい説明・料金の目安を見る →</a></p>
+      </div>
+    </div>`;
+  root.querySelector("#welcomeTryBtn")
+    ?.addEventListener("click", () => go("vocab"));
+}
+
 // --- Dashboard --------------------------------------------------------------
 
 export async function dashboard(root) {

@@ -129,6 +129,18 @@ a.nav-item { display: block; text-decoration: none; box-sizing: border-box; }
 .mic-cmd.listening { background: var(--danger); color: #fff; }
 .cmd-status { color: var(--muted); font-size: 13px; }
 
+/* ようこそ画面(ゲスト初期表示)ではツール操作系のトップバー項目
+   (操作ボタン・入力モード・残高・AI状態・バージョン表記)を隠し、
+   価値提案をファーストビューから押し出さないようにする(2026-08-24・
+   スマホで設定行が3段続き訴求が画面外に追いやられていた問題への対応)。
+   ブランド・テーマ切替・文字サイズ・ログイン導線は残す。 */
+body.tab-welcome #micCmd, body.tab-welcome #cmdStatus,
+body.tab-welcome .topbar-right label.toggle,
+body.tab-welcome #usageBalance, body.tab-welcome #costBadge,
+body.tab-welcome #aiState, body.tab-welcome #appVer {
+  display: none;
+}
+
 .toggle { color: var(--muted); font-size: 13px; }
 .toggle select, select, input, textarea {
   background: var(--panel-2);
@@ -440,6 +452,30 @@ th { color: var(--muted); font-weight: 600; }
 
 /* 「うろ覚え」バッジ(2026-08-18) */
 .pill.vague { background: var(--warn); color: #3a2600; font-weight: 600; }
+
+/* ゲスト向け「ようこそ」画面のメリット表示(2026-08-24) */
+.pill.info { background: rgba(77, 163, 255, .18); color: var(--accent);
+  border: 1px solid rgba(77, 163, 255, .4); font-weight: 600; }
+
+/* --- ようこそ画面(ゲストの初期表示・2026-08-24) --------------------------
+   PCで下に大きな空白が残り「殺風景」に見えるとの指摘のため、画面の残り
+   高さいっぱいに中央寄せする。カードはグラデーションで単なる箱に見え
+   ないようにする。 */
+.welcome-hero {
+  min-height: calc(100vh - 140px);
+  display: flex; align-items: center; justify-content: center;
+}
+.welcome-card {
+  max-width: 560px; text-align: center; padding: 36px 28px;
+  background: linear-gradient(160deg, var(--panel) 0%, var(--panel-2) 100%);
+}
+.welcome-emoji { font-size: 22px; font-weight: 700; }
+.welcome-pills { justify-content: center; margin: 18px 0 22px; }
+.welcome-pills .pill { padding: 4px 12px; font-size: 13px; }
+@media (max-width: 640px) {
+  .welcome-hero { min-height: 0; }
+  .welcome-pills { flex-direction: column; align-items: stretch; }
+}
 
 /* 習熟度バー（一覧用）: 全長は従来の約半分。色は inline で段階を表す。 */
 .mbar {
