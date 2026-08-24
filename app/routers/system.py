@@ -979,6 +979,93 @@ def admin_anon_access(days: int = 30, limit: int = 500):
     }
 
 
+@router.get("/admin/visit-trend")
+def admin_visit_trend(days: int = 30):
+    """訪問者数の推移（人間/クローラー別・延べ数とユニークIP数、日次・
+    2026-08-24ユーザー要望「昔の訪問者カウンターに相当するものが欲しい・
+    1週間/1ヶ月/3ヶ月/6ヶ月の推移を表とグラフで見たい」）。
+
+    集計対象は landing_visits(kind='visit')。usage_events は画面遷移
+    のたびのAPI呼び出しも含み「訪問」の実感と乖離するため、ページを開く
+    たび1回だけ記録される landing_visits の方を採用した。人間/クローラー
+    の判定は「未登録アクセス状況」(admin_anon_access)と同じ
+    visitor_kind.classify() を使い、判定基準を統一する。管理者自身の
+    アクセス(ADMIN_KNOWN_IPS)は訪問者数から除外する。"""
+    _require_admin()
+    days = max(1, min(days, 366))
+    since = f"-{days} days"
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT ip, user_agent, "
+            "substr(datetime(created_at, '+9 hours'), 1, 10) AS date "
+            "FROM landing_visits "
+            "WHERE kind='visit' AND created_at >= datetime('now', ?) "
+            "AND ip != ''",
+            (since,),
+        ).fetchall()
+        geo_rows = conn.execute(
+            "SELECT ip, org, hostname FROM ip_geo_cache",
+        ).fetchall()
+    geo_map = {r["ip"]: dict(r) for r in geo_rows}
+    admin_ips = load_admin_known_ips()
+
+    ua_map: dict[str, list[str]] = {}
+    for r in rows:
+        ua_map.setdefault(r["ip"], []).append(r["user_agent"] or "")
+    mark_cache: dict[str, int] = {}
+
+    def ip_mark(ip: str) -> int:
+        if ip not in mark_cache:
+            geo = geo_map.get(ip, {})
+            mark, _ = visitor_kind.classify(
+                ua_map.get(ip, []), geo.get("org", ""),
+                geo.get("hostname", ""), ip in admin_ips,
+            )
+            mark_cache[ip] = mark
+        return mark_cache[ip]
+
+    by_day: dict[str, dict] = {}
+    for r in rows:
+        mark = ip_mark(r["ip"])
+        if mark == visitor_kind.MARK_ADMIN:
+            continue
+        d = by_day.setdefault(r["date"], {
+            "human_total": 0, "human_ips": set(),
+            "bot_total": 0, "bot_ips": set(),
+        })
+        if mark == visitor_kind.MARK_NONE:
+            d["human_total"] += 1
+            d["human_ips"].add(r["ip"])
+        else:
+            d["bot_total"] += 1
+            d["bot_ips"].add(r["ip"])
+
+    daily = []
+    for date in sorted(by_day):
+        d = by_day[date]
+        daily.append({
+            "date": date,
+            "human_total": d["human_total"],
+            "human_unique_ips": len(d["human_ips"]),
+            "bot_total": d["bot_total"],
+            "bot_unique_ips": len(d["bot_ips"]),
+        })
+    # 期間合計のユニークIPは日次の単純合計だと複数日にまたがる同一IPを
+    # 重複カウントしてしまうため、別途IP単位で数え直す。
+    all_human_ips = {ip for ip in ua_map if ip_mark(ip) == visitor_kind.MARK_NONE}
+    all_bot_ips = {
+        ip for ip in ua_map
+        if ip_mark(ip) not in (visitor_kind.MARK_NONE, visitor_kind.MARK_ADMIN)
+    }
+    summary = {
+        "human_total": sum(d["human_total"] for d in daily),
+        "human_unique_ips": len(all_human_ips),
+        "bot_total": sum(d["bot_total"] for d in daily),
+        "bot_unique_ips": len(all_bot_ips),
+    }
+    return {"days": days, "summary": summary, "daily": daily}
+
+
 @router.get("/admin/error-log")
 def admin_error_log(lines: int = 200):
     """アプリのエラーログ(data/app.log)の末尾を返す（管理画面のログ確認用・

@@ -241,11 +241,11 @@ export async function welcome(root) {
         <p class="muted mt">
           <a href="/static/about.html">詳しい説明・料金の目安を見る →</a></p>
 
-        <p class="muted welcome-scroll-label" style="margin-top:28px">
-          収録語彙分野一覧（${domains.length}分野・スワイプで見られます）</p>
+        <p class="welcome-scroll-label" style="margin-top:28px">
+          収録語彙分野一覧（${domains.length}分野・枠内スクロールで見られます）</p>
         <div class="row welcome-scroll-row">${domainChips}</div>
 
-        <p class="muted welcome-scroll-label">収録機能一覧</p>
+        <p class="welcome-scroll-label">収録機能一覧</p>
         <div class="row welcome-scroll-row">${featureChips}</div>
       </div>
     </div>`;
@@ -4052,6 +4052,26 @@ export async function admin(root) {
         </details>
       </details>
 
+      <details class="log-group" id="logVisitTrendDetails">
+        <summary>📊 訪問者数の推移（人間/クローラー別）</summary>
+        <p class="muted mt">トップページ/取扱説明書/ログイン画面の閲覧
+          (landing_visits・kind='visit')を日次集計。人間/クローラーの
+          判定は上の「未登録アクセス状況」と同じ基準（管理者自身は除外）。</p>
+        <div class="row">
+          <button class="btn ghost visit-trend-range" data-days="7"
+            style="padding:3px 10px">1週間</button>
+          <button class="btn ghost visit-trend-range active" data-days="30"
+            style="padding:3px 10px">1ヶ月</button>
+          <button class="btn ghost visit-trend-range" data-days="90"
+            style="padding:3px 10px">3ヶ月</button>
+          <button class="btn ghost visit-trend-range" data-days="180"
+            style="padding:3px 10px">6ヶ月</button>
+          <button class="btn ghost" id="visitTrendReload"
+            style="padding:3px 10px">🔄 再読み込み</button>
+        </div>
+        <div id="visitTrendWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
+
       <details class="log-group" id="logChargeKeyDetails">
         <summary>🧾 チャージキー入力ログ（直近100件・無期限保持）</summary>
         <p class="muted mt">キー番号(secretを含まない公開部分)は無期限保持
@@ -4624,6 +4644,164 @@ export async function admin(root) {
     loadAccessLog();
   });
 
+  // --- 訪問者数の推移(2026-08-24) ------------------------------------------
+  function buildVisitTrendSvg(daily) {
+    const W = 680, H = 220, padL = 40, padR = 14, padT = 10, padB = 24;
+    const innerW = W - padL - padR, innerH = H - padT - padB;
+    const n = daily.length;
+    const maxVal = Math.max(
+      1, ...daily.map((d) => Math.max(d.human_total, d.bot_total)));
+    const magnitude = Math.pow(10, Math.floor(Math.log10(maxVal || 1)));
+    const niceMax = [1, 2, 5, 10].map((s) => s * magnitude)
+      .find((v) => maxVal <= v) || 10 * magnitude;
+    const x = (i) => padL + (n <= 1 ? innerW / 2 : (innerW * i) / (n - 1));
+    const y = (v) => padT + innerH - (innerH * v) / niceMax;
+
+    const gridCount = 4;
+    const gridLines = Array.from({ length: gridCount + 1 }, (_, i) => {
+      const v = Math.round((niceMax / gridCount) * i);
+      const yy = y(v);
+      return `<line x1="${padL}" y1="${yy}" x2="${W - padR}" y2="${yy}"
+          stroke="var(--line)" stroke-width="1" />
+        <text x="${padL - 6}" y="${yy + 4}" text-anchor="end"
+          font-size="10" fill="var(--muted)">${v.toLocaleString()}</text>`;
+    }).join("");
+
+    const labelStep = Math.max(1, Math.ceil(n / 8));
+    const xLabels = daily.map((d, i) => {
+      if (i % labelStep !== 0 && i !== n - 1) return "";
+      const short = d.date.slice(5).replace("-", "/");
+      return `<text x="${x(i)}" y="${H - 6}" text-anchor="middle"
+        font-size="10" fill="var(--muted)">${short}</text>`;
+    }).join("");
+
+    const linePath = (key) => daily.map((d, i) =>
+      `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(d[key]).toFixed(1)}`)
+      .join(" ");
+    const dots = (key, cls) => daily.map((d, i) =>
+      `<circle cx="${x(i).toFixed(1)}" cy="${y(d[key]).toFixed(1)}" r="4"
+        class="${cls}" stroke="var(--panel)" stroke-width="2" />`).join("");
+    const last = n ? daily[n - 1] : null;
+    const endLabel = (val, dy) => last
+      ? `<text x="${x(n - 1) + 6}" y="${y(val) + dy}" font-size="11"
+          font-weight="700" fill="var(--text)">${val}</text>`
+      : "";
+
+    return `
+      <svg viewBox="0 0 ${W} ${H}" class="visit-trend-svg" role="img"
+        aria-label="訪問者数(人間/クローラー)の日別推移グラフ">
+        ${gridLines}
+        ${xLabels}
+        <path d="${linePath("bot_total")}" fill="none"
+          stroke="var(--vt-bot)" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" />
+        <path d="${linePath("human_total")}" fill="none"
+          stroke="var(--vt-human)" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" />
+        ${dots("bot_total", "vt-dot-bot")}
+        ${dots("human_total", "vt-dot-human")}
+        ${last ? endLabel(last.human_total, -8) : ""}
+        ${last ? endLabel(last.bot_total, 16) : ""}
+        <line class="vt-crosshair" x1="-100" x2="-100"
+          y1="${padT}" y2="${H - padB}" stroke="var(--line)"
+          stroke-width="1" />
+      </svg>`;
+  }
+
+  function wireVisitTrendHover(wrapEl, daily) {
+    const svgEl = wrapEl.querySelector(".visit-trend-svg");
+    const tip = wrapEl.querySelector(".vt-tooltip");
+    const crosshair = svgEl.querySelector(".vt-crosshair");
+    const W = 680, padL = 40, padR = 14;
+    const innerW = W - padL - padR;
+    const n = daily.length;
+    const xAt = (i) => padL + (n <= 1 ? innerW / 2 : (innerW * i) / (n - 1));
+    svgEl.addEventListener("mousemove", (e) => {
+      const rect = svgEl.getBoundingClientRect();
+      const relX = ((e.clientX - rect.left) / rect.width) * W;
+      let idx = 0, best = Infinity;
+      daily.forEach((d, i) => {
+        const dist = Math.abs(xAt(i) - relX);
+        if (dist < best) { best = dist; idx = i; }
+      });
+      const d = daily[idx];
+      crosshair.setAttribute("x1", xAt(idx));
+      crosshair.setAttribute("x2", xAt(idx));
+      tip.style.display = "block";
+      tip.style.left = `${e.clientX - rect.left + 10}px`;
+      tip.style.top = `${e.clientY - rect.top - 10}px`;
+      tip.innerHTML = `<b>${escapeHtml(d.date)}</b><br>
+        🧑 人間: ${d.human_total}件(IP ${d.human_unique_ips})<br>
+        🤖 クローラー: ${d.bot_total}件(IP ${d.bot_unique_ips})`;
+    });
+    svgEl.addEventListener("mouseleave", () => {
+      tip.style.display = "none";
+      crosshair.setAttribute("x1", -100);
+      crosshair.setAttribute("x2", -100);
+    });
+  }
+
+  let visitTrendDays = 30;
+  async function loadVisitTrend() {
+    const wrap = root.querySelector("#visitTrendWrap");
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    let res;
+    try {
+      res = await api.get(
+        `/api/system/admin/visit-trend?days=${visitTrendDays}`);
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+      return;
+    }
+    const daily = res.daily || [];
+    if (!daily.length) {
+      wrap.innerHTML = `<p class="muted">この期間のデータはまだありません。</p>`;
+      return;
+    }
+    const s = res.summary || {};
+    const summaryHtml = `<div class="grid cols-4 mt">
+      <div class="stat"><div class="num">${s.human_total ?? 0}</div>
+        <div class="lbl">人間(延べ)</div></div>
+      <div class="stat"><div class="num">${s.human_unique_ips ?? 0}</div>
+        <div class="lbl">人間(ユニークIP)</div></div>
+      <div class="stat"><div class="num">${s.bot_total ?? 0}</div>
+        <div class="lbl">クローラー(延べ)</div></div>
+      <div class="stat"><div class="num">${s.bot_unique_ips ?? 0}</div>
+        <div class="lbl">クローラー(ユニークIP)</div></div>
+    </div>`;
+    const legendHtml = `<div class="row mt visit-trend-legend">
+      <span class="vt-legend-item"><span class="vt-swatch vt-dot-human">
+        </span>人間</span>
+      <span class="vt-legend-item"><span class="vt-swatch vt-dot-bot">
+        </span>クローラー</span>
+    </div>`;
+    const rowsHtml = daily.slice().reverse().map((d) => `<tr>
+      <td class="muted">${escapeHtml(d.date)}</td>
+      <td>${d.human_total}</td><td>${d.human_unique_ips}</td>
+      <td>${d.bot_total}</td><td>${d.bot_unique_ips}</td>
+    </tr>`).join("");
+    wrap.innerHTML = `${summaryHtml}${legendHtml}
+      <div class="visit-trend-wrap mt">
+        ${buildVisitTrendSvg(daily)}
+        <div class="vt-tooltip" style="display:none"></div>
+      </div>
+      <table class="mt"><thead><tr>
+        <th>日付</th><th>人間(延べ)</th><th>人間(IP)</th>
+        <th>クローラー(延べ)</th><th>クローラー(IP)</th>
+      </tr></thead><tbody>${rowsHtml}</tbody></table>`;
+    wireVisitTrendHover(wrap.querySelector(".visit-trend-wrap"), daily);
+  }
+  root.querySelectorAll(".visit-trend-range").forEach((b) => {
+    b.addEventListener("click", () => {
+      visitTrendDays = Number(b.dataset.days);
+      root.querySelectorAll(".visit-trend-range").forEach((x) =>
+        x.classList.toggle("active", x === b));
+      loadVisitTrend();
+    });
+  });
+  root.querySelector("#visitTrendReload")
+    .addEventListener("click", loadVisitTrend);
+
   async function runAiUsageSearch() {
     const wrap = root.querySelector("#aiUsageSearchWrap");
     wrap.innerHTML = `<p class="muted">検索中…</p>`;
@@ -4810,6 +4988,7 @@ export async function admin(root) {
     ["#logServerStatusDetails", loadServerStatus],
     ["#logLoginDetails", loadLoginLog],
     ["#logAnonAccessDetails", loadAnonAccess],
+    ["#logVisitTrendDetails", loadVisitTrend],
     ["#logChargeKeyDetails", loadChargeKeyLog],
     ["#logErrorDetails", loadErrorLog],
     ["#logAccessDetails", loadAccessLog],

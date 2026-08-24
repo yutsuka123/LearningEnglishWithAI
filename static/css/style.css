@@ -20,6 +20,11 @@
   --warn: #ffb454;
   --danger: #ff6b6b;
   --radius: 12px;
+  /* 訪問者数推移グラフ用(2026-08-24・dataviz skillのvalidate_palette.jsで
+     CVD安全性を検証済みの2系列カテゴリカルパレット。人間=青・
+     クローラー=橙、隣接ペアのΔE基準を両モードでPASS確認済み)。 */
+  --vt-human: #3987e5;
+  --vt-bot: #d95926;
 }
 
 /* ライトテーマ（既定はダークのまま。ユーザーが明示的に切り替えた時だけ適用。
@@ -35,6 +40,8 @@
   --accent-2: #1a9d6c;
   --warn: #b8860b;
   --danger: #d64545;
+  --vt-human: #2a78d6;
+  --vt-bot: #eb6834;
 }
 
 * { box-sizing: border-box; }
@@ -484,12 +491,22 @@ th { color: var(--muted); font-weight: 600; }
   .welcome-pills { flex-direction: column; align-items: stretch; }
 }
 /* 収録語彙分野/機能の一覧(2026-08-24)。場所を取らずに「多さ」を見せたい
-   というユーザー要望のため、縦に並べず横スクロール(スマホはスワイプ)の
-   1本の帯にする。 */
-.welcome-scroll-label { font-size: 13px; margin: 0 0 6px; text-align: left; }
+   というユーザー要望のため、横スクロール(スワイプ)の帯として実装したが、
+   実機Androidでスワイプが機能せず見られないと判明。横スワイプはページの
+   縦スクロールと競合しやすく発見しにくい/操作しにくいため、折り返し+
+   縦スクロールの小さな箱(タグクラウド風)に変更(2026-08-24)。高さを
+   固定して場所は取らないまま、縦スクロールという誰でも迷わない操作方法
+   にした。 */
+.welcome-scroll-label {
+  font-size: 13px; margin: 0 0 6px; text-align: left;
+  color: var(--text); font-weight: 700;
+}
 .welcome-scroll-row {
-  flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto;
-  gap: 6px; padding-bottom: 8px; margin-bottom: 4px;
+  /* 約3行ぶん見せて、次の行が少しだけ覗く高さにする(2026-08-24・
+     「3行くらい表示できてスワイプすればいい」というユーザー提案。
+     覗かせることで続きがあると伝わる)。 */
+  flex-wrap: wrap; justify-content: flex-start; max-height: 84px;
+  overflow-y: auto; gap: 6px; padding: 2px 2px 8px; margin-bottom: 4px;
   -webkit-overflow-scrolling: touch;
 }
 .welcome-scroll-row .pill {
@@ -733,3 +750,23 @@ th { color: var(--muted); font-weight: 600; }
 .rel-entry { margin: 0 0 18px; }
 .rel-entry ul { margin: 4px 0 8px 1.2em; padding: 0; }
 .rel-entry li { margin: 2px 0; }
+
+/* 訪問者数推移グラフ(管理画面・2026-08-24)。マークは2px線・丸端点・
+   4px半径ドット+2px surfaceリング、グリッドは控えめなhairline
+   （dataviz skillのmark仕様に準拠）。 */
+.visit-trend-range.active { background: var(--accent); color: #04101f; }
+.visit-trend-legend { align-items: center; }
+.vt-legend-item { display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--muted); }
+.vt-swatch { display: inline-block; width: 10px; height: 10px;
+  border-radius: 50%; }
+.vt-dot-human { fill: var(--vt-human); background: var(--vt-human); }
+.vt-dot-bot { fill: var(--vt-bot); background: var(--vt-bot); }
+.visit-trend-wrap { position: relative; }
+.visit-trend-svg { width: 100%; height: auto; display: block; }
+.vt-tooltip {
+  position: absolute; pointer-events: none; z-index: 5;
+  background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px 10px; font-size: 12px;
+  line-height: 1.5; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,.25);
+}
