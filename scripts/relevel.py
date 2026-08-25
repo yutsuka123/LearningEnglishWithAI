@@ -37,7 +37,7 @@ DOMAIN_BASE = {
     "世界史": "800", "日本史": "800", "宗教": "800", "軍事": "800", "機械": "800",
     "電気電子": "800", "化学": "800", "物理": "800", "数学": "800", "哲学": "800",
     "病名": "800", "法律手続き": "800",
-    "航空管制": "700",
+    "航空管制": "700", "外交": "700",
 }
 DEFAULT_BASE = "600"  # blank/unknown domain (mostly original common seed words)
 
@@ -103,6 +103,15 @@ H900 = {
     "low-level wind shear", "density altitude", "microburst", "gust front",
     "instrument approach procedure", "missed approach point", "iaf", "faf",
     "outer marker",
+    # 外交: advanced/technical diplomacy terms
+    "agrément", "plenipotentiary", "chargé d'affaires",
+    "doyen of the diplomatic corps", "extraterritoriality", "note verbale",
+    "customary international law", "most-favored-nation status",
+    "rapprochement", "brinkmanship", "saber-rattling", "cordon sanitaire",
+    "track ii diplomacy", "letter of recall", "full powers (diplomacy)",
+    "depositary (treaty)", "de facto recognition", "de jure recognition",
+    "vienna convention on diplomatic relations",
+    "ambassador extraordinary and plenipotentiary",
 }
 H990 = {
     # math
