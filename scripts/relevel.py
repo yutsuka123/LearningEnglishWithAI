@@ -38,6 +38,7 @@ DOMAIN_BASE = {
     "電気電子": "800", "化学": "800", "物理": "800", "数学": "800", "哲学": "800",
     "病名": "800", "法律手続き": "800",
     "航空管制": "700", "外交": "700", "猫": "600", "犬": "600",
+    "アマチュア無線・無線通信": "700",
 }
 DEFAULT_BASE = "600"  # blank/unknown domain (mostly original common seed words)
 
@@ -121,6 +122,12 @@ H900 = {
     "canine cognitive dysfunction", "brachycephalic",
     "counter-conditioning", "desensitization", "canine cognition",
     "resource guarding", "leash reactivity", "canine good citizen",
+    # アマチュア無線: advanced/technical terms
+    "dxcc", "pota", "sota", "aprs", "echolink", "d-star", "dmr", "ft8",
+    "wsjt-x", "psk31", "rtty", "ares", "iaru", "itu region",
+    "no-code license", "counterpoise", "sporadic e", "meteor scatter",
+    "moonbounce", "solar flux index", "nvis", "was award", "iota award",
+    "logbook of the world",
 }
 H990 = {
     # math
