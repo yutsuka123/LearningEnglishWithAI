@@ -37,6 +37,7 @@ DOMAIN_BASE = {
     "世界史": "800", "日本史": "800", "宗教": "800", "軍事": "800", "機械": "800",
     "電気電子": "800", "化学": "800", "物理": "800", "数学": "800", "哲学": "800",
     "病名": "800", "法律手続き": "800",
+    "航空管制": "700",
 }
 DEFAULT_BASE = "600"  # blank/unknown domain (mostly original common seed words)
 
@@ -53,6 +54,16 @@ LOW = {
         "gravity", "mass", "velocity", "acceleration", "force", "energy", "friction", "speed",
         # religion basics
         "faith", "soul", "prayer", "blessing", "holy", "sin", "mercy", "worship", "monk", "grace",
+        # ATC: ICAO/NATO phonetic alphabet (memorized code words, not conceptually hard)
+        "alfa (phonetic alphabet)", "bravo (phonetic alphabet)", "charlie (phonetic alphabet)",
+        "delta (phonetic alphabet)", "echo (phonetic alphabet)", "foxtrot (phonetic alphabet)",
+        "golf (phonetic alphabet)", "hotel (phonetic alphabet)", "india (phonetic alphabet)",
+        "juliett (phonetic alphabet)", "kilo (phonetic alphabet)", "lima (phonetic alphabet)",
+        "mike (phonetic alphabet)", "november (phonetic alphabet)", "oscar (phonetic alphabet)",
+        "papa (phonetic alphabet)", "quebec (phonetic alphabet)", "romeo (phonetic alphabet)",
+        "sierra (phonetic alphabet)", "tango (phonetic alphabet)", "uniform (phonetic alphabet)",
+        "victor (phonetic alphabet)", "whiskey (phonetic alphabet)", "x-ray (phonetic alphabet)",
+        "yankee (phonetic alphabet)", "zulu (phonetic alphabet)",
     },
     "600": {
         # military common
@@ -84,6 +95,14 @@ H900 = {
     "aerodynamics", "fuselage", "aileron", "propulsion", "telemetry", "reentry", "trajectory", "escape velocity", "supersonic", "turbine", "thrust", "cosmonaut", "spacewalk",
     # misc advanced
     "outrage", "ceasefire", "armistice",
+    # ATC: advanced/technical air traffic control terms
+    "tacan", "rnp", "gpws", "ads-b", "tcas", "artcc", "tracon", "mda",
+    "decision height", "decision altitude", "separation minima",
+    "wake turbulence category", "arresting gear", "surface movement radar",
+    "wind shear detection system", "jet blast deflector",
+    "low-level wind shear", "density altitude", "microburst", "gust front",
+    "instrument approach procedure", "missed approach point", "iaf", "faf",
+    "outer marker",
 }
 H990 = {
     # math
