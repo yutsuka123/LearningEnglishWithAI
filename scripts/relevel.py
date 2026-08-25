@@ -40,6 +40,7 @@ DOMAIN_BASE = {
     "航空管制": "700", "外交": "700", "猫": "600", "犬": "600",
     "アマチュア無線・無線通信": "700",
     "和製英語": "400",
+    "認証・規制": "800",
 }
 DEFAULT_BASE = "600"  # blank/unknown domain (mostly original common seed words)
 

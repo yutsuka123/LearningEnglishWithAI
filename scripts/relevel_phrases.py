@@ -27,7 +27,7 @@ def base_level(scene: str) -> str:
     if "ニュース" in s:
         return "800"
     for k in ("ビジネス", "IT", "管理", "AI", "会議", "開発", "航空管制", "外交",
-              "アマチュア無線"):
+              "アマチュア無線", "認証", "規格"):
         if k in s:
             return "700"
     for k in ("慣用", "誤用", "和製"):
