@@ -37,7 +37,7 @@ DOMAIN_BASE = {
     "世界史": "800", "日本史": "800", "宗教": "800", "軍事": "800", "機械": "800",
     "電気電子": "800", "化学": "800", "物理": "800", "数学": "800", "哲学": "800",
     "病名": "800", "法律手続き": "800",
-    "航空管制": "700", "外交": "700",
+    "航空管制": "700", "外交": "700", "猫": "600", "犬": "600",
 }
 DEFAULT_BASE = "600"  # blank/unknown domain (mostly original common seed words)
 
@@ -112,6 +112,15 @@ H900 = {
     "depositary (treaty)", "de facto recognition", "de jure recognition",
     "vienna convention on diplomatic relations",
     "ambassador extraordinary and plenipotentiary",
+    # 猫/犬: advanced anatomy/behavior/veterinary terms
+    "flehmen response", "tapetum lucidum", "whisker fatigue",
+    "allogrooming", "fel d 1", "obligate carnivore",
+    "trap-neuter-return", "declawing", "polydactyl cat",
+    "environmental enrichment", "self-soothing behavior",
+    "litter box aversion", "vertical territory",
+    "canine cognitive dysfunction", "brachycephalic",
+    "counter-conditioning", "desensitization", "canine cognition",
+    "resource guarding", "leash reactivity", "canine good citizen",
 }
 H990 = {
     # math
