@@ -9,9 +9,12 @@
 - decks / deck_words / deck_progress（単語帳）
 - phrase_decks / deck_phrases / phrase_deck_progress（フレーズ帳）
 
-`data/backups/user_data_<timestamp>.db` に保存し、直近2世代だけ残す
-（本体DB(vocabulary.db、audio_blobs等で数GB)とは別ファイルにすることで、
-バックアップ自体は数MB程度に収まる）。
+`data/backups/user_data_<timestamp>.db` に保存し、直近30世代(≈1ヶ月分)
+だけ残す（本体DB(vocabulary.db、audio_blobs等で数GB)とは別ファイルに
+することで、バックアップ自体は1世代あたり数百KB程度に収まる。
+2026-08-26: 実ユーザー登録が始まったことを機に、直近2世代(2日分)では
+問題発覚が遅れた場合に間に合わない懸念があり30世代に拡大・ユーザー
+指示）。
 
 使い方(VPS上、eigo-appコンテナの中のpython3で実行を想定):
   docker exec eigo-app python3 scripts/backup_user_data.py
@@ -34,7 +37,7 @@ _TABLES = [
     "decks", "deck_words", "deck_progress",
     "phrase_decks", "deck_phrases", "phrase_deck_progress",
 ]
-_KEEP = 2
+_KEEP = 30
 
 
 def _timestamp() -> str:
