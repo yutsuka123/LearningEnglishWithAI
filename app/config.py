@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 
 # アプリのバージョン（UI表示用）。バージョンを上げたら CHANGELOG.md に追記し、
 # 必ず git commit + push をセットで行うこと（CLAUDE.md参照）。
-APP_VERSION = "ver1.2.20"
+APP_VERSION = "ver1.2.21"
 
 # Project root = the directory that contains the "app" package.
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -81,6 +81,8 @@ class Settings:
     balance_markup: float          # 枠外利用の残高控除倍率(原価×為替×この値)。
     # 個別上限未設定時の既定無料枠(円/日)。legacy/charged専用(email tierは0円)。
     ai_daily_free_jpy: float
+    # 同上、role="admin"用(2026-08-26: 100pt/1000ptへの統一に伴い新設)。
+    ai_daily_free_jpy_admin: float
 
     @property
     def ai_enabled(self) -> bool:
@@ -114,10 +116,13 @@ DEFAULT_MAX_OUTPUT_TOKENS = 1500
 # 枠外利用時の残高控除倍率（原価×為替×この値）。2026-08-08: 1.5→2.0に変更
 # （粗利率33%→50%）。docs/COST_ESTIMATE.md §6参照。
 DEFAULT_BALANCE_MARKUP = 2.0
-# 個別上限未設定時の既定無料枠(円/日)。2026-08-08決定: legacy/charged
-# ユーザーのみ適用（¥150/日）。email tier(自己サインアップ・未課金)は
+# 個別上限未設定時の既定無料枠(円/日=pt/日)。2026-08-08決定・2026-08-26に
+# 100pt/1000ptのキリのよい値へ統一(ユーザー指示): legacy/招待ユーザーの
+# みに適用（¥100=100pt/日）。email tier(自己サインアップ・未課金)は
 # ai.py側で強制的に0円（無料枠なし・残高必須）とする。
-DEFAULT_AI_DAILY_FREE_JPY = 150.0
+DEFAULT_AI_DAILY_FREE_JPY = 100.0
+# role="admin"用の既定無料枠(円/日=pt/日)。2026-08-26新設（ユーザー指示）。
+DEFAULT_AI_DAILY_FREE_JPY_ADMIN = 1000.0
 
 
 def load_settings() -> Settings:
@@ -154,6 +159,10 @@ def load_settings() -> Settings:
     daily_free_jpy = _parse_float(
         os.getenv("AI_DAILY_FREE_JPY", ""), DEFAULT_AI_DAILY_FREE_JPY
     )
+    daily_free_jpy_admin = _parse_float(
+        os.getenv("AI_DAILY_FREE_JPY_ADMIN", ""),
+        DEFAULT_AI_DAILY_FREE_JPY_ADMIN,
+    )
     return Settings(
         openai_api_key=os.getenv("OPENAI_API_KEY", "").strip(),
         openai_model=model or "gpt-5.4-mini",
@@ -172,6 +181,7 @@ def load_settings() -> Settings:
         audio_storage=storage,
         balance_markup=max(1.0, markup),
         ai_daily_free_jpy=max(0.0, daily_free_jpy),
+        ai_daily_free_jpy_admin=max(0.0, daily_free_jpy_admin),
     )
 
 

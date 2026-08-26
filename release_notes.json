@@ -15,6 +15,18 @@
  ],
  "versions": [
   {
+   "version": "ver1.2.21",
+   "date": "2026-08-26",
+   "title": "日次AI無料枠を100pt/1000pt(admin)に統一 + 管理画面「上限」表示の誤解を修正",
+   "public": [
+    "無料利用枠の日次上限を、キリのよい100pt(通常)/1000pt(admin)に整理しました。日付が変わると枠が回復する仕組みは従来通りです。"
+   ],
+   "admin": [
+    "個別上限未設定ユーザーの既定無料枠をrole別(通常100pt/日・admin 1000pt/日)に変更(app/services/ai.pyの_default_daily_cap_usdにrole分岐を追加)。既存の個別daily_cost_cap_usd上書きはscripts/reset_daily_cap_overrides.pyで一括クリアして新デフォルトへ統一(monthly_cost_cap_usdは対象外)。ローカルDBで検証済み、本番適用は次回メンテ(2026-08-27 3時)予定。",
+    "管理画面の「上限」列が個別未設定ユーザー全員にサイト全体の日次上限(現在¥50,000相当)をフォールバック表示していた問題を修正。app/routers/system.pyのadmin_overviewを実際の利用制御と同じ_effective_caps()に統一し、role/emailに応じた実効値を正しく表示。"
+   ]
+  },
+  {
    "version": "ver1.2.20",
    "date": "2026-08-26",
    "title": "訪問者数推移グラフに累積表示を追加 + バージョン情報の表示ズレを修正",

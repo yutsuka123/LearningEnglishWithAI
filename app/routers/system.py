@@ -715,8 +715,21 @@ def admin_overview(
         ).fetchall()
     users = []
     for r in rows:
-        dcap = r["dcap"] or s.ai_daily_cost_cap_usd or None
-        mcap = r["mcap"] or None
+        # 2026-08-26: 「上限」列がサイト全体の上限(ai_daily_cost_cap_usd)を
+        # そのままフォールバック表示していたため、個別未設定ユーザー全員が
+        # 同じ巨大な値に見え「これは全体の上限では」と誤解を招いていた
+        # （ユーザー指摘）。実際の利用制御(`ai._user_guard`)と同じ
+        # `_effective_caps`を使い、role/emailに応じた実効値(100pt/日・
+        # admin=1000pt/日・自己サインアップ=0円 等)を表示するよう統一。
+        u_for_caps = {
+            "email": r["email"], "username": r["username"],
+            "role": r["role"],
+            "daily_cost_cap_usd": r["dcap"],
+            "monthly_cost_cap_usd": r["mcap"],
+        }
+        dcap, mcap = ai._effective_caps(u_for_caps, s)
+        dcap = dcap or None
+        mcap = mcap if r["mcap"] is not None else None
         today_jpy = r["today"] * rate
         month_jpy = r["month"] * rate
         over_daily = bool(dcap and r["today"] >= dcap)

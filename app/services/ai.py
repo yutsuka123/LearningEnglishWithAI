@@ -64,7 +64,15 @@ def _default_daily_cap_usd(u: dict, s) -> float:
     2026-08-12決定: 無料枠は**旧ユーザー（テスター）＝管理者が直接作成した
     アカウント（email未設定）のみ**。自己サインアップ（emailを設定して
     登録した全ユーザー）は課金の有無を問わず**0円**（無料枠なし・残高が
-    無ければAI機能を一切使えない）。
+    無ければAI機能を一切使えない・購入したptで利用する）。
+
+    2026-08-26: 上記の無料枠を「100pt/日(通常)・1000pt/日(admin)」という
+    キリのよい値に統一（ユーザー指示）。従来はrole="admin"かどうかを見ずに
+    一律`ai_daily_free_jpy`だったが、admin(オーナー自身のテスト利用等)は
+    より広い枠が要るため新たにrole分岐を追加した。この変更に合わせ、
+    既存の個別上限(`users.daily_cost_cap_usd`)を持っていた対象ユーザーは
+    移行時に一括でNULLへ戻し、この既定値に統一する
+    （`scripts/reset_daily_cap_overrides.py`参照）。
 
     「特別ユーザー」に無料枠を与えたい場合は、この既定値ではなく
     `users.daily_cost_cap_usd`(個別上限)を管理者が直接設定する
@@ -83,6 +91,8 @@ def _default_daily_cap_usd(u: dict, s) -> float:
     from .auth import GUEST_USERNAME
     if u.get("username") == GUEST_USERNAME:
         return 0.0  # 2026-08-12: ゲスト疑似ユーザーは常に無料枠0円
+    if u.get("role") == "admin":
+        return s.ai_daily_free_jpy_admin / s.usd_jpy_rate
     return s.ai_daily_free_jpy / s.usd_jpy_rate
 
 
