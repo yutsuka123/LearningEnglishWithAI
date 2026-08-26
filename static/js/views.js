@@ -4068,6 +4068,8 @@ export async function admin(root) {
             style="padding:3px 10px">6ヶ月</button>
           <button class="btn ghost" id="visitTrendReload"
             style="padding:3px 10px">🔄 再読み込み</button>
+          <label><input type="checkbox" id="visitTrendCumulative" checked />
+            累積(延べ)</label>
         </div>
         <div id="visitTrendWrap" class="mt"><p class="muted">未読み込み</p></div>
       </details>
@@ -4742,6 +4744,17 @@ export async function admin(root) {
   }
 
   let visitTrendDays = 30;
+  // 延べ数(human_total/bot_total)は日次の単純合計なので累積和が取れるが、
+  // ユニークIP数は日をまたぐ重複排除ができない(バックエンドがIP集合では
+  // なく件数しか返さない)ため、累積表示は延べ数のみに適用する。
+  function toCumulativeVisits(daily) {
+    let h = 0, b = 0;
+    return daily.map((d) => {
+      h += d.human_total;
+      b += d.bot_total;
+      return { ...d, human_total: h, bot_total: b };
+    });
+  }
   async function loadVisitTrend() {
     const wrap = root.querySelector("#visitTrendWrap");
     wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
@@ -4753,11 +4766,13 @@ export async function admin(root) {
       wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
       return;
     }
-    const daily = res.daily || [];
-    if (!daily.length) {
+    const rawDaily = res.daily || [];
+    if (!rawDaily.length) {
       wrap.innerHTML = `<p class="muted">この期間のデータはまだありません。</p>`;
       return;
     }
+    const cumulative = root.querySelector("#visitTrendCumulative").checked;
+    const daily = cumulative ? toCumulativeVisits(rawDaily) : rawDaily;
     const s = res.summary || {};
     const summaryHtml = `<div class="grid cols-4 mt">
       <div class="stat"><div class="num">${s.human_total ?? 0}</div>
@@ -4786,8 +4801,10 @@ export async function admin(root) {
         <div class="vt-tooltip" style="display:none"></div>
       </div>
       <table class="mt"><thead><tr>
-        <th>日付</th><th>人間(延べ)</th><th>人間(IP)</th>
-        <th>クローラー(延べ)</th><th>クローラー(IP)</th>
+        <th>日付</th><th>人間(${cumulative ? "累積" : "延べ"})</th>
+        <th>人間(IP)</th>
+        <th>クローラー(${cumulative ? "累積" : "延べ"})</th>
+        <th>クローラー(IP)</th>
       </tr></thead><tbody>${rowsHtml}</tbody></table>`;
     wireVisitTrendHover(wrap.querySelector(".visit-trend-wrap"), daily);
   }
@@ -4801,6 +4818,8 @@ export async function admin(root) {
   });
   root.querySelector("#visitTrendReload")
     .addEventListener("click", loadVisitTrend);
+  root.querySelector("#visitTrendCumulative")
+    .addEventListener("change", loadVisitTrend);
 
   async function runAiUsageSearch() {
     const wrap = root.querySelector("#aiUsageSearchWrap");
