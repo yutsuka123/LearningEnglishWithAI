@@ -4252,6 +4252,12 @@ export async function admin(root) {
 
     <div class="admin-sec" data-sec="other" style="display:none">
       <div class="card">
+        <h2>💳 PayPay決済テスト</h2>
+        <p class="muted">サンドボックス環境での結合テスト専用ページ
+          (¥800/¥8,000のテスト決済・状態確認・キャンセル・返金)。</p>
+        <a class="btn good" href="/admin/paypay-test">PayPayテストを開く →</a>
+      </div>
+      <div class="card">
         <h2>セキュリティ</h2>
         <div class="grid cols-4">
           <div class="stat"><div class="num">${sec.locked_accounts ?? 0}</div>

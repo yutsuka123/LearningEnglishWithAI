@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PayPay決済テスト — English Learning with AI</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #f4f6fb;
+      margin: 0; color: #223; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 24px 16px 60px; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    .sub { color: #789; font-size: 13px; margin: 0 0 20px; }
+    .card { background: #fff; padding: 18px 20px; border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08); margin-bottom: 20px; }
+    .card h2 { font-size: 14px; margin: 0 0 12px; color: #345; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    button { padding: 10px 18px; border: 0; border-radius: 8px; cursor: pointer;
+      font-size: 14px; background: #e60033; color: #fff; font-weight: 700; }
+    button.ghost { background: #eef2fb; color: #3b6fd4; font-weight: 400; }
+    button.warn { background: #fbeaea; color: #b3261e; font-weight: 400; }
+    button:disabled { opacity: .5; cursor: default; }
+    .badge { display: inline-block; font-size: 12px; padding: 3px 10px;
+      border-radius: 999px; font-weight: 700; }
+    .b-COMPLETED { background: #e3f5e8; color: #1a7f37; }
+    .b-CREATED { background: #fff3cd; color: #8a6d00; }
+    .b-FAILED, .b-CANCELED, .b-EXPIRED { background: #fbeaea; color: #b3261e; }
+    .muted { color: #99a; font-size: 12px; }
+    .err { color: #b3261e; font-size: 13px; min-height: 18px; white-space: pre-wrap; }
+    .note { background: #fff8e1; border: 1px solid #ffe58a; border-radius: 8px;
+      padding: 10px 14px; font-size: 12px; color: #665; margin: 0 0 18px; }
+    pre { background: #f1f4fa; border-radius: 8px; padding: 10px;
+      font-size: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+    a.back { font-size: 13px; color: #3b6fd4; text-decoration: none; }
+    input { padding: 6px 8px; border: 1px solid #ccd; border-radius: 6px;
+      font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/admin">← 管理画面に戻る</a>
+    <h1>💳 PayPay決済テスト</h1>
+    <p class="sub">サンドボックス環境でのPayPay結合テスト専用ページ（管理者専用・実際の課金導線には未接続）。</p>
+
+    <div id="cfgWarn" class="note" style="display:none">
+      ⚠️ .envにPAYPAY_API_KEY / PAYPAY_API_SECRET / PAYPAY_MERCHANT_IDが
+      未設定です。設定してからお試しください。
+    </div>
+
+    <div class="card">
+      <h2>① 支払いを開始</h2>
+      <p class="muted">ボタンを押すとPayPayの決済ページへ遷移します。PayPayが
+        発行したテストユーザーでログインして支払ってください。</p>
+      <div class="row">
+        <button id="btn800" onclick="startPay(800)">¥800 で支払う</button>
+        <button id="btn8000" onclick="startPay(8000)">¥8,000 で支払う</button>
+      </div>
+      <p class="err" id="createErr"></p>
+    </div>
+
+    <div class="card" id="statusCard" style="display:none">
+      <h2>② 支払い結果
+        <span id="statusBadge" class="badge"></span>
+      </h2>
+      <p class="muted">結果はredirect復帰そのものではなく、Get Payment
+        Details APIの応答(data.status)で判定しています。</p>
+      <div class="row">
+        <button class="ghost" onclick="refreshStatus()">状態を再確認</button>
+        <button class="warn" id="btnCancel" onclick="doCancel()"
+          style="display:none">未払いをキャンセル(Delete a Code)</button>
+        <button class="warn" id="btnRefund" onclick="doRefund()"
+          style="display:none">支払い済みを返金(Refund)</button>
+      </div>
+      <p class="err" id="statusErr"></p>
+      <pre id="rawJson"></pre>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const params = new URLSearchParams(location.search);
+    let curMpid = params.get('mpid') || '';
+
+    async function api(path, opts) {
+      const r = await fetch('/api/paypay-test' + path, Object.assign(
+        { headers: { 'Content-Type': 'application/json' } }, opts || {}));
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.detail || d.error || ('エラー ' + r.status));
+      return d;
+    }
+
+    function storeKey(mpid) { return 'paypaytest:' + mpid; }
+
+    async function checkConfig() {
+      try {
+        const d = await api('/status');
+        $('cfgWarn').style.display = d.configured ? 'none' : 'block';
+        $('btn800').disabled = !d.configured;
+        $('btn8000').disabled = !d.configured;
+      } catch (e) { /* ignore */ }
+    }
+
+    async function startPay(amount) {
+      $('createErr').textContent = '';
+      try {
+        const d = await api('/create', {
+          method: 'POST',
+          body: JSON.stringify({ amount_jpy: amount }),
+        });
+        sessionStorage.setItem(storeKey(d.merchant_payment_id), JSON.stringify({
+          code_id: d.code_id, amount_jpy: amount,
+        }));
+        location.href = d.url;
+      } catch (e) {
+        $('createErr').textContent = e.message;
+      }
+    }
+
+    async function refreshStatus() {
+      if (!curMpid) return;
+      $('statusErr').textContent = '';
+      try {
+        const d = await api('/details/' + encodeURIComponent(curMpid));
+        const raw = d.raw || {};
+        const body = raw.data || {};
+        const status = body.status || '(unknown)';
+        $('statusBadge').textContent = status;
+        $('statusBadge').className = 'badge b-' + status;
+        $('rawJson').textContent = JSON.stringify(raw, null, 2);
+
+        const saved = JSON.parse(
+          sessionStorage.getItem(storeKey(curMpid)) || '{}');
+        $('btnCancel').style.display =
+          (status === 'CREATED' && saved.code_id) ? 'inline-block' : 'none';
+        $('btnRefund').style.display =
+          (status === 'COMPLETED' && body.paymentId) ? 'inline-block' : 'none';
+      } catch (e) {
+        $('statusErr').textContent = e.message;
+      }
+    }
+
+    async function doCancel() {
+      const saved = JSON.parse(
+        sessionStorage.getItem(storeKey(curMpid)) || '{}');
+      if (!saved.code_id) return;
+      $('statusErr').textContent = '';
+      try {
+        await api('/cancel', {
+          method: 'POST',
+          body: JSON.stringify({
+            merchant_payment_id: curMpid, code_id: saved.code_id,
+          }),
+        });
+        await refreshStatus();
+      } catch (e) {
+        $('statusErr').textContent = e.message;
+      }
+    }
+
+    async function doRefund() {
+      $('statusErr').textContent = '';
+      try {
+        const d = await api('/details/' + encodeURIComponent(curMpid));
+        const body = (d.raw || {}).data || {};
+        const saved = JSON.parse(
+          sessionStorage.getItem(storeKey(curMpid)) || '{}');
+        await api('/refund', {
+          method: 'POST',
+          body: JSON.stringify({
+            merchant_payment_id: curMpid,
+            payment_id: body.paymentId,
+            amount_jpy: saved.amount_jpy || body.amount?.amount || 0,
+          }),
+        });
+        await refreshStatus();
+      } catch (e) {
+        $('statusErr').textContent = e.message;
+      }
+    }
+
+    checkConfig();
+    if (curMpid) {
+      $('statusCard').style.display = 'block';
+      refreshStatus();
+    }
+  </script>
+</body>
+</html>

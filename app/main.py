@@ -20,7 +20,7 @@ from .config import load_tokushoho_info, log, paths
 from .database import OWNER_USER_ID, db, init_db
 from .routers import (
     auth_routes, base_oauth, billing, categories, decks, fulfillment,
-    inquiries, learn, phrase_decks, phrases, system, vocabulary,
+    inquiries, learn, paypay_test, phrase_decks, phrases, system, vocabulary,
 )
 from .services import auth as auth_svc
 from .services import geoip
@@ -237,6 +237,7 @@ app.include_router(billing.router)
 app.include_router(inquiries.router)
 app.include_router(fulfillment.router)
 app.include_router(base_oauth.router)
+app.include_router(paypay_test.router)
 
 
 @app.get("/api/health")
@@ -407,6 +408,17 @@ def admin_fulfillment_page():
         return RedirectResponse("/login")
     return FileResponse(
         str(paths.root / "templates" / "admin_fulfillment.html"))
+
+
+@app.get("/admin/paypay-test")
+def admin_paypay_test_page():
+    """PayPay決済テストページ（管理者専用）。"""
+    with db() as conn:
+        me = auth_svc.get_user(conn, auth_svc.current_user_id())
+    if not me or me.get("role") != "admin":
+        return RedirectResponse("/login")
+    return FileResponse(
+        str(paths.root / "templates" / "admin_paypay_test.html"))
 
 
 # Serve the SPA. Static assets under /static, index.html at root.
