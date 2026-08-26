@@ -3877,7 +3877,7 @@ export async function admin(root) {
         ${u.is_test ? "checked" : ""} /> テスト</label></td>
       <td>
         <input type="number" class="chg-amt" data-uid="${u.id}"
-          value="1000" min="-10000" max="10000" step="100" style="width:74px" />
+          placeholder="pt" min="-10000" max="10000" step="100" style="width:74px" />
         <input type="text" class="chg-note" data-uid="${u.id}"
           placeholder="理由(必須)" style="width:110px" />
         <button class="btn good chg-btn" data-uid="${u.id}"
@@ -3890,13 +3890,16 @@ export async function admin(root) {
     </tr>`).join("");
 
   const usageRows = d.users.map((u) => {
-    const bal = u.balance_jpy == null ? "—" : "¥" + Math.round(u.balance_jpy);
-    const dcap = u.daily_cap_jpy ? "¥" + u.daily_cap_jpy : "—";
-    const mcap = u.monthly_cap_jpy ? "¥" + u.monthly_cap_jpy : "—";
+    // 2026-08-26: 残高・日次/月次上限はいずれも1pt=1円の同一単位のため、
+    // 一般ユーザー向け表示(チャージ残高=pt表記)に合わせて管理画面も
+    // ptに統一(ユーザー指示)。
+    const bal = u.balance_jpy == null ? "—" : Math.round(u.balance_jpy) + "pt";
+    const dcap = u.daily_cap_jpy ? u.daily_cap_jpy + "pt" : "—";
+    const mcap = u.monthly_cap_jpy ? u.monthly_cap_jpy + "pt" : "—";
     return `<tr>
       <td>${nameCell(u)}</td>
-      <td>¥${u.today_jpy} / ${dcap}</td>
-      <td>¥${u.month_jpy} / ${mcap}</td>
+      <td>${u.today_jpy}pt / ${dcap}</td>
+      <td>${u.month_jpy}pt / ${mcap}</td>
       <td>${bal}</td>
       <td>${u.calls}</td>
       <td>${fmtDate(u.last_used)}</td>
@@ -5074,7 +5077,7 @@ export async function admin(root) {
     });
   });
 
-  // 残高の手動調整（±¥10,000まで・理由必須・万が一の是正用）。
+  // 残高の手動調整（±10,000ptまで・理由必須・万が一の是正用）。
   root.querySelectorAll(".chg-btn").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const uid = parseInt(btn.dataset.uid, 10);
@@ -5084,17 +5087,17 @@ export async function admin(root) {
       const note = (noteInp.value || "").trim();
       if (!Number.isFinite(amt) || amt === 0) { toast("金額を入力"); return; }
       if (Math.abs(amt) > 10000) {
-        amt = Math.sign(amt) * 10000; toast("1回の上限は±¥10,000です");
+        amt = Math.sign(amt) * 10000; toast("1回の上限は±10,000ptです");
       }
       if (!note) { toast("理由を入力してください"); return; }
       const verb = amt > 0 ? "増額" : "減額";
-      if (!confirm(`残高を¥${amt}（${verb}）調整します。\n理由: ${note}\n`
+      if (!confirm(`残高を${amt}pt（${verb}）調整します。\n理由: ${note}\n`
         + `よろしいですか？`)) return;
       btn.disabled = true;
       try {
         const r = await api.post("/api/system/admin/charge",
           { user_id: uid, amount_jpy: amt, note });
-        toast(`調整完了: 残高 ¥${Math.round(r.balance_jpy)}`);
+        toast(`調整完了: 残高 ${Math.round(r.balance_jpy)}pt`);
         go("admin");  // 再描画
       } catch (e) { toast("失敗: " + e.message); btn.disabled = false; }
     });
