@@ -2509,6 +2509,8 @@ export async function conversation(root) {
         </span>
         <label class="toggle"><input type="checkbox" id="autoTts" checked />
           AI返答を読み上げ</label>
+        <label class="toggle"><input type="checkbox" id="speakSpeaker" />
+          話者名を読み上げる（AI）</label>
         <label class="toggle"><input type="checkbox" id="fastMode" />
           ⚡ 応答を高速化（試験運用）</label>
         <button class="btn secondary" id="start"
@@ -2607,6 +2609,10 @@ export async function conversation(root) {
 
   const chat = root.querySelector("#chat");
   const history = [];
+  // 話者名(AI)を読み上げに含めるか（選択制・既定OFF・2026-08-27要望）。
+  // AIの発話のみが読み上げ対象なので、話者は常に"AI"固定でよい。
+  const withSpeaker = (t) =>
+    root.querySelector("#speakSpeaker").checked ? "AI. " + t : t;
   const enText = (t) => englishOnly((t || "").split("【コーチ")[0]);
   // コーチの改善後の英文例（【例】以降の1文）を取り出す。
   const coachExample = (t) => {
@@ -2640,8 +2646,8 @@ export async function conversation(root) {
           ? "🌐 " + md(r.text) : escapeHtml(r.error || "翻訳失敗");
         refreshCost();
       });
-      say.addEventListener("click", () =>
-        speech.speak(enText(body.textContent) || body.textContent));
+      say.addEventListener("click", () => speech.speak(
+        withSpeaker(enText(body.textContent) || body.textContent)));
       sayEx.addEventListener("click", () => {
         const ex = coachExample(body.textContent);
         if (ex) speech.speak(ex); else toast("添削例がありません");
@@ -2691,7 +2697,7 @@ export async function conversation(root) {
     history.push({ role: "assistant", content: full });
     if (root.querySelector("#autoTts").checked && state.aiEnabled) {
       // 【コーチ】以降と日本語は読み上げない（英語部分のみ）。
-      speech.speak(englishOnly(full.split("【コーチ")[0]));
+      speech.speak(withSpeaker(englishOnly(full.split("【コーチ")[0])));
     }
     refreshCost();
     scheduleAutoSave();
@@ -2793,7 +2799,7 @@ export async function conversation(root) {
     history.push({ role: "assistant", content: full });
     refreshCost();
     scheduleAutoSave();
-    await speech.speakAndWait(englishOnly(full.split("【コーチ")[0]));
+    await speech.speakAndWait(withSpeaker(englishOnly(full.split("【コーチ")[0])));
   }
 
   // --- 会話の自動記録 -------------------------------------------------------
