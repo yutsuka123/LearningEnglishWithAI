@@ -728,6 +728,32 @@ def _migrate(conn: sqlite3.Connection) -> None:
     _add_col(conn, "landing_visits", "kind",
              "kind TEXT NOT NULL DEFAULT 'visit'")
     _add_col(conn, "landing_visits", "success", "success INTEGER")
+    # words.exampleを更新してもdetail.example_ja(訳)が古いまま残り、
+    # 訳と例文が別内容になる事故が2026-08-05(3,303語)・2026-08-22
+    # (2,452語)・2026-08-27(推定約3,500語)と3回繰り返し発生した
+    # (毎回サブエージェント等で一括翻訳し直して手当てしていたが再発を
+    # 防げていなかった)。表示側`app/routers/vocabulary.py`の
+    # `_resolve_example_ja`は不一致を検知して非表示にする防御を既に
+    # 持つが、DB側でも構造的に再発を防ぐため、exampleが変わったのに
+    # detail.example_ja_srcが追随していない(=今後の書き込みが両方を
+    # セットで更新するのを怠った)場合はexample_ja/example_ja_srcを
+    # 自動的に消すトリガーを追加(2026-08-27)。同一UPDATE文で
+    # detail側も正しく更新していれば発火しない(ローカルDBのコピーで
+    # 動作確認済み)。
+    conn.execute("""
+        CREATE TRIGGER IF NOT EXISTS trg_words_example_ja_invalidate
+        AFTER UPDATE OF example ON words
+        FOR EACH ROW
+        WHEN NEW.example IS NOT OLD.example
+          AND json_valid(NEW.detail)
+          AND (json_extract(NEW.detail, '$.example_ja_src') IS NULL
+               OR json_extract(NEW.detail, '$.example_ja_src') != NEW.example)
+        BEGIN
+            UPDATE words
+            SET detail = json_remove(detail, '$.example_ja', '$.example_ja_src')
+            WHERE id = NEW.id;
+        END;
+    """)
     _migrate_multiuser(conn)
 
 
