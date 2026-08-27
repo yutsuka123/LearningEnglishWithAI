@@ -143,7 +143,7 @@ a.nav-item { display: block; text-decoration: none; box-sizing: border-box; }
    ブランド・テーマ切替・文字サイズ・ログイン導線は残す。 */
 body.tab-welcome #micCmd, body.tab-welcome #cmdStatus,
 body.tab-welcome .topbar-right label.toggle,
-body.tab-welcome #usageBalance, body.tab-welcome #costBadge,
+body.tab-welcome #usageBalance,
 body.tab-welcome #aiState, body.tab-welcome #appVer {
   display: none;
 }

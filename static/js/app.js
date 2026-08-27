@@ -392,13 +392,6 @@ export async function refreshCost() {
           `${Math.round(u.balance_jpy)}pt 含む）`
         : `AI利用の残り目安: ${remain}pt`;
     }
-    // 管理者のみ金額表示。一般ユーザーは残量表示のみ。
-    const badge = document.getElementById("costBadge");
-    if (badge) {
-      badge.textContent = isAdmin
-        ? `💰 今日 ¥${u.today_jpy} / 今月 ¥${u.month_jpy}`
-        : "";
-    }
     const ver = document.getElementById("appVer");
     if (ver) ver.textContent = u.version || "";
     // ログアウト/ログインボタン（マルチユーザー時のみ表示。ゲストは
