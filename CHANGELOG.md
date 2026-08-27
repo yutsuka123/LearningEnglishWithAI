@@ -8,6 +8,31 @@
 （例: 1.1.0→1.1.1）。ユーザーから別途指示があった場合のみ上位の桁を
 上げる。
 
+## ver1.2.23 (2026-08-27)
+
+**🐛 PayPayテストのredirectUrlがhttp://になる不具合を修正 + 分野「宇宙」新設**
+
+- **PayPayテストのredirectUrl修正**: 本番はCaddy経由でDockerネットワーク
+  内部通信のため、FastAPIの`request.base_url`が常に`http://`になって
+  しまい（`app/services/auth.py`の`real_client_ip`と同じ既知の落とし穴）、
+  `app/routers/paypay_test.py`が生成する`redirectUrl`がPayPayに
+  `http://study.nyangailab.com/...`という平文HTTPのまま送られていた
+  （実機テストでPayPayアプリ側「エラーが発生しました」の一因と推定）。
+  `app/routers/auth_routes.py`の`_cookie_secure`が既に使っていた
+  「`X-Forwarded-Proto`ヘッダーから実スキームを判定する」パターンを
+  `app/services/auth.py`の共通関数`external_scheme()`として切り出し、
+  `paypay_test.py`・`auth_routes.py`の両方から使うように統一。
+  ローカルでモックリクエストによる動作確認済み。本番デプロイ後、
+  `redirectUrl`が`https://`になっていることをログで確認済み。
+- **単語/フレーズ分野「宇宙」を新設**（ユーザー指摘: 「人工衛星」が
+  工学・デバイス機器に重複所属、「天文」が理学に埋もれているのは
+  違和感がある）: `app/services/taxonomy.py`の`WORD_CATEGORIES`/
+  `PHRASE_CATEGORIES`で、天文(天文学の英語)+人工衛星(人工衛星を語る
+  英語)を新設「宇宙」大分類に集約。理学/工学/デバイス・機器からは
+  該当分野を削除（重複解消）。DBの`words.domain`/`phrases.scene`
+  自体は無変更のため既存ユーザーの単語帳への影響なし。
+  「インバウンド」(産業/交通への重複所属)はユーザー判断で現状維持。
+
 ## ver1.2.22 (2026-08-26・commit `64e518a`)
 
 **🆕 管理画面のユーザー別使用状況テーブルを¥からptに統一 + 残高調整欄の紛らわしい初期値を撤去**

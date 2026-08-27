@@ -710,6 +710,16 @@ def real_client_ip(request) -> str:
     return request.client.host if request.client else "?"
 
 
+def external_scheme(request) -> str:
+    """[[real_client_ip]]と同じ理由(本番はCaddy経由のDocker内接続のため
+    request.url.schemeは常にhttp)で、X-Forwarded-Protoから実際に
+    クライアントが接続したスキームを判定する。uvicornの--proxy-headers
+    設定には頼らない(2026-08-27発見: PayPayのredirectUrlが常にhttp://に
+    なりPayPayアプリ側で決済エラーになる不具合の原因)。"""
+    xfp = request.headers.get("x-forwarded-proto", "").split(",")[0].strip()
+    return xfp or request.url.scheme
+
+
 # 汎用 IP レート制限（DDoS/濫用の速度制限）。RATE_LIMIT_PER_MIN で調整。
 # 0/未設定=無効（ローカル単一ユーザーは既定で無効＝通常利用に影響なし）。
 # 公開時は env で 300 程度を推奨。真のDDoSは前段(Cloudflare/Caddy/fail2ban)で防ぐ。

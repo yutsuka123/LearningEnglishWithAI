@@ -15,6 +15,18 @@
  ],
  "versions": [
   {
+   "version": "ver1.2.23",
+   "date": "2026-08-27",
+   "title": "PayPayテストのURL不具合を修正 + 単語/フレーズ分野「宇宙」を新設",
+   "public": [
+    "単語・フレーズの分野「宇宙」を新設し、天文・人工衛星関連の語をまとめました。既存の単語帳への影響はありません。"
+   ],
+   "admin": [
+    "本番のリバースプロキシ構成が原因でPayPayテストページのredirectUrlが常にhttp://になっていた不具合を修正(app/services/auth.pyにexternal_scheme()を新設・X-Forwarded-Protoから実スキームを判定)。auth_routes.pyの_cookie_secureも同じ関数に統一。",
+    "taxonomy.pyのWORD_CATEGORIES/PHRASE_CATEGORIESで「天文」+「人工衛星」を新設「宇宙」大分類に集約し、理学/工学/デバイス・機器への重複所属を解消。DBのdomain/scene値は無変更。"
+   ]
+  },
+  {
    "version": "ver1.2.22",
    "date": "2026-08-26",
    "title": "管理画面のユーザー別使用状況をptに統一 + 残高調整欄の紛らわしい初期値を撤去",

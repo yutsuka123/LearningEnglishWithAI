@@ -39,8 +39,7 @@ def _cookie_secure(request: Request) -> bool:
         return True
     if mode in ("0", "false", "no"):
         return False
-    xfp = request.headers.get("x-forwarded-proto", "").split(",")[0].strip()
-    return request.url.scheme == "https" or xfp == "https"
+    return auth.external_scheme(request) == "https"
 
 
 def _record_signup_attempt(

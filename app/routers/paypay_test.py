@@ -32,6 +32,7 @@ from pydantic import BaseModel
 from ..config import log
 from ..services import errors, paypay
 from ..database import db
+from ..services import auth
 from ..services.auth import current_user_id, get_user
 
 router = APIRouter(prefix="/api/paypay-test", tags=["paypay-test"])
@@ -77,7 +78,11 @@ def create(payload: CreateIn, request: Request):
     with db() as conn:
         me = _require_admin(conn)
     merchant_payment_id = f"test-{uuid.uuid4()}"
-    redirect_url = str(request.base_url).rstrip("/") + \
+    # request.base_urlは常にhttp(本番はCaddy経由のDocker内接続のため)。
+    # external_scheme([[real_client_ip]]と同じ理由)で実際のスキームに直す
+    # (2026-08-27発見: httpのままだとPayPayアプリ側で決済エラーになる)。
+    scheme = auth.external_scheme(request)
+    redirect_url = f"{scheme}://{request.url.netloc}" \
         f"/api/paypay-test/return?mpid={merchant_payment_id}"
     log.info(
         "paypay_test: create admin=%s(id=%s) amount=%s mpid=%s",
