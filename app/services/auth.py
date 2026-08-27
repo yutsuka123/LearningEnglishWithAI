@@ -715,7 +715,10 @@ def external_scheme(request) -> str:
     request.url.schemeは常にhttp)で、X-Forwarded-Protoから実際に
     クライアントが接続したスキームを判定する。uvicornの--proxy-headers
     設定には頼らない(2026-08-27発見: PayPayのredirectUrlが常にhttp://に
-    なりPayPayアプリ側で決済エラーになる不具合の原因)。"""
+    なっていた不具合を機に新設。ただしその後、実機決済エラーの真因は
+    別にPayPay側のアカウント審査未完了だったと判明・docs/TODO.md参照。
+    httpsへの修正自体は公式ドキュメントの用法に合わせた正当な対応として
+    維持)。"""
     xfp = request.headers.get("x-forwarded-proto", "").split(",")[0].strip()
     return xfp or request.url.scheme
 

@@ -142,7 +142,15 @@ def create_code(
     merchant_payment_id: str, amount_jpy: int, *,
     redirect_url: str, order_description: str = "",
 ) -> dict:
-    """Create a Code(POST /v2/codes)。data.url へリダイレクトさせる。"""
+    """Create a Code(POST /v2/codes)。本実装のサービス種別「ウェブ
+    ペイメント」に対応するWeb Cashierドキュメント
+    (https://www.paypay.ne.jp/opa/doc/jp/v1.0/webcashier)によれば
+    `redirectType`は任意パラメータとして存在し、リダイレクト先が
+    ウェブページの場合は"WEB_LINK"を指定する(2026-08-27訂正: 直前に
+    店頭QR掲示用のDynamic QR Codeドキュメントを見て「存在しない」と
+    誤って削除していた・Fableレビューで指摘)。data.deeplink/data.url
+    はいずれもアプリインストール済みなら支払い画面を直接起動する仕様
+    (公式Q&A参照)。"""
     body = {
         "merchantPaymentId": merchant_payment_id,
         "amount": {"amount": int(amount_jpy), "currency": "JPY"},

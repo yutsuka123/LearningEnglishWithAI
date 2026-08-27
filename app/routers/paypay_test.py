@@ -23,11 +23,12 @@ docs/TODO.mdに記録済み(このテストページの段階では見送り)。
 
 from __future__ import annotations
 
+import urllib.parse
 import uuid
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Path, Request
 from fastapi.responses import RedirectResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ..config import log
 from ..services import errors, paypay
@@ -40,9 +41,11 @@ router = APIRouter(prefix="/api/paypay-test", tags=["paypay-test"])
 # 動作確認用の固定金額(BASEショップの既存2プランに合わせる)。
 ALLOWED_AMOUNTS = {800, 8000}
 
-# merchantPaymentId -> 作成時のadmin user_id (簡易な突合・プロセス内保持で
-# 十分。本番の課金導線に使うものではないため永続化はしない)。
-_created_by: dict[str, int] = {}
+# merchantPaymentId/codeId用の形式検証(パス注入対策・Fableレビュー指摘
+# 2026-08-27)。PayPay発行のcodeIdは"04-英数字"形式、こちらが生成する
+# merchantPaymentIdは"test-<uuid4>"形式で、いずれも英数字・アンダー
+# スコア・ハイフンのみで表現できる。
+_ID_PATTERN = r"^[A-Za-z0-9_-]{1,64}$"
 
 
 def _require_admin(conn) -> dict:
@@ -80,7 +83,9 @@ def create(payload: CreateIn, request: Request):
     merchant_payment_id = f"test-{uuid.uuid4()}"
     # request.base_urlは常にhttp(本番はCaddy経由のDocker内接続のため)。
     # external_scheme([[real_client_ip]]と同じ理由)で実際のスキームに直す
-    # (2026-08-27発見: httpのままだとPayPayアプリ側で決済エラーになる)。
+    # (2026-08-27発見・修正。ただし実機決済エラーの直接原因はこれとは
+    # 別だったと後日判明・docs/TODO.md参照。httpsにする対応自体は
+    # 公式ドキュメントの用法に合わせた正当な修正として維持)。
     scheme = auth.external_scheme(request)
     redirect_url = f"{scheme}://{request.url.netloc}" \
         f"/api/paypay-test/return?mpid={merchant_payment_id}"
@@ -99,7 +104,6 @@ def create(payload: CreateIn, request: Request):
             "paypay_test: create FAILED admin=%s mpid=%s: %s",
             me.get("username"), merchant_payment_id, e)
         raise errors.http_error("3018", str(e))
-    _created_by[merchant_payment_id] = me["id"]
     body = data.get("data") or {}
     if not body.get("url"):
         raise errors.http_error(
@@ -108,6 +112,7 @@ def create(payload: CreateIn, request: Request):
         "ok": True,
         "merchant_payment_id": merchant_payment_id,
         "url": body["url"],
+        "deeplink": body.get("deeplink"),
         "code_id": body.get("codeId"),
         "expiry_date": body.get("expiryDate"),
     }
@@ -118,11 +123,14 @@ def paypay_return(mpid: str = ""):
     """PayPayのredirectUrl着地点。ここではステータス確認せず、
     フロント(HTML)側からGet Payment Detailsを呼ばせる（管理画面に
     そのまま結果を表示するため）。"""
-    return RedirectResponse(f"/admin/paypay-test?mpid={mpid}")
+    query = urllib.parse.urlencode({"mpid": mpid})
+    return RedirectResponse(f"/admin/paypay-test?{query}")
 
 
 @router.get("/details/{merchant_payment_id}")
-def details(merchant_payment_id: str):
+def details(
+    merchant_payment_id: str = Path(pattern=_ID_PATTERN),
+):
     """Get Payment Details。支払い完了の判定はここで返る
     data.status == "COMPLETED" を見て行うこと(redirect復帰だけでは
     判定しない)。"""
@@ -143,8 +151,8 @@ def details(merchant_payment_id: str):
 
 
 class CancelIn(BaseModel):
-    merchant_payment_id: str
-    code_id: str
+    merchant_payment_id: str = Field(pattern=_ID_PATTERN)
+    code_id: str = Field(pattern=_ID_PATTERN)
 
 
 @router.post("/cancel")
@@ -175,6 +183,9 @@ class RefundIn(BaseModel):
 @router.post("/refund")
 def do_refund(payload: RefundIn):
     """支払い済みの取消(Refund)。"""
+    if payload.amount_jpy not in ALLOWED_AMOUNTS:
+        raise errors.http_error(
+            "3019", f"金額は{sorted(ALLOWED_AMOUNTS)}のいずれかにしてください。")
     with db() as conn:
         me = _require_admin(conn)
     merchant_refund_id = f"refund-{uuid.uuid4()}"

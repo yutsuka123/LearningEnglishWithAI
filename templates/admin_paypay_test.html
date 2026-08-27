@@ -109,7 +109,10 @@
         sessionStorage.setItem(storeKey(d.merchant_payment_id), JSON.stringify({
           code_id: d.code_id, amount_jpy: amount,
         }));
-        location.href = d.url;
+        // deeplink(paypay://...)・urlのいずれもアプリインストール済み
+        // なら支払い画面を直接起動する仕様(公式Q&A)。deeplinkは同一
+        // 端末上での遷移により適した形式のため優先する(2026-08-27)。
+        location.href = d.deeplink || d.url;
       } catch (e) {
         $('createErr').textContent = e.message;
       }
