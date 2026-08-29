@@ -492,12 +492,17 @@ th { color: var(--muted); font-weight: 600; }
    常時表示ではなく明示的に開いた時だけ出すので鬱陶しくない設計。 */
 .info-icon {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 16px; height: 16px; border-radius: 50%;
-  font-size: 11px; line-height: 1; cursor: pointer;
-  color: var(--muted); border: 1px solid var(--line);
+  width: 20px; height: 20px; border-radius: 50%;
+  font-size: 13px; font-weight: 700; line-height: 1; cursor: pointer;
+  /* 薄くて見えづらいという指摘(2026-08-30)を受け、ハンバーガーボタン
+     (.nav-toggle)と同じ「水色の縁取り+薄い水色背景」で目立たせる。
+     ダーク/ライトどちらのテーマでもvar(--accent)自体がそのテーマ向けに
+     調整済みなので、そのまま使えば両テーマで目立つ。 */
+  color: var(--accent); border: 1px solid var(--accent);
+  background: rgba(77, 163, 255, .18);
   margin-left: 3px; flex: none; vertical-align: middle;
 }
-.info-icon:hover { color: var(--accent); border-color: var(--accent); }
+.info-icon:hover { background: rgba(77, 163, 255, .32); }
 .hint-popover {
   position: absolute; z-index: 300; width: 240px;
   background: var(--panel-2); border: 1px solid var(--line);
