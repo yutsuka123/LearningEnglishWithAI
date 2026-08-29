@@ -1828,12 +1828,15 @@ export async function vocab(root) {
         <select id="fLevelMax" title="レベル上限"><option value="">上限</option>
           ${(facets.range_levels || facets.levels).map((l) =>
             `<option>${escapeHtml(l)}</option>`).join("")}</select>
-        <label class="toggle" title="範囲外(禁止用語相当)も含める">
+        ${state.isAdmin ? `<label class="toggle"
+          title="範囲外(現状すべて禁止用語)も含める。「禁止用語も表示」と
+            併用しないと表示されない">
           <input type="checkbox" id="fOutRange" /> 範囲外</label>
-        ${infoIcon("out-of-range-filter",
-          "一部の単語には通常のレベル(数値)が割り当てられていません。"
-          + "チェックすると、レベルの上限・下限に関わらずそうした語も"
-          + "表示対象に含めます。")}
+          ${infoIcon("out-of-range-filter",
+            "現状、レベル「範囲外」の語はすべて禁止用語(不適切表現)です。"
+            + "このチェックだけでは表示されず、「禁止用語も表示」も同時に"
+            + "オンにする必要があります(意図しない不適切表現の表示を防ぐ"
+            + "ための仕様です)。")}` : ""}
         ${freeOnlyToggle("fFreeOnly", "語")}
         ${myDecks.length ? `<select id="fDeck" title="単語帳で絞り込み">
           <option value="">単語帳: 全て</option>
@@ -1931,7 +1934,14 @@ export async function vocab(root) {
   };
 
   // 分野/レベル/並び替え/禁止表示はサーバ側、キーワードはクライアント側。
+  // フィルタを連続で変更すると複数のload()が並行して発行され、後発の
+  // 速い応答より先発の遅い応答が後から返って上書きしてしまうことがあった
+  // (2026-08-30ユーザー報告「分野を選び直しても前の単語が残ることがある」)。
+  // 呼び出しごとに連番を振り、自分より新しいload()が発行済みなら結果を
+  // 捨てる(go()のmyRootと同じレースコンディション対策の考え方)。
+  let loadSeq = 0;
   const load = async () => {
+    const seq = ++loadSeq;
     const q = new URLSearchParams({ sort: root.querySelector("#fSort").value });
     if (selectedDomains.size) {
       q.set("domain", [...selectedDomains].join(","));
@@ -1943,7 +1953,7 @@ export async function vocab(root) {
     const lmax = root.querySelector("#fLevelMax").value;
     if (lmin) q.set("level_min", lmin);
     if (lmax) q.set("level_max", lmax);
-    if (root.querySelector("#fOutRange").checked) q.set("out_of_range", "true");
+    if (root.querySelector("#fOutRange")?.checked) q.set("out_of_range", "true");
     const ms = root.querySelector("#fMastered").value;
     if (ms) q.set("mastered", ms);
     if (root.querySelector("#fDir").dataset.desc === "1") q.set("desc", "true");
@@ -1954,6 +1964,7 @@ export async function vocab(root) {
     const deckSel = root.querySelector("#fDeck");
     if (deckSel && deckSel.value) q.set("deck_id", deckSel.value);
     const words = await api.get("/api/words?" + q.toString());
+    if (seq !== loadSeq) return; // 自分より新しい問い合わせが発行済み→破棄
     const term = kw.value.trim().toLowerCase();
     curWords = term ? words.filter((w) =>
       w.english.toLowerCase().includes(term)
@@ -1970,7 +1981,7 @@ export async function vocab(root) {
   });
   ["#fLevelMin", "#fLevelMax", "#fOutRange", "#fFreeOnly", "#fSort",
    "#fMastered"].forEach((id) =>
-    root.querySelector(id).addEventListener("change", load));
+    root.querySelector(id)?.addEventListener("change", load));
   root.querySelector("#fDeck")?.addEventListener("change", load);
   // 分野チェックボックス（複数選択可）。大分類を選ぶと候補が絞り込まれる
   // （大分類だけでもカテゴリ配下の全分野を検索対象にできる＝分野は
@@ -2053,12 +2064,15 @@ export async function phrases(root) {
         <select id="fLevelMax" title="レベル上限"><option value="">上限</option>
           ${(pfacets.range_levels || []).map((l) =>
             `<option>${escapeHtml(l)}</option>`).join("")}</select>
-        <label class="toggle" title="範囲外も含める">
+        ${state.isAdmin ? `<label class="toggle"
+          title="範囲外(現状すべて禁止用語)も含める。「禁止用語も表示」と
+            併用しないと表示されない">
           <input type="checkbox" id="fOutRange" /> 範囲外</label>
-        ${infoIcon("out-of-range-filter",
-          "一部のフレーズには通常のレベル(数値)が割り当てられていません。"
-          + "チェックすると、レベルの上限・下限に関わらずそうしたフレーズも"
-          + "表示対象に含めます。")}
+          ${infoIcon("out-of-range-filter",
+            "現状、レベル「範囲外」のフレーズはすべて禁止用語(不適切表現)"
+            + "です。このチェックだけでは表示されず、「禁止用語も表示」も"
+            + "同時にオンにする必要があります(意図しない不適切表現の表示を"
+            + "防ぐための仕様です)。")}` : ""}
         ${freeOnlyToggle("fFreeOnly", "フレーズ")}
         ${myDecks.length ? `<select id="fDeck" title="フレーズ帳で絞り込み">
           <option value="">フレーズ帳: 全て</option>
@@ -2146,7 +2160,11 @@ export async function phrases(root) {
   if (!dfpActive) { curList = list; pPage = 0; paint(); }
 
   // シーン・並び替え・禁止表示はサーバ側、キーワードはクライアント側。
+  // vocab()と同じレースコンディション対策(連番ガード)。詳細はvocab()側の
+  // コメント参照。
+  let loadSeq = 0;
   const load = async () => {
+    const seq = ++loadSeq;
     const q = new URLSearchParams({ sort: root.querySelector("#fSort").value });
     if (selectedScenes.size) {
       q.set("scene", [...selectedScenes].join(","));
@@ -2158,7 +2176,7 @@ export async function phrases(root) {
     const lmax = root.querySelector("#fLevelMax").value;
     if (lmin) q.set("level_min", lmin);
     if (lmax) q.set("level_max", lmax);
-    if (root.querySelector("#fOutRange").checked) q.set("out_of_range", "true");
+    if (root.querySelector("#fOutRange")?.checked) q.set("out_of_range", "true");
     const ms = root.querySelector("#fMastered").value;
     if (ms) q.set("mastered", ms);
     if (root.querySelector("#fDir").dataset.desc === "1") q.set("desc", "true");
@@ -2169,6 +2187,7 @@ export async function phrases(root) {
     const deckSel = root.querySelector("#fDeck");
     if (deckSel && deckSel.value) q.set("deck_id", deckSel.value);
     const items = await api.get("/api/phrases?" + q.toString());
+    if (seq !== loadSeq) return; // 自分より新しい問い合わせが発行済み→破棄
     const term = kw.value.trim().toLowerCase();
     curList = term ? items.filter((p) =>
       p.english.toLowerCase().includes(term)
@@ -2198,7 +2217,7 @@ export async function phrases(root) {
   root.querySelector("#fSort").addEventListener("change", load);
   root.querySelector("#fMastered").addEventListener("change", load);
   ["#fLevelMin", "#fLevelMax", "#fOutRange", "#fFreeOnly"].forEach((id) =>
-    root.querySelector(id).addEventListener("change", load));
+    root.querySelector(id)?.addEventListener("change", load));
   root.querySelector("#fDeck")?.addEventListener("change", load);
   root.querySelector("#pPage").addEventListener("change", () => {
     pPage = 0; paint();

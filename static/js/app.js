@@ -476,6 +476,7 @@ export async function refreshCost() {
 }
 
 async function doLogout() {
+  if (!confirm("本当にログアウトしますか？")) return;
   try { await api.post("/api/auth/logout"); } catch (_) { /* */ }
   location.href = "/login";
 }

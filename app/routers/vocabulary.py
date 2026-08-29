@@ -120,7 +120,7 @@ def _word_filter(
         where.append("COALESCE(level, '') = ?")
         params.append(level)
     # レベル範囲（下限〜上限）＋範囲外チェック。
-    if level_min or level_max:
+    elif level_min or level_max:
         allowed = _level_range(level_min, level_max)
         ph = ",".join("?" * len(allowed))
         cond = f"COALESCE(level, '') IN ({ph})"
@@ -130,6 +130,15 @@ def _word_filter(
             p.append(OUT_OF_RANGE)
         where.append(cond)
         params += p
+    elif not out_of_range:
+        # レベル範囲を絞り込んでいない(=全レベル対象の)ときに「範囲外」の
+        # チェックを外している場合は、通常のレベルが割り当てられていない
+        # 語を一覧から除外する(2026-08-30修正: 従来はレベル範囲を絞り込む
+        # 場合にしか効果が無く、単独でチェックしても「変わらない」ように
+        # 見えるユーザー報告があったため、常にこのチェックボックスが意味を
+        # 持つよう修正)。
+        where.append("COALESCE(level, '') <> ?")
+        params.append(OUT_OF_RANGE)
     if not include_banned:
         # 「範囲外」レベルのチェックはレベル絞り込みにのみ作用させる。
         # ここで緩めると、禁止用語チェックを入れていなくてもレベルが

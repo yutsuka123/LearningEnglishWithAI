@@ -82,6 +82,11 @@ def _phrase_filter(
             p.append(OUT_OF_RANGE)
         where.append(cond)
         params += p
+    elif not out_of_range:
+        # 単語版_word_filter()と同じ修正(2026-08-30・「範囲外」チェックが
+        # レベル範囲未指定時は何もしないように見えていた問題)。
+        where.append("COALESCE(level, '') <> ?")
+        params.append(OUT_OF_RANGE)
     if not include_banned:
         # 「範囲外」レベルのチェックはレベル絞り込みにのみ作用させる。
         # ここで緩めると、禁止用語チェックを入れていなくてもレベルが
