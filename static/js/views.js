@@ -1775,7 +1775,10 @@ export async function vocab(root) {
     ${dfwActive ? `<p class="muted">⚙️ 設定の既定フィルターを適用中です。
       この画面でその場変更もできます。</p>` : ""}
     <div class="card">
-      <div class="row">
+      <details class="log-group" id="vocabFilters"
+        ${window.innerWidth <= 760 ? "" : "open"}>
+      <summary>🔍 絞り込み・並び替え</summary>
+      <div class="row mt">
         <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:200px" />
         <select id="fCategory" title="大分類"><option value="">全カテゴリ</option>
           ${Object.keys(domainGroups).map((c) =>
@@ -1825,6 +1828,7 @@ export async function vocab(root) {
           ${showBanned() ? "checked" : ""} />
           🔞 禁止用語も表示</label>` : ""}
       </div>
+      </details>
       <table class="mt rtable rtable-words"><thead><tr>
         <th>再生</th><th>英語</th><th>日本語</th><th>Lv</th><th>分野</th>
         <th>習熟度</th><th>正答率</th><th>操作</th></tr></thead>
@@ -1998,7 +2002,10 @@ export async function phrases(root) {
         🔞 禁止用語も表示</label>` : ""}
     </div>
     <div class="card">
-      <div class="row">
+      <details class="log-group" id="phraseFilters"
+        ${window.innerWidth <= 760 ? "" : "open"}>
+      <summary>🔍 絞り込み・並び替え</summary>
+      <div class="row mt">
         <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:180px" />
         <span class="muted">Lv</span>
         <select id="fLevelMin" title="レベル下限"><option value="">下限</option>
@@ -2036,6 +2043,7 @@ export async function phrases(root) {
         ${speedSelect("pSpeed")}
         ${pageSizeSelect("pPage")}
       </div>
+      </details>
       <table class="mt rtable"><thead><tr><th>再生</th><th>英語</th><th>日本語</th>
         <th>シーン</th><th>習熟度</th><th>操作</th></tr></thead>
         <tbody id="rows"></tbody></table>

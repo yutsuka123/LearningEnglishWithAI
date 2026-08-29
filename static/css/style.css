@@ -181,6 +181,12 @@ h2 { font-size: 17px; margin: 22px 0 10px; }
   border-radius: var(--radius);
   padding: 18px;
   margin-bottom: 16px;
+  /* 操作列(詳細/うろ覚え/覚えた/卒業等)はnowrapで折り返さないため、幅の
+     狭い画面(iPad横等)ではtableがcard幅を超えてはみ出し、背景の外に
+     ボタンが飛び出て見える不具合があった(2026-08-29ユーザー報告)。
+     card自体をスクロールコンテナにして、はみ出しをcardの背景内に
+     収める。 */
+  overflow-x: auto;
 }
 
 .grid { display: grid; gap: 14px; }
@@ -194,8 +200,10 @@ h2 { font-size: 17px; margin: 22px 0 10px; }
   display: none;
   align-items: center; justify-content: center;
   width: 38px; height: 38px; border-radius: 8px;
-  border: 1px solid var(--line); background: var(--panel-2);
-  color: var(--text); font-size: 18px; line-height: 1; cursor: pointer;
+  /* 背景に埋もれて気付きにくいという実機フィードバック(2026-08-29)を受け、
+     水色(--accent)で縁取り+背景を薄く染めて目立たせる。 */
+  border: 1px solid var(--accent); background: rgba(77, 163, 255, .18);
+  color: var(--accent); font-size: 18px; line-height: 1; cursor: pointer;
 }
 /* メニュー内の未読メンテナンスお知らせに気付けるようにする丸印
    (2026-08-23。予定は黄、作業中は赤。.maint-bannerと同じ配色)。 */

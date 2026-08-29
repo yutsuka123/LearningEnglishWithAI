@@ -18,6 +18,7 @@ from typing import Iterator
 
 from ..config import load_settings, log
 from ..database import db
+from .errors import ERROR_CODES
 
 # ---------------------------------------------------------------------------
 # Cost / rate guards — prevent runaway spend if something loops or misbehaves.
@@ -633,7 +634,11 @@ def synthesize_speech(
     except Exception as exc:
         log.error("TTS 失敗 (voice=%s, model=%s): %s",
                   voice, settings.tts_model, exc)
-        return None, f"音声合成に失敗しました: {exc}"
+        # 2026-08-29修正: 以前はexcの文字列をそのままユーザーに返しており、
+        # OpenAI側の生エラー(レート制限のJSON等)がトースト表示に漏れていた
+        # (実機フィードバックで発覚)。詳細はログのみに留め、画面には
+        # errors.py(4桁エラーコードの単一ソース)の定型文を返す。
+        return None, ERROR_CODES["8001"][0]
 
 
 # 単語/フレーズ音声「再生」課金の下限(円)。1回あたりの課金額がこれ未満に
