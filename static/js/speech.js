@@ -472,37 +472,6 @@ export function abortListening() {
   }
 }
 
-export function listenOnce(lang = "en-US") {
-  return new Promise((resolve, reject) => {
-    if (!SR) { reject(new Error("音声認識に未対応のブラウザです")); return; }
-    abortListening();
-    const rec = new SR();
-    activeRec = rec;
-    rec.lang = lang;
-    rec.interimResults = false;
-    rec.maxAlternatives = 1;
-    let done = false;
-    const finish = (fn) => {
-      if (done) return; done = true;
-      if (activeRec === rec) activeRec = null;
-      clearTimeout(tid);
-      fn();
-    };
-    rec.onresult = (e) =>
-      finish(() => resolve(e.results[0][0].transcript));
-    rec.onerror = (e) =>
-      finish(() => reject(new Error(e.error || "認識エラー")));
-    rec.onend = () =>
-      finish(() => reject(new Error("聞き取れませんでした")));
-    // Safety: never hang forever.
-    const tid = setTimeout(() => {
-      try { rec.abort(); } catch (e) { /* ignore */ }
-      finish(() => reject(new Error("タイムアウトしました")));
-    }, 15000);
-    rec.start();
-  });
-}
-
 // AI recorder: records mic audio and transcribes via the backend (Whisper),
 // which AUTO-DETECTS the language and handles non-native English far better
 // than the browser recognizer. Same {start, stop()->text} shape.

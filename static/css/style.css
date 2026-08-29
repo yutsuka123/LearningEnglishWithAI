@@ -124,24 +124,11 @@ a.nav-item { display: block; text-decoration: none; box-sizing: border-box; }
   display: flex; align-items: center; gap: 12px;
 }
 
-.mic-cmd {
-  background: var(--accent-2);
-  color: #042016;
-  border: none;
-  border-radius: 20px;
-  padding: 7px 14px;
-  cursor: pointer;
-  font-weight: 600;
-}
-.mic-cmd.listening { background: var(--danger); color: #fff; }
-.cmd-status { color: var(--muted); font-size: 13px; }
-
 /* ようこそ画面(ゲスト初期表示)ではツール操作系のトップバー項目
-   (操作ボタン・入力モード・残高・AI状態・バージョン表記)を隠し、
+   (入力モード・残高・AI状態・バージョン表記)を隠し、
    価値提案をファーストビューから押し出さないようにする(2026-08-24・
    スマホで設定行が3段続き訴求が画面外に追いやられていた問題への対応)。
    ブランド・テーマ切替・文字サイズ・ログイン導線は残す。 */
-body.tab-welcome #micCmd, body.tab-welcome #cmdStatus,
 body.tab-welcome .topbar-right label.toggle,
 body.tab-welcome #usageBalance,
 body.tab-welcome #aiState, body.tab-welcome #appVer {
@@ -723,6 +710,26 @@ th { color: var(--muted); font-weight: 600; }
    目立たせつつ、閉じられる（同じ内容は再表示しない）。スマホで本文を
    圧迫していたため2026-08-23にメインの上部からサイドバー(メニュー)内へ
    移動した。 */
+/* 英会話/リーディング/ライティング/リスニングで、無課金/未ログインの人が
+   ページ下部の無料サンプルに気付けず離脱していた形跡があったため
+   (2026-08-29・実機ログ分析)、冒頭に赤字の案内を出しサンプルへジャンプ
+   できるようにする(sampleGateBanner()/wireSampleGateBanner())。 */
+.sample-gate-banner {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #e5534b;
+  background: rgba(229, 83, 75, .12);
+  color: #e5534b;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.sample-gate-banner .sample-gate-link {
+  color: #e5534b;
+  text-decoration: underline;
+}
+
 .maint-banner {
   margin: 14px 0 0;
   padding: 10px 12px;

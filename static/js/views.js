@@ -150,6 +150,29 @@ function aiGateDisabled() {
   return state.isGuest || !state.hasAiBalance;
 }
 
+// 英会話/リーディング/ライティング/リスニングは無課金では使えないため、
+// 上部の「生成」等が押せないだけでは気付きにくく、ページ下部の無料サンプル
+// (sampleMaterialsCard)にたどり着けないまま離脱していた恐れがある
+// (2026-08-29・実機ログ分析で判明)。冒頭に目立つ案内を出し、クリックで
+// サンプルへジャンプする。
+function sampleGateBanner(area) {
+  if (!aiGateDisabled()) return "";
+  return `<div class="sample-gate-banner">
+    ⚠️ この機能はご登録・チャージが必要です。
+    <a href="#" class="sample-gate-link" data-jump="sampleCard-${
+      escapeHtml(area)}">無課金でも見られるサンプルはこちら↓</a>
+  </div>`;
+}
+function wireSampleGateBanner(root) {
+  root.querySelectorAll(".sample-gate-link").forEach((a) => {
+    a.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      root.querySelector(`#${a.dataset.jump}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+}
+
 // Keep mostly-English lines (skip Japanese-only lines & markdown headers) so
 // read-aloud sounds natural. Falls back to the whole text if nothing matches.
 function englishOnly(text) {
@@ -1779,7 +1802,7 @@ export async function vocab(root) {
         ${window.innerWidth <= 760 ? "" : "open"}>
       <summary>🔍 絞り込み・並び替え</summary>
       <div class="row mt">
-        <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:200px" />
+        <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:140px" />
         <select id="fCategory" title="大分類"><option value="">全カテゴリ</option>
           ${Object.keys(domainGroups).map((c) =>
             `<option>${escapeHtml(c)}</option>`).join("")}</select>
@@ -2006,7 +2029,7 @@ export async function phrases(root) {
         ${window.innerWidth <= 760 ? "" : "open"}>
       <summary>🔍 絞り込み・並び替え</summary>
       <div class="row mt">
-        <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:180px" />
+        <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:140px" />
         <span class="muted">Lv</span>
         <select id="fLevelMin" title="レベル下限"><option value="">下限</option>
           ${(pfacets.range_levels || []).map((l) =>
@@ -2275,6 +2298,7 @@ function materialView(title, sub, area, fields, histAreas) {
   return async function (root) {
     root.innerHTML = `
       <h1>${title}</h1>
+      ${sampleGateBanner(area)}
       <p class="sub">${sub}</p>
       ${aiBadgeNote()}
       <div class="card">
@@ -2299,6 +2323,7 @@ function materialView(title, sub, area, fields, histAreas) {
         左上で分野を選んで「生成」を押してください。</div></div>`;
     root.appendChild(sampleMaterialsCard(area,
       "📖 サンプルを見る", "サンプルがまだありません。"));
+    wireSampleGateBanner(root);
     // 内容理解問題トグル: OFFなら表示・読み上げから問題部分を除く（保存はフル）。
     const disp = (b) =>
       root.querySelector("#showQ").checked ? b : stripQuestions(b);
@@ -2367,7 +2392,7 @@ export const reading = (root) => materialView(
 // できる（2026-08-12: 個人の生成履歴が混ざらないよう、専用の読み取り
 // 専用API `/api/learn/samples` を使う。ログイン有無を問わず同じ結果）。
 function sampleMaterialsCard(area, cardTitle, emptyLabel) {
-  const card = el(`<div class="card">
+  const card = el(`<div class="card" id="sampleCard-${escapeHtml(area)}">
     <h2>${escapeHtml(cardTitle)}</h2>
     <p class="muted">実際にAIを使わなくても内容を確認できるサンプルです。
       無課金でもご覧いただけます。</p>
@@ -2407,6 +2432,7 @@ function sampleMaterialsCard(area, cardTitle, emptyLabel) {
 export async function writing(root) {
   root.innerHTML = `
     <h1>ライティング</h1>
+    ${sampleGateBanner("writing_sample")}
     <p class="sub">英文を書く(または話す)とAIが添削します。音声応答可。</p>
     ${aiBadgeNote()}
     <div class="card">
@@ -2421,6 +2447,7 @@ export async function writing(root) {
     </div>`;
   root.appendChild(sampleMaterialsCard("writing_sample",
     "📝 添削サンプルを見る", "サンプルがまだありません。"));
+  wireSampleGateBanner(root);
   const ansBox = root.querySelector("#ans");
   ansBox.appendChild(answerInput(async (txt) => {
     if (!txt.trim()) { toast("文章が空です"); return; }
@@ -2453,6 +2480,7 @@ export async function conversation(root) {
   const vlist = speech.listOpenAIVoices();
   root.innerHTML = `
     <h1>英会話</h1>
+    ${sampleGateBanner("conversation_sample")}
     <p class="sub">AIの声:
       <select id="voiceSel">${vlist.map((v) =>
         `<option value="${v}" ${v === speech.currentVoice() ? "selected" : ""}
@@ -2548,6 +2576,7 @@ export async function conversation(root) {
     </div>`;
   root.appendChild(sampleMaterialsCard("conversation_sample",
     "💬 会話サンプルを見る", "サンプルがまだありません。"));
+  wireSampleGateBanner(root);
 
   const modeSel = root.querySelector("#mode");
   const sceneSel = root.querySelector("#sceneSel");
@@ -2989,6 +3018,7 @@ export async function listening(root) {
   const topics = await api.get("/api/listening");
   root.innerHTML = `
     <h1>リスニング</h1>
+    ${sampleGateBanner("listening")}
     <p class="sub">スクリプトを生成して読み上げ、理解度を記録します。</p>
     ${aiBadgeNote()}
     <div class="card">
@@ -3045,6 +3075,7 @@ export async function listening(root) {
     </div>`;
   root.appendChild(sampleMaterialsCard("listening",
     "🎧 サンプルを見る", "サンプルがまだありません。"));
+  wireSampleGateBanner(root);
   let scriptText = "";
   // 内容理解問題トグル＋読み上げは英語のみ(englishOnly)で統一。
   const lDisp = (b) =>
@@ -3623,11 +3654,23 @@ export async function history(root) {
     new_words: root.querySelector("#neww").value,
   });
 
-  root.querySelector("#summary").addEventListener("click", async () => {
-    const out = root.querySelector("#sumOut"); out.textContent = "要約中…";
-    const r = await api.post("/api/learn/session/summary", payload());
-    out.innerHTML = r.ok ? md(r.summary) : escapeHtml(r.error);
-    refreshCost();
+  root.querySelector("#summary").addEventListener("click", async (ev) => {
+    const btn = ev.currentTarget;
+    const out = root.querySelector("#sumOut");
+    // 2026-08-29修正: 失敗時に「要約中…」のまま固まって見えるバグを修正
+    // (実機ログで、この直後にユーザーが離脱していた形跡があった)。
+    // ボタンを連打できないようにし、失敗時も必ずメッセージを出す。
+    btn.disabled = true;
+    out.textContent = "要約中…";
+    try {
+      const r = await api.post("/api/learn/session/summary", payload());
+      out.innerHTML = r.ok ? md(r.summary) : escapeHtml(r.error);
+      refreshCost();
+    } catch (e) {
+      out.textContent = e.message || "要約に失敗しました。時間をおいて再度お試しください。";
+    } finally {
+      btn.disabled = false;
+    }
   });
   root.querySelector("#save").addEventListener("click", async () => {
     await api.post("/api/learn/session/save", payload());

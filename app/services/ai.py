@@ -438,7 +438,9 @@ def chat(
         )
     except Exception as exc:
         log.error("chat 失敗 (feature=%s): %s", feature, exc)
-        return AIResult(ok=False, text="", error=f"AI 呼び出しに失敗しました: {exc}")
+        # 2026-08-29修正: synthesize_speech()と同じ問題(生の例外文字列を
+        # そのままユーザーへ返していた)。errors.pyの定型文(4005)を返す。
+        return AIResult(ok=False, text="", error=ERROR_CODES["4005"][0])
 
 
 def chat_stream(

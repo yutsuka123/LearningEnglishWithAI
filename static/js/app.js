@@ -294,6 +294,13 @@ const ROUTES = {
   admin: views.admin,
 };
 
+// 入力:文字/音声セレクタを使う画面だけに絞ってトップバーへ表示する
+// (2026-08-29・ユーザー指摘: 常時表示は他画面で意味を持たずスペースの
+// 無駄+紛らわしい)。実際に state.inputMode を参照するのは
+// daily()/quiz()/writing() の3画面(static/js/views.jsのanswerInput()と
+// quiz.jsのrenderAnswerInput())。
+const INPUT_MODE_TABS = new Set(["daily", "quiz", "writing"]);
+
 let currentTab = "dashboard";
 // boot()の末尾で無条件にgo("dashboard")するとboot()の非同期処理(タクソノミー
 // 取得等)が終わる前にユーザーがタブをクリックした場合、そのビューの
@@ -319,6 +326,10 @@ export async function go(tab) {
   speech.stopSpeaking();
   document.querySelectorAll(".nav-item").forEach((b) =>
     b.classList.toggle("active", b.dataset.tab === tab));
+  const inputModeWrap = document.getElementById("inputModeWrap");
+  if (inputModeWrap) {
+    inputModeWrap.style.display = INPUT_MODE_TABS.has(tab) ? "" : "none";
+  }
   closeMobileNav();
   // 各ビュー関数には view() 本体ではなく専用のラッパーdivを渡す。views
   // の中には内部でawaitを挟んでから root.innerHTML を書くものがあり
@@ -415,63 +426,6 @@ function setInputMode(mode) {
   state.inputMode = mode === "voice" ? "voice" : "text";
   localStorage.setItem("inputMode", state.inputMode);
   document.getElementById("inputMode").value = state.inputMode;
-}
-
-// Voice command -> action.
-async function runCommand() {
-  const btn = document.getElementById("micCmd");
-  const status = document.getElementById("cmdStatus");
-  if (!speech.sttSupported()) {
-    toast("このブラウザは音声認識に未対応です");
-    return;
-  }
-  btn.classList.add("listening");
-  status.textContent = "聞き取り中…";
-  try {
-    const text = await speech.listenOnce("ja-JP");
-    status.textContent = `「${text}」`;
-    const intent = await api.post("/api/learn/command", { text });
-    await execCommand(intent);
-  } catch (e) {
-    status.textContent = e.message;
-  } finally {
-    btn.classList.remove("listening");
-    setTimeout(() => (status.textContent = ""), 4000);
-  }
-}
-
-export async function execCommand(intent) {
-  if (!intent || !intent.action) return;
-  const { action, args = {}, say } = intent;
-  if (say) { toast(say); speech.speak(say, { rate: 1 }); }
-  switch (action) {
-    case "navigate":
-      if (args.tab) go(args.tab);
-      break;
-    case "set_input_mode":
-      setInputMode(args.mode);
-      toast("入力モード: " + state.inputMode);
-      break;
-    case "set_model":
-      if (args.model) {
-        await api.put("/api/system/settings", { openai_model: args.model });
-        toast("モデルを " + args.model + " に変更しました");
-        refreshAiState();
-      }
-      break;
-    case "start_daily":
-      go("daily");
-      break;
-    case "save_session":
-      go("history");
-      toast("学習履歴タブで保存できます");
-      break;
-    case "speak":
-      if (args.text) speech.speak(args.text);
-      break;
-    default:
-      break;
-  }
 }
 
 export async function refreshAiState() {
@@ -604,7 +558,6 @@ async function boot() {
   document.getElementById("inputMode").value = state.inputMode;
   document.getElementById("inputMode")
     .addEventListener("change", (e) => setInputMode(e.target.value));
-  document.getElementById("micCmd").addEventListener("click", runCommand);
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) logoutBtn.addEventListener("click", doLogout);
 
