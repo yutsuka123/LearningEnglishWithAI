@@ -55,11 +55,11 @@ export function el(html) {
   return t.content.firstElementChild;
 }
 
-export function toast(msg) {
+export function toast(msg, ms = 2200) {
   const t = document.getElementById("toast");
   t.textContent = msg;
   t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2200);
+  setTimeout(() => t.classList.remove("show"), ms);
 }
 
 export function escapeHtml(s) {
@@ -130,8 +130,18 @@ export function setTestBanned(on) {
 }
 
 // ---------------------------------------------------------------------------
-// スマホ向けハンバーガーメニュー（狭い画面でのみCSSが有効化する）。
+// 左ペイン(サイドバー)の開閉。
+// スマホ(<=760px)はオフキャンバス(.open で右へスライドイン)、
+// それ以外の幅は常設表示だが折りたたみ可能(.collapsed で幅0)
+// (2026-08-30ユーザー要望: 横幅の狭いPC/タブレットで各機能の表を見る際、
+// 左ペイン分の横幅を空けたい)。
 // ---------------------------------------------------------------------------
+
+// この幅より狭いPC/タブレット画面では、ページ切替後に自動で左ペインを
+// 畳む(ピン留め時を除く)。760px以下は上のオフキャンバス扱いなので対象外。
+const SIDEBAR_AUTO_COLLAPSE_MAX_WIDTH = 1200;
+
+let sidebarCollapsed = false;
 
 function closeMobileNav() {
   document.getElementById("sidebar")?.classList.remove("open");
@@ -141,6 +151,39 @@ function closeMobileNav() {
 function toggleMobileNav() {
   document.getElementById("sidebar")?.classList.toggle("open");
   document.getElementById("sidebarBackdrop")?.classList.toggle("show");
+}
+
+function isSidebarPinned() {
+  return localStorage.getItem("sidebarPinned") === "1";
+}
+
+function setSidebarCollapsed(on) {
+  sidebarCollapsed = on;
+  document.getElementById("sidebar")?.classList.toggle("collapsed", on);
+  document.body.classList.toggle("sidebar-collapsed", on);
+}
+
+function setSidebarPinned(on) {
+  localStorage.setItem("sidebarPinned", on ? "1" : "0");
+  const btn = document.getElementById("sidebarPin");
+  if (btn) {
+    btn.classList.toggle("active", on);
+    btn.title = on
+      ? "固定表示中（クリックで解除）"
+      : "左メニューを固定表示（自動で畳まれないようにする）";
+  }
+  if (on) setSidebarCollapsed(false); // 固定するなら必ず開いた状態にする
+}
+
+// スマホは既存のオフキャンバス開閉、それ以外は折りたたみ開閉。
+// 同じハンバーガーボタンで両方をまかなう(2026-08-30、見慣れたアイコンを
+// 使い回すことで直感的にする)。
+function toggleSidebar() {
+  if (window.innerWidth <= 760) {
+    toggleMobileNav();
+  } else {
+    setSidebarCollapsed(!sidebarCollapsed);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -246,7 +289,8 @@ export async function refreshMaintenanceBanner() {
       + (n.state === "in_progress" ? " in-progress" : "");
     box.innerHTML = "";
     const icon = document.createElement("span");
-    icon.textContent = n.state === "in_progress" ? "🛠️" : "🗓️";
+    icon.textContent = n.state === "in_progress" ? "🛠️"
+      : n.state === "completed" ? "✅" : "🗓️";
     const text = document.createElement("span");
     text.textContent = n.text;
     const close = document.createElement("button");
@@ -308,6 +352,10 @@ let currentTab = "dashboard";
 // load()/paint()等がDOMを見失ってエラーになる(2026-08-05発見)。boot()側で
 // 既にユーザーがナビゲートしたか判定するためのフラグ。
 let userNavigated = false;
+// 左ペイン自動折りたたみ用: 最初の表示(起動直後の初回go())は開いたまま
+// にし、2回目以降のページ切替からだけ幅が狭ければ畳む
+// (2026-08-30ユーザー要望「最初の表示時は開いておき」)。
+let hasNavigatedOnce = false;
 
 // 画面を離れるときに一度だけ呼ばれるクリーンアップ。views が登録する
 // (例: 英会話の自動記録の確定保存)。次の go() で消費される。
@@ -331,6 +379,16 @@ export async function go(tab) {
     inputModeWrap.style.display = INPUT_MODE_TABS.has(tab) ? "" : "none";
   }
   closeMobileNav();
+  closeHintPopover();
+  // 中間幅の画面(タブレット横・小さめノートPC等)では、各機能の表が
+  // 横スクロールを要することが多いため、初回表示以降のページ切替では
+  // 左ペイン分の横幅を返す(ピン留め時は自動で畳まない)。
+  if (hasNavigatedOnce && !isSidebarPinned()
+      && window.innerWidth > 760
+      && window.innerWidth <= SIDEBAR_AUTO_COLLAPSE_MAX_WIDTH) {
+    setSidebarCollapsed(true);
+  }
+  hasNavigatedOnce = true;
   // 各ビュー関数には view() 本体ではなく専用のラッパーdivを渡す。views
   // の中には内部でawaitを挟んでから root.innerHTML を書くものがあり
   // (例: dashboard() の /api/system/progress 取得後)、その間に別タブへ
@@ -457,6 +515,106 @@ const STUDY_TABS = new Set(["vocab", "flashcard", "phrases", "flashphrase", "qui
 let guestStudyClicks = 0;
 let guestNudgeShown = false;
 
+// ---------------------------------------------------------------------------
+// ⓘ説明ヒント(2026-08-30〜)。選択肢/制限がある項目(例:「再生できるものだけ」
+// 「範囲外」)の意味を、PCはマウスホバー(title属性、既存の仕組みのまま)、
+// スマホ含め全端末はⓘクリック/タップでポップオーバー表示する。
+// 「今後表示しない」を選ぶとⓘアイコン自体を消す(=同じ説明を得た人には
+// 見せない、鬱陶しくしない設計)。ログイン済みは/api/system/user-settings
+// (端末非依存のDB保存)、アカウントの無いゲストはlocalStorageに保存する。
+// ---------------------------------------------------------------------------
+
+let dismissedHints = new Set();
+
+async function loadDismissedHints() {
+  if (state.isGuest) {
+    try {
+      dismissedHints = new Set(
+        JSON.parse(localStorage.getItem("dismissedHints") || "[]"));
+    } catch (e) { dismissedHints = new Set(); }
+    return;
+  }
+  try {
+    const r = await api.get("/api/system/user-settings");
+    dismissedHints = new Set((r.settings || {}).dismissed_hints || []);
+  } catch (e) { dismissedHints = new Set(); }
+}
+
+export function isHintDismissed(hintId) {
+  return dismissedHints.has(hintId);
+}
+
+// hint テキストは呼び出し側(views.js)が保持する固定文言なので引数で渡す
+// (中央データベース化するほどの数がまだ無いため素朴にしてある)。
+export function infoIcon(hintId, text) {
+  if (dismissedHints.has(hintId)) return "";
+  return `<span class="info-icon" data-hint-id="${hintId}" `
+    + `title="${escapeHtml(text)}">ⓘ</span>`;
+}
+
+async function dismissHint(hintId) {
+  dismissedHints.add(hintId);
+  document.querySelectorAll(`.info-icon[data-hint-id="${hintId}"]`)
+    .forEach((n) => n.remove());
+  if (state.isGuest) {
+    localStorage.setItem(
+      "dismissedHints", JSON.stringify([...dismissedHints]));
+    return;
+  }
+  try {
+    const r = await api.get("/api/system/user-settings");
+    const settings = r.settings || {};
+    settings.dismissed_hints = [...dismissedHints];
+    await api.put("/api/system/user-settings", { settings });
+  } catch (e) { /* 保存に失敗しても表示上は既に消えているので致命的でない */ }
+}
+
+let openHintPopover = null;
+
+function closeHintPopover() {
+  if (openHintPopover) { openHintPopover.remove(); openHintPopover = null; }
+}
+
+function showHintPopover(icon) {
+  closeHintPopover();
+  const hintId = icon.dataset.hintId;
+  const text = icon.title;
+  const pop = el(`<div class="hint-popover">
+    <div class="hint-popover-text"></div>
+    <div class="hint-popover-actions">
+      <button type="button" class="hint-dismiss">今後表示しない</button>
+      <button type="button" class="hint-close">閉じる</button>
+    </div>
+  </div>`);
+  pop.querySelector(".hint-popover-text").textContent = text;
+  document.body.appendChild(pop);
+  const r = icon.getBoundingClientRect();
+  const top = r.bottom + window.scrollY + 6;
+  const maxLeft = window.scrollX
+    + document.documentElement.clientWidth - pop.offsetWidth - 8;
+  const left = Math.max(8, Math.min(r.left + window.scrollX, maxLeft));
+  pop.style.top = `${top}px`;
+  pop.style.left = `${left}px`;
+  pop.querySelector(".hint-close").addEventListener("click", closeHintPopover);
+  pop.querySelector(".hint-dismiss").addEventListener("click", () => {
+    dismissHint(hintId);
+    closeHintPopover();
+  });
+  openHintPopover = pop;
+}
+
+function initHintIcons() {
+  document.addEventListener("click", (e) => {
+    if (e.target.closest(".hint-popover")) return;
+    const icon = e.target.closest(".info-icon");
+    if (icon) { showHintPopover(icon); return; }
+    closeHintPopover();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeHintPopover();
+  });
+}
+
 function initClickTracking() {
   document.addEventListener("click", (e) => {
     const btn = e.target.closest("button, a.btn");
@@ -506,6 +664,7 @@ async function boot() {
   // 描画してから隠す順序だと、未ログインでも一瞬「管理者」「設定」等が
   // 見えてちらつく問題があったため・2026-08-12ユーザー指摘）。
   await refreshCost();      // sets state.isAdmin / state.multiuser / state.isGuest
+  await loadDismissedHints(); // isGuestが決まった後(保存先の出し分けに必要)
   if (state.isAdmin) {
     // 非管理者は/api/system/settingsを読めない(2026-08-12・管理者専用化)。
     // AI有効状態はrefreshCost()内でmy-usage経由により既に取得済み。
@@ -548,11 +707,14 @@ async function boot() {
     }
   }
 
-  // スマホ向けハンバーガーメニュー: ボタン/背景タップで開閉。
+  // ハンバーガー: スマホはオフキャンバス開閉、それ以外は折りたたみ開閉。
   document.getElementById("navToggle")
-    ?.addEventListener("click", toggleMobileNav);
+    ?.addEventListener("click", toggleSidebar);
   document.getElementById("sidebarBackdrop")
     ?.addEventListener("click", closeMobileNav);
+  document.getElementById("sidebarPin")
+    ?.addEventListener("click", () => setSidebarPinned(!isSidebarPinned()));
+  setSidebarPinned(isSidebarPinned()); // 保存済みの固定状態を反映
 
   // Topbar.
   document.getElementById("inputMode").value = state.inputMode;
@@ -562,6 +724,7 @@ async function boot() {
   if (logoutBtn) logoutBtn.addEventListener("click", doLogout);
 
   initClickTracking();
+  initHintIcons();
   refreshMaintenanceBanner();
   speech.onUsage(refreshCost); // refresh cost after paid TTS calls
   speech.onPaymentRequired((msg) => toast(msg)); // 無料範囲外の再生でチャージ不足のとき

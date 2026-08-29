@@ -528,8 +528,19 @@ def _maintenance_notice(plan: dict) -> dict:
         end = _parse_jst(plan.get("adhoc_end", ""))
         if start and end is None:
             end = start + timedelta(minutes=30)
-        if start and now <= end:
+        # 完了後6時間は「終了しました」を出し続け、それを過ぎたら消す
+        # （2026-08-30ユーザー指示: 終了直後に即消すのではなく、しばらく
+        # 完了報告を見せてから消えるようにしたい）。
+        if start and now <= end + timedelta(hours=6):
             note = plan.get("adhoc_note") or ""
+            if now > end:
+                return {
+                    "show": True, "state": "completed", "kind": "adhoc",
+                    "text": (f"メンテナンスは終了しました"
+                             f"（{start:%m/%d %H:%M}〜{end:%H:%M}"
+                             f"・日本時間）。ご協力ありがとうございました。"
+                             f"{note}"),
+                }
             if now >= start:
                 return {
                     "show": True, "state": "in_progress", "kind": "adhoc",

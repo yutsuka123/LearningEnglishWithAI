@@ -82,14 +82,54 @@ a:hover:not(.btn) { color: var(--accent-2); }
   top: 0;
   height: 100vh;
   overflow-y: auto;
+  transition: width .2s ease;
+}
+
+/* 広い/中間幅の画面向け折りたたみ(2026-08-30ユーザー要望)。 スマホは
+   従来どおりtransformでのオフキャンバス開閉(下の@media参照)なので、
+   ここは761px以上でのみ効かせる(誤って重ならないよう明示的に分離)。 */
+@media (min-width: 761px) {
+  .sidebar.collapsed {
+    width: 0;
+    padding: 0;
+    border-right: none;
+    overflow: hidden;
+  }
 }
 
 .brand {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
   font-weight: 700;
   font-size: 18px;
   line-height: 1.2;
   padding: 8px 10px 16px;
   color: var(--accent);
+}
+
+/* 左メニューを固定表示(自動で畳まれないように)するピン
+   (2026-08-30ユーザー要望)。狭い画面幅でナビゲーション後に自動で畳む
+   挙動をオフにするだけで、手動での開閉(ハンバーガー)自体は引き続き可能。 */
+.sidebar-pin {
+  flex: none;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  width: 28px; height: 28px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--muted);
+  opacity: .6;
+}
+.sidebar-pin:hover { opacity: 1; }
+.sidebar-pin.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(77, 163, 255, .15);
+  opacity: 1;
 }
 
 #nav { display: flex; flex-direction: column; gap: 2px; }
@@ -181,10 +221,13 @@ h2 { font-size: 17px; margin: 22px 0 10px; }
 .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
 .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
 
-/* ハンバーガーメニュー: 通常(広い画面)は非表示。狭い画面でのみ出す。 */
+/* ハンバーガーメニュー。スマホではオフキャンバスサイドバーの開閉、
+   広い/中間幅の画面では左ペインの折りたたみ開閉に使う共通ボタン
+   (2026-08-30〜。以前は狭い画面限定だったが、左ペインをどの画面幅でも
+   畳める/開けるようにするため常時表示へ変更)。 */
 .nav-toggle {
   position: relative;
-  display: none;
+  display: inline-flex;
   align-items: center; justify-content: center;
   width: 38px; height: 38px; border-radius: 8px;
   /* 背景に埋もれて気付きにくいという実機フィードバック(2026-08-29)を受け、
@@ -217,11 +260,16 @@ h2 { font-size: 17px; margin: 22px 0 10px; }
 .topbar-brand-sub {
   font-weight: 600; color: var(--text); font-size: 14px;
 }
+/* 広い/中間幅の画面で左ペインを畳んだ時も同じ理由でブランド表示が
+   消えてしまうため、その間だけトップバー側に出す(2026-08-30)。 */
+body.sidebar-collapsed .topbar-brand { display: inline-flex; font-size: 15px; }
 
 @media (max-width: 760px) {
   .grid.cols-4, .grid.cols-3, .grid.cols-2 { grid-template-columns: 1fr; }
-  .nav-toggle { display: inline-flex; }
   .topbar-brand { display: inline-flex; font-size: 15px; }
+  /* スマホ幅ではピンは無意味(オフキャンバス自体がハンバーガー操作の
+     ため)なので隠す。 */
+  .sidebar-pin { display: none; }
   /* topbar-right は項目数が多く、幅の狭いスマホ縦画面では1行に収まらず
      ログイン/ログアウトボタンが画面外にはみ出て見切れていた
      (2026-08-19ユーザー報告)。折り返し可にして複数行に展開する。 */
@@ -438,6 +486,33 @@ th { color: var(--muted); font-weight: 600; }
   transition: opacity .25s; z-index: 50;
 }
 .toast.show { opacity: 1; }
+
+/* ⓘ説明ヒント(2026-08-30)。選択肢/制限がある項目の意味を、クリック/タップ
+   (PCはマウスホバーのtitleでも)で見られるようにする小さなポップオーバー。
+   常時表示ではなく明示的に開いた時だけ出すので鬱陶しくない設計。 */
+.info-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%;
+  font-size: 11px; line-height: 1; cursor: pointer;
+  color: var(--muted); border: 1px solid var(--line);
+  margin-left: 3px; flex: none; vertical-align: middle;
+}
+.info-icon:hover { color: var(--accent); border-color: var(--accent); }
+.hint-popover {
+  position: absolute; z-index: 300; width: 240px;
+  background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .35);
+  font-size: 13px; color: var(--text); line-height: 1.5;
+}
+.hint-popover-actions {
+  display: flex; justify-content: space-between; gap: 8px; margin-top: 8px;
+}
+.hint-popover-actions button {
+  background: none; border: none; color: var(--accent);
+  font-size: 12px; cursor: pointer; padding: 2px 4px;
+}
+.hint-popover-actions .hint-close { color: var(--muted); }
 
 .steps { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
 .step-chip { padding: 6px 12px; border-radius: 16px; background: var(--panel-2);
@@ -712,8 +787,11 @@ th { color: var(--muted); font-weight: 600; }
    移動した。 */
 /* 英会話/リーディング/ライティング/リスニングで、無課金/未ログインの人が
    ページ下部の無料サンプルに気付けず離脱していた形跡があったため
-   (2026-08-29・実機ログ分析)、冒頭に赤字の案内を出しサンプルへジャンプ
-   できるようにする(sampleGateBanner()/wireSampleGateBanner())。 */
+   (2026-08-29・実機ログ分析)、冒頭に赤字の案内を出す。当初はサンプルへ
+   ジャンプするリンクにしていたが、既に画面内に見えていると押しても
+   反応が無いように見えると指摘され(2026-08-30)、案内の直後にサンプル
+   自体を差し込む方式に変更した(sampleGateBanner()/placeSampleCard()、
+   views.js参照)。 */
 .sample-gate-banner {
   margin: 10px 0 0;
   padding: 10px 12px;
@@ -724,10 +802,6 @@ th { color: var(--muted); font-weight: 600; }
   font-weight: 600;
   font-size: 14px;
   line-height: 1.5;
-}
-.sample-gate-banner .sample-gate-link {
-  color: #e5534b;
-  text-decoration: underline;
 }
 
 .maint-banner {

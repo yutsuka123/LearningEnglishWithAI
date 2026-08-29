@@ -6,11 +6,25 @@ import { quizRunner } from "./quiz.js";
 import {
   el, md, escapeHtml, toast, state, go, refreshCost, refreshAiState,
   showBanned, setShowBanned, testBanned, setTestBanned, onLeaveView,
-  fmtDateJST, refreshMaintenanceBanner, TABS,
+  fmtDateJST, refreshMaintenanceBanner, TABS, infoIcon,
 } from "./app.js";
 
 // 禁止用語クエリ: include_banned を付ける/付けないを返す小ヘルパー。
 const bannedParam = (on) => (on ? "include_banned=true" : "");
+
+// 「🔊再生できるものだけ」チェックボックス(単語/フレーズ一覧・
+// フラッシュ単語/フラッシュフレーズの計4箇所で共通)。何が起きるのか
+// 分かりにくいという指摘(2026-08-30)を受け、太字化+ⓘヒントアイコンを追加
+// (app.jsのinfoIcon参照。クリック/タップでポップオーバー表示、
+// 「今後表示しない」でユーザーごとに恒久的に消せる)。
+function freeOnlyToggle(id, kindLabel) {
+  return `<label class="toggle" title="無料で🔊再生できる${kindLabel}だけに
+      絞り込む（未ログイン/ログイン無料ユーザー向け）">
+    <input type="checkbox" id="${id}" />
+    <b style="font-size:15px">🔊再生できるものだけ</b></label>
+    ${infoIcon("free-only-filter",
+      "登録すると再生できる数が増えます。さらに課金すると全て再生できます。")}`;
+}
 
 // 管理画面の各種集計フィルタ（2026-08-20ユーザー要望）。既定は管理者
 // 自身/メール未登録の招待ユーザー/テストユーザーを除外(=実際の一般
@@ -153,24 +167,24 @@ function aiGateDisabled() {
 // 英会話/リーディング/ライティング/リスニングは無課金では使えないため、
 // 上部の「生成」等が押せないだけでは気付きにくく、ページ下部の無料サンプル
 // (sampleMaterialsCard)にたどり着けないまま離脱していた恐れがある
-// (2026-08-29・実機ログ分析で判明)。冒頭に目立つ案内を出し、クリックで
-// サンプルへジャンプする。
-function sampleGateBanner(area) {
+// (2026-08-29・実機ログ分析で判明)。当初は「こちら↓」リンクでサンプルまで
+// スクロールする案内にしていたが、押しても既に画面内に見えていることが
+// あり「反応していない」ように見えると指摘された(2026-08-30)。
+// スクロールで誘導するのではなく、案内の直後(生成カードより上)に
+// サンプル自体を差し込んで先頭に来るようにする(placeSampleCard参照)。
+function sampleGateBanner() {
   if (!aiGateDisabled()) return "";
   return `<div class="sample-gate-banner">
     ⚠️ この機能はご登録・チャージが必要です。
-    <a href="#" class="sample-gate-link" data-jump="sampleCard-${
-      escapeHtml(area)}">無課金でも見られるサンプルはこちら↓</a>
-  </div>`;
+    無課金でも見られるサンプルを下記にご用意しています。
+  </div><div id="sampleSlotTop"></div>`;
 }
-function wireSampleGateBanner(root) {
-  root.querySelectorAll(".sample-gate-link").forEach((a) => {
-    a.addEventListener("click", (ev) => {
-      ev.preventDefault();
-      root.querySelector(`#${a.dataset.jump}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-  });
+// ゲート中(未登録/残高無し)はサンプルを冒頭のバナー直後(先頭)に、
+// そうでなければ従来どおり末尾に補足として置く。
+function placeSampleCard(root, card) {
+  const top = root.querySelector("#sampleSlotTop");
+  if (top) { top.replaceWith(card); return; }
+  root.appendChild(card);
 }
 
 // Keep mostly-English lines (skip Japanese-only lines & markdown headers) so
@@ -1448,9 +1462,7 @@ export async function flashcard(root) {
           ※ONにすると音量にご注意ください</span>
       </div>
       <div class="row mt">
-        <label class="toggle" title="無料で🔊再生できる単語だけに絞り込む
-          （未ログイン/ログイン無料ユーザー向け）">
-          <input type="checkbox" id="fcFreeOnly" /> 🔊再生できるものだけ</label>
+        ${freeOnlyToggle("fcFreeOnly", "単語")}
       </div>
       <div class="row mt">
         <button class="btn" id="fcStart">▶ 開始</button>
@@ -1626,9 +1638,7 @@ export async function flashPhrase(root) {
           ※ONにすると音量にご注意ください</span>
       </div>
       <div class="row mt">
-        <label class="toggle" title="無料で🔊再生できるフレーズだけに絞り込む
-          （未ログイン/ログイン無料ユーザー向け）">
-          <input type="checkbox" id="fpFreeOnly" /> 🔊再生できるものだけ</label>
+        ${freeOnlyToggle("fpFreeOnly", "フレーズ")}
       </div>
       <div class="row mt">
         <button class="btn" id="fpStart">▶ 開始</button>
@@ -1820,9 +1830,11 @@ export async function vocab(root) {
             `<option>${escapeHtml(l)}</option>`).join("")}</select>
         <label class="toggle" title="範囲外(禁止用語相当)も含める">
           <input type="checkbox" id="fOutRange" /> 範囲外</label>
-        <label class="toggle" title="無料で🔊再生できる語だけに絞り込む
-          （未ログイン/ログイン無料ユーザー向け）">
-          <input type="checkbox" id="fFreeOnly" /> 🔊再生できるものだけ</label>
+        ${infoIcon("out-of-range-filter",
+          "一部の単語には通常のレベル(数値)が割り当てられていません。"
+          + "チェックすると、レベルの上限・下限に関わらずそうした語も"
+          + "表示対象に含めます。")}
+        ${freeOnlyToggle("fFreeOnly", "語")}
         ${myDecks.length ? `<select id="fDeck" title="単語帳で絞り込み">
           <option value="">単語帳: 全て</option>
           ${myDecks.map((d) =>
@@ -1853,8 +1865,11 @@ export async function vocab(root) {
       </div>
       </details>
       <table class="mt rtable rtable-words"><thead><tr>
-        <th>再生</th><th>英語</th><th>日本語</th><th>Lv</th><th>分野</th>
-        <th>習熟度</th><th>正答率</th><th>操作</th></tr></thead>
+        <th>再生${infoIcon("voice-icon-legend",
+          "🆓誰でも無料で再生できます。🔊ログイン/チャージ等で再生できます。"
+          + "🔒現在の状態では再生できません(ログインまたはチャージが必要な"
+          + "場合があります)。")}</th><th>英語</th><th>日本語</th><th>Lv</th>
+        <th>分野</th><th>習熟度</th><th>正答率</th><th>操作</th></tr></thead>
         <tbody id="rows"></tbody></table>
       <div id="pager" class="mt"></div>
     </div>`;
@@ -2040,9 +2055,11 @@ export async function phrases(root) {
             `<option>${escapeHtml(l)}</option>`).join("")}</select>
         <label class="toggle" title="範囲外も含める">
           <input type="checkbox" id="fOutRange" /> 範囲外</label>
-        <label class="toggle" title="無料で🔊再生できるフレーズだけに絞り込む
-          （未ログイン/ログイン無料ユーザー向け）">
-          <input type="checkbox" id="fFreeOnly" /> 🔊再生できるものだけ</label>
+        ${infoIcon("out-of-range-filter",
+          "一部のフレーズには通常のレベル(数値)が割り当てられていません。"
+          + "チェックすると、レベルの上限・下限に関わらずそうしたフレーズも"
+          + "表示対象に含めます。")}
+        ${freeOnlyToggle("fFreeOnly", "フレーズ")}
         ${myDecks.length ? `<select id="fDeck" title="フレーズ帳で絞り込み">
           <option value="">フレーズ帳: 全て</option>
           ${myDecks.map((d) =>
@@ -2067,7 +2084,11 @@ export async function phrases(root) {
         ${pageSizeSelect("pPage")}
       </div>
       </details>
-      <table class="mt rtable"><thead><tr><th>再生</th><th>英語</th><th>日本語</th>
+      <table class="mt rtable"><thead><tr>
+        <th>再生${infoIcon("voice-icon-legend",
+          "🆓誰でも無料で再生できます。🔊ログイン/チャージ等で再生できます。"
+          + "🔒現在の状態では再生できません(ログインまたはチャージが必要な"
+          + "場合があります)。")}</th><th>英語</th><th>日本語</th>
         <th>シーン</th><th>習熟度</th><th>操作</th></tr></thead>
         <tbody id="rows"></tbody></table>
       <div id="pager" class="mt"></div>
@@ -2298,7 +2319,7 @@ function materialView(title, sub, area, fields, histAreas) {
   return async function (root) {
     root.innerHTML = `
       <h1>${title}</h1>
-      ${sampleGateBanner(area)}
+      ${sampleGateBanner()}
       <p class="sub">${sub}</p>
       ${aiBadgeNote()}
       <div class="card">
@@ -2321,9 +2342,8 @@ function materialView(title, sub, area, fields, histAreas) {
       <div id="histPanel" class="card" style="display:none"></div>
       <div class="card"><div id="out" class="md">
         左上で分野を選んで「生成」を押してください。</div></div>`;
-    root.appendChild(sampleMaterialsCard(area,
+    placeSampleCard(root, sampleMaterialsCard(area,
       "📖 サンプルを見る", "サンプルがまだありません。"));
-    wireSampleGateBanner(root);
     // 内容理解問題トグル: OFFなら表示・読み上げから問題部分を除く（保存はフル）。
     const disp = (b) =>
       root.querySelector("#showQ").checked ? b : stripQuestions(b);
@@ -2432,7 +2452,7 @@ function sampleMaterialsCard(area, cardTitle, emptyLabel) {
 export async function writing(root) {
   root.innerHTML = `
     <h1>ライティング</h1>
-    ${sampleGateBanner("writing_sample")}
+    ${sampleGateBanner()}
     <p class="sub">英文を書く(または話す)とAIが添削します。音声応答可。</p>
     ${aiBadgeNote()}
     <div class="card">
@@ -2445,9 +2465,8 @@ export async function writing(root) {
       <div id="ans"></div>
       <div id="fb" class="md mt"></div>
     </div>`;
-  root.appendChild(sampleMaterialsCard("writing_sample",
+  placeSampleCard(root, sampleMaterialsCard("writing_sample",
     "📝 添削サンプルを見る", "サンプルがまだありません。"));
-  wireSampleGateBanner(root);
   const ansBox = root.querySelector("#ans");
   ansBox.appendChild(answerInput(async (txt) => {
     if (!txt.trim()) { toast("文章が空です"); return; }
@@ -2480,7 +2499,7 @@ export async function conversation(root) {
   const vlist = speech.listOpenAIVoices();
   root.innerHTML = `
     <h1>英会話</h1>
-    ${sampleGateBanner("conversation_sample")}
+    ${sampleGateBanner()}
     <p class="sub">AIの声:
       <select id="voiceSel">${vlist.map((v) =>
         `<option value="${v}" ${v === speech.currentVoice() ? "selected" : ""}
@@ -2574,9 +2593,8 @@ export async function conversation(root) {
       <div class="chat" id="chat"></div>
       <div id="inputArea" class="mt"></div>
     </div>`;
-  root.appendChild(sampleMaterialsCard("conversation_sample",
+  placeSampleCard(root, sampleMaterialsCard("conversation_sample",
     "💬 会話サンプルを見る", "サンプルがまだありません。"));
-  wireSampleGateBanner(root);
 
   const modeSel = root.querySelector("#mode");
   const sceneSel = root.querySelector("#sceneSel");
@@ -3018,7 +3036,7 @@ export async function listening(root) {
   const topics = await api.get("/api/listening");
   root.innerHTML = `
     <h1>リスニング</h1>
-    ${sampleGateBanner("listening")}
+    ${sampleGateBanner()}
     <p class="sub">スクリプトを生成して読み上げ、理解度を記録します。</p>
     ${aiBadgeNote()}
     <div class="card">
@@ -3073,9 +3091,8 @@ export async function listening(root) {
         <button class="btn good" id="save">記録</button>
       </div>
     </div>`;
-  root.appendChild(sampleMaterialsCard("listening",
+  placeSampleCard(root, sampleMaterialsCard("listening",
     "🎧 サンプルを見る", "サンプルがまだありません。"));
-  wireSampleGateBanner(root);
   let scriptText = "";
   // 内容理解問題トグル＋読み上げは英語のみ(englishOnly)で統一。
   const lDisp = (b) =>
