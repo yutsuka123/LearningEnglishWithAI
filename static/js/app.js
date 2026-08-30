@@ -711,7 +711,7 @@ async function boot() {
   if (state.multiuser) {
     if (state.isGuest) {
       nav.appendChild(el(
-        '<a class="nav-item" href="/login">🔑 ログイン</a>',
+        '<a class="nav-item" href="/login">🔑 ログイン/登録</a>',
       ));
     } else {
       const navLogout = el('<button class="nav-item">🚪 ログアウト</button>');
