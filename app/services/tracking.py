@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import logging
+import time as _time
 
 from ..database import db
 from . import auth
@@ -29,12 +30,49 @@ def log_event(kind: str, category: str = "", label: str = "") -> None:
         return
     uid = auth.current_user_id()
     ip = auth.current_ip()
+    gsid = auth.current_guest_sid()
     try:
         with db() as conn:
             conn.execute(
                 "INSERT INTO usage_events "
-                "(user_id, ip, kind, category, label) VALUES (?, ?, ?, ?, ?)",
-                (uid, ip, kind, (category or "")[:100], (label or "")[:150]),
+                "(user_id, ip, kind, category, label, guest_sid) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (uid, ip, kind, (category or "")[:100], (label or "")[:150],
+                 gsid),
             )
     except Exception:
         log.warning("usage_events記録に失敗", exc_info=True)
+
+
+# フロントエンドの未捕捉JS例外の記録(2026-08-30)。1画面のバグが大量
+# スパムにならないよう、ip_rate_limited(auth.py)とは別の専用カウンタで
+# IPごと1分間20件までに制限する(超過分はDBを守るため静かに破棄)。
+_CLIENT_ERROR_HITS: dict[str, list[float]] = {}
+_CLIENT_ERROR_CAP_PER_MIN = 20
+
+
+def record_client_error(
+    kind: str, message: str, stack: str = "", url: str = "",
+    line: int = 0, col: int = 0,
+) -> None:
+    """client_errors に1件記録する。レート制限超過・DB失敗はどちらも無視。"""
+    ip = auth.current_ip() or "?"
+    now = _time.monotonic()
+    hits = [t for t in _CLIENT_ERROR_HITS.get(ip, []) if now - t < 60.0]
+    if len(hits) >= _CLIENT_ERROR_CAP_PER_MIN:
+        return
+    hits.append(now)
+    _CLIENT_ERROR_HITS[ip] = hits
+    uid = auth.current_user_id()
+    gsid = auth.current_guest_sid()
+    try:
+        with db() as conn:
+            conn.execute(
+                "INSERT INTO client_errors "
+                "(user_id, ip, guest_sid, kind, message, stack, url, "
+                "line, col) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (uid, ip, gsid, kind, (message or "")[:2000],
+                 (stack or "")[:2000], (url or "")[:500], line, col),
+            )
+    except Exception:
+        log.warning("client_errors記録に失敗", exc_info=True)

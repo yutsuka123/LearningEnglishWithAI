@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import secrets
 import time
 from contextlib import asynccontextmanager
 
@@ -82,6 +83,10 @@ _GUEST_READ_PREFIXES = (
     # プレフィックス扱いに加える(実際はPOSTだが、admin専用の集計取得
     # ではなく誰でも書ける前提のログ用エンドポイントのため問題ない)。
     "/api/system/track",
+    # 2026-08-30: フロントエンドの未捕捉JS例外報告。ゲストの画面で起きた
+    # バグ(登録前の離脱原因になりうる)も拾う必要があるため/trackと同じ
+    # 扱いにする。
+    "/api/system/client-error",
     # 2026-08-22: バージョン情報ページ(更新履歴)とメンテナンス予定のお知らせ。
     # どちらも未ログインの人にも見せる必要がある（メンテナンス予定は
     # 「今つながりにくい理由」を伝えるものなので、ログイン前にこそ要る）。
@@ -155,6 +160,18 @@ async def _auth_context(request, call_next):
             {"ok": False, "error": "リクエストが多すぎます。少し待って"
              "ください。"}, status_code=429)
     multiuser = auth_svc.multiuser_enabled()
+    # 未ログイン訪問者を1人ずつ区別するための匿名セッションID
+    # (2026-08-30・登録に至らない原因分析の常設化用)。ログイン有無に
+    # 関わらず発行する(登録後もログイン前の行動と紐付けられるように
+    # するため)。ローカル単一ユーザー(MULTIUSER=0)では「ゲスト」という
+    # 概念自体が無いため対象外。
+    gsid = ""
+    new_gsid = False
+    if multiuser:
+        gsid = request.cookies.get(auth_svc.GUEST_SID_COOKIE, "")
+        if not gsid:
+            gsid = secrets.token_urlsafe(16)
+            new_gsid = True
     uid = OWNER_USER_ID
     if multiuser:
         uid = None
@@ -181,9 +198,11 @@ async def _auth_context(request, call_next):
                     with db() as conn:
                         conn.execute(
                             "INSERT INTO landing_visits "
-                            "(ip, path, user_agent) VALUES (?, ?, ?)",
+                            "(ip, path, user_agent, guest_sid) "
+                            "VALUES (?, ?, ?, ?)",
                             (client_ip, path,
-                             request.headers.get("user-agent", "")[:300]),
+                             request.headers.get("user-agent", "")[:300],
+                             gsid),
                         )
                     # 国・場所・接続元組織名の非同期エンリッチ（未キャッ
                     # シュのIPのみ実際に外部API呼び出しが走る・失敗しても
@@ -210,13 +229,21 @@ async def _auth_context(request, call_next):
     token = auth_svc.set_current_user_id(
         uid if uid is not None else OWNER_USER_ID)
     ip_token = auth_svc.set_current_ip(client_ip)
+    gsid_token = auth_svc.set_current_guest_sid(gsid)
     web_token = auth_svc.mark_web_request()
     try:
         response = await call_next(request)
     finally:
         auth_svc.reset_current_user_id(token)
         auth_svc.reset_current_ip(ip_token)
+        auth_svc.reset_current_guest_sid(gsid_token)
         auth_svc.reset_web_request(web_token)
+    if new_gsid:
+        response.set_cookie(
+            auth_svc.GUEST_SID_COOKIE, gsid, max_age=auth_svc.GUEST_SID_TTL,
+            httponly=True, samesite="lax", path="/",
+            secure=auth_svc.cookie_secure(request),
+        )
     path = request.url.path
     if path == "/" or path.startswith("/static"):
         response.headers["Cache-Control"] = "no-cache, must-revalidate"

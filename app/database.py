@@ -520,6 +520,26 @@ CREATE TABLE IF NOT EXISTS usage_events (
 CREATE INDEX IF NOT EXISTS idx_usage_events_kind
     ON usage_events(kind, created_at);
 CREATE INDEX IF NOT EXISTS idx_usage_events_ip ON usage_events(ip);
+
+-- フロントエンドの未捕捉JS例外(window.onerror/unhandledrejection)を
+-- 記録する(2026-08-20発覚の「フロントのエラーがブラウザのコンソール
+-- にしか残らずサーバーからは見えない」穴への対応・2026-08-30)。
+-- static/js/error-report.jsからPOST /api/system/client-errorで送られる。
+CREATE TABLE IF NOT EXISTS client_errors (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER,
+    ip         TEXT    DEFAULT '',
+    guest_sid  TEXT    DEFAULT '',
+    kind       TEXT    NOT NULL,   -- 'jserror' | 'unhandledrejection'
+    message    TEXT    DEFAULT '',
+    stack      TEXT    DEFAULT '',
+    url        TEXT    DEFAULT '',
+    line       INTEGER,
+    col        INTEGER,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_client_errors_created
+    ON client_errors(created_at);
 """
 
 
@@ -754,6 +774,12 @@ def _migrate(conn: sqlite3.Connection) -> None:
             WHERE id = NEW.id;
         END;
     """)
+    # 未ログイン訪問者を1人ずつ区別するための匿名セッションID
+    # (2026-08-30・登録に至らない原因分析の常設化用。Cookie発行は
+    # app/main.pyの_auth_contextミドルウェア、値の生成はapp/services/
+    # auth.pyのGUEST_SID_COOKIE参照)。
+    _add_col(conn, "landing_visits", "guest_sid", "guest_sid TEXT DEFAULT ''")
+    _add_col(conn, "usage_events", "guest_sid", "guest_sid TEXT DEFAULT ''")
     _migrate_multiuser(conn)
 
 

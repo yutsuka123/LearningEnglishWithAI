@@ -4097,6 +4097,15 @@ export async function admin(root) {
           VPS側cronで5分おきに収集したものを表示します。上位プランへの
           乗り換えが必要かどうかの判断材料用です。</p>
         <div id="serverStatusWrap" class="mt"><p class="muted">未読み込み</p></div>
+        <div class="row mt">
+          <button class="btn ghost server-hist-range" data-hours="24"
+            style="padding:3px 10px">24時間</button>
+          <button class="btn ghost server-hist-range active" data-hours="168"
+            style="padding:3px 10px">1週間</button>
+          <button class="btn ghost server-hist-range" data-hours="720"
+            style="padding:3px 10px">1ヶ月</button>
+        </div>
+        <div id="serverStatusHistWrap" class="mt"><p class="muted">未読み込み</p></div>
       </details>
 
       <details class="log-group" id="logLoginDetails">
@@ -4156,6 +4165,26 @@ export async function admin(root) {
         </details>
       </details>
 
+      <details class="log-group" id="logRegFunnelDetails">
+        <summary>🚪 登録に至らない原因分析</summary>
+        <p class="muted mt">未登録訪問者を1人ずつ区別するCookie(2026-08-30
+          導入)を使い、訪問→「このアプリについて」確認→登録試行→登録完了
+          の各段階の人数を集計。導入前のデータには付いていないため、
+          この機能導入以降のデータからのみ正確になります（それ以前は
+          上の「未登録アクセス状況」(IP単位)を参照してください）。</p>
+        <div class="row">
+          <label>直近:
+            <select id="regFunnelDays">
+              <option value="7">7日</option>
+              <option value="30" selected>30日</option>
+              <option value="90">90日</option>
+            </select></label>
+          <button class="btn ghost" id="regFunnelReload"
+            style="padding:3px 10px">再読み込み</button>
+        </div>
+        <div id="regFunnelWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
+
       <details class="log-group" id="logVisitTrendDetails">
         <summary>📊 訪問者数の推移（人間/クローラー別）</summary>
         <p class="muted mt">トップページ/取扱説明書/ログイン画面の閲覧
@@ -4200,6 +4229,26 @@ export async function admin(root) {
             style="padding:3px 10px">再読み込み</button>
         </div>
         <div id="errorLogWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
+
+      <details class="log-group" id="logClientErrorDetails">
+        <summary>🐛 フロントエンドJSエラー（未捕捉例外）</summary>
+        <p class="muted mt">画面のJSで捕捉されなかった例外(window.onerror/
+          unhandledrejection)。従来ブラウザのコンソールにしか残らず
+          気づけなかったバグを拾う目的(2026-08-30)。同じ内容が繰り返し
+          起きている場合はメッセージ別の件数一覧で気づきやすくしている。</p>
+        <div class="row">
+          <label>直近:
+            <select id="clientErrLogDays">
+              <option value="1">1日</option>
+              <option value="7" selected>7日</option>
+              <option value="30">30日</option>
+              <option value="90">90日</option>
+            </select></label>
+          <button class="btn ghost" id="clientErrLogReload"
+            style="padding:3px 10px">再読み込み</button>
+        </div>
+        <div id="clientErrorLogWrap" class="mt"><p class="muted">未読み込み</p></div>
       </details>
 
       <details class="log-group" id="logAccessDetails">
@@ -4440,6 +4489,90 @@ export async function admin(root) {
     }
   }
 
+  // --- サーバー負荷の推移グラフ(2026-08-30) ---------------------------
+  // buildVisitTrendSvgとは独立の1系列版(訪問者数グラフへの影響を避ける
+  // ため既存関数は変更せず新設)。load1/mem_pct/disk_pctを縦に3本並べる。
+  function buildMetricTrendSvg(points, key, color, unit) {
+    const W = 680, H = 120, padL = 40, padR = 14, padT = 10, padB = 20;
+    const innerW = W - padL - padR, innerH = H - padT - padB;
+    const n = points.length;
+    const vals = points.map((p) => p[key] ?? 0);
+    const maxVal = Math.max(1, ...vals);
+    const magnitude = Math.pow(10, Math.floor(Math.log10(maxVal || 1)));
+    const niceMax = [1, 2, 5, 10].map((s) => s * magnitude)
+      .find((v) => maxVal <= v) || 10 * magnitude;
+    const x = (i) => padL + (n <= 1 ? innerW / 2 : (innerW * i) / (n - 1));
+    const y = (v) => padT + innerH - (innerH * v) / niceMax;
+    const gridLines = [0, 0.5, 1].map((f) => {
+      const v = Math.round(niceMax * f);
+      const yy = y(v);
+      return `<line x1="${padL}" y1="${yy}" x2="${W - padR}" y2="${yy}"
+          stroke="var(--line)" stroke-width="1" />
+        <text x="${padL - 6}" y="${yy + 4}" text-anchor="end"
+          font-size="10" fill="var(--muted)">${v}${unit}</text>`;
+    }).join("");
+    const labelStep = Math.max(1, Math.ceil(n / 6));
+    const xLabels = points.map((p, i) => {
+      if (i % labelStep !== 0 && i !== n - 1) return "";
+      const short = fmtDate(p.ts).slice(5, 16);
+      return `<text x="${x(i)}" y="${H - 4}" text-anchor="middle"
+        font-size="9" fill="var(--muted)">${escapeHtml(short)}</text>`;
+    }).join("");
+    const linePath = points.map((p, i) =>
+      `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(p[key] ?? 0).toFixed(1)}`
+    ).join(" ");
+    return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">
+      ${gridLines}${xLabels}
+      <path d="${linePath}" fill="none" stroke="${color}" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" />
+    </svg>`;
+  }
+
+  let serverHistHours = 168;
+  async function loadServerStatusHistory() {
+    const wrap = root.querySelector("#serverStatusHistWrap");
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    try {
+      const res = await api.get(
+        `/api/system/admin/server-status-history?hours=${serverHistHours}`);
+      const points = res.points || [];
+      if (!points.length) {
+        wrap.innerHTML = `<p class="muted">この期間のデータはまだありません。</p>`;
+        return;
+      }
+      const m = res.max || {};
+      wrap.innerHTML = `
+        <div class="grid cols-3 mt">
+          <div class="stat"><div class="num">${m.load1 ?? "—"}</div>
+            <div class="lbl">期間中の最大load average</div></div>
+          <div class="stat"><div class="num">${m.mem_pct ?? "—"}%</div>
+            <div class="lbl">期間中の最大RAM使用率</div></div>
+          <div class="stat"><div class="num">${m.disk_pct ?? "—"}%</div>
+            <div class="lbl">期間中の最大ディスク使用率</div></div>
+        </div>
+        <p class="muted mt">load average</p>
+        ${buildMetricTrendSvg(points, "load1", "var(--accent)", "")}
+        <p class="muted mt">RAM使用率</p>
+        ${buildMetricTrendSvg(points, "mem_pct", "var(--accent-2)", "%")}
+        <p class="muted mt">ディスク使用率</p>
+        ${buildMetricTrendSvg(points, "disk_pct", "var(--vt-bot)", "%")}`;
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  function loadServerStatusAll() {
+    loadServerStatus();
+    loadServerStatusHistory();
+  }
+  root.querySelectorAll(".server-hist-range").forEach((b) => {
+    b.addEventListener("click", () => {
+      serverHistHours = Number(b.dataset.hours);
+      root.querySelectorAll(".server-hist-range").forEach((x) =>
+        x.classList.toggle("active", x === b));
+      loadServerStatusHistory();
+    });
+  });
+
   async function loadLoginLog() {
     const wrap = root.querySelector("#loginLogWrap");
     wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
@@ -4611,6 +4744,113 @@ export async function admin(root) {
   root.querySelectorAll(".anon-mark").forEach((c) =>
     c.addEventListener("change", renderAnonRows));
 
+  // --- 登録に至らない原因分析(常設・2026-08-30) ------------------------
+  async function loadRegFunnelGuestDetail(gsid, wrapEl) {
+    wrapEl.innerHTML = `<p class="muted">読み込み中…</p>`;
+    try {
+      const res = await api.get(
+        `/api/system/admin/registration-funnel/guest/${encodeURIComponent(gsid)}`);
+      const rows = res.timeline.map((t) => `<tr>
+        <td class="muted">${fmtDate(t.created_at)}</td>
+        <td class="muted">${escapeHtml(t.src)}</td>
+        <td>${escapeHtml(t.kind || "")}</td>
+        <td>${escapeHtml(t.path || t.category || "")}</td>
+        <td class="muted">${escapeHtml(t.label || "")}${
+          t.success != null ? `成否:${t.success ? "成功" : "失敗"}` : ""}</td>
+      </tr>`).join("");
+      wrapEl.innerHTML = rows
+        ? `<table><thead><tr>
+            <th>日時</th><th>種別</th><th>kind</th><th>画面/分野</th><th>備考</th>
+          </tr></thead><tbody>${rows}</tbody></table>`
+        : `<p class="muted">行動ログがありません。</p>`;
+    } catch (e) {
+      wrapEl.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  async function loadRegFunnel() {
+    const wrap = root.querySelector("#regFunnelWrap");
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    const days = root.querySelector("#regFunnelDays").value;
+    try {
+      const res = await api.get(
+        `/api/system/admin/registration-funnel?days=${days}`);
+      const stages = res.stages || [];
+      if (!stages[0] || !stages[0].count) {
+        wrap.innerHTML = `<p class="muted">この期間はまだデータが
+          ありません(このCookieの導入後から集計されます)。</p>`;
+        return;
+      }
+      const tilesHtml = `<div class="grid cols-4 mt">${stages.map((s) => `
+        <div class="stat"><div class="num">${s.count}</div>
+          <div class="lbl">${escapeHtml(s.label)}</div></div>`).join("")}
+      </div>`;
+      const barsHtml = stages.map((s) => `
+        <div class="row mt" style="align-items:center; gap:8px">
+          <span class="muted" style="width:200px; font-size:12px">
+            ${escapeHtml(s.label)}</span>
+          <div style="flex:1; background:var(--panel-2); border-radius:4px;
+            overflow:hidden; height:14px">
+            <div style="width:${s.rate_from_start}%; background:var(--accent);
+              height:100%"></div>
+          </div>
+          <span class="muted" style="width:120px; font-size:12px">
+            ${s.rate_from_start}%（前段階比${s.rate_from_prev}%）</span>
+        </div>`).join("");
+      const dropoffSummary = res.dropoff_summary || [];
+      const summaryRows = dropoffSummary.map((d) => `<tr>
+        <td>${escapeHtml(d.category)}</td><td>${d.count}</td>
+      </tr>`).join("");
+      const sessions = res.dropoff_sessions || [];
+      const sessionRows = sessions.map((s) => `
+        <tr class="reg-funnel-session" data-gsid="${escapeHtml(s.guest_sid)}"
+          style="cursor:pointer">
+          <td class="muted">${fmtDate(s.created_at)}</td>
+          <td>${escapeHtml(s.category || "(不明)")}</td>
+          <td class="muted">詳細 ▸</td>
+        </tr>
+        <tr class="reg-funnel-detail" data-gsid="${escapeHtml(s.guest_sid)}"
+          hidden>
+          <td colspan="3"><div class="reg-funnel-detail-wrap muted">
+            未読み込み</div></td>
+        </tr>`).join("");
+      wrap.innerHTML = `${tilesHtml}${barsHtml}
+        <h3 class="mt">離脱ポイント（訪問したが登録を試みなかった人が
+          最後に見ていた画面）</h3>
+        ${dropoffSummary.length
+          ? `<table class="mt"><thead><tr><th>画面/分野</th><th>人数</th>
+              </tr></thead><tbody>${summaryRows}</tbody></table>`
+          : `<p class="muted">対象者がいません。</p>`}
+        <details class="mt"><summary>📋 個別セッション一覧
+          （クリックで行動ログを表示・最大${sessions.length}件）</summary>
+          <table class="mt"><thead><tr>
+            <th>最終確認</th><th>画面/分野</th><th></th>
+          </tr></thead><tbody>${sessionRows}</tbody></table>
+        </details>`;
+      wrap.querySelectorAll(".reg-funnel-session").forEach((tr) => {
+        tr.addEventListener("click", () => {
+          const gsid = tr.dataset.gsid;
+          const detailTr = wrap.querySelector(
+            `.reg-funnel-detail[data-gsid="${CSS.escape(gsid)}"]`);
+          const nowHidden = detailTr.hidden;
+          detailTr.hidden = !nowHidden;
+          if (nowHidden) {
+            const inner = detailTr.querySelector(".reg-funnel-detail-wrap");
+            if (inner.dataset.loaded !== "1") {
+              inner.dataset.loaded = "1";
+              loadRegFunnelGuestDetail(gsid, inner);
+            }
+          }
+        });
+      });
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  root.querySelector("#regFunnelReload")
+    .addEventListener("click", loadRegFunnel);
+  root.querySelector("#regFunnelDays")
+    .addEventListener("change", loadRegFunnel);
+
   async function loadChargeKeyLog() {
     const wrap = root.querySelector("#chargeKeyLogWrap");
     wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
@@ -4685,6 +4925,53 @@ export async function admin(root) {
   }
   root.querySelector("#errLogReload").addEventListener("click", loadErrorLog);
   root.querySelector("#errLogLines").addEventListener("change", loadErrorLog);
+
+  const clientErrKindLabel = {
+    jserror: "JS例外", unhandledrejection: "未処理rejection",
+  };
+  async function loadClientErrorLog() {
+    const wrap = root.querySelector("#clientErrorLogWrap");
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    const days = root.querySelector("#clientErrLogDays").value;
+    try {
+      const res = await api.get(
+        `/api/system/admin/client-error-log?days=${days}`);
+      if (!res.grouped.length) {
+        wrap.innerHTML = `<p class="muted">この期間はまだありません。</p>`;
+        return;
+      }
+      const groupedRows = res.grouped.map((g) => `<tr>
+        <td class="muted">${clientErrKindLabel[g.kind] || escapeHtml(g.kind)}</td>
+        <td>${escapeHtml(g.message)}</td>
+        <td>${g.cnt}</td>
+        <td class="muted">${fmtDate(g.last_seen)}</td>
+      </tr>`).join("");
+      const recentRows = res.recent.map((r) => `<tr>
+        <td class="muted">${fmtDate(r.created_at)}</td>
+        <td class="muted">${clientErrKindLabel[r.kind] || escapeHtml(r.kind)}</td>
+        <td>${escapeHtml(r.message)}</td>
+        <td class="muted">${escapeHtml(r.url || "")}${
+          r.line ? `:${r.line}:${r.col}` : ""}</td>
+        <td class="muted">${escapeHtml(r.ip || "")}</td>
+      </tr>`).join("");
+      wrap.innerHTML = `
+        <h3>メッセージ別の件数（多い順）</h3>
+        <table><thead><tr>
+          <th>種別</th><th>メッセージ</th><th>件数</th><th>最終発生</th>
+        </tr></thead><tbody>${groupedRows}</tbody></table>
+        <details class="mt"><summary>📋 直近の生ログ（${res.recent.length}件）</summary>
+          <table class="mt"><thead><tr>
+            <th>日時</th><th>種別</th><th>メッセージ</th><th>発生箇所</th><th>IP</th>
+          </tr></thead><tbody>${recentRows}</tbody></table>
+        </details>`;
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  root.querySelector("#clientErrLogReload")
+    .addEventListener("click", loadClientErrorLog);
+  root.querySelector("#clientErrLogDays")
+    .addEventListener("change", loadClientErrorLog);
 
   async function loadAccessLog() {
     const wrap = root.querySelector("#accessLogWrap");
@@ -5114,12 +5401,14 @@ export async function admin(root) {
   // だし、細かい項目は最初はたたんでおき」というユーザー要望に対応。
   // 併せて管理画面を開くたび無条件に5本のAPIを叩いていたのを解消)。
   const lazySections = [
-    ["#logServerStatusDetails", loadServerStatus],
+    ["#logServerStatusDetails", loadServerStatusAll],
     ["#logLoginDetails", loadLoginLog],
     ["#logAnonAccessDetails", loadAnonAccess],
+    ["#logRegFunnelDetails", loadRegFunnel],
     ["#logVisitTrendDetails", loadVisitTrend],
     ["#logChargeKeyDetails", loadChargeKeyLog],
     ["#logErrorDetails", loadErrorLog],
+    ["#logClientErrorDetails", loadClientErrorLog],
     ["#logAccessDetails", loadAccessLog],
     ["#logUsageAnalyticsDetails", loadUsageAnalytics],
   ];

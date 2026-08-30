@@ -15,6 +15,19 @@
  ],
  "versions": [
   {
+   "version": "ver1.2.31",
+   "date": "2026-08-30",
+   "title": "サーバー監視のグラフ化 + フロントエラー収集 + 登録分析(常設)",
+   "public": [
+    "アプリの安定運用のため、内部の監視・分析機能を強化しました(利用者の画面上の見た目に変わりはありません)。"
+   ],
+   "admin": [
+    "server_stats.jsonlの保持を7日→30日に拡張、/admin/server-status-historyで24h/168h/720hのダウンサンプル済み推移+期間内maxを返すAPIを追加、views.jsに期間切替グラフを追加。",
+    "client_errorsテーブルを新設し、static/js/error-report.js(window.onerror/unhandledrejection)から/api/system/client-errorへPOST、IPごと20件/分のレート制限つき。管理画面にメッセージ別集計+生ログパネルを追加。",
+    "GUEST_SID_COOKIE(ela_gsid)を新設しapp/main.pyの_auth_contextミドルウェアで発行、landing_visits/usage_eventsにguest_sid列を追加。/admin/registration-funnelでステージ別集計+離脱ポイント、/admin/registration-funnel/guest/{gsid}でドリルダウンを提供。"
+   ]
+  },
+  {
    "version": "ver1.2.30",
    "date": "2026-08-30",
    "title": "想定会話の話者名読み上げ + 左ペインピン留め修正 + pt残高表示の改善",

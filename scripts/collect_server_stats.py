@@ -20,10 +20,11 @@ import subprocess
 import time
 from datetime import datetime, timezone
 
-# 5分間隔想定で7日分(2016件)を保持。それ以上古い行は収集のたびに
+# 5分間隔想定で30日分(8640件)を保持。それ以上古い行は収集のたびに
 # 切り捨てる(ファイルが際限なく育たないようにするため)。
-MAX_RECORDS = 2016
-
+# 2026-08-30: 過去1ヶ月の最大負荷を見たいという要望に対応するため
+# 7日分(2016件)から拡張(1行が小さいため30日分でも数MB程度)。
+MAX_RECORDS = 8640
 
 
 def _load_average() -> tuple[float, float, float]:

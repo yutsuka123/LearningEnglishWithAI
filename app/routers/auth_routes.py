@@ -7,7 +7,6 @@ MULTIUSER=1 のときに使う。ローカル単一ユーザー（既定）で�
 
 from __future__ import annotations
 
-import os
 import time
 
 from fastapi import APIRouter, BackgroundTasks, Request, Response
@@ -31,17 +30,6 @@ SIGNUP_CLOSED_MESSAGE = (
 )
 
 
-def _cookie_secure(request: Request) -> bool:
-    """本番HTTPSでは Secure Cookie を必須にする。COOKIE_SECURE=1 で強制、
-    auto（既定）はリバプロの X-Forwarded-Proto / scheme が https かで判定。"""
-    mode = os.getenv("COOKIE_SECURE", "auto").strip().lower()
-    if mode in ("1", "true", "yes"):
-        return True
-    if mode in ("0", "false", "no"):
-        return False
-    return auth.external_scheme(request) == "https"
-
-
 def _record_signup_attempt(
     request: Request, ip: str, success: bool,
     background_tasks: BackgroundTasks,
@@ -53,9 +41,11 @@ def _record_signup_attempt(
         with db() as conn:
             conn.execute(
                 "INSERT INTO landing_visits "
-                "(ip, kind, success, user_agent) VALUES (?, 'signup', ?, ?)",
+                "(ip, kind, success, user_agent, guest_sid) "
+                "VALUES (?, 'signup', ?, ?, ?)",
                 (ip, 1 if success else 0,
-                 request.headers.get("user-agent", "")[:300]),
+                 request.headers.get("user-agent", "")[:300],
+                 auth.current_guest_sid()),
             )
         background_tasks.add_task(geoip.enrich_ip, ip)
     except Exception:
@@ -186,7 +176,7 @@ def signup(
     resp.set_cookie(
         auth.SESSION_COOKIE, token, max_age=auth._SESSION_TTL,
         httponly=True, samesite="lax", path="/",
-        secure=_cookie_secure(request),
+        secure=auth.cookie_secure(request),
     )
     return resp
 
@@ -226,7 +216,7 @@ def login(
     resp.set_cookie(
         auth.SESSION_COOKIE, token, max_age=auth._SESSION_TTL,
         httponly=True, samesite="lax", path="/",
-        secure=_cookie_secure(request),
+        secure=auth.cookie_secure(request),
     )
     return resp
 

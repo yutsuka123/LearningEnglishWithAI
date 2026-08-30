@@ -40,6 +40,15 @@ _current_ip: contextvars.ContextVar[str] = contextvars.ContextVar(
     "current_ip", default=""
 )
 
+# 現在のリクエストのゲストセッションID（2026-08-30・登録に至らない原因
+# 分析の常設化のため新設）。未ログイン訪問者は全員が共有の__guest__
+# 疑似ユーザーになりログイン以前はIPしか手がかりが無かったため、Cookie
+# (GUEST_SID_COOKIE)で1人ずつ区別できるようにする。current_ipと同じ
+# contextvarパターン。
+_current_guest_sid: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "current_guest_sid", default=""
+)
+
 # 現在の呼び出しがWebリクエスト経由か（未設定＝CLI/バッチ実行）。
 # current_user_idはCLI実行時ownerにフォールバックするため、Web経由の
 # owner本人の利用と区別がつかなかった問題を解消する（§CLIスクリプトの
@@ -105,6 +114,18 @@ def reset_current_ip(token: contextvars.Token) -> None:
 
 def current_ip() -> str:
     return _current_ip.get()
+
+
+def set_current_guest_sid(gsid: str) -> contextvars.Token:
+    return _current_guest_sid.set(gsid or "")
+
+
+def reset_current_guest_sid(token: contextvars.Token) -> None:
+    _current_guest_sid.reset(token)
+
+
+def current_guest_sid() -> str:
+    return _current_guest_sid.get()
 
 
 def mark_web_request() -> contextvars.Token:
@@ -528,6 +549,27 @@ def get_user_settings(conn: sqlite3.Connection, user_id: int) -> dict:
 # ---------------------------------------------------------------------------
 SESSION_COOKIE = "ela_session"
 _SESSION_TTL = 60 * 60 * 24 * 30  # 30日
+
+# 未ログイン訪問者を区別するための匿名セッションID Cookie（2026-08-30）。
+# ログイン有無に関わらず常時発行する（未ログイン期間の行動をログイン後
+# にも紐付けられるメリットの方が大きいため）。ランダム値をそのまま
+# 保存するだけで署名は不要（本人確認用途ではなく、行動ログの名寄せ
+# だけが目的のため）。
+GUEST_SID_COOKIE = "ela_gsid"
+GUEST_SID_TTL = 60 * 60 * 24 * 180  # 180日
+
+
+def cookie_secure(request) -> bool:
+    """本番HTTPSでは Secure Cookie を必須にする。COOKIE_SECURE=1 で強制、
+    auto（既定）はリバプロの X-Forwarded-Proto / scheme が https かで判定。
+    元はauth_routes.pyの_cookie_secure()だったが、main.pyのミドルウェア
+    (ゲストセッションCookie発行)からも使うためこちらに統一した。"""
+    mode = os.getenv("COOKIE_SECURE", "auto").strip().lower()
+    if mode in ("1", "true", "yes"):
+        return True
+    if mode in ("0", "false", "no"):
+        return False
+    return external_scheme(request) == "https"
 
 
 def get_session_secret(conn: sqlite3.Connection) -> bytes:

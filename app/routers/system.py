@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter
 
@@ -1005,6 +1006,118 @@ def admin_anon_access(days: int = 30, limit: int = 500):
     }
 
 
+@router.get("/admin/registration-funnel")
+def admin_registration_funnel(days: int = 30):
+    """登録に至らない原因分析(常設・2026-08-30)。未登録訪問者を1人ずつ
+    区別するguest_sid Cookie(app/main.pyの_auth_contextミドルウェアで
+    発行)を使い、訪問→about確認→登録試行→登録完了の各段階のユニーク
+    guest_sid数を集計する。加えて「訪問はしたが登録を試みなかった」
+    guest_sidについて、最後に触れていた画面(usage_events.category)を
+    集計し離脱ポイントの見当をつける。既存のadmin_anon_access(IP単位)は
+    guest_sid導入前のデータも見られるよう残したまま、こちらは導入後の
+    正確な人単位集計を担う。"""
+    _require_admin()
+    days = max(1, min(days, 365))
+    since = f"-{days} days"
+    with db() as conn:
+        def count_distinct_guest(where_sql: str) -> int:
+            row = conn.execute(
+                "SELECT COUNT(DISTINCT guest_sid) AS c FROM landing_visits "
+                f"WHERE guest_sid != '' AND created_at >= datetime('now', ?) "
+                f"AND {where_sql}", (since,),
+            ).fetchone()
+            return row["c"]
+
+        visited = count_distinct_guest("kind='visit'")
+        viewed_about = count_distinct_guest(
+            "kind='visit' AND path='/static/about.html'")
+        signup_attempted = count_distinct_guest("kind='signup'")
+        signup_succeeded = count_distinct_guest(
+            "kind='signup' AND success=1")
+
+        dropoff_rows = conn.execute(
+            "SELECT ue.guest_sid, ue.category, ue.created_at "
+            "FROM usage_events ue "
+            "WHERE ue.guest_sid != '' "
+            "AND ue.created_at >= datetime('now', ?) "
+            "AND ue.guest_sid IN ("
+            "  SELECT guest_sid FROM landing_visits WHERE kind='visit' "
+            "  AND guest_sid != '' AND created_at >= datetime('now', ?)"
+            ") "
+            "AND ue.guest_sid NOT IN ("
+            "  SELECT guest_sid FROM landing_visits WHERE kind='signup' "
+            "  AND guest_sid != '' AND created_at >= datetime('now', ?)"
+            ") "
+            "ORDER BY ue.guest_sid, ue.created_at",
+            (since, since, since),
+        ).fetchall()
+    # guest_sidごとに最後のイベントだけ残す(created_at昇順で走査して
+    # 上書きしていくため、最後に残った値が最新になる)。
+    last_event: dict[str, dict] = {}
+    for r in dropoff_rows:
+        last_event[r["guest_sid"]] = {
+            "category": r["category"], "created_at": r["created_at"],
+        }
+    dropoff_sessions = sorted(
+        [{"guest_sid": g, **v} for g, v in last_event.items()],
+        key=lambda x: x["created_at"], reverse=True,
+    )[:200]
+    dropoff_counts: dict[str, int] = {}
+    for v in last_event.values():
+        key = v["category"] or "(不明)"
+        dropoff_counts[key] = dropoff_counts.get(key, 0) + 1
+    dropoff_summary = sorted(
+        [{"category": k, "count": v} for k, v in dropoff_counts.items()],
+        key=lambda x: -x["count"],
+    )
+
+    def rate(n: int, d: int) -> float:
+        return round(n / d * 100, 1) if d else 0.0
+
+    stages = [
+        {"key": "visited", "label": "訪問", "count": visited},
+        {"key": "viewed_about", "label": "「このアプリについて」を確認",
+         "count": viewed_about},
+        {"key": "signup_attempted", "label": "登録を試みた",
+         "count": signup_attempted},
+        {"key": "signup_succeeded", "label": "登録完了",
+         "count": signup_succeeded},
+    ]
+    for i, s in enumerate(stages):
+        prev = stages[i - 1]["count"] if i > 0 else visited
+        s["rate_from_start"] = rate(s["count"], visited)
+        s["rate_from_prev"] = rate(s["count"], prev) if i > 0 else 100.0
+    return {
+        "days": days, "stages": stages,
+        "dropoff_summary": dropoff_summary,
+        "dropoff_sessions": dropoff_sessions,
+    }
+
+
+@router.get("/admin/registration-funnel/guest/{guest_sid}")
+def admin_registration_funnel_guest(guest_sid: str):
+    """1人ぶんの行動ログ(landing_visits+usage_events)を時系列マージして
+    返す(ファネル一覧からのドリルダウン用・「詳細に分析できるように」
+    というユーザー要望対応)。"""
+    _require_admin()
+    with db() as conn:
+        lv = conn.execute(
+            "SELECT 'landing_visits' AS src, kind, path, success, "
+            "user_agent, created_at FROM landing_visits "
+            "WHERE guest_sid = ? ORDER BY created_at", (guest_sid,),
+        ).fetchall()
+        ue = conn.execute(
+            "SELECT 'usage_events' AS src, kind, category, label, "
+            "created_at FROM usage_events "
+            "WHERE guest_sid = ? ORDER BY created_at", (guest_sid,),
+        ).fetchall()
+    timeline = sorted(
+        [dict(r) for r in lv] + [dict(r) for r in ue],
+        key=lambda r: r["created_at"],
+    )
+    return {"guest_sid": guest_sid, "timeline": timeline}
+
+
 @router.get("/admin/visit-trend")
 def admin_visit_trend(days: int = 30):
     """訪問者数の推移（人間/クローラー別・延べ数とユニークIP数、日次・
@@ -1235,6 +1348,62 @@ def track_event(payload: TrackEventIn):
     if payload.kind in ("page", "click"):
         tracking.log_event(payload.kind, payload.category, payload.label)
     return {"ok": True}
+
+
+class ClientErrorIn(BaseModel):
+    kind: str
+    message: str = ""
+    stack: str = ""
+    url: str = ""
+    line: int = 0
+    col: int = 0
+
+
+@router.post("/client-error")
+def client_error(payload: ClientErrorIn):
+    """フロントエンドの未捕捉JS例外の報告(2026-08-20発覚の「フロントの
+    エラーがブラウザのコンソールにしか残らずサーバーからは見えない」
+    穴への対応・2026-08-30)。static/js/error-report.jsのwindow.onerror/
+    unhandledrejectionから送られる。ゲストも送信対象
+    (_GUEST_READ_PREFIXESに追加済み)。記録失敗が画面操作を妨げないよう
+    常に200を返すbest-effort。"""
+    if payload.kind in ("jserror", "unhandledrejection"):
+        tracking.record_client_error(
+            payload.kind, payload.message, payload.stack, payload.url,
+            payload.line, payload.col,
+        )
+    return {"ok": True}
+
+
+@router.get("/admin/client-error-log")
+def admin_client_error_log(days: int = 7, limit: int = 200):
+    """フロントエンドJSエラーの一覧(管理画面用)。メッセージでGROUP BYした
+    件数・最終発生時刻(よくあるバグを一目で把握する用)と、直近の生ログ
+    (詳細調査用)の両方を返す。"""
+    _require_admin()
+    days = max(1, min(days, 365))
+    limit = max(1, min(limit, 1000))
+    since = f"-{days} days"
+    with db() as conn:
+        grouped = conn.execute(
+            "SELECT kind, message, COUNT(*) AS cnt, "
+            "MAX(created_at) AS last_seen, MIN(created_at) AS first_seen "
+            "FROM client_errors WHERE created_at >= datetime('now', ?) "
+            "GROUP BY kind, message ORDER BY cnt DESC LIMIT 100",
+            (since,),
+        ).fetchall()
+        recent = conn.execute(
+            "SELECT id, user_id, ip, kind, message, stack, url, line, col, "
+            "created_at FROM client_errors "
+            "WHERE created_at >= datetime('now', ?) "
+            "ORDER BY id DESC LIMIT ?",
+            (since, limit),
+        ).fetchall()
+    return {
+        "days": days,
+        "grouped": [dict(r) for r in grouped],
+        "recent": [dict(r) for r in recent],
+    }
 
 
 @router.get("/admin/usage-analytics")
@@ -1575,3 +1744,55 @@ def admin_server_status(
             f"AND {filter_sql}"
         ).fetchone()
     return {"host": latest, "active_users_5min": row["c"]}
+
+
+@router.get("/admin/server-status-history")
+def admin_server_status_history(hours: int = 24):
+    """CPU/RAM/ディスクの過去推移+期間内の最大値（2026-08-30ユーザー
+    要望「過去1ヶ月・過去1週間で最大の負荷も表示できるようにする」
+    「24時間/1週間/1ヶ月切り替えできるグラフ表示」）。admin_server_status
+    と同じ data/server_stats.jsonl(collect_server_stats.pyがVPSホスト
+    cronで5分おきに追記)を読む。グラフ用に約120点へダウンサンプル
+    するが、maxはダウンサンプル前の生データから算出する(平均に埋もれて
+    瞬間的なピークを取りこぼさないため)。"""
+    _require_admin()
+    hours = max(1, min(hours, 24 * 31))
+    path = paths.data_dir / "server_stats.jsonl"
+    if not path.exists():
+        return {"hours": hours, "max": None, "points": []}
+    since = datetime.now(timezone.utc) - timedelta(hours=hours)
+    records = []
+    with path.open(encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                rec = json.loads(line)
+                ts = datetime.strptime(
+                    rec["ts"], "%Y-%m-%d %H:%M:%S").replace(
+                    tzinfo=timezone.utc)
+            except (ValueError, KeyError):
+                continue
+            if ts >= since:
+                records.append(rec)
+    if not records:
+        return {"hours": hours, "max": None, "points": []}
+    max_stat = {
+        "load1": max(r.get("load1", 0) for r in records),
+        "mem_pct": max(r.get("mem_pct", 0) for r in records),
+        "disk_pct": max(r.get("disk_pct", 0) for r in records),
+    }
+    target_points = 120
+    bucket_size = max(1, len(records) // target_points)
+    points = []
+    for i in range(0, len(records), bucket_size):
+        chunk = records[i:i + bucket_size]
+        n = len(chunk)
+        points.append({
+            "ts": chunk[-1]["ts"],
+            "load1": round(sum(r.get("load1", 0) for r in chunk) / n, 2),
+            "mem_pct": round(sum(r.get("mem_pct", 0) for r in chunk) / n, 1),
+            "disk_pct": round(sum(r.get("disk_pct", 0) for r in chunk) / n, 1),
+        })
+    return {"hours": hours, "max": max_stat, "points": points}
