@@ -177,11 +177,14 @@ function setSidebarPinned(on) {
 
 // スマホは既存のオフキャンバス開閉、それ以外は折りたたみ開閉。
 // 同じハンバーガーボタンで両方をまかなう(2026-08-30、見慣れたアイコンを
-// 使い回すことで直感的にする)。
+// 使い回すことで直感的にする)。ピン留め中は「固定表示」の名の通り
+// ハンバーガーでも畳めないようにする(2026-08-30ユーザー指摘: ピン有効
+// でもハンバーガーを押すと畳まれてしまい、ピンの意味が無いように見えた。
+// 解除したければピン自体をオフにすればよい、という一貫した仕様にする)。
 function toggleSidebar() {
   if (window.innerWidth <= 760) {
     toggleMobileNav();
-  } else {
+  } else if (!isSidebarPinned()) {
     setSidebarCollapsed(!sidebarCollapsed);
   }
 }
@@ -454,7 +457,7 @@ export async function refreshCost() {
     const balEl = document.getElementById("usageBalance");
     if (balEl) {
       const remain = Math.max(0, Math.round(u.remaining_jpy || 0));
-      balEl.textContent = `${remain}pt`;
+      balEl.textContent = `残り${remain}pt`;
       balEl.style.color = _usageColor(remain);
       balEl.title = u.balance_jpy != null
         ? `AI利用の残り目安: ${remain}pt（チャージ残高 ` +
@@ -666,6 +669,15 @@ async function boot() {
   // 見えてちらつく問題があったため・2026-08-12ユーザー指摘）。
   await refreshCost();      // sets state.isAdmin / state.multiuser / state.isGuest
   await loadDismissedHints(); // isGuestが決まった後(保存先の出し分けに必要)
+  // pt残高は未登録/無課金でも0ptのまま常に表示され、何の数字か分かり
+  // づらいという指摘(2026-08-30)を受けⓘヒントを追加。
+  const balInfo = document.getElementById("usageBalanceInfo");
+  if (balInfo) {
+    balInfo.innerHTML = infoIcon("usage-balance-pt",
+      "pt(ポイント)はAI機能(音声再生・英会話・添削等)に使える残高の単位"
+      + "です。未登録は0ptですが、無料登録すると毎日一定量が使えるように"
+      + "なり、チャージ(有料)するとさらに増えます。");
+  }
   if (state.isAdmin) {
     // 非管理者は/api/system/settingsを読めない(2026-08-12・管理者専用化)。
     // AI有効状態はrefreshCost()内でmy-usage経由により既に取得済み。

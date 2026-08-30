@@ -3362,7 +3362,9 @@ function renderTripPrepData(panel, data) {
   }
   if (Array.isArray(data.sample_conversation)
       && data.sample_conversation.length) {
-    const card = el(`<div class="card"><h3>💬 想定会話</h3></div>`);
+    const card = el(`<div class="card"><h3>💬 想定会話</h3>
+      <label class="toggle"><input type="checkbox" id="scSpeaker" />
+        話者名を読み上げる</label></div>`);
     const chat = el(`<div class="chat"></div>`);
     data.sample_conversation.forEach((turn) => {
       const you = String(turn.speaker || "").toLowerCase().startsWith("you");
@@ -3375,8 +3377,14 @@ function renderTripPrepData(panel, data) {
       chat.appendChild(m);
     });
     card.appendChild(chat);
+    // 話者名アナウンス: 選択制・既定OFF(2026-08-30ユーザー承認)。
+    // このバーは/api/learn/ttsでその場合成する読み上げなので事前生成音声
+    // の在庫は不要(チェック有無でgetText()に渡す文字列が変わるだけ)。
+    const scSpeaker = card.querySelector("#scSpeaker");
     card.appendChild(readAloudBar(
-      () => data.sample_conversation.map((t) => t.en).join(". ")));
+      () => data.sample_conversation.map((t) =>
+        (scSpeaker.checked && t.speaker ? `${t.speaker}. ` : "")
+        + (t.en || "")).join(" ")));
     panel.appendChild(card);
   }
   if (data.follow_up_email
