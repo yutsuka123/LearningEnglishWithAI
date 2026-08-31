@@ -20,6 +20,18 @@ Duplicates skipped by english (lowercased) against the full live `words` /
 Run:  python scripts/add_cats_dogs.py
 仕上げ: 投入後に `python scripts/relevel.py` と
         `python scripts/relevel_phrases.py` で難易度を再設定する。
+
+**2026-08-31追記(方針転換・再実行不可)**: 上記「品種名は動物ドメインに
+残す」という当初方針をユーザー指示で転換し、`words`の基本語・品種名
+(cat/dog/kitten/puppy/主要犬種13種/主要猫種7種、計37件)を`動物(身近な
+動物)`から`猫`/`犬`へ移動、`phrases`の「猫・犬にまつわる英語」(156件)も
+`猫にまつわる英語`/`犬にまつわる英語`に分割した(犬猫両方に言及する3件は
+両分野に複製)。理由: 犬派/猫派どちらか一方だけの学習者向けに分野を
+絞れるようにするため(宣伝面でも猫好き/犬好き層を別々に狙う施策と連動)。
+**このスクリプトを再実行すると「猫・犬にまつわる英語」の156件が重複挿入
+される**(english列の重複チェックはあるが、シーン名が変わったため通らない
+可能性が高い)。再実行しないこと。詳細は`app/services/taxonomy.py`の
+該当コメントと本番/ローカルDBの実データを参照。
 """
 
 from __future__ import annotations
