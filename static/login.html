@@ -90,6 +90,7 @@
   </style>
 </head>
 <body>
+  <script src="/static/js/error-report.js"></script>
   <div class="pagebar">
     <select id="fontSize" title="文字の大きさ">
       <option value="">文字: 中</option>
@@ -139,16 +140,16 @@
       使用します。<b>本名でなくて構いません</b>（仮名・ニックネーム可）。
       フリガナは分かる場合のみで結構です。</p>
     <label for="su">メールアドレス</label>
-    <input id="su" name="email" type="email" autocomplete="email"
-      required />
+    <input id="su" name="email" type="text" inputmode="email"
+      autocomplete="email" required />
     <p class="hint">登録後、こちらから営業・勧誘・宣伝・課金の催促等の
       メールをお送りすることはありません。</p>
     <p class="hint">BASEでチャージ（pt購入）をご予定の方は、BASEでのお支払い
       時に使用するメールアドレスと同じものでご登録いただくと、
       チャージキーの発行・照合がスムーズです。</p>
     <label for="su2">メールアドレス（確認）</label>
-    <input id="su2" name="email_confirm" type="email" autocomplete="email"
-      required />
+    <input id="su2" name="email_confirm" type="text" inputmode="email"
+      autocomplete="email" required />
     <label for="sp">パスワード</label>
     <div class="pwd-wrap">
       <input id="sp" name="new_password" type="password" minlength="8"
@@ -256,6 +257,19 @@
   </form>
 
   <script>
+    // localStorageはiOS Safariの「すべてのCookieをブロック」等の
+    // プライバシー設定下でSecurityErrorを投げることがある。ここは
+    // 同期<script>の先頭のため、無防備にthrowすると以降の全コード
+    // (新規登録ボタンのイベント登録・送信処理を含む)が一切実行されず
+    // 「登録ボタンを押しても反応しない」事故になる(2026-09-01発見)。
+    // 必ずtry/catchで包み、失敗時は既定値にフォールバックする。
+    function safeGetItem(key) {
+      try { return localStorage.getItem(key); } catch (_) { return null; }
+    }
+    function safeSetItem(key, value) {
+      try { localStorage.setItem(key, value); } catch (_) { /* ignore */ }
+    }
+
     // テーマ/文字サイズはメインアプリ(static/js/app.js)と同じ
     // localStorageキー("theme"/"fontSize")を使い、ログイン前後で
     // 設定が引き継がれるようにする。
@@ -269,11 +283,11 @@
         if (btn) btn.textContent = '🌙';
       }
     }
-    applyTheme(localStorage.getItem('theme') || 'dark');
+    applyTheme(safeGetItem('theme') || 'dark');
     document.getElementById('themeToggle').addEventListener('click', () => {
       const next = document.documentElement.dataset.theme === 'light'
         ? 'dark' : 'light';
-      localStorage.setItem('theme', next);
+      safeSetItem('theme', next);
       applyTheme(next);
     });
 
@@ -283,10 +297,10 @@
       const sel = document.getElementById('fontSize');
       if (sel) sel.value = size;
     }
-    applyFontSize(localStorage.getItem('fontSize') || '');
+    applyFontSize(safeGetItem('fontSize') || '');
     document.getElementById('fontSize').addEventListener('change', (e) => {
       const v = e.target.value;
-      localStorage.setItem('fontSize', v);
+      safeSetItem('fontSize', v);
       applyFontSize(v);
     });
 
@@ -495,6 +509,11 @@
       }
       const pwErr = passwordPolicyError(password);
       if (pwErr) { se.textContent = pwErr; return; }
+      // 二重送信防止(連打・多重タップで2件のPOSTが飛び、片方が
+      // 「既に登録されています」を返して成功なのに失敗表示に見える
+      // 事故を防ぐ・2026-09-01)。
+      const submitBtn = fSignup.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
       try {
         const r = await fetch('/api/auth/signup', {
           method: 'POST',
@@ -527,7 +546,8 @@
         const d = await r.json();
         if (d.ok) { location.href = '/'; }
         else { se.textContent = d.error || '登録に失敗しました。'; }
-      } catch (_) { se.textContent = '通信エラーが発生しました。'; }
+      } catch (_) { se.textContent = '通信エラーが発生しました。';
+      } finally { if (submitBtn) submitBtn.disabled = false; }
     });
   </script>
 </body>
