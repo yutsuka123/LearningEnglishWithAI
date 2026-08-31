@@ -152,7 +152,8 @@
     <label for="sp">パスワード</label>
     <div class="pwd-wrap">
       <input id="sp" name="new_password" type="password" minlength="8"
-        maxlength="32" autocomplete="new-password" required />
+        maxlength="32" autocomplete="off" data-lpignore="true"
+        data-1p-ignore disabled required />
       <button type="button" class="pwd-toggle" data-target="sp"
         aria-label="パスワードを表示"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
@@ -162,7 +163,8 @@
     <label for="sp2">パスワード（確認）</label>
     <div class="pwd-wrap">
       <input id="sp2" name="password_confirm" type="password" minlength="8"
-        maxlength="32" autocomplete="new-password" required />
+        maxlength="32" autocomplete="off" data-lpignore="true"
+        data-1p-ignore disabled required />
       <button type="button" class="pwd-toggle" data-target="sp2"
         aria-label="パスワードを表示"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
@@ -306,15 +308,25 @@
 
     const fLogin = document.getElementById('f');
     const fSignup = document.getElementById('fSignup');
+    const pLogin = document.getElementById('p');
+    const pSignup = [document.getElementById('sp'), document.getElementById('sp2')];
+    // 非表示側フォームのパスワード欄はdisabledにして完全にDOMから除外する
+    // (display:noneだけだとブラウザ/パスワード管理ソフトが非表示要素も
+    // 走査し、ログイン欄と登録欄が同一ページに同居していることで自動生成・
+    // 自動入力を誤爆させる問題があったため・2026-09-01)。
     // 2026-08-18〜: リリース前最終テストのため新規登録を再開。
     function showSignup() {
       fLogin.classList.add('hidden');
       fSignup.classList.remove('hidden');
+      pLogin.disabled = true;
+      pSignup.forEach((el) => { el.disabled = false; });
       track('click', 'signup_form', 'opened');
     }
     function showLogin() {
       fSignup.classList.add('hidden');
       fLogin.classList.remove('hidden');
+      pSignup.forEach((el) => { el.disabled = true; });
+      pLogin.disabled = false;
     }
     document.getElementById('toSignup').addEventListener('click', showSignup);
     document.getElementById('toLogin').addEventListener('click', showLogin);
