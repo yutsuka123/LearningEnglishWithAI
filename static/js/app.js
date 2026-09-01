@@ -10,6 +10,15 @@ import * as views from "./views.js";
 export const state = {
   inputMode: localStorage.getItem("inputMode") || "text", // 'text' | 'voice'
   aiEnabled: false,
+  // 安全側のデフォルト(2026-09-01): /api/system/my-usageが失敗すると
+  // refreshCost()の内部try/catchで握りつぶされ、これらがundefinedの
+  // まま残ってしまい、サイドバーのログイン導線(#loginBtnや🔑ログイン/
+  // 登録リンク)が一切表示されないバグがあった(ゲスト訪問者が登録
+  // 導線を完全に失う最悪のケース)。未確認の間はゲスト扱いにしておけば
+  // 「本来ログイン中の人に一瞬ゲスト向け表示が出る」程度で済み、
+  // 「本来ゲストの人がログイン導線を失う」よりずっと軽微。
+  multiuser: true,
+  isGuest: true,
   taxonomy: { news_fields: [], accents: [], models: [] },
   // B16: 出張・旅行準備の「ロールプレイを始める」から一時的にセットされる
   // 人物像。会話タブがこれを見て、シーン選択の代わりにpersonaで会話する。
