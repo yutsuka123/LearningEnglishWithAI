@@ -4185,6 +4185,27 @@ export async function admin(root) {
         <div id="regFunnelWrap" class="mt"><p class="muted">未読み込み</p></div>
       </details>
 
+      <details class="log-group" id="logRegistrantsDetails">
+        <summary>🧑‍🎓 登録者一覧（アンケート込み）</summary>
+        <p class="muted mt">新規登録時のアンケート回答も含めた登録者一覧
+          （新しい順・最大200件）。上部の集計フィルタ
+          （管理者/招待ユーザー/テストユーザーを含めるか）が効きます。</p>
+        <button class="btn ghost" id="registrantsReload"
+          style="padding:3px 10px">再読み込み</button>
+        <div id="registrantsWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
+
+      <details class="log-group" id="logSurveySummaryDetails">
+        <summary>📋 アンケート集計</summary>
+        <p class="muted mt">登録時アンケートの回答を項目別に集計します。
+          複数選択欄（職業詳細・利用目的・きっかけ・興味分野）は選択肢
+          ごとの人数、単一選択欄（職業分類・年代・性別）はそのままの
+          内訳です。</p>
+        <button class="btn ghost" id="surveySummaryReload"
+          style="padding:3px 10px">再読み込み</button>
+        <div id="surveySummaryWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
+
       <details class="log-group" id="logVisitTrendDetails">
         <summary>📊 訪問者数の推移（人間/クローラー別）</summary>
         <p class="muted mt">トップページ/取扱説明書/ログイン画面の閲覧
@@ -4851,6 +4872,102 @@ export async function admin(root) {
   root.querySelector("#regFunnelDays")
     .addEventListener("change", loadRegFunnel);
 
+  async function loadRegistrants() {
+    const wrap = root.querySelector("#registrantsWrap");
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    try {
+      const res = await api.get(
+        `/api/system/admin/registrants?${adminAggQuery()}`);
+      const items = res.items || [];
+      if (!items.length) {
+        wrap.innerHTML = `<p class="muted">登録者がいません。</p>`;
+        return;
+      }
+      const cell = (s) => s ? escapeHtml(s) : "—";
+      const rows = items.map((u) => `<tr>
+        <td class="muted">${fmtDate(u.created_at)}</td>
+        <td>${escapeHtml(u.display_name || "")}<br>
+          <span class="muted">${escapeHtml(u.email || u.username)}</span></td>
+        <td>${cell(u.survey_occupation_category)}${
+          u.survey_occupation_detail
+            ? `<br><span class="muted">${escapeHtml(u.survey_occupation_detail)}</span>`
+            : ""}</td>
+        <td>${cell(u.survey_age_group)}</td>
+        <td>${cell(u.survey_gender)}</td>
+        <td>${cell(u.survey_purpose)}</td>
+        <td>${cell(u.survey_referral)}</td>
+        <td>${cell(u.survey_interest_areas)}</td>
+        <td>${cell(u.survey_free_text)}</td>
+      </tr>`).join("");
+      wrap.innerHTML = `<div style="overflow-x:auto"><table><thead><tr>
+          <th>登録日時</th><th>担当者/メール</th><th>職業</th><th>年代</th>
+          <th>性別</th><th>目的</th><th>きっかけ</th><th>興味分野</th>
+          <th>自由記述</th>
+        </tr></thead><tbody>${rows}</tbody></table></div>`;
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  root.querySelector("#registrantsReload")
+    .addEventListener("click", loadRegistrants);
+
+  async function loadSurveySummary() {
+    const wrap = root.querySelector("#surveySummaryWrap");
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    try {
+      const res = await api.get(
+        `/api/system/admin/survey-summary?${adminAggQuery()}`);
+      const barTable = (title, items) => {
+        if (!items.length) {
+          return `<h3 class="mt">${title}</h3>
+            <p class="muted">データがありません。</p>`;
+        }
+        const max = Math.max(...items.map((i) => i.count));
+        const rows = items.map((i) => `
+          <div class="row mt" style="align-items:center; gap:8px">
+            <span class="muted" style="width:160px; font-size:12px">
+              ${escapeHtml(i.label)}</span>
+            <div style="flex:1; background:var(--panel-2); border-radius:4px;
+              overflow:hidden; height:14px">
+              <div style="width:${max ? Math.round(i.count / max * 100) : 0}%;
+                background:var(--accent); height:100%"></div>
+            </div>
+            <span class="muted" style="width:40px; font-size:12px">
+              ${i.count}</span>
+          </div>`).join("");
+        return `<h3 class="mt">${title}</h3>${rows}`;
+      };
+      const freeText = res.free_text || [];
+      const freeTextHtml = freeText.length
+        ? `<table class="mt"><thead><tr><th>担当者</th><th>内容</th>
+            </tr></thead><tbody>${freeText.map((f) => `<tr>
+              <td>${escapeHtml(f.display_name || "")}</td>
+              <td>${escapeHtml(f.text)}</td></tr>`).join("")}
+          </tbody></table>`
+        : `<p class="muted">自由記述の回答はありません。</p>`;
+      wrap.innerHTML = `
+        <div class="grid cols-4">
+          <div class="stat"><div class="num">${res.total}</div>
+            <div class="lbl">対象ユーザー数</div></div>
+          <div class="stat"><div class="num">${res.answered}</div>
+            <div class="lbl">アンケート回答あり</div></div>
+        </div>
+        ${barTable("職業分類", res.occupation_category)}
+        ${barTable("職業詳細", res.occupation_detail)}
+        ${barTable("年代", res.age_group)}
+        ${barTable("性別", res.gender)}
+        ${barTable("利用目的", res.purpose)}
+        ${barTable("きっかけ", res.referral)}
+        ${barTable("興味分野", res.interest_areas)}
+        <h3 class="mt">自由記述</h3>
+        ${freeTextHtml}`;
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  root.querySelector("#surveySummaryReload")
+    .addEventListener("click", loadSurveySummary);
+
   async function loadChargeKeyLog() {
     const wrap = root.querySelector("#chargeKeyLogWrap");
     wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
@@ -5405,6 +5522,8 @@ export async function admin(root) {
     ["#logLoginDetails", loadLoginLog],
     ["#logAnonAccessDetails", loadAnonAccess],
     ["#logRegFunnelDetails", loadRegFunnel],
+    ["#logRegistrantsDetails", loadRegistrants],
+    ["#logSurveySummaryDetails", loadSurveySummary],
     ["#logVisitTrendDetails", loadVisitTrend],
     ["#logChargeKeyDetails", loadChargeKeyLog],
     ["#logErrorDetails", loadErrorLog],

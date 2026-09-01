@@ -21,7 +21,8 @@ from .config import load_tokushoho_info, log, paths
 from .database import OWNER_USER_ID, db, init_db
 from .routers import (
     auth_routes, base_oauth, billing, categories, decks, fulfillment,
-    inquiries, learn, paypay_test, phrase_decks, phrases, system, vocabulary,
+    inquiries, learn, paypay_charge, paypay_test, phrase_decks, phrases,
+    system, vocabulary,
 )
 from .services import auth as auth_svc
 from .services import geoip
@@ -34,6 +35,11 @@ _AUTH_ALLOW = {
     "/login", "/api/auth/login", "/api/auth/signup", "/api/health",
     "/favicon.ico", "/tokushoho", "/robots.txt", "/api/system/taxonomy",
     "/sitemap.xml", "/llms.txt",
+    # PayPayからのredirect復帰(2026-09-01)。セッション切れの状態で戻って
+    # きても素の401 JSONではなく/paypay-chargeへ一旦到達させ、そちらの
+    # ページ側のログインチェックで/loginへ誘導する(お金は一切動かない
+    # 単なるリダイレクトのため許可しても安全)。
+    "/api/paypay/return",
 }
 
 # 未ログイン訪問をlanding_visitsへ記録するパス（2026-08-20拡張・管理画面
@@ -265,6 +271,7 @@ app.include_router(inquiries.router)
 app.include_router(fulfillment.router)
 app.include_router(base_oauth.router)
 app.include_router(paypay_test.router)
+app.include_router(paypay_charge.router)
 
 
 @app.get("/api/health")
@@ -446,6 +453,15 @@ def admin_paypay_test_page():
         return RedirectResponse("/login")
     return FileResponse(
         str(paths.root / "templates" / "admin_paypay_test.html"))
+
+
+@app.get("/paypay-charge")
+def paypay_charge_page():
+    """PayPayでのpt購入・支払い後の確認ページ（ログイン中のユーザー
+    向け・2026-09-01新設）。ログインチェックは`_auth_context`ミドル
+    ウェアが先に行うため、ここまで来た時点で認証済み。"""
+    return FileResponse(
+        str(paths.root / "templates" / "paypay_charge.html"))
 
 
 # Serve the SPA. Static assets under /static, index.html at root.

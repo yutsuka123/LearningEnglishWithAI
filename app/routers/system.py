@@ -79,6 +79,119 @@ def admin_set_test_flag(user_id: int, payload: dict):
     return {"ok": True, "user_id": user_id, "is_test": is_test}
 
 
+@router.get("/admin/registrants")
+def admin_registrants(
+    include_admin: bool = False, include_invited: bool = False,
+    include_test: bool = False, limit: int = 200,
+):
+    """登録者一覧(アンケート回答込み)。管理者画面④用(2026-09-01・
+    ユーザー要望「登録者の確認」)。/admin/overviewは利用量・課金状態が
+    主目的でメール本体やアンケート内容を含まないため、別エンドポイントに
+    分離した。新しい登録から確認したいはずなのでcreated_at降順。"""
+    _require_admin()
+    limit = max(1, min(limit, 500))
+    filter_sql = _user_filter_sql(include_admin, include_invited,
+                                   include_test)
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT id, username, email, display_name, full_name, "
+            "furigana, display_name_furigana, created_at, role, is_test, "
+            "survey_occupation_category, survey_occupation_detail, "
+            "survey_age_group, survey_gender, survey_purpose, "
+            "survey_referral, survey_interest_areas, survey_free_text "
+            f"FROM users WHERE {filter_sql} "
+            "ORDER BY created_at DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+    return {"ok": True, "items": [dict(r) for r in rows]}
+
+
+def _split_multi(value: str) -> list[str]:
+    """アンケートの複数選択欄(collectWithOtherが', '区切りで保存)を
+    個別の値に分割する。空欄・前後空白は除く。"""
+    if not value:
+        return []
+    return [v.strip() for v in value.split(",") if v.strip()]
+
+
+@router.get("/admin/survey-summary")
+def admin_survey_summary(
+    include_admin: bool = False, include_invited: bool = False,
+    include_test: bool = False,
+):
+    """アンケート結果の集計表示。管理者画面⑤用(2026-09-01・ユーザー要望
+    「アンケートの確認(内容詳しく集計表示)」)。単一選択欄はそのまま、
+    複数選択欄(職業詳細/目的/きっかけ/興味分野)は', '区切りを分解して
+    個別に集計する。"""
+    _require_admin()
+    from collections import Counter
+    filter_sql = _user_filter_sql(include_admin, include_invited,
+                                   include_test)
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT id, display_name, survey_occupation_category, "
+            "survey_occupation_detail, survey_age_group, survey_gender, "
+            "survey_purpose, survey_referral, survey_interest_areas, "
+            "survey_free_text "
+            f"FROM users WHERE {filter_sql}"
+        ).fetchall()
+    total = len(rows)
+    answered = 0
+    occupation_category: Counter = Counter()
+    occupation_detail: Counter = Counter()
+    age_group: Counter = Counter()
+    gender: Counter = Counter()
+    purpose: Counter = Counter()
+    referral: Counter = Counter()
+    interest_areas: Counter = Counter()
+    free_text: list[dict] = []
+    for r in rows:
+        has_any = any([
+            r["survey_occupation_category"], r["survey_age_group"],
+            r["survey_gender"], r["survey_purpose"], r["survey_referral"],
+            r["survey_interest_areas"], r["survey_free_text"],
+        ])
+        if has_any:
+            answered += 1
+        if r["survey_occupation_category"]:
+            occupation_category[r["survey_occupation_category"]] += 1
+        for v in _split_multi(r["survey_occupation_detail"]):
+            occupation_detail[v] += 1
+        if r["survey_age_group"]:
+            age_group[r["survey_age_group"]] += 1
+        if r["survey_gender"]:
+            gender[r["survey_gender"]] += 1
+        for v in _split_multi(r["survey_purpose"]):
+            purpose[v] += 1
+        for v in _split_multi(r["survey_referral"]):
+            referral[v] += 1
+        for v in _split_multi(r["survey_interest_areas"]):
+            interest_areas[v] += 1
+        if (r["survey_free_text"] or "").strip():
+            free_text.append({
+                "user_id": r["id"], "display_name": r["display_name"],
+                "text": r["survey_free_text"],
+            })
+
+    def _sorted(c: Counter) -> list[dict]:
+        return [{"label": k, "count": v}
+                for k, v in sorted(c.items(), key=lambda kv: -kv[1])]
+
+    return {
+        "ok": True,
+        "total": total,
+        "answered": answered,
+        "occupation_category": _sorted(occupation_category),
+        "occupation_detail": _sorted(occupation_detail),
+        "age_group": _sorted(age_group),
+        "gender": _sorted(gender),
+        "purpose": _sorted(purpose),
+        "referral": _sorted(referral),
+        "interest_areas": _sorted(interest_areas),
+        "free_text": free_text,
+    }
+
+
 @router.get("/taxonomy")
 def taxonomy():
     """Selectable lists for UI dropdowns (news fields, accents, models)."""

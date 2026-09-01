@@ -43,13 +43,18 @@ class PayPayError(Exception):
     """PayPay API呼び出し時のエラー(管理画面にそのままメッセージ表示する)。"""
 
 
-def _is_production() -> bool:
+def is_production() -> bool:
+    """本番(実売上)モードかどうか。加盟店審査が完了するまでは常にFalse
+    (=サンドボックス)。2026-09-01〜: app/routers/paypay_charge.pyが一般
+    ユーザー向けのpt購入を、審査完了までadmin限定に制限する判定にも使う
+    (サンドボックスのままだと実際の支払いなしにptだけ付与されてしまう
+    ため)。"""
     return os.getenv("PAYPAY_PRODUCTION_MODE", "").strip().lower() in (
         "1", "true", "yes")
 
 
 def _base_url() -> str:
-    return _PRODUCTION_APIGW if _is_production() else _SANDBOX_APIGW
+    return _PRODUCTION_APIGW if is_production() else _SANDBOX_APIGW
 
 
 def _credentials() -> tuple[str, str, str]:
@@ -104,7 +109,7 @@ def _request(method: str, path: str, *, body: dict | None = None) -> dict:
     # 秘密情報は絶対にログに出さない(bodyはmerchantPaymentId/amount等の
     # 非秘匿情報のみを含む想定)。
     log.info("paypay: request method=%s path=%s production=%s body=%s",
-             method, path, _is_production(), body_json)
+             method, path, is_production(), body_json)
     try:
         resp = httpx.request(
             method, url, headers=headers,
@@ -199,3 +204,42 @@ def refund(
     if reason:
         body["reason"] = reason[:200]
     return _request("POST", "/v2/refunds", body=body)
+
+
+def credit_if_completed(
+    conn, payment_row, status: str, payment_id: str,
+) -> bool:
+    """`paypay_payments`の1行(sqlite3.Row)に対し、statusがCOMPLETEDで
+    かつ未付与の場合に限り、原子的にpt付与する。付与できたかどうかを
+    返す。`app/routers/paypay_charge.py`の`/confirm`と
+    `scripts/reconcile_paypay_payments.py`の両方から呼ばれる共通ロジック
+    (2026-09-01・実装を2箇所に分けると挙動がずれる恐れがあるため一本化)。
+
+    二重防止の仕組み: `credited_at IS NULL`の行だけを対象にUPDATEし、
+    実際に更新できた行数(rowcount)が1のときだけpt付与する
+    (`app/services/charge_keys.py`の`redeem_key`と同じ「使用済みで
+    なければ使用済みにする」という原子的な自己防衛パターン)。同時に
+    2回呼ばれても、片方だけが更新に成功しpt付与も1回だけになる。"""
+    from . import auth  # 循環import回避のため関数内でimport
+
+    mpid = payment_row["merchant_payment_id"]
+    already_credited = payment_row["credited_at"] is not None
+    conn.execute(
+        "UPDATE paypay_payments SET status = ?, payment_id = ?, "
+        "updated_at = datetime('now') WHERE merchant_payment_id = ?",
+        (status, payment_id, mpid),
+    )
+    if status != "COMPLETED" or already_credited:
+        return False
+    cur = conn.execute(
+        "UPDATE paypay_payments SET credited_at = datetime('now') "
+        "WHERE merchant_payment_id = ? AND credited_at IS NULL",
+        (mpid,),
+    )
+    if cur.rowcount != 1:
+        return False
+    mode = "production" if is_production() else "sandbox"
+    auth.add_balance(
+        conn, payment_row["user_id"], float(payment_row["amount_jpy"]),
+        reason="paypay_charge", note=f"mpid={mpid} mode={mode}")
+    return True

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PayPayでのチャージ — English Learning with AI</title>
+  <style>
+    :root {
+      --bg: #0f1419; --card: #1a2230; --text: #e6edf3; --sub: #d5dde6;
+      --border: #3a4a61; --accent: #4da3ff; --accent-hover: #6db4ff;
+      --err: #ff6b6b; --ok: #3ddc84; --shadow: rgba(0,0,0,.4);
+    }
+    :root[data-theme="light"] {
+      --bg: #f4f6fb; --card: #fff; --text: #223; --sub: #556;
+      --border: #ccd; --accent: #3b6fd4; --accent-hover: #2f5cb8;
+      --err: #c0392b; --ok: #1a7f37; --shadow: rgba(0,0,0,.08);
+    }
+    body { font-family: system-ui, sans-serif; background: var(--bg);
+      display: flex; min-height: 100vh; align-items: center;
+      justify-content: center; margin: 0; color: var(--text); }
+    .card { background: var(--card); padding: 32px; border-radius: 12px;
+      box-shadow: 0 4px 24px var(--shadow); width: 340px;
+      text-align: center; }
+    h1 { font-size: 18px; margin: 0 0 16px; }
+    .msg { font-size: 14px; color: var(--sub); margin: 12px 0; }
+    .amount { font-size: 28px; font-weight: 700; margin: 8px 0; }
+    .ok { color: var(--ok); }
+    .err { color: var(--err); }
+    .badge { display: inline-block; font-size: 12px; padding: 3px 10px;
+      border-radius: 999px; font-weight: 700; background: var(--border);
+      color: var(--text); }
+    button, a.btn { display: inline-block; padding: 10px 20px; border: 0;
+      border-radius: 8px; cursor: pointer; font-size: 14px;
+      background: var(--accent); color: #fff; font-weight: 700;
+      text-decoration: none; margin-top: 12px; }
+    button:hover, a.btn:hover { background: var(--accent-hover); }
+    .spinner { font-size: 32px; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>💳 PayPayでのチャージ</h1>
+    <div id="out"><p class="spinner">⏳</p><p class="msg">確認しています…</p>
+      <a href="/" style="font-size:12px; color:var(--sub)">アプリに戻る</a>
+    </div>
+  </div>
+
+  <script>
+    // ライト/ダークはメインアプリ(static/js/app.js)と同じlocalStorageキーを
+    // 使う。読み取りに失敗しても(iOS Safariのプライバシー設定等)このページ
+    // 自体は動く必要があるためtry/catchで包む(static/login.htmlと同じ
+    // 教訓・2026-09-01)。
+    try {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'light') document.documentElement.dataset.theme = 'light';
+    } catch (_) { /* ignore */ }
+
+    const out = document.getElementById('out');
+    const params = new URLSearchParams(location.search);
+    const mpid = params.get('mpid') || '';
+
+    function showResult(html) { out.innerHTML = html; }
+
+    async function confirmPayment() {
+      if (!mpid) {
+        showResult(`<p class="msg">この画面は購入手続きの一部です。
+          単体では開けません。</p>
+          <a class="btn" href="/">アプリに戻る</a>`);
+        return;
+      }
+      showResult(`<p class="spinner">⏳</p><p class="msg">確認しています…</p>
+        <a href="/" style="font-size:12px; color:var(--sub)">アプリに戻る</a>`);
+      try {
+        const r = await fetch(
+          '/api/paypay/confirm/' + encodeURIComponent(mpid));
+        const d = await r.json();
+        if (!r.ok || !d.ok) {
+          throw new Error(d.detail || d.error || ('エラー ' + r.status));
+        }
+        if (d.credited) {
+          showResult(`
+            <p class="msg ok">🎉 チャージが完了しました</p>
+            <div class="amount">${d.balance_jpy != null
+              ? Math.round(d.balance_jpy) : '-'} pt</div>
+            <p class="msg">現在の残高です。</p>
+            <a class="btn" href="/">アプリに戻る</a>`);
+          return;
+        }
+        // まだCOMPLETEDではない(支払い前・キャンセル・処理中など)。
+        showResult(`
+          <p class="msg">支払いがまだ確認できませんでした。</p>
+          <p><span class="badge">${escapeHtml(d.status || '不明')}</span></p>
+          <p class="msg">PayPayアプリで支払いを完了してから、下のボタンで
+            再確認してください。決済をキャンセルした場合はチャージされま
+            せん。</p>
+          <button onclick="confirmPayment()">再確認する</button>
+          <br><a class="btn" href="/" style="background:transparent;
+            color:var(--sub); box-shadow:none">アプリに戻る</a>`);
+      } catch (e) {
+        showResult(`
+          <p class="msg err">確認できませんでした: ${escapeHtml(e.message)}</p>
+          <button onclick="confirmPayment()">再試行する</button>
+          <br><a class="btn" href="/" style="background:transparent;
+            color:var(--sub); box-shadow:none">アプリに戻る</a>`);
+      }
+    }
+    function escapeHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;',
+          "'": '&#39;' }[c]));
+    }
+    confirmPayment();
+  </script>
+</body>
+</html>

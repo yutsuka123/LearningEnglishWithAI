@@ -481,6 +481,33 @@ CREATE INDEX IF NOT EXISTS idx_paypay_actions_mpid
 CREATE INDEX IF NOT EXISTS idx_paypay_actions_created
     ON paypay_actions(created_at);
 
+-- PayPayでのpt購入(実課金導線・2026-09-01新設、app/routers/paypay_charge.py)。
+-- 1回の購入試行=1行。`credited_at`がNULLの間は「まだpt未付与」を意味し、
+-- ここに`UNIQUE(merchant_payment_id)`+「credited_atがNULLの行だけを対象に
+-- 更新する」という原子的な操作(`UPDATE ... WHERE credited_at IS NULL`)を
+-- 組み合わせることで、Webhookとredirect復帰が両方来ても・ユーザーが
+-- 確認ボタンを連打しても、pt付与は構造的に1回しか起こらない
+-- (app/services/charge_keys.pyのredeem_key関数と同じ考え方)。
+-- status: PayPay側の最新のdata.status(CREATED/COMPLETED/FAILED/
+-- CANCELED/REFUNDED等)。credited_atが埋まっているのに後で返金された
+-- 場合もstatusだけ更新し、pt自体は自動では取り消さない(要:手動是正)。
+CREATE TABLE IF NOT EXISTS paypay_payments (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id             INTEGER NOT NULL REFERENCES users(id),
+    merchant_payment_id TEXT    NOT NULL UNIQUE,
+    code_id             TEXT    DEFAULT '',
+    payment_id          TEXT    DEFAULT '',
+    amount_jpy          INTEGER NOT NULL,
+    status              TEXT    NOT NULL DEFAULT 'CREATED',
+    credited_at         TEXT,
+    created_at          TEXT    NOT NULL DEFAULT (datetime('now')),
+    updated_at          TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_paypay_payments_user
+    ON paypay_payments(user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_paypay_payments_pending
+    ON paypay_payments(credited_at, created_at);
+
 -- お問い合わせ・要望フォーム（2026-08-06・手動対応前提。自動振り分け等は
 -- 将来検討）。管理者が一覧で確認し、status を手動で更新する運用。
 CREATE TABLE IF NOT EXISTS inquiries (
@@ -807,6 +834,11 @@ def _migrate(conn: sqlite3.Connection) -> None:
     # auth.pyのGUEST_SID_COOKIE参照)。
     _add_col(conn, "landing_visits", "guest_sid", "guest_sid TEXT DEFAULT ''")
     _add_col(conn, "usage_events", "guest_sid", "guest_sid TEXT DEFAULT ''")
+    # paypay_actionsは元々admin専用テストツールの監査ログだったが、
+    # 実課金導線(paypay_charge.py)の追加でユーザー本人の操作も記録する
+    # ようになったため、admin_user_idとは別にuser_idを追加(2026-09-01)。
+    _add_col(conn, "paypay_actions", "user_id",
+             "user_id INTEGER REFERENCES users(id)")
     _migrate_multiuser(conn)
 
 
