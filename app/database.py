@@ -454,6 +454,33 @@ CREATE TABLE IF NOT EXISTS base_order_actions (
 CREATE INDEX IF NOT EXISTS idx_base_order_actions_order
     ON base_order_actions(order_id, created_at);
 
+-- PayPay決済テスト(app/routers/paypay_test.py)の構造化監査ログ
+-- (2026-09-01・ユーザー要望「ログ・エラーハンドリングを充実させて万全を
+-- 期す」)。これまではapp.log(テキストログ)のみで、コンテナ再作成
+-- (docker compose up -d --build)のたびに直前の履歴が失われていた
+-- (2026-09-01実例: ver1.2.33/1.2.34デプロイの合間にテスト決済2件の
+-- ログが消える寸前だった)。DBに残すことで再作成後も履歴を追跡できる。
+-- action: 'create' | 'details' | 'cancel' | 'refund'。
+-- status: PayPay側のdata.status(CREATED/COMPLETED/FAILED/CANCELED等)、
+-- または接続自体に失敗した場合は空文字（=okがFALSEの行を見ればわかる）。
+CREATE TABLE IF NOT EXISTS paypay_actions (
+    id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    action              TEXT    NOT NULL,
+    admin_user_id       INTEGER REFERENCES users(id),
+    merchant_payment_id TEXT    DEFAULT '',
+    code_id             TEXT    DEFAULT '',
+    payment_id          TEXT    DEFAULT '',
+    amount_jpy          INTEGER,
+    status              TEXT    DEFAULT '',
+    ok                  INTEGER NOT NULL DEFAULT 1,
+    note                TEXT    DEFAULT '',
+    created_at          TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_paypay_actions_mpid
+    ON paypay_actions(merchant_payment_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_paypay_actions_created
+    ON paypay_actions(created_at);
+
 -- お問い合わせ・要望フォーム（2026-08-06・手動対応前提。自動振り分け等は
 -- 将来検討）。管理者が一覧で確認し、status を手動で更新する運用。
 CREATE TABLE IF NOT EXISTS inquiries (

@@ -73,6 +73,32 @@
       <p class="err" id="statusErr"></p>
       <pre id="rawJson"></pre>
     </div>
+
+    <div class="card">
+      <h2>③ 最近の実行履歴
+        <button class="ghost" style="padding:4px 10px;font-size:12px"
+          onclick="loadHistory()">更新</button>
+      </h2>
+      <p class="muted">create/details/cancel/refundの全操作をDBに記録
+        (コンテナ再作成でも消えない)。失敗した操作も含む。</p>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="text-align:left;color:#789">
+              <th style="padding:4px 8px">日時</th>
+              <th style="padding:4px 8px">操作</th>
+              <th style="padding:4px 8px">金額</th>
+              <th style="padding:4px 8px">状態</th>
+              <th style="padding:4px 8px">管理者</th>
+              <th style="padding:4px 8px">merchantPaymentId</th>
+              <th style="padding:4px 8px">備考</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+      <p class="err" id="historyErr"></p>
+    </div>
   </div>
 
   <script>
@@ -109,10 +135,14 @@
         sessionStorage.setItem(storeKey(d.merchant_payment_id), JSON.stringify({
           code_id: d.code_id, amount_jpy: amount,
         }));
-        // deeplink(paypay://...)・urlのいずれもアプリインストール済み
-        // なら支払い画面を直接起動する仕様(公式Q&A)。deeplinkは同一
-        // 端末上での遷移により適した形式のため優先する(2026-08-27)。
-        location.href = d.deeplink || d.url;
+        // deeplink(paypay://...)はスマホ/タブレット(PayPayアプリが
+        // 端末にある前提)でのみ機能する。PCブラウザではpaypay://を開く
+        // アプリが無いためlocation.hrefが無反応になる(2026-09-01発覚:
+        // 「PCでボタンを押しても反応しない」)。モバイル端末以外では
+        // urlを使う(ORDER_QRなのでQRコードが表示され、スマホのPayPay
+        // アプリで読み取れる)。
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        location.href = (isMobile && d.deeplink) ? d.deeplink : d.url;
       } catch (e) {
         $('createErr').textContent = e.message;
       }
@@ -154,6 +184,7 @@
           }),
         });
         await refreshStatus();
+        loadHistory();
       } catch (e) {
         $('statusErr').textContent = e.message;
       }
@@ -175,12 +206,43 @@
           }),
         });
         await refreshStatus();
+        loadHistory();
       } catch (e) {
         $('statusErr').textContent = e.message;
       }
     }
 
+    function escapeHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    async function loadHistory() {
+      $('historyErr').textContent = '';
+      try {
+        const d = await api('/history?limit=50');
+        const rows = d.items || [];
+        $('historyBody').innerHTML = rows.map((r) => {
+          const badge = r.ok
+            ? `<span class="badge b-${escapeHtml(r.status || 'CREATED')}">${escapeHtml(r.status || '-')}</span>`
+            : `<span class="badge b-FAILED">失敗</span>`;
+          return `<tr style="border-top:1px solid #eef1f8">
+            <td style="padding:4px 8px;white-space:nowrap">${escapeHtml(r.created_at)}</td>
+            <td style="padding:4px 8px">${escapeHtml(r.action)}</td>
+            <td style="padding:4px 8px">${r.amount_jpy != null ? '¥' + escapeHtml(r.amount_jpy) : '-'}</td>
+            <td style="padding:4px 8px">${badge}</td>
+            <td style="padding:4px 8px">${escapeHtml(r.admin_username || '-')}</td>
+            <td style="padding:4px 8px;font-size:11px;word-break:break-all">${escapeHtml(r.merchant_payment_id)}</td>
+            <td style="padding:4px 8px;font-size:11px">${escapeHtml(r.note)}</td>
+          </tr>`;
+        }).join('') || '<tr><td colspan="7" style="padding:8px;color:#99a">履歴はまだありません。</td></tr>';
+      } catch (e) {
+        $('historyErr').textContent = e.message;
+      }
+    }
+
     checkConfig();
+    loadHistory();
     if (curMpid) {
       $('statusCard').style.display = 'block';
       refreshStatus();

@@ -104,11 +104,18 @@ def _request(method: str, path: str, *, body: dict | None = None) -> dict:
     # 秘密情報は絶対にログに出さない(bodyはmerchantPaymentId/amount等の
     # 非秘匿情報のみを含む想定)。
     log.info("paypay: request method=%s path=%s production=%s body=%s",
-              method, path, _is_production(), body_json)
+             method, path, _is_production(), body_json)
     try:
         resp = httpx.request(
             method, url, headers=headers,
             content=body_json, timeout=30.0)
+    except httpx.TimeoutException as e:
+        log.warning("paypay: request TIMEOUT method=%s path=%s: %s",
+                    method, path, e)
+        raise PayPayError(
+            "PayPayへの接続がタイムアウトしました(30秒)。時間をおいて"
+            "再試行してください。決済自体は処理されている場合があるため、"
+            "残高/注文状況を確認してから再送してください。") from e
     except httpx.HTTPError as e:
         log.warning("paypay: request failed method=%s path=%s: %s",
                     method, path, e)

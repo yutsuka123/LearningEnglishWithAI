@@ -16,9 +16,13 @@ create/details/cancel/refundの全操作を、実行した管理者(username/id)
 merchantPaymentId・codeId・paymentId・金額・結果ステータスとともに
 app.logへ記録する(成功はlog.info、失敗はlog.warning)。API secret等の
 秘密情報は`app/services/paypay.py`側でも一切ログに出さない設計。
-現状はapp.log(テキストログ)のみで、DBテーブル化(base_order_actionsと
-同様の構造化監査ログ)は本番決済導線に組み込む際の課題として
-docs/TODO.mdに記録済み(このテストページの段階では見送り)。
+
+**2026-09-01追記**: app.log(テキストログ)だけだとコンテナ再作成
+(`docker compose up -d --build`)のたびに直前の履歴が失われてしまう
+実例が発生した(デプロイの合間にテスト決済2件のログが消える寸前
+だった)ため、`paypay_actions`テーブル(app/database.py)にも同じ内容を
+記録するようにした(`_record_action`)。GET /historyで直近の実行履歴を
+取得でき、`templates/admin_paypay_test.html`の③に一覧表示する。
 """
 
 from __future__ import annotations
@@ -53,6 +57,28 @@ def _require_admin(conn) -> dict:
     if not me or me.get("role") != "admin":
         raise errors.http_error("2004", "管理者のみ操作できます。")
     return me
+
+
+def _record_action(
+    conn, action: str, admin_id: int | None, *,
+    mpid: str = "", code_id: str = "", payment_id: str = "",
+    amount_jpy: int | None = None, status: str = "", ok: bool = True,
+    note: str = "",
+) -> None:
+    """paypay_actionsテーブルへ監査ログを残す(app.logだけだとコンテナ
+    再作成で消えるため・2026-09-01)。この記録自体の失敗で本処理を
+    落とさないよう、例外はここで握りつぶしてlog.warningのみ行う。"""
+    try:
+        conn.execute(
+            "INSERT INTO paypay_actions (action, admin_user_id, "
+            "merchant_payment_id, code_id, payment_id, amount_jpy, "
+            "status, ok, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (action, admin_id, mpid, code_id, payment_id, amount_jpy,
+             status, 1 if ok else 0, note[:500]),
+        )
+        conn.commit()
+    except Exception as e:  # noqa: BLE001 - 監査ログの失敗は握りつぶす
+        log.warning("paypay_actions記録に失敗しました: %s", e)
 
 
 @router.get("/status")
@@ -103,11 +129,25 @@ def create(payload: CreateIn, request: Request):
         log.warning(
             "paypay_test: create FAILED admin=%s mpid=%s: %s",
             me.get("username"), merchant_payment_id, e)
+        with db() as conn:
+            _record_action(
+                conn, "create", me["id"], mpid=merchant_payment_id,
+                amount_jpy=payload.amount_jpy, ok=False, note=str(e))
         raise errors.http_error("3018", str(e))
     body = data.get("data") or {}
     if not body.get("url"):
+        with db() as conn:
+            _record_action(
+                conn, "create", me["id"], mpid=merchant_payment_id,
+                amount_jpy=payload.amount_jpy, ok=False,
+                note="PayPayからurlが返らなかった")
         raise errors.http_error(
             "3018", f"PayPayからurlが返りませんでした: {data}")
+    with db() as conn:
+        _record_action(
+            conn, "create", me["id"], mpid=merchant_payment_id,
+            code_id=body.get("codeId") or "", amount_jpy=payload.amount_jpy,
+            status=body.get("status") or "", ok=True)
     return {
         "ok": True,
         "merchant_payment_id": merchant_payment_id,
@@ -142,11 +182,22 @@ def details(
         log.warning(
             "paypay_test: details FAILED admin=%s mpid=%s: %s",
             me.get("username"), merchant_payment_id, e)
+        with db() as conn:
+            _record_action(
+                conn, "details", me["id"], mpid=merchant_payment_id,
+                ok=False, note=str(e))
         raise errors.http_error("3018", str(e))
-    status = (data.get("data") or {}).get("status")
+    body = data.get("data") or {}
+    status = body.get("status")
     log.info(
         "paypay_test: details admin=%s mpid=%s status=%s",
         me.get("username"), merchant_payment_id, status)
+    with db() as conn:
+        _record_action(
+            conn, "details", me["id"], mpid=merchant_payment_id,
+            payment_id=body.get("paymentId") or "",
+            amount_jpy=(body.get("amount") or {}).get("amount"),
+            status=status or "", ok=True)
     return {"ok": True, "raw": data}
 
 
@@ -170,7 +221,15 @@ def cancel(payload: CancelIn):
         log.warning(
             "paypay_test: cancel FAILED admin=%s code_id=%s: %s",
             me.get("username"), payload.code_id, e)
+        with db() as conn:
+            _record_action(
+                conn, "cancel", me["id"], mpid=payload.merchant_payment_id,
+                code_id=payload.code_id, ok=False, note=str(e))
         raise errors.http_error("3018", str(e))
+    with db() as conn:
+        _record_action(
+            conn, "cancel", me["id"], mpid=payload.merchant_payment_id,
+            code_id=payload.code_id, status="CANCELED", ok=True)
     return {"ok": True, "raw": data}
 
 
@@ -202,5 +261,34 @@ def do_refund(payload: RefundIn):
         log.warning(
             "paypay_test: refund FAILED admin=%s payment_id=%s: %s",
             me.get("username"), payload.payment_id, e)
+        with db() as conn:
+            _record_action(
+                conn, "refund", me["id"], mpid=payload.merchant_payment_id,
+                payment_id=payload.payment_id, amount_jpy=payload.amount_jpy,
+                ok=False, note=str(e))
         raise errors.http_error("3018", str(e))
+    with db() as conn:
+        _record_action(
+            conn, "refund", me["id"], mpid=payload.merchant_payment_id,
+            payment_id=payload.payment_id, amount_jpy=payload.amount_jpy,
+            status=(data.get("data") or {}).get("status") or "", ok=True)
     return {"ok": True, "raw": data}
+
+
+@router.get("/history")
+def history(limit: int = 50):
+    """直近の実行履歴(管理画面③で表示)。app.logがコンテナ再作成で
+    失われても、ここでDBから振り返れるようにする(2026-09-01)。"""
+    limit = max(1, min(limit, 200))
+    with db() as conn:
+        _require_admin(conn)
+        rows = conn.execute(
+            "SELECT pa.id, pa.action, pa.merchant_payment_id, pa.code_id, "
+            "pa.payment_id, pa.amount_jpy, pa.status, pa.ok, pa.note, "
+            "pa.created_at, u.username AS admin_username "
+            "FROM paypay_actions pa LEFT JOIN users u "
+            "ON u.id = pa.admin_user_id "
+            "ORDER BY pa.id DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+    return {"ok": True, "items": [dict(r) for r in rows]}
