@@ -120,6 +120,17 @@ def main() -> int:
             if not data:
                 failed += 1
                 continue
+            # example_ja_srcを必ずセットする(2026-09-01発覚の重大バグ修正:
+            # これが無いとapp/routers/vocabulary.pyの_resolve_example_jaが
+            # 「訳がどの例文に対応するか」を判定できず、AIの返した examples[]
+            # がwords.exampleと一言一句一致しない限り訳が空欄表示になる。
+            # word_detail()エンドポイントおよびbuild_details_history_lit_
+            # batch_2026_08_30.pyでは既に対応済みだったが、このバッチ版だけ
+            # 長期間欠落しており、本番で数千語規模の「訳が消える」事故の
+            # 原因になっていた(docs/TODO.md参照)。)
+            if (r["example"] or "").strip() and str(
+                    data.get("example_ja") or "").strip():
+                data["example_ja_src"] = (r["example"] or "").strip()
             conn.execute(
                 "UPDATE words SET detail = ? WHERE id = ?",
                 (json.dumps(data, ensure_ascii=False), r["id"]),
