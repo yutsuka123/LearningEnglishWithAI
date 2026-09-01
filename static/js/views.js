@@ -1940,6 +1940,21 @@ export async function vocab(root) {
   // 呼び出しごとに連番を振り、自分より新しいload()が発行済みなら結果を
   // 捨てる(go()のmyRootと同じレースコンディション対策の考え方)。
   let loadSeq = 0;
+  let baseWords = []; // 直近のサーバ取得結果(キーワード適用前)のキャッシュ
+  // キーワードはサーバのクエリパラメータに含まれずクライアント側でしか
+  // 絞り込んでいないため、1文字入力するたびにload()で全件再取得すると
+  // 無駄な重いリクエストが積み重なり、体感で「検索し直しても反映されない」
+  // ように見える不具合になっていた(2026-09-02ユーザー報告)。キーワード
+  // 変更時はキャッシュ済みbaseWordsをその場でフィルタするだけにし、
+  // サーバ再取得はキーワード以外のフィルタが変わったときだけ行う。
+  const applyKeyword = () => {
+    const term = kw.value.trim().toLowerCase();
+    curWords = term ? baseWords.filter((w) =>
+      w.english.toLowerCase().includes(term)
+      || (w.japanese || "").toLowerCase().includes(term)) : baseWords;
+    wPage = 0;
+    paint();
+  };
   const load = async () => {
     const seq = ++loadSeq;
     const q = new URLSearchParams({ sort: root.querySelector("#fSort").value });
@@ -1965,12 +1980,8 @@ export async function vocab(root) {
     if (deckSel && deckSel.value) q.set("deck_id", deckSel.value);
     const words = await api.get("/api/words?" + q.toString());
     if (seq !== loadSeq) return; // 自分より新しい問い合わせが発行済み→破棄
-    const term = kw.value.trim().toLowerCase();
-    curWords = term ? words.filter((w) =>
-      w.english.toLowerCase().includes(term)
-      || (w.japanese || "").toLowerCase().includes(term)) : words;
-    wPage = 0;
-    paint();
+    baseWords = words;
+    applyKeyword();
   };
   const fDir = root.querySelector("#fDir");
   fDir.addEventListener("click", () => {
@@ -2005,7 +2016,7 @@ export async function vocab(root) {
   if (sbW) sbW.addEventListener("change", (e) => {
     setShowBanned(e.target.checked); go("vocab");
   });
-  kw.addEventListener("input", load);
+  kw.addEventListener("input", applyKeyword);
   if (dfwActive) {
     if (dfw.category) root.querySelector("#fCategory").value = dfw.category;
     if (dfw.level_min) root.querySelector("#fLevelMin").value = dfw.level_min;
@@ -2163,6 +2174,22 @@ export async function phrases(root) {
   // vocab()と同じレースコンディション対策(連番ガード)。詳細はvocab()側の
   // コメント参照。
   let loadSeq = 0;
+  let baseList = dfpActive ? [] : list; // 直近のサーバ取得結果のキャッシュ
+  // キーワードはサーバのクエリパラメータに含まれずクライアント側でしか
+  // 絞り込んでいないため、1文字入力するたびにload()で全件再取得すると
+  // 無駄な重いリクエストが積み重なり、体感で「検索し直しても反映されない」
+  // ように見える不具合になっていた(2026-09-02ユーザー報告・vocab()と同じ
+  // 原因)。キーワード変更時はキャッシュ済みbaseListをその場でフィルタする
+  // だけにし、サーバ再取得はキーワード以外のフィルタが変わったときだけ
+  // 行う。
+  const applyKeyword = () => {
+    const term = kw.value.trim().toLowerCase();
+    curList = term ? baseList.filter((p) =>
+      p.english.toLowerCase().includes(term)
+      || (p.japanese || "").toLowerCase().includes(term)) : baseList;
+    pPage = 0;
+    paint();
+  };
   const load = async () => {
     const seq = ++loadSeq;
     const q = new URLSearchParams({ sort: root.querySelector("#fSort").value });
@@ -2188,12 +2215,8 @@ export async function phrases(root) {
     if (deckSel && deckSel.value) q.set("deck_id", deckSel.value);
     const items = await api.get("/api/phrases?" + q.toString());
     if (seq !== loadSeq) return; // 自分より新しい問い合わせが発行済み→破棄
-    const term = kw.value.trim().toLowerCase();
-    curList = term ? items.filter((p) =>
-      p.english.toLowerCase().includes(term)
-      || (p.japanese || "").toLowerCase().includes(term)) : items;
-    pPage = 0;
-    paint();
+    baseList = items;
+    applyKeyword();
   };
   const fDir = root.querySelector("#fDir");
   fDir.addEventListener("click", () => {
@@ -2227,7 +2250,7 @@ export async function phrases(root) {
   if (sbP) sbP.addEventListener("change", (e) => {
     setShowBanned(e.target.checked); go("phrases");
   });
-  kw.addEventListener("input", load);
+  kw.addEventListener("input", applyKeyword);
   if (dfpActive) {
     if (dfp.category) root.querySelector("#sceneCategory").value = dfp.category;
     if (dfp.level_min) root.querySelector("#fLevelMin").value = dfp.level_min;
