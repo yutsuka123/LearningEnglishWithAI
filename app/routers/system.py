@@ -99,7 +99,7 @@ def admin_registrants(
             "survey_occupation_category, survey_occupation_detail, "
             "survey_age_group, survey_gender, survey_purpose, "
             "survey_referral, survey_interest_areas, survey_free_text "
-            f"FROM users WHERE {filter_sql} "
+            f"FROM users u WHERE {filter_sql} "
             "ORDER BY created_at DESC LIMIT ?",
             (limit,),
         ).fetchall()
@@ -133,7 +133,7 @@ def admin_survey_summary(
             "survey_occupation_detail, survey_age_group, survey_gender, "
             "survey_purpose, survey_referral, survey_interest_areas, "
             "survey_free_text "
-            f"FROM users WHERE {filter_sql}"
+            f"FROM users u WHERE {filter_sql}"
         ).fetchall()
     total = len(rows)
     answered = 0

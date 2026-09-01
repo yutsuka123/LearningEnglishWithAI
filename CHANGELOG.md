@@ -8,6 +8,19 @@
 （例: 1.1.0→1.1.1）。ユーザーから別途指示があった場合のみ上位の桁を
 上げる。
 
+## ver1.2.36 (2026-09-01)
+
+**🐛 「登録者一覧」「アンケート集計」がSQLエラーで動作しなかった不具合を修正**
+
+- ver1.2.35で新設した`GET /api/system/admin/registrants`・
+  `GET /api/system/admin/survey-summary`が、リリース直後にユーザー
+  実機で試したところ`sqlite3.OperationalError: no such column: u.role`
+  で500エラーになっていることが判明。`_user_filter_sql()`が生成する
+  絞り込み条件は`u.role`のようにテーブルエイリアス`u`を前提にしている
+  のに、両エンドポイントのSQLが`FROM users WHERE ...`とエイリアスを
+  付けずに書いていたのが原因(`FROM users u WHERE ...`に修正)。
+  ローカルDBで実際にクエリが通ることを確認済み。
+
 ## ver1.2.35 (2026-09-01)
 
 **🆕 管理画面に「登録者一覧」「アンケート集計」を追加**
