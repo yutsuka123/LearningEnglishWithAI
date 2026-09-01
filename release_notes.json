@@ -15,6 +15,17 @@
  ],
  "versions": [
   {
+   "version": "ver1.2.38",
+   "date": "2026-09-02",
+   "title": "管理者向け機能の内部改善",
+   "public": [
+    "管理者向け機能の内部改善を行いました(利用者向けの変更はありません)。"
+   ],
+   "admin": [
+    "PayPay実課金導線(現時点では非公開・管理者限定)のPOST /api/paypay/createがユーザー単位で無制限に呼べてしまっていた問題を修正。1時間あたり10回までの制限を追加(app/services/paypay.pyのcreate_rate_limited、charge_keys.pyのredeem_lockedと同じユーザー単位・時間窓方式)。超過時はエラーコード3003(既存の「試行が多すぎます」)を返す。一般ユーザーへの影響は無し。"
+   ]
+  },
+  {
    "version": "ver1.2.37",
    "date": "2026-09-02",
    "title": "登録画面の使いやすさを改善",

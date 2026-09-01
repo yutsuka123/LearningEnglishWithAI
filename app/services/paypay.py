@@ -53,6 +53,30 @@ def is_production() -> bool:
         "1", "true", "yes")
 
 
+# 支払いコード発行(Create a Code)の濫用防止（2026-09-02・公開前の残作業
+# 対応）。それまでは無制限に発行できてしまっていた。総当たり対策の
+# app/services/charge_keys.py の redeem_locked と同じユーザー単位・時間窓
+# 方式だが、こちらは失敗時だけでなく呼び出しのたびに数える
+# （app/services/auth.py の ip_rate_limited と同じ「チェックして即加算」
+# パターン）。
+_CREATE_HITS: dict[int, list[float]] = {}
+_CREATE_MAX = 10        # 直近_CREATE_WINDOW秒でこの回数を超えたら制限
+_CREATE_WINDOW = 3600.0  # 1時間
+
+
+def create_rate_limited(user_id: int) -> bool:
+    """直近1時間に_CREATE_MAX回を超えて支払いコードを作成していればTrue
+    （呼び出し側は成功時のみ加算されるよう、コード作成前に1回だけ呼ぶ）。"""
+    now = time.monotonic()
+    hits = [t for t in _CREATE_HITS.get(user_id, []) if now - t < _CREATE_WINDOW]
+    if len(hits) >= _CREATE_MAX:
+        _CREATE_HITS[user_id] = hits
+        return True
+    hits.append(now)
+    _CREATE_HITS[user_id] = hits
+    return False
+
+
 def _base_url() -> str:
     return _PRODUCTION_APIGW if is_production() else _SANDBOX_APIGW
 

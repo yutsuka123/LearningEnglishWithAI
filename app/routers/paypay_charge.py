@@ -21,6 +21,10 @@
      ルーターの`/confirm`エンドポイントだけに決済確定を依存させない。
   4. 金額はALLOWED_AMOUNTS(BASEショップの既存価格帯と同じ¥800/¥8000)
      のみ受け付け、クライアントからの任意額指定は拒否する。
+  5. `POST /create`はユーザー単位で1時間10回までに制限する
+     (`app/services/paypay.py`の`create_rate_limited`。2026-09-02追加・
+     公開前の残作業だった「無制限に支払いコードを発行できてしまう」問題
+     への対応)。
 """
 
 from __future__ import annotations
@@ -110,6 +114,9 @@ def create(payload: CreateIn, request: Request):
     uid = auth.current_user_id()
     with db() as conn:
         _guard_not_yet_public(conn, uid)
+    if paypay.create_rate_limited(uid):
+        log.warning("paypay_charge: create rate-limited uid=%s", uid)
+        raise errors.http_error("3003")
     merchant_payment_id = f"charge-{uuid.uuid4()}"
     # request.base_urlは常にhttp(本番はCaddy経由のDocker内接続のため)。
     # external_schemeで実際のスキームに直す(paypay_test.pyと同じ理由)。

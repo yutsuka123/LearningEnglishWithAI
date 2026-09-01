@@ -8,6 +8,23 @@
 （例: 1.1.0→1.1.1）。ユーザーから別途指示があった場合のみ上位の桁を
 上げる。
 
+## ver1.2.38 (2026-09-02)
+
+**🔒 PayPay実課金導線の公開前残作業のうち「レート制限」を実装(現時点でも非公開・利用者向けの変更なし)**
+
+- `POST /api/paypay/create`(支払いコード発行)がユーザー単位で無制限に
+  呼べてしまう状態だったのを修正。`app/services/paypay.py`に
+  `create_rate_limited`を新設し、ユーザーごと直近1時間に10回を超えたら
+  エラーコード3003(既存の「試行が多すぎます」)で拒否するようにした。
+  既存の`app/services/charge_keys.py`の`redeem_locked`(総当たり対策)や
+  `app/services/auth.py`の`ip_rate_limited`と同じ「メモリ内・ユーザー/IP
+  単位・時間窓」方式を踏襲。
+- この導線自体は引き続き2段階ゲート(`PAYPAY_PRODUCTION_MODE`+
+  `app_state.paypay_charge_public_enabled`)で管理者以外は一切利用不可の
+  ため、一般ユーザーへの影響は無い。`docs/TODO.md`の「PayPay公開前に
+  必要な残作業」5項目のうち1点目に対応(残りはcron登録・app_state有効化・
+  UI追加・返金アラート、いずれも本番審査完了後に対応予定)。
+
 ## ver1.2.37 (2026-09-02予定・2026-09-01作業)
 
 **🆕 登録導線のUX改善(claude-fable-5監査+レビュー済み・2026-09-02 03:00デプロイ予定)**
