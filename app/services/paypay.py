@@ -323,7 +323,33 @@ def reverse_credit_if_refunded(conn, payment_row) -> bool:
     )
     if cur.rowcount != 1:
         return False
+    # 残高が既に使い切られていた場合、マイナス(負債)にはせず0円で
+    # クランプする(2026-09-02ユーザー指示「0でクランプかな」)。クランプ
+    # が発生した場合、返金額の一部(または全額)を実質的に無償提供した
+    # ことになるため、noteに明記して監査で追跡できるようにする。
+    # ⚠️悪用対策(同一ユーザーが購入→即消費→返金を繰り返して無限に
+    # 無償利用するパターン)は未実装・継続検討事項
+    # (ユーザー指示「悪用されないように引き続き要検討、キャンセルすれば
+    # 無限に使えないようにする」)。当面はこのnoteとpaypay_actionsの
+    # ログで検知し、必要になれば返金回数の上限等を別途実装すること。
+    row = conn.execute(
+        "SELECT balance_jpy FROM users WHERE id = ?",
+        (payment_row["user_id"],),
+    ).fetchone()
+    cur_balance = (float(row["balance_jpy"])
+                   if row and row["balance_jpy"] is not None else 0.0)
+    full_amount = float(payment_row["amount_jpy"])
+    deduct = min(full_amount, max(0.0, cur_balance))
+    note = f"mpid={mpid}"
+    if deduct < full_amount:
+        note += (f" (0円クランプ: 本来{full_amount:.0f}のところ"
+                 f"{deduct:.0f}のみ回収、差額{full_amount - deduct:.0f}は"
+                 f"既に消費済みのため無償・要注意)")
+        log.warning(
+            "paypay: refund clamp mpid=%s user_id=%s full=%s "
+            "deducted=%s (already spent, potential abuse vector)",
+            mpid, payment_row["user_id"], full_amount, deduct)
     auth.add_balance(
-        conn, payment_row["user_id"], -float(payment_row["amount_jpy"]),
-        reason="paypay_refund", note=f"mpid={mpid}")
+        conn, payment_row["user_id"], -deduct,
+        reason="paypay_refund", note=note)
     return True
