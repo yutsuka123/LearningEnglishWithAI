@@ -839,6 +839,11 @@ def _migrate(conn: sqlite3.Connection) -> None:
     # ようになったため、admin_user_idとは別にuser_idを追加(2026-09-01)。
     _add_col(conn, "paypay_actions", "user_id",
              "user_id INTEGER REFERENCES users(id)")
+    # 返金してもpt残高が自動で取り消されない抜け穴の修正
+    # (2026-09-02・claude-fable-5レビュー指摘)。credited_atと対になる
+    # 列で、付与済みのptを取り消し済みかどうかを原子的に判定する用途
+    # (app/services/paypay.pyのreverse_credit_if_refunded参照)。
+    _add_col(conn, "paypay_payments", "refunded_at", "refunded_at TEXT")
     _migrate_multiuser(conn)
 
 

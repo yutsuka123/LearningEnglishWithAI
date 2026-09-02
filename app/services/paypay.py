@@ -269,6 +269,25 @@ def credit_if_completed(
     )
     if status != "COMPLETED" or already_credited:
         return False
+    # ⚠️⚠️⚠️ 重要(2026-09-02・claude-fable-5レビュー指摘で発覚した重大な
+    # 抜け穴を修正): サンドボックス(PAYPAY_PRODUCTION_MODE=false)では
+    # 実際のお金は一切動いていないため、statusがCOMPLETEDになっても
+    # pt付与してはいけない。以前はこのチェックが無く、
+    # `_guard_not_yet_public`(app/routers/paypay_charge.py)がadmin/
+    # 許可リストアカウントに両ゲート(本番モード・公開フラグ)をバイパス
+    # させていたため、**サンドボックス決済(実質無料)でも実際のptが
+    # 付与されてしまう状態だった**(scripts/reconcile_paypay_payments.py
+    # 側には元々このガードがあったが、こちら側だけ漏れていた)。
+    # サンドボックスでテストする場合は必ずこのガードごと一時的に外す
+    # のではなく、テスト用の別経路(ledgerに残高が乗らない形)を新設する
+    # こと。安易にこのif文を消さないこと。
+    if not is_production():
+        log.warning(
+            "paypay: credit SKIPPED (sandbox mode, no real money moved) "
+            "mpid=%s user_id=%s amount_jpy=%s — see comment above before "
+            "changing this.",
+            mpid, payment_row["user_id"], payment_row["amount_jpy"])
+        return False
     cur = conn.execute(
         "UPDATE paypay_payments SET credited_at = datetime('now') "
         "WHERE merchant_payment_id = ? AND credited_at IS NULL",
@@ -276,8 +295,35 @@ def credit_if_completed(
     )
     if cur.rowcount != 1:
         return False
-    mode = "production" if is_production() else "sandbox"
     auth.add_balance(
         conn, payment_row["user_id"], float(payment_row["amount_jpy"]),
-        reason="paypay_charge", note=f"mpid={mpid} mode={mode}")
+        reason="paypay_charge", note=f"mpid={mpid} mode=production")
+    return True
+
+
+def reverse_credit_if_refunded(conn, payment_row) -> bool:
+    """返金が確定した支払いについて、既に付与済みのpt残高を取り消す
+    (2026-09-02・claude-fable-5レビュー指摘: 「返金してもpt残高が戻らない」
+    抜け穴の修正)。`credit_if_completed`と対になる関数で、同じ原子的
+    自己防衛パターンを使う: `credited_at IS NOT NULL AND refunded_at IS
+    NULL`の行だけを対象にUPDATEし、実際に更新できた場合だけpt残高を
+    マイナス方向に加算する(何度呼ばれても取り消しは1回だけ)。
+    まだpt付与されていない行(credited_at IS NULL)を返金しても何もしない
+    (取り消すpt自体が無いため)。"""
+    from . import auth  # 循環import回避のため関数内でimport
+
+    mpid = payment_row["merchant_payment_id"]
+    if payment_row["credited_at"] is None:
+        return False
+    cur = conn.execute(
+        "UPDATE paypay_payments SET refunded_at = datetime('now') "
+        "WHERE merchant_payment_id = ? AND credited_at IS NOT NULL "
+        "AND refunded_at IS NULL",
+        (mpid,),
+    )
+    if cur.rowcount != 1:
+        return False
+    auth.add_balance(
+        conn, payment_row["user_id"], -float(payment_row["amount_jpy"]),
+        reason="paypay_refund", note=f"mpid={mpid}")
     return True

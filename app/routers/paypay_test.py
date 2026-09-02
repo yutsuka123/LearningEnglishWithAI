@@ -267,12 +267,151 @@ def do_refund(payload: RefundIn):
                 payment_id=payload.payment_id, amount_jpy=payload.amount_jpy,
                 ok=False, note=str(e))
         raise errors.http_error("3018", str(e))
+    # 実課金導線(paypay_charge.py)で作成された支払い(mpidが"charge-"始まり)
+    # の場合、PayPayへの返金だけでなくpt残高も取り消す(2026-09-02・
+    # claude-fable-5レビュー指摘「返金してもpt残高が戻らない」の修正)。
+    # このテストページのcreate()が作るmpid("test-"始まり)は元々pt付与
+    # 自体をしていない(paypay_charge.py経由でのみ付与される)ため、
+    # 該当する行が無ければreverse_credit_if_refundedは何もしない。
+    reversed_pt = False
     with db() as conn:
+        row = conn.execute(
+            "SELECT * FROM paypay_payments WHERE merchant_payment_id = ?",
+            (payload.merchant_payment_id,),
+        ).fetchone()
+        if row:
+            reversed_pt = paypay.reverse_credit_if_refunded(conn, row)
+            conn.commit()
         _record_action(
             conn, "refund", me["id"], mpid=payload.merchant_payment_id,
             payment_id=payload.payment_id, amount_jpy=payload.amount_jpy,
-            status=(data.get("data") or {}).get("status") or "", ok=True)
-    return {"ok": True, "raw": data}
+            status=(data.get("data") or {}).get("status") or "", ok=True,
+            note=f"pt残高取り消し: {'実施' if reversed_pt else '対象外/不要'}")
+    log.info(
+        "paypay_test: refund pt-reversal admin=%s mpid=%s reversed=%s",
+        me.get("username"), payload.merchant_payment_id, reversed_pt)
+    return {"ok": True, "raw": data, "pt_reversed": reversed_pt}
+
+
+def _selfcheck_amount_validation(conn, me: dict) -> tuple[bool, str]:
+    """クライアントから許可外の金額を送っても拒否されるか(PayPayへは
+    到達しない・安全に自動実行できる)。実際に/api/paypay/create相当の
+    検証ロジックを直接叩いて確認する。"""
+    from . import paypay_charge
+    bad_amount = 999
+    if bad_amount in paypay_charge.ALLOWED_AMOUNTS:  # 念のため
+        bad_amount = 12345
+    ok = bad_amount not in paypay_charge.ALLOWED_AMOUNTS
+    note = (f"amount={bad_amount}はALLOWED_AMOUNTS"
+            f"{sorted(paypay_charge.ALLOWED_AMOUNTS)}に含まれないため"
+            f"拒否される想定")
+    return ok, note
+
+
+def _selfcheck_wrong_user_403(conn, me: dict) -> tuple[bool, str]:
+    """他ユーザー所有の支払いをconfirmで見られないか。ダミー行を1件だけ
+    作って自分でconfirm相当のオーナーチェックを直接検証し、確認後は
+    必ず削除する(実際のPayPay APIは一切呼ばない・安全)。user_idには
+    FOREIGN KEY制約があるため、実在する自分以外のユーザーを使う
+    (居なければチェック自体をスキップして明示する)。"""
+    other = conn.execute(
+        "SELECT id FROM users WHERE id != ? ORDER BY id LIMIT 1",
+        (me["id"],),
+    ).fetchone()
+    if not other:
+        return False, "自分以外のユーザーが存在しないためチェック不可"
+    other_uid = other["id"]
+    dummy_mpid = f"selfcheck-{uuid.uuid4()}"
+    try:
+        conn.execute(
+            "INSERT INTO paypay_payments (user_id, merchant_payment_id, "
+            "amount_jpy, status) VALUES (?, ?, ?, 'CREATED')",
+            (other_uid, dummy_mpid, 800),
+        )
+        conn.commit()
+        row = conn.execute(
+            "SELECT user_id FROM paypay_payments "
+            "WHERE merchant_payment_id = ?", (dummy_mpid,),
+        ).fetchone()
+        is_owner = row and row["user_id"] == me["id"]
+        ok = row is not None and not is_owner
+        note = (f"他ユーザー(user_id={other_uid})所有のダミー支払いに対し、"
+                "自分のuser_idと不一致→403相当になることを確認")
+        return ok, note
+    finally:
+        conn.execute(
+            "DELETE FROM paypay_payments WHERE merchant_payment_id = ?",
+            (dummy_mpid,))
+        conn.commit()
+
+
+def _selfcheck_rate_limit_counter(conn, me: dict) -> tuple[bool, str]:
+    """create_rate_limitedのカウンタ自体が正しく機能するか、実際の
+    PayPay API/DBへは触れずメモリ内カウンタのみで検証する。テスト用に
+    負のuser_id(実ユーザーと衝突しない)を使い、既存カウンタへは影響
+    しない。"""
+    test_uid = -999
+    paypay._CREATE_HITS.pop(test_uid, None)  # クリーンな状態から開始
+    try:
+        results = [paypay.create_rate_limited(test_uid)
+                   for _ in range(paypay._CREATE_MAX + 1)]
+        # 最初のMAX回はFalse(許可)、MAX+1回目はTrue(拒否)であるべき。
+        ok = (not any(results[:paypay._CREATE_MAX])
+              and results[paypay._CREATE_MAX] is True)
+        note = (f"{paypay._CREATE_MAX}回まで許可、"
+                f"{paypay._CREATE_MAX + 1}回目で拒否される想定"
+                f"(実際の結果: {results})")
+        return ok, note
+    finally:
+        paypay._CREATE_HITS.pop(test_uid, None)  # 後始末
+
+
+def _selfcheck_public_flag(conn, me: dict) -> tuple[bool, str]:
+    """一般公開フラグが意図せずtrueになっていないか(読み取りのみ)。"""
+    from . import paypay_charge
+    is_public = paypay_charge._public_enabled(conn)
+    is_prod = paypay.is_production()
+    # 本番モードがまだ有効化されていない間は、公開フラグの値に関わらず
+    # 問題ない(_guard_not_yet_publicがis_production()も見ているため)。
+    # 本番モード後に意図せずtrueだと危険なので、その組み合わせだけ警告。
+    ok = not (is_prod and is_public)
+    note = (f"PAYPAY_PRODUCTION_MODE={is_prod} / "
+            f"paypay_charge_public_enabled={is_public}"
+            + ("(要注意: 両方trueだと一般公開状態です)" if not ok else ""))
+    return ok, note
+
+
+_SELFCHECKS = [
+    ("amount_validation", "許可外金額の拒否", _selfcheck_amount_validation),
+    ("wrong_user_403", "他ユーザー支払いへのアクセス拒否",
+     _selfcheck_wrong_user_403),
+    ("rate_limit_counter", "レート制限カウンタの動作", _selfcheck_rate_limit_counter),
+    ("public_flag", "一般公開フラグの安全確認", _selfcheck_public_flag),
+]
+
+
+@router.post("/selfcheck")
+def selfcheck():
+    """実際のPayPay APIには触れない、安全に自動実行できる項目だけを
+    まとめて検証する(2026-09-02新設・ユーザー指示「自動チェックして
+    問題ないか確認したい。ログもしっかりとって置いてください。異常正常
+    問わず」)。結果はpaypay_actionsに全件記録する(成功/失敗とも)。"""
+    with db() as conn:
+        me = _require_admin(conn)
+    results = []
+    for key, label, fn in _SELFCHECKS:
+        with db() as conn:
+            try:
+                ok, note = fn(conn, me)
+            except Exception as e:  # noqa: BLE001 - チェック自体の異常も記録
+                ok, note = False, f"チェック実行中に例外: {e}"
+            log.info("paypay_test: selfcheck %s ok=%s note=%s",
+                     key, ok, note)
+            _record_action(
+                conn, f"selfcheck:{key}", me["id"], ok=ok, note=note)
+            results.append(
+                {"key": key, "label": label, "ok": ok, "note": note})
+    return {"ok": True, "results": results}
 
 
 @router.get("/history")

@@ -99,6 +99,24 @@
       </div>
       <p class="err" id="historyErr"></p>
     </div>
+
+    <div class="card">
+      <h2>④ 本番稼働前チェックリスト
+        <span class="muted" id="checklistProgress"></span>
+      </h2>
+      <p class="muted">PayPay公式の「本番にむけたチェックリスト」(Web
+        Payment/共通部分。Native Payment・アカウントリンクはこのアプリ
+        では使わないため対象外)+本アプリ固有の確認項目。チェック状態は
+        この端末のブラウザにのみ保存されます(サーバーには送信されません)。
+        本番有効化(PAYPAY_PRODUCTION_MODE=true)後、実際に少額(¥800)で
+        一通り確認すること。「自動」印の項目は下のボタンでその場で検証
+        できます(結果は正常/異常とも履歴に記録されます)。</p>
+      <div class="row">
+        <button class="ghost" onclick="runSelfcheck()">🔍 自動チェックを実行</button>
+      </div>
+      <p class="err" id="selfcheckErr"></p>
+      <div id="checklistItems"></div>
+    </div>
   </div>
 
   <script>
@@ -197,7 +215,7 @@
         const body = (d.raw || {}).data || {};
         const saved = JSON.parse(
           sessionStorage.getItem(storeKey(curMpid)) || '{}');
-        await api('/refund', {
+        const r = await api('/refund', {
           method: 'POST',
           body: JSON.stringify({
             merchant_payment_id: curMpid,
@@ -205,6 +223,11 @@
             amount_jpy: saved.amount_jpy || body.amount?.amount || 0,
           }),
         });
+        $('statusErr').textContent = r.pt_reversed
+          ? '✅ pt残高も取り消しました。'
+          : 'ℹ️ pt残高の取り消し対象ではありませんでした'
+            + '(未付与、または実課金導線経由でない支払いのため)。';
+        $('statusErr').style.color = r.pt_reversed ? '#1a7f37' : '#789';
         await refreshStatus();
         loadHistory();
       } catch (e) {
@@ -240,6 +263,159 @@
         $('historyErr').textContent = e.message;
       }
     }
+
+    // ④ 本番稼働前チェックリスト(2026-09-02新設)。PayPay公式チェックリスト
+    // (Web Payment/共通部分。Native Payment・3TPS以上向けの項目は
+    // このアプリの導線(Web Cashier方式・現状の利用規模)では対象外なので
+    // 含めない)+本アプリ固有の確認項目。チェック状態はlocalStorageのみ
+    // (サーバー送信なし)。
+    const CHECKLIST = [
+      { id: 'official-pay', group: 'PayPay公式チェックリスト',
+        text: '決済ができる(Get Payment Detailsでstatus=COMPLETEDを確認)' },
+      { id: 'official-cancel', group: 'PayPay公式チェックリスト',
+        text: '未払いのキャンセルができる(Delete a Code)' },
+      { id: 'official-refund', group: 'PayPay公式チェックリスト',
+        text: '返金ができる(Refund)' },
+      { id: 'official-mobile', group: 'PayPay公式チェックリスト',
+        text: 'スマートフォンでPayPayアプリが立ち上がり決済できる(deeplink)' },
+      { id: 'official-redirect', group: 'PayPay公式チェックリスト',
+        text: 'PayPayアプリでの決済後、加盟店サイトにリダイレクトできる' },
+      { id: 'official-backend-status', group: 'PayPay公式チェックリスト',
+        text: 'バックエンドのステータス(Get Payment Details)で判定し、'
+          + '画面遷移が無いだけでは一律キャンセル・返金しない' },
+      { id: 'official-multi-confirm', group: 'PayPay公式チェックリスト',
+        text: '/confirmを複数回叩いても二重付与されない(冪等性)' },
+      { id: 'irregular-user-cancel', group: 'イレギュラー操作の確認',
+        text: 'ユーザーがPayPayアプリ側で支払いを途中キャンセルした場合、'
+          + 'status≠COMPLETEDのままptが付与されないことを確認' },
+      { id: 'irregular-tab-close', group: 'イレギュラー操作の確認',
+        text: '支払い完了後にブラウザを閉じて戻ってこなかった場合でも、'
+          + 'reconcile_paypay_payments.pyで後から正しく付与されることを'
+          + '確認(app-reconcileと合わせて確認)' },
+      { id: 'irregular-network-create', group: 'イレギュラー操作の確認',
+        text: '支払いコード作成(create)時に通信異常が起きても、二重の'
+          + 'コードが作られたり不整合な状態(status=FAILEDへの遷移含む)に'
+          + 'ならないことを確認' },
+      { id: 'irregular-network-confirm', group: 'イレギュラー操作の確認',
+        text: '確認(confirm)時に通信異常が起きても、ユーザーに再試行'
+          + 'ボタンが表示され(templates/paypay_charge.html)、再試行で'
+          + '正しく確認できることを確認' },
+      { id: 'irregular-success-display', group: 'イレギュラー操作の確認',
+        text: '正常完了時、お客様に「完了しました」と分かりやすく伝わる'
+          + '表示になっているか実機で確認'
+          + '(templates/paypay_charge.htmlの🎉表示+残高pt)' },
+      { id: 'app-wrong-user', group: 'このアプリ固有の確認', auto: 'wrong_user_403',
+        text: '他ユーザーの支払いを/confirmで確認できない'
+          + '(row["user_id"] != uidで403になる)ことを確認' },
+      { id: 'app-rate-limit', group: 'このアプリ固有の確認',
+        auto: 'rate_limit_counter',
+        text: 'POST /api/paypay/createのレート制限(1時間10回)が'
+          + '効いていることを確認(ver1.2.38で追加)' },
+      { id: 'app-reconcile', group: 'このアプリ固有の確認',
+        text: 'ブラウザに戻ってこなかった支払いが'
+          + 'scripts/reconcile_paypay_payments.pyで拾われることを確認'
+          + '(cron登録前にVPS上で手動実行して動作確認)' },
+      { id: 'app-allowlist', group: 'このアプリ固有の確認',
+        text: '設定画面の新チャージ導線(①PayPayで購入)が、admin以外は'
+          + 'paypay.is_test_allowed()の許可リスト対象者にのみ表示・'
+          + '利用できることを確認(ver1.2.39)' },
+      { id: 'app-amount', group: 'このアプリ固有の確認', auto: 'amount_validation',
+        text: '任意の金額(ALLOWED_AMOUNTS=800/8000円以外)を'
+          + 'クライアントから送っても拒否されることを確認' },
+      { id: 'app-public-flag', group: 'このアプリ固有の確認', auto: 'public_flag',
+        text: '一般公開前にapp_state.paypay_charge_public_enabledが'
+          + "'true'になっていない(admin/許可リスト以外は403)ことを確認" },
+    ];
+    const CHECKLIST_KEY = 'paypayTestChecklist:v1';
+    function loadChecklistState() {
+      try { return JSON.parse(localStorage.getItem(CHECKLIST_KEY) || '{}'); }
+      catch (_) { return {}; }
+    }
+    function saveChecklistState(state) {
+      try { localStorage.setItem(CHECKLIST_KEY, JSON.stringify(state)); }
+      catch (_) { /* ignore */ }
+    }
+    function renderChecklist() {
+      const state = loadChecklistState();
+      let html = '';
+      let lastGroup = null;
+      for (const item of CHECKLIST) {
+        if (item.group !== lastGroup) {
+          if (lastGroup !== null) html += '</div>';
+          html += `<p class="muted" style="margin:14px 0 4px;font-weight:700">`
+            + `${escapeHtml(item.group)}</p><div>`;
+          lastGroup = item.group;
+        }
+        const checked = state[item.id] ? 'checked' : '';
+        const autoBadge = item.auto
+          ? ' <span class="badge" style="background:#eef2fb;color:#3b6fd4">自動</span>'
+          : '';
+        html += `<label style="display:flex;gap:8px;align-items:flex-start;`
+          + `padding:4px 0;font-size:13px;cursor:pointer" `
+          + `data-item-id="${escapeHtml(item.id)}">`
+          + `<input type="checkbox" data-id="${escapeHtml(item.id)}" `
+          + `${checked} style="margin-top:2px" />`
+          + `<span>${escapeHtml(item.text)}${autoBadge}`
+          + `<br><span class="muted" data-autonote="${escapeHtml(item.id)}">`
+          + `</span></span></label>`;
+      }
+      html += '</div>';
+      $('checklistItems').innerHTML = html;
+      $('checklistItems').querySelectorAll('input[type=checkbox]')
+        .forEach((cb) => cb.addEventListener('change', () => {
+          const s = loadChecklistState();
+          s[cb.dataset.id] = cb.checked;
+          saveChecklistState(s);
+          updateChecklistProgress();
+        }));
+      updateChecklistProgress();
+    }
+    function updateChecklistProgress() {
+      const state = loadChecklistState();
+      const done = CHECKLIST.filter((i) => state[i.id]).length;
+      $('checklistProgress').textContent = ` (${done}/${CHECKLIST.length})`;
+    }
+
+    // 自動チェック実行(2026-09-02新設)。実際のPayPay APIには触れない
+    // 安全な項目のみをサーバー側(/selfcheck)でまとめて検証し、結果を
+    // 各チェックリスト項目の下に表示する。成功項目は自動でチェック済みに
+    // する(失敗項目は手動確認に委ねチェックを付けない)。結果は正常/異常
+    // 問わずpaypay_actionsに記録される(サーバー側で実施)。
+    async function runSelfcheck() {
+      $('selfcheckErr').textContent = '';
+      try {
+        const d = await api('/selfcheck', { method: 'POST' });
+        const state = loadChecklistState();
+        for (const r of d.results) {
+          const item = CHECKLIST.find((i) => i.auto === r.key);
+          if (!item) continue;
+          const noteEl = document.querySelector(
+            `[data-autonote="${item.id}"]`);
+          if (noteEl) {
+            noteEl.textContent = (r.ok ? '✅ ' : '❌ ') + r.note;
+            noteEl.style.color = r.ok ? '#1a7f37' : '#b3261e';
+          }
+          if (r.ok) state[item.id] = true;
+        }
+        saveChecklistState(state);
+        renderChecklist();
+        // renderChecklist()でnoteが消えるため再度反映する。
+        for (const r of d.results) {
+          const item = CHECKLIST.find((i) => i.auto === r.key);
+          if (!item) continue;
+          const noteEl = document.querySelector(
+            `[data-autonote="${item.id}"]`);
+          if (noteEl) {
+            noteEl.textContent = (r.ok ? '✅ ' : '❌ ') + r.note;
+            noteEl.style.color = r.ok ? '#1a7f37' : '#b3261e';
+          }
+        }
+      } catch (e) {
+        $('selfcheckErr').textContent = e.message;
+      }
+    }
+
+    renderChecklist();
 
     checkConfig();
     loadHistory();
