@@ -69,10 +69,14 @@ def _guard_not_yet_public(conn, uid: int) -> None:
        一般ユーザーには公開しない(管理者が実機で動作確認してから
        app_stateを更新して公開する運用)。
     どちらの段階でも管理者(role='admin')は自分自身のテストのため常に
-    通す。"""
+    通す。2026-09-02〜: role='admin'でなくても、
+    `paypay.is_test_allowed`のテスト許可リストに載っているアカウントも
+    同様に通す(少人数への限定公開・詳細は同関数のdocstring参照)。"""
     me = auth.get_user(conn, uid)
     is_admin = bool(me and me.get("role") == "admin")
-    if is_admin:
+    is_test_allowed = bool(me and paypay.is_test_allowed(
+        me.get("username", "")))
+    if is_admin or is_test_allowed:
         return
     if not paypay.is_production() or not _public_enabled(conn):
         raise errors.http_error("3020")

@@ -439,6 +439,10 @@ export async function refreshCost() {
     const u = await api.get("/api/system/my-usage");
     const isAdmin = u.role === "admin";
     state.isAdmin = isAdmin;       // 各ビューのロール別表示に使う
+    // PayPay新チャージ画面の限定公開(2026-09-02)。管理者に加えて、
+    // 個別に許可されたアカウントにも表示する
+    // (app/services/paypay.pyのis_test_allowedと対応)。
+    state.canTestPaypayCharge = isAdmin || !!u.paypay_charge_test_allowed;
     state.multiuser = !!u.multiuser;
     state.isGuest = !!u.is_guest;
     // AI呼び出し(会話・生成)や無料範囲外の語・フレーズ再生を「実際に

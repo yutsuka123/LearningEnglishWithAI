@@ -53,6 +53,20 @@ def is_production() -> bool:
         "1", "true", "yes")
 
 
+# PayPay実課金導線のテスト許可リスト(2026-09-02・ユーザー指示「管理者
+# ytsuka-biz1@nyangailab.comにチャージ新画面を開放する」への対応)。
+# role='admin'ではない特定アカウントにだけ、新チャージ画面(PayPay購入)を
+# 限定的に開放するための一時的な仕組み。対象が少人数のうちはapp_state等の
+# DB管理にはせず、コード直書きのシンプルな方式で運用する(必要になれば
+# 後日DB管理に拡張)。
+_TEST_ALLOWED_USERNAMES = {"ytsuka-biz1@nyangailab.com"}
+
+
+def is_test_allowed(username: str) -> bool:
+    """role='admin'でなくても新チャージ画面(PayPay購入)を使えるかどうか。"""
+    return (username or "").strip().lower() in _TEST_ALLOWED_USERNAMES
+
+
 # 支払いコード発行(Create a Code)の濫用防止（2026-09-02・公開前の残作業
 # 対応）。それまでは無制限に発行できてしまっていた。総当たり対策の
 # app/services/charge_keys.py の redeem_locked と同じユーザー単位・時間窓

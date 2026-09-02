@@ -5805,6 +5805,21 @@ export async function settings(root) {
     <div class="card" id="chargeCard" style="display:none">
       <h2>💳 チャージ</h2>
       <p>現在の残高: <b id="ptBalance">-</b> pt</p>
+      ${state.canTestPaypayCharge ? `
+      <div id="paypayChargeBlock" class="mt">
+        <h3 style="margin-bottom:4px">① PayPayで購入(即時反映・限定
+          テスト中)</h3>
+        <p class="muted" style="margin-top:0">支払いが完了すると、キーの
+          発行・入力なしでそのまま残高に反映されます。</p>
+        <div class="row">
+          <button class="btn good" id="pp_pay_800">¥800で購入</button>
+          <button class="btn good" id="pp_pay_8000">¥8000で購入</button>
+        </div>
+        <p class="muted mt" id="pp_out"></p>
+      </div>
+      <hr class="mt" />
+      <h3 style="margin-bottom:4px">② BASEで購入してキーを入力</h3>
+      ` : ""}
       <div class="row">
         <input id="ck_key" name="charge_key" type="text"
           autocomplete="one-time-code" autocapitalize="characters"
@@ -6412,6 +6427,27 @@ export async function settings(root) {
       refreshCost();
     } catch (e) { out.textContent = "失敗: " + e.message; }
   });
+
+  // PayPayでの即時チャージ(管理者テスト中・2026-09-02)。作成後は
+  // admin_paypay_test.htmlと同じ理由でモバイル判定してdeeplink/urlを
+  // 出し分ける(PCブラウザではpaypay://が無反応になるため)。確定は
+  // /paypay-charge(templates/paypay_charge.html)がredirect先で行う。
+  const ppOut = root.querySelector("#pp_out");
+  const startPayPayCharge = async (amountJpy) => {
+    if (!ppOut) return;
+    ppOut.textContent = "処理を開始しています…";
+    try {
+      const d = await api.post("/api/paypay/create", { amount_jpy: amountJpy });
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      location.href = (isMobile && d.deeplink) ? d.deeplink : d.url;
+    } catch (e) {
+      ppOut.textContent = "失敗: " + e.message;
+    }
+  };
+  const pp800 = root.querySelector("#pp_pay_800");
+  if (pp800) pp800.addEventListener("click", () => startPayPayCharge(800));
+  const pp8000 = root.querySelector("#pp_pay_8000");
+  if (pp8000) pp8000.addEventListener("click", () => startPayPayCharge(8000));
 
   // Friendly descriptions for the OpenAI voices.
   const VOICE_DESC = {

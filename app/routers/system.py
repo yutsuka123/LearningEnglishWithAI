@@ -462,6 +462,7 @@ def my_usage():
     from ..services.auth import current_user_id, get_user, is_guest_user_id
 
     from ..config import APP_VERSION
+    from ..services import paypay
     from ..services.auth import multiuser_enabled
     uid = current_user_id()
     s = load_settings()
@@ -506,6 +507,12 @@ def my_usage():
         # ゲストは api_key_masked 等を含む /api/system/settings を読めない
         # ため、AI有効フラグだけはここ(秘匿情報なし)からも取れるようにする。
         "ai_enabled": s.ai_enabled,
+        # PayPay実課金導線(新チャージ画面)の限定公開フラグ(2026-09-02)。
+        # role='admin'は別途フロント側でstate.isAdminから判定済みのため
+        # ここではテスト許可リストのみを見る
+        # (app/routers/paypay_charge.pyのバックエンド側ガードと同じ判定)。
+        "paypay_charge_test_allowed": paypay.is_test_allowed(
+            u.get("username", "")),
     }
 
 
