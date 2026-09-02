@@ -5816,6 +5816,19 @@ export async function settings(root) {
           <button class="btn good" id="pp_pay_8000">¥8000で購入</button>
         </div>
         <p class="muted mt" id="pp_out"></p>
+        <details class="mt">
+          <summary>✅ テスト確認チェックリスト
+            <span id="pp_checklist_progress" class="muted"></span></summary>
+          <p class="muted">実際に支払いを試すときに確認しておきたい項目
+            です。チェック状態はこの端末のブラウザにのみ保存されます。
+            「自動」印は下のボタンでその場検証できます(結果は正常/異常
+            とも記録されます)。</p>
+          <div class="row">
+            <button class="btn ghost" id="pp_selfcheck_btn">🔍 自動チェックを実行</button>
+          </div>
+          <p class="muted mt" id="pp_selfcheck_err"></p>
+          <div id="pp_checklist_items" class="mt"></div>
+        </details>
       </div>
       <hr class="mt" />
       <h3 style="margin-bottom:4px">② BASEで購入してキーを入力</h3>
@@ -6448,6 +6461,126 @@ export async function settings(root) {
   if (pp800) pp800.addEventListener("click", () => startPayPayCharge(800));
   const pp8000 = root.querySelector("#pp_pay_8000");
   if (pp8000) pp8000.addEventListener("click", () => startPayPayCharge(8000));
+
+  // ✅ テスト確認チェックリスト(2026-09-02・admin_paypay_test.htmlと同じ
+  // 内容だが、そちらはURL自体がadmin専用でthis許可リスト対象者
+  // (ytsuka-biz1@nyangailab.com等)が開けないため、実際に購入ボタンが
+  // あるこの設定画面側にも表示する。「自動」印はapp/routers/
+  // paypay_test.pyの/selfcheckを叩く(admin/許可リスト対象者どちらも
+  // 実行可)。
+  if (root.querySelector("#pp_checklist_items")) {
+    const PP_CHECKLIST = [
+      { id: 'official-pay', group: 'PayPay公式チェックリスト',
+        text: '決済ができる(Get Payment Detailsでstatus=COMPLETEDを確認)' },
+      { id: 'official-cancel', group: 'PayPay公式チェックリスト',
+        text: '未払いのキャンセルができる(Delete a Code)' },
+      { id: 'official-refund', group: 'PayPay公式チェックリスト',
+        text: '返金ができる(Refund)' },
+      { id: 'official-mobile', group: 'PayPay公式チェックリスト',
+        text: 'スマートフォンでPayPayアプリが立ち上がり決済できる(deeplink)' },
+      { id: 'official-redirect', group: 'PayPay公式チェックリスト',
+        text: 'PayPayアプリでの決済後、加盟店サイトにリダイレクトできる' },
+      { id: 'official-backend-status', group: 'PayPay公式チェックリスト',
+        text: 'バックエンドのステータスで判定し、画面遷移が無いだけでは'
+          + '一律キャンセル・返金しない' },
+      { id: 'official-multi-confirm', group: 'PayPay公式チェックリスト',
+        text: '確認ボタンを複数回押しても二重付与されない(冪等性)' },
+      { id: 'irregular-user-cancel', group: 'イレギュラー操作の確認',
+        text: 'PayPayアプリ側で支払いを途中キャンセルした場合、'
+          + 'ptが付与されないことを確認' },
+      { id: 'irregular-tab-close', group: 'イレギュラー操作の確認',
+        text: '支払い完了後にブラウザを閉じて戻ってこなかった場合でも、'
+          + '後から正しく付与されることを確認' },
+      { id: 'irregular-success-display', group: 'イレギュラー操作の確認',
+        text: '正常完了時、「完了しました」と分かりやすく伝わる表示に'
+          + 'なっているか確認' },
+      { id: 'app-wrong-user', group: '安全性の確認', auto: 'wrong_user_403',
+        text: '他ユーザーの支払いを確認できないことを確認' },
+      { id: 'app-rate-limit', group: '安全性の確認',
+        auto: 'rate_limit_counter',
+        text: '購入ボタンの連打制限(1時間10回)が効いていることを確認' },
+      { id: 'app-amount', group: '安全性の確認', auto: 'amount_validation',
+        text: '任意の金額(¥800/¥8000以外)を送っても拒否されることを確認' },
+      { id: 'app-public-flag', group: '安全性の確認', auto: 'public_flag',
+        text: '一般公開前に、他の一般ユーザーには見えていないことを確認' },
+    ];
+    const PP_CHECKLIST_KEY = 'paypaySettingsChecklist:v1';
+    const loadPpState = () => {
+      try { return JSON.parse(localStorage.getItem(PP_CHECKLIST_KEY) || '{}'); }
+      catch (_) { return {}; }
+    };
+    const savePpState = (s) => {
+      try { localStorage.setItem(PP_CHECKLIST_KEY, JSON.stringify(s)); }
+      catch (_) { /* ignore */ }
+    };
+    const renderPpChecklist = () => {
+      const state2 = loadPpState();
+      let html = '';
+      let lastGroup = null;
+      for (const item of PP_CHECKLIST) {
+        if (item.group !== lastGroup) {
+          if (lastGroup !== null) html += '</div>';
+          html += `<p class="muted" style="margin:10px 0 4px;font-weight:700">`
+            + `${escapeHtml(item.group)}</p><div>`;
+          lastGroup = item.group;
+        }
+        const checked = state2[item.id] ? 'checked' : '';
+        const autoBadge = item.auto
+          ? ' <span class="pill">自動</span>' : '';
+        html += `<label style="display:flex;gap:8px;align-items:flex-start;`
+          + `padding:3px 0;font-size:13px;cursor:pointer">`
+          + `<input type="checkbox" data-pp-id="${escapeHtml(item.id)}" `
+          + `${checked} style="margin-top:2px" />`
+          + `<span>${escapeHtml(item.text)}${autoBadge}`
+          + `<br><span class="muted" data-pp-note="${escapeHtml(item.id)}">`
+          + `</span></span></label>`;
+      }
+      html += '</div>';
+      root.querySelector('#pp_checklist_items').innerHTML = html;
+      root.querySelectorAll('[data-pp-id]').forEach((cb) =>
+        cb.addEventListener('change', () => {
+          const s = loadPpState();
+          s[cb.dataset.ppId] = cb.checked;
+          savePpState(s);
+          updatePpProgress();
+        }));
+      updatePpProgress();
+    };
+    const updatePpProgress = () => {
+      const s = loadPpState();
+      const done = PP_CHECKLIST.filter((i) => s[i.id]).length;
+      const el = root.querySelector('#pp_checklist_progress');
+      if (el) el.textContent = ` (${done}/${PP_CHECKLIST.length})`;
+    };
+    renderPpChecklist();
+    const ppSelfcheckBtn = root.querySelector('#pp_selfcheck_btn');
+    if (ppSelfcheckBtn) ppSelfcheckBtn.addEventListener('click', async () => {
+      const errEl = root.querySelector('#pp_selfcheck_err');
+      errEl.textContent = '';
+      try {
+        const d = await api.post('/api/paypay-test/selfcheck', {});
+        const s = loadPpState();
+        for (const r of d.results) {
+          const item = PP_CHECKLIST.find((i) => i.auto === r.key);
+          if (!item) continue;
+          if (r.ok) s[item.id] = true;
+        }
+        savePpState(s);
+        renderPpChecklist();
+        for (const r of d.results) {
+          const item = PP_CHECKLIST.find((i) => i.auto === r.key);
+          if (!item) continue;
+          const noteEl = root.querySelector(`[data-pp-note="${item.id}"]`);
+          if (noteEl) {
+            noteEl.textContent = (r.ok ? '✅ ' : '❌ ') + r.note;
+            noteEl.style.color = r.ok ? '#3ddc84' : '#ff6b6b';
+          }
+        }
+      } catch (e) {
+        errEl.textContent = e.message;
+      }
+    });
+  }
 
   // Friendly descriptions for the OpenAI voices.
   const VOICE_DESC = {

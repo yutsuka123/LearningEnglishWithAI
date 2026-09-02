@@ -59,6 +59,22 @@ def _require_admin(conn) -> dict:
     return me
 
 
+def _require_admin_or_test_allowed(conn) -> dict:
+    """/selfcheckなど、実際のPayPay APIには触れない安全な検証専用の
+    エンドポイント向け(2026-09-02)。admin_paypay_test.htmlの本体
+    (create/cancel/refund等・実際にPayPay APIを叩く)は`_require_admin`
+    のまま管理者専用を維持するが、設定画面のPayPay購入導線を使える
+    許可リスト対象者(`paypay.is_test_allowed`)にも、自分が行った購入の
+    整合性チェックだけは行えるようにする。"""
+    me = get_user(conn, current_user_id())
+    is_admin = bool(me and me.get("role") == "admin")
+    is_test_allowed = bool(me and paypay.is_test_allowed(
+        me.get("username", "")))
+    if not me or not (is_admin or is_test_allowed):
+        raise errors.http_error("2004", "この操作は行えません。")
+    return me
+
+
 def _record_action(
     conn, action: str, admin_id: int | None, *,
     mpid: str = "", code_id: str = "", payment_id: str = "",
@@ -395,9 +411,12 @@ def selfcheck():
     """実際のPayPay APIには触れない、安全に自動実行できる項目だけを
     まとめて検証する(2026-09-02新設・ユーザー指示「自動チェックして
     問題ないか確認したい。ログもしっかりとって置いてください。異常正常
-    問わず」)。結果はpaypay_actionsに全件記録する(成功/失敗とも)。"""
+    問わず」)。結果はpaypay_actionsに全件記録する(成功/失敗とも)。
+    admin専用ではなく、設定画面のPayPay購入導線を使える許可リスト対象者
+    (`paypay.is_test_allowed`)も実行できる(2026-09-02・ユーザー指示
+    「テストユーザーにはわかるように」)。"""
     with db() as conn:
-        me = _require_admin(conn)
+        me = _require_admin_or_test_allowed(conn)
     results = []
     for key, label, fn in _SELFCHECKS:
         with db() as conn:
