@@ -7216,3 +7216,534 @@ export async function phraseDecks(root) {
     });
   }
 }
+
+// ---------------------------------------------------------------------------
+// 🎮 ゲーム(2026-09-03・テストユーザー+管理者限定公開、第一弾はクロス
+// ワード)。ハブ→設定→プレイの3段階を、トップレベルのタブは増やさず
+// root.innerHTML の差し替えだけで遷移する(go(tab)のフルroot差し替え
+// パターンと同じ考え方)。
+// ---------------------------------------------------------------------------
+
+// ヒント1つにつき基礎点の10%減点(app/routers/games.pyのHINT_PCTと対応)。
+// 「答えを見る」だけは特別枠(率ではなく加点なしで即解けた扱い)。
+const CW_HINT_LABELS = {
+  audio: ["🔊 発音を聞く", "-10%"],
+  first_letter: ["🔤 先頭文字", "-10%"],
+  last_letter: ["🔡 末尾文字", "-10%"],
+  japanese: ["🇯🇵 日本語の意味", "-10%"],
+  english: ["📖 英語ヒント(例文)", "-10%"],
+  reveal: ["👁️ 答えを見る", "0点"],
+};
+
+// 直近3件の出題ソース選択を覚えておき、設定画面で選び直しやすくする
+// (2026-09-03ユーザー要望)。ブラウザごとのローカル保存(localStorage)
+// なので、他端末とは共有されない簡易的な利便性機能。
+const CW_RECENT_KEY = "cw_recent_sources";
+const CW_RECENT_MAX = 3;
+
+function cwLoadRecent() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(CW_RECENT_KEY) || "[]");
+    return Array.isArray(raw) ? raw : [];
+  } catch {
+    return [];
+  }
+}
+
+function cwSaveRecent(entry) {
+  try {
+    const list = cwLoadRecent().filter((e) => e.label !== entry.label);
+    list.unshift(entry);
+    localStorage.setItem(
+      CW_RECENT_KEY, JSON.stringify(list.slice(0, CW_RECENT_MAX)));
+  } catch { /* localStorage不可(プライベートモード等)は無視 */ }
+}
+
+export async function games(root) {
+  await cwRenderHub(root);
+}
+
+async function cwRenderHub(root) {
+  let sessions = [];
+  try {
+    sessions = await api.get("/api/games/crossword/sessions");
+  } catch (e) { /* 未許可ユーザーはここで403、下のUIは出さない */ }
+  const inProgress = sessions.filter((s) => s.status === "in_progress");
+  root.innerHTML = `
+    <h1>🎮 ゲーム</h1>
+    <p><span class="pill vague">🧪 テスト中</span></p>
+    <p class="muted">テストユーザー・管理者限定公開の機能です。不具合が
+      あれば教えてください。スコアやセーブが今後リセットされる場合が
+      あります。</p>
+    <div class="grid cols-3 mt">
+      <div class="card" id="cwCardStart" style="cursor:pointer">
+        <h2>🧩 クロスワード</h2>
+        <p class="muted">分野・単語帳から単語を選んで挑戦。</p>
+      </div>
+      <div class="card" style="opacity:.5">
+        <h2>🎲 準備中</h2><p class="muted">今後追加予定</p>
+      </div>
+      <div class="card" style="opacity:.5">
+        <h2>🎲 準備中</h2><p class="muted">今後追加予定</p>
+      </div>
+    </div>
+    ${inProgress.length ? `<div class="card mt">
+      <h3>再開できるゲーム</h3>
+      <table class="mt"><thead><tr>
+        <th>対象</th><th>スコア</th><th>日時</th><th></th>
+      </tr></thead><tbody>${inProgress.map((s) => `<tr>
+        <td>${escapeHtml(s.source_ref)}</td>
+        <td>${s.score}</td>
+        <td class="muted">${escapeHtml(s.created_at)}</td>
+        <td><button class="btn" data-resume="${s.id}">再開</button></td>
+      </tr>`).join("")}</tbody></table>
+    </div>` : ""}
+  `;
+  root.querySelector("#cwCardStart")
+    .addEventListener("click", () => cwRenderSetup(root));
+  root.querySelectorAll("[data-resume]").forEach((b) => {
+    b.addEventListener("click", () => {
+      cwRenderPlay(root, Number(b.dataset.resume));
+    });
+  });
+}
+
+async function cwRenderSetup(root, preset) {
+  const [facets, decks] = await Promise.all([
+    api.get("/api/words/facets"),
+    api.get("/api/decks").catch(() => []),
+  ]);
+  const domainGroups = facets.domain_groups || {};
+  const selectedDomains = new Set(
+    preset?.sourceType === "domain" ? preset.domains || [] : []);
+  const recent = cwLoadRecent();
+
+  const isDeck = preset?.sourceType === "deck";
+
+  root.innerHTML = `
+    <button type="button" class="btn ghost" id="cwBack">
+      ← ゲーム一覧に戻る</button>
+    <h1 class="mt">🧩 クロスワード - 設定</h1>
+    ${recent.length ? `<div class="row mt" style="align-items:center">
+      <span class="muted">最近の選択:</span>
+      ${recent.map((r, i) => `<button type="button" class="btn ghost"
+        data-recent="${i}">${escapeHtml(r.label)}</button>`).join("")}
+    </div>` : ""}
+    <div class="card mt">
+      <div class="row">
+        <label><input type="radio" name="cwSource" value="domain"
+          ${isDeck ? "" : "checked"}/> 分野から選ぶ</label>
+        <label><input type="radio" name="cwSource" value="deck"
+          ${isDeck ? "checked" : ""}/> 単語帳から選ぶ</label>
+      </div>
+      <div id="cwDomainBlock" class="mt" ${isDeck ? 'style="display:none"' : ""}>
+        <span class="cdrop">
+          <button type="button" class="btn ghost" id="cwDomainBtn">
+            分野: 全て ▾</button>
+          <div class="cdrop-panel" id="cwDomainPanel"></div>
+        </span>
+      </div>
+      <div id="cwDeckBlock" class="mt" ${isDeck ? "" : 'style="display:none"'}>
+        ${decks.length ? `<select id="cwDeck">
+          <option value="">選択してください</option>
+          ${decks.map((d) => `<option value="${d.id}"
+            ${isDeck && preset.deckId === d.id ? "selected" : ""}>
+            ${escapeHtml(d.name)}(${d.total ?? "?"}語)</option>`)
+            .join("")}
+        </select>` : `<p class="muted">単語帳がありません。
+          先に単語帳を作ってください。</p>`}
+      </div>
+      <div class="row mt">
+        <label>語数:
+          <input type="number" id="cwWordCount" value="10" min="6" max="20"
+            style="width:4em"/></label>
+      </div>
+      <div class="cw-optgroup mt">
+        <div class="cw-optgroup-title">クリューモード</div>
+        <div class="row" style="flex-direction:column;align-items:flex-start">
+          <label><input type="radio" name="cwClueMode" value="always_ja"
+            checked/> 日本語訳モード(常に日本語の意味を表示)</label>
+          <label><input type="radio" name="cwClueMode" value="always_english"/>
+            英英モード(常に英語のヒントを表示・本格的なクロスワードに近い・
+            該当データが無い語は除外されます)</label>
+          <label><input type="radio" name="cwClueMode" value="always_audio"/>
+            音声モード(発音の再生だけ常に減点なし・ヒアリングで埋める)</label>
+          <label><input type="radio" name="cwClueMode" value="hints_only"/>
+            ヒント制(最初は何も表示されない・ヒントを使うたびに減点)</label>
+        </div>
+      </div>
+      <div class="cw-optgroup mt" id="cwJapaneseStyleBlock">
+        <div class="cw-optgroup-title">日本語ヒントのスタイル</div>
+        <div class="row">
+          <label><input type="radio" name="cwJapaneseStyle" value="simple"
+            checked/> 訳語のみ(例: 適切な)</label>
+          <label><input type="radio" name="cwJapaneseStyle" value="explanation"/>
+            説明文(AIが作成する、単語自体を含まない日本語の説明)</label>
+          <label><input type="radio" name="cwJapaneseStyle" value="hybrid"/>
+            ハイブリッド(クリューごとに穴埋め文/説明をランダムに混在・
+            本当のクロスワードに近い・訳語は表示しません)</label>
+        </div>
+      </div>
+      <div class="cw-optgroup mt" id="cwEnglishStyleBlock" style="display:none">
+        <div class="cw-optgroup-title">英語ヒントのスタイル</div>
+        <div class="row">
+          <label><input type="radio" name="cwEnglishStyle" value="fill_blank"
+            checked/> 文章の穴埋め(例文の対象単語をマスク)</label>
+          <label><input type="radio" name="cwEnglishStyle" value="definition"/>
+            語の説明(AIが作成する短い英語の定義)</label>
+          <label><input type="radio" name="cwEnglishStyle" value="hybrid"/>
+            ハイブリッド(クリューごとに穴埋め文/語の説明をランダムに
+            混在・本当のクロスワードに近い)</label>
+        </div>
+      </div>
+      <button class="btn primary mt" id="cwStart">スタート</button>
+      <p class="muted mt" id="cwError" style="display:none"></p>
+    </div>
+  `;
+  root.querySelector("#cwBack")
+    .addEventListener("click", () => cwRenderHub(root));
+  root.querySelectorAll("[data-recent]").forEach((b) => {
+    b.addEventListener("click", () => {
+      cwRenderSetup(root, recent[Number(b.dataset.recent)]);
+    });
+  });
+  initCheckDropdown(root, "cwDomainBtn", "cwDomainPanel",
+    () => domainGroups, selectedDomains, () => {}, "分野");
+  root.querySelectorAll('input[name="cwSource"]').forEach((r) => {
+    r.addEventListener("change", () => {
+      const v = root.querySelector(
+        'input[name="cwSource"]:checked').value;
+      root.querySelector("#cwDomainBlock").style.display =
+        v === "domain" ? "" : "none";
+      root.querySelector("#cwDeckBlock").style.display =
+        v === "deck" ? "" : "none";
+    });
+  });
+  root.querySelectorAll('input[name="cwClueMode"]').forEach((r) => {
+    r.addEventListener("change", () => {
+      const v = root.querySelector(
+        'input[name="cwClueMode"]:checked').value;
+      root.querySelector("#cwEnglishStyleBlock").style.display =
+        v === "always_english" ? "" : "none";
+      root.querySelector("#cwJapaneseStyleBlock").style.display =
+        v === "always_ja" ? "" : "none";
+    });
+  });
+  const startBtn = root.querySelector("#cwStart");
+  startBtn.addEventListener("click", async () => {
+    if (startBtn.disabled) return;  // 2026-09-03: 生成中の連打対策
+    const sourceType = root.querySelector(
+      'input[name="cwSource"]:checked').value;
+    const clueMode = root.querySelector(
+      'input[name="cwClueMode"]:checked').value;
+    const wordCount = Number(
+      root.querySelector("#cwWordCount").value) || 10;
+    const body = {
+      source_type: sourceType, word_count: wordCount, clue_mode: clueMode,
+      english_style: root.querySelector(
+        'input[name="cwEnglishStyle"]:checked')?.value || "fill_blank",
+      japanese_style: root.querySelector(
+        'input[name="cwJapaneseStyle"]:checked')?.value || "simple",
+    };
+    let recentEntry;
+    if (sourceType === "domain") {
+      body.domains = [...selectedDomains];
+      recentEntry = { sourceType, domains: body.domains,
+        label: body.domains.join("・") || "分野未選択" };
+    } else {
+      const deckSel = root.querySelector("#cwDeck");
+      body.deck_id = deckSel ? Number(deckSel.value) || null : null;
+      const deckName = deckSel?.selectedOptions[0]?.textContent || "単語帳";
+      recentEntry = { sourceType, deckId: body.deck_id,
+        label: `📔${deckName}` };
+    }
+    const errEl = root.querySelector("#cwError");
+    errEl.style.display = "none";
+    const origLabel = startBtn.textContent;
+    startBtn.disabled = true;
+    startBtn.textContent = "⏳ クロスワード生成中…(ヒント作成のため数秒" +
+      "かかることがあります)";
+    try {
+      const session = await api.post("/api/games/crossword/new", body);
+      cwSaveRecent(recentEntry);
+      cwRenderPlay(root, session.session_id, session);
+    } catch (e) {
+      errEl.textContent = e.message || "生成に失敗しました。";
+      errEl.style.display = "";
+      startBtn.disabled = false;
+      startBtn.textContent = origLabel;
+    }
+  });
+}
+
+// app/services/crossword_gen.pyのDIRECTIONSと対応(ヨコ/タテ)。
+const CW_DIRECTION_VECTORS = {
+  across: [0, 1], down: [1, 0],
+};
+
+function cwCellsFor(clue) {
+  const [dr, dc] = CW_DIRECTION_VECTORS[clue.direction];
+  const cells = [];
+  for (let i = 0; i < clue.length; i++) {
+    cells.push([clue.row + dr * i, clue.col + dc * i]);
+  }
+  return cells;
+}
+
+async function cwRenderPlay(root, sessionId, initialState) {
+  let session = initialState
+    || await api.get(`/api/games/crossword/${sessionId}`);
+  let selected = session.clues[0]
+    ? { number: session.clues[0].number,
+        direction: session.clues[0].direction }
+    : null;
+  let hintDisplay = null;   // 直近取得したヒントの表示内容(次の操作で消える)
+
+  function selectedClue() {
+    if (!selected) return null;
+    return session.clues.find(
+      (c) => c.number === selected.number
+        && c.direction === selected.direction) || null;
+  }
+
+  function render() {
+    const cellSet = new Set(
+      session.grid.cells.map(([r, c]) => `${r},${c}`));
+    const numbering = {};
+    session.clues.forEach((c) => { numbering[`${c.row},${c.col}`] = c.number; });
+    // マス目クリックでも選択できるように(2026-09-03ユーザー要望)、
+    // どのマスがどのクリューに属するかを引けるようにしておく
+    // (交差点は複数クリューに属する)。
+    const cellToClues = {};
+    session.clues.forEach((c) => {
+      cwCellsFor(c).forEach(([r, col]) => {
+        const k = `${r},${col}`;
+        (cellToClues[k] = cellToClues[k] || []).push(c);
+      });
+    });
+    const cur = selectedClue();
+    const curCells = new Set(
+      cur ? cwCellsFor(cur).map(([r, c]) => `${r},${c}`) : []);
+
+    let gridHtml = `<div class="cw-grid" style="grid-template-columns:` +
+      `repeat(${session.grid.cols}, 28px)">`;
+    for (let r = 0; r < session.grid.rows; r++) {
+      for (let c = 0; c < session.grid.cols; c++) {
+        const key = `${r},${c}`;
+        if (!cellSet.has(key)) {
+          gridHtml += `<div class="cw-cell cw-black"></div>`;
+          continue;
+        }
+        const letter = session.revealed_cells[key] || "";
+        const num = numbering[key];
+        gridHtml += `<div class="cw-cell${
+          curCells.has(key) ? " cw-selected" : ""}" data-cell="${key}">` +
+          (num ? `<span class="cw-num">${num}</span>` : "") +
+          `<span class="cw-letter">${escapeHtml(letter)}</span></div>`;
+      }
+    }
+    gridHtml += `</div>`;
+
+    // 無料で常時表示されるヒント種別(app/routers/games.pyの
+    // FREE_HINT_BY_MODEと対応)。日本語/英語は文章表示、音声は
+    // 「ボタンは出すが0%減点」という扱いなのでhintsリストからは除かない。
+    const freeHint = { always_ja: "japanese", always_english: "english",
+      always_audio: "audio", hints_only: null }[session.clue_mode];
+    // バックエンドが生成時に選ばれたモード+スタイル(日本語訳/説明・
+    // 穴埋め文/類義語説明/ハイブリッド)のテキストをfree_clueに
+    // まとめて入れてくれるので、フロントはモード別分岐が不要。
+    const freeText = (c) => (
+      (freeHint === "japanese" || freeHint === "english")
+        ? (c.free_clue || "") : "");
+
+    const clueRow = (c) => {
+      const mark = c.solved ? "✅" : (c.given_up ? "🏳️" : "");
+      const isSel = cur && cur.number === c.number
+        && cur.direction === c.direction;
+      const txt = freeText(c);
+      const jaText = txt
+        ? ` <span class="muted">${escapeHtml(txt)}</span>` : "";
+      return `<div class="cw-clue-item${isSel ? " cw-clue-selected" : ""}"
+        data-num="${c.number}" data-dir="${c.direction}">
+        ${c.number}. (${c.length}文字)${jaText} ${mark}</div>`;
+    };
+    const across = session.clues.filter((c) => c.direction === "across");
+    const down = session.clues.filter((c) => c.direction === "down");
+
+    let hintHtml = "";
+    if (hintDisplay) {
+      hintHtml = `<div class="pill mt">${escapeHtml(hintDisplay)}</div>`;
+    }
+
+    let detailHtml = "";
+    if (cur) {
+      // 文章系の無料ヒント(日本語/英語)は既に表示済みなのでボタン一覧
+      // から外す。音声は「モードによって0%か-10%か」だけが変わるので
+      // 常にボタンを出す。
+      const hints = ["audio", "first_letter", "last_letter", "japanese",
+        "english", "reveal"].filter(
+        (h) => !(h === freeHint && h !== "audio"));
+      const done = cur.solved || cur.given_up;
+      const curText = freeText(cur);
+      detailHtml = `
+        <div class="card mt">
+          <div><b>クリュー ${cur.number}
+            (${cur.direction === "across" ? "ヨコ" : "タテ"})</b>
+            ・${cur.length}文字
+            ${curText ? ` — ${escapeHtml(curText)}` : ""}</div>
+          ${hintHtml}
+          <div class="row mt">
+            <input type="text" id="cwAnswerInput" ${done ? "disabled" : ""}
+              placeholder="英単語を入力" style="text-transform:uppercase"/>
+            <button class="btn primary" id="cwSubmit"
+              ${done ? "disabled" : ""}>答える</button>
+          </div>
+          <div class="row mt" id="cwHintButtons">
+            ${hints.map((h) => {
+              const [label, costLabel] = CW_HINT_LABELS[h];
+              const shownCost = (h === "audio" && h === freeHint)
+                ? "減点なし" : costLabel;
+              const used = cur.hints_used.includes(h);
+              return `<button class="btn ghost" data-hint="${h}"
+                ${done ? "disabled" : ""}>${label} (${shownCost})${
+                  used ? " ✓" : ""}</button>`;
+            }).join("")}
+            <button class="btn ghost" id="cwGiveup" ${done ? "disabled" : ""}
+              >🏳️ ギブアップ</button>
+          </div>
+        </div>`;
+    }
+
+    root.innerHTML = `
+      <div class="row">
+        <button type="button" class="btn ghost" id="cwBack2">
+          ← ゲーム一覧に戻る</button>
+        <button type="button" class="btn ghost" id="cwBackToSetup">
+          🔄 新しいクロスワードを作る</button>
+      </div>
+      <div class="row mt" style="justify-content:space-between">
+        <h1>🧩 クロスワード</h1>
+        <div class="pill">スコア: ${session.score}</div>
+      </div>
+      ${detailHtml}
+      <div class="cw-board mt">
+        <div class="cw-board-grid">${gridHtml}</div>
+        <div class="cw-board-clues">
+          <b>ヨコ</b>
+          ${across.map(clueRow).join("")}
+          <b class="mt" style="display:block">タテ</b>
+          ${down.map(clueRow).join("")}
+        </div>
+      </div>
+      ${session.status === "completed"
+        ? `<div class="card mt"><h2>🎉 クリア！</h2>
+           <p>最終スコア: ${session.score}</p></div>` : ""}
+    `;
+
+    root.querySelector("#cwBack2")
+      .addEventListener("click", () => cwRenderHub(root));
+    root.querySelector("#cwBackToSetup")
+      .addEventListener("click", () => cwRenderSetup(root));
+    root.querySelectorAll(".cw-clue-item").forEach((elm) => {
+      elm.addEventListener("click", () => {
+        selected = { number: Number(elm.dataset.num),
+                      direction: elm.dataset.dir };
+        hintDisplay = null;
+        render();
+      });
+    });
+    // マス目クリックでも選択できるように(2026-09-03ユーザー要望)。
+    // 交差点(ヨコ/タテ両方に属するマス)では、今選んでいる方と違う
+    // クリューがあればそちらへ切り替え、無ければヨコを優先する。
+    root.querySelectorAll(".cw-cell[data-cell]").forEach((elm) => {
+      elm.addEventListener("click", () => {
+        const list = cellToClues[elm.dataset.cell] || [];
+        if (!list.length) return;
+        const other = cur && list.find(
+          (c) => !(c.number === cur.number && c.direction === cur.direction));
+        const pick = other || list.find((c) => c.direction === "across")
+          || list[0];
+        selected = { number: pick.number, direction: pick.direction };
+        hintDisplay = null;
+        render();
+      });
+    });
+    const input = root.querySelector("#cwAnswerInput");
+    const submit = root.querySelector("#cwSubmit");
+    if (input && submit) {
+      const doSubmit = async () => {
+        const answer = input.value.trim();
+        if (!answer || !cur) return;
+        try {
+          const res = await api.post(
+            `/api/games/crossword/${sessionId}/answer`, {
+              clue_number: cur.number, direction: cur.direction, answer,
+            });
+          session = res;
+          if (res.correct) {
+            hintDisplay = null;
+            toast("正解！");
+          } else if (res.forced_reveal) {
+            hintDisplay = "不正解が続いたため、答えを開示しました(0点)。";
+          } else {
+            const pct = res.match_ratio != null
+              ? `一致率${Math.round(res.match_ratio * 100)}%・` : "";
+            hintDisplay = `不正解です。${pct}残り試行${res.attempts_left}回`;
+          }
+          render();
+        } catch (e) {
+          toast(e.message || "エラーが発生しました。");
+        }
+      };
+      submit.addEventListener("click", doSubmit);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") doSubmit();
+      });
+    }
+    root.querySelectorAll("[data-hint]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        if (!cur) return;
+        try {
+          const res = await api.post(
+            `/api/games/crossword/${sessionId}/hint`, {
+              clue_number: cur.number, direction: cur.direction,
+              hint_type: btn.dataset.hint,
+            });
+          session = res.session;
+          if (res.hint_type === "audio") {
+            speech.sayItem("word", res.word_id, "word", MALE_VOICE, "",
+              speedOpts("std"));
+            hintDisplay = "🔊 発音を再生しました。";
+          } else if (res.hint_type === "first_letter"
+            || res.hint_type === "last_letter") {
+            hintDisplay = `文字: ${res.letter}`;
+          } else if (res.hint_type === "japanese") {
+            hintDisplay = `意味: ${res.japanese}`;
+          } else if (res.hint_type === "english") {
+            hintDisplay = `例文: ${res.example}`;
+          } else if (res.hint_type === "reveal") {
+            hintDisplay = `答え: ${res.answer}`;
+          }
+          render();
+        } catch (e) {
+          toast(e.message || "ヒントを取得できませんでした。");
+        }
+      });
+    });
+    root.querySelector("#cwGiveup")?.addEventListener("click", async () => {
+      if (!cur) return;
+      try {
+        session = await api.post(
+          `/api/games/crossword/${sessionId}/giveup`, {
+            clue_number: cur.number, direction: cur.direction,
+          });
+        hintDisplay = null;
+        render();
+      } catch (e) {
+        toast(e.message || "エラーが発生しました。");
+      }
+    });
+  }
+
+  render();
+}

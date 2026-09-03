@@ -45,6 +45,7 @@ export const TABS = [
   // ["tripprep", "🧳 出張・旅行準備"],
   ["assess", "🎯 判定・教材"],
   ["history", "📚 学習履歴"],
+  ["games", "🎮 ゲーム"],   // 管理者+テスト許可のみ表示（boot で隠す）
   ["settings", "⚙️ 設定・チャージ"],
   // バージョン情報（更新履歴・メンテナンス予定）。未ログインでも見られる
   // ようにする（2026-08-22ユーザー要望）。
@@ -345,6 +346,7 @@ const ROUTES = {
   tripprep: views.tripPrep,
   assess: views.assess,
   history: views.history,
+  games: views.games,
   settings: views.settings,
   release: views.release,
   admin: views.admin,
@@ -443,6 +445,9 @@ export async function refreshCost() {
     // 個別に許可されたアカウントにも表示する
     // (app/services/paypay.pyのis_test_allowedと対応)。
     state.canTestPaypayCharge = isAdmin || !!u.paypay_charge_test_allowed;
+    // ゲーム機能(クロスワード等)の限定公開(2026-09-03)。上と同じ判定
+    // 方式・別の許可リスト(app/services/games_access.pyと対応)。
+    state.canUseGames = isAdmin || !!u.games_test_allowed;
     state.multiuser = !!u.multiuser;
     state.isGuest = !!u.is_guest;
     // AI呼び出し(会話・生成)や無料範囲外の語・フレーズ再生を「実際に
@@ -702,6 +707,7 @@ async function boot() {
   const nav = document.getElementById("nav");
   TABS.forEach(([tab, label]) => {
     if (tab === "admin" && !state.isAdmin) return;
+    if (tab === "games" && !state.canUseGames) return;
     if (tab === "welcome" && !state.isGuest) return;
     if (state.isGuest && GUEST_HIDDEN_TABS.has(tab)) return;
     const b = el(`<button class="nav-item" data-tab="${tab}">${label}</button>`);

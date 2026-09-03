@@ -865,3 +865,77 @@ th { color: var(--muted); font-weight: 600; }
   border-radius: 8px; padding: 6px 10px; font-size: 12px;
   line-height: 1.5; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,.25);
 }
+
+/* ---------------------------------------------------------------------
+   🎮 クロスワードゲーム(2026-09-03)。マス目はCSS Gridで組み、DOMの
+   出現順(行優先)そのままで自動配置する(明示的なrow/col指定は不要)。
+   ------------------------------------------------------------------ */
+.cw-grid {
+  display: grid;
+  gap: 2px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  width: max-content;
+}
+.cw-cell {
+  width: 28px; height: 28px;
+  background: var(--panel);
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+}
+.cw-cell.cw-black { background: transparent; }
+.cw-cell.cw-selected { background: var(--panel-2); outline: 2px solid var(--accent); }
+.cw-num {
+  position: absolute; top: 1px; left: 2px;
+  font-size: 9px; font-weight: 400; color: var(--muted);
+}
+.cw-letter { font-size: 14px; }
+.cw-clue-item {
+  padding: 4px 6px; cursor: pointer; border-radius: 6px;
+}
+.cw-clue-item:hover { background: var(--panel-2); }
+.cw-clue-selected { background: var(--panel-2); outline: 1px solid var(--accent); }
+
+/* 盤面(マス目)とクリュー一覧のレイアウト(2026-09-03)。以前は「回答欄
+   +ヒントボタン」のカードをマス目の下に置いていたため、マス目が大きい
+   と回答欄まで毎回スクロールする必要があった(ユーザー報告「入力と
+   縦に長く入力しづらい」)。回答欄カードはこの上(cwRenderPlay側)で
+   先に描画し、ここではマス目とクリュー一覧を横並びにする。PC幅では
+   横並び、スマホ幅(720px以下)では縦積み+マス目を少し小さくする
+   (ユーザー要望「配置をよくしたい、スマホとPC用わけてよい」)。 */
+.cw-board {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.cw-board-grid {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.cw-board-clues {
+  flex: 1 1 260px;
+  min-width: 240px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+@media (max-width: 720px) {
+  .cw-board { flex-direction: column; flex-wrap: nowrap; }
+  .cw-board-clues { max-width: 100%; max-height: 260px; }
+  .cw-cell { width: 24px; height: 24px; }
+  .cw-letter { font-size: 12px; }
+}
+
+/* 設定画面のラジオボタン群(クリューモード/日本語・英語ヒントのスタイル)
+   がひと続きに見えてしまう不具合(2026-09-03ユーザー報告)への対策。
+   グループごとに枠+見出しを付けて境目を明確にする。 */
+.cw-optgroup {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+.cw-optgroup-title {
+  font-weight: 600; font-size: 12px; color: var(--muted);
+  margin-bottom: 6px;
+}

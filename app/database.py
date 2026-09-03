@@ -594,6 +594,29 @@ CREATE TABLE IF NOT EXISTS client_errors (
 );
 CREATE INDEX IF NOT EXISTS idx_client_errors_created
     ON client_errors(created_at);
+
+-- ゲーム機能第一弾「クロスワード」のプレイセッション(2026-09-03・
+-- テストユーザー+管理者限定公開)。puzzle_json にサーバー側の正解
+-- (グリッド寸法・セル配置・クリュー一覧)を持たせ、japaneseは含めない
+-- (word_idからwordsテーブルを都度引く。ステールデータ防止)。将来の
+-- 全ユーザーランキング・自分の過去スコア振り返りも、この1テーブルへの
+-- 集計クエリだけで実現できるよう score/status/created_at をトップ
+-- レベル列にしてある。
+CREATE TABLE IF NOT EXISTS crossword_sessions (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    source_type   TEXT    NOT NULL,              -- 'domain' | 'deck'
+    source_ref    TEXT    NOT NULL DEFAULT '',    -- カンマ区切り分野名 or deck_id
+    clue_mode     TEXT    NOT NULL DEFAULT 'always_ja',  -- 'always_ja'|'hints_only'
+    puzzle_json   TEXT    NOT NULL,
+    progress_json TEXT    NOT NULL DEFAULT '{}',
+    score         INTEGER NOT NULL DEFAULT 0,
+    status        TEXT    NOT NULL DEFAULT 'in_progress',  -- 'in_progress'|'completed'
+    created_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+    completed_at  TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_crossword_sessions_user
+    ON crossword_sessions(user_id, created_at);
 """
 
 
