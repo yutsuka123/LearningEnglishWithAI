@@ -296,7 +296,13 @@ CHARGE_ROUND_STEP_JPY = 0.5
 # （教材読み上げ。ユーザー指示により明示的に+50銭を付ける）のみ。判定は
 # 除外リスト方式にする（許可リスト方式だと、"listening"等chat()経由の
 # 「その他」カテゴリ機能に+50銭が乗り忘れるバグがあったため2026-08-12修正）。
-_NO_SURCHARGE_FEATURES = {"tts", "stt"}
+# crossword_hint（クロスワードのヒント生成、2026-09-03新設）も+50銭を
+# 乗せず倍率(×2.0="その他")のみにする。ユーザー指示の式「原価0.1円未満
+# は0.5円・原価0.5円までは最大1円・それ以上は原価の2倍」は、+50銭の
+# 上乗せを外して倍率×2.0→0.5円単位切り上げをそのまま適用すると一致する
+# （例: 原価0.3円→raw0.6円→切上げ1.0円）ため、専用の計算式を新設せず
+# 既存の除外リストに加えるだけで実現した。docs/COST_ESTIMATE.md §1.5参照。
+_NO_SURCHARGE_FEATURES = {"tts", "stt", "crossword_hint"}
 
 
 def _compute_charge_jpy(cost_usd: float, rate: float, feature: str) -> float:
