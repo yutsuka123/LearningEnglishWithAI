@@ -896,6 +896,8 @@ th { color: var(--muted); font-weight: 600; }
 }
 .cw-clue-item:hover { background: var(--panel-2); }
 .cw-clue-selected { background: var(--panel-2); outline: 1px solid var(--accent); }
+.cw-word-detail { cursor: pointer; opacity: 0.75; }
+.cw-word-detail:hover { opacity: 1; }
 
 /* 盤面(マス目)とクリュー一覧のレイアウト(2026-09-03)。以前は「回答欄
    +ヒントボタン」のカードをマス目の下に置いていたため、マス目が大きい

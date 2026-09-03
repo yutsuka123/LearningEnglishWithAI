@@ -26,6 +26,7 @@ _WORD_RE = re.compile(r"^[A-Za-z]+$")
 MIN_WORD_LEN, MAX_WORD_LEN = 3, 10
 MIN_PLACED_WORDS = 6
 DEFAULT_WORD_COUNT = 10
+MAX_WORD_COUNT = 50  # 2026-09-03ユーザー指示(従来20→50に拡大)
 
 # 難易度連動スコア(2026-09-03ユーザー指示)。基礎点はTOEICレベル
 # (words.level、app/routers/vocabulary.pyのLEVEL_ORDER参照)の1/10。
@@ -147,6 +148,25 @@ def _masked_example_ja(example_ja: str, japanese: str) -> str:
     return example_ja.replace(core, "○" * len(core))
 
 
+def _leaks_answer(text: str, english: str, japanese: str = "") -> bool:
+    """ヒント文が答えをそのまま含んでいないか調べる(2026-09-03ユーザー
+    指摘: lidarの説明文に「lidar は」、motorの訳語「モーター」がそのまま
+    出ていた等、複数件報告された)。2種類を見る:
+    (1) 英語の綴りがそのまま含まれていないか(大小文字問わず)。
+    (2) 単語の日本語訳の中心語(カタカナ読み等、_ja_core_term参照)が
+    そのまま含まれていないか——ユーザー指摘の通り「単なるカタカナの
+    置き換えも答えが入っているものとする」ため、英語綴りの一致だけでは
+    不十分。"""
+    if not text:
+        return False
+    if english and english.lower() in text.lower():
+        return True
+    core = _ja_core_term(japanese) if japanese else ""
+    if core and len(core) >= 2 and core in text:
+        return True
+    return False
+
+
 def _fetch_candidate_words(
     conn, source_type: str, domains: list[str] | None, deck_id: int | None,
 ) -> list[dict]:
@@ -232,25 +252,37 @@ def _ensure_ai_hints(
     方針)。英語ヒント(crossword_hint_en)・日本語ヒント(crossword_hint_ja)
     の両方で使う。AI無効時/失敗時は呼び出し元が別のフィールドへ
     フォールバックする。"""
+    from concurrent.futures import ThreadPoolExecutor
     from ..services import ai
     if not ai.is_enabled():
         return
-    missing = [c for c in pool if not c.get(cache_key)][:20]
+    missing = [c for c in pool if not c.get(cache_key)]
     if not missing:
         return
     # 1回のAI呼び出しでmax_tokensを使い切って途中の語のヒントが欠ける
     # (JSON配列が閉じずに切れる)ことがあったため(2026-09-03ユーザー
     # 報告: 英英ハイブリッドで穴埋めのみになる語があった)、8語ずつの
     # チャンクに分けて呼ぶ(1語あたりのトークン余裕を確保)。
+    # チャンクは並列で呼ぶ(2026-09-03発覚: 語数上限を50まで拡大した
+    # ことで、順番に呼ぶと7チャンク×数秒=最大45秒もかかり、その間
+    # DBの書き込みトランザクションを開いたままになる問題があったため。
+    # DBへの書き込み(UPDATE)は全チャンクのAI応答が揃ってから、まとめて
+    # 素早く行う=トランザクションを長く保持しない)。
     CHUNK = 8
     by_en = {c["english"]: c for c in missing}
-    for i in range(0, len(missing), CHUNK):
-        batch = missing[i:i + CHUNK]
+    batches = [missing[i:i + CHUNK] for i in range(0, len(missing), CHUNK)]
+
+    def _call(batch: list[dict]):
         listing = "\n".join(f"{c['english']} | {c['japanese']}" for c in batch)
-        r = ai.chat(
+        return ai.chat(
             system, f"単語(英語 | 日本語訳):\n{listing}",
             temperature=0.4, max_tokens=1200, feature="crossword_hint",
         )
+
+    with ThreadPoolExecutor(max_workers=min(8, len(batches))) as pool_exec:
+        results = list(pool_exec.map(_call, batches))
+
+    for r in results:
         if not r.ok:
             continue
         for item in _json_array(r.text):
@@ -325,6 +357,13 @@ class NewGamePayload(BaseModel):
     japanese_style: str = "simple"
 
 
+# 安全なヒント文が1つも用意できなかった語用の汎用表示(2026-09-03)。
+# 訳語(japanese)へフォールバックすると、訳語自体がカタカナ読みで
+# 答えを割ってしまう語がある(例: motor→モーター)ため、explanation/
+# hybridスタイルでは訳語へフォールバックしない方針にした代わりに使う。
+_HINT_UNAVAILABLE_JA = "(この語のヒント文を準備中です。他のヒントもお試しください)"
+
+
 def _free_clue_text(
     clue_mode: str, style: str, src: dict, english: str,
 ) -> str:
@@ -335,10 +374,26 @@ def _free_clue_text(
         # にフォールバックする(2026-09-03ユーザー指摘: 専門語で従来の
         # explanationが単語自体を含んでしまう(例: phononの説明文に
         # 「phononとは」)ことがあり、ヒントとして不適切だったため。
-        # _ensure_japanese_ai_hints参照)。
-        explanation = src.get("crossword_hint_ja") or src["explanation"]
+        # _ensure_japanese_ai_hints参照)。crossword_hint_jaが未生成の語
+        # (AIの応答から漏れた等)でexplanationへフォールバックする際も、
+        # answer(英語綴り)がそのまま含まれていれば使わない(2026-09-03
+        # 追加報告: lidarの説明文に「lidar は」とそのまま書かれていた
+        # ケースがあったため、安全側のフィルタを機械的にもかける)。
+        hint_ja = src.get("crossword_hint_ja") or ""
+        if _leaks_answer(hint_ja, english, src["japanese"]):
+            hint_ja = ""
+        old_explanation = src["explanation"] or ""
+        if _leaks_answer(old_explanation, english, src["japanese"]):
+            old_explanation = ""
+        explanation = hint_ja or old_explanation
+        # 2026-09-03追加報告: motorの訳語「モーター・原動機」のように、
+        # 訳語自体が答えのカタカナ読みで答えを割ってしまう語がある
+        # (_leaks_answerは英語綴りの直接一致しか検知できないため、
+        # explanation/hybridの最終フォールバックとして訳語(japanese)を
+        # 使うのはそもそも危険。安全なヒントが無い場合は訳語を出さず、
+        # 汎用の準備中メッセージにする)。
         if style == "explanation":
-            return explanation or src["japanese"]
+            return explanation or _HINT_UNAVAILABLE_JA
         if style == "hybrid":
             # 2026-09-03ユーザー指摘(実際の新聞クロスワードの例を提示):
             # 本物のクロスワードは「1つのクリューに穴埋め+意味の両方」
@@ -347,14 +402,13 @@ def _free_clue_text(
             # 「アンマンを首都とする中東の国。」(説明のみ、穴埋めなし)が
             # 同じ盤面に混じる)。そのためhybridは両方を1文に結合するの
             # ではなく、クリューごとにどちらか一方をランダムに選ぶ
-            # (以前の"／意味:"併記方式から変更)。訳語をそのまま出すと
-            # 訳語自体がカタカナ読み=答えの綴りに近い専門語(例: フォノン)
-            # でヒントが答えを割ってしまうため、訳語ではなく穴埋め文を
-            # 使う。選んだ方にデータが無ければもう一方にフォールバック。
+            # (以前の"／意味:"併記方式から変更)。選んだ方にデータが
+            # 無ければもう一方にフォールバックし、両方無ければ準備中
+            # メッセージにする(訳語へはフォールバックしない・上記理由)。
             use_explanation = random.random() < 0.5
             if use_explanation and explanation:
                 return explanation
-            return src["blank_ja"] or explanation
+            return src["blank_ja"] or explanation or _HINT_UNAVAILABLE_JA
         return src["japanese"]
     if clue_mode == "always_english":
         blank = ""
@@ -364,8 +418,15 @@ def _free_clue_text(
         # 忠実な短い定義文)を優先し、無ければ従来のsynonymsに
         # フォールバックする(2026-09-03ユーザー指摘: synonymsそのまま
         # だと多義語で意味がズレることがあるため。_ensure_english_ai_
-        # hints参照)。
-        definition = src.get("crossword_hint_en") or src["synonyms"]
+        # hints参照)。念のため、どちらもanswer自体を含んでいれば使わない
+        # (日本語版と同じ安全フィルタ)。
+        hint_en = src.get("crossword_hint_en") or ""
+        if _leaks_answer(hint_en, english):
+            hint_en = ""
+        synonyms = src["synonyms"] or ""
+        if _leaks_answer(synonyms, english):
+            synonyms = ""
+        definition = hint_en or synonyms
         if style == "definition":
             return definition
         if style == "hybrid":
@@ -419,21 +480,35 @@ def crossword_new(payload: NewGamePayload):
                     c for c in candidates if c["example"] or c["synonyms"]]
         if len(candidates) < MIN_PLACED_WORDS:
             raise errors.http_error("7005")
+        word_count = min(
+            max(payload.word_count, MIN_PLACED_WORDS), MAX_WORD_COUNT)
         random.shuffle(candidates)
-        pool = candidates[:max(payload.word_count, MIN_PLACED_WORDS)]
-        if (payload.clue_mode == "always_english"
-                and payload.english_style in ("definition", "hybrid")):
-            _ensure_english_ai_hints(conn, pool)
-        elif (payload.clue_mode == "always_ja"
-                and payload.japanese_style in ("explanation", "hybrid")):
-            _ensure_japanese_ai_hints(conn, pool)
+        # 2026-09-03ユーザー指示「平均2以上、できれば3以上」への対応:
+        # 目標語数ちょうどの候補ではなく、その3倍まで(上限は候補の全数)
+        # をgenerate()に渡し、試行ごとに異なる組み合わせで交差数を探索
+        # させる(crossword_gen.generate()のtarget_count参照)。
+        oversample_n = min(len(candidates), word_count * 3)
+        pool = candidates[:oversample_n]
 
         word_pairs = [(c["id"], c["english"]) for c in pool]
-        puzzle = crossword_gen.generate(word_pairs)
+        puzzle = crossword_gen.generate(
+            word_pairs, attempts=40, target_count=word_count,
+            max_grid=crossword_gen.grid_size_for(word_count))
         if puzzle is None or len(puzzle.clues) < MIN_PLACED_WORDS:
             raise errors.http_error("7005")
 
-        by_id = {c["id"]: c for c in pool}
+        # AI代の節約のため、実際にパズルへ配置された語だけにヒント生成を
+        # 絞る(オーバーサンプルした候補全体ではなく)。
+        placed_ids = {cl.word_id for cl in puzzle.clues}
+        used_pool = [c for c in pool if c["id"] in placed_ids]
+        if (payload.clue_mode == "always_english"
+                and payload.english_style in ("definition", "hybrid")):
+            _ensure_english_ai_hints(conn, used_pool)
+        elif (payload.clue_mode == "always_ja"
+                and payload.japanese_style in ("explanation", "hybrid")):
+            _ensure_japanese_ai_hints(conn, used_pool)
+
+        by_id = {c["id"]: c for c in used_pool}
         clues_full = []
         for cl in puzzle.clues:
             entry = {
@@ -465,7 +540,21 @@ def crossword_new(payload: NewGamePayload):
              puzzle_json),
         )
         session_id = cur.lastrowid
-        return _session_state(conn, session_id, uid, by_id, payload.clue_mode)
+        state = _session_state(
+            conn, session_id, uid, by_id, payload.clue_mode)
+        # 希望語数より少なく配置された場合、原因と対策(分野を増やす等)を
+        # 案内する(2026-09-03ユーザー指示「うまく作れない場合は分野を
+        # 増やしてくださいとアドバイスする」)。候補語同士が交差しにくい
+        # 組み合わせだと、6語以上(MIN_PLACED_WORDS)は満たしていても
+        # 希望語数を下回ることがあるため。
+        if len(puzzle.clues) < word_count:
+            state["notice"] = (
+                f"{word_count}語を希望しましたが、単語同士がうまく交差"
+                f"できず{len(puzzle.clues)}語だけ配置しました。分野を"
+                f"複数選ぶ・単語帳を変える、または語数を減らすと、"
+                f"希望語数に近づきやすくなります。"
+            )
+        return state
 
 
 def _session_state(
@@ -487,6 +576,30 @@ def _session_state(
         by_id = {r["id"]: {"japanese": r["japanese"] or ""} for r in wrows}
 
     free_hint = FREE_HINT_BY_MODE.get(clue_mode)
+    # 正解/ギブアップ済みの語は、タップで単語詳細(既存のshowWordDetail
+    # モーダル)を開けるようにする(2026-09-03ユーザー要望「答えたら、
+    # 答えた単語触ると詳細画面が出るといい」)。未正解の語の情報は
+    # 一切含めない(答えを先に知られてしまうため)。
+    done_ids = sorted({
+        c["word_id"] for c in puzzle["clues"]
+        if progress.get(f"{c['number']}-{c['direction']}", {}).get("solved")
+        or progress.get(f"{c['number']}-{c['direction']}", {})
+        .get("given_up")
+    })
+    word_info: dict[int, dict] = {}
+    if done_ids:
+        ph = ",".join("?" * len(done_ids))
+        rows = conn.execute(
+            f"SELECT id, japanese, level, example, detail FROM words "
+            f"WHERE id IN ({ph})", done_ids,
+        ).fetchall()
+        for r in rows:
+            word_info[r["id"]] = {
+                "japanese": r["japanese"] or "", "level": r["level"] or "",
+                "example": r["example"] or "",
+                "has_detail": bool(r["detail"]),
+            }
+
     revealed_cells: dict[str, str] = {}
     clues_out = []
     for c in puzzle["clues"]:
@@ -506,6 +619,10 @@ def _session_state(
             # (puzzle_json内にfree_clueとして保存済み・crossword_new
             # の_free_clue_text参照)。
             clue_out["free_clue"] = c.get("free_clue", "")
+        if c["word_id"] in word_info:
+            clue_out["word_id"] = c["word_id"]
+            clue_out["english"] = c["english"]
+            clue_out["word_info"] = word_info[c["word_id"]]
         clues_out.append(clue_out)
         if p.get("solved") or p.get("given_up"):
             for i, ch in enumerate(c["english"]):
@@ -755,6 +872,33 @@ def crossword_giveup(session_id: int, payload: GiveUpPayload):
                 (json.dumps(progress), session_id),
             )
             _maybe_complete(conn, session_id, puzzle, progress, row["score"])
+        return _session_state(conn, session_id, uid)
+
+
+@router.post("/crossword/{session_id}/giveup-all")
+def crossword_giveup_all(session_id: int):
+    """全クリューを一括ギブアップする(2026-09-03ユーザー要望「全部答え
+    オープンボタン」)。テスト中の便利機能として、1クリューずつ
+    ギブアップを繰り返す手間を省く(未正解の全クリューを1回のDB更新で
+    given_up扱いにする・スコアは変えない=既存の単一ギブアップと同じ
+    仕様)。"""
+    uid = current_user_id()
+    with db() as conn:
+        _guard_games_access(conn, uid)
+        row = _owned_session(conn, session_id, uid)
+        puzzle = json.loads(row["puzzle_json"])
+        progress = json.loads(row["progress_json"])
+        for clue in puzzle["clues"]:
+            key = f"{clue['number']}-{clue['direction']}"
+            p = progress.setdefault(
+                key, {"solved": False, "given_up": False, "hints_used": []})
+            if not p["solved"]:
+                p["given_up"] = True
+        conn.execute(
+            "UPDATE crossword_sessions SET progress_json = ? WHERE id = ?",
+            (json.dumps(progress), session_id),
+        )
+        _maybe_complete(conn, session_id, puzzle, progress, row["score"])
         return _session_state(conn, session_id, uid)
 
 

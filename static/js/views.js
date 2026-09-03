@@ -7230,9 +7230,9 @@ const CW_HINT_LABELS = {
   audio: ["🔊 発音を聞く", "-10%"],
   first_letter: ["🔤 先頭文字", "-10%"],
   last_letter: ["🔡 末尾文字", "-10%"],
-  japanese: ["🇯🇵 日本語の意味", "-10%"],
+  japanese: ["日本語の意味", "-10%"],
   english: ["📖 英語ヒント(例文)", "-10%"],
-  reveal: ["👁️ 答えを見る", "0点"],
+  reveal: ["🔓 答えを見る", "0点"],
 };
 
 // 直近3件の出題ソース選択を覚えておき、設定画面で選び直しやすくする
@@ -7353,10 +7353,19 @@ async function cwRenderSetup(root, preset) {
         </select>` : `<p class="muted">単語帳がありません。
           先に単語帳を作ってください。</p>`}
       </div>
-      <div class="row mt">
-        <label>語数:
-          <input type="number" id="cwWordCount" value="10" min="6" max="20"
-            style="width:4em"/></label>
+      <div class="row mt" style="align-items:center">
+        <label>語数:</label>
+        <select id="cwWordCountTens">
+          ${[0, 10, 20, 30, 40, 50].map((n) =>
+            `<option value="${n}" ${n === 10 ? "selected" : ""}>${n}</option>`
+          ).join("")}
+        </select>
+        <span>+</span>
+        <select id="cwWordCountOnes">
+          ${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) =>
+            `<option value="${n}">${n}</option>`).join("")}
+        </select>
+        <span class="muted">(6〜50語・既定10語)</span>
       </div>
       <div class="cw-optgroup mt">
         <div class="cw-optgroup-title">クリューモード</div>
@@ -7436,8 +7445,9 @@ async function cwRenderSetup(root, preset) {
       'input[name="cwSource"]:checked').value;
     const clueMode = root.querySelector(
       'input[name="cwClueMode"]:checked').value;
-    const wordCount = Number(
-      root.querySelector("#cwWordCount").value) || 10;
+    const wordCount = (Number(root.querySelector("#cwWordCountTens").value)
+      || 0) + (Number(root.querySelector("#cwWordCountOnes").value) || 0)
+      || 10;
     const body = {
       source_type: sourceType, word_count: wordCount, clue_mode: clueMode,
       english_style: root.querySelector(
@@ -7563,9 +7573,15 @@ async function cwRenderPlay(root, sessionId, initialState) {
       const txt = freeText(c);
       const jaText = txt
         ? ` <span class="muted">${escapeHtml(txt)}</span>` : "";
+      // 正解/ギブアップ済みの語は単語詳細を開けるようにする
+      // (2026-09-03ユーザー要望)。クリュー選択のクリックと競合しない
+      // よう、詳細アイコン自体のクリックはstopPropagationする。
+      const detailBtn = c.word_info
+        ? ` <span class="cw-word-detail" data-word-id="${c.word_id}"
+            title="単語の詳細を見る">🔎</span>` : "";
       return `<div class="cw-clue-item${isSel ? " cw-clue-selected" : ""}"
         data-num="${c.number}" data-dir="${c.direction}">
-        ${c.number}. (${c.length}文字)${jaText} ${mark}</div>`;
+        ${c.number}. (${c.length}文字)${jaText} ${mark}${detailBtn}</div>`;
     };
     const across = session.clues.filter((c) => c.direction === "across");
     const down = session.clues.filter((c) => c.direction === "down");
@@ -7623,8 +7639,15 @@ async function cwRenderPlay(root, sessionId, initialState) {
       </div>
       <div class="row mt" style="justify-content:space-between">
         <h1>🧩 クロスワード</h1>
-        <div class="pill">スコア: ${session.score}</div>
+        <div class="row" style="align-items:center">
+          <div class="pill">スコア: ${session.score}</div>
+          ${session.status === "in_progress" ? `<button type="button"
+            class="btn ghost" id="cwGiveupAll">🔓 全部答えを見る</button>`
+            : ""}
+        </div>
       </div>
+      ${session.notice ? `<div class="pill vague mt">
+        ℹ️ ${escapeHtml(session.notice)}</div>` : ""}
       ${detailHtml}
       <div class="cw-board mt">
         <div class="cw-board-grid">${gridHtml}</div>
@@ -7644,12 +7667,33 @@ async function cwRenderPlay(root, sessionId, initialState) {
       .addEventListener("click", () => cwRenderHub(root));
     root.querySelector("#cwBackToSetup")
       .addEventListener("click", () => cwRenderSetup(root));
+    root.querySelector("#cwGiveupAll")?.addEventListener("click", async () => {
+      if (!confirm("全クリューの答えを表示します(未正解分は0点になりま" +
+        "す)。よろしいですか？")) return;
+      session = await api.post(
+        `/api/games/crossword/${sessionId}/giveup-all`, {});
+      hintDisplay = null;
+      render();
+    });
     root.querySelectorAll(".cw-clue-item").forEach((elm) => {
       elm.addEventListener("click", () => {
         selected = { number: Number(elm.dataset.num),
                       direction: elm.dataset.dir };
         hintDisplay = null;
         render();
+      });
+    });
+    root.querySelectorAll(".cw-word-detail").forEach((elm) => {
+      elm.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const wid = Number(elm.dataset.wordId);
+        const c = session.clues.find((cl) => cl.word_id === wid);
+        if (!c || !c.word_info) return;
+        showWordDetail({
+          id: wid, english: c.english, japanese: c.word_info.japanese,
+          level: c.word_info.level, example: c.word_info.example,
+          has_detail: c.word_info.has_detail,
+        });
       });
     });
     // マス目クリックでも選択できるように(2026-09-03ユーザー要望)。

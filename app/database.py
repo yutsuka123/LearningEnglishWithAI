@@ -643,6 +643,15 @@ def get_connection() -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.execute("PRAGMA journal_mode = WAL")
+    # WAL でも書き込みは同時に1本まで。busy_timeout 未設定(既定0)だと
+    # 他の書き込みトランザクションと少しでも重なった瞬間に即
+    # "database is locked" で失敗してしまう(2026-09-03発覚: クロス
+    # ワード生成中のAIヒント呼び出し(バッチ数によっては数秒〜十数秒)が
+    # トランザクションを開いたまま行われるため、その間に別リクエストが
+    # 書き込もうとすると発生した。将来的にはAI呼び出しをDBトランザクション
+    # の外に出すのが本筋だが、現状はテスト限定公開で同時書き込みの頻度が
+    # 低いため、待ち時間を延ばして吸収する対症療法にとどめる)。
+    conn.execute("PRAGMA busy_timeout = 15000")
     return conn
 
 

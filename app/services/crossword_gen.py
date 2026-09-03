@@ -31,7 +31,15 @@ from __future__ import annotations
 import random
 from dataclasses import dataclass, field
 
-MAX_GRID = 20
+MAX_GRID = 34
+
+
+def grid_size_for(word_count: int) -> int:
+    """語数に応じたグリッド上限を返す(2026-09-03ユーザー指示「語数の
+    上限を50まで」への対応)。語数が多いほど配置スペースが必要になる
+    (固定20だと50語では28/50語しか置けないことを実測確認済み)。
+    小規模(10語程度)では従来通り20を使う。"""
+    return max(20, min(MAX_GRID, word_count + 10))
 
 # 方向 -> 単位ベクトル(行方向, 列方向)。
 DIRECTIONS: dict[str, tuple[int, int]] = {
@@ -86,11 +94,22 @@ def _crossing_count(word: str, row: int, col: int, direction: str,
 def _can_place(
     word: str, row: int, col: int, direction: str,
     grid: dict[tuple[int, int], str], max_grid: int,
+    boundary: set[tuple[int, int]] = frozenset(),
 ) -> bool:
+    """``boundary``: 既存の各語の直前・直後マス(before/after)の集合
+    (2026-09-03発覚のバグ対策)。単語Aの前後マスが空であることは配置
+    時に確認していたが、後から別の語Bがちょうどそのマスへ(Aとは無関係
+    に)乗ってしまうケースを防げておらず、密なパズル(語数が多い場合)で
+    「実際には繋がっていないのに読み上げると連続して見える」語や、
+    採番ロジックが語の先頭マスを拾えずクラッシュする不具合につながって
+    いた。新しい語を置くときも、既存語のboundaryに重ならないことを
+    確認する。"""
     dr, dc = DIRECTIONS[direction]
     cells = _cells_for(word, row, col, direction)
     for r, c in cells:
         if r < 0 or c < 0 or r >= max_grid or c >= max_grid:
+            return False
+        if (r, c) in boundary:
             return False
 
     # 開始直前・終了直後のマスが空(または盤外)であること
@@ -120,21 +139,39 @@ def _can_place(
     return has_intersection
 
 
+def _boundary_for(placements: list[_Placement]) -> set[tuple[int, int]]:
+    """配置済みの各語の直前・直後マスの集合(_can_placeのboundary引数用)。"""
+    b: set[tuple[int, int]] = set()
+    for p in placements:
+        dr, dc = DIRECTIONS[p.direction]
+        b.add((p.row - dr, p.col - dc))
+        b.add((p.row + dr * len(p.english), p.col + dc * len(p.english)))
+    return b
+
+
 def _try_place_via_intersection(
     word_id: int, word: str, grid: dict[tuple[int, int], str], max_grid: int,
+    boundary: set[tuple[int, int]] = frozenset(),
 ) -> _Placement | None:
-    """交差数が最大になる配置を探して返す(見つからなければNone)。"""
+    """交差数が最大になる配置を探して返す(見つからなければNone)。
+    交差数が同点の場合は、先頭文字/末尾文字での交差を優先する
+    (2026-09-03ユーザー指示「先頭文字・末尾文字の50%以上はクロスして
+    ほしい」への対応。本物のクロスワードは語の端で交差することが多い
+    ため)。"""
     best: _Placement | None = None
-    best_score = -1
+    best_score = (-1, -1)
     for (r, c), letter in list(grid.items()):
         for i, ch in enumerate(word):
             if ch != letter:
                 continue
             for direction, (dr, dc) in DIRECTIONS.items():
                 row, col = r - dr * i, c - dc * i
-                if not _can_place(word, row, col, direction, grid, max_grid):
+                if not _can_place(
+                        word, row, col, direction, grid, max_grid, boundary):
                     continue
-                score = _crossing_count(word, row, col, direction, grid)
+                crossings = _crossing_count(word, row, col, direction, grid)
+                edge_bonus = 1 if i in (0, len(word) - 1) else 0
+                score = (crossings, edge_bonus)
                 if score > best_score:
                     best_score = score
                     best = _Placement(word_id, word, row, col, direction)
@@ -143,14 +180,23 @@ def _try_place_via_intersection(
 
 def _run_attempt(
     candidates: list[tuple[int, str]], max_grid: int,
+    target_count: int | None = None,
 ) -> list[_Placement]:
     if not candidates:
         return []
     shuffled = candidates[:]
     random.shuffle(shuffled)
+    if target_count is not None:
+        # 候補が目標語数より多い場合、試行ごとに異なる部分集合で組み方を
+        # 試す(2026-09-03ユーザー指示「平均2以上、できれば3以上」への
+        # 対応。単語の組み合わせ次第で交差しやすさが変わるため、順序
+        # だけでなく採用する語の組み合わせ自体も試行間で変える方が
+        # 平均交差数が伸びることを実測確認済み)。
+        shuffled = shuffled[:target_count]
     ordered = sorted(shuffled, key=lambda wc: -len(wc[1]))
 
     grid: dict[tuple[int, int], str] = {}
+    boundary: set[tuple[int, int]] = set()
     placements: list[_Placement] = []
 
     first_id, first_word = ordered[0]
@@ -158,8 +204,10 @@ def _run_attempt(
     start_row = max_grid // 2
     for i, ch in enumerate(first_word):
         grid[(start_row, start_col + i)] = ch
-    placements.append(
-        _Placement(first_id, first_word, start_row, start_col, "across"))
+    first_placement = _Placement(
+        first_id, first_word, start_row, start_col, "across")
+    placements.append(first_placement)
+    boundary |= _boundary_for([first_placement])
 
     pending = list(ordered[1:])
     while pending:
@@ -167,7 +215,7 @@ def _run_attempt(
         still_pending: list[tuple[int, str]] = []
         for word_id, word in pending:
             placement = _try_place_via_intersection(
-                word_id, word, grid, max_grid)
+                word_id, word, grid, max_grid, boundary)
             if placement is None:
                 still_pending.append((word_id, word))
                 continue
@@ -178,13 +226,60 @@ def _run_attempt(
                 idx = ((r - placement.row) // dr if dr
                        else (c - placement.col) // dc)
                 grid[(r, c)] = word[idx]
+            boundary |= _boundary_for([placement])
             placements.append(placement)
             placed_this_round = True
         pending = still_pending
         if not placed_this_round:
             break  # これ以上配置できる語がない
 
-    return placements
+    return _refine(placements, max_grid)
+
+
+def _refine(
+    placements: list[_Placement], max_grid: int, rounds: int = 4,
+) -> list[_Placement]:
+    """各語を1つずつ「他の語は固定したまま最善の位置に置き直せないか」を
+    試す局所探索(2026-09-03ユーザー指示「最低1平均2以上、できれば平均
+    3以上」への対応)。1回の貪欲配置(_run_attempt)は「先に置かれた語との
+    交差」しか考慮できないため、後から置かれた語がより良い交差点を
+    持っていても最初の一巡では見つからないことがある。全語を固定した
+    グリッドを基準に、語を1つだけ抜いて再探索することで、既に確定した
+    他の語との新たな交差点(見落とし)を拾えるようにする。件数が少ない
+    小規模パズル前提なので計算コストは軽い。"""
+    if len(placements) < 2:
+        return placements
+    result = list(placements)
+    for _ in range(rounds):
+        improved = False
+        for idx in range(len(result)):
+            target = result[idx]
+            grid: dict[tuple[int, int], str] = {}
+            others = [other for j, other in enumerate(result) if j != idx]
+            for other in others:
+                for (r, c), ch in zip(
+                    _cells_for(other.english, other.row, other.col,
+                               other.direction),
+                    other.english,
+                ):
+                    grid[(r, c)] = ch
+            boundary = _boundary_for(others)
+            current_score = _crossing_count(
+                target.english, target.row, target.col, target.direction,
+                grid)
+            candidate = _try_place_via_intersection(
+                target.word_id, target.english, grid, max_grid, boundary)
+            if candidate is None:
+                continue
+            candidate_score = _crossing_count(
+                candidate.english, candidate.row, candidate.col,
+                candidate.direction, grid)
+            if candidate_score > current_score:
+                result[idx] = candidate
+                improved = True
+        if not improved:
+            break
+    return result
 
 
 def _total_crossings(placements: list[_Placement]) -> int:
@@ -204,11 +299,19 @@ def _total_crossings(placements: list[_Placement]) -> int:
 
 def generate(
     candidates: list[tuple[int, str]], attempts: int = 15,
-    max_grid: int = MAX_GRID,
+    max_grid: int = MAX_GRID, target_count: int | None = None,
 ) -> Puzzle | None:
     """candidates: [(word_id, english), ...]（英大文字小文字は問わないが
     内部ではそのまま比較に使うので、呼び出し側で大文字化しておくこと）。
     配置できる語が1つも無ければ None を返す。
+
+    ``target_count``: 指定すると、candidatesがそれより多い場合に**試行
+    ごとに異なる部分集合**を採用語数分だけランダムに選んで配置を試す
+    (2026-09-03ユーザー指示「平均2以上、できれば3以上」対応。呼び出し側
+    (games.py)が実際に必要な語数より多い候補を渡すことで、単語の組み
+    合わせ自体も探索対象になり、順序だけを変える場合より平均交差数が
+    伸びることを実測確認済み)。省略時は全candidatesをそのまま使う
+    (従来通りの挙動)。
 
     複数回試行し、**配置できた語数を最優先**、同数なら**総交差マス数が
     多い方**を採用する(2026-09-03ユーザー指示「クロス数が少なすぎる、
@@ -217,7 +320,7 @@ def generate(
     best: list[_Placement] = []
     best_key = (-1, -1)
     for _ in range(attempts):
-        result = _run_attempt(candidates, max_grid)
+        result = _run_attempt(candidates, max_grid, target_count)
         key = (len(result), _total_crossings(result))
         if key > best_key:
             best_key = key
@@ -245,17 +348,21 @@ def generate(
     grid_rows = max_row - min_row + 1
     grid_cols = max_col - min_col + 1
 
+    # 採番はcellsからの推測(隣接マスの有無)ではなく、実際の配置一覧
+    # (shifted)から直接「語の開始マス」を求める(2026-09-03発覚:
+    # 語数が多く密なパズルでは、無関係な2語がたまたま隣接するマスを
+    # 持つことがあり、隣接判定だけでは語の開始マスを取りこぼして
+    # KeyErrorになる不具合があった。_can_place/_boundary_forの修正で
+    # この隣接自体は防げるが、採番は常に確実な方法にしておく)。
+    starts: dict[tuple[int, int], set[str]] = {}
+    for p in shifted:
+        starts.setdefault((p.row, p.col), set()).add(p.direction)
+
     numbering: dict[tuple[int, int], int] = {}
     counter = 1
     for r in range(grid_rows):
         for c in range(grid_cols):
-            if (r, c) not in cells:
-                continue
-            starts_across = (c == 0 or (r, c - 1) not in cells) and (
-                c + 1 < grid_cols and (r, c + 1) in cells)
-            starts_down = (r == 0 or (r - 1, c) not in cells) and (
-                r + 1 < grid_rows and (r + 1, c) in cells)
-            if starts_across or starts_down:
+            if (r, c) in starts:
                 numbering[(r, c)] = counter
                 counter += 1
 
