@@ -11,6 +11,7 @@ the UI can display API consumption (ユーザー要望: API使用量・費用の
 
 from __future__ import annotations
 
+import sqlite3
 import time
 from collections import deque
 from dataclasses import dataclass
@@ -403,6 +404,9 @@ def charge_crossword_game(conn, uid: int, cost_usd_total: float) -> float:
     return -delta
 
 
+_USAGE_WRITE_RETRIES = 3  # database is locked時の再試行回数(2026-09-06)
+
+
 def _record_usage(
     model: str,
     prompt_tokens: int,
@@ -413,18 +417,35 @@ def _record_usage(
 
     cost = estimate_cost(model, prompt_tokens, output_tokens)
     uid = current_user_id()
+    ip = current_ip()
     s = load_settings()
-    with db() as conn:
-        conn.execute(
-            "INSERT INTO ai_usage "
-            "(model, prompt_tokens, output_tokens, cost_usd, feature, "
-            " user_id, ip) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (model, prompt_tokens, output_tokens, cost, feature, uid,
-             current_ip()),
-        )
-        if feature not in _LUMP_SUM_FEATURES:
-            _maybe_deduct_balance(conn, uid, cost, feature, s)
-    return cost
+    # クロスワードのAIヒント生成(_ensure_ai_hints)のように、1リクエスト内で
+    # 複数語のバッチをThreadPoolExecutorで並列にai.chat()する機能があり、
+    # 各バッチが独立したDB接続でここへ書き込みに来る。busy_timeout(15秒)
+    # 内でも競合が解消しないことがあり、"database is locked"のまま例外に
+    # なると、実際には成功していたAI応答ごと「chat失敗」として捨てられて
+    # しまっていた(2026-09-06ユーザー報告: 有料会員なのにヒントが
+    # 「準備中」のまま・日本語ヒントがAI生成されず訳語のみにフォール
+    # バックした事例)。まずは短い間隔で数回リトライして解消を試みる。
+    for attempt in range(_USAGE_WRITE_RETRIES):
+        try:
+            with db() as conn:
+                conn.execute(
+                    "INSERT INTO ai_usage "
+                    "(model, prompt_tokens, output_tokens, cost_usd, "
+                    " feature, user_id, ip) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (model, prompt_tokens, output_tokens, cost, feature,
+                     uid, ip),
+                )
+                if feature not in _LUMP_SUM_FEATURES:
+                    _maybe_deduct_balance(conn, uid, cost, feature, s)
+            return cost
+        except sqlite3.OperationalError as exc:
+            if "locked" not in str(exc).lower() or (
+                attempt == _USAGE_WRITE_RETRIES - 1):
+                raise
+            time.sleep(0.2 * (attempt + 1))
+    return cost  # pragma: no cover - ループは必ずreturn/raiseで抜ける
 
 
 # OpenAI SDKの既定(timeout未指定=10分・max_retries=2)のままだと、接続
@@ -515,22 +536,6 @@ def chat(
             **_temperature_kwarg(use_model, temperature),
             **_token_kwarg(use_model, capped),
         )
-        elapsed = time.monotonic() - t0
-        if elapsed >= _SLOW_CALL_SEC:
-            log.warning(
-                "chat 低速 (feature=%s model=%s elapsed=%.1fs)",
-                feature, use_model, elapsed)
-        usage = resp.usage
-        ptok = getattr(usage, "prompt_tokens", 0) or 0
-        otok = getattr(usage, "completion_tokens", 0) or 0
-        cost = _record_usage(use_model, ptok, otok, feature)
-        return AIResult(
-            ok=True,
-            text=resp.choices[0].message.content or "",
-            cost_usd=cost,
-            prompt_tokens=ptok,
-            output_tokens=otok,
-        )
     except Exception as exc:
         elapsed = time.monotonic() - t0
         log.error("chat 失敗 (feature=%s model=%s elapsed=%.1fs): %s",
@@ -538,6 +543,37 @@ def chat(
         # 2026-08-29修正: synthesize_speech()と同じ問題(生の例外文字列を
         # そのままユーザーへ返していた)。errors.pyの定型文(4005)を返す。
         return AIResult(ok=False, text="", error=ERROR_CODES["4005"][0])
+
+    elapsed = time.monotonic() - t0
+    if elapsed >= _SLOW_CALL_SEC:
+        log.warning(
+            "chat 低速 (feature=%s model=%s elapsed=%.1fs)",
+            feature, use_model, elapsed)
+    usage = resp.usage
+    ptok = getattr(usage, "prompt_tokens", 0) or 0
+    otok = getattr(usage, "completion_tokens", 0) or 0
+    try:
+        cost = _record_usage(use_model, ptok, otok, feature)
+    except Exception:
+        # 2026-09-06: API呼び出し自体は既に成功しているため、利用量記録
+        # (DB書き込み)がdatabase is locked等で失敗しても応答は握り
+        # つぶさない(ユーザー報告: クロスワードのAIヒント並列生成で
+        # DB競合が起きると、成功していたAI応答ごと「chat失敗」扱いに
+        # なり、有料会員でもヒントが「準備中」のまま/日本語ヒントが
+        # 訳語のみにフォールバックしていた)。費用はDBが無くても概算
+        # できるのでログだけ残して処理を続ける(_record_usage側で3回
+        # リトライ済みのため、ここに来るのは稀)。
+        log.exception(
+            "chat: usage記録に失敗(API呼び出し自体は成功・feature=%s)",
+            feature)
+        cost = estimate_cost(use_model, ptok, otok)
+    return AIResult(
+        ok=True,
+        text=resp.choices[0].message.content or "",
+        cost_usd=cost,
+        prompt_tokens=ptok,
+        output_tokens=otok,
+    )
 
 
 def chat_stream(

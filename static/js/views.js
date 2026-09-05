@@ -7602,12 +7602,15 @@ async function cwRenderSetup(root, preset) {
     <button type="button" class="btn ghost" id="cwBack">
       ← ゲーム一覧に戻る</button>
     <h1 class="mt">🧩 クロスワード - 設定</h1>
-    ${state.isGuest ? `<div class="card">
-      <p class="muted">🔒 この機能(自分で作る)を使うには登録(無料)が
-        必要です。ここで設定してもスタート時にエラーになります。
-        <a href="/login#signup">登録(無料)はこちら</a>、または
-        <button type="button" class="btn ghost" id="cwGoSamplesFromSetup">
-          🧩 サンプルクロスワードを見る</button></p>
+    ${state.isGuest ? `<div class="sample-gate-banner">
+      ⚠️ この機能(自分で作る)はご登録(無料)が必要です。
+      ここで設定してもスタート時にエラーになります。
+      <a href="/login#signup">登録(無料)はこちら</a>、または
+      無料でも遊べるサンプルを下記にご用意しています。
+    </div>
+    <div class="row mt">
+      <button type="button" class="btn ghost" id="cwGoSamplesFromSetup">
+        🧩 サンプルクロスワードを見る</button>
     </div>` : ""}
     ${recent.length ? `<table class="cw-recent-table mt"><tbody>
       ${recent.map((r, i) => `<tr>
@@ -8139,7 +8142,7 @@ async function cwRenderPlay(root, sessionId, initialState) {
         ? ` <button type="button" class="btn ghost cw-lang-toggle"
             data-num="${c.number}" data-dir="${c.direction}"
             style="padding:0 5px;font-size:10px;line-height:1.6"
-            >${cwLangFor(c) === "ja" ? "🇯🇵→EN" : "🇬🇧→JA"}</button>` : "";
+            >${cwLangFor(c) === "ja" ? "日本語→英語" : "英語→日本語"}</button>` : "";
       // 正解/ギブアップ済みの語の単語詳細は、一覧内の小さいアイコンでは
       // なく選択後の詳細カード側(cw-word-tools)に大きいボタンとして出す
       // (2026-09-05ユーザー要望・一覧の🔎はスマホで押しにくかったため)。
