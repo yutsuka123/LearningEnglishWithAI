@@ -605,9 +605,35 @@ CREATE INDEX IF NOT EXISTS idx_client_errors_created
 CREATE TABLE IF NOT EXISTS crossword_sessions (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    source_type   TEXT    NOT NULL,              -- 'domain' | 'deck'
-    source_ref    TEXT    NOT NULL DEFAULT '',    -- カンマ区切り分野名 or deck_id
+    -- ゲスト(__guest__)は全員user_idを共有するため、user_id一致だけでは
+    -- 個々のゲストを区別できない(2026-09-05・サンプルクロスワードを
+    -- ゲストにも公開したことで表面化。app/main.pyのミドルウェアが発行する
+    -- guest_sid Cookieで個別に区別する。ログイン済みユーザーは常に''。
+    -- games.pyの_owned_session参照)。
+    guest_sid     TEXT    NOT NULL DEFAULT '',
+    source_type   TEXT    NOT NULL,              -- 'domain' | 'deck' | 'sample'
+    source_ref    TEXT    NOT NULL DEFAULT '',    -- カンマ区切り分野名 or deck_id or sample_id
     clue_mode     TEXT    NOT NULL DEFAULT 'always_ja',  -- 'always_ja'|'hints_only'
+    -- クリューモードで決まる最終スコア倍率(2026-09-05・
+    -- games.pyのCLUE_MODE_SCORE_MULTIPLIER参照。「ヒントの難易度」は
+    -- 独立設定ではなくclue_mode自体が兼ねる、というユーザー指示に基づく)。
+    score_multiplier REAL NOT NULL DEFAULT 1.0,
+    -- 「最初から」(/restart)で同じ設定を再現するために保存する生成条件
+    -- (2026-09-05)。source_type/source_ref/clue_modeと合わせて
+    -- NewGamePayload一式を復元できるようにする。
+    word_count     INTEGER NOT NULL DEFAULT 10,
+    english_style  TEXT    NOT NULL DEFAULT 'fill_blank',
+    japanese_style TEXT    NOT NULL DEFAULT 'simple',
+    level_min      TEXT,
+    level_max      TEXT,
+    -- パズルの詰め方(2026-09-05)。1なら面積優先(コンパクトモード)。
+    compact        INTEGER NOT NULL DEFAULT 0,
+    -- 不正解時の部分一致開示の甘さ(2026-09-05・'easy'|'normal'|'hard'。
+    -- games.pyのPARTIAL_MATCH_THRESHOLD_BY_DIFFICULTY参照)。
+    answer_difficulty TEXT NOT NULL DEFAULT 'normal',
+    -- 保存(ピン留め、2026-09-05)。1なら_enforce_session_capの上限・
+    -- 自動削除の対象から常に除外する(課金ユーザー限定機能)。
+    pinned        INTEGER NOT NULL DEFAULT 0,
     puzzle_json   TEXT    NOT NULL,
     progress_json TEXT    NOT NULL DEFAULT '{}',
     score         INTEGER NOT NULL DEFAULT 0,
@@ -617,6 +643,45 @@ CREATE TABLE IF NOT EXISTS crossword_sessions (
 );
 CREATE INDEX IF NOT EXISTS idx_crossword_sessions_user
     ON crossword_sessions(user_id, created_at);
+
+-- 集客用に一般公開する、事前に作り込んだ固定のサンプルクロスワード
+-- (2026-09-05)。パズル内容は全ユーザー共通(その場生成ではない)なので
+-- AI代・生成コストは初回作成時のみ(全ユーザー共有のsunkコスト)。
+CREATE TABLE IF NOT EXISTS crossword_samples (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    title          TEXT    NOT NULL,
+    description    TEXT    NOT NULL DEFAULT '',
+    domains        TEXT    NOT NULL DEFAULT '',
+    level_min      TEXT,
+    level_max      TEXT,
+    word_count     INTEGER NOT NULL,
+    clue_mode      TEXT    NOT NULL DEFAULT 'always_ja',
+    english_style  TEXT    NOT NULL DEFAULT 'fill_blank',
+    japanese_style TEXT    NOT NULL DEFAULT 'simple',
+    compact        INTEGER NOT NULL DEFAULT 0,
+    puzzle_json    TEXT    NOT NULL,
+    sort_order     INTEGER NOT NULL DEFAULT 0,
+    is_active      INTEGER NOT NULL DEFAULT 1,
+    created_at     TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+-- サンプルの「プレイ回数」上限判定用ログ(2026-09-05・無料ユーザー枠を
+-- 使い切ったかどうかをCOUNT(DISTINCT sample_id)で判定する。同じサンプルの
+-- 再プレイは新規消費にしない=games.pyの_sample_already_played参照)。
+-- ゲストはuser_idを共有するためguest_sidで区別する(上記crossword_sessions
+-- と同じ理由)。
+CREATE TABLE IF NOT EXISTS crossword_sample_plays (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL,
+    guest_sid   TEXT    NOT NULL DEFAULT '',
+    sample_id   INTEGER NOT NULL REFERENCES crossword_samples(id),
+    session_id  INTEGER,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_crossword_sample_plays_user
+    ON crossword_sample_plays(user_id, sample_id);
+CREATE INDEX IF NOT EXISTS idx_crossword_sample_plays_guest
+    ON crossword_sample_plays(guest_sid, sample_id);
 """
 
 
@@ -876,6 +941,33 @@ def _migrate(conn: sqlite3.Connection) -> None:
     # 列で、付与済みのptを取り消し済みかどうかを原子的に判定する用途
     # (app/services/paypay.pyのreverse_credit_if_refunded参照)。
     _add_col(conn, "paypay_payments", "refunded_at", "refunded_at TEXT")
+    # クリューモード別の最終スコア倍率(2026-09-05ユーザー指示で、当初の
+    # 「ヒント使用ごとに減点」方式から差し替え。既存セッションはDEFAULT
+    # 1.0=等倍を引き継ぐ。旧hint_pct列は未使用のまま残るが実害はない)。
+    _add_col(conn, "crossword_sessions", "score_multiplier",
+             "score_multiplier REAL NOT NULL DEFAULT 1.0")
+    # 「最初から」(/restart)・保存(ピン留め)機能(2026-09-05)。
+    _add_col(conn, "crossword_sessions", "word_count",
+             "word_count INTEGER NOT NULL DEFAULT 10")
+    _add_col(conn, "crossword_sessions", "english_style",
+             "english_style TEXT NOT NULL DEFAULT 'fill_blank'")
+    _add_col(conn, "crossword_sessions", "japanese_style",
+             "japanese_style TEXT NOT NULL DEFAULT 'simple'")
+    _add_col(conn, "crossword_sessions", "level_min", "level_min TEXT")
+    _add_col(conn, "crossword_sessions", "level_max", "level_max TEXT")
+    _add_col(conn, "crossword_sessions", "pinned",
+             "pinned INTEGER NOT NULL DEFAULT 0")
+    _add_col(conn, "crossword_sessions", "compact",
+             "compact INTEGER NOT NULL DEFAULT 0")
+    # 不正解時の部分一致開示の甘さ(2026-09-05ユーザー要望「難易度低なら
+    # 50%一致で開示」)。既存セッションはDEFAULT 'normal'=旧来の一律0.8
+    # 挙動を引き継ぐ。
+    _add_col(conn, "crossword_sessions", "answer_difficulty",
+             "answer_difficulty TEXT NOT NULL DEFAULT 'normal'")
+    # サンプルクロスワードのゲスト個別区別用(2026-09-05・上記CREATE TABLE
+    # のコメント参照)。
+    _add_col(conn, "crossword_sessions", "guest_sid",
+             "guest_sid TEXT NOT NULL DEFAULT ''")
     _migrate_multiuser(conn)
 
 

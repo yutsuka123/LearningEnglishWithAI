@@ -49,6 +49,11 @@ _AUTH_ALLOW = {
 # 　　するため。/loginは元々_AUTH_ALLOWで認証不要だが記録対象ではなかった）。
 _LANDING_LOG_PATHS = {"/", "/static/about.html", "/login"}
 
+# この秒数以上かかったリクエストはapp.logにWARNINGを残す(2026-09-05
+# ユーザー要望「各処理や遷移の時間で課題なところをあぶりだしたい」・
+# クロスワード生成が1分以上固まって見えた事象の再発防止・恒久監視用)。
+_SLOW_REQUEST_SEC = 5.0
+
 # fire-and-forgetのIPエンリッチタスクへの強参照を保持する集合。asyncioの
 # イベントループはタスクを弱参照でしか保持しないため、変数に代入せず
 # asyncio.create_task()しただけだと完了前にGCで消えることがある
@@ -100,6 +105,12 @@ _GUEST_READ_PREFIXES = (
     # 管理者向け詳細(admin)を返さない、maintenance の更新(PUT)は
     # `_require_admin()` で拒否される。
     "/api/system/release-notes", "/api/system/maintenance",
+    # 2026-09-05: サンプルクロスワード(集客用に一般公開)。この配下は
+    # ゲスト疑似ユーザーが割り当てられるだけで、実際にどこまで許可する
+    # かは各エンドポイント内部で判定する(通常のカスタムゲーム作成等は
+    # 引き続き_guard_games_access/_guard_session_accessで弾かれる・
+    # app/routers/games.py参照。多重防御)。
+    "/api/games/crossword",
 )
 
 # 特定商取引法ページ: 未記入欄のフォールバック文言(赤字表示)。
@@ -237,9 +248,20 @@ async def _auth_context(request, call_next):
     ip_token = auth_svc.set_current_ip(client_ip)
     gsid_token = auth_svc.set_current_guest_sid(gsid)
     web_token = auth_svc.mark_web_request()
+    # リクエスト全体の所要時間を計測し、遅いものだけapp.logに残す
+    # (2026-09-05ユーザー要望「各処理や遷移の時間で課題なところを
+    # あぶりだしたい」対応。AI呼び出し個別の低速判定はapp/services/ai.py
+    # 側で別途行っているため、ここではDB処理・複数AI呼び出しの合計等、
+    # エンドポイント単位の遅さを拾う)。
+    req_t0 = time.monotonic()
     try:
         response = await call_next(request)
     finally:
+        elapsed = time.monotonic() - req_t0
+        if elapsed >= _SLOW_REQUEST_SEC:
+            log.warning(
+                "slow request: %s %s elapsed=%.1fs",
+                request.method, request.url.path, elapsed)
         auth_svc.reset_current_user_id(token)
         auth_svc.reset_current_ip(ip_token)
         auth_svc.reset_current_guest_sid(gsid_token)

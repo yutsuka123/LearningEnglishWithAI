@@ -211,27 +211,45 @@ def _run_attempt(
 
     pending = list(ordered[1:])
     while pending:
-        placed_this_round = False
-        still_pending: list[tuple[int, str]] = []
-        for word_id, word in pending:
+        # 2026-09-05ユーザー指示「平均3以上に増やしたい」への対応:
+        # 従来は先頭から順に「置ける語を見つけたら即置く」方式だった
+        # ため、置く順序次第で本来もっと交差できた語が先に(交差数の
+        # 少ない位置に)置かれてしまうことがあった。ここでは毎回
+        # pending全員の最善配置を評価し、**その時点で最も交差数が
+        # 多い語を優先して置く**(best-first挿入)方式に変更。交差の
+        # 多い語ほど早く確定させることで、後続の語がその交差点を
+        # 目当てに配置しやすくなり、全体の平均交差数が伸びる
+        # (小規模パズル前提なのでO(残語数^2)でも計算コストは軽い)。
+        best_idx: int | None = None
+        best_placement: _Placement | None = None
+        best_score = (-1, -1)
+        for idx, (word_id, word) in enumerate(pending):
             placement = _try_place_via_intersection(
                 word_id, word, grid, max_grid, boundary)
             if placement is None:
-                still_pending.append((word_id, word))
                 continue
-            cells_here = _cells_for(
-                word, placement.row, placement.col, placement.direction)
-            dr, dc = DIRECTIONS[placement.direction]
-            for r, c in cells_here:
-                idx = ((r - placement.row) // dr if dr
-                       else (c - placement.col) // dc)
-                grid[(r, c)] = word[idx]
-            boundary |= _boundary_for([placement])
-            placements.append(placement)
-            placed_this_round = True
-        pending = still_pending
-        if not placed_this_round:
-            break  # これ以上配置できる語がない
+            crossings = _crossing_count(
+                placement.english, placement.row, placement.col,
+                placement.direction, grid)
+            score = (crossings, len(word))
+            if score > best_score:
+                best_score = score
+                best_idx = idx
+                best_placement = placement
+        if best_placement is None:
+            break  # 誰も配置できない語だけが残った
+
+        word_id, word = pending.pop(best_idx)
+        cells_here = _cells_for(
+            word, best_placement.row, best_placement.col,
+            best_placement.direction)
+        dr, dc = DIRECTIONS[best_placement.direction]
+        for r, c in cells_here:
+            idx = ((r - best_placement.row) // dr if dr
+                   else (c - best_placement.col) // dc)
+            grid[(r, c)] = word[idx]
+        boundary |= _boundary_for([best_placement])
+        placements.append(best_placement)
 
     return _refine(placements, max_grid)
 
@@ -282,6 +300,23 @@ def _refine(
     return result
 
 
+def _bbox_area(placements: list[_Placement]) -> int:
+    """配置全体の外接矩形の面積(2026-09-05ユーザー要望「一般的なクロス
+    ワードの配置に近づける・無理のない範囲で」への対応)。generate()の
+    試行選択で、配置数・交差数が同点のときのタイブレークに使う
+    (同じ結果を保ったまま、より密集した=よくあるクロスワードらしい
+    配置を優先できる)。"""
+    if not placements:
+        return 0
+    all_cells = [
+        cell for p in placements
+        for cell in _cells_for(p.english, p.row, p.col, p.direction)
+    ]
+    rows = [r for r, _ in all_cells]
+    cols = [c for _, c in all_cells]
+    return (max(rows) - min(rows) + 1) * (max(cols) - min(cols) + 1)
+
+
 def _total_crossings(placements: list[_Placement]) -> int:
     """配置全体の交差マス総数(=各語のcrossing数の合計)。小規模(10語
     程度)前提なので、O(語数^2)の単純な総当たりで十分。"""
@@ -300,6 +335,7 @@ def _total_crossings(placements: list[_Placement]) -> int:
 def generate(
     candidates: list[tuple[int, str]], attempts: int = 15,
     max_grid: int = MAX_GRID, target_count: int | None = None,
+    compact: bool = False,
 ) -> Puzzle | None:
     """candidates: [(word_id, english), ...]（英大文字小文字は問わないが
     内部ではそのまま比較に使うので、呼び出し側で大文字化しておくこと）。
@@ -316,12 +352,22 @@ def generate(
     複数回試行し、**配置できた語数を最優先**、同数なら**総交差マス数が
     多い方**を採用する(2026-09-03ユーザー指示「クロス数が少なすぎる、
     平均2箇所ほしい、最低1箇所・最大制限なし」への対応。件数が少ない
-    小規模パズルなので試行を増やしても計算コストは軽い)。"""
+    小規模パズルなので試行を増やしても計算コストは軽い)。配置数・交差数
+    まで同点の場合は、外接矩形の面積が小さい方(より密集した、一般的な
+    クロスワードに近い配置)を採用する(2026-09-05ユーザー要望)。
+
+    ``compact=True``(2026-09-05ユーザー要望「選択できるだけ面積減らして
+    クロスを多くするモード」)のときは、面積の小ささを交差数より優先
+    する(配置数最優先は変えず、2番目の判定基準を入れ替えるだけ)。
+    既定(False)は従来通り交差数優先の「普通モード」。"""
     best: list[_Placement] = []
-    best_key = (-1, -1)
+    best_key = (-1, -1, float("-inf"))
     for _ in range(attempts):
         result = _run_attempt(candidates, max_grid, target_count)
-        key = (len(result), _total_crossings(result))
+        crossings = _total_crossings(result)
+        area = _bbox_area(result)
+        key = ((len(result), -area, crossings) if compact
+               else (len(result), crossings, -area))
         if key > best_key:
             best_key = key
             best = result

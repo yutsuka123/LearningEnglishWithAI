@@ -31,110 +31,62 @@
     }
   }
   </script>
-  <style>
-    body { font-family: system-ui, sans-serif; background: #f4f6fb;
-      margin: 0; color: #223; }
-    .wrap { max-width: 640px; margin: 0 auto; padding: 32px 20px 60px; }
-    .card { background: #fff; padding: 28px 32px; border-radius: 12px;
-      box-shadow: 0 4px 24px rgba(0,0,0,.08); margin-bottom: 16px; }
-    h1 { font-size: 20px; margin: 0 0 4px; }
-    .sub { color: #789; font-size: 13px; margin: 0 0 24px; }
-    h2 { font-size: 15px; margin: 0 0 8px; color: #345; }
-    h3 { font-size: 14px; margin: 18px 0 4px; color: #234; }
-    p, li { font-size: 14px; line-height: 1.8; color: #445; }
-    ul.links { list-style: none; margin: 8px 0; padding: 0; }
-    ul.links li { margin: 10px 0; }
-    ul.links a { display: inline-flex; align-items: center; gap: 8px;
-      font-size: 15px; color: #234; text-decoration: none;
-      padding: 12px 16px; width: 100%; box-sizing: border-box;
-      background: #f4f6fb; border-radius: 8px; }
-    ul.links a:hover { background: #e8ecf5; }
-    .muted { color: #789; font-size: 13px; }
-    .notice { background: #fff3cd; border: 1px solid #ffe58a;
-      border-radius: 8px; padding: 12px 16px; margin: 0 0 20px;
-      font-size: 13px; line-height: 1.7; color: #5a4a12; }
-    .cta { display: inline-block; margin: 4px 0 0; padding: 12px 28px;
-      background: #3b6fd4; color: #fff; text-decoration: none;
-      border-radius: 8px; font-size: 15px; font-weight: 600; }
-    .cta:hover { background: #2f5bb8; }
-    .legal-row { display: flex; gap: 10px; flex-wrap: wrap;
-      margin: 12px 0 0; }
-    .cta-legal { display: inline-block; padding: 10px 20px;
-      background: #eef2fb; color: #2f5bb8; text-decoration: none;
-      border: 1px solid #c7d4ef; border-radius: 8px; font-size: 14px;
-      font-weight: 600; }
-    .cta-legal:hover { background: #e0e8f9; }
-    a.back { display: inline-block; margin-top: 24px; font-size: 13px;
-      color: #3b6fd4; text-decoration: none; }
-    a.back:hover { text-decoration: underline; }
-    .manual-item { margin: 0 0 18px; padding-bottom: 14px;
-      border-bottom: 1px solid #e5e9f2; }
-    .manual-item:last-child { border-bottom: none; }
-    /* 概要カードの「見せる」用の3行ハイライト（2026-08-19）。
-       サブスク不要・登録/ログインのメリットを一目で伝える。 */
-    .teaser { list-style: none; margin: 14px 0 4px; padding: 0;
-      display: flex; flex-direction: column; gap: 6px; }
-    .teaser li { font-size: 14px; color: #234; }
-    /* 目次（2026-08-19・見やすさ改善）。同じ場所に1つだけ置き、各見出しへ
-       ジャンプできるようにする。 */
-    .toc-list { list-style: none; margin: 10px 0 0; padding: 0;
-      counter-reset: toc; }
-    .toc-list li { counter-increment: toc; margin: 8px 0; }
-    .toc-list li::before { content: counter(toc) ". "; color: #9ab; }
-    .toc-list a { color: #3b6fd4; text-decoration: none; font-size: 14.5px; }
-    .toc-list a:hover { text-decoration: underline; }
-    /* 各セクション見出しの下に置く「目次へ戻る」リンク。目次自体は
-       上に1箇所だけ置き、ここからそこへ飛べるようにする(飛べる導線)。 */
-    .totoc { margin: -4px 0 16px; }
-    .totoc a { font-size: 12px; color: #9ab; text-decoration: none; }
-    .totoc a:hover { text-decoration: underline; color: #3b6fd4; }
-    .quick-list { margin: 8px 0 0; padding-left: 20px; }
-    .quick-list li { margin: 4px 0; }
-  </style>
+  <link rel="stylesheet" href="/static/css/page.css" />
+  <script src="/static/js/page-chrome.js"></script>
 </head>
 <body>
+  <div class="pagebar">
+    <select id="fontSize" title="文字の大きさ">
+      <option value="">文字: 中</option>
+      <option value="small">文字: 小</option>
+      <option value="large">文字: 大</option>
+      <option value="xlarge">文字: 特大</option>
+    </select>
+    <button type="button" id="themeToggle" title="ダーク/ライト切替">🌙</button>
+  </div>
   <div class="wrap">
     <div class="card" id="overview">
-      <h1>🐱 nyangailab — サブスク疲れの方のためのAI英語学習アプリ</h1>
-      <p class="sub">個人開発・ベストエフォート対応。ログインの前後どちらからも
-        このページを開けます。</p>
+      <h1>🐱 nyangailab</h1>
+      <p class="sub">月額サブスクなしで、ニッチな語彙まで学べるAI英語学習
+        アプリ</p>
       <p class="sub">バージョン: <span id="verNum">—</span>
-        （リリース日: <span id="verDate">—</span>）
-        ・ このページの作成日: 2026-08-08 ／ 最終更新日: 2026-08-19</p>
-      <p class="sub">⚠️ 個人開発のため、不具合対応やメンテナンスのため
-        予告なく一時的にご利用いただけなくなる場合があります。あらかじめ
-        ご了承ください。</p>
+        （リリース日: <span id="verDate">—</span>）</p>
 
-      <p>nyangailabは、月額サブスクリプションではなく<b>使った分だけ払う
-        都度課金制（前払いチャージ方式）</b>のAI英語学習アプリです。
-        日常会話の基礎語彙はもちろん、専門用語から、さらには妖怪や
-        絶滅種のようなニッチな分野まで幅広い単語・フレーズを、AIの
-        自然な音声つきで学べます。「サブスクに入ったものの続かなかった」
-        「使わない月にも料金が発生するのが嫌」という方に向いています。</p>
+      <p>使った分だけ払う前払いチャージ制です。使わない月は<b>0円</b>。
+        登録しなくても、単語・フレーズを今すぐ見られます。</p>
 
-      <p><b>サブスクなし・無料使用可能</b>な範囲が広いのも特徴です。
-        単語・フレーズの閲覧やリーディング/リスニング/英会話/ライティング
-        のサンプル教材はログイン不要・無料で
-        お試しいただけます。月額固定費が発生しないため、使う分だけ
-        払えばよい<b>安い英語アプリ</b>として、英会話の
-        継続学習にもお使いいただけます。</p>
+      <a class="cta" href="/login#signup"
+        data-track="about_cta:hero_signup">無料で登録する →</a>
+      <div class="legal-row">
+        <a class="cta-legal" href="/"
+          data-track="about_cta:hero_open_app">まずアプリを見てみる →</a>
+      </div>
 
       <ul class="teaser">
-        <li>✅ <b>登録・ログイン不要</b>で、単語/フレーズの閲覧やサンプル
-          教材をすぐにお試しいただけます</li>
-        <li>⚠️ ただし<b>ログインしないと学習の記録は保存されません</b>。
-          <b>ログイン（無料・1分）</b>すれば、覚えた単語がずっと積み上がり、
-          単語帳・フレーズ帳も作れます</li>
-        <li>🗣️ 基礎語彙は無料のまま伸ばせますが、AIと実際に話す練習や
-          自分向けの教材が欲しくなったら<b>前払いチャージ</b>へ（¥800から。
-          サブスクではないので使った分だけ）</li>
+        <li>💰 <b>月額固定費なし。</b> 前払いチャージ（¥800から）を使った
+          分だけ消費します。放置しても課金されません。</li>
+        <li>🦉 <b>理学・工学・AI用語から、動植物・文学・芸術・口語表現、
+          アニメやゲームなどのエンタメまで。</b> 一般的な単語帳アプリが
+          扱わないニッチな分野も、語源・豆知識つきの詳しい解説で
+          学べます。</li>
+        <li>🔊 <b>AIの自然な音声つき。</b> 単語・例文・教材の読み上げに
+          対応。同じ音声は聞き直しても追加課金されません。</li>
       </ul>
 
-      <a class="cta" href="/">アプリを開く（トップ画面へ）→</a>
-      <div class="legal-row">
-        <a class="cta-legal" href="/static/terms.html" target="_blank">📄 利用規約・免責事項</a>
-        <a class="cta-legal" href="/tokushoho" target="_blank">🧾 特定商取引法に基づく表記</a>
-      </div>
+      <h3>他の英語学習アプリとの違い</h3>
+      <ul class="quick-list">
+        <li><b>サブスク疲れの人向け</b>：月額課金ではなく、前払いした
+          残高から使った分だけ引かれます。解約手続きも不要です。</li>
+        <li><b>収録分野が広い</b>：一般的な語彙だけでなく、物理・天文・
+          法律・医療・料理・アニメ・失礼にならない言い方・名言など
+          幅広い分野、単語13,000語以上・フレーズ7,000件以上を収録。</li>
+        <li><b>1語ごとの解説が詳しい</b>：意味・例文だけでなく、語源・
+          派生語・類義語・豆知識まで確認できます。</li>
+        <li><b>登録前に中身を全部見られる</b>：単語・フレーズの一覧と
+          詳細は、ログインなしで全分野無料で読めます。</li>
+        <li><b>メール確認のステップがありません</b>：登録するとその場で
+          すぐ使い始められます。</li>
+      </ul>
     </div>
 
     <div class="card" id="toc">
@@ -146,6 +98,7 @@
         <li><a href="#quickstart">かんたん使い方ガイド</a></li>
         <li><a href="#legal">利用規約・特定商取引法など</a></li>
         <li><a href="#manual">詳しい取扱説明書・使い方ガイド</a></li>
+        <li><a href="#faq">よくある質問</a></li>
         <li><a href="#trouble">困ったときは</a></li>
       </ol>
     </div>
@@ -153,9 +106,11 @@
     <div class="card" id="signup">
       <h2>📝 登録するには？</h2>
       <p class="totoc"><a href="#toc">▲ 目次へ戻る</a></p>
-      <p>メールアドレスとパスワードだけで、その場ですぐ登録できます
+      <p>メールアドレス・パスワード・呼んでほしいお名前（ニックネームで
+        可）を入力するだけで、確認メールなしでその場ですぐ登録できます
         （現在、新規登録は受付中です）。</p>
-      <a class="cta" href="/login#signup">新規登録ページを開く →</a>
+      <a class="cta" href="/login#signup"
+        data-track="about_cta:section_signup">新規登録ページを開く →</a>
 
       <h3>登録すると何がいいの？</h3>
       <ul>
@@ -191,7 +146,8 @@
           押すと pt（1pt=1円）が残高に加算されます。</li>
       </ol>
       <a class="cta" href="https://nyangailab.base.shop/" target="_blank"
-        rel="noopener">nyangailab BASEショップを開く →</a>
+        rel="noopener" data-track="about_cta:base_shop">nyangailab
+        BASEショップを開く →</a>
       <p class="muted mt">料金の詳細・最新の価格は
         <a href="/tokushoho">特定商取引法に基づく表記</a>を
         ご覧ください。</p>
@@ -202,6 +158,37 @@
       <p class="totoc"><a href="#toc">▲ 目次へ戻る</a></p>
       <p class="muted">「①未ログイン」「②ログイン（無課金）」「③課金（チャージ後）」
         の3段階で、使える範囲が変わります。</p>
+
+      <div class="tier-cards">
+        <div class="tier-card">
+          <h3>🆓 登録なし</h3>
+          <ul>
+            <li>単語・フレーズ全分野を閲覧OK</li>
+            <li>発音は単語1,000語・フレーズ750件まで無料</li>
+            <li>学習記録は保存されません</li>
+            <li>単語帳・フレーズ帳は作れません</li>
+          </ul>
+        </div>
+        <div class="tier-card">
+          <h3>✅ 登録（無料）</h3>
+          <ul>
+            <li>発音の無料範囲が単語2,000語・フレーズ1,500件に拡大</li>
+            <li>学習記録（習熟度・復習間隔）を保存</li>
+            <li>単語帳・フレーズ帳が作れる（1個・100語まで）</li>
+            <li>AI英会話・教材生成・添削はサンプルのみ</li>
+          </ul>
+        </div>
+        <div class="tier-card">
+          <h3>💳 チャージ（¥800〜）</h3>
+          <ul>
+            <li>収録すべての発音を再生可能（単語13,000語以上）</li>
+            <li>単語帳・フレーズ帳が個数・語数とも無制限</li>
+            <li>AI英会話・教材生成・添削が使える</li>
+            <li>使った分だけ消費（月額固定費なし）</li>
+          </ul>
+        </div>
+      </div>
+      <p class="muted">以下は各段階の詳しい説明です。</p>
 
       <div class="manual-item">
         <h3>🔊🆓🔒 単語・フレーズ一覧の再生アイコンの意味</h3>
@@ -256,7 +243,7 @@
         <h3>③ 課金（チャージ後）</h3>
         <p>音声再生の無料範囲を超えた単語・フレーズも、チャージ残高が
           あれば少額消費してすべて再生できるようになります（収録数は
-          単語12,000語以上・フレーズ6,500件以上、随時追加中）。加えて
+          単語13,000語以上・フレーズ7,000件以上、随時追加中）。加えて
           AI英会話・リーディング/リスニング教材の生成・ライティング添削・
           読み上げ音声などをご利用いただけます。単語帳・フレーズ帳の個数・
           語数の上限もなくなります。チャージ残高は前払い方式で、使った分
@@ -278,14 +265,16 @@
       <ul class="quick-list">
         <li><b>🏠 ダッシュボード</b> — 学習状況のサマリー画面</li>
         <li><b>🔤 英単語 ／ 💬 ミニフレーズ</b> — 単語・フレーズの一覧・検索</li>
-        <li><b>🎴 フラッシュ単語 ／ フラッシュフレーズ</b> — カード形式の復習</li>
-        <li><b>📁 単語帳 ／ フレーズ帳</b> — 自分だけのコレクション作成</li>
+        <li><b>🃏 フラッシュ単語 ／ フラッシュフレーズ</b> — カード形式の復習</li>
+        <li><b>🗂️ 単語帳 ／ フレーズ帳</b> — 自分だけのコレクション作成</li>
+        <li><b>📝 クイズ</b> — 4択・タイピングで単語/フレーズを出題</li>
         <li><b>📖 リーディング ／ 🎧 リスニング ／ ✍️ ライティング ／
           🗣️ 英会話</b> — AI教材で練習（サンプルは無料、AIによる新規生成・
           添削・会話は課金ユーザー向け）</li>
         <li><b>🎯 判定・教材</b> — レベル判定や場面別教材の生成（課金）</li>
         <li><b>📚 学習履歴</b> — これまでの学習記録の振り返り</li>
-        <li><b>⚙️ 設定</b> — 表示設定・プロフィール・チャージ（残高追加）</li>
+        <li><b>⚙️ 設定・チャージ</b> — 表示設定・プロフィール・チャージ
+          （残高追加）</li>
       </ul>
     </div>
 
@@ -303,6 +292,9 @@
       <p class="totoc"><a href="#toc">▲ 目次へ戻る</a></p>
       <p class="muted">サイドバーメニューの並び順に沿って、各機能を詳しく
         説明します。ログイン後の画面と合わせてご覧ください。</p>
+
+      <details class="manual-collapse">
+      <summary>各機能の詳しい説明を開く</summary>
 
       <div class="notice">
         ⚠️ <strong>単語・フレーズ・例文等のコンテンツ、読み上げ音声、
@@ -469,11 +461,128 @@
           満点は100〜300ptの範囲で変更でき、忘却曲線の減少量を0にすると
           オフにできます。</p>
       </div>
+      </details>
+    </div>
+
+    <div class="card" id="faq">
+      <h2>❓ ご利用の前に（よくある質問）</h2>
+      <p class="totoc"><a href="#toc">▲ 目次へ戻る</a></p>
+      <div class="manual-item">
+        <h3>登録するといいことは？</h3>
+        <p>覚えた単語がずっと積み上がり（習熟度・忘却曲線に基づく復習
+          間隔を記録）、次に開いたときもそこから続けられます。単語帳・
+          フレーズ帳も作れるようになり、発音の無料再生範囲も広がります。
+          登録は無料で、1分ほどで完了します。</p>
+      </div>
+      <div class="manual-item">
+        <h3>登録しないとどうなる？</h3>
+        <p>単語・フレーズの閲覧やサンプル教材は、登録しなくても
+          お試しいただけます。ただし学習記録が保存されないため、
+          訪れるたびにリセットされた状態になります。単語帳・フレーズ帳の
+          作成もできません。まずは登録なしで雰囲気を確かめてから、
+          気に入ったら登録していただく形でも問題ありません。</p>
+      </div>
+      <div class="manual-item">
+        <h3>実名での登録は必要ですか？</h3>
+        <p><b>必要ありません。</b>「呼んでほしいお名前」はニックネームで
+          構いません。チャージキーの発行などご連絡の際の宛名として
+          使うだけで、本名確認等は一切行っていません。</p>
+      </div>
+      <div class="manual-item">
+        <h3>課金（チャージ）するといいことは？</h3>
+        <p>発音の音声再生が収録すべての単語・フレーズで聞けるように
+          なるほか、AI英会話・リーディング/リスニング教材の生成・
+          ライティング添削などが使えるようになります。単語帳・フレーズ帳の
+          個数・語数の上限もなくなります。月額サブスクではなく前払い
+          チャージ制なので、使わなければ追加の費用は発生しません。</p>
+      </div>
+      <div class="manual-item">
+        <h3>クレジットカード情報や決済の管理はどうなっていますか？</h3>
+        <p>クレジットカード番号等の決済情報は、開発者（私）側では
+          一切保持・管理していません。決済は「<a href="https://thebase.in/"
+          target="_blank" rel="noopener">BASE</a>」（BASE株式会社が提供する
+          ECプラットフォーム）に代行してもらっており、カード情報の入力・
+          保管もBASE側で安全に取り扱われます。開発者が受け取るのは
+          決済完了後の通知のみで、決済手段の詳細に触れることは
+          ありません。</p>
+      </div>
+      <div class="manual-item">
+        <h3>個人開発とのことですが、止まったりしませんか？</h3>
+        <p>不具合対応やメンテナンスのため、予告なく一時的にご利用
+          いただけなくなる場合があります。ご了承のうえお使いください。</p>
+      </div>
+      <div class="manual-item">
+        <h3>教材はAIが作っているのですか？</h3>
+        <p>はい。単語・フレーズ・例文等のコンテンツ、読み上げ音声、
+          音声入力の認識（発音判定等）は、OpenAIが提供するAIモデルを
+          用いて作成・生成しています。内容の確認には努めていますが、
+          まれに不自然な表現や誤りが生じる可能性があります。詳しくは
+          <a href="/static/terms.html">利用規約・免責事項</a>を
+          ご覧ください。</p>
+      </div>
+      <div class="manual-item">
+        <h3>今は試験公開中と聞きました</h3>
+        <p>正式公開に向けた最終テスト期間ですが、新規登録もご利用も
+          可能です。</p>
+      </div>
     </div>
 
     <div class="card" id="trouble">
       <h2>🔧 困ったときは</h2>
       <p class="totoc"><a href="#toc">▲ 目次へ戻る</a></p>
+
+      <div class="manual-item" id="trouble-signup">
+        <h3>新規登録ができない</h3>
+        <ul>
+          <li>メールアドレスの形式が正しいか確認してください
+            （例: example@mail.com）。</li>
+          <li>使い捨て・一時的なメールアドレス（テストメールサービス等）は
+            ご利用いただけません。普段お使いのメールアドレスを
+            ご入力ください。</li>
+          <li>「メールアドレス（確認）」「パスワード（確認）」欄は、
+            それぞれ上の欄と完全に一致している必要があります
+            （大文字・小文字も区別されます）。</li>
+          <li>パスワードは8〜32文字で、英字・数字・記号のうち2種類以上を
+            組み合わせてください。</li>
+          <li>そのメールアドレスは既に登録済みの可能性があります。
+            「ログイン画面に戻る」からログインをお試しください。</li>
+          <li>お名前欄（呼んでほしいお名前）は必須です。本名でなくても
+            登録できます。</li>
+          <li>登録ボタンを押しても反応しない場合、ブラウザの「すべての
+            Cookie・サイトデータをブロック」等のプライバシー設定が
+            原因のことがあります。設定を確認するか、別のブラウザ・
+            シークレット/プライベートウィンドウでお試しください。</li>
+          <li>短時間に何度も送信すると、一時的に登録を制限する場合が
+            あります。少し時間をおいてから再度お試しください。</li>
+        </ul>
+      </div>
+
+      <div class="manual-item" id="trouble-login">
+        <h3>ログインできない</h3>
+        <ul>
+          <li>メールアドレス（初期からご利用の方はユーザー名）と
+            パスワードが正しいか確認してください。</li>
+          <li>パスワードをお忘れの場合、現時点では画面からの再発行に
+            対応していません。<a href="/tokushoho">特定商取引法に基づく
+            表記</a>に記載の連絡先までご連絡ください。</li>
+          <li>短時間に何度も失敗すると、一時的にログインを制限する場合が
+            あります。少し時間をおいてから再度お試しください。</li>
+        </ul>
+      </div>
+
+      <div class="manual-item" id="trouble-charge">
+        <h3>チャージキーが使えない・届かない</h3>
+        <ul>
+          <li>キーは大文字・小文字や記号を含め、届いたとおり正確に
+            入力してください（コピー＆ペーストがおすすめです）。</li>
+          <li>1つのチャージキーは1回のみ使用できます。既に使用済みの
+            場合はエラーになります。</li>
+          <li>ご購入後、チャージキーの発行は手動のため反映まで
+            お時間をいただく場合があります。しばらく経っても届かない
+            場合は、ご購入時のメールアドレスと登録メールアドレスが
+            一致しているかご確認のうえ、上記連絡先までご連絡ください。</li>
+        </ul>
+      </div>
 
       <div class="manual-item" id="trouble-mic">
         <h3>マイクが使えない（ハンズフリー会話・録音）</h3>
@@ -535,6 +644,28 @@
           if (vd && u.version_date) vd.textContent = u.version_date;
         })
         .catch(() => { /* ignore: バージョン表記が出ないだけ */ });
+
+      // 離脱分析用の軽量トラッキング(2026-09-05・opus照査提案「Aboutページの
+      // 刷新が効いているか計測する」への対応)。static/login.htmlの
+      // track()と同じ方式(/api/system/trackへ直接POST・ゲストも記録対象)。
+      // それまでこのページにはトラッキングが一切無く、CTAクリックが
+      // 見えなかった。
+      function track(kind, category, label) {
+        try {
+          fetch('/api/system/track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ kind, category, label }),
+          });
+        } catch (e) { /* ignore */ }
+      }
+      track('page', 'about_page', document.referrer ? 'with_referrer' : 'direct');
+      document.querySelectorAll('[data-track]').forEach(function (el) {
+        el.addEventListener('click', function () {
+          const parts = el.dataset.track.split(':');
+          track('click', parts[0], parts[1] || '');
+        });
+      });
     })();
   </script>
 </body>

@@ -445,8 +445,9 @@ export async function refreshCost() {
     // 個別に許可されたアカウントにも表示する
     // (app/services/paypay.pyのis_test_allowedと対応)。
     state.canTestPaypayCharge = isAdmin || !!u.paypay_charge_test_allowed;
-    // ゲーム機能(クロスワード等)の限定公開(2026-09-03)。上と同じ判定
-    // 方式・別の許可リスト(app/services/games_access.pyと対応)。
+    // ゲーム機能(クロスワード等)の限定公開(2026-09-03、2026-09-05に
+    // 招待ユーザーへも開放)。games_test_allowedはテスト許可リストと
+    // 招待ユーザーの統合判定(app/services/games_access.pyのcan_access)。
     state.canUseGames = isAdmin || !!u.games_test_allowed;
     state.multiuser = !!u.multiuser;
     state.isGuest = !!u.is_guest;
@@ -499,6 +500,10 @@ export async function refreshCost() {
 async function doLogout() {
   if (!confirm("本当にログアウトしますか？")) return;
   try { await api.post("/api/auth/logout"); } catch (_) { /* */ }
+  // 共有端末で前のアカウントの選択履歴(分野名・単語帳名等)が次の
+  // ログイン先に見えてしまわないようにする(2026-09-05fable監査指摘・
+  // cw_recent_sourcesはユーザーごとに分けず端末単位で保存しているため)。
+  try { localStorage.removeItem("cw_recent_sources"); } catch (_) { /* */ }
   location.href = "/login";
 }
 

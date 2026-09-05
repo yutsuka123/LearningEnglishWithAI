@@ -9,10 +9,13 @@
 }
 
 :root {
-  --bg: #0f1419;
-  --panel: #1a2230;
-  --panel-2: #222d3d;
-  --line: #2c3a4f;
+  /* 2026-09-05ユーザー要望「背景は落ち着いたトーン・ダークは暗すぎず
+     明るすぎず目に優しく」に対応し、従来の#0f1419(ほぼ黒)から一段
+     明るい落ち着いたスレート系に調整(色相・相対的な明暗関係は維持)。 */
+  --bg: #161c23;
+  --panel: #1f2733;
+  --panel-2: #29323f;
+  --line: #38445a;
   --text: #e6edf3;
   --muted: #a7b6c8;
   --accent: #4da3ff;
@@ -30,10 +33,12 @@
 /* ライトテーマ（既定はダークのまま。ユーザーが明示的に切り替えた時だけ適用。
    JS側で <html data-theme="light"> をセット/localStorage保存する）。 */
 :root[data-theme="light"] {
-  --bg: #f4f6fb;
-  --panel: #ffffff;
-  --panel-2: #eef1f7;
-  --line: #dbe2ee;
+  /* 2026-09-05ユーザー要望「背景は落ち着いたトーン」に対応し、真っ白
+     寄りだった従来値から少し落ち着いた淡いトーンに調整。 */
+  --bg: #eef1f6;
+  --panel: #f9fafc;
+  --panel-2: #e9ecf2;
+  --line: #d5dce8;
   --text: #1a2230;
   --muted: #64748b;
   --accent: #3b6fd4;
@@ -397,6 +402,12 @@ body.sidebar-collapsed .topbar-brand { display: inline-flex; font-size: 15px; }
 .btn.voice-m { background: #1f6fd6; color: #fff; padding: 3px 11px; font-size: 15px; }
 .btn.voice-f { background: #d6406a; color: #fff; padding: 3px 11px; font-size: 15px; }
 .voice-cell { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 5px; }
+/* クロスワード: 正解/ギブアップ済みクリューの音声・詳細ボタン
+   (2026-09-05ユーザー要望)。一覧内の小さい🔎アイコンはスマホで押し
+   にくかったため、選択後の詳細カードに大きめのボタンとして出す。 */
+.cw-word-tools { gap: 12px; }
+.cw-word-tools .btn.voice-m,
+.cw-word-tools .btn.voice-f { padding: 9px 15px; font-size: 17px; }
 /* 🆓は🔒/🔊より字面が小さく見えるとの指摘(2026-08-13)により中身の絵文字
    だけ1.2倍表示（ボタン自体のfont-sizeを上げると外枠(パディング込みの
    ボタン全体)まで大きくなってしまったため、内側のspanだけscaleする）。 */
@@ -422,6 +433,11 @@ body.sidebar-collapsed .topbar-brand { display: inline-flex; font-size: 15px; }
 .bar { background: var(--panel-2); border-radius: 6px; height: 8px; overflow: hidden; }
 .bar > span { display: block; height: 100%; background: var(--accent-2); }
 
+/* クロスワード設定画面の「前回/前々回」選択履歴(2026-09-05ユーザー
+   要望「表になっているといい・表の枠はいらない」)。通常のtableは
+   th/tdにborder-bottomが付くため、ここだけ罫線なしに上書きする。 */
+.cw-recent-table td { border-bottom: none; padding: 4px 10px 4px 0; }
+
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
 th { color: var(--muted); font-weight: 600; }
@@ -432,6 +448,12 @@ th { color: var(--muted); font-weight: 600; }
 .pill {
   display: inline-block; padding: 2px 9px; border-radius: 12px;
   font-size: 12px; background: var(--panel-2); color: var(--muted);
+}
+/* クロスワードのスコア表示(2026-09-05ユーザー要望「スコア大きく
+   表示したほうがいい」)。通常の.pillより一回り大きく・太字・強調色に。 */
+.cw-score {
+  font-size: 18px; font-weight: 700; padding: 4px 14px;
+  color: var(--accent-2);
 }
 
 .quiz-card { text-align: center; padding: 30px 18px; }
@@ -878,26 +900,59 @@ th { color: var(--muted); font-weight: 600; }
   width: max-content;
 }
 .cw-cell {
-  width: 28px; height: 28px;
-  background: var(--panel);
+  /* セルサイズは語数に応じてJS側(cwCellSizing)が--cw-cell-size等を
+     算出しインラインで設定する(2026-09-05ユーザー要望「表示長方形の
+     面積はできるだけ小さくなるように最適化」・語数上限50では最大34x34
+     マスになり、固定28pxのままだと際限なく巨大化するため)。 */
+  width: var(--cw-cell-size, 28px); height: var(--cw-cell-size, 28px);
+  /* ダークモードでマス目同士の境目が分かりにくいとの指摘(2026-09-05)。
+     --panelのままだと周囲の.cw-grid背景(--line)との差が小さかったため、
+     一段明るい--panel-2にした上でセル自体にも枠線を付け、色味を派手に
+     せずに境界だけをはっきりさせる(gapによる線に加えて二重で強調)。 */
+  background: var(--panel-2);
+  border: 1px solid var(--line);
   position: relative;
   display: flex; align-items: center; justify-content: center;
   font-weight: 700;
 }
-.cw-cell.cw-black { background: transparent; }
-.cw-cell.cw-selected { background: var(--panel-2); outline: 2px solid var(--accent); }
+.cw-cell.cw-black { background: transparent; border-color: transparent; }
+.cw-cell.cw-selected { background: var(--panel); outline: 2px solid var(--accent); }
+/* 猫を乗せるマスは、黒猫/白猫/三毛猫のどの毛色でも輪郭線(濃い色)と
+   毛色(白〜黒)の両方が見える固定の中間トーン背景にする(2026-09-05
+   ユーザー指摘: 黒猫が暗い背景に馴染んで見分けづらかったため)。
+   ダーク/ライトどちらのテーマでも同じ色(テーマの--panel-2は使わない)。 */
+.cw-cell.cw-cell-has-cat { background: #cfc9ba; border-color: #a89f8a; }
+/* 2026-09-05ユーザー指摘「背景(猫マスの色)を選んだら語の選択も解除
+   されたように見える」: 上のcw-cell-has-catと同じ詳細度(クラス2つ)
+   だったため、後に書かれているcw-cell-has-cat側のbackgroundが選択中
+   マスのbackground(var(--panel))を打ち消し、選択がほぼ見えなくなって
+   いた(outline自体は残るが目立たない)。3クラス指定で詳細度を上げ、
+   猫マスを選択した場合も選択中だと分かる配色にする。 */
+.cw-cell.cw-selected.cw-cell-has-cat {
+  background: var(--panel); border-color: var(--accent);
+}
 .cw-num {
   position: absolute; top: 1px; left: 2px;
-  font-size: 9px; font-weight: 400; color: var(--muted);
+  font-size: var(--cw-num-size, 9px); font-weight: 400; color: var(--muted);
+  z-index: 2;
 }
-.cw-letter { font-size: 14px; }
+/* 猫の上でも番号が読めるように、小さな暗い背景チップを敷く
+   (2026-09-05ユーザー指摘「数字が枯れてしまっている」)。 */
+/* 明るい青地に黒字が見やすいとのユーザー指摘(2026-09-05)。 */
+.cw-cell-has-cat .cw-num {
+  background: #4db2ff;
+  color: #04101f;
+  font-weight: 700;
+  border-radius: 3px;
+  padding: 0 2px;
+  line-height: 1.3;
+}
+.cw-letter { font-size: var(--cw-letter-size, 14px); }
 .cw-clue-item {
   padding: 4px 6px; cursor: pointer; border-radius: 6px;
 }
 .cw-clue-item:hover { background: var(--panel-2); }
 .cw-clue-selected { background: var(--panel-2); outline: 1px solid var(--accent); }
-.cw-word-detail { cursor: pointer; opacity: 0.75; }
-.cw-word-detail:hover { opacity: 1; }
 
 /* 盤面(マス目)とクリュー一覧のレイアウト(2026-09-03)。以前は「回答欄
    +ヒントボタン」のカードをマス目の下に置いていたため、マス目が大きい
@@ -915,6 +970,38 @@ th { color: var(--muted); font-weight: 600; }
 .cw-board-grid {
   overflow-x: auto;
   max-width: 100%;
+  position: relative;
+}
+/* 背景の猫(2026-09-05ユーザー要望「nyangaiだから」・既定は無地で、
+   設定画面から任意でオンにできる装飾)。盤面の読みやすさを妨げないよう
+   薄い透過度・盤面より背面(z-index)に置き、ゆっくり回転させる。 */
+.cw-cat-bg {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: min(70%, 260px);
+  transform: translate(-50%, -50%);
+  opacity: .10;
+  z-index: 0;
+  pointer-events: none;
+  animation: cw-cat-spin 50s linear infinite;
+}
+.cw-grid { position: relative; z-index: 1; }
+@keyframes cw-cat-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+/* 未解答マスの猫(2026-09-05ユーザー要望)。背景の猫(.cw-cat-bg・薄い
+   装飾・盤面の外側/背面)とは違い、マスの中に収まる不透明な画像にして
+   はっきり区別できるようにする。素材自体に横顔/正面/背面などのポーズが
+   揃っているため、回転はさせない(ユーザー指摘: 元画像のポーズを
+   そのまま使うほうが自然)。 */
+.cw-cell-cat {
+  position: absolute;
+  inset: 8%;
+  width: 84%; height: 84%;
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 1;
 }
 .cw-board-clues {
   flex: 1 1 260px;
@@ -925,8 +1012,6 @@ th { color: var(--muted); font-weight: 600; }
 @media (max-width: 720px) {
   .cw-board { flex-direction: column; flex-wrap: nowrap; }
   .cw-board-clues { max-width: 100%; max-height: 260px; }
-  .cw-cell { width: 24px; height: 24px; }
-  .cw-letter { font-size: 12px; }
 }
 
 /* 設定画面のラジオボタン群(クリューモード/日本語・英語ヒントのスタイル)
@@ -941,3 +1026,12 @@ th { color: var(--muted); font-weight: 600; }
   font-weight: 600; font-size: 12px; color: var(--muted);
   margin-bottom: 6px;
 }
+/* 設定画面のラジオ選択肢(2026-09-05・cwRadioOpt参照): タイトル+補足を
+   2段で並べ、長い説明を1行に詰め込まず読みやすくする。 */
+.cw-radio-col { display: flex; flex-direction: column; gap: 8px; }
+.cw-radio-opt {
+  display: flex; align-items: flex-start; gap: 8px; cursor: pointer;
+}
+.cw-radio-opt input { margin-top: 4px; flex-shrink: 0; }
+.cw-radio-opt span { display: flex; flex-direction: column; gap: 1px; }
+.cw-radio-opt small { font-size: 12px; line-height: 1.3; }

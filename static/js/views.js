@@ -1417,7 +1417,10 @@ export async function flashcard(root) {
   }).join("");
 
   root.innerHTML = `
-    <h1>🃏 フラッシュ単語</h1>
+    <h1>🃏 フラッシュ単語 ${infoIcon("help-flashcard",
+      "単語カードを次々にめくって答え合わせする高速学習モードです。" +
+      "分野・レベル・自分の単語帳から出題範囲を選べます。ログインすると" +
+      "習熟度が記録され、覚えた語の出題を抑制できます。")}</h1>
     <div class="card" id="fcSetup">
       <p class="muted">単語帳をどんどんめくる高速学習。カードをタップで答え、
         スワイプ（または下のボタン）で採点します。</p>
@@ -1593,7 +1596,9 @@ export async function flashPhrase(root) {
   }).join("");
 
   root.innerHTML = `
-    <h1>🃏 フラッシュフレーズ</h1>
+    <h1>🃏 フラッシュフレーズ ${infoIcon("help-flashphrase",
+      "実用フレーズをカード形式で次々に答え合わせする高速学習モードです。" +
+      "シーン・レベル・自分のフレーズ帳から出題範囲を選べます。")}</h1>
     <div class="card" id="fpSetup">
       <p class="muted">フレーズ帳をどんどんめくる高速学習。カードをタップで答え、
         スワイプ（または下のボタン）で採点します。</p>
@@ -1749,12 +1754,23 @@ function initCheckDropdown(root, btnId, panelId, groupsGetter, selected,
   };
   const renderPanel = () => {
     const groups = groupsGetter();
-    const clearRow = selected.size
+    const allItems = Object.values(groups).flat();
+    // 大分類を選んだ後、配下の分野を1つずつチェックしなくても済むように
+    // 「すべて選択」を追加(2026-09-05ユーザー要望「大分類選んだらその下
+    // の分類にすべて選択もあるといい」・initCheckDropdownは英単語/
+    // フレーズ/クロスワードの分野・シーン選択で共通利用しているため、
+    // ここを直せば全画面に反映される)。既に全件選択済みなら出さない。
+    const allSelected = allItems.length > 0
+      && allItems.every((it) => selected.has(it));
+    const btnRow = (allItems.length > 1 && (!allSelected || selected.size))
       ? `<div class="cd-clear-row">
-          <button type="button" class="btn ghost" id="${panelId}_clear">
-            選択をクリア（${selected.size}件）</button>
+          ${allSelected ? "" : `<button type="button" class="btn ghost"
+            id="${panelId}_all">すべて選択（${allItems.length}件）</button>`}
+          ${selected.size ? `<button type="button" class="btn ghost"
+            id="${panelId}_clear">選択をクリア（${selected.size}件）
+            </button>` : ""}
         </div>` : "";
-    panel.innerHTML = clearRow + Object.entries(groups).map(([g, items]) => `
+    panel.innerHTML = btnRow + Object.entries(groups).map(([g, items]) => `
       <div class="cd-group">
         <div class="cd-group-label">${escapeHtml(g)}</div>
         ${items.map((it) => `<label class="cd-item">
@@ -1769,6 +1785,12 @@ function initCheckDropdown(root, btnId, panelId, groupsGetter, selected,
         onChange();
         renderPanel();
       });
+    });
+    panel.querySelector(`#${panelId}_all`)?.addEventListener("click", () => {
+      allItems.forEach((it) => selected.add(it));
+      refreshLabel();
+      onChange();
+      renderPanel();
     });
     panel.querySelector(`#${panelId}_clear`)?.addEventListener("click", () => {
       selected.clear();
@@ -1804,7 +1826,11 @@ export async function vocab(root) {
   const dfwActive = !!(dfw.category || dfw.level_min || dfw.level_max
     || dfw.mastered);
   root.innerHTML = `
-    <h1 id="pageTitle">英単語</h1>
+    <h1 id="pageTitle">英単語 ${infoIcon("help-vocab",
+      "分野・レベルで絞り込んで単語を一覧表示します。ログインなしでも" +
+      "閲覧・一部再生はできますが、習熟度の記録や単語帳への追加には" +
+      "ログインが必要です。音声再生は無料範囲を超えると課金(チャージ)" +
+      "が必要になる場合があります。")}</h1>
     ${dfwActive ? `<p class="muted">⚙️ 設定の既定フィルターを適用中です。
       この画面でその場変更もできます。</p>` : ""}
     <div class="card">
@@ -1829,14 +1855,12 @@ export async function vocab(root) {
           ${(facets.range_levels || facets.levels).map((l) =>
             `<option>${escapeHtml(l)}</option>`).join("")}</select>
         ${state.isAdmin ? `<label class="toggle"
-          title="範囲外(現状すべて禁止用語)も含める。「禁止用語も表示」と
-            併用しないと表示されない">
+          title="TOEIC範囲外(このアプリでの判定)の語も表示する">
           <input type="checkbox" id="fOutRange" /> 範囲外</label>
           ${infoIcon("out-of-range-filter",
-            "現状、レベル「範囲外」の語はすべて禁止用語(不適切表現)です。"
-            + "このチェックだけでは表示されず、「禁止用語も表示」も同時に"
-            + "オンにする必要があります(意図しない不適切表現の表示を防ぐ"
-            + "ための仕様です)。")}` : ""}
+            "ここでの「範囲外」は、TOEICの300〜990のレベル帯に対応しないと"
+            + "このアプリが判定した語を指します。オンにすると、そうした語も"
+            + "一覧に含めて表示します。")}` : ""}
         ${freeOnlyToggle("fFreeOnly", "語")}
         ${myDecks.length ? `<select id="fDeck" title="単語帳で絞り込み">
           <option value="">単語帳: 全て</option>
@@ -2044,7 +2068,10 @@ export async function phrases(root) {
   const dfpActive = !!(dfp.category || dfp.level_min || dfp.level_max
     || dfp.mastered);
   root.innerHTML = `
-    <h1 id="pageTitle">ミニフレーズ (${list.length})</h1>
+    <h1 id="pageTitle">ミニフレーズ (${list.length}) ${infoIcon(
+      "help-phrases", "シーン別の実用フレーズ一覧です。音声再生・フレーズ" +
+      "帳への追加ができます。フレーズ帳の作成・保存にはログインが必要" +
+      "です。")}</h1>
     ${dfpActive ? `<p class="muted">⚙️ 設定の既定フィルターを適用中です。
       この画面でその場変更もできます。</p>` : ""}
     <div class="row">
@@ -2076,14 +2103,12 @@ export async function phrases(root) {
           ${(pfacets.range_levels || []).map((l) =>
             `<option>${escapeHtml(l)}</option>`).join("")}</select>
         ${state.isAdmin ? `<label class="toggle"
-          title="範囲外(現状すべて禁止用語)も含める。「禁止用語も表示」と
-            併用しないと表示されない">
+          title="TOEIC範囲外(このアプリでの判定)のフレーズも表示する">
           <input type="checkbox" id="fOutRange" /> 範囲外</label>
           ${infoIcon("out-of-range-filter",
-            "現状、レベル「範囲外」のフレーズはすべて禁止用語(不適切表現)"
-            + "です。このチェックだけでは表示されず、「禁止用語も表示」も"
-            + "同時にオンにする必要があります(意図しない不適切表現の表示を"
-            + "防ぐための仕様です)。")}` : ""}
+            "ここでの「範囲外」は、TOEICの300〜990のレベル帯に対応しないと"
+            + "このアプリが判定したフレーズを指します。オンにすると、"
+            + "そうしたフレーズも一覧に含めて表示します。")}` : ""}
         ${freeOnlyToggle("fFreeOnly", "フレーズ")}
         ${myDecks.length ? `<select id="fDeck" title="フレーズ帳で絞り込み">
           <option value="">フレーズ帳: 全て</option>
@@ -2270,7 +2295,9 @@ export async function quiz(root) {
     .catch(() => ({ settings: {} }))).settings || {};
   const hideMasteredDefault = !!us.hide_mastered;
   root.innerHTML = `
-    <h1>クイズ</h1>
+    <h1>クイズ ${infoIcon("help-quiz",
+      "英単語・フレーズを4択またはタイピングで出題する定番クイズです。" +
+      "分野・出題方向(英→日/日→英)を選んで挑戦できます。")}</h1>
     <p class="sub">10問ランダム出題。英単語・フレーズどちらも両方向で出題します。</p>
     <div class="card">
       <div class="row">
@@ -2493,7 +2520,10 @@ function sampleMaterialsCard(area, cardTitle, emptyLabel) {
 
 export async function writing(root) {
   root.innerHTML = `
-    <h1>ライティング</h1>
+    <h1>ライティング ${infoIcon("help-writing",
+      "お題に対して英文を書き、AIが添削・フィードバックします。ゲスト" +
+      "でもサンプル教材は試せますが、AIによる自由な添削にはログインと" +
+      "AI利用の残高が必要です。")}</h1>
     ${sampleGateBanner()}
     <p class="sub">英文を書く(または話す)とAIが添削します。音声応答可。</p>
     ${aiBadgeNote()}
@@ -2540,7 +2570,10 @@ export async function conversation(root) {
   if (pref) speech.setVoice(pref); else speech.pickRoundVoice();
   const vlist = speech.listOpenAIVoices();
   root.innerHTML = `
-    <h1>英会話</h1>
+    <h1>英会話 ${infoIcon("help-conversation",
+      "AIと英語で会話練習ができます。シーン・レベルを選んでやり取りし、" +
+      "終了後にフィードバックを受け取れます。AIとの会話にはログインと" +
+      "AI利用の残高が必要です。")}</h1>
     ${sampleGateBanner()}
     <p class="sub">AIの声:
       <select id="voiceSel">${vlist.map((v) =>
@@ -3077,14 +3110,22 @@ export async function conversation(root) {
 export async function listening(root) {
   const topics = await api.get("/api/listening");
   root.innerHTML = `
-    <h1>リスニング</h1>
+    <h1>リスニング ${infoIcon("help-listening",
+      "AIがスクリプトを生成して読み上げ、聞き取れたかを記録します。" +
+      "題材ジャンル・話者アクセント・速度を選べます。「聞き流し」は" +
+      "英文/日本語訳を隠して繰り返し再生するモードです。")}</h1>
     ${sampleGateBanner()}
     <p class="sub">スクリプトを生成して読み上げ、理解度を記録します。</p>
     ${aiBadgeNote()}
     <div class="card">
       <div class="row">
         <select id="topic">${topics.map((t) =>
-          `<option value="${t.id}">${t.source} / ${t.accent} (理解度${t.comprehension})</option>`
+          // 未学習(理解度0)は毎回全選択肢に並んで意味を成さない見た目に
+          // なっていたため、記録済み(1以上)のときだけ表示する
+          // (2026-09-05ユーザー指摘「理解度0はいらないのでは・
+          // なんだかわからない」)。
+          `<option value="${t.id}">${t.source} / ${t.accent}${
+            t.comprehension ? ` (理解度${t.comprehension})` : ""}</option>`
         ).join("")}</select>
         <select id="genre" title="題材ジャンル">
           <option value="">（題材: トピックのまま）</option>
@@ -6715,7 +6756,10 @@ export async function decks(root) {
     api.get("/api/decks/summary"),
   ]);
   root.innerHTML = `
-    <h1>単語帳</h1>
+    <h1>単語帳 ${infoIcon("help-deck",
+      "自分だけの単語リストを作って学習・出題に使えます。ログインが" +
+      "必要で、無料範囲では1個・100語まで、チャージ済みなら個数・語数" +
+      "とも無制限です。")}</h1>
     <p class="sub">分野・レベルから自分用の単語帳(デッキ)を作って学習。
       出題方向や忘却曲線・「覚えた」の基準は設定画面の詳細設定で
       アカウント共通に調整できます。
@@ -6970,7 +7014,10 @@ export async function phraseDecks(root) {
     api.get("/api/phrase-decks/summary"),
   ]);
   root.innerHTML = `
-    <h1>フレーズ帳</h1>
+    <h1>フレーズ帳 ${infoIcon("help-phrasedeck",
+      "自分だけのフレーズリストを作って学習・出題に使えます。ログインが" +
+      "必要で、無料範囲では1個・100件まで、チャージ済みなら個数・件数" +
+      "とも無制限です。")}</h1>
     <p class="sub">シーン・レベルから自分用のフレーズ帳(デッキ)を作って学習。
       出題方向や忘却曲線・「覚えた」の基準は設定画面の詳細設定で
       アカウント共通に調整できます。
@@ -7224,22 +7271,33 @@ export async function phraseDecks(root) {
 // パターンと同じ考え方)。
 // ---------------------------------------------------------------------------
 
-// ヒント1つにつき基礎点の10%減点(app/routers/games.pyのHINT_PCTと対応)。
-// 「答えを見る」だけは特別枠(率ではなく加点なしで即解けた扱い)。
+// app/routers/games.pyのDEFAULT_WORD_COUNTと対応。
+const DEFAULT_WORD_COUNT = 10;
+
+// 2026-09-05ユーザー指示でヒント使用ごとの減点は廃止(何回でも自由に
+// 使える)。スコアへの影響はクリューモードで決まる倍率のみ
+// (CW_CLUE_MODE_OPTSの説明文・app/routers/games.pyの
+// CLUE_MODE_SCORE_MULTIPLIER参照)。「答えを見る」だけは特別枠で、
+// このクリューを0点(未加点)にして即「解けた」扱いにする。
+// 先頭文字/末尾文字ヒントはマス目にもその場で反映される。
 const CW_HINT_LABELS = {
-  audio: ["🔊 発音を聞く", "-10%"],
-  first_letter: ["🔤 先頭文字", "-10%"],
-  last_letter: ["🔡 末尾文字", "-10%"],
-  japanese: ["日本語の意味", "-10%"],
-  english: ["📖 英語ヒント(例文)", "-10%"],
+  audio: ["🔊 発音を聞く", "無料"],
+  first_letter: ["🔤 先頭文字", "無料"],
+  last_letter: ["🔡 末尾文字", "無料"],
+  japanese: ["日本語の意味", "無料"],
+  english: ["📖 英語ヒント(例文)", "無料"],
   reveal: ["🔓 答えを見る", "0点"],
 };
 
-// 直近3件の出題ソース選択を覚えておき、設定画面で選び直しやすくする
-// (2026-09-03ユーザー要望)。ブラウザごとのローカル保存(localStorage)
-// なので、他端末とは共有されない簡易的な利便性機能。
+// 直近2件の設定(分野/単語帳選択に加え、語数・クリューモード・難易度等
+// 設定一式)を覚えておき、設定画面を開いたときに前回の設定をそのまま
+// 既定値として復元する(2026-09-05ユーザー要望「前の設定を反映して
+// ほしい・記憶しておく」)。加えて「前回」「前々回」を選び直せる表を出す。
+// ブラウザごとのローカル保存(localStorage)なので、他端末とは共有され
+// ない簡易的な利便性機能(2026-09-03導入時からの方針を踏襲)。
 const CW_RECENT_KEY = "cw_recent_sources";
-const CW_RECENT_MAX = 3;
+const CW_RECENT_MAX = 2;
+const CW_RECENT_LABELS = ["前回", "前々回"];
 
 function cwLoadRecent() {
   try {
@@ -7259,6 +7317,73 @@ function cwSaveRecent(entry) {
   } catch { /* localStorage不可(プライベートモード等)は無視 */ }
 }
 
+const CW_CLUE_MODE_LABELS = {
+  always_ja: "日本語訳モード", always_english: "英英モード",
+  always_audio: "音声モード", always_both: "両方モード",
+};
+
+// 設定画面のラジオ選択肢を「短いタイトル+補足(小文字・muted)」の2段
+// レイアウトで統一して作る(2026-09-05ユーザー指摘「説明文が見づらい
+// 長ったらしい・必要十分に」への対応・従来はタイトルの後ろに長い括弧
+// 書きが続いていて一行が長くなりすぎていた)。
+function cwRadioOpt(name, value, checked, title, desc) {
+  return `<label class="cw-radio-opt">
+    <input type="radio" name="${name}" value="${value}"
+      ${checked ? "checked" : ""}/>
+    <span><b>${title}</b>${desc
+      ? `<small class="muted">${desc}</small>` : ""}</span>
+  </label>`;
+}
+
+// 「ヒントの難易度」は独立設定ではなくクリューモード自体が兼ねる
+// (2026-09-05ユーザー指示)。各モードの説明にスコア倍率を明記し、
+// ヒントボタン自体は何回使っても追加の減点が無いことも伝える
+// (旧「ヒント1つにつきX%減点」方式は廃止済み・app/routers/games.pyの
+// CLUE_MODE_SCORE_MULTIPLIER参照)。
+const CW_CLUE_MODE_OPTS = [
+  ["always_ja", "日本語訳モード",
+    "（常に日本語の意味のヒントが出るので、初めての方でも安心して" +
+    "遊べます。ヒントボタンは何回でも自由に使えます。スコア倍率0.8倍）"],
+  ["always_english", "英英モード",
+    "（常に英語の説明がヒントとして出ます。本格的な英語クロスワードに" +
+    "近い遊び方です・該当データが無い語は出題から除外されます。" +
+    "スコア倍率は等倍）"],
+  ["always_audio", "音声モード",
+    "（発音を聞いて単語を当てるモードです。聞き取り練習にぴったり。" +
+    "スコア倍率は等倍）"],
+  ["always_both", "両方モード",
+    "（日本語訳・英語ヒントの両方が常に見え、プレイ中いつでも切り替え" +
+    "られます。該当データが無い語は出題から除外されます。" +
+    "スコア倍率0.9倍）"],
+];
+// ヒント(各語に常に表示される説明文)の難易度は、中身の手厚さで
+// 調整する(2026-09-05ユーザー指示「簡単なヒントは複数のヒントの
+// 組み合わせになって難易度が下がる」)。richは訳語/穴埋め文+説明を
+// 両方まとめて出す、いちばん手厚い(易しい)選択肢。
+const CW_JAPANESE_STYLE_OPTS = [
+  ["simple", "訳語のみ", "例: 適切な"],
+  ["explanation", "説明文", "AI作成・単語自体は使わない説明"],
+  ["hybrid", "ハイブリッド", "穴埋め文/説明を混在・訳語は表示しません"],
+  ["rich", "手厚い(易しい)", "訳語+説明を両方まとめて表示"],
+];
+const CW_ENGLISH_STYLE_OPTS = [
+  ["fill_blank", "文章の穴埋め", "例文の対象単語をマスク"],
+  ["definition", "語の説明", "AI作成の短い英語の定義"],
+  ["hybrid", "ハイブリッド", "穴埋め文/語の説明を混在"],
+  ["rich", "手厚い(易しい)", "穴埋め文+語の説明を両方まとめて表示"],
+];
+
+// 履歴テーブル・最近の選択ボタン用に、1件の設定を短い要約文にする。
+function cwPresetSummary(r) {
+  const parts = [r.label || "分野未選択"];
+  if (r.wordCount) parts.push(`${r.wordCount}語`);
+  if (r.clueMode) parts.push(CW_CLUE_MODE_LABELS[r.clueMode] || r.clueMode);
+  if (r.levelMin || r.levelMax) {
+    parts.push(`TOEIC${r.levelMin || "下限なし"}〜${r.levelMax || "上限なし"}`);
+  }
+  return parts.join(" ・ ");
+}
+
 export async function games(root) {
   await cwRenderHub(root);
 }
@@ -7268,42 +7393,175 @@ async function cwRenderHub(root) {
   try {
     sessions = await api.get("/api/games/crossword/sessions");
   } catch (e) { /* 未許可ユーザーはここで403、下のUIは出さない */ }
-  const inProgress = sessions.filter((s) => s.status === "in_progress");
+  // 完了済みも一覧に出し、見返し/作り直しができるようにする(2026-09-05
+  // ユーザー要望「クリアしたものも再開可能」)。保存(ピン留め)は課金
+  // ユーザー限定(上限は無料1件/課金10件・_enforce_session_cap参照)。
   root.innerHTML = `
-    <h1>🎮 ゲーム</h1>
+    <h1>🎮 ゲーム ${infoIcon("help-games",
+      "単語を使ったミニゲームで遊びながら学べる機能です(テスト公開中)。" +
+      "分野・単語帳から出題範囲を選んで挑戦できます。")}</h1>
     <p><span class="pill vague">🧪 テスト中</span></p>
     <p class="muted">テストユーザー・管理者限定公開の機能です。不具合が
       あれば教えてください。スコアやセーブが今後リセットされる場合が
       あります。</p>
     <div class="grid cols-3 mt">
-      <div class="card" id="cwCardStart" style="cursor:pointer">
-        <h2>🧩 クロスワード</h2>
-        <p class="muted">分野・単語帳から単語を選んで挑戦。</p>
+      <div class="card" id="cwCardSamples" style="cursor:pointer">
+        <h2>🧩 サンプルクロスワード</h2>
+        <p class="muted">あらかじめ用意した固定のパズルで手軽に挑戦。
+          ログイン不要(ゲストは5個まで)。</p>
       </div>
-      <div class="card" style="opacity:.5">
-        <h2>🎲 準備中</h2><p class="muted">今後追加予定</p>
+      <div class="card" id="cwCardStart" style="cursor:pointer">
+        <h2>🛠️ 自分で作る</h2>
+        <p class="muted">分野・単語帳から単語を選んで自由に出題。</p>
       </div>
       <div class="card" style="opacity:.5">
         <h2>🎲 準備中</h2><p class="muted">今後追加予定</p>
       </div>
     </div>
-    ${inProgress.length ? `<div class="card mt">
+    ${sessions.length ? `<div class="card mt">
       <h3>再開できるゲーム</h3>
+      <p class="muted">保存できるのは無料範囲で直近1件・課金ユーザーは
+        直近10件まで(古いものから自動的に消えます)。「保存」に
+        チェックすると、それ以降も消えずに残ります(課金ユーザー限定)。</p>
       <table class="mt"><thead><tr>
-        <th>対象</th><th>スコア</th><th>日時</th><th></th>
-      </tr></thead><tbody>${inProgress.map((s) => `<tr>
+        <th>対象</th><th>状態</th><th>語数</th><th>スコア</th><th>日時</th>
+        <th>保存</th><th></th>
+      </tr></thead><tbody>${sessions.map((s) => `<tr>
         <td>${escapeHtml(s.source_ref)}</td>
+        <td class="muted">${s.status === "completed" ? "完了" : "進行中"}</td>
+        <td>${s.word_count ?? "-"}</td>
         <td>${s.score}</td>
         <td class="muted">${escapeHtml(s.created_at)}</td>
-        <td><button class="btn" data-resume="${s.id}">再開</button></td>
+        <td><label class="toggle"><input type="checkbox" data-pin="${s.id}"
+          ${s.pinned ? "checked" : ""}/></label></td>
+        <td>
+          <button class="btn ghost" data-resume="${s.id}">${
+            s.status === "completed" ? "見る" : "続きから"}</button>
+          <button class="btn ghost" data-restart="${s.id}">最初から</button>
+        </td>
       </tr>`).join("")}</tbody></table>
     </div>` : ""}
   `;
+  root.querySelector("#cwCardSamples")
+    .addEventListener("click", () => cwRenderSamples(root));
   root.querySelector("#cwCardStart")
     .addEventListener("click", () => cwRenderSetup(root));
   root.querySelectorAll("[data-resume]").forEach((b) => {
     b.addEventListener("click", () => {
       cwRenderPlay(root, Number(b.dataset.resume));
+    });
+  });
+  root.querySelectorAll("[data-restart]").forEach((b) => {
+    b.addEventListener("click", async () => {
+      b.disabled = true;
+      try {
+        const session = await api.post(
+          `/api/games/crossword/${b.dataset.restart}/restart`, {});
+        cwRenderPlay(root, session.session_id, session);
+      } catch (e) {
+        toast(e.message || "作り直しに失敗しました。");
+        b.disabled = false;
+      }
+    });
+  });
+  root.querySelectorAll("[data-pin]").forEach((cb) => {
+    cb.addEventListener("change", async () => {
+      const wanted = cb.checked;
+      try {
+        await api.post(`/api/games/crossword/${cb.dataset.pin}/pin`,
+          { pinned: wanted });
+      } catch (e) {
+        cb.checked = !wanted;
+        toast(e.message || "保存の切り替えに失敗しました。");
+      }
+    });
+  });
+}
+
+// サンプルクロスワード一覧(2026-09-05・集客用に一般公開する固定パズル)。
+// ゲスト含め誰でも呼べるAPI(/api/games/crossword/samples)を使う。
+// 導線(「ゲーム」タブ自体の表示)はテストユーザー限定のまま
+// (app.js state.canUseGames)なので、この画面自体は実装済みでも
+// 一般ユーザーはまだ辿り着けない(2026-09-05ユーザー指示「開放は説明書
+// 等と一緒にするので、実装は本番通り・導線だけ隠す」)。
+async function cwRenderSamples(root) {
+  root.innerHTML = `<p class="muted">読み込み中…</p>`;
+  let data;
+  try {
+    data = await api.get("/api/games/crossword/samples");
+  } catch (e) {
+    root.innerHTML = `<div class="card">読み込みに失敗しました: ${
+      escapeHtml(e.message || "")}</div>`;
+    return;
+  }
+  const { samples, play_limit: limit, played_count: played, tier } = data;
+  const statusText = tier === "charged"
+    ? "課金ユーザーは何個でも遊べます。保存(ピン留め)は10件まで。"
+    : tier === "guest"
+    ? `ゲストとして遊べます(残り${Math.max(limit - played, 0)}/${limit}個)。` +
+      "ログイン(無料)すると20個まで遊べて、保存もできるようになります。"
+    : `無料会員として遊べます(残り${Math.max(limit - played, 0)}/${limit}個)。` +
+      "保存(ピン留め)は5件まで。チャージすると無制限に遊べます。";
+  const levelText = (s) => (s.level_min || s.level_max)
+    ? `TOEIC ${s.level_min || "下限なし"}〜${s.level_max || "上限なし"}` : "";
+  const card = (s) => `<div class="card cw-sample-card" data-sample="${s.id}"
+      style="cursor:pointer">
+    <h3>${escapeHtml(s.title)}${
+      s.already_played ? ` <span class="pill vague">プレイ済み</span>` : ""
+    }</h3>
+    <p class="muted">${escapeHtml(s.description || "")}</p>
+    <p class="muted">${s.word_count}語${
+      levelText(s) ? ` ・ ${escapeHtml(levelText(s))}` : ""}</p>
+    <p>${(s.domains || "").split(",").filter(Boolean).map((d) =>
+      `<span class="pill">${escapeHtml(d)}</span>`).join(" ")}</p>
+    <button type="button" class="btn primary mt">${
+      s.already_played ? "🔁 もう一度プレイ" : "▶️ プレイする"}</button>
+  </div>`;
+  root.innerHTML = `
+    <div class="row">
+      <button type="button" class="btn ghost" id="cwSamplesBack">
+        ← ゲームメニューに戻る</button>
+    </div>
+    <h1>🧩 サンプルクロスワード ${infoIcon("help-cw-samples",
+      "あらかじめ用意した固定のクロスワードです。誰でも(ログイン不要で"
+      + "も)遊べます。同じサンプルの再プレイは何度でも無料です。")}</h1>
+    <p class="muted">${statusText}</p>
+    <div class="row" style="align-items:center">
+      <label class="toggle"><input type="checkbox" id="cwSampleBgCat"/>
+        背景に猫を表示</label>
+      <label class="toggle"><input type="checkbox" id="cwSampleBlockCat"/>
+        未解答マスを猫にする</label>
+      <span class="muted">(既定はどちらもオン。猫にしたくなければ
+        チェックを外してください)</span>
+    </div>
+    ${samples.length ? `<div class="grid cols-3 mt">
+      ${samples.map(card).join("")}
+    </div>` : `<p class="muted">現在サンプルはありません。</p>`}
+  `;
+  root.querySelector("#cwSamplesBack")
+    .addEventListener("click", () => cwRenderHub(root));
+  const sampleBgCat = root.querySelector("#cwSampleBgCat");
+  sampleBgCat.checked = cwCatPrefGet(true, "bg");
+  sampleBgCat.addEventListener("change", () => {
+    cwCatPrefSet(true, "bg", sampleBgCat.checked);
+  });
+  const sampleBlockCat = root.querySelector("#cwSampleBlockCat");
+  sampleBlockCat.checked = cwCatPrefGet(true, "block");
+  sampleBlockCat.addEventListener("change", () => {
+    cwCatPrefSet(true, "block", sampleBlockCat.checked);
+  });
+  root.querySelectorAll("[data-sample]").forEach((elm) => {
+    elm.querySelector("button").addEventListener("click", async () => {
+      const btn = elm.querySelector("button");
+      btn.disabled = true;
+      try {
+        const session = await api.post(
+          `/api/games/crossword/samples/${elm.dataset.sample}/start`, {});
+        cwRenderPlay(root, session.session_id, session);
+      } catch (e) {
+        toast(e.message || "開始できませんでした。");
+        btn.disabled = false;
+      }
     });
   });
 }
@@ -7314,21 +7572,44 @@ async function cwRenderSetup(root, preset) {
     api.get("/api/decks").catch(() => []),
   ]);
   const domainGroups = facets.domain_groups || {};
-  const selectedDomains = new Set(
-    preset?.sourceType === "domain" ? preset.domains || [] : []);
   const recent = cwLoadRecent();
-
-  const isDeck = preset?.sourceType === "deck";
+  // 明示的なpreset(履歴の「この設定で作る」)が無ければ、前回使った設定を
+  // 既定値として自動復元する(2026-09-05ユーザー要望「前の設定を反映して
+  // ほしい・記憶しておく」)。
+  const effective = preset || recent[0] || null;
+  const isDeck = effective?.sourceType === "deck";
+  const selectedDomains = new Set(
+    effective?.sourceType === "domain" ? effective.domains || [] : []);
+  const initialCategory = effective?.majorCategory || "";
+  const wc = effective?.wordCount || DEFAULT_WORD_COUNT;
+  // 語数の選択肢はシンプルな固定リストにする(2026-09-05ユーザー指示)。
+  const WORD_COUNT_OPTS = [3, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50];
+  const clueMode = effective?.clueMode || "always_ja";
+  const englishStyle = effective?.englishStyle || "fill_blank";
+  const japaneseStyle = effective?.japaneseStyle || "simple";
+  const compact = effective?.compact || false;
+  const answerDifficulty = effective?.answerDifficulty || "normal";
+  const catOpts = ['<option value="">全カテゴリ</option>']
+    .concat(Object.keys(domainGroups).map((c) => `<option
+      ${c === initialCategory ? "selected" : ""}>${escapeHtml(c)}</option>`))
+    .join("");
+  const lvOpts = (min) => '<option value="">指定なし</option>'
+    + (facets.range_levels || []).map((l) => `<option
+      ${l === (min ? effective?.levelMin : effective?.levelMax)
+        ? "selected" : ""}>${escapeHtml(l)}</option>`).join("");
 
   root.innerHTML = `
     <button type="button" class="btn ghost" id="cwBack">
       ← ゲーム一覧に戻る</button>
     <h1 class="mt">🧩 クロスワード - 設定</h1>
-    ${recent.length ? `<div class="row mt" style="align-items:center">
-      <span class="muted">最近の選択:</span>
-      ${recent.map((r, i) => `<button type="button" class="btn ghost"
-        data-recent="${i}">${escapeHtml(r.label)}</button>`).join("")}
-    </div>` : ""}
+    ${recent.length ? `<table class="cw-recent-table mt"><tbody>
+      ${recent.map((r, i) => `<tr>
+        <td class="muted">${CW_RECENT_LABELS[i] || ""}</td>
+        <td>${escapeHtml(cwPresetSummary(r))}</td>
+        <td><button type="button" class="btn ghost"
+          data-recent="${i}">この設定で作る</button></td>
+      </tr>`).join("")}
+    </tbody></table>` : ""}
     <div class="card mt">
       <div class="row">
         <label><input type="radio" name="cwSource" value="domain"
@@ -7337,72 +7618,98 @@ async function cwRenderSetup(root, preset) {
           ${isDeck ? "checked" : ""}/> 単語帳から選ぶ</label>
       </div>
       <div id="cwDomainBlock" class="mt" ${isDeck ? 'style="display:none"' : ""}>
-        <span class="cdrop">
-          <button type="button" class="btn ghost" id="cwDomainBtn">
-            分野: 全て ▾</button>
-          <div class="cdrop-panel" id="cwDomainPanel"></div>
-        </span>
+        <div class="row" style="align-items:center">
+          <select id="cwCategory" title="大分類">${catOpts}</select>
+          <span class="cdrop">
+            <button type="button" class="btn ghost" id="cwDomainBtn">
+              分野: 全て ▾</button>
+            <div class="cdrop-panel" id="cwDomainPanel"></div>
+          </span>
+        </div>
+        <div class="row mt" style="align-items:center">
+          <span class="muted">難易度(TOEIC目安)</span>
+          <select id="cwLevelMin">${lvOpts(true)}</select>
+          <span class="muted">〜</span>
+          <select id="cwLevelMax">${lvOpts(false)}</select>
+        </div>
+        <p class="muted mt" id="cwDomainCountWarn" style="display:none"></p>
       </div>
       <div id="cwDeckBlock" class="mt" ${isDeck ? "" : 'style="display:none"'}>
         ${decks.length ? `<select id="cwDeck">
           <option value="">選択してください</option>
           ${decks.map((d) => `<option value="${d.id}"
-            ${isDeck && preset.deckId === d.id ? "selected" : ""}>
+            ${isDeck && effective.deckId === d.id ? "selected" : ""}>
             ${escapeHtml(d.name)}(${d.total ?? "?"}語)</option>`)
             .join("")}
         </select>` : `<p class="muted">単語帳がありません。
           先に単語帳を作ってください。</p>`}
+        <p class="muted mt" id="cwDeckCountInfo" style="display:none"></p>
       </div>
       <div class="row mt" style="align-items:center">
         <label>語数:</label>
-        <select id="cwWordCountTens">
-          ${[0, 10, 20, 30, 40, 50].map((n) =>
-            `<option value="${n}" ${n === 10 ? "selected" : ""}>${n}</option>`
+        <select id="cwWordCount">
+          ${WORD_COUNT_OPTS.map((n) =>
+            `<option value="${n}" ${n === wc ? "selected" : ""}>${n}語</option>`
           ).join("")}
         </select>
-        <span>+</span>
-        <select id="cwWordCountOnes">
-          ${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) =>
-            `<option value="${n}">${n}</option>`).join("")}
-        </select>
-        <span class="muted">(6〜50語・既定10語)</span>
+        <span class="muted">(既定10語)</span>
       </div>
       <div class="cw-optgroup mt">
-        <div class="cw-optgroup-title">クリューモード</div>
-        <div class="row" style="flex-direction:column;align-items:flex-start">
-          <label><input type="radio" name="cwClueMode" value="always_ja"
-            checked/> 日本語訳モード(常に日本語の意味を表示)</label>
-          <label><input type="radio" name="cwClueMode" value="always_english"/>
-            英英モード(常に英語のヒントを表示・本格的なクロスワードに近い・
-            該当データが無い語は除外されます)</label>
-          <label><input type="radio" name="cwClueMode" value="always_audio"/>
-            音声モード(発音の再生だけ常に減点なし・ヒアリングで埋める)</label>
-          <label><input type="radio" name="cwClueMode" value="hints_only"/>
-            ヒント制(最初は何も表示されない・ヒントを使うたびに減点)</label>
+        <div class="cw-optgroup-title">パズルの詰め方</div>
+        <div class="cw-radio-col">
+          ${cwRadioOpt("cwCompact", "0", !compact, "普通",
+            "交差(クロス)の多さを優先して配置します")}
+          ${cwRadioOpt("cwCompact", "1", compact, "コンパクト(面積優先)",
+            "できるだけ盤面の面積が小さくなるよう配置します")}
         </div>
       </div>
-      <div class="cw-optgroup mt" id="cwJapaneseStyleBlock">
+      <div class="cw-optgroup mt">
+        <div class="cw-optgroup-title">回答の難易度（不正解時にどれだけ
+          ヒントが出るか）</div>
+        <div class="cw-radio-col">
+          ${cwRadioOpt("cwAnswerDifficulty", "easy",
+            answerDifficulty === "easy", "低",
+            "4割(40%)以上文字が合っていれば、合っている文字を表示" +
+            "(1文字抜け・余分があってもズレを補正して判定)")}
+          ${cwRadioOpt("cwAnswerDifficulty", "normal",
+            answerDifficulty === "normal", "中(既定)",
+            "6割(60%)以上文字が合っていれば、合っている文字を表示" +
+            "(1文字抜け・余分があってもズレを補正して判定)")}
+          ${cwRadioOpt("cwAnswerDifficulty", "hard",
+            answerDifficulty === "hard", "高",
+            "先頭文字が合っている場合のみ表示(それ以外は開示なし)")}
+        </div>
+      </div>
+      <div class="row mt" style="align-items:center">
+        <label class="toggle"><input type="checkbox" id="cwBgCat"/>
+          背景に猫を表示(既定は無地)</label>
+        <label class="toggle"><input type="checkbox" id="cwBlockCat"/>
+          未解答マスを猫にする(既定は無地)</label>
+      </div>
+      <div class="cw-optgroup mt">
+        <div class="cw-optgroup-title">クリューモード（各問題のヒントの
+          出し方）</div>
+        <div class="cw-radio-col">
+          ${CW_CLUE_MODE_OPTS.map(([v, t, d]) => cwRadioOpt(
+            "cwClueMode", v, clueMode === v, t, d)).join("")}
+        </div>
+      </div>
+      <div class="cw-optgroup mt" id="cwJapaneseStyleBlock"
+        ${["always_ja", "always_both"].includes(clueMode)
+          ? "" : 'style="display:none"'}>
         <div class="cw-optgroup-title">日本語ヒントのスタイル</div>
-        <div class="row">
-          <label><input type="radio" name="cwJapaneseStyle" value="simple"
-            checked/> 訳語のみ(例: 適切な)</label>
-          <label><input type="radio" name="cwJapaneseStyle" value="explanation"/>
-            説明文(AIが作成する、単語自体を含まない日本語の説明)</label>
-          <label><input type="radio" name="cwJapaneseStyle" value="hybrid"/>
-            ハイブリッド(クリューごとに穴埋め文/説明をランダムに混在・
-            本当のクロスワードに近い・訳語は表示しません)</label>
+        <div class="cw-radio-col">
+          ${CW_JAPANESE_STYLE_OPTS.map(([v, t, d]) => cwRadioOpt(
+            "cwJapaneseStyle", v, japaneseStyle === v, t, d)).join("")}
         </div>
       </div>
-      <div class="cw-optgroup mt" id="cwEnglishStyleBlock" style="display:none">
+      <div class="cw-optgroup mt" id="cwEnglishStyleBlock"
+        ${["always_english", "always_both"].includes(clueMode)
+          ? "" : 'style="display:none"'}>
         <div class="cw-optgroup-title">英語ヒントのスタイル</div>
-        <div class="row">
-          <label><input type="radio" name="cwEnglishStyle" value="fill_blank"
-            checked/> 文章の穴埋め(例文の対象単語をマスク)</label>
-          <label><input type="radio" name="cwEnglishStyle" value="definition"/>
-            語の説明(AIが作成する短い英語の定義)</label>
-          <label><input type="radio" name="cwEnglishStyle" value="hybrid"/>
-            ハイブリッド(クリューごとに穴埋め文/語の説明をランダムに
-            混在・本当のクロスワードに近い)</label>
+        <div class="cw-radio-col">
+          ${CW_ENGLISH_STYLE_OPTS.map(([v, t, d]) => cwRadioOpt(
+            "cwEnglishStyle", v, englishStyle === v, t, d)).join("")}
         </div>
       </div>
       <button class="btn primary mt" id="cwStart">スタート</button>
@@ -7416,8 +7723,78 @@ async function cwRenderSetup(root, preset) {
       cwRenderSetup(root, recent[Number(b.dataset.recent)]);
     });
   });
-  initCheckDropdown(root, "cwDomainBtn", "cwDomainPanel",
-    () => domainGroups, selectedDomains, () => {}, "分野");
+  // 選択中の分野(+レベル絞り込み前)の合計語数を常に表示する
+  // (2026-09-05ユーザー要望「分野や単語帳を選択する際に、選択した総語数が
+  // わかるといい」。当初は語数不足時の警告のみだったが、常時表示に拡張)。
+  // 分野の語数はfacets.domain_counts(/api/words/facets)から取得済み・
+  // 複数分野でタグが重複する語は多少ダブって数えるが、目安としては十分。
+  const domainCounts = facets.domain_counts || {};
+  function updateDomainCountWarn() {
+    const warnEl = root.querySelector("#cwDomainCountWarn");
+    if (!warnEl) return;
+    const sourceType = root.querySelector(
+      'input[name="cwSource"]:checked').value;
+    if (sourceType !== "domain") { warnEl.style.display = "none"; return; }
+    const wordCount = Number(root.querySelector("#cwWordCount").value)
+      || DEFAULT_WORD_COUNT;
+    const domains = [...selectedDomains];
+    const total = domains.length
+      ? domains.reduce((sum, d) => sum + (domainCounts[d] || 0), 0)
+      : Object.values(domainCounts).reduce((a, b) => a + b, 0);
+    if (total < wordCount) {
+      warnEl.textContent = `⚠️ 選択中の分野の語数は合計${total}語です。`
+        + `${wordCount}語を希望していますが、実際にはそれより少ない語数で`
+        + `作られる可能性があります。`;
+    } else {
+      warnEl.textContent = `選択中の分野の語数: 合計${total}語`;
+    }
+    warnEl.style.display = "";
+  }
+  // 単語帳選択時も同様に、選んだ単語帳の総語数を表示する(decks一覧の
+  // optionテキストにも件数はあるが、選んだ後にも分かるようにする)。
+  function updateDeckCountInfo() {
+    const infoEl = root.querySelector("#cwDeckCountInfo");
+    if (!infoEl) return;
+    const sourceType = root.querySelector(
+      'input[name="cwSource"]:checked').value;
+    const deckSel = root.querySelector("#cwDeck");
+    if (sourceType !== "deck" || !deckSel || !deckSel.value) {
+      infoEl.style.display = "none";
+      return;
+    }
+    const deck = decks.find((d) => String(d.id) === deckSel.value);
+    infoEl.textContent = `選択中の単語帳の語数: 合計${
+      deck && deck.total != null ? deck.total : "?"}語`;
+    infoEl.style.display = "";
+  }
+  // 背景の猫・未解答マスの猫(2026-09-05ユーザー要望)。セッションの設定
+  // ではなく端末ごとの純粋な表示設定なので、cwSaveRecentとは別に
+  // localStorageで単純に持つ。
+  const cwBgCat = root.querySelector("#cwBgCat");
+  cwBgCat.checked = cwCatPrefGet(false, "bg");
+  cwBgCat.addEventListener("change", () => {
+    cwCatPrefSet(false, "bg", cwBgCat.checked);
+  });
+  const cwBlockCat = root.querySelector("#cwBlockCat");
+  cwBlockCat.checked = cwCatPrefGet(false, "block");
+  cwBlockCat.addEventListener("change", () => {
+    cwCatPrefSet(false, "block", cwBlockCat.checked);
+  });
+  const cwDomainDropdown = initCheckDropdown(root, "cwDomainBtn",
+    "cwDomainPanel", () => {
+      const cat = root.querySelector("#cwCategory").value;
+      return cat ? { [cat]: domainGroups[cat] || [] } : domainGroups;
+    }, selectedDomains, updateDomainCountWarn, "分野");
+  root.querySelector("#cwCategory").addEventListener("change", () => {
+    selectedDomains.clear();
+    cwDomainDropdown.renderPanel();
+    cwDomainDropdown.refreshLabel();
+    updateDomainCountWarn();
+  });
+  root.querySelector("#cwWordCount")
+    .addEventListener("change", updateDomainCountWarn);
+  root.querySelector("#cwDeck")
+    ?.addEventListener("change", updateDeckCountInfo);
   root.querySelectorAll('input[name="cwSource"]').forEach((r) => {
     r.addEventListener("change", () => {
       const v = root.querySelector(
@@ -7426,16 +7803,20 @@ async function cwRenderSetup(root, preset) {
         v === "domain" ? "" : "none";
       root.querySelector("#cwDeckBlock").style.display =
         v === "deck" ? "" : "none";
+      updateDomainCountWarn();
+      updateDeckCountInfo();
     });
   });
+  updateDomainCountWarn();
+  updateDeckCountInfo();
   root.querySelectorAll('input[name="cwClueMode"]').forEach((r) => {
     r.addEventListener("change", () => {
       const v = root.querySelector(
         'input[name="cwClueMode"]:checked').value;
       root.querySelector("#cwEnglishStyleBlock").style.display =
-        v === "always_english" ? "" : "none";
+        ["always_english", "always_both"].includes(v) ? "" : "none";
       root.querySelector("#cwJapaneseStyleBlock").style.display =
-        v === "always_ja" ? "" : "none";
+        ["always_ja", "always_both"].includes(v) ? "" : "none";
     });
   });
   const startBtn = root.querySelector("#cwStart");
@@ -7443,29 +7824,46 @@ async function cwRenderSetup(root, preset) {
     if (startBtn.disabled) return;  // 2026-09-03: 生成中の連打対策
     const sourceType = root.querySelector(
       'input[name="cwSource"]:checked').value;
-    const clueMode = root.querySelector(
+    const selClueMode = root.querySelector(
       'input[name="cwClueMode"]:checked').value;
-    const wordCount = (Number(root.querySelector("#cwWordCountTens").value)
-      || 0) + (Number(root.querySelector("#cwWordCountOnes").value) || 0)
-      || 10;
+    const wordCount = Number(root.querySelector("#cwWordCount").value)
+      || DEFAULT_WORD_COUNT;
+    const levelMin = root.querySelector("#cwLevelMin")?.value || "";
+    const levelMax = root.querySelector("#cwLevelMax")?.value || "";
+    const selEnglishStyle = root.querySelector(
+      'input[name="cwEnglishStyle"]:checked')?.value || "fill_blank";
+    const selJapaneseStyle = root.querySelector(
+      'input[name="cwJapaneseStyle"]:checked')?.value || "simple";
+    const selCompact = root.querySelector(
+      'input[name="cwCompact"]:checked')?.value === "1";
+    const selAnswerDifficulty = root.querySelector(
+      'input[name="cwAnswerDifficulty"]:checked')?.value || "normal";
     const body = {
-      source_type: sourceType, word_count: wordCount, clue_mode: clueMode,
-      english_style: root.querySelector(
-        'input[name="cwEnglishStyle"]:checked')?.value || "fill_blank",
-      japanese_style: root.querySelector(
-        'input[name="cwJapaneseStyle"]:checked')?.value || "simple",
+      source_type: sourceType, word_count: wordCount,
+      clue_mode: selClueMode, english_style: selEnglishStyle,
+      japanese_style: selJapaneseStyle, compact: selCompact,
+      answer_difficulty: selAnswerDifficulty,
     };
-    let recentEntry;
+    let recentEntry = {
+      sourceType, wordCount, clueMode: selClueMode,
+      englishStyle: selEnglishStyle, japaneseStyle: selJapaneseStyle,
+      compact: selCompact, answerDifficulty: selAnswerDifficulty,
+    };
     if (sourceType === "domain") {
       body.domains = [...selectedDomains];
-      recentEntry = { sourceType, domains: body.domains,
-        label: body.domains.join("・") || "分野未選択" };
+      body.level_min = levelMin || null;
+      body.level_max = levelMax || null;
+      recentEntry.domains = body.domains;
+      recentEntry.majorCategory = root.querySelector("#cwCategory").value;
+      recentEntry.levelMin = levelMin;
+      recentEntry.levelMax = levelMax;
+      recentEntry.label = body.domains.join("・") || "分野未選択";
     } else {
       const deckSel = root.querySelector("#cwDeck");
       body.deck_id = deckSel ? Number(deckSel.value) || null : null;
       const deckName = deckSel?.selectedOptions[0]?.textContent || "単語帳";
-      recentEntry = { sourceType, deckId: body.deck_id,
-        label: `📔${deckName}` };
+      recentEntry.deckId = body.deck_id;
+      recentEntry.label = `📔${deckName}`;
     }
     const errEl = root.querySelector("#cwError");
     errEl.style.display = "none";
@@ -7484,6 +7882,96 @@ async function cwRenderSetup(root, preset) {
       startBtn.textContent = origLabel;
     }
   });
+}
+
+// マス目1つの表示サイズを盤面の大きさから動的に決める(2026-09-05
+// ユーザー要望「表示長方形の面積はできるだけ小さくなるように最適化・
+// 大きくなりすぎると見づらい」)。従来は28px固定だったため、語数上限を
+// 50まで拡大した後は最大34x34マス(app/services/crossword_gen.pyの
+// MAX_GRID)まで育ち、固定サイズのままだと表示が際限なく巨大になって
+// いた。目標合計サイズ(TARGET_PX)をマスの多い辺で割ってセルサイズを
+// 決めることで、語数が増えるほどセルを縮小し、盤面全体の面積を一定
+// 範囲に抑える(既定10語・20x20相当の盤面ではTARGET_PX/20=28pxとなり、
+// 従来の見た目のまま)。画面幅が狭い場合はさらにそちらを優先する。
+const CW_MAX_CELL_PX = 28;
+const CW_MIN_CELL_PX = 14;
+const CW_TARGET_BOARD_PX = 560;
+function cwCellSizing(rows, cols) {
+  const maxDim = Math.max(rows, cols, 1);
+  const availableWidth = Math.max(
+    (typeof window !== "undefined" ? window.innerWidth : 600) - 32, 200);
+  const cellPx = Math.max(CW_MIN_CELL_PX, Math.min(
+    CW_MAX_CELL_PX,
+    Math.floor(availableWidth / cols),
+    Math.floor(CW_TARGET_BOARD_PX / maxDim),
+  ));
+  return {
+    cellPx,
+    letterPx: Math.max(8, Math.round(cellPx * 0.5)),
+    numPx: Math.max(7, Math.round(cellPx * 0.32)),
+  };
+}
+
+// 未解答マス・背景に表示する猫の画像プール(2026-09-05ユーザー提供・
+// 自社アプリ「Cat Math Block」の素材)。黒猫/三毛猫/白猫×複数ポーズの
+// 21枚(以下cwCatHash()が語ごと・セッションごとに自動で振り分ける。
+// 増やす場合はこの配列に追加するだけでよい)。
+const CW_CAT_IMAGES = [
+  "cat_black_back_01.png", "cat_black_back_02.png",
+  "cat_black_front_01.png", "cat_black_front_02.png",
+  "cat_black_left_02.png",
+  "cat_black_right_01.png", "cat_black_right_02.png",
+  "cat_black_right_03.png",
+  "cat_black_up_01.png", "cat_black_up_02.png",
+  "cat_mike_back_01.png", "cat_mike_front_01.png",
+  "cat_mike_left_01.png",
+  "cat_mike_right_01.png", "cat_mike_right_02.png",
+  "cat_white_back_01.png", "cat_white_front_01.png",
+  "cat_white_left_01.png", "cat_white_left_02.png",
+  "cat_white_right_01.png", "cat_white_right_02.png",
+  "cat_white_right_03.png",
+].map((f) => `/static/img/cw-cats/${f}`);
+
+function cwCatHash(key) {
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  }
+  return CW_CAT_IMAGES[hash % CW_CAT_IMAGES.length];
+}
+
+// 猫表示設定の既定値(2026-09-05ユーザー要望「サンプルも猫選べるといい、
+// デフォ猫で」)。自分で作るクロスワードは従来通り既定オフ(明示的に
+// チェックした人だけ)。サンプルは集客用に見せ方を工夫したいので既定
+// オン(チェックを外した人だけオフ)にする・保存キーも分けて、この
+// 既定値の違いが互いに影響しないようにする。
+function cwCatPrefKey(isSample, kind) {
+  return isSample ? `cw_sample_${kind}_cat` : `cw_${kind}_cat`;
+}
+function cwCatPrefGet(isSample, kind) {
+  const raw = localStorage.getItem(cwCatPrefKey(isSample, kind));
+  return raw === null ? isSample : raw === "1";
+}
+function cwCatPrefSet(isSample, kind, on) {
+  localStorage.setItem(cwCatPrefKey(isSample, kind), on ? "1" : "0");
+}
+
+// クリュー(番号+方向)から、同じ語なら常に同じ猫画像を選ぶ。未解答マスの
+// 猫は答えを見せてはいけないので、word_id/englishではなくクリュー番号+
+// 方向という「答えを含まない」識別子でハッシュする(2026-09-05・交差点は
+// 複数の語が同じマスを共有するため、同じ猫にできるとは限らない)。
+function cwCatImageFor(clue) {
+  return cwCatHash(`${clue.number}-${clue.direction}`);
+}
+
+// 選択したクリューのヒント(詳細カード)を見える位置までスクロールする
+// (2026-09-05ユーザー要望「語を選ぶと、語のヒントが先頭にくるといい」)。
+// 詳細カードはDOM上グリッド・一覧より上に置いてあるが、長い一覧を下の方
+// までスクロールした状態で選ぶと画面外のままになるため、選択のたびに
+// 呼び出して視界に戻す。
+function cwScrollToDetail(root) {
+  root.querySelector("#cwDetailCard")
+    ?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 // app/services/crossword_gen.pyのDIRECTIONSと対応(ヨコ/タテ)。
@@ -7508,6 +7996,14 @@ async function cwRenderPlay(root, sessionId, initialState) {
         direction: session.clues[0].direction }
     : null;
   let hintDisplay = null;   // 直近取得したヒントの表示内容(次の操作で消える)
+  // 両方モード(always_both)で、日本語訳/英語ヒントのどちらを表示するか
+  // (2026-09-05ユーザー要望「ゲーム中に英英・日本語切り替えられる」→
+  // 同日追加要望「最初は英語で、クリューごとに個別に切替」により、
+  // 単一のグローバル状態ではなくクリュー単位(number+direction)の
+  // マップに変更。未設定(未操作)のクリューは既定で英語("en")を表示。
+  const jaEnByClue = {};
+  const cwLangKey = (c) => `${c.number}-${c.direction}`;
+  const cwLangFor = (c) => jaEnByClue[cwLangKey(c)] || "en";
 
   function selectedClue() {
     if (!selected) return null;
@@ -7535,8 +8031,16 @@ async function cwRenderPlay(root, sessionId, initialState) {
     const curCells = new Set(
       cur ? cwCellsFor(cur).map(([r, c]) => `${r},${c}`) : []);
 
+    const { cellPx, letterPx, numPx } = cwCellSizing(
+      session.grid.rows, session.grid.cols);
+    // 未解答マスを猫にする設定(2026-09-05)。背景の猫(薄い装飾・盤面全体の
+    // 背面)とは別物で、区別できるようマスの中に収まる不透明な画像にする。
+    // サンプルは既定オン・自作クロスワードは既定オフ(cwCatPrefGet参照)。
+    const isSampleSession = session.source_type === "sample";
+    const blockCatOn = cwCatPrefGet(isSampleSession, "block");
     let gridHtml = `<div class="cw-grid" style="grid-template-columns:` +
-      `repeat(${session.grid.cols}, 28px)">`;
+      `repeat(${session.grid.cols}, ${cellPx}px);--cw-cell-size:${cellPx}px;` +
+      `--cw-letter-size:${letterPx}px;--cw-num-size:${numPx}px">`;
     for (let r = 0; r < session.grid.rows; r++) {
       for (let c = 0; c < session.grid.cols; c++) {
         const key = `${r},${c}`;
@@ -7546,25 +8050,49 @@ async function cwRenderPlay(root, sessionId, initialState) {
         }
         const letter = session.revealed_cells[key] || "";
         const num = numbering[key];
+        let catImg = "";
+        if (blockCatOn && !letter) {
+          // 交差点(ヨコ・タテ両方に属する)では、同じ語の他マスと極力
+          // 同じ猫になるようヨコを優先する(ユーザー了承済み「クロス
+          // するのでその限りではない」)。
+          const clues = cellToClues[key] || [];
+          const primary = clues.find((cl) => cl.direction === "across")
+            || clues[0];
+          if (primary) {
+            // 元画像に横顔/正面/背面などのポーズが揃っているため、
+            // CSS回転はしない(2026-09-05ユーザー指摘)。
+            catImg = `<img class="cw-cell-cat" src="${
+              cwCatImageFor(primary)}" alt=""/>`;
+          }
+        }
         gridHtml += `<div class="cw-cell${
-          curCells.has(key) ? " cw-selected" : ""}" data-cell="${key}">` +
+          curCells.has(key) ? " cw-selected" : ""}${
+          catImg ? " cw-cell-has-cat" : ""}" data-cell="${key}">` +
           (num ? `<span class="cw-num">${num}</span>` : "") +
+          catImg +
           `<span class="cw-letter">${escapeHtml(letter)}</span></div>`;
       }
     }
     gridHtml += `</div>`;
 
     // 無料で常時表示されるヒント種別(app/routers/games.pyの
-    // FREE_HINT_BY_MODEと対応)。日本語/英語は文章表示、音声は
+    // FREE_HINT_BY_MODEと対応・常に配列)。日本語/英語は文章表示、音声は
     // 「ボタンは出すが0%減点」という扱いなのでhintsリストからは除かない。
-    const freeHint = { always_ja: "japanese", always_english: "english",
-      always_audio: "audio", hints_only: null }[session.clue_mode];
+    const freeHint = { always_ja: ["japanese"], always_english: ["english"],
+      always_audio: ["audio"], hints_only: [],
+      always_both: ["japanese", "english"] }[session.clue_mode] || [];
     // バックエンドが生成時に選ばれたモード+スタイル(日本語訳/説明・
-    // 穴埋め文/類義語説明/ハイブリッド)のテキストをfree_clueに
+    // 穴埋め文/類義語説明/ハイブリッド)のテキストをfree_clue_ja/enに
     // まとめて入れてくれるので、フロントはモード別分岐が不要。
-    const freeText = (c) => (
-      (freeHint === "japanese" || freeHint === "english")
-        ? (c.free_clue || "") : "");
+    // always_bothはjaEnToggleでどちらを表示するか選ぶ。
+    const freeText = (c) => {
+      if (session.clue_mode === "always_both") {
+        return (cwLangFor(c) === "ja" ? c.free_clue_ja : c.free_clue_en) || "";
+      }
+      if (freeHint.includes("japanese")) return c.free_clue_ja || "";
+      if (freeHint.includes("english")) return c.free_clue_en || "";
+      return "";
+    };
 
     const clueRow = (c) => {
       const mark = c.solved ? "✅" : (c.given_up ? "🏳️" : "");
@@ -7573,15 +8101,19 @@ async function cwRenderPlay(root, sessionId, initialState) {
       const txt = freeText(c);
       const jaText = txt
         ? ` <span class="muted">${escapeHtml(txt)}</span>` : "";
-      // 正解/ギブアップ済みの語は単語詳細を開けるようにする
-      // (2026-09-03ユーザー要望)。クリュー選択のクリックと競合しない
-      // よう、詳細アイコン自体のクリックはstopPropagationする。
-      const detailBtn = c.word_info
-        ? ` <span class="cw-word-detail" data-word-id="${c.word_id}"
-            title="単語の詳細を見る">🔎</span>` : "";
+      // 両方モードは、クリューごとに日本語訳/英語ヒントを個別に切替
+      // できる小さいボタンを付ける(2026-09-05ユーザー要望)。
+      const langBtn = session.clue_mode === "always_both"
+        ? ` <button type="button" class="btn ghost cw-lang-toggle"
+            data-num="${c.number}" data-dir="${c.direction}"
+            style="padding:0 5px;font-size:10px;line-height:1.6"
+            >${cwLangFor(c) === "ja" ? "🇯🇵→EN" : "🇬🇧→JA"}</button>` : "";
+      // 正解/ギブアップ済みの語の単語詳細は、一覧内の小さいアイコンでは
+      // なく選択後の詳細カード側(cw-word-tools)に大きいボタンとして出す
+      // (2026-09-05ユーザー要望・一覧の🔎はスマホで押しにくかったため)。
       return `<div class="cw-clue-item${isSel ? " cw-clue-selected" : ""}"
         data-num="${c.number}" data-dir="${c.direction}">
-        ${c.number}. (${c.length}文字)${jaText} ${mark}${detailBtn}</div>`;
+        ${c.number}. (${c.length}文字)${jaText}${langBtn} ${mark}</div>`;
     };
     const across = session.clues.filter((c) => c.direction === "across");
     const down = session.clues.filter((c) => c.direction === "down");
@@ -7594,53 +8126,58 @@ async function cwRenderPlay(root, sessionId, initialState) {
     let detailHtml = "";
     if (cur) {
       // 文章系の無料ヒント(日本語/英語)は既に表示済みなのでボタン一覧
-      // から外す。音声は「モードによって0%か-10%か」だけが変わるので
-      // 常にボタンを出す。
+      // から外す(音声は常にボタンを出す)。
       const hints = ["audio", "first_letter", "last_letter", "japanese",
         "english", "reveal"].filter(
-        (h) => !(h === freeHint && h !== "audio"));
+        (h) => h === "audio" || !freeHint.includes(h));
       const done = cur.solved || cur.given_up;
       const curText = freeText(cur);
       detailHtml = `
-        <div class="card mt">
+        <div class="card mt" id="cwDetailCard">
           <div><b>クリュー ${cur.number}
             (${cur.direction === "across" ? "ヨコ" : "タテ"})</b>
             ・${cur.length}文字
-            ${curText ? ` — ${escapeHtml(curText)}` : ""}</div>
+            ${curText ? ` — ${escapeHtml(curText)}` : ""}
+            ${session.clue_mode === "always_both" ? `<button
+              type="button" class="btn ghost" id="cwJaEnToggle"
+              style="margin-left:6px">🔄 ${
+                cwLangFor(cur) === "ja" ? "英語ヒントに切替" : "日本語訳に切替"
+              }</button>` : ""}</div>
           ${hintHtml}
           <div class="row mt">
             <input type="text" id="cwAnswerInput" ${done ? "disabled" : ""}
-              placeholder="英単語を入力" style="text-transform:uppercase"/>
+              placeholder="英単語を入力" style="text-transform:uppercase"
+              autocomplete="off" autocorrect="off" autocapitalize="off"
+              spellcheck="false"/>
             <button class="btn primary" id="cwSubmit"
               ${done ? "disabled" : ""}>答える</button>
           </div>
-          <div class="row mt" id="cwHintButtons">
+          ${done ? "" : `<div class="row mt" id="cwHintButtons">
             ${hints.map((h) => {
               const [label, costLabel] = CW_HINT_LABELS[h];
-              const shownCost = (h === "audio" && h === freeHint)
-                ? "減点なし" : costLabel;
               const used = cur.hints_used.includes(h);
               return `<button class="btn ghost" data-hint="${h}"
-                ${done ? "disabled" : ""}>${label} (${shownCost})${
-                  used ? " ✓" : ""}</button>`;
+                >${label} (${costLabel})${used ? " ✓" : ""}</button>`;
             }).join("")}
-            <button class="btn ghost" id="cwGiveup" ${done ? "disabled" : ""}
-              >🏳️ ギブアップ</button>
-          </div>
+            <button class="btn ghost" id="cwGiveup">🏳️ ギブアップ</button>
+          </div>`}
+          ${(done && cur.word_info) ? `<div class="row mt cw-word-tools"
+            id="cwWordTools"></div>` : ""}
         </div>`;
     }
 
+    const isSample = session.source_type === "sample";
     root.innerHTML = `
       <div class="row">
-        <button type="button" class="btn ghost" id="cwBack2">
-          ← ゲーム一覧に戻る</button>
-        <button type="button" class="btn ghost" id="cwBackToSetup">
-          🔄 新しいクロスワードを作る</button>
+        <button type="button" class="btn ghost" id="cwBack2">${
+          isSample ? "← サンプル一覧に戻る" : "← ゲーム一覧に戻る"}</button>
+        ${isSample ? "" : `<button type="button" class="btn ghost"
+          id="cwBackToSetup">🔄 新しいクロスワードを作る</button>`}
       </div>
       <div class="row mt" style="justify-content:space-between">
         <h1>🧩 クロスワード</h1>
         <div class="row" style="align-items:center">
-          <div class="pill">スコア: ${session.score}</div>
+          <div class="pill cw-score">スコア: ${session.score}</div>
           ${session.status === "in_progress" ? `<button type="button"
             class="btn ghost" id="cwGiveupAll">🔓 全部答えを見る</button>`
             : ""}
@@ -7650,7 +8187,13 @@ async function cwRenderPlay(root, sessionId, initialState) {
         ℹ️ ${escapeHtml(session.notice)}</div>` : ""}
       ${detailHtml}
       <div class="cw-board mt">
-        <div class="cw-board-grid">${gridHtml}</div>
+        <div class="cw-board-grid">${
+          cwCatPrefGet(isSampleSession, "bg")
+            // セッションごとに猫を変える(同じパズルを開き直している間は
+            // 同じ猫のまま・cwCatHashでsession_idからハッシュするため)。
+            ? `<img class="cw-cat-bg" src="${
+                cwCatHash(String(session.session_id))}" alt=""/>`
+            : ""}${gridHtml}</div>
         <div class="cw-board-clues">
           <b>ヨコ</b>
           ${across.map(clueRow).join("")}
@@ -7664,9 +8207,25 @@ async function cwRenderPlay(root, sessionId, initialState) {
     `;
 
     root.querySelector("#cwBack2")
-      .addEventListener("click", () => cwRenderHub(root));
+      .addEventListener("click", () => isSample
+        ? cwRenderSamples(root) : cwRenderHub(root));
     root.querySelector("#cwBackToSetup")
-      .addEventListener("click", () => cwRenderSetup(root));
+      ?.addEventListener("click", () => cwRenderSetup(root));
+    root.querySelector("#cwJaEnToggle")?.addEventListener("click", () => {
+      if (!cur) return;
+      const key = cwLangKey(cur);
+      jaEnByClue[key] = cwLangFor(cur) === "ja" ? "en" : "ja";
+      render();
+    });
+    root.querySelectorAll(".cw-lang-toggle").forEach((elm) => {
+      elm.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        const key = `${elm.dataset.num}-${elm.dataset.dir}`;
+        const current = jaEnByClue[key] || "en";
+        jaEnByClue[key] = current === "ja" ? "en" : "ja";
+        render();
+      });
+    });
     root.querySelector("#cwGiveupAll")?.addEventListener("click", async () => {
       if (!confirm("全クリューの答えを表示します(未正解分は0点になりま" +
         "す)。よろしいですか？")) return;
@@ -7681,21 +8240,28 @@ async function cwRenderPlay(root, sessionId, initialState) {
                       direction: elm.dataset.dir };
         hintDisplay = null;
         render();
+        // 2026-09-05ユーザー要望「語を選ぶと、語のヒントが先頭にくる
+        // といい」。詳細カード(クリューのヒント)は既にDOM上グリッドより
+        // 上に置いてあるが、長い一覧を下の方までスクロールした状態から
+        // 選ぶと画面外のままなので、選択のたびに見える位置まで戻す。
+        cwScrollToDetail(root);
       });
     });
-    root.querySelectorAll(".cw-word-detail").forEach((elm) => {
-      elm.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const wid = Number(elm.dataset.wordId);
-        const c = session.clues.find((cl) => cl.word_id === wid);
-        if (!c || !c.word_info) return;
-        showWordDetail({
-          id: wid, english: c.english, japanese: c.word_info.japanese,
-          level: c.word_info.level, example: c.word_info.example,
-          has_detail: c.word_info.has_detail,
-        });
-      });
-    });
+    // 正解/ギブアップ済みのクリューを選択すると、音声(男声/女声)・詳細
+    // ボタンを詳細カード内に大きめに出す(2026-09-05ユーザー要望・
+    // 一覧の小さい🔎アイコンはスマホで押しにくかったため置き換え)。
+    const wordToolsEl = root.querySelector("#cwWordTools");
+    if (wordToolsEl && cur && cur.word_info) {
+      wordToolsEl.appendChild(voiceButtonsItem(
+        "word", cur.word_id, "word", () => cur.english, () => "std"));
+      const detBtn = el(`<button class="btn good">📖 詳細</button>`);
+      detBtn.addEventListener("click", () => showWordDetail({
+        id: cur.word_id, english: cur.english,
+        japanese: cur.word_info.japanese, level: cur.word_info.level,
+        example: cur.word_info.example, has_detail: cur.word_info.has_detail,
+      }));
+      wordToolsEl.appendChild(detBtn);
+    }
     // マス目クリックでも選択できるように(2026-09-03ユーザー要望)。
     // 交差点(ヨコ/タテ両方に属するマス)では、今選んでいる方と違う
     // クリューがあればそちらへ切り替え、無ければヨコを優先する。
@@ -7710,6 +8276,7 @@ async function cwRenderPlay(root, sessionId, initialState) {
         selected = { number: pick.number, direction: pick.direction };
         hintDisplay = null;
         render();
+        cwScrollToDetail(root);
       });
     });
     const input = root.querySelector("#cwAnswerInput");

@@ -296,13 +296,18 @@ CHARGE_ROUND_STEP_JPY = 0.5
 # （教材読み上げ。ユーザー指示により明示的に+50銭を付ける）のみ。判定は
 # 除外リスト方式にする（許可リスト方式だと、"listening"等chat()経由の
 # 「その他」カテゴリ機能に+50銭が乗り忘れるバグがあったため2026-08-12修正）。
-# crossword_hint（クロスワードのヒント生成、2026-09-03新設）も+50銭を
-# 乗せず倍率(×2.0="その他")のみにする。ユーザー指示の式「原価0.1円未満
-# は0.5円・原価0.5円までは最大1円・それ以上は原価の2倍」は、+50銭の
-# 上乗せを外して倍率×2.0→0.5円単位切り上げをそのまま適用すると一致する
-# （例: 原価0.3円→raw0.6円→切上げ1.0円）ため、専用の計算式を新設せず
-# 既存の除外リストに加えるだけで実現した。docs/COST_ESTIMATE.md §1.5参照。
-_NO_SURCHARGE_FEATURES = {"tts", "stt", "crossword_hint"}
+_NO_SURCHARGE_FEATURES = {"tts", "stt"}
+
+# crossword_hint（クロスワードのヒント生成）は2026-09-05〜、呼び出し
+# ごとの自動課金(_record_usage → _maybe_deduct_balance)からは外し、
+# 1ゲーム分の原価合計をまとめて1回だけ課金する方式に変更した
+# (下記 charge_crossword_game 参照。docs/COST_ESTIMATE.md §1.5
+# 「新課金式案」)。キャッシュ済みでAI呼び出しが0回のゲームでも
+# 必ず最低0.25pt課金することで、キャッシュヒット率が上がるほど
+# 平均収益が¥0に近づいていた旧方式(呼び出し毎課金・§1.5旧版)の
+# 弱点を解消する狙い。ai_usageへのINSERT自体(原価の記録)は従来通り
+# 続ける（_record_usage参照・profitability分析に必要なため）。
+_LUMP_SUM_FEATURES = {"crossword_hint"}
 
 
 def _compute_charge_jpy(cost_usd: float, rate: float, feature: str) -> float:
@@ -346,6 +351,58 @@ def _maybe_deduct_balance(
         )
 
 
+# クロスワード1ゲーム分の課金式(2026-09-05ユーザー提案・
+# docs/COST_ESTIMATE.md §1.5「新課金式案」)。既存のCATEGORY_MULTIPLIER
+# 方式(呼び出し毎・0.5円単位)とは別枠の独自の式・単位(pt・0.25刻み)。
+CROSSWORD_GAME_BASE_PT = 0.25
+CROSSWORD_GAME_SURCHARGE_JPY = 0.5
+CROSSWORD_GAME_MULT = 2.0
+CROSSWORD_GAME_ROUND_STEP_PT = 0.25
+
+
+def _compute_crossword_game_charge_pt(cost_usd_total: float, rate: float) -> float:
+    """1ゲームぶんのAI原価合計(USD)から課金額(pt)を計算する。
+    AI呼び出しが0回(全語キャッシュ済み/AI不要モード)なら基本額のみ、
+    それ以外は「基本額 + (原価(円) + 50銭) × 2」を0.25pt単位で切り上げる。"""
+    import math
+
+    if cost_usd_total <= 0:
+        return CROSSWORD_GAME_BASE_PT
+    cost_jpy = cost_usd_total * rate
+    raw = (CROSSWORD_GAME_BASE_PT
+           + (cost_jpy + CROSSWORD_GAME_SURCHARGE_JPY) * CROSSWORD_GAME_MULT)
+    steps = math.ceil(raw / CROSSWORD_GAME_ROUND_STEP_PT - 1e-9)
+    return steps * CROSSWORD_GAME_ROUND_STEP_PT
+
+
+def charge_crossword_game(conn, uid: int, cost_usd_total: float) -> float:
+    """クロスワード1ゲーム作成(新規/再生成)ごとに、そのゲームで実際に
+    発生したAI原価合計をまとめて1回だけ課金する(_LUMP_SUM_FEATURES参照
+    ・呼び出し毎の自動課金はこのfeatureでは行わない)。保存(ピン留め)の
+    有無に関わらず毎回課金する。無料枠(日次/月次上限)の判定とは独立
+    （crossword自体がテスト/招待ユーザー限定の別機能であり、キャッシュ
+    済みでも必ず最低額を課金することが本方式の狙いのため）。
+    残高が課金額に満たない場合は残高を使い切るだけに留め、0円未満には
+    しない(ゲーム自体は既に生成済みでAI原価も既に発生済みのため、
+    再生課金(charge_playback_if_needed)と違って事前に拒否できない)。
+    戻り値: 実際に控除した額(pt)。"""
+    from .auth import add_balance, get_user
+
+    u = get_user(conn, uid)
+    if not u or u.get("balance_jpy") is None:
+        return 0.0
+    s = load_settings()
+    charge = _compute_crossword_game_charge_pt(cost_usd_total, s.usd_jpy_rate)
+    cur = float(u.get("balance_jpy") or 0)
+    delta = -min(charge, cur)
+    if delta != 0:
+        add_balance(
+            conn, uid, delta, reason="crossword_game",
+            note=f"ai_cost=${cost_usd_total:.5f}",
+        )
+    return -delta
+
+
 def _record_usage(
     model: str,
     prompt_tokens: int,
@@ -365,8 +422,24 @@ def _record_usage(
             (model, prompt_tokens, output_tokens, cost, feature, uid,
              current_ip()),
         )
-        _maybe_deduct_balance(conn, uid, cost, feature, s)
+        if feature not in _LUMP_SUM_FEATURES:
+            _maybe_deduct_balance(conn, uid, cost, feature, s)
     return cost
+
+
+# OpenAI SDKの既定(timeout未指定=10分・max_retries=2)のままだと、接続
+# トラブル時に「失敗はするが数分待たされる」状態になり得る(2026-09-05
+# ユーザー報告: ローカルでcrossword_hint生成中に1分以上固まって見えた。
+# app.logのchat失敗ログ自体はConnection errorとして残っていたため、
+# 機能面のフォールバック(AI失敗時は非AIヒントへ切替)は効いていたが、
+# 応答が返るまでの体感速度が悪かった)。接続系はすぐに諦めさせ、
+# リトライも1回だけにして「待たされる」ワースト値を短くする。
+_OPENAI_TIMEOUT_SEC = 20.0
+_OPENAI_CONNECT_TIMEOUT_SEC = 5.0
+_OPENAI_MAX_RETRIES = 1
+# この秒数以上かかった呼び出しは、成功していてもapp.logにWARNINGを残す
+# (2026-09-05・「各処理の時間で課題なところをあぶりだしたい」対応)。
+_SLOW_CALL_SEC = 8.0
 
 
 def _client():
@@ -375,9 +448,15 @@ def _client():
     if not settings.ai_enabled:
         return None, settings
     try:
+        import httpx
         from openai import OpenAI
 
-        return OpenAI(api_key=settings.openai_api_key), settings
+        return OpenAI(
+            api_key=settings.openai_api_key,
+            timeout=httpx.Timeout(
+                _OPENAI_TIMEOUT_SEC, connect=_OPENAI_CONNECT_TIMEOUT_SEC),
+            max_retries=_OPENAI_MAX_RETRIES,
+        ), settings
     except Exception:  # pragma: no cover - import/runtime guard
         log.exception("OpenAI クライアントの初期化に失敗")
         return None, settings
@@ -421,6 +500,11 @@ def chat(
 
     use_model = model or settings.openai_model
     capped = min(max_tokens, settings.ai_max_output_tokens)
+    # 呼び出しの所要時間を計測(2026-09-05・ユーザー報告「クロスワード生成が
+    # 1分以上固まって見えた」の再発防止)。成功時も遅い呼び出しは警告ログを
+    # 残し、「AI呼び出しのどこが遅いか」を事後にapp.logから追えるようにする
+    # (失敗時は原因調査のため常にelapsedを記録)。
+    t0 = time.monotonic()
     try:
         resp = client.chat.completions.create(
             model=use_model,
@@ -431,6 +515,11 @@ def chat(
             **_temperature_kwarg(use_model, temperature),
             **_token_kwarg(use_model, capped),
         )
+        elapsed = time.monotonic() - t0
+        if elapsed >= _SLOW_CALL_SEC:
+            log.warning(
+                "chat 低速 (feature=%s model=%s elapsed=%.1fs)",
+                feature, use_model, elapsed)
         usage = resp.usage
         ptok = getattr(usage, "prompt_tokens", 0) or 0
         otok = getattr(usage, "completion_tokens", 0) or 0
@@ -443,7 +532,9 @@ def chat(
             output_tokens=otok,
         )
     except Exception as exc:
-        log.error("chat 失敗 (feature=%s): %s", feature, exc)
+        elapsed = time.monotonic() - t0
+        log.error("chat 失敗 (feature=%s model=%s elapsed=%.1fs): %s",
+                   feature, use_model, elapsed, exc)
         # 2026-08-29修正: synthesize_speech()と同じ問題(生の例外文字列を
         # そのままユーザーへ返していた)。errors.pyの定型文(4005)を返す。
         return AIResult(ok=False, text="", error=ERROR_CODES["4005"][0])
@@ -476,6 +567,7 @@ def chat_stream(
         return
 
     use_model = model or settings.openai_model
+    t0 = time.monotonic()
     try:
         stream = client.chat.completions.create(
             model=use_model,
@@ -503,8 +595,15 @@ def chat_stream(
                 yield delta.content
         if ptok or otok:
             _record_usage(use_model, ptok, otok, feature)
+        elapsed = time.monotonic() - t0
+        if elapsed >= _SLOW_CALL_SEC:
+            log.warning(
+                "chat_stream 低速 (feature=%s model=%s elapsed=%.1fs)",
+                feature, use_model, elapsed)
     except Exception as exc:
-        log.error("chat_stream 失敗 (feature=%s): %s", feature, exc)
+        elapsed = time.monotonic() - t0
+        log.error("chat_stream 失敗 (feature=%s model=%s elapsed=%.1fs): %s",
+                   feature, use_model, elapsed, exc)
         yield f"\n[エラー] {exc}"
 
 
@@ -602,6 +701,7 @@ def synthesize_speech(
     extra = {}
     if instr and "gpt-4o" in settings.tts_model:
         extra["instructions"] = instr
+    t0 = time.monotonic()
     try:
         resp = client.audio.speech.create(
             model=settings.tts_model,
@@ -611,6 +711,10 @@ def synthesize_speech(
             **extra,
         )
         audio = resp.read() if hasattr(resp, "read") else resp.content
+        elapsed = time.monotonic() - t0
+        if elapsed >= _SLOW_CALL_SEC:
+            log.warning("TTS 低速 (voice=%s model=%s elapsed=%.1fs)",
+                        voice, settings.tts_model, elapsed)
         try:
             cache.write_bytes(audio)
         except Exception:  # caching is best-effort
@@ -640,8 +744,9 @@ def synthesize_speech(
                 _maybe_deduct_balance(conn, uid, cost, feature, settings)
         return audio, None
     except Exception as exc:
-        log.error("TTS 失敗 (voice=%s, model=%s): %s",
-                  voice, settings.tts_model, exc)
+        elapsed = time.monotonic() - t0
+        log.error("TTS 失敗 (voice=%s, model=%s, elapsed=%.1fs): %s",
+                  voice, settings.tts_model, elapsed, exc)
         # 2026-08-29修正: 以前はexcの文字列をそのままユーザーに返しており、
         # OpenAI側の生エラー(レート制限のJSON等)がトースト表示に漏れていた
         # (実機フィードバックで発覚)。詳細はログのみに留め、画面には
@@ -802,6 +907,7 @@ def transcribe(
             kw["language"] = lang
         return client.audio.transcriptions.create(**kw)
 
+    t0 = time.monotonic()
     try:
         calls = 1
         if len(allowed) == 1:
@@ -839,9 +945,14 @@ def transcribe(
             # 2026-08-12修正: TTSと同じ抜け穴（残高が一切減らない）がSTTにも
             # あったため同様に修正。
             _maybe_deduct_balance(conn, uid, cost, "stt", settings)
+        elapsed = time.monotonic() - t0
+        if elapsed >= _SLOW_CALL_SEC:
+            log.warning("STT 低速 (model=%s calls=%d elapsed=%.1fs)",
+                        settings.stt_model, calls, elapsed)
         return text, None
     except Exception as exc:
-        log.error("STT 失敗: %s", exc)
+        elapsed = time.monotonic() - t0
+        log.error("STT 失敗 (elapsed=%.1fs): %s", elapsed, exc)
         return None, f"文字起こしに失敗しました: {exc}"
 
 

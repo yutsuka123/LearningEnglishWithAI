@@ -1,0 +1,130 @@
+/* SPA外の独立ページ(about/terms/privacy/tokushoho/login)共通のテーマ+
+   基本スタイル(2026-09-05・opus照査提案「一回きりにしない」共通化)。
+   トークン名はstatic/css/style.css(SPA本体)の:root/:root[data-theme=
+   "light"]と完全に同じ名前にしてあり、意味も統一されている。
+   テーマ切替・文字サイズ切替のロジックはstatic/js/page-chrome.jsを
+   参照(localStorageの"theme"/"fontSize"キーをSPA本体と共有)。 */
+:root {
+  /* static/css/style.css(SPA本体)と同時に調整(2026-09-05ユーザー要望
+     「背景は落ち着いたトーン・ダークは暗すぎず明るすぎず」)。 */
+  --bg: #161c23;
+  --panel: #1f2733;
+  --panel-2: #29323f;
+  --line: #38445a;
+  --text: #e6edf3;
+  --muted: #a7b6c8;
+  --accent: #4da3ff;
+  --accent-2: #36c98d;
+  --warn: #ffb454;
+  --danger: #ff6b6b;
+  --radius: 12px;
+  --shadow: rgba(0, 0, 0, .4);
+}
+:root[data-theme="light"] {
+  --bg: #eef1f6;
+  --panel: #f9fafc;
+  --panel-2: #e9ecf2;
+  --line: #d5dce8;
+  --text: #1a2230;
+  --muted: #64748b;
+  --accent: #3b6fd4;
+  --accent-2: #1a9d6c;
+  --warn: #b8860b;
+  --danger: #d64545;
+  --shadow: rgba(0, 0, 0, .08);
+}
+:root[data-font-size="small"] body { zoom: 0.88; }
+:root[data-font-size="large"] body { zoom: 1.32; }
+:root[data-font-size="xlarge"] body { zoom: 1.63; }
+
+* { box-sizing: border-box; }
+.mt { margin-top: 16px; }
+body { font-family: system-ui, sans-serif; background: var(--bg);
+  margin: 0; color: var(--text); }
+.wrap { max-width: 640px; margin: 0 auto; padding: 32px 20px 60px; }
+.card { background: var(--panel); padding: 28px 32px;
+  border-radius: var(--radius); box-shadow: 0 4px 24px var(--shadow);
+  margin-bottom: 16px; }
+h1 { font-size: 20px; margin: 0 0 4px; color: var(--text); }
+h2 { font-size: 15px; margin: 0 0 8px; color: var(--text); }
+h3 { font-size: 14px; margin: 18px 0 4px; color: var(--text); }
+p, li, td, th { font-size: 14px; line-height: 1.8; color: var(--text); }
+.sub, .muted { color: var(--muted); font-size: 13px; }
+a { color: var(--accent); }
+a:hover { color: var(--accent-2); }
+a.back { display: inline-block; margin-top: 24px; font-size: 13px;
+  color: var(--accent); text-decoration: none; }
+a.back:hover { text-decoration: underline; }
+table { width: 100%; border-collapse: collapse; margin: 4px 0; }
+th, td { text-align: left; padding: 10px 8px; vertical-align: top;
+  border-bottom: 1px solid var(--line); }
+th { width: 34%; color: var(--text); font-weight: 600; }
+.note, .draft { background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 8px; padding: 12px 16px; margin: 20px 0; font-size: 13px; }
+.imp { background: var(--panel-2); border: 1px solid var(--accent);
+  border-radius: 8px; padding: 12px 16px; margin: 20px 0; }
+.notice { background: var(--panel-2); border: 1px solid var(--warn);
+  border-radius: 8px; padding: 12px 16px; margin: 0 0 20px;
+  font-size: 13px; line-height: 1.7; color: var(--text); }
+.todo { color: var(--danger); font-weight: 600; }
+
+/* ページ右上の共通コントロール(文字サイズ・テーマ切替)。
+   static/login.htmlの.pagebarと同じ見た目。 */
+.pagebar { position: fixed; top: 12px; right: 12px; display: flex;
+  gap: 8px; align-items: center; z-index: 10; }
+.pagebar select { width: auto; margin: 0; padding: 5px 8px;
+  font-size: 12px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--panel); color: var(--text); }
+.pagebar button { width: auto; margin: 0; padding: 5px 10px;
+  font-size: 15px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--panel); color: var(--text); cursor: pointer; }
+
+/* about.html固有(元の直書きCSSから移設。他ページでは未使用)。 */
+ul.links { list-style: none; margin: 8px 0; padding: 0; }
+ul.links li { margin: 10px 0; }
+ul.links a { display: inline-flex; align-items: center; gap: 8px;
+  font-size: 15px; color: var(--text); text-decoration: none;
+  padding: 12px 16px; width: 100%; box-sizing: border-box;
+  background: var(--panel-2); border-radius: 8px; }
+ul.links a:hover { background: var(--line); }
+.cta { display: inline-block; margin: 4px 0 0; padding: 12px 28px;
+  background: var(--accent); color: #fff; text-decoration: none;
+  border-radius: 8px; font-size: 15px; font-weight: 600; }
+.cta:hover { background: var(--accent-2); color: #fff; }
+.legal-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0 0; }
+.cta-legal { display: inline-block; padding: 10px 20px;
+  background: var(--panel-2); color: var(--accent); text-decoration: none;
+  border: 1px solid var(--line); border-radius: 8px; font-size: 14px;
+  font-weight: 600; }
+.cta-legal:hover { background: var(--line); }
+.manual-item { margin: 0 0 18px; padding-bottom: 14px;
+  border-bottom: 1px solid var(--line); }
+.manual-item:last-child { border-bottom: none; }
+.teaser { list-style: none; margin: 14px 0 4px; padding: 0;
+  display: flex; flex-direction: column; gap: 6px; }
+.teaser li { font-size: 14px; color: var(--text); }
+.toc-list { list-style: none; margin: 10px 0 0; padding: 0;
+  counter-reset: toc; }
+.toc-list li { counter-increment: toc; margin: 8px 0; }
+.toc-list li::before { content: counter(toc) ". "; color: var(--muted); }
+.toc-list a { color: var(--accent); text-decoration: none; font-size: 14.5px; }
+.toc-list a:hover { text-decoration: underline; }
+.totoc { margin: -4px 0 16px; }
+.totoc a { font-size: 12px; color: var(--muted); text-decoration: none; }
+.totoc a:hover { text-decoration: underline; color: var(--accent); }
+.quick-list { margin: 8px 0 0; padding-left: 20px; }
+.quick-list li { margin: 4px 0; }
+
+/* 「登録/ログイン前後・課金有無」の3段比較(2026-09-05opus照査提案)。
+   スマホでは1カラムに積み、PCでは3カラム表示にする。 */
+.tier-cards { display: grid; gap: 12px; margin: 14px 0;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.tier-card { background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 8px; padding: 14px 16px; }
+.tier-card h3 { margin: 0 0 8px; }
+.tier-card ul { margin: 0; padding-left: 18px; }
+.tier-card li { font-size: 13px; margin: 4px 0; }
+
+details.manual-collapse { margin: 8px 0; }
+details.manual-collapse > summary { cursor: pointer; font-weight: 600;
+  color: var(--text); padding: 4px 0; }

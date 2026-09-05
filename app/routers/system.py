@@ -513,10 +513,12 @@ def my_usage():
         # (app/routers/paypay_charge.pyのバックエンド側ガードと同じ判定)。
         "paypay_charge_test_allowed": paypay.is_test_allowed(
             u.get("username", "")),
-        # ゲーム機能(クロスワード等)の限定公開フラグ(2026-09-03)。
-        # 上のpaypay_charge_test_allowedと同じ判定方式・別の許可リスト。
-        "games_test_allowed": games_access.is_test_allowed(
-            u.get("username", "")),
+        # ゲーム機能(クロスワード等)の限定公開フラグ(2026-09-03、
+        # 2026-09-05に招待ユーザー(email未設定の配布アカウント)にも
+        # 開放)。個別許可リスト or 招待ユーザーの統合判定
+        # (app/services/games_access.py の can_access 参照)。
+        "games_test_allowed": games_access.can_access(
+            u.get("username", ""), u.get("email", "")),
     }
 
 

@@ -3,18 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ログイン — English Learning with AI</title>
+  <title>ログイン / 新規登録｜nyangailab</title>
   <style>
     /* 既定=ダーク、data-theme="light"のときだけライトに切り替える
        （メインアプリ(static/js/app.js のapplyTheme)と同じ方式・
        localStorageの"theme"キーも共通化して行き来しても引き継がれる）。 */
+    /* static/css/style.css(SPA本体)と同時に調整(2026-09-05ユーザー要望
+       「背景は落ち着いたトーン・ダークは暗すぎず明るすぎず」)。 */
     :root {
-      --bg: #0f1419; --card: #1a2230; --text: #e6edf3; --sub: #d5dde6;
-      --border: #3a4a61; --accent: #4da3ff; --accent-hover: #6db4ff;
+      --bg: #161c23; --card: #1f2733; --text: #e6edf3; --sub: #d5dde6;
+      --border: #3d4a5e; --accent: #4da3ff; --accent-hover: #6db4ff;
       --err: #ff6b6b; --shadow: rgba(0,0,0,.4);
     }
     :root[data-theme="light"] {
-      --bg: #f4f6fb; --card: #fff; --text: #223; --sub: #556;
+      --bg: #eef1f6; --card: #f9fafc; --text: #223; --sub: #556;
       --border: #ccd; --accent: #3b6fd4; --accent-hover: #2f5cb8;
       --err: #c0392b; --shadow: rgba(0,0,0,.08);
     }
@@ -35,13 +37,17 @@
       display: flex; min-height: 100vh; align-items: center;
       justify-content: center; margin: 0; }
     .card { background: var(--card); padding: 32px; border-radius: 12px;
-      box-shadow: 0 4px 24px var(--shadow); width: 320px; }
-    h1 { font-size: 18px; margin: 0 0 20px; color: var(--text); }
+      box-shadow: 0 4px 24px var(--shadow); width: min(360px, 100% - 32px); }
+    h1 { font-size: 18px; margin: 0 0 4px; color: var(--text); }
+    .lead { font-size: 13px; color: var(--sub); margin: 0 0 20px; }
     label { display: block; font-size: 13px; color: var(--sub);
       margin: 12px 0 4px; }
+    /* iOS Safariは16px未満のinputにフォーカスすると自動でページ全体を
+       拡大する(カードが画面外にはみ出す原因)。16px未満にしないこと
+       (2026-09-05opus照査指摘)。 */
     input, select, textarea { width: 100%; padding: 10px;
       border: 1px solid var(--border); border-radius: 8px;
-      box-sizing: border-box; font-size: 14px; font-family: inherit;
+      box-sizing: border-box; font-size: 16px; font-family: inherit;
       background: var(--bg); color: var(--text); }
     textarea { resize: vertical; min-height: 60px; }
     details.survey { margin-top: 16px; border: 1px solid var(--border);
@@ -101,9 +107,13 @@
     <button type="button" id="themeToggle" title="ダーク/ライト切替">🌙</button>
   </div>
   <form class="card" id="f">
-    <h1>🐱 English Learning with AI</h1>
-    <label for="u">ユーザー名（メールアドレスでも可）</label>
+    <h1>🐱 nyangailab</h1>
+    <p class="lead">月額サブスクなしのAI英語学習アプリ。単語12,000語以上を
+      収録。</p>
+    <label for="u">メールアドレス</label>
     <input id="u" name="username" autocomplete="username" required />
+    <p class="hint">（登録時期の早い一部ユーザーは、初期からのユーザー名
+      でもログインできます）</p>
     <label for="p">パスワード</label>
     <div class="pwd-wrap">
       <input id="p" name="password" type="password"
@@ -128,43 +138,44 @@
 
   <form class="card hidden" id="fSignup">
     <h1>🐱 新規登録</h1>
-    <p class="free-note" style="margin-top:0">✅ <b>登録は無料</b>です。
-      課金は任意で、あとから設定画面でいつでも設定できます。</p>
-    <label for="sdisplay">呼んでほしいお名前（必須）</label>
-    <input id="sdisplay" name="display_name" autocomplete="nickname"
-      required placeholder="例: たろう、タロさん、Taro など" />
-    <label for="sdisplayKana">フリガナ（任意）</label>
-    <input id="sdisplayKana" name="display_name_furigana" autocomplete="off"
-      placeholder="タロウ" />
-    <p class="hint">チャージキーの発行など、こちらからご連絡する際の宛名に
-      使用します。<b>本名でなくて構いません</b>（仮名・ニックネーム可）。
-      フリガナは分かる場合のみで結構です。</p>
+    <p class="free-note" style="margin-top:0;text-align:left">
+      登録（無料・1分）でできるようになること<br/>
+      ・📈 覚えた単語がずっと積み上がります（習熟度を自動で記録）<br/>
+      ・📁 自分だけの単語帳・フレーズ帳が作れます<br/>
+      ・🔊 音声で聞ける範囲が広がります<br/>
+      ✅ カード不要・確認メールなし・そのまますぐ使えます</p>
     <label for="su">メールアドレス（必須）</label>
     <input id="su" name="email" type="text" inputmode="email"
       autocomplete="email" required />
-    <p class="hint">登録後、こちらから営業・勧誘・宣伝・課金の催促等の
-      メールをお送りすることはありません。BASEでチャージ（pt購入）を
-      ご予定の方は、BASEでのお支払いに使うメールアドレスと同じものだと
-      チャージキーの照合がスムーズです。</p>
+    <label for="su2">メールアドレス（確認・必須）</label>
+    <input id="su2" name="email_confirm" type="text" inputmode="email"
+      autocomplete="email" required />
+    <p class="hint">入力ミスがあると、チャージキーなどのご連絡が届かなく
+      なります。営業・勧誘・宣伝のメールをお送りすることはありません。</p>
     <label for="sp">パスワード（必須）</label>
+    <p class="hint">8〜32文字。半角の英字・数字・記号のうち2種類以上を
+      組み合わせてください。</p>
     <div class="pwd-wrap">
       <input id="sp" name="new_password" type="password" minlength="8"
-        maxlength="32" autocomplete="off" data-lpignore="true"
-        data-1p-ignore disabled required />
+        maxlength="32" autocomplete="new-password" disabled required />
       <button type="button" class="pwd-toggle" data-target="sp"
         aria-label="パスワードを表示"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
-    <p class="hint">8〜32文字。半角の英字・数字・記号が使えます
-      （英字のみ・数字のみ・記号のみは不可、2種類以上を組み合わせて
-      ください）。</p>
     <label for="sp2">パスワード（確認・必須）</label>
     <div class="pwd-wrap">
       <input id="sp2" name="password_confirm" type="password" minlength="8"
-        maxlength="32" autocomplete="off" data-lpignore="true"
-        data-1p-ignore disabled required />
+        maxlength="32" autocomplete="new-password" disabled required />
       <button type="button" class="pwd-toggle" data-target="sp2"
         aria-label="パスワードを表示"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
+    <label for="sdisplay">呼んでほしいお名前（必須）</label>
+    <input id="sdisplay" name="display_name" autocomplete="nickname"
+      required placeholder="例: たろう、タロさん、Taro など" />
+    <p class="hint">チャージキーの発行など、こちらからご連絡する際の宛名に
+      使用します。<b>本名でなくて構いません</b>（仮名・ニックネーム可）。</p>
+    <label for="sdisplayKana">フリガナ（任意）</label>
+    <input id="sdisplayKana" name="display_name_furigana" autocomplete="off"
+      placeholder="タロウ" />
     <details class="survey">
       <summary>📋 アンケート（任意・サービス改善の参考にさせていただきます）</summary>
       <label for="sname">氏名（任意）</label>
@@ -238,9 +249,6 @@
       提携関係はありません)を通じて行われます。</p>
     <div class="toggle">
       <a id="toLogin">ログイン画面に戻る</a>
-    </div>
-    <div class="toggle">
-      <a href="/">ログインせずにお試しで使ってみる →</a>
     </div>
     <div class="foot"><a href="/static/about.html">ℹ️ このアプリについて</a>
       （<a href="/static/terms.html" target="_blank">利用規約</a>
@@ -321,24 +329,54 @@
     // 走査し、ログイン欄と登録欄が同一ページに同居していることで自動生成・
     // 自動入力を誤爆させる問題があったため・2026-09-01)。
     // 2026-08-18〜: リリース前最終テストのため新規登録を再開。
-    function showSignup() {
+    // 「戻る」でサイトごと離脱してしまう問題への対応(2026-09-05opus照査
+    // 指摘)。フォーム切替のたびhistoryへ1件積み、ブラウザの戻るボタンで
+    // ログイン⇔登録を行き来できるようにする(popstateからの復元時は
+    // push=falseにして無限に積まないようにする)。
+    function showSignup(push) {
       fLogin.classList.add('hidden');
       fSignup.classList.remove('hidden');
       pLogin.disabled = true;
       pSignup.forEach((el) => { el.disabled = false; });
+      document.title = '新規登録｜nyangailab';
+      if (push) history.pushState({ form: 'signup' }, '', '/login#signup');
       track('click', 'signup_form', 'opened');
     }
-    function showLogin() {
+    function showLogin(push) {
       fSignup.classList.add('hidden');
       fLogin.classList.remove('hidden');
       pSignup.forEach((el) => { el.disabled = true; });
       pLogin.disabled = false;
+      document.title = 'ログイン / 新規登録｜nyangailab';
+      if (push) history.pushState({ form: 'login' }, '', '/login');
     }
-    document.getElementById('toSignup').addEventListener('click', showSignup);
-    document.getElementById('toLogin').addEventListener('click', showLogin);
+    document.getElementById('toSignup')
+      .addEventListener('click', () => showSignup(true));
+    document.getElementById('toLogin')
+      .addEventListener('click', () => showLogin(true));
+    window.addEventListener('popstate', (ev) => {
+      if (ev.state && ev.state.form === 'signup') showSignup(false);
+      else showLogin(false);
+    });
     // /login#signup で新規登録フォームを直接開けるようにする(このアプリ
     // についてページ等から一発リンクしたいという要望・2026-08-19)。
-    if (location.hash === '#signup') showSignup();
+    // 初回表示は既存のhistoryエントリを置き換えるだけ(pushしない)。
+    if (location.hash === '#signup') {
+      history.replaceState({ form: 'signup' }, '', '/login#signup');
+      showSignup(false);
+    } else {
+      history.replaceState({ form: 'login' }, '', location.pathname);
+    }
+
+    // 離脱分析の解像度を上げる(2026-09-05opus照査提案): 「開いただけ／
+    // 入力を始めた／送信を試みた／クライアントで弾かれた」を分けて
+    // 記録する。first_inputは1回だけ送る。
+    let signupFirstInputSent = false;
+    fSignup.addEventListener('input', () => {
+      if (signupFirstInputSent) return;
+      signupFirstInputSent = true;
+      track('click', 'signup_form', 'first_input');
+    }, { capture: true });
 
     // 実写風に見えるとの声があった絵文字(👁/🙈)をやめ、一般的な
     // パスワード表示切替でよく使われる線画アイコン(目/目に斜線)に統一。
@@ -485,17 +523,32 @@
 
     fSignup.addEventListener('submit', async (ev) => {
       ev.preventDefault();
+      track('click', 'signup_form', 'submit_attempt');
       const se = document.getElementById('se');
       se.textContent = '';
       const email = document.getElementById('su').value;
+      const emailConfirm = document.getElementById('su2').value;
       const password = document.getElementById('sp').value;
       const passwordConfirm = document.getElementById('sp2').value;
+      // メールアドレスの入力ミス対策(2026-09-05ユーザー指摘: 確認メールを
+      // 送らない設計のため、誤入力に気づけないままだとチャージキー等の
+      // 連絡が届かなくなる)。
+      if (email.trim().toLowerCase() !== emailConfirm.trim().toLowerCase()) {
+        se.textContent = 'メールアドレスが一致しません。';
+        track('click', 'signup_form', 'invalid:email_mismatch');
+        return;
+      }
       if (password !== passwordConfirm) {
         se.textContent = 'パスワードが一致しません。';
+        track('click', 'signup_form', 'invalid:pw_mismatch');
         return;
       }
       const pwErr = passwordPolicyError(password);
-      if (pwErr) { se.textContent = pwErr; return; }
+      if (pwErr) {
+        se.textContent = pwErr;
+        track('click', 'signup_form', 'invalid:pw_policy');
+        return;
+      }
       // 二重送信防止(連打・多重タップで2件のPOSTが飛び、片方が
       // 「既に登録されています」を返して成功なのに失敗表示に見える
       // 事故を防ぐ・2026-09-01)。
