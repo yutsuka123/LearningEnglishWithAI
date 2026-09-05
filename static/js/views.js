@@ -7734,13 +7734,16 @@ async function cwRenderSetup(root, preset) {
       cwRenderSetup(root, recent[Number(b.dataset.recent)]);
     });
   });
-  // 選択中の分野(+レベル絞り込み前)の合計語数を常に表示する
-  // (2026-09-05ユーザー要望「分野や単語帳を選択する際に、選択した総語数が
-  // わかるといい」。当初は語数不足時の警告のみだったが、常時表示に拡張)。
-  // 分野の語数はfacets.domain_counts(/api/words/facets)から取得済み・
-  // 複数分野でタグが重複する語は多少ダブって数えるが、目安としては十分。
-  const domainCounts = facets.domain_counts || {};
-  function updateDomainCountWarn() {
+  // 選択中の分野+TOEICレベル範囲で実際に絞り込まれる語数を表示する
+  // (2026-09-05ユーザー要望「選択した総語数がわかるといい」で新設した
+  // 際はfacets.domain_counts頼りでレベル範囲を無視していたため、レベルを
+  // 変えても表示が更新されない不具合があった(2026-09-06ユーザー指摘
+  // 「英単語画面と同様のチェックがあるとわかりやすい」)。英単語画面の
+  // load()と同じ考え方で、/api/wordsを実際に叩いて正確な該当件数を出す
+  // (_word_filterを共有しているため_fetch_candidate_wordsとほぼ同じ
+  // 絞り込み結果になる)。
+  let domainCountSeq = 0;
+  async function updateDomainCountWarn() {
     const warnEl = root.querySelector("#cwDomainCountWarn");
     if (!warnEl) return;
     const sourceType = root.querySelector(
@@ -7749,15 +7752,35 @@ async function cwRenderSetup(root, preset) {
     const wordCount = Number(root.querySelector("#cwWordCount").value)
       || DEFAULT_WORD_COUNT;
     const domains = [...selectedDomains];
-    const total = domains.length
-      ? domains.reduce((sum, d) => sum + (domainCounts[d] || 0), 0)
-      : Object.values(domainCounts).reduce((a, b) => a + b, 0);
-    if (total < wordCount) {
-      warnEl.textContent = `⚠️ 選択中の分野の語数は合計${total}語です。`
-        + `${wordCount}語を希望していますが、実際にはそれより少ない語数で`
-        + `作られる可能性があります。`;
+    const levelMin = root.querySelector("#cwLevelMin")?.value || "";
+    const levelMax = root.querySelector("#cwLevelMax")?.value || "";
+    const q = new URLSearchParams();
+    if (domains.length) {
+      q.set("domain", domains.join(","));
     } else {
-      warnEl.textContent = `選択中の分野の語数: 合計${total}語`;
+      const cat = root.querySelector("#cwCategory").value;
+      if (cat) q.set("category", cat);
+    }
+    if (levelMin) q.set("level_min", levelMin);
+    if (levelMax) q.set("level_max", levelMax);
+    const seq = ++domainCountSeq;
+    warnEl.textContent = "語数を確認中…";
+    warnEl.style.display = "";
+    let total;
+    try {
+      total = (await api.get("/api/words?" + q.toString())).length;
+    } catch (_) {
+      return;
+    }
+    if (seq !== domainCountSeq) return;  // 新しい問い合わせが発行済み→破棄
+    const levelText = (levelMin || levelMax)
+      ? `(TOEIC ${levelMin || "下限なし"}〜${levelMax || "上限なし"})` : "";
+    if (total < wordCount) {
+      warnEl.textContent = `⚠️ 選択中の分野${levelText}の語数は合計${total}`
+        + `語です。${wordCount}語を希望していますが、実際にはそれより`
+        + `少ない語数で作られる可能性があります。`;
+    } else {
+      warnEl.textContent = `選択中の分野${levelText}の語数: 合計${total}語`;
     }
     warnEl.style.display = "";
   }
@@ -7798,6 +7821,10 @@ async function cwRenderSetup(root, preset) {
     updateDomainCountWarn();
   });
   root.querySelector("#cwWordCount")
+    .addEventListener("change", updateDomainCountWarn);
+  root.querySelector("#cwLevelMin")
+    .addEventListener("change", updateDomainCountWarn);
+  root.querySelector("#cwLevelMax")
     .addEventListener("change", updateDomainCountWarn);
   root.querySelector("#cwDeck")
     ?.addEventListener("change", updateDeckCountInfo);
