@@ -7409,8 +7409,10 @@ async function cwRenderHub(root) {
     <div class="grid cols-2 mt">
       <div class="card" id="cwCardStart"
         style="cursor:pointer;border-color:var(--accent);border-width:2px">
-        <h2>✏️ クロスワード作成</h2>
-        <p class="muted">分野・単語帳から単語を選んで自由に出題。</p>
+        <h2>✏️ クロスワード作成${state.isGuest
+          ? ` <span class="pill vague">🔒 要登録(無料)</span>` : ""}</h2>
+        <p class="muted">分野・単語帳から単語を選んで自由に出題。${
+          state.isGuest ? "ゲストの方は登録(無料)が必要です。" : ""}</p>
       </div>
       <div class="card" id="cwCardSamples" style="cursor:pointer">
         <h2>🧩 サンプルクロスワード</h2>
@@ -7600,6 +7602,13 @@ async function cwRenderSetup(root, preset) {
     <button type="button" class="btn ghost" id="cwBack">
       ← ゲーム一覧に戻る</button>
     <h1 class="mt">🧩 クロスワード - 設定</h1>
+    ${state.isGuest ? `<div class="card">
+      <p class="muted">🔒 この機能(自分で作る)を使うには登録(無料)が
+        必要です。ここで設定してもスタート時にエラーになります。
+        <a href="/login#signup">登録(無料)はこちら</a>、または
+        <button type="button" class="btn ghost" id="cwGoSamplesFromSetup">
+          🧩 サンプルクロスワードを見る</button></p>
+    </div>` : ""}
     ${recent.length ? `<table class="cw-recent-table mt"><tbody>
       ${recent.map((r, i) => `<tr>
         <td class="muted">${CW_RECENT_LABELS[i] || ""}</td>
@@ -7710,12 +7719,16 @@ async function cwRenderSetup(root, preset) {
             "cwEnglishStyle", v, englishStyle === v, t, d)).join("")}
         </div>
       </div>
-      <button class="btn primary mt" id="cwStart">スタート</button>
+      <button class="btn primary mt" id="cwStart" ${
+        state.isGuest ? "disabled" : ""}>${
+        state.isGuest ? "🔒 スタート(要登録)" : "スタート"}</button>
       <p class="muted mt" id="cwError" style="display:none"></p>
     </div>
   `;
   root.querySelector("#cwBack")
     .addEventListener("click", () => cwRenderHub(root));
+  root.querySelector("#cwGoSamplesFromSetup")
+    ?.addEventListener("click", () => cwRenderSamples(root));
   root.querySelectorAll("[data-recent]").forEach((b) => {
     b.addEventListener("click", () => {
       cwRenderSetup(root, recent[Number(b.dataset.recent)]);

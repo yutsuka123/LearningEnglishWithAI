@@ -199,7 +199,7 @@ def _guard_games_access(conn, uid: int) -> None:
     ことから、まずはサンプルのみで体験してもらう方針)。"""
     from ..services.auth import is_guest_user_id
     if is_guest_user_id(conn, uid):
-        raise errors.http_error("3020")
+        raise errors.http_error("7007")
 
 
 def _owned_session(conn, session_id: int, uid: int) -> dict:
