@@ -968,6 +968,14 @@ def _migrate(conn: sqlite3.Connection) -> None:
     # のコメント参照)。
     _add_col(conn, "crossword_sessions", "guest_sid",
              "guest_sid TEXT NOT NULL DEFAULT ''")
+    # サンプルの公開階層(2026-09-05ユーザー指示「未登録でも一覧は見えるが
+    # プレイは登録者限定、にできるサンプルを作りたい」)。is_activeは
+    # 「一覧にすら出さない(未解放)」を表すので、それとは別に「一覧には
+    # 出すがゲストはプレイ不可(登録者限定)」を区別する列を追加する。
+    # 既定0=登録者限定側(安全側のデフォルト)、個別に1へ更新したものだけ
+    # ゲストもプレイ可(解放)にする。
+    _add_col(conn, "crossword_samples", "guest_playable",
+             "guest_playable INTEGER NOT NULL DEFAULT 0")
     _migrate_multiuser(conn)
 
 

@@ -462,7 +462,7 @@ def my_usage():
     from ..services.auth import current_user_id, get_user, is_guest_user_id
 
     from ..config import APP_VERSION
-    from ..services import games_access, paypay
+    from ..services import paypay
     from ..services.auth import multiuser_enabled
     uid = current_user_id()
     s = load_settings()
@@ -513,12 +513,6 @@ def my_usage():
         # (app/routers/paypay_charge.pyのバックエンド側ガードと同じ判定)。
         "paypay_charge_test_allowed": paypay.is_test_allowed(
             u.get("username", "")),
-        # ゲーム機能(クロスワード等)の限定公開フラグ(2026-09-03、
-        # 2026-09-05に招待ユーザー(email未設定の配布アカウント)にも
-        # 開放)。個別許可リスト or 招待ユーザーの統合判定
-        # (app/services/games_access.py の can_access 参照)。
-        "games_test_allowed": games_access.can_access(
-            u.get("username", ""), u.get("email", "")),
     }
 
 

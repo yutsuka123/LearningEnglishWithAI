@@ -45,7 +45,7 @@ export const TABS = [
   // ["tripprep", "🧳 出張・旅行準備"],
   ["assess", "🎯 判定・教材"],
   ["history", "📚 学習履歴"],
-  ["games", "🎮 ゲーム"],   // 管理者+テスト許可のみ表示（boot で隠す）
+  ["games", "🎮 ゲーム"],   // 2026-09-05〜一般公開（誰でも表示）
   ["settings", "⚙️ 設定・チャージ"],
   // バージョン情報（更新履歴・メンテナンス予定）。未ログインでも見られる
   // ようにする（2026-08-22ユーザー要望）。
@@ -445,10 +445,11 @@ export async function refreshCost() {
     // 個別に許可されたアカウントにも表示する
     // (app/services/paypay.pyのis_test_allowedと対応)。
     state.canTestPaypayCharge = isAdmin || !!u.paypay_charge_test_allowed;
-    // ゲーム機能(クロスワード等)の限定公開(2026-09-03、2026-09-05に
-    // 招待ユーザーへも開放)。games_test_allowedはテスト許可リストと
-    // 招待ユーザーの統合判定(app/services/games_access.pyのcan_access)。
-    state.canUseGames = isAdmin || !!u.games_test_allowed;
+    // ゲーム機能(クロスワード等)は2026-09-05〜一般公開(サンプルは
+    // ゲスト含め誰でも、自分で作るはログイン済みユーザーなら誰でも。
+    // ゲスト/未ログイン時の判定はapp.js側では行わずcwRenderHub内で
+    // 出し分ける)。タブ自体は常に表示する。
+    state.canUseGames = true;
     state.multiuser = !!u.multiuser;
     state.isGuest = !!u.is_guest;
     // AI呼び出し(会話・生成)や無料範囲外の語・フレーズ再生を「実際に

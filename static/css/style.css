@@ -972,29 +972,11 @@ th { color: var(--muted); font-weight: 600; }
   max-width: 100%;
   position: relative;
 }
-/* 背景の猫(2026-09-05ユーザー要望「nyangaiだから」・既定は無地で、
-   設定画面から任意でオンにできる装飾)。盤面の読みやすさを妨げないよう
-   薄い透過度・盤面より背面(z-index)に置き、ゆっくり回転させる。 */
-.cw-cat-bg {
-  position: absolute;
-  top: 50%; left: 50%;
-  width: min(70%, 260px);
-  transform: translate(-50%, -50%);
-  opacity: .10;
-  z-index: 0;
-  pointer-events: none;
-  animation: cw-cat-spin 50s linear infinite;
-}
 .cw-grid { position: relative; z-index: 1; }
-@keyframes cw-cat-spin {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(360deg); }
-}
-/* 未解答マスの猫(2026-09-05ユーザー要望)。背景の猫(.cw-cat-bg・薄い
-   装飾・盤面の外側/背面)とは違い、マスの中に収まる不透明な画像にして
-   はっきり区別できるようにする。素材自体に横顔/正面/背面などのポーズが
-   揃っているため、回転はさせない(ユーザー指摘: 元画像のポーズを
-   そのまま使うほうが自然)。 */
+/* 未解答マスの猫(2026-09-05ユーザー要望)。マスの中に収まる不透明な
+   画像にする。素材自体に横顔/正面/背面などのポーズが揃っているため、
+   回転はさせない(ユーザー指摘: 元画像のポーズをそのまま使うほうが
+   自然)。 */
 .cw-cell-cat {
   position: absolute;
   inset: 8%;

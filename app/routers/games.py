@@ -1,10 +1,12 @@
 """ゲーム機能のAPI(2026-09-03・第一弾はクロスワード)。
 
-テストユーザー+管理者+招待ユーザー限定公開(`app/services/games_access.py`、
-2026-09-05に招待ユーザーへも開放)。ログインユーザーのみ(ゲスト不可・
-auth依存のcurrent_user_idが未ログインでは使えないため自然に弾かれる)。
-設計の詳細・スコア/ヒント仕様はdocs/TODO.md および実装時のプラン
-ドキュメント参照。
+2026-09-05〜一般公開。サンプルクロスワード(source_type='sample')は
+ゲスト含め誰でも遊べる(_guard_session_access参照)。自分で作る方
+(分野/単語帳から選ぶカスタムゲーム)はログイン済みユーザーなら誰でも
+使える(_guard_games_access参照。ゲストは単語帳が使えないことと、
+生成のたびに実際のAI原価が発生し得ることから、まずはサンプルのみで
+体験してもらう)。設計の詳細・スコア/ヒント仕様はdocs/TODO.md および
+実装時のプランドキュメント参照。
 """
 
 from __future__ import annotations
@@ -17,15 +19,60 @@ import re
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from ..config import log
 from ..database import db
-from ..services import crossword_gen, errors, games_access
-from ..services.auth import current_user_id, get_user
+from ..services import crossword_gen, errors
+from ..services.auth import current_user_id
 from ..services.spaced_repetition import banned_filter
 
 router = APIRouter(prefix="/api/games", tags=["games"])
 
 _WORD_RE = re.compile(r"^[A-Za-z]+$")
 MIN_WORD_LEN, MAX_WORD_LEN = 3, 10
+# 冠詞落とし+複合語のスペースを"_"に変換(2026-09-05ユーザー指示)。
+# 「the Sun」「the Moon」のように冠詞+1語、「litter box」「Siamese cat」
+# のように複数語で登録されている語は、そのままだと_WORD_RE(1単語限定)に
+# 弾かれてクロスワードに出題できなかった。
+#   1. 先頭の冠詞(the/a/an)は答えから完全に落とす(「the Sun」→「SUN」。
+#      冠詞自体は意味を持たないため)。
+#   2. 冠詞を落とした後もなお複数語（スペース区切り）が残る場合は、
+#      スペースを"_"に変換して1つの答えにする(「the Milky Way」→
+#      冠詞落とし→「Milky Way」→「MILKY_WAY」)。この"_"のマスは常時
+#      開示する(未解答でも見える。答え合わせ・部分一致判定はプレイヤー
+#      入力側のスペースを"_"に正規化してから比較する。_session_state・
+#      crossword_answer参照)。
+# 語義・例文は元の語(冠詞/スペースありの原文)のものをそのまま使う。
+# _masked_exampleは答え文字列の部分一致でマスクするため、例文中に元の
+# 表記(スペースあり)が含まれていても問題なくマスクできる。
+_ARTICLE_RE = re.compile(r"^(?:the|a|an)\s+(.+)$", re.IGNORECASE)
+_MULTI_WORD_RE = re.compile(r"^[A-Za-z]+(?: [A-Za-z]+)+$")
+# 複合語("_"を含む)は素の単語より長くなりがちなため上限を緩める。
+MAX_WORD_LEN_COMPOUND = 18
+
+
+def _normalize_crossword_answer(raw: str) -> tuple[str, bool] | None:
+    """words.englishをクロスワードの答え用に正規化する。
+    戻り値は(答え文字列, 冠詞を落としたか)。出題不可なら None。"""
+    text = (raw or "").strip()
+    if _WORD_RE.match(text):
+        if not (MIN_WORD_LEN <= len(text) <= MAX_WORD_LEN):
+            return None
+        return text.upper(), False
+    article_dropped = False
+    m = _ARTICLE_RE.match(text)
+    if m:
+        text = m.group(1).strip()
+        article_dropped = True
+    if _WORD_RE.match(text):
+        if not (MIN_WORD_LEN <= len(text) <= MAX_WORD_LEN):
+            return None
+        return text.upper(), article_dropped
+    if _MULTI_WORD_RE.match(text):
+        joined = text.replace(" ", "_")
+        if not (MIN_WORD_LEN <= len(joined) <= MAX_WORD_LEN_COMPOUND):
+            return None
+        return joined.upper(), article_dropped
+    return None
 # 性器・生殖器等のセンシティブな語(2026-09-05ユーザー指示「センシティブ
 # な内容・性器などの単語等はクロスワード出題から外しましょう」)。
 # words.domain='身体'には解剖学の一環としてurethra〜pubic hairの一連の
@@ -46,6 +93,16 @@ CROSSWORD_SENSITIVE_WORD_IDS = frozenset({
     10910,  # prostate 前立腺
     10911,  # genitals 性器・陰部(総称)
     10914,  # pubic hair 陰毛
+    # 2026-09-05発覚: 宣伝用クロスワードを試作中、犬,猫ドメインから
+    # 避妊・去勢手術等の語が出題されてしまった(id26のネコ好きサンプル
+    # 作り直しで個別除外していたのと同じ語だが、ドメイン全体からの
+    # 自動出題では防げていなかった)。動物の繁殖・去勢に関する手術用語
+    # も同様にクロスワード出題から除外する(通常の単語学習では引き続き
+    # 表示する)。
+    12424,  # whelping 出産する(犬が子犬を産むこと)
+    12430,  # spay 避妊手術をする(メスの生殖器を摘出する手術)
+    12431,  # neuter 去勢手術をする(オスの生殖器を摘出する手術)
+    12375,  # declawing 抜爪(爪の末節骨ごとの切除手術)
 })
 # UIの語数選択肢(views.js WORD_COUNT_OPTS)の最小値と揃える
 # (2026-09-05ユーザー指摘: 以前は6だったため「3」「5」を選んでも実際は
@@ -135,15 +192,13 @@ MAX_WRONG_ATTEMPTS = 5          # 1クリューあたりの不正解許容回数
 
 
 def _guard_games_access(conn, uid: int) -> None:
-    """管理者・招待ユーザー(email未設定の配布アカウント) or ゲームの
-    テスト許可リストに載っているユーザーのみ通す。それ以外は機能自体が
-    存在しないかのような汎用メッセージ(3020)で403。"""
-    me = get_user(conn, uid)
-    is_admin = bool(me and me.get("role") == "admin")
-    is_allowed = bool(
-        me and games_access.can_access(
-            me.get("username", ""), me.get("email", "")))
-    if not (is_admin or is_allowed):
+    """カスタムクロスワード(分野/単語帳から選ぶ方)はログイン済みユーザー
+    なら誰でも使える(2026-09-05〜一般公開。従来のテスト許可リスト/
+    招待ユーザー限定`games_access.can_access`は廃止)。ゲストのみ拒否
+    する(単語帳が使えないこと、生成のたびにAI原価が実際に発生し得る
+    ことから、まずはサンプルのみで体験してもらう方針)。"""
+    from ..services.auth import is_guest_user_id
+    if is_guest_user_id(conn, uid):
         raise errors.http_error("3020")
 
 
@@ -327,24 +382,26 @@ def _fetch_candidate_words(
     for r in rows:
         if r["id"] in CROSSWORD_SENSITIVE_WORD_IDS:
             continue
-        english = (r["english"] or "").strip()
-        if not _WORD_RE.match(english):
+        normalized = _normalize_crossword_answer(r["english"])
+        if normalized is None:
             continue
-        if not (MIN_WORD_LEN <= len(english) <= MAX_WORD_LEN):
-            continue
-        key = english.upper()
+        english, article_dropped = normalized
+        key = english
         if key in seen:
             continue
         seen.add(key)
         detail = _parse_detail(r["detail"])
         japanese = r["japanese"] or ""
         out.append({
-            "id": r["id"], "english": english.upper(),
+            "id": r["id"], "english": english,
+            "article_dropped": article_dropped,
             "japanese": japanese, "example": r["example"] or "",
             "synonyms": _extract_synonyms(r["detail"]),
             "explanation": _extract_explanation(r["detail"]),
             "crossword_hint_en": detail.get("crossword_hint_en", "") or "",
             "crossword_hint_ja": detail.get("crossword_hint_ja", "") or "",
+            "crossword_fillblank_en": (
+                detail.get("crossword_fillblank_en", "") or ""),
             "blank_ja": _masked_example_ja(
                 detail.get("example_ja", "") or "", japanese),
             "_detail": detail,
@@ -356,11 +413,19 @@ def _json_array(text: str) -> list:
     raw = text.strip()
     a, b = raw.find("["), raw.rfind("]")
     if a == -1 or b == -1:
+        log.warning("crossword AI response had no JSON array: %.200s", raw)
         return []
     try:
         data = json.loads(raw[a:b + 1])
-        return data if isinstance(data, list) else []
+        if not isinstance(data, list):
+            log.warning(
+                "crossword AI response JSON was not a list: %.200s", raw)
+            return []
+        return data
     except (ValueError, TypeError):
+        log.warning(
+            "crossword AI response JSON parse failed: %.200s", raw,
+            exc_info=True)
         return []
 
 
@@ -408,6 +473,12 @@ def _ensure_ai_hints(
     total_cost = sum(r.cost_usd for r in results)
     for r in results:
         if not r.ok:
+            # 2026-09-05: 失敗を握りつぶすとAI不調に誰も気づけないため、
+            # 一般公開に伴いログに残す(該当語は_free_clue_text側の
+            # フォールバックで引き続き別のヒントを表示する)。
+            log.warning(
+                "crossword AI hint batch failed (cache_key=%s): %s",
+                cache_key, r.error)
             continue
         for item in _json_array(r.text):
             en = str(item.get("english", "")).strip().upper()
@@ -457,6 +528,30 @@ def _ensure_english_ai_hints(conn, pool: list[dict]) -> float:
 
 def _ensure_japanese_ai_hints(conn, pool: list[dict]) -> float:
     return _ensure_ai_hints(conn, pool, "crossword_hint_ja", _JA_HINT_SYSTEM)
+
+
+# 穴埋め(fill_blank)用の専用例文(2026-09-05ユーザー指示「サンプルに
+# 限らず、ヒントの穴埋め文はクロスワード用に動的に作っていい」)。
+# 従来fill_blankはwords.example(語一覧・クイズ等でも共用する既存の
+# 例文)が無い語を候補から除外するだけだったが、この専用例文を
+# AI生成してキャッシュすることで、例文が無い語もfill_blankモードの
+# 対象にできるようにする(words.exampleそのものは変更しない=他機能に
+# 影響しない)。
+_EN_FILLBLANK_SYSTEM = (
+    "クロスワードパズルの穴埋めヒント用の英語例文を作ります。各単語に"
+    "ついて、与えられた綴りと完全に同じ形(大文字/小文字の違いのみ許容。"
+    "語形変化や活用・複数形化は不可)でその単語を1回だけ含む、短く"
+    "自然な英語の例文を1文作ってください。与えられた日本語訳が表す"
+    "意味に忠実に(多義語でも他の意味を使わない)。平易な単語・構文を"
+    "使うこと。"
+    'JSON配列のみ出力: [{"english":"GRAVITY","hint":"Gravity pulls '
+    'objects toward the ground."}]'
+)
+
+
+def _ensure_english_fillblank_examples(conn, pool: list[dict]) -> float:
+    return _ensure_ai_hints(
+        conn, pool, "crossword_fillblank_en", _EN_FILLBLANK_SYSTEM)
 
 
 ENGLISH_STYLES = ("fill_blank", "definition", "hybrid", "rich")
@@ -689,6 +784,18 @@ def _is_transliteration_of(japanese: str, english: str) -> bool:
     return False
 
 
+_ARTICLE_NOTE = {"ja": "（回答は冠詞なしで）", "en": " (answer without the article)"}
+
+
+def _with_article_note(text: str, src: dict, lang: str) -> str:
+    """冠詞落とし(2026-09-05ユーザー指示)した語には、ヒント文に
+    「回答は冠詞なしで」の注記を付ける(答えが冠詞抜きの綴りになって
+    いることをプレイヤーに伝えるため)。"""
+    if not src.get("article_dropped") or not text:
+        return text
+    return text + _ARTICLE_NOTE[lang]
+
+
 def _free_clue_text(
     clue_mode: str, style: str, src: dict, english: str,
 ) -> str:
@@ -763,6 +870,17 @@ def _free_clue_text(
         blank = ""
         if src["example"]:
             blank = _masked_example(src["example"], english)
+        elif src.get("crossword_fillblank_en"):
+            # words.exampleが無い語向けの、クロスワード専用に動的生成
+            # した例文(2026-09-05ユーザー指示・_ensure_english_
+            # fillblank_examples参照)。AIが単語をそのままの形で含め
+            # 忘れた場合、_masked_exampleは無置換のまま返す=答えが
+            # そのまま見えてしまうため、置換できた(=マスクされた)場合
+            # のみ採用する(念のための安全策)。
+            fillblank_ex = src["crossword_fillblank_en"]
+            masked = _masked_example(fillblank_ex, english)
+            if masked != fillblank_ex:
+                blank = masked
         # crossword_hint_en(AIが作成しキャッシュした、日本語訳の意味に
         # 忠実な短い定義文)を優先し、無ければ従来のsynonymsに
         # フォールバックする(2026-09-03ユーザー指摘: synonymsそのまま
@@ -833,7 +951,11 @@ def _create_crossword_session(
     if wants_en:
         if english_style == "definition" and not ai_can_define:
             candidates = [c for c in candidates if c["synonyms"]]
-        elif english_style == "fill_blank":
+        elif english_style == "fill_blank" and not ai_can_define:
+            # AI無効時のみexample必須(2026-09-05ユーザー指示「穴埋め文は
+            # クロスワード用に動的に作っていい」に伴い、AI有効時は
+            # crossword_fillblank_enを動的生成して補うため、ここでは
+            # 除外しない・下記_ensure_english_fillblank_examples参照)。
             candidates = [c for c in candidates if c["example"]]
         elif english_style in ("hybrid", "rich") and not ai_can_define:
             # hybrid/rich: 例文・類義語のどちらか一方でもあれば可
@@ -874,6 +996,14 @@ def _create_crossword_session(
     ai_cost_total = 0.0
     if wants_en and english_style in ("definition", "hybrid", "rich"):
         ai_cost_total += _ensure_english_ai_hints(conn, used_pool)
+    if wants_en and english_style == "fill_blank":
+        # words.exampleが既にある語はAIを呼ばず流用する(コスト削減・
+        # 2026-09-05ユーザー指示「穴埋め文はクロスワード用に動的に
+        # 作っていい」の対象はexampleが無い語のみ)。
+        needs_fillblank = [c for c in used_pool if not c["example"]]
+        if needs_fillblank:
+            ai_cost_total += _ensure_english_fillblank_examples(
+                conn, needs_fillblank)
     if wants_ja and japanese_style in ("explanation", "hybrid", "rich"):
         ai_cost_total += _ensure_japanese_ai_hints(conn, used_pool)
 
@@ -890,11 +1020,15 @@ def _create_crossword_session(
             # always_bothは両方保存しておき、プレイ中にどちらを表示する
             # かはフロント側のトグルで切り替える(2026-09-05)。
             if wants_ja:
-                entry["free_clue_ja"] = _free_clue_text(
-                    "always_ja", japanese_style, src, cl.english)
+                entry["free_clue_ja"] = _with_article_note(
+                    _free_clue_text(
+                        "always_ja", japanese_style, src, cl.english),
+                    src, "ja")
             if wants_en:
-                entry["free_clue_en"] = _free_clue_text(
-                    "always_english", english_style, src, cl.english)
+                entry["free_clue_en"] = _with_article_note(
+                    _free_clue_text(
+                        "always_english", english_style, src, cl.english),
+                    src, "en")
         clues_full.append(entry)
     puzzle_json = json.dumps({
         "rows": puzzle.rows, "cols": puzzle.cols,
@@ -1074,6 +1208,11 @@ def _start_sample_session(conn, uid: int, sample: dict) -> dict:
 
     is_guest, gsid = _sample_identity(conn, uid)
     charged = is_charged_or_admin(conn, uid)
+    # 登録者限定サンプルはゲストに一覧までは見せるが、プレイは拒否する
+    # (2026-09-05ユーザー指示「未登録でも一覧は見えるがプレイは登録者
+    # 限定」)。crossword_samples.guest_playable=0のものが対象。
+    if is_guest and not sample["guest_playable"]:
+        raise errors.http_error("7006")
     already = _sample_already_played(conn, uid, is_guest, gsid, sample["id"])
     if not already and not charged:
         limit = (CW_SAMPLE_PLAY_LIMIT_GUEST if is_guest
@@ -1135,14 +1274,18 @@ def crossword_sample_list():
         played = _sample_play_count(conn, uid, is_guest, gsid)
         rows = conn.execute(
             "SELECT id, title, description, domains, level_min, level_max, "
-            "word_count FROM crossword_samples WHERE is_active = 1 "
-            "ORDER BY sort_order, id",
+            "word_count, guest_playable FROM crossword_samples "
+            "WHERE is_active = 1 ORDER BY sort_order, id",
         ).fetchall()
         samples = []
         for r in rows:
             d = dict(r)
             d["already_played"] = _sample_already_played(
                 conn, uid, is_guest, gsid, r["id"])
+            # ゲストには「登録者限定」であることを一覧の時点で伝える
+            # (2026-09-05ユーザー指示「未登録でも一覧は見えるがプレイは
+            # 登録者限定」)。ログイン済みユーザーには常にfalse(区別不要)。
+            d["guest_locked"] = is_guest and not d["guest_playable"]
             samples.append(d)
         return {
             "samples": samples,
@@ -1337,6 +1480,14 @@ def _session_state(
             clue_out["english"] = c["english"]
             clue_out["word_info"] = word_info[c["word_id"]]
         clues_out.append(clue_out)
+        # 複合語の区切り"_"(2026-09-05ユーザー指示)は答えではなく構造上の
+        # 区切りなので、未解答でも常に開示する(cwCatImageFor等と同様、
+        # 答えを含まない情報のため安全)。
+        for i, ch in enumerate(c["english"]):
+            if ch == "_":
+                r = c["row"] + (i if c["direction"] == "down" else 0)
+                col = c["col"] + (i if c["direction"] == "across" else 0)
+                revealed_cells[f"{r},{col}"] = "_"
         if p.get("solved") or p.get("given_up"):
             for i, ch in enumerate(c["english"]):
                 r = c["row"] + (i if c["direction"] == "down" else 0)
@@ -1393,6 +1544,16 @@ def crossword_get(session_id: int):
         return _session_state(conn, session_id, uid)
 
 
+
+# 複合語の区切り判定用(2026-09-05ユーザー指示「半角/全角スペース・
+# 半角/全角アンダースコア・区切りなし、どれでも一致するように」)。
+_WORD_SEPARATOR_TRANS = str.maketrans("", "", " 　_＿")
+
+
+def _strip_word_separators(text: str) -> str:
+    return text.translate(_WORD_SEPARATOR_TRANS)
+
+
 def _masked_example(example: str, english: str) -> str:
     """例文中の対象単語をアンダースコアでマスクする(英語ヒント用)。"""
     return re.sub(
@@ -1428,9 +1589,16 @@ def crossword_answer(session_id: int, payload: AnswerPayload):
             "solved": False, "given_up": False, "hints_used": [],
             "revealed_positions": [], "wrong_attempts": 0,
         })
+        # 複合語("_"区切り、2026-09-05)の正誤判定は、区切り文字の
+        # 種類・有無を問わない(2026-09-05ユーザー指示「半角/全角の
+        # スペース・アンダースコア、区切りなし、どれでも一致するように」)。
+        # 部分一致(difflib)側は従来通りtarget(アンダースコア入り)を
+        # そのまま使う("_"のマスは常時開示済みのため、そこが一致しなく
+        # ても実害が無い)。
         answer = payload.answer.strip().upper()
         target = clue["english"]
-        correct = answer == target
+        correct = _strip_word_separators(answer) == _strip_word_separators(
+            target)
         result = {"correct": correct, "match_ratio": None,
                    "attempts_left": None, "forced_reveal": False}
 

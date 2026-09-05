@@ -7280,12 +7280,18 @@ const DEFAULT_WORD_COUNT = 10;
 // CLUE_MODE_SCORE_MULTIPLIER参照)。「答えを見る」だけは特別枠で、
 // このクリューを0点(未加点)にして即「解けた」扱いにする。
 // 先頭文字/末尾文字ヒントはマス目にもその場で反映される。
+// 2026-09-05ユーザー指摘: 「(無料)」という表記は「点数は減らないか」
+// という疑問に答えておらず紛らわしい(お金/ポイントの話なのか、得点の
+// 話なのか判別できない)。得点に影響しないヒントは何も書かない(=書か
+// ないことが「得点減なし」を意味する)。得点に影響する場合だけ
+// 「(-10%)」等、影響の内容がわかる表記にする(「答えを見る」は既に
+// 「0点」という実際の結果を表示済みなのでそのまま)。
 const CW_HINT_LABELS = {
-  audio: ["🔊 発音を聞く", "無料"],
-  first_letter: ["🔤 先頭文字", "無料"],
-  last_letter: ["🔡 末尾文字", "無料"],
-  japanese: ["日本語の意味", "無料"],
-  english: ["📖 英語ヒント(例文)", "無料"],
+  audio: ["🔊 発音を聞く", null],
+  first_letter: ["🔤 先頭文字", null],
+  last_letter: ["🔡 末尾文字", null],
+  japanese: ["日本語の意味", null],
+  english: ["📖 英語ヒント(例文)", null],
   reveal: ["🔓 答えを見る", "0点"],
 };
 
@@ -7398,24 +7404,18 @@ async function cwRenderHub(root) {
   // ユーザー限定(上限は無料1件/課金10件・_enforce_session_cap参照)。
   root.innerHTML = `
     <h1>🎮 ゲーム ${infoIcon("help-games",
-      "単語を使ったミニゲームで遊びながら学べる機能です(テスト公開中)。" +
+      "単語を使ったミニゲームで遊びながら学べる機能です。" +
       "分野・単語帳から出題範囲を選んで挑戦できます。")}</h1>
-    <p><span class="pill vague">🧪 テスト中</span></p>
-    <p class="muted">テストユーザー・管理者限定公開の機能です。不具合が
-      あれば教えてください。スコアやセーブが今後リセットされる場合が
-      あります。</p>
-    <div class="grid cols-3 mt">
+    <div class="grid cols-2 mt">
+      <div class="card" id="cwCardStart"
+        style="cursor:pointer;border-color:var(--accent);border-width:2px">
+        <h2>✏️ クロスワード作成</h2>
+        <p class="muted">分野・単語帳から単語を選んで自由に出題。</p>
+      </div>
       <div class="card" id="cwCardSamples" style="cursor:pointer">
         <h2>🧩 サンプルクロスワード</h2>
         <p class="muted">あらかじめ用意した固定のパズルで手軽に挑戦。
           ログイン不要(ゲストは5個まで)。</p>
-      </div>
-      <div class="card" id="cwCardStart" style="cursor:pointer">
-        <h2>🛠️ 自分で作る</h2>
-        <p class="muted">分野・単語帳から単語を選んで自由に出題。</p>
-      </div>
-      <div class="card" style="opacity:.5">
-        <h2>🎲 準備中</h2><p class="muted">今後追加予定</p>
       </div>
     </div>
     ${sessions.length ? `<div class="card mt">
@@ -7496,17 +7496,19 @@ async function cwRenderSamples(root) {
   }
   const { samples, play_limit: limit, played_count: played, tier } = data;
   const statusText = tier === "charged"
-    ? "課金ユーザーは何個でも遊べます。保存(ピン留め)は10件まで。"
+    ? "全部のサンプルが遊べます。保存(ピン留め)は10件まで。"
     : tier === "guest"
     ? `ゲストとして遊べます(残り${Math.max(limit - played, 0)}/${limit}個)。` +
-      "ログイン(無料)すると20個まで遊べて、保存もできるようになります。"
+      "登録者限定のサンプルは、ログイン(無料)すると遊べるようになります。"
     : `無料会員として遊べます(残り${Math.max(limit - played, 0)}/${limit}個)。` +
-      "保存(ピン留め)は5件まで。チャージすると無制限に遊べます。";
+      "保存(ピン留め)は5件まで。チャージすると保存が10件までになります。";
   const levelText = (s) => (s.level_min || s.level_max)
     ? `TOEIC ${s.level_min || "下限なし"}〜${s.level_max || "上限なし"}` : "";
   const card = (s) => `<div class="card cw-sample-card" data-sample="${s.id}"
-      style="cursor:pointer">
+      style="cursor:${s.guest_locked ? "default" : "pointer"}">
     <h3>${escapeHtml(s.title)}${
+      s.guest_locked ? ` <span class="pill vague">🔒 登録した方のみ</span>` : ""
+    }${
       s.already_played ? ` <span class="pill vague">プレイ済み</span>` : ""
     }</h3>
     <p class="muted">${escapeHtml(s.description || "")}</p>
@@ -7514,8 +7516,10 @@ async function cwRenderSamples(root) {
       levelText(s) ? ` ・ ${escapeHtml(levelText(s))}` : ""}</p>
     <p>${(s.domains || "").split(",").filter(Boolean).map((d) =>
       `<span class="pill">${escapeHtml(d)}</span>`).join(" ")}</p>
-    <button type="button" class="btn primary mt">${
-      s.already_played ? "🔁 もう一度プレイ" : "▶️ プレイする"}</button>
+    <button type="button" class="btn ${s.guest_locked ? "ghost" : "primary"} mt"
+      ${s.guest_locked ? "disabled" : ""}>${
+      s.guest_locked ? "🔒 登録した方のみ"
+        : s.already_played ? "🔁 もう一度プレイ" : "▶️ プレイする"}</button>
   </div>`;
   root.innerHTML = `
     <div class="row">
@@ -7527,11 +7531,9 @@ async function cwRenderSamples(root) {
       + "も)遊べます。同じサンプルの再プレイは何度でも無料です。")}</h1>
     <p class="muted">${statusText}</p>
     <div class="row" style="align-items:center">
-      <label class="toggle"><input type="checkbox" id="cwSampleBgCat"/>
-        背景に猫を表示</label>
       <label class="toggle"><input type="checkbox" id="cwSampleBlockCat"/>
         未解答マスを猫にする</label>
-      <span class="muted">(既定はどちらもオン。猫にしたくなければ
+      <span class="muted">(既定はオン。猫にしたくなければ
         チェックを外してください)</span>
     </div>
     ${samples.length ? `<div class="grid cols-3 mt">
@@ -7540,19 +7542,15 @@ async function cwRenderSamples(root) {
   `;
   root.querySelector("#cwSamplesBack")
     .addEventListener("click", () => cwRenderHub(root));
-  const sampleBgCat = root.querySelector("#cwSampleBgCat");
-  sampleBgCat.checked = cwCatPrefGet(true, "bg");
-  sampleBgCat.addEventListener("change", () => {
-    cwCatPrefSet(true, "bg", sampleBgCat.checked);
-  });
   const sampleBlockCat = root.querySelector("#cwSampleBlockCat");
   sampleBlockCat.checked = cwCatPrefGet(true, "block");
   sampleBlockCat.addEventListener("change", () => {
     cwCatPrefSet(true, "block", sampleBlockCat.checked);
   });
   root.querySelectorAll("[data-sample]").forEach((elm) => {
-    elm.querySelector("button").addEventListener("click", async () => {
-      const btn = elm.querySelector("button");
+    const btn = elm.querySelector("button");
+    if (btn.disabled) return;  // 登録者限定(guest_locked)は押しても何もしない
+    btn.addEventListener("click", async () => {
       btn.disabled = true;
       try {
         const session = await api.post(
@@ -7681,10 +7679,10 @@ async function cwRenderSetup(root, preset) {
         </div>
       </div>
       <div class="row mt" style="align-items:center">
-        <label class="toggle"><input type="checkbox" id="cwBgCat"/>
-          背景に猫を表示(既定は無地)</label>
         <label class="toggle"><input type="checkbox" id="cwBlockCat"/>
-          未解答マスを猫にする(既定は無地)</label>
+          未解答マスを猫にする</label>
+        <span class="muted">(既定はオン。猫にしたくなければ
+          チェックを外してください)</span>
       </div>
       <div class="cw-optgroup mt">
         <div class="cw-optgroup-title">クリューモード（各問題のヒントの
@@ -7767,14 +7765,9 @@ async function cwRenderSetup(root, preset) {
       deck && deck.total != null ? deck.total : "?"}語`;
     infoEl.style.display = "";
   }
-  // 背景の猫・未解答マスの猫(2026-09-05ユーザー要望)。セッションの設定
-  // ではなく端末ごとの純粋な表示設定なので、cwSaveRecentとは別に
-  // localStorageで単純に持つ。
-  const cwBgCat = root.querySelector("#cwBgCat");
-  cwBgCat.checked = cwCatPrefGet(false, "bg");
-  cwBgCat.addEventListener("change", () => {
-    cwCatPrefSet(false, "bg", cwBgCat.checked);
-  });
+  // 未解答マスの猫(2026-09-05ユーザー要望)。セッションの設定ではなく
+  // 端末ごとの純粋な表示設定なので、cwSaveRecentとは別にlocalStorageで
+  // 単純に持つ。
   const cwBlockCat = root.querySelector("#cwBlockCat");
   cwBlockCat.checked = cwCatPrefGet(false, "block");
   cwBlockCat.addEventListener("change", () => {
@@ -7912,7 +7905,7 @@ function cwCellSizing(rows, cols) {
   };
 }
 
-// 未解答マス・背景に表示する猫の画像プール(2026-09-05ユーザー提供・
+// 未解答マスに表示する猫の画像プール(2026-09-05ユーザー提供・
 // 自社アプリ「Cat Math Block」の素材)。黒猫/三毛猫/白猫×複数ポーズの
 // 21枚(以下cwCatHash()が語ごと・セッションごとに自動で振り分ける。
 // 増やす場合はこの配列に追加するだけでよい)。
@@ -7941,16 +7934,15 @@ function cwCatHash(key) {
 }
 
 // 猫表示設定の既定値(2026-09-05ユーザー要望「サンプルも猫選べるといい、
-// デフォ猫で」)。自分で作るクロスワードは従来通り既定オフ(明示的に
-// チェックした人だけ)。サンプルは集客用に見せ方を工夫したいので既定
-// オン(チェックを外した人だけオフ)にする・保存キーも分けて、この
-// 既定値の違いが互いに影響しないようにする。
+// デフォ猫で」、同日追記「作成時も猫がデフォ」)。サンプル・自分で作る
+// のどちらも既定オン(チェックを外した人だけオフ)。保存キーは分けて
+// あるので、サンプル側で外しても自作側には影響しない(逆も同様)。
 function cwCatPrefKey(isSample, kind) {
   return isSample ? `cw_sample_${kind}_cat` : `cw_${kind}_cat`;
 }
 function cwCatPrefGet(isSample, kind) {
   const raw = localStorage.getItem(cwCatPrefKey(isSample, kind));
-  return raw === null ? isSample : raw === "1";
+  return raw === null ? true : raw === "1";
 }
 function cwCatPrefSet(isSample, kind, on) {
   localStorage.setItem(cwCatPrefKey(isSample, kind), on ? "1" : "0");
@@ -8033,9 +8025,9 @@ async function cwRenderPlay(root, sessionId, initialState) {
 
     const { cellPx, letterPx, numPx } = cwCellSizing(
       session.grid.rows, session.grid.cols);
-    // 未解答マスを猫にする設定(2026-09-05)。背景の猫(薄い装飾・盤面全体の
-    // 背面)とは別物で、区別できるようマスの中に収まる不透明な画像にする。
-    // サンプルは既定オン・自作クロスワードは既定オフ(cwCatPrefGet参照)。
+    // 未解答マスを猫にする設定(2026-09-05)。マスの中に収まる不透明な
+    // 画像にする。サンプルは既定オン・自作クロスワードは既定オフ
+    // (cwCatPrefGet参照)。
     const isSampleSession = session.source_type === "sample";
     const blockCatOn = cwCatPrefGet(isSampleSession, "block");
     let gridHtml = `<div class="cw-grid" style="grid-template-columns:` +
@@ -8157,7 +8149,8 @@ async function cwRenderPlay(root, sessionId, initialState) {
               const [label, costLabel] = CW_HINT_LABELS[h];
               const used = cur.hints_used.includes(h);
               return `<button class="btn ghost" data-hint="${h}"
-                >${label} (${costLabel})${used ? " ✓" : ""}</button>`;
+                >${label}${costLabel ? ` (${costLabel})` : ""}${
+                  used ? " ✓" : ""}</button>`;
             }).join("")}
             <button class="btn ghost" id="cwGiveup">🏳️ ギブアップ</button>
           </div>`}
@@ -8185,15 +8178,13 @@ async function cwRenderPlay(root, sessionId, initialState) {
       </div>
       ${session.notice ? `<div class="pill vague mt">
         ℹ️ ${escapeHtml(session.notice)}</div>` : ""}
+      ${Object.values(session.revealed_cells).includes("_") ? `<p
+        class="muted" style="font-size:12px">※ マス目の「_」は複数の単語
+        から成る答えの区切りです。回答するときはそこにスペースを
+        入れて入力してください(例: MILKY WAY)。</p>` : ""}
       ${detailHtml}
       <div class="cw-board mt">
-        <div class="cw-board-grid">${
-          cwCatPrefGet(isSampleSession, "bg")
-            // セッションごとに猫を変える(同じパズルを開き直している間は
-            // 同じ猫のまま・cwCatHashでsession_idからハッシュするため)。
-            ? `<img class="cw-cat-bg" src="${
-                cwCatHash(String(session.session_id))}" alt=""/>`
-            : ""}${gridHtml}</div>
+        <div class="cw-board-grid">${gridHtml}</div>
         <div class="cw-board-clues">
           <b>ヨコ</b>
           ${across.map(clueRow).join("")}
