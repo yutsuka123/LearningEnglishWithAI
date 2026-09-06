@@ -7516,7 +7516,8 @@ async function cwRenderHub(root) {
       <h3>再開できるゲーム</h3>
       <p class="muted">保存できるのは無料範囲で直近1件・課金ユーザーは
         直近10件まで(古いものから自動的に消えます)。「保存」に
-        チェックすると、それ以降も消えずに残ります(課金ユーザー限定)。</p>
+        チェックすると、それ以降も消えずに残ります(課金ユーザー限定・
+        保存できるのは最大50件までです)。</p>
       <table class="mt"><thead><tr>
         <th>対象</th><th>状態</th><th>語数</th><th>スコア</th><th>日時</th>
         <th>保存</th><th></th>
@@ -8425,11 +8426,14 @@ async function cwRenderPlay(root, sessionId, initialState) {
 
     let detailHtml = "";
     if (cur) {
-      // 文章系の無料ヒント(日本語/英語)は既に表示済みなのでボタン一覧
-      // から外す(音声は常にボタンを出す)。
+      // 英語ヒント(例文)は無料で既に表示済みならボタン一覧から外す
+      // (音声は常にボタンを出す)。日本語訳を見る(japanese)は、無料の
+      // 日本語ヒント(間接的な説明)とは役割が違う(英単語自体の直訳を
+      // 見せる)ため、モードに関わらず常にボタンを出す(2026-09-06
+      // ユーザー指摘)。
       const hints = ["audio", "first_letter", "last_letter", "japanese",
         "english", "reveal"].filter(
-        (h) => h === "audio" || !freeHint.includes(h));
+        (h) => h === "audio" || h === "japanese" || !freeHint.includes(h));
       const done = cur.solved || cur.given_up;
       const curText = freeText(cur);
       detailHtml = `

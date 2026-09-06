@@ -1230,6 +1230,11 @@ def _create_crossword_session(
 # ある間だけ上限のカウント対象・削除対象から除外する。
 CW_SESSION_CAP_CHARGED = 10
 CW_SESSION_CAP_FREE = 1
+# ピン留め(保存)できる件数自体の上限(2026-09-06ユーザー指示「保存最大
+# 50個までにしましょう」)。上記CW_SESSION_CAP_CHARGED(=未保存の「直近
+# 10件」自動保持数)とは別枠(保存にチェックした分は消えない前提のため、
+# もっと多く保持できてよい、との判断)。
+CW_SESSION_PIN_CAP_CHARGED = 50
 
 
 def _enforce_session_cap(conn, uid: int) -> None:
@@ -1238,9 +1243,10 @@ def _enforce_session_cap(conn, uid: int) -> None:
     (1) 無料ユーザー(元課金ユーザーがダウングレードした場合を含む)は
         pinned状態に関わらず直近1件のみ残す(ピン留めは課金ユーザー限定
         機能のため、非課金になった時点で無制限保持の抜け道にしない)。
-    (2) ピン留めできる件数自体もCW_SESSION_CAP_CHARGED件までに制限する
-        (crossword_pinのガード参照。ここでは既存データの後始末として、
-        万一上限を超えたピン留めが残っていても直近優先で切り詰める)。
+    (2) ピン留めできる件数自体もCW_SESSION_PIN_CAP_CHARGED件(2026-09-06
+        ユーザー指示で10→50件に拡大)までに制限する(crossword_pinの
+        ガード参照。ここでは既存データの後始末として、万一上限を超えた
+        ピン留めが残っていても直近優先で切り詰める)。
     """
     from ..services.auth import is_charged_or_admin
     charged = is_charged_or_admin(conn, uid)
@@ -1269,7 +1275,8 @@ def _enforce_session_cap(conn, uid: int) -> None:
         # ピン留め自体が上限を超えている分は、古い方から通常の削除対象
         # (pinned=0)に戻す(ピン留めは「消えない」約束なのでいきなり
         # 削除はせず、まず上限内の通常セッション扱いに落とす)。
-        pinned_excess_ids = [r["id"] for r in pinned_rows[CW_SESSION_CAP_CHARGED:]]
+        pinned_excess_ids = [
+            r["id"] for r in pinned_rows[CW_SESSION_PIN_CAP_CHARGED:]]
         if pinned_excess_ids:
             ph = ",".join("?" * len(pinned_excess_ids))
             conn.execute(
@@ -1547,7 +1554,7 @@ def crossword_pin(session_id: int, payload: PinPayload):
                         "3016", "クロスワードの保存(ピン留め)は課金ユーザー"
                         "限定です。設定画面からチャージすると使えるように"
                         "なります。")
-                cap = CW_SESSION_CAP_CHARGED
+                cap = CW_SESSION_PIN_CAP_CHARGED
             # ピン留め自体の件数も上限までにする(2026-09-05fable監査
             # 指摘: 上限なしに保存できてしまう抜け穴の防止。サンプルと
             # カスタムゲームは別枠で数える)。
@@ -1951,12 +1958,15 @@ def crossword_hint(session_id: int, payload: HintPayload):
         if clue is None:
             raise errors.http_error("7002", "存在しないクリューです。")
         free_hint = FREE_HINT_BY_MODE.get(row["clue_mode"], ())
-        if (payload.hint_type in free_hint
-                and payload.hint_type in ("japanese", "english")):
-            # 文章系(日本語・英語ヒント)は既にクリューとして常時表示
-            # されているため、あらためて要求する意味が無い(always_bothは
-            # 両方が対象)。音声だけは「常時無料だが表示ではなく再生」
-            # なので、このガード対象外(下のコスト計算で0円扱いにする)。
+        if payload.hint_type == "english" and payload.hint_type in free_hint:
+            # 英語ヒント(例文)は既にクリューとして常時表示されている
+            # ため、あらためて要求する意味が無い。音声だけは「常時無料
+            # だが表示ではなく再生」なのでこのガード対象外(下のコスト
+            # 計算で0円扱いにする)。日本語訳を見る(japanese)は、常時
+            # 表示される日本語ヒント(間接的な説明)とは別物(英単語自体の
+            # 直訳を見せる、より踏み込んだヒント)なので、モードに関わらず
+            # 常に許可する(2026-09-06ユーザー指摘「日本語ヒントに切替と
+            # 日本語訳を見るは役割が違う」)。
             raise errors.http_error(
                 "7002", "このモードでは既に表示されているヒントです。")
         key = f"{clue['number']}-{clue['direction']}"
