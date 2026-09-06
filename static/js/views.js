@@ -7359,12 +7359,13 @@ export async function phraseDecks(root) {
 // app/routers/games.pyのDEFAULT_WORD_COUNTと対応。
 const DEFAULT_WORD_COUNT = 10;
 
-// 2026-09-05ユーザー指示でヒント使用ごとの減点は廃止(何回でも自由に
-// 使える)。スコアへの影響はクリューモードで決まる倍率のみ
-// (CW_CLUE_MODE_OPTSの説明文・app/routers/games.pyの
-// CLUE_MODE_SCORE_MULTIPLIER参照)。「答えを見る」だけは特別枠で、
-// このクリューを0点(未加点)にして即「解けた」扱いにする。
-// 先頭文字/末尾文字ヒントはマス目にもその場で反映される。
+// 2026-09-05ユーザー指示でヒント使用ごとの減点を一度廃止したが、
+// 2026-09-06ユーザー指示で「追加ヒントは獲得スコアが減ることがある」
+// 仕様に戻した(app/routers/games.pyのCW_HINT_PENALTY_PCT参照・同じ
+// 種別を同じクリューで何度使っても減点は1回分だけ)。クリューモードで
+// 決まる倍率(CW_CLUE_MODE_OPTSの説明文・CLUE_MODE_SCORE_MULTIPLIER
+// 参照)とは別枠で加算される。先頭文字/末尾文字ヒントはマス目にも
+// その場で反映される。
 // 2026-09-05ユーザー指摘: 「(無料)」という表記は「点数は減らないか」
 // という疑問に答えておらず紛らわしい(お金/ポイントの話なのか、得点の
 // 話なのか判別できない)。得点に影響しないヒントは何も書かない(=書か
@@ -7372,11 +7373,11 @@ const DEFAULT_WORD_COUNT = 10;
 // 「(-10%)」等、影響の内容がわかる表記にする(「答えを見る」は既に
 // 「0点」という実際の結果を表示済みなのでそのまま)。
 const CW_HINT_LABELS = {
-  audio: ["🔊 発音を聞く", null],
-  first_letter: ["🔤 先頭文字", null],
-  last_letter: ["🔡 末尾文字", null],
-  japanese: ["日本語の意味", null],
-  english: ["📖 英語ヒント(例文)", null],
+  audio: ["🔊 発音を聞く", "-10%"],
+  first_letter: ["🔤 先頭文字", "-10%"],
+  last_letter: ["🔡 末尾文字", "-10%"],
+  japanese: ["日本語の意味", "-30%"],
+  english: ["📖 英語ヒント(例文)", "-20%"],
   reveal: ["🔓 答えを見る", "0点"],
 };
 
@@ -7427,14 +7428,15 @@ function cwRadioOpt(name, value, checked, title, desc) {
 }
 
 // 「ヒントの難易度」は独立設定ではなくクリューモード自体が兼ねる
-// (2026-09-05ユーザー指示)。各モードの説明にスコア倍率を明記し、
-// ヒントボタン自体は何回使っても追加の減点が無いことも伝える
-// (旧「ヒント1つにつきX%減点」方式は廃止済み・app/routers/games.pyの
-// CLUE_MODE_SCORE_MULTIPLIER参照)。
+// (2026-09-05ユーザー指示)。各モードの説明にスコア倍率を明記する
+// (app/routers/games.pyのCLUE_MODE_SCORE_MULTIPLIER参照)。追加ヒント
+// (発音/先頭文字/末尾文字/日本語訳/英語ヒント)による減点は
+// CW_HINT_LABELS/CW_HINT_PENALTY_PCT参照(2026-09-06に復活・同じ種別を
+// 同じクリューで何度使っても減点は1回分だけ)。
 const CW_CLUE_MODE_OPTS = [
   ["always_ja", "日本語訳モード",
     "（常に日本語の意味のヒントが出るので、初めての方でも安心して" +
-    "遊べます。ヒントボタンは何回でも自由に使えます。スコア倍率0.8倍）"],
+    "遊べます。スコア倍率0.8倍）"],
   ["always_english", "英英モード",
     "（常に英語の説明がヒントとして出ます。本格的な英語クロスワードに" +
     "近い遊び方です・該当データが無い語は出題から除外されます。" +
@@ -8450,7 +8452,11 @@ async function cwRenderPlay(root, sessionId, initialState) {
             <button class="btn primary" id="cwSubmit"
               ${done ? "disabled" : ""}>答える</button>
           </div>
-          ${done ? "" : `<div class="row mt" id="cwHintButtons">
+          ${done ? "" : `
+          <p class="muted" style="font-size:11px;margin:6px 0 0"
+            >※追加ヒントを使うと、このクリューの獲得スコアが減ることが
+            あります。</p>
+          <div class="row mt" id="cwHintButtons">
             ${hints.map((h) => {
               const [label, costLabel] = CW_HINT_LABELS[h];
               const used = cur.hints_used.includes(h);

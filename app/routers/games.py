@@ -131,12 +131,21 @@ def _score_for_level(level: str | None) -> int:
         return MIN_CORRECT_SCORE  # レベル未設定(範囲外)は最低点
 
 
-# 2026-09-05ユーザー指示: ヒントは使用回数によらず自由に使ってよい
-# (使用ごとの減点は廃止)。「答えを見る」だけは特別枠で、率ではなく
-# 即「加点なしで解けた」扱いにする(crossword_hint内で直接solved=True
-# にする・下記HINT_TYPES参照)。
+# 2026-09-05ユーザー指示でヒント使用ごとの減点を一度廃止したが、
+# 2026-09-06ユーザー指示で「追加ヒントは獲得スコアが減ることがある」
+# 仕様に戻した。「答えを見る」だけは特別枠で、率ではなく即「加点なしで
+# 解けた」扱いにする(crossword_hint内で直接solved=Trueにする・下記
+# HINT_TYPES参照)。それ以外のヒントは、同じクリューで初めて使った
+# 種別ごとに1回だけCW_HINT_PENALTY_PCTの割合を正解時の得点から差し引く
+# (同じ種別を何度使っても追加の減点は無い・hints_usedで種別ごとに
+# 重複記録しない既存の仕組みをそのまま使う)。複数種別を併用した場合は
+# 単純加算(crossword_answer参照)。
 HINT_TYPES = {"audio", "first_letter", "last_letter", "japanese", "english",
               "reveal"}
+CW_HINT_PENALTY_PCT = {
+    "audio": 10, "first_letter": 10, "last_letter": 10,
+    "japanese": 30, "english": 20,
+}
 
 # クリューモード(2026-09-03ユーザー指示で3種→4種、2026-09-05に
 # always_both追加で5種、その後「ヒント制」廃止で4種に整理)。「無料で
@@ -164,9 +173,9 @@ FREE_HINT_BY_MODE = {
 # always_bothは日本語訳・英語ヒントの両方が常に見え、always_ja単体より
 # さらに手厚いため、ユーザー指示の「点数は-10%」に基づき0.9倍にする
 # (0.8倍のalways_jaより甘い設定に見えるが、これはユーザーの明示的な
-# 指示値をそのまま採用したもの)。ヒント自体(先頭文字/末尾文字/発音/
-# 答えを見る等)は何回使ってもこの倍率自体は変わらない
-# (使用回数による追加減点は廃止済み)。
+# 指示値をそのまま採用したもの)。この倍率自体はヒントの使用有無に
+# 関わらず一定(追加ヒントによる減点はCW_HINT_PENALTY_PCT・
+# crossword_answer参照、こちらとは別枠)。
 CLUE_MODE_SCORE_MULTIPLIER = {
     "always_ja": 0.8,
     "always_english": 1.0,
@@ -529,6 +538,11 @@ _JA_HINT_SYSTEM = (
     "その単語自身の英語綴りや、それをそのままカタカナ読みしたものを"
     "使わずに、意味が分かる日本語の説明文を1文程度で作ってください。"
     "専門用語は身近な言葉に言い換えること。"
+    "重要: 与えられた日本語訳の単語をそのまま説明文に書かない・繰り返さ"
+    "ないこと(例えば「犬」の説明に「犬とは」のように書かない)。かわりに"
+    "上位概念(動物・乗り物・道具など)や、似た物との違い・比較を使って"
+    "間接的に特徴を説明すること(例:「そり」なら車輪の代わりに刃や"
+    "滑走面で雪や氷の上を滑る乗り物、のように)。"
     'JSON配列のみ出力: [{"english":"PHONON","hint":"結晶がわずかに'
     '振動するときの、その振動エネルギーの最小単位を表す物理の言葉。"}]'
 )
@@ -1854,14 +1868,18 @@ def crossword_answer(session_id: int, payload: AnswerPayload):
                 "SELECT level FROM words WHERE id = ?", (clue["word_id"],),
             ).fetchone()
             base = _score_for_level(wrow["level"] if wrow else None)
-            # 2026-09-05ユーザー指示でヒント使用ごとの減点は廃止し、
-            # クリューモード(=最初から出るヒントの手厚さ)で決まる倍率を
-            # 最終スコアにかける方式に一本化(row["score_multiplier"]は
-            # crossword_new作成時にCLUE_MODE_SCORE_MULTIPLIERから設定)。
-            # ヒント自体は自由に使えるが、「答えを見る」だけは特別枠で
-            # 加点なし(下のreveal分岐でp["solved"]=Trueかつscore未設定の
-            # ままここへは来ないため、常に0点のまま)。
-            gained = base * row["score_multiplier"]
+            # クリューモード(=最初から出るヒントの手厚さ)で決まる倍率
+            # (row["score_multiplier"]はcrossword_new作成時に
+            # CLUE_MODE_SCORE_MULTIPLIERから設定)に加え、このクリューで
+            # 実際に使った追加ヒントの種別ごとにCW_HINT_PENALTY_PCTを
+            # 加算した割合だけ減点する(2026-09-06ユーザー指示で復活)。
+            # 「答えを見る」だけは特別枠で加点なし(下のreveal分岐で
+            # p["solved"]=Trueかつscore未設定のままここへは来ないため、
+            # 常に0点のまま)。
+            hint_penalty_pct = sum(
+                CW_HINT_PENALTY_PCT.get(h, 0) for h in p.get("hints_used", []))
+            hint_factor = max(0.0, 1 - hint_penalty_pct / 100)
+            gained = base * row["score_multiplier"] * hint_factor
             p["score"] = max(round(gained), 0)
             row["score"] += p["score"]
         elif not correct and not p["solved"] and not p["given_up"]:
