@@ -7376,7 +7376,7 @@ const CW_HINT_LABELS = {
   audio: ["🔊 発音を聞く", "-10%"],
   first_letter: ["🔤 先頭文字", "-10%"],
   last_letter: ["🔡 末尾文字", "-10%"],
-  japanese: ["日本語の意味", "-30%"],
+  japanese: ["🔎 日本語訳を見る", "-30%"],
   english: ["📖 英語ヒント(例文)", "-20%"],
   reveal: ["🔓 答えを見る", "0点"],
 };
@@ -8441,7 +8441,7 @@ async function cwRenderPlay(root, sessionId, initialState) {
             ${session.clue_mode === "always_both" ? `<button
               type="button" class="btn ghost" id="cwJaEnToggle"
               style="margin-left:6px">🔄 ${
-                cwLangFor(cur) === "ja" ? "英語ヒントに切替" : "日本語訳に切替"
+                cwLangFor(cur) === "ja" ? "英語ヒントに切替" : "日本語ヒントに切替"
               }</button>` : ""}</div>
           ${hintHtml}
           <div class="row mt">
