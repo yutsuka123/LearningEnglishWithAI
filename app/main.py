@@ -6,6 +6,7 @@ import asyncio
 import secrets
 import time
 from contextlib import asynccontextmanager
+from urllib.parse import quote
 
 import html as html_lib
 
@@ -22,7 +23,7 @@ from .database import OWNER_USER_ID, db, init_db
 from .routers import (
     auth_routes, base_oauth, billing, categories, decks, fulfillment,
     games, inquiries, learn, paypay_charge, paypay_test, phrase_decks,
-    phrases, system, vocabulary,
+    phrases, seo_pages, system, vocabulary,
 )
 from .services import auth as auth_svc
 from .services import geoip
@@ -230,6 +231,11 @@ async def _auth_context(request, call_next):
             allowed = (
                 path in _AUTH_ALLOW or path.startswith("/static")
                 or path == "/"
+                # 2026-09-07: SEO/LLMO向け公開用語集・フレーズ集・
+                # クロスワード紹介ページ（ログイン不要・DefinedTermSet
+                # 相当の公開コンテンツ）。
+                or path.startswith("/glossary") or path.startswith("/phrasebook")
+                or path.startswith("/crossword")
             )
             guest_readable = any(
                 path.startswith(p) for p in _GUEST_READ_PREFIXES)
@@ -295,6 +301,7 @@ app.include_router(base_oauth.router)
 app.include_router(paypay_test.router)
 app.include_router(paypay_charge.router)
 app.include_router(games.router)
+app.include_router(seo_pages.router)
 
 
 @app.get("/api/health")
@@ -321,27 +328,59 @@ def robots_txt():
         "Allow: /static/privacy.html",
         "Allow: /tokushoho",
         "Allow: /login",
+        # 2026-09-07: SEO/LLMO向け公開用語集・フレーズ集・クロスワード
+        # 紹介ページ（docs/SEO_LLMO_STRATEGY.md参照）。
+        "Allow: /glossary",
+        "Allow: /phrasebook",
+        "Allow: /crossword",
         "Sitemap: https://study.nyangailab.com/sitemap.xml",
     ]
     return PlainTextResponse("\n".join(lines) + "\n")
 
 
+# サイトマップ中の動的ページ(用語集・フレーズ集)の更新日。ページ内容
+# (DB由来)を大きく変えたとき以外は更新不要。
+_SITEMAP_LASTMOD = "2026-09-07"
+
+
 @app.get("/sitemap.xml")
 def sitemap_xml():
     """検索エンジン向けのサイトマップ(2026-08-13)。robots.txtでAllowして
-    いる公開ページのみ列挙する（ログイン必須ページ・APIは含めない）。"""
+    いる公開ページのみ列挙する（ログイン必須ページ・APIは含めない）。
+    2026-09-07: 用語集・フレーズ集ページ(DBの`domain`/`scene`から動的生成)
+    を追加。禁止用語ドメイン/シーンは`seo_pages.public_word_domains`/
+    `public_phrase_scenes`が除外済みの一覧を返す。"""
     pages = [
         ("https://study.nyangailab.com/", "1.0"),
         ("https://study.nyangailab.com/static/about.html", "0.9"),
+        ("https://study.nyangailab.com/glossary", "0.8"),
+        ("https://study.nyangailab.com/phrasebook", "0.8"),
+        ("https://study.nyangailab.com/crossword", "0.7"),
         ("https://study.nyangailab.com/login", "0.5"),
         ("https://study.nyangailab.com/static/terms.html", "0.3"),
         ("https://study.nyangailab.com/static/privacy.html", "0.3"),
         ("https://study.nyangailab.com/tokushoho", "0.3"),
     ]
     urls = "".join(
-        f"<url><loc>{loc}</loc><priority>{pri}</priority></url>"
+        f"<url><loc>{loc}</loc><priority>{pri}</priority>"
+        f"<lastmod>{_SITEMAP_LASTMOD}</lastmod></url>"
         for loc, pri in pages
     )
+    with db() as conn:
+        domains = seo_pages.public_word_domains(conn)
+        scenes = seo_pages.public_phrase_scenes(conn)
+    for domain in domains:
+        loc = f"https://study.nyangailab.com/glossary/{quote(domain)}"
+        urls += (
+            f"<url><loc>{loc}</loc><priority>0.5</priority>"
+            f"<lastmod>{_SITEMAP_LASTMOD}</lastmod></url>"
+        )
+    for scene in scenes:
+        loc = f"https://study.nyangailab.com/phrasebook/{quote(scene)}"
+        urls += (
+            f"<url><loc>{loc}</loc><priority>0.5</priority>"
+            f"<lastmod>{_SITEMAP_LASTMOD}</lastmod></url>"
+        )
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
@@ -414,6 +453,13 @@ def llms_txt():
         "サービス概要・アプリ本体（ログイン不要の範囲あり）",
         "- [このアプリについて](https://study.nyangailab.com/static/about.html): "
         "料金モデル・無料/課金の利用範囲・使い方ガイド",
+        "- [英単語 分野別用語集](https://study.nyangailab.com/glossary): "
+        "専門用語・アマチュア無線・アニメ・世界各国の料理など分野別の"
+        "英単語一覧（ログイン不要）",
+        "- [英語フレーズ集（シーン別）](https://study.nyangailab.com/phrasebook): "
+        "シーン別の英語フレーズ一覧（ログイン不要）",
+        "- [英語クロスワードパズル](https://study.nyangailab.com/crossword): "
+        "英単語から自動生成するクロスワード、一部ゲストでも無料プレイ可",
         "- [ログイン](https://study.nyangailab.com/login): "
         "既存ユーザーのログイン、および新規登録（受付中）",
         "- [利用規約](https://study.nyangailab.com/static/terms.html)",

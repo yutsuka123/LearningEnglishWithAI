@@ -15,6 +15,17 @@
  ],
  "versions": [
   {
+   "version": "ver1.3.7",
+   "date": "2026-09-07",
+   "title": "英単語用語集・フレーズ集・クロスワード紹介ページを追加",
+   "public": [
+    "分野別の英単語用語集（/glossary）、シーン別の英語フレーズ集（/phrasebook）、クロスワードの紹介ページ（/crossword）を新設しました。ログイン不要でどなたでも閲覧できます。"
+   ],
+   "admin": [
+    "SEO/LLMO改善のためSPA外にSSR公開ページを新設(app/routers/seo_pages.py)。words.domain/phrases.sceneのうち「禁止用語」を含む値は部分一致で一律除外(完全一致リストだけでは`禁止用語（薬物）`を見落とすと判明し修正)。robots.txt/sitemap.xml(lastmod追加)/llms.txt対応。static/index.html・about.htmlにog:image/twitter:image・Organization JSON-LD(sameAs)・dateModifiedを追加。詳細はdocs/SEO_LLMO_STRATEGY.md参照。"
+   ]
+  },
+  {
    "version": "ver1.3.6",
    "date": "2026-09-06",
    "title": "ゲスト向けの案内文の誤解を招く表記を修正",
