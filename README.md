@@ -1,5 +1,7 @@
-# English Learning with AI
+# nyangailab（にゃんがいらぼ）- English Learning with AI
 
+月額サブスクではなく前払いチャージ制（使った分だけ）で使えるAI英語学習
+アプリ。https://study.nyangailab.com で公開中。
 TOEIC 向けの英語学習支援アプリ。**Windows / macOS 両対応**。
 単語・フレーズ・会話・リスニング・リーディング・ライティング・ニュース・文学を
 総合的に学習し、習熟度・忘却曲線・学習履歴を**自作システム側で永続化**します。
