@@ -7497,11 +7497,12 @@ async function cwRenderHub(root) {
       <div class="card" id="cwCardStart"
         style="cursor:pointer;border-color:var(--accent);border-width:2px">
         <h2>✏️ クロスワード作成${state.isGuest
-          ? ` <span class="pill vague">🔒 要登録(無料)</span>`
+          ? ` <span class="pill vague">🔒 要登録+課金</span>`
           : (!state.isChargedTier
             ? ` <span class="pill vague">🔒 要課金</span>` : "")}</h2>
         <p class="muted">分野・単語帳から単語を選んで自由に出題。${
-          state.isGuest ? "ゲストの方は登録(無料)が必要です。"
+          state.isGuest
+            ? "ゲストの方は登録(無料)に加えて課金が必要です。"
           : (!state.isChargedTier
             ? "作成のたびにAI利用料が発生するため、課金ユーザー限定です。"
             : "")}</p>
@@ -7835,10 +7836,12 @@ async function cwRenderSetup(root, preset) {
       ← ゲーム一覧に戻る</button>
     <h1 class="mt">🧩 クロスワード - 設定</h1>
     ${state.isGuest ? `<div class="sample-gate-banner">
-      ⚠️ この機能(自分で作る)はご登録(無料)が必要です。
+      ⚠️ この機能(自分で作る)はご登録(無料)に加えて課金が必要です
+      (作成のたびにAI利用料が実際に発生するため)。
       ここで設定してもスタート時にエラーになります。
-      <a href="/login#signup">登録(無料)はこちら</a>、または
-      無料でも遊べるサンプルを下記にご用意しています。
+      <a href="/login#signup">登録(無料)はこちら</a>の上、設定画面から
+      チャージいただくか、無料でも遊べるサンプルを下記にご用意して
+      います。
     </div>
     <div class="row mt">
       <button type="button" class="btn ghost" id="cwGoSamplesFromSetup">
@@ -7973,7 +7976,7 @@ async function cwRenderSetup(root, preset) {
       </div>
       <button class="btn primary mt" id="cwStart" ${
         (state.isGuest || !state.isChargedTier) ? "disabled" : ""}>${
-        state.isGuest ? "🔒 スタート(要登録)"
+        state.isGuest ? "🔒 スタート(要登録+課金)"
         : (!state.isChargedTier ? "🔒 スタート(要課金)" : "スタート")
       }</button>
       <div class="bar mt" id="cwProgressWrap" style="display:none">
