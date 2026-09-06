@@ -459,7 +459,8 @@ def my_usage():
     """現在ユーザーの当日/当月 AI利用・上限・前払い残高（コスト表示用）。"""
     from ..database import db
     from ..services import ai
-    from ..services.auth import current_user_id, get_user, is_guest_user_id
+    from ..services.auth import (
+        current_user_id, get_user, is_guest_user_id, is_charged_or_admin)
 
     from ..config import APP_VERSION
     from ..services import paypay
@@ -471,6 +472,12 @@ def my_usage():
     with db() as conn:
         u = get_user(conn, uid) or {}
         is_guest = is_guest_user_id(conn, uid)
+        # クロスワード「自分で作る」等、課金ユーザー限定機能のフロント側
+        # ゲート表示用(2026-09-06・AI原価が実際に発生する機能は無料登録
+        # だけでは開放しない方針に変更。バックエンドのis_charged_or_admin
+        # と完全に同じ判定をフロントにも渡し、表示と実際の可否がズレない
+        # ようにする)。
+        is_charged = is_charged_or_admin(conn, uid)
     rate = s.usd_jpy_rate
     # 実効上限(USD)：_user_guardと同じロジック(個別設定→既定=旧ユーザーの
     # みEmail未設定なら¥150/日、それ以外0円)を使う。以前はここだけ別計算
@@ -497,6 +504,7 @@ def my_usage():
         "balance_jpy": (round(balance_jpy, 1)
                         if balance_jpy is not None else None),
         "remaining_jpy": remaining_jpy,
+        "is_charged_or_admin": is_charged,
         "role": u.get("role", "user"),
         "username": u.get("username", ""),
         "model": s.openai_model,

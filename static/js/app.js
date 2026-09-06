@@ -461,6 +461,11 @@ export async function refreshCost() {
     // 近似する）。
     state.hasAiBalance =
       isAdmin || (!state.isGuest && (u.remaining_jpy || 0) > 0);
+    // クロスワード「自分で作る」等、課金ユーザー限定機能の表示ゲート用
+    // (2026-09-06・app/routers/system.pyのis_charged_or_adminと同一判定。
+    // hasAiBalanceは「今使える残高があるか」の近似値で、チャージ済みだが
+    // 残高を使い切った課金ユーザーはfalseになってしまうため代用不可)。
+    state.isChargedTier = !!u.is_charged_or_admin;
     if (!isAdmin) {
       // 非管理者(ゲスト・無課金/課金の一般ユーザー)は/api/system/settings
       // を読めない(api_key_masked等を含むため管理者専用・2026-08-12)。

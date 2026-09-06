@@ -2,11 +2,11 @@
 
 2026-09-05〜一般公開。サンプルクロスワード(source_type='sample')は
 ゲスト含め誰でも遊べる(_guard_session_access参照)。自分で作る方
-(分野/単語帳から選ぶカスタムゲーム)はログイン済みユーザーなら誰でも
-使える(_guard_games_access参照。ゲストは単語帳が使えないことと、
-生成のたびに実際のAI原価が発生し得ることから、まずはサンプルのみで
-体験してもらう)。設計の詳細・スコア/ヒント仕様はdocs/TODO.md および
-実装時のプランドキュメント参照。
+(分野/単語帳から選ぶカスタムゲーム)は課金ユーザー・管理者限定
+(_guard_games_access参照。生成のたびに実際にAI利用料が発生するため、
+2026-09-06にログイン済みなら誰でも可→課金ユーザー限定へ方針変更)。
+設計の詳細・スコア/ヒント仕様はdocs/TODO.md および実装時のプラン
+ドキュメント参照。
 """
 
 from __future__ import annotations
@@ -201,14 +201,18 @@ MAX_WRONG_ATTEMPTS = 5          # 1クリューあたりの不正解許容回数
 
 
 def _guard_games_access(conn, uid: int) -> None:
-    """カスタムクロスワード(分野/単語帳から選ぶ方)はログイン済みユーザー
-    なら誰でも使える(2026-09-05〜一般公開。従来のテスト許可リスト/
-    招待ユーザー限定`games_access.can_access`は廃止)。ゲストのみ拒否
-    する(単語帳が使えないこと、生成のたびにAI原価が実際に発生し得る
-    ことから、まずはサンプルのみで体験してもらう方針)。"""
-    from ..services.auth import is_guest_user_id
+    """カスタムクロスワード(分野/単語帳から選ぶ方)は課金ユーザー・管理者
+    限定(2026-09-06ユーザー指示: 生成のたびに実際にAI利用料が発生する
+    ため、無料登録だけでは開放しない。一般公開直後の2026-09-05時点は
+    ログイン済みなら誰でも使える設計だったが、コスト面から方針変更)。
+    ゲストは7007(登録案内)、登録済みだが未課金のユーザーは7008
+    (課金案内)。サンプルクロスワードはこのガードの対象外で、登録済み
+    なら引き続き無料で遊べる。"""
+    from ..services.auth import is_guest_user_id, is_charged_or_admin
     if is_guest_user_id(conn, uid):
         raise errors.http_error("7007")
+    if not is_charged_or_admin(conn, uid):
+        raise errors.http_error("7008")
 
 
 def _owned_session(conn, session_id: int, uid: int) -> dict:
@@ -236,7 +240,11 @@ def _guard_session_access(conn, uid: int, session_id: int) -> None:
     """既存の_guard_games_access相当だが、対象セッションがサンプル
     (source_type='sample')の場合は誰でも(ゲスト含む)通す(2026-09-05・
     サンプルクロスワードは集客用に一般公開するため)。それ以外(分野/
-    単語帳のカスタムゲーム)は従来通りテスト/招待/管理者限定のまま。"""
+    単語帳のカスタムゲーム)は_guard_games_access(課金ユーザー限定)。
+    **新規にAIを呼び出す操作(=最初から作り直すrestart)専用**
+    (2026-09-06追記: 既存ゲームの継続プレイには使わないこと。継続プレイ
+    はAI原価が新たに発生しないため、課金必須にする必要が無い
+    ・_guard_session_play参照)。"""
     row = conn.execute(
         "SELECT source_type FROM crossword_sessions WHERE id = ?",
         (session_id,),
@@ -244,6 +252,25 @@ def _guard_session_access(conn, uid: int, session_id: int) -> None:
     if row and row["source_type"] == "sample":
         return
     _guard_games_access(conn, uid)
+
+
+def _guard_session_play(conn, uid: int, session_id: int) -> None:
+    """既に作成済みのセッションを継続プレイ(閲覧・回答・ヒント・
+    ギブアップ・保存切替)するためのガード(2026-09-06新設)。サンプルは
+    誰でも通す。カスタムゲームは新規にAIを呼ばない(=追加コストが発生
+    しない)ため、_guard_games_access(課金必須)ほど厳しくせず、ゲストの
+    みを拒否する(2026-09-05〜の一般公開時点の挙動のまま)。これにより、
+    課金必須化(_guard_games_access)より前に無料登録ユーザーが作成済みの
+    ゲームも、引き続き遊び終えることができる。"""
+    row = conn.execute(
+        "SELECT source_type FROM crossword_sessions WHERE id = ?",
+        (session_id,),
+    ).fetchone()
+    if row and row["source_type"] == "sample":
+        return
+    from ..services.auth import is_guest_user_id
+    if is_guest_user_id(conn, uid):
+        raise errors.http_error("7007")
 
 
 def _parse_detail(detail_json: str | None) -> dict:
@@ -1535,7 +1562,7 @@ def crossword_pin(session_id: int, payload: PinPayload):
     別枠の緩い上限(ゲスト不可・無料ログイン5件・課金10件)。"""
     uid = current_user_id()
     with db() as conn:
-        _guard_session_access(conn, uid, session_id)
+        _guard_session_play(conn, uid, session_id)
         row = _owned_session(conn, session_id, uid)
         is_sample = row["source_type"] == "sample"
         from ..services.auth import is_charged_or_admin, is_guest_user_id
@@ -1690,10 +1717,15 @@ def crossword_sessions():
     """カスタムゲーム(分野/単語帳)の再開一覧。サンプル(source_type=
     'sample')はここには含めない(2026-09-05・専用のGET /crossword/samples
     に「プレイ済み」表示+再プレイ導線があるため。混ぜると保存件数の
-    説明文(カスタムゲーム用)と噛み合わなくなる)。"""
+    説明文(カスタムゲーム用)と噛み合わなくなる)。閲覧はAI原価が発生
+    しないため、_guard_games_access(課金必須)ではなくゲストのみ拒否
+    する(2026-09-06・課金必須化より前に無料登録ユーザーが作成した
+    ゲームも一覧に出せるようにするため)。"""
     uid = current_user_id()
     with db() as conn:
-        _guard_games_access(conn, uid)
+        from ..services.auth import is_guest_user_id
+        if is_guest_user_id(conn, uid):
+            raise errors.http_error("7007")
         rows = conn.execute(
             "SELECT id, source_type, source_ref, category, status, score, "
             "created_at, word_count, pinned FROM crossword_sessions "
@@ -1807,7 +1839,7 @@ def crossword_ranking(period: str = "month"):
 def crossword_get(session_id: int):
     uid = current_user_id()
     with db() as conn:
-        _guard_session_access(conn, uid, session_id)
+        _guard_session_play(conn, uid, session_id)
         return _session_state(conn, session_id, uid)
 
 
@@ -1844,7 +1876,7 @@ class AnswerPayload(BaseModel):
 def crossword_answer(session_id: int, payload: AnswerPayload):
     uid = current_user_id()
     with db() as conn:
-        _guard_session_access(conn, uid, session_id)
+        _guard_session_play(conn, uid, session_id)
         row = _owned_session(conn, session_id, uid)
         puzzle = json.loads(row["puzzle_json"])
         progress = json.loads(row["progress_json"])
@@ -1950,7 +1982,7 @@ def crossword_hint(session_id: int, payload: HintPayload):
     if payload.hint_type not in HINT_TYPES:
         raise errors.http_error("7002", "hint_typeが不正です。")
     with db() as conn:
-        _guard_session_access(conn, uid, session_id)
+        _guard_session_play(conn, uid, session_id)
         row = _owned_session(conn, session_id, uid)
         puzzle = json.loads(row["puzzle_json"])
         progress = json.loads(row["progress_json"])
@@ -2033,7 +2065,7 @@ class GiveUpPayload(BaseModel):
 def crossword_giveup(session_id: int, payload: GiveUpPayload):
     uid = current_user_id()
     with db() as conn:
-        _guard_session_access(conn, uid, session_id)
+        _guard_session_play(conn, uid, session_id)
         row = _owned_session(conn, session_id, uid)
         puzzle = json.loads(row["puzzle_json"])
         progress = json.loads(row["progress_json"])
@@ -2062,7 +2094,7 @@ def crossword_giveup_all(session_id: int):
     仕様)。"""
     uid = current_user_id()
     with db() as conn:
-        _guard_session_access(conn, uid, session_id)
+        _guard_session_play(conn, uid, session_id)
         row = _owned_session(conn, session_id, uid)
         puzzle = json.loads(row["puzzle_json"])
         progress = json.loads(row["progress_json"])

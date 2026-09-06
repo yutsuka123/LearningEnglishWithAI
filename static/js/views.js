@@ -7497,9 +7497,14 @@ async function cwRenderHub(root) {
       <div class="card" id="cwCardStart"
         style="cursor:pointer;border-color:var(--accent);border-width:2px">
         <h2>✏️ クロスワード作成${state.isGuest
-          ? ` <span class="pill vague">🔒 要登録(無料)</span>` : ""}</h2>
+          ? ` <span class="pill vague">🔒 要登録(無料)</span>`
+          : (!state.isChargedTier
+            ? ` <span class="pill vague">🔒 要課金</span>` : "")}</h2>
         <p class="muted">分野・単語帳から単語を選んで自由に出題。${
-          state.isGuest ? "ゲストの方は登録(無料)が必要です。" : ""}</p>
+          state.isGuest ? "ゲストの方は登録(無料)が必要です。"
+          : (!state.isChargedTier
+            ? "作成のたびにAI利用料が発生するため、課金ユーザー限定です。"
+            : "")}</p>
       </div>
       <div class="card" id="cwCardSamples" style="cursor:pointer">
         <h2>🧩 サンプルクロスワード</h2>
@@ -7838,7 +7843,19 @@ async function cwRenderSetup(root, preset) {
     <div class="row mt">
       <button type="button" class="btn ghost" id="cwGoSamplesFromSetup">
         🧩 サンプルクロスワードを見る</button>
-    </div>` : ""}
+    </div>` : (!state.isChargedTier ? `<div class="sample-gate-banner">
+      ⚠️ この機能(自分で作る)は課金ユーザー限定です。作成のたびに
+      AI利用料が実際に発生するため、無料登録だけでは開放していません。
+      ここで設定してもスタート時にエラーになります。
+      設定画面からチャージいただくか、登録済みなら無料で遊べる
+      サンプルを下記にご用意しています。
+    </div>
+    <div class="row mt">
+      <button type="button" class="btn ghost" id="cwGoSettingsFromSetup">
+        ⚙️ 設定画面でチャージする</button>
+      <button type="button" class="btn ghost" id="cwGoSamplesFromSetup">
+        🧩 サンプルクロスワードを見る</button>
+    </div>` : "")}
     ${recent.length ? `<table class="cw-recent-table mt"><tbody>
       ${recent.map((r, i) => `<tr>
         <td class="muted">${CW_RECENT_LABELS[i] || ""}</td>
@@ -7955,8 +7972,10 @@ async function cwRenderSetup(root, preset) {
         </div>
       </div>
       <button class="btn primary mt" id="cwStart" ${
-        state.isGuest ? "disabled" : ""}>${
-        state.isGuest ? "🔒 スタート(要登録)" : "スタート"}</button>
+        (state.isGuest || !state.isChargedTier) ? "disabled" : ""}>${
+        state.isGuest ? "🔒 スタート(要登録)"
+        : (!state.isChargedTier ? "🔒 スタート(要課金)" : "スタート")
+      }</button>
       <div class="bar mt" id="cwProgressWrap" style="display:none">
         <span id="cwProgressBar" style="width:0%"></span>
       </div>
@@ -7967,6 +7986,8 @@ async function cwRenderSetup(root, preset) {
     .addEventListener("click", () => cwRenderHub(root));
   root.querySelector("#cwGoSamplesFromSetup")
     ?.addEventListener("click", () => cwRenderSamples(root));
+  root.querySelector("#cwGoSettingsFromSetup")
+    ?.addEventListener("click", () => go("settings"));
   root.querySelectorAll("[data-recent]").forEach((b) => {
     b.addEventListener("click", () => {
       cwRenderSetup(root, recent[Number(b.dataset.recent)]);
