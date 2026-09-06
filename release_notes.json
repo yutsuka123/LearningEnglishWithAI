@@ -19,10 +19,12 @@
    "date": "2026-09-07",
    "title": "英単語用語集・フレーズ集・クロスワード紹介ページを追加",
    "public": [
-    "分野別の英単語用語集（/glossary）、シーン別の英語フレーズ集（/phrasebook）、クロスワードの紹介ページ（/crossword）を新設しました。ログイン不要でどなたでも閲覧できます。"
+    "分野別の英単語用語集（/glossary）、シーン別の英語フレーズ集（/phrasebook）、クロスワードの紹介ページ（/crossword）を新設しました。ログイン不要でどなたでも閲覧できます。",
+    "「このアプリについて」ページで、クロスワードの「自分で作る」機能が無料登録だけで使えるかのような誤解を招く記載になっていたため、実際の仕様（課金が必要）に修正しました。あわせて価格目安・保存件数などの記載も実際の値に修正しました。"
    ],
    "admin": [
-    "SEO/LLMO改善のためSPA外にSSR公開ページを新設(app/routers/seo_pages.py)。words.domain/phrases.sceneのうち「禁止用語」を含む値は部分一致で一律除外(完全一致リストだけでは`禁止用語（薬物）`を見落とすと判明し修正)。robots.txt/sitemap.xml(lastmod追加)/llms.txt対応。static/index.html・about.htmlにog:image/twitter:image・Organization JSON-LD(sameAs)・dateModifiedを追加。詳細はdocs/SEO_LLMO_STRATEGY.md参照。"
+    "SEO/LLMO改善のためSPA外にSSR公開ページを新設(app/routers/seo_pages.py)。words.domain/phrases.sceneのうち「禁止用語」を含む値は部分一致で一律除外(完全一致リストだけでは`禁止用語（薬物）`を見落とすと判明し修正)。robots.txt/sitemap.xml(lastmod追加)/llms.txt対応。static/index.html・about.htmlにog:image/twitter:image・Organization JSON-LD(sameAs)・dateModifiedを追加。詳細はdocs/SEO_LLMO_STRATEGY.md参照。",
+    "static/about.htmlのクロスワード「自分で作る」記載(3箇所)をgames.pyのis_charged_or_admin実装に合わせて修正(ユーザー報告)。あわせて全体をExploreエージェント3並列で実装と照合し、価格目安表のクロスワード行(0.25pt→新規生成時は1〜3.75pt、0.25ptはキャッシュ再利用時の最低額)、課金ユーザーの保存上限(サンプルは10件のまま、自分で作った分はver1.3.4で50件に拡大済みだった)の2件の食い違いを追加修正。単語帳「全件」の説明に無課金時100語上限も明記。"
    ]
   },
   {
