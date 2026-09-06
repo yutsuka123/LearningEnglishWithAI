@@ -74,6 +74,79 @@
   リトライ(最大3回・0.2秒刻み)を追加した上で、`chat()`側もAPI呼び出し
   自体の成否と利用量記録の成否を分離(記録が最終的に失敗しても、AI応答
   自体は捨てずにそのまま返す。費用はDB書き込み無しでも概算して返す)。
+- **追記・重要(同日・未デプロイのため同バージョンに追記)**: 上記の
+  `database is locked`対策(リトライ)は緩和策止まりで、根本原因は
+  `_ensure_ai_hints`がヒントキャッシュ更新(`words.detail`のUPDATE)を
+  リクエストの長寿命の共有connectionで行っており、並列スレッドの
+  `_record_usage`書き込みと競合していたことだったと判明。書き込みを
+  短命の専用connection(`with db() as cache_conn: cache_conn.executemany(...)`)
+  に分離し即コミットするよう修正(`app/routers/games.py`)。実測で
+  20語587秒→13.6秒に短縮、3〜50語×3条件(理学/全部/TOEIC500未満)の
+  計18パターンの負荷テストでロックエラー0件・最大30.2秒(50語)を確認
+  (実測結果は`docs/COST_ESTIMATE.md`・git管理外に記録)。
+- **追記**: AIヒントの品質チェックパイプライン「作成→照査→再作成」を
+  追加。生成直後に軽量モデル(`quality_model`)でヒントを検査する
+  `_review_ai_hints`と、指摘があった語だけ1往復だけ再生成する
+  `_ensure_ai_hints_reviewed`を新設(`app/routers/games.py`)。この
+  照査呼び出しも1ゲーム単位の一括課金に含める(`app/services/ai.py`の
+  `_LUMP_SUM_FEATURES`に`crossword_hint_review`を追加)。実測ベースで
+  旧方式比おおむね2倍前後高速化。
+- **追記・確定**: クロスワードの課金額を確定。`0.75pt + 語数×0.06`を
+  0.25pt単位で切り上げ、AI呼び出しが0回(全語キャッシュ再利用等)の
+  場合は最低0.25ptのみ課金する式(`_compute_crossword_game_charge_pt`・
+  `app/services/ai.py`)。目安10語で約1.5pt、3〜50語で約1.0〜3.75pt。
+  実測コスト(18条件・実際のAI課金)をもとに、再生成が発生した場合の
+  最悪ケースでも粗字が残る係数を選定(詳細は`docs/COST_ESTIMATE.md`・
+  git管理外)。取扱説明(`static/about.html`)にも、キャッシュ再利用で
+  AI呼び出しが無かった場合でも最低0.25pt(DB運用コストぶん)を消費する
+  旨の注記を追加。
+- **追記**: クロスワード生成中に進捗バーを表示するよう変更
+  (`cwEstimateSeconds`/`cwStartProgressBar`・`static/js/views.js`)。
+  実測タイミングを基に「語数・モードごとの予測時間の最大値×1.3」を
+  バッファとして使用。生成中のボタン表示も、実際には数十秒かかる
+  ケースがあるため「数秒かかることがあります」から「数十秒かかる場合が
+  あります」に訂正。
+- **追記**: クロスワードの分野選択で「全分野」や大分類まるごとを選んだ
+  際に「分野を1つ以上選んでください(E7002)」というエラーになる不具合を
+  修正。`crossword_sessions`に`category`列を追加し、`domains`が空でも
+  `category`(大分類)があればその配下全分野、両方空なら全分野を対象に
+  できるよう`_fetch_candidate_words`/`_word_filter`を拡張
+  (`app/database.py`・`app/routers/games.py`)。セッション一覧の「対象」
+  表示も、分野名を全部並べると読みにくいため`_crossword_source_label`で
+  「すべて」「〇〇(全分野)」のような短い表記に変更。
+- **追記**: 管理画面に「コスト管理」タブを追加。`GET
+  /api/system/admin/cost-report`でユーザー別・機能別の原価/課金額/
+  粗利/粗利率を集計し、赤字・低粗利率にアラートバッジを表示
+  (`app/routers/system.py`)。
+- **追記**: クロスワードにスコアランキング機能を追加。`GET
+  /api/games/crossword/ranking`(`period=month|total`・上位10位+
+  自分が圏外なら自分の順位も表示)。他ユーザーの表示名は先頭1文字+
+  「さん」に匿名化、自分の行のみ登録ニックネームを表示。参加は課金
+  ユーザー限定、サンプルクロスワードのスコアは集計対象外(その旨を
+  画面上に注記)(`app/routers/games.py`の`crossword_ranking`・
+  `static/js/views.js`の`cwRenderRanking`)。
+- **追記**: 語数の多いクロスワード(40語程度)で未解答マスの猫画像が
+  小さく潰れて見える不具合を調査。絵文字フォールバック・SVGベクター
+  アイコンへの置き換えを順に試したが、ユーザー判断でいずれも不採用
+  (「オリジナル画像を出したい」「SVGは厳しい」)。最終的に、盤面全体の
+  目標サイズ(`CW_TARGET_BOARD_PX=560`)に応じてセルを縮小する従来方式
+  を復活させつつ、最小セルサイズを14pxで下げ止め、それ以上大きな盤面は
+  横スクロールで見る方針に調整(`static/js/views.js`の`cwCellSizing`・
+  実写画像のみ使用しSVGアイコンは導入しない)。
+- **追記**: クロスワード作成時の詰め方に、画面の縦横比を考慮する新選択肢
+  「画面に合わせる」を追加(スマホ縦持ちなら縦長寄りの盤面になる)。
+  配置アルゴリズムの探索領域を正方形固定から可変の長方形に変更し
+  (`app/services/crossword_gen.py`の`generate()`に`target_aspect`
+  引数・`_rect_dims`ヘルパーを追加、`max_grid`単一値だった内部関数群を
+  `max_rows`/`max_cols`に分割)、既存の「普通」「コンパクト」とは独立に
+  併用できる(`crossword_sessions.screen_fit`列・`NewGamePayload.
+  screen_fit`/`screen_aspect`・`app/routers/games.py`)。照査で
+  `screen_aspect`にInfinity等の非有限値を渡すと`_rect_dims`が
+  `OverflowError`で落ちる不具合を発見し、`math.isfinite()`チェックを
+  追加して修正済み。
+- **追記**: 「このアプリについて」ページに、PayPayでのインスタント
+  チャージ機能の「近日対応予定」告知(視認性向上のため枠線付きボックス
+  化)と、開発者からのひとことセクションを追加(`static/about.html`)。
 
 ## ver1.3.0 (2026-09-06 03:00デプロイ予定・2026-09-05作業・commit 7f808cc)
 

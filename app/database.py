@@ -613,6 +613,11 @@ CREATE TABLE IF NOT EXISTS crossword_sessions (
     guest_sid     TEXT    NOT NULL DEFAULT '',
     source_type   TEXT    NOT NULL,              -- 'domain' | 'deck' | 'sample'
     source_ref    TEXT    NOT NULL DEFAULT '',    -- カンマ区切り分野名 or deck_id or sample_id
+    -- 大分類(2026-09-06)。source_ref(分野)が空でもcategoryだけ指定
+    -- されていれば大分類配下の全分野が対象、両方空なら全分野が対象
+    -- (games.py _fetch_candidate_words参照)。一覧表示の短縮ラベル
+    -- (_crossword_source_label)にも使う。
+    category      TEXT    NOT NULL DEFAULT '',
     clue_mode     TEXT    NOT NULL DEFAULT 'always_ja',  -- 'always_ja'|'hints_only'
     -- クリューモードで決まる最終スコア倍率(2026-09-05・
     -- games.pyのCLUE_MODE_SCORE_MULTIPLIER参照。「ヒントの難易度」は
@@ -628,6 +633,9 @@ CREATE TABLE IF NOT EXISTS crossword_sessions (
     level_max      TEXT,
     -- パズルの詰め方(2026-09-05)。1なら面積優先(コンパクトモード)。
     compact        INTEGER NOT NULL DEFAULT 0,
+    -- 画面サイズを考慮した盤面形状(2026-09-06)。1なら作成時の画面幅/
+    -- 高さ比に近い縦横比になるよう試みる(compactとは独立・両立可)。
+    screen_fit     INTEGER NOT NULL DEFAULT 0,
     -- 不正解時の部分一致開示の甘さ(2026-09-05・'easy'|'normal'|'hard'。
     -- games.pyのPARTIAL_MATCH_THRESHOLD_BY_DIFFICULTY参照)。
     answer_difficulty TEXT NOT NULL DEFAULT 'normal',
@@ -976,6 +984,14 @@ def _migrate(conn: sqlite3.Connection) -> None:
     # ゲストもプレイ可(解放)にする。
     _add_col(conn, "crossword_samples", "guest_playable",
              "guest_playable INTEGER NOT NULL DEFAULT 0")
+    # 大分類まるごと/全分野でのクロスワード作成に対応(2026-09-06・
+    # 上のCREATE TABLE crossword_sessionsのコメント参照)。
+    _add_col(conn, "crossword_sessions", "category",
+             "category TEXT NOT NULL DEFAULT ''")
+    # 画面サイズを考慮した盤面形状モード(2026-09-06・「compact」とは
+    # 独立した詰め方の選択肢。games.py NewGamePayload.screen_fit参照)。
+    _add_col(conn, "crossword_sessions", "screen_fit",
+             "screen_fit INTEGER NOT NULL DEFAULT 0")
     _migrate_multiuser(conn)
 
 

@@ -971,6 +971,7 @@ th { color: var(--muted); font-weight: 600; }
   overflow-x: auto;
   max-width: 100%;
   position: relative;
+  -webkit-overflow-scrolling: touch;
 }
 .cw-grid { position: relative; z-index: 1; }
 /* 未解答マスの猫(2026-09-05ユーザー要望)。マスの中に収まる不透明な
@@ -979,8 +980,10 @@ th { color: var(--muted); font-weight: 600; }
    自然)。 */
 .cw-cell-cat {
   position: absolute;
-  inset: 8%;
-  width: 84%; height: 84%;
+  /* 2026-09-06ユーザー指摘「余白を減らしてマス一杯に表示した方が小さい
+     ときにまだましになるのでは」に対応し、8%/84%から余白を詰めた。 */
+  inset: 3%;
+  width: 94%; height: 94%;
   object-fit: contain;
   pointer-events: none;
   z-index: 1;

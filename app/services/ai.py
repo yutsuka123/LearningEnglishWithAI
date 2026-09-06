@@ -12,6 +12,7 @@ the UI can display API consumption (ユーザー要望: API使用量・費用の
 from __future__ import annotations
 
 import sqlite3
+import threading
 import time
 from collections import deque
 from dataclasses import dataclass
@@ -308,7 +309,7 @@ _NO_SURCHARGE_FEATURES = {"tts", "stt"}
 # 平均収益が¥0に近づいていた旧方式(呼び出し毎課金・§1.5旧版)の
 # 弱点を解消する狙い。ai_usageへのINSERT自体(原価の記録)は従来通り
 # 続ける（_record_usage参照・profitability分析に必要なため）。
-_LUMP_SUM_FEATURES = {"crossword_hint"}
+_LUMP_SUM_FEATURES = {"crossword_hint", "crossword_hint_review"}
 
 
 def _compute_charge_jpy(cost_usd: float, rate: float, feature: str) -> float:
@@ -352,59 +353,73 @@ def _maybe_deduct_balance(
         )
 
 
-# クロスワード1ゲーム分の課金式(2026-09-05ユーザー提案・
-# docs/COST_ESTIMATE.md §1.5「新課金式案」)。既存のCATEGORY_MULTIPLIER
-# 方式(呼び出し毎・0.5円単位)とは別枠の独自の式・単位(pt・0.25刻み)。
-CROSSWORD_GAME_BASE_PT = 0.25
-CROSSWORD_GAME_SURCHARGE_JPY = 0.5
-CROSSWORD_GAME_MULT = 2.0
+# クロスワード1ゲーム分の課金式(2026-09-06確定・語数比例式に変更。
+# docs/COST_ESTIMATE.md §1.5「新課金(0.75+語数×0.06)」実測で粗利率を
+# 検証した上で採用)。既存のCATEGORY_MULTIPLIER方式(呼び出し毎・
+# 0.5円単位)とは別枠の独自の式・単位(pt・0.25刻み)。
+# AI原価合計に応じて課金額を変える旧「新課金式案」(原価×2+0.5円)は
+# 検討の結果不採用(語数だけで決まる方がシンプルで説明しやすいため)。
+CROSSWORD_GAME_MIN_PT = 0.25  # AI呼び出しが0回(全語キャッシュ済み/
+# AI不要モード)の場合の固定額。DBへのセッション保存・スコア管理等
+# 純粋なAI原価以外の運用コストぶんとして、語数によらず必ず徴収する
+# (2026-09-06ユーザー指示「キャッシュで再実行する際も0.25pt課金される
+# ことをDB使用のため等の注意書きとして明記」)。
+CROSSWORD_GAME_BASE_PT = 0.75
+CROSSWORD_GAME_PER_WORD_PT = 0.06
 CROSSWORD_GAME_ROUND_STEP_PT = 0.25
 
 
-def _compute_crossword_game_charge_pt(cost_usd_total: float, rate: float) -> float:
-    """1ゲームぶんのAI原価合計(USD)から課金額(pt)を計算する。
-    AI呼び出しが0回(全語キャッシュ済み/AI不要モード)なら基本額のみ、
-    それ以外は「基本額 + (原価(円) + 50銭) × 2」を0.25pt単位で切り上げる。"""
+def _compute_crossword_game_charge_pt(cost_usd_total: float, word_count: int) -> float:
+    """1ゲームぶんの課金額(pt)を計算する。AI呼び出しが0回(全語キャッシュ
+    済み/AI不要モード)なら固定の最低額のみ、それ以外は語数に比例した
+    式「0.75pt + 語数×0.06」を0.25pt単位で切り上げる(AI原価そのものは
+    見ない・docs/COST_ESTIMATE.md §1.5参照)。"""
     import math
 
     if cost_usd_total <= 0:
-        return CROSSWORD_GAME_BASE_PT
-    cost_jpy = cost_usd_total * rate
-    raw = (CROSSWORD_GAME_BASE_PT
-           + (cost_jpy + CROSSWORD_GAME_SURCHARGE_JPY) * CROSSWORD_GAME_MULT)
+        return CROSSWORD_GAME_MIN_PT
+    raw = CROSSWORD_GAME_BASE_PT + word_count * CROSSWORD_GAME_PER_WORD_PT
     steps = math.ceil(raw / CROSSWORD_GAME_ROUND_STEP_PT - 1e-9)
     return steps * CROSSWORD_GAME_ROUND_STEP_PT
 
 
-def charge_crossword_game(conn, uid: int, cost_usd_total: float) -> float:
-    """クロスワード1ゲーム作成(新規/再生成)ごとに、そのゲームで実際に
-    発生したAI原価合計をまとめて1回だけ課金する(_LUMP_SUM_FEATURES参照
-    ・呼び出し毎の自動課金はこのfeatureでは行わない)。保存(ピン留め)の
-    有無に関わらず毎回課金する。無料枠(日次/月次上限)の判定とは独立
-    （crossword自体がテスト/招待ユーザー限定の別機能であり、キャッシュ
-    済みでも必ず最低額を課金することが本方式の狙いのため）。
-    残高が課金額に満たない場合は残高を使い切るだけに留め、0円未満には
-    しない(ゲーム自体は既に生成済みでAI原価も既に発生済みのため、
-    再生課金(charge_playback_if_needed)と違って事前に拒否できない)。
-    戻り値: 実際に控除した額(pt)。"""
+def charge_crossword_game(
+    conn, uid: int, cost_usd_total: float, word_count: int,
+) -> float:
+    """クロスワード1ゲーム作成(新規/再生成)ごとに課金する
+    (_LUMP_SUM_FEATURES参照・呼び出し毎の自動課金はこのfeatureでは
+    行わない)。保存(ピン留め)の有無に関わらず毎回課金する。無料枠
+    (日次/月次上限)の判定とは独立（crossword自体がテスト/招待ユーザー
+    限定の別機能であり、キャッシュ済みでも必ず最低額を課金することが
+    本方式の狙いのため）。残高が課金額に満たない場合は残高を使い切る
+    だけに留め、0円未満にはしない(ゲーム自体は既に生成済みでAI原価も
+    既に発生済みのため、再生課金(charge_playback_if_needed)と違って
+    事前に拒否できない)。戻り値: 実際に控除した額(pt)。"""
     from .auth import add_balance, get_user
 
     u = get_user(conn, uid)
     if not u or u.get("balance_jpy") is None:
         return 0.0
-    s = load_settings()
-    charge = _compute_crossword_game_charge_pt(cost_usd_total, s.usd_jpy_rate)
+    charge = _compute_crossword_game_charge_pt(cost_usd_total, word_count)
     cur = float(u.get("balance_jpy") or 0)
     delta = -min(charge, cur)
     if delta != 0:
         add_balance(
             conn, uid, delta, reason="crossword_game",
-            note=f"ai_cost=${cost_usd_total:.5f}",
+            note=f"word_count={word_count} ai_cost=${cost_usd_total:.5f}",
         )
     return -delta
 
 
-_USAGE_WRITE_RETRIES = 3  # database is locked時の再試行回数(2026-09-06)
+_USAGE_WRITE_RETRIES = 5  # database is locked時の再試行回数(2026-09-06)
+# クロスワードのAIヒント生成/レビュー(_ensure_ai_hints・_review_ai_hints)の
+# ように、1リクエスト内でThreadPoolExecutorが複数バッチを並列にai.chat()
+# する機能があり、各バッチが独立したDB接続でここへ書き込みに来る。本アプリ
+# はuvicornを単一プロセス(--workers未指定)で動かしているため、同一プロセス
+# 内の競合はPythonのLockで確実かつ高速に直列化できる(SQLiteのbusy_timeout
+# ポーリングより速く、待ち時間のばらつきも無い)。プロセス外(別スクリプトの
+# 直接DB書き込み等)からの競合に備え、リトライも併用する。
+_usage_write_lock = threading.Lock()
 
 
 def _record_usage(
@@ -419,32 +434,31 @@ def _record_usage(
     uid = current_user_id()
     ip = current_ip()
     s = load_settings()
-    # クロスワードのAIヒント生成(_ensure_ai_hints)のように、1リクエスト内で
-    # 複数語のバッチをThreadPoolExecutorで並列にai.chat()する機能があり、
-    # 各バッチが独立したDB接続でここへ書き込みに来る。busy_timeout(15秒)
-    # 内でも競合が解消しないことがあり、"database is locked"のまま例外に
-    # なると、実際には成功していたAI応答ごと「chat失敗」として捨てられて
-    # しまっていた(2026-09-06ユーザー報告: 有料会員なのにヒントが
+    # 2026-09-06ユーザー報告: busy_timeout(15秒)内でも競合が解消せず
+    # "database is locked"のまま例外になると、実際には成功していたAI応答
+    # ごと「chat失敗」として捨てられてしまっていた(有料会員なのにヒントが
     # 「準備中」のまま・日本語ヒントがAI生成されず訳語のみにフォール
-    # バックした事例)。まずは短い間隔で数回リトライして解消を試みる。
-    for attempt in range(_USAGE_WRITE_RETRIES):
-        try:
-            with db() as conn:
-                conn.execute(
-                    "INSERT INTO ai_usage "
-                    "(model, prompt_tokens, output_tokens, cost_usd, "
-                    " feature, user_id, ip) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    (model, prompt_tokens, output_tokens, cost, feature,
-                     uid, ip),
-                )
-                if feature not in _LUMP_SUM_FEATURES:
-                    _maybe_deduct_balance(conn, uid, cost, feature, s)
-            return cost
-        except sqlite3.OperationalError as exc:
-            if "locked" not in str(exc).lower() or (
-                attempt == _USAGE_WRITE_RETRIES - 1):
-                raise
-            time.sleep(0.2 * (attempt + 1))
+    # バックした事例)。上記_usage_write_lockで同一プロセス内の競合を
+    # ほぼ解消した上で、念のため短い間隔のリトライも残す。
+    with _usage_write_lock:
+        for attempt in range(_USAGE_WRITE_RETRIES):
+            try:
+                with db() as conn:
+                    conn.execute(
+                        "INSERT INTO ai_usage "
+                        "(model, prompt_tokens, output_tokens, cost_usd, "
+                        " feature, user_id, ip) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        (model, prompt_tokens, output_tokens, cost, feature,
+                         uid, ip),
+                    )
+                    if feature not in _LUMP_SUM_FEATURES:
+                        _maybe_deduct_balance(conn, uid, cost, feature, s)
+                return cost
+            except sqlite3.OperationalError as exc:
+                if "locked" not in str(exc).lower() or (
+                    attempt == _USAGE_WRITE_RETRIES - 1):
+                    raise
+                time.sleep(0.2 * (attempt + 1))
     return cost  # pragma: no cover - ループは必ずreturn/raiseで抜ける
 
 

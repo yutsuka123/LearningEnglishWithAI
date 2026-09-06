@@ -1762,6 +1762,132 @@ _TABLE_GROUPS = {
 }
 
 
+# コスト管理レポートの粗利率アラート閾値(2026-09-06新設)。0%未満=赤字
+# (badge-bad)、これ以上でもWARN未満=低粗利(badge-warn)。目安は
+# docs/COST_ESTIMATE.mdの目標粗利率(3〜5割)を踏まえた保守的な値。
+COST_REPORT_LOSS_MARGIN_PCT = 0.0
+COST_REPORT_WARN_MARGIN_PCT = 20.0
+
+
+def _cost_report_feature_bucket(feature: str) -> str:
+    """crossword_hint/crossword_hint_reviewは1ゲーム単位でまとめて
+    課金される(balance_ledgerのreason='crossword_game'は機能別に
+    分かれない)ため、原価側もcrossword一本にまとめて突き合わせる。"""
+    return "crossword" if (feature or "").startswith("crossword") else (
+        feature or "(不明)")
+
+
+def _cost_report_margin(cost_jpy: float, charged_jpy: float) -> dict:
+    profit = charged_jpy - cost_jpy
+    margin_pct = (profit / charged_jpy * 100) if charged_jpy > 0 else (
+        0.0 if cost_jpy <= 0 else -100.0)
+    return {
+        "cost_jpy": round(cost_jpy, 2),
+        "charged_jpy": round(charged_jpy, 2),
+        "profit_jpy": round(profit, 2),
+        "margin_pct": round(margin_pct, 1),
+        "is_loss": profit < 0,
+        "is_low_margin": (
+            COST_REPORT_LOSS_MARGIN_PCT
+            <= margin_pct < COST_REPORT_WARN_MARGIN_PCT),
+    }
+
+
+@router.get("/admin/cost-report")
+def admin_cost_report(days: int = 30):
+    """機能別・ユーザー別の原価/課金(pt→円換算)/粗利レポート(2026-09-06
+    新設)。原価は`ai_usage.cost_usd`(USD建て・為替換算)、課金は
+    `balance_ledger`の実控除額(delta_jpy<0)の絶対値を突き合わせる。
+    `balance_ledger`は呼び出し毎課金の全機能をまとめて
+    reason='ai_usage'にしているため、機能別の内訳は`note`列
+    (`f"{feature} (${cost:.5f})"`形式・`_maybe_deduct_balance`参照)の
+    先頭トークンから復元する。クロスワードはreason='crossword_game'
+    (1ゲームまとめて課金・`charge_crossword_game`参照)を別途集計し、
+    原価側もcrossword_hint/crossword_hint_reviewをまとめて突き合わせる
+    (`_cost_report_feature_bucket`)。"""
+    _require_admin()
+    days = max(1, min(days, 365))
+    since = f"-{days} days"
+    rate = load_settings().usd_jpy_rate
+
+    with db() as conn:
+        cost_rows = conn.execute(
+            "SELECT user_id, feature, SUM(cost_usd) AS cost_usd "
+            "FROM ai_usage WHERE created_at >= datetime('now', ?) "
+            "GROUP BY user_id, feature",
+            (since,),
+        ).fetchall()
+        ledger_rows = conn.execute(
+            "SELECT user_id, reason, note, delta_jpy FROM balance_ledger "
+            "WHERE created_at >= datetime('now', ?) "
+            "AND reason IN ('ai_usage', 'crossword_game') "
+            "AND delta_jpy < 0",
+            (since,),
+        ).fetchall()
+        user_rows = conn.execute(
+            "SELECT id, username, role FROM users").fetchall()
+
+    usernames = {r["id"]: r["username"] for r in user_rows}
+    roles = {r["id"]: r["role"] for r in user_rows}
+
+    cost_by_uf: dict[tuple[int, str], float] = {}
+    for r in cost_rows:
+        key = (r["user_id"], _cost_report_feature_bucket(r["feature"]))
+        cost_by_uf[key] = (
+            cost_by_uf.get(key, 0.0) + (r["cost_usd"] or 0.0) * rate)
+
+    charge_by_uf: dict[tuple[int, str], float] = {}
+    for r in ledger_rows:
+        if r["reason"] == "crossword_game":
+            feature = "crossword"
+        else:
+            feature = (r["note"] or "").split(" ", 1)[0] or "(不明)"
+        key = (r["user_id"], feature)
+        charge_by_uf[key] = charge_by_uf.get(key, 0.0) + (-r["delta_jpy"])
+
+    all_keys = set(cost_by_uf) | set(charge_by_uf)
+
+    by_feature_totals: dict[str, list[float]] = {}
+    by_user_totals: dict[int, list[float]] = {}
+    for uid, feature in all_keys:
+        cost = cost_by_uf.get((uid, feature), 0.0)
+        charged = charge_by_uf.get((uid, feature), 0.0)
+        f_tot = by_feature_totals.setdefault(feature, [0.0, 0.0])
+        f_tot[0] += cost
+        f_tot[1] += charged
+        u_tot = by_user_totals.setdefault(uid, [0.0, 0.0])
+        u_tot[0] += cost
+        u_tot[1] += charged
+
+    by_feature = sorted(
+        (
+            {"feature": feature, **_cost_report_margin(cost, charged)}
+            for feature, (cost, charged) in by_feature_totals.items()
+        ),
+        key=lambda r: r["profit_jpy"],
+    )
+    by_user = sorted(
+        (
+            {
+                "user_id": uid,
+                "username": usernames.get(uid, f"(id={uid})"),
+                "role": roles.get(uid, ""),
+                **_cost_report_margin(cost, charged),
+            }
+            for uid, (cost, charged) in by_user_totals.items()
+        ),
+        key=lambda r: r["profit_jpy"],
+    )
+    total_cost = sum(c for c, _ in by_user_totals.values())
+    total_charged = sum(g for _, g in by_user_totals.values())
+    return {
+        "days": days,
+        "by_feature": by_feature,
+        "by_user": by_user,
+        "total": _cost_report_margin(total_cost, total_charged),
+    }
+
+
 def _dir_size_bytes(path) -> int:
     if not path.exists():
         return 0

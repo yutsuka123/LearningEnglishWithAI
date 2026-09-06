@@ -28,6 +28,7 @@
 
 from __future__ import annotations
 
+import math
 import random
 from dataclasses import dataclass, field
 
@@ -40,6 +41,19 @@ def grid_size_for(word_count: int) -> int:
     (固定20だと50語では28/50語しか置けないことを実測確認済み)。
     小規模(10語程度)では従来通り20を使う。"""
     return max(20, min(MAX_GRID, word_count + 10))
+
+
+def _rect_dims(base: int, target_aspect: float) -> tuple[int, int]:
+    """正方形の目標サイズ(base)を、画面の縦横比(target_aspect=幅/高さ)に
+    近い長方形の(行数, 列数)に変換する(2026-09-06ユーザー要望「縦長画面
+    なら縦長のクロスワードを作りたい」)。面積(base**2相当)はできるだけ
+    保ったまま比率だけ変える。極端な比率で配置が破綻しないよう
+    MAX_GRIDの2倍を上限にする。"""
+    cols = max(10, round(base * math.sqrt(target_aspect)))
+    rows = max(10, round((base * base) / cols))
+    cap = MAX_GRID * 2
+    return min(rows, cap), min(cols, cap)
+
 
 # 方向 -> 単位ベクトル(行方向, 列方向)。
 DIRECTIONS: dict[str, tuple[int, int]] = {
@@ -93,7 +107,7 @@ def _crossing_count(word: str, row: int, col: int, direction: str,
 
 def _can_place(
     word: str, row: int, col: int, direction: str,
-    grid: dict[tuple[int, int], str], max_grid: int,
+    grid: dict[tuple[int, int], str], max_rows: int, max_cols: int,
     boundary: set[tuple[int, int]] = frozenset(),
 ) -> bool:
     """``boundary``: 既存の各語の直前・直後マス(before/after)の集合
@@ -107,7 +121,7 @@ def _can_place(
     dr, dc = DIRECTIONS[direction]
     cells = _cells_for(word, row, col, direction)
     for r, c in cells:
-        if r < 0 or c < 0 or r >= max_grid or c >= max_grid:
+        if r < 0 or c < 0 or r >= max_rows or c >= max_cols:
             return False
         if (r, c) in boundary:
             return False
@@ -150,7 +164,8 @@ def _boundary_for(placements: list[_Placement]) -> set[tuple[int, int]]:
 
 
 def _try_place_via_intersection(
-    word_id: int, word: str, grid: dict[tuple[int, int], str], max_grid: int,
+    word_id: int, word: str, grid: dict[tuple[int, int], str],
+    max_rows: int, max_cols: int,
     boundary: set[tuple[int, int]] = frozenset(),
 ) -> _Placement | None:
     """交差数が最大になる配置を探して返す(見つからなければNone)。
@@ -167,7 +182,8 @@ def _try_place_via_intersection(
             for direction, (dr, dc) in DIRECTIONS.items():
                 row, col = r - dr * i, c - dc * i
                 if not _can_place(
-                        word, row, col, direction, grid, max_grid, boundary):
+                        word, row, col, direction, grid,
+                        max_rows, max_cols, boundary):
                     continue
                 crossings = _crossing_count(word, row, col, direction, grid)
                 edge_bonus = 1 if i in (0, len(word) - 1) else 0
@@ -179,7 +195,7 @@ def _try_place_via_intersection(
 
 
 def _run_attempt(
-    candidates: list[tuple[int, str]], max_grid: int,
+    candidates: list[tuple[int, str]], max_rows: int, max_cols: int,
     target_count: int | None = None,
 ) -> list[_Placement]:
     if not candidates:
@@ -200,8 +216,8 @@ def _run_attempt(
     placements: list[_Placement] = []
 
     first_id, first_word = ordered[0]
-    start_col = max((max_grid - len(first_word)) // 2, 0)
-    start_row = max_grid // 2
+    start_col = max((max_cols - len(first_word)) // 2, 0)
+    start_row = max_rows // 2
     for i, ch in enumerate(first_word):
         grid[(start_row, start_col + i)] = ch
     first_placement = _Placement(
@@ -225,7 +241,7 @@ def _run_attempt(
         best_score = (-1, -1)
         for idx, (word_id, word) in enumerate(pending):
             placement = _try_place_via_intersection(
-                word_id, word, grid, max_grid, boundary)
+                word_id, word, grid, max_rows, max_cols, boundary)
             if placement is None:
                 continue
             crossings = _crossing_count(
@@ -251,11 +267,12 @@ def _run_attempt(
         boundary |= _boundary_for([best_placement])
         placements.append(best_placement)
 
-    return _refine(placements, max_grid)
+    return _refine(placements, max_rows, max_cols)
 
 
 def _refine(
-    placements: list[_Placement], max_grid: int, rounds: int = 4,
+    placements: list[_Placement], max_rows: int, max_cols: int,
+    rounds: int = 4,
 ) -> list[_Placement]:
     """各語を1つずつ「他の語は固定したまま最善の位置に置き直せないか」を
     試す局所探索(2026-09-03ユーザー指示「最低1平均2以上、できれば平均
@@ -286,7 +303,8 @@ def _refine(
                 target.english, target.row, target.col, target.direction,
                 grid)
             candidate = _try_place_via_intersection(
-                target.word_id, target.english, grid, max_grid, boundary)
+                target.word_id, target.english, grid,
+                max_rows, max_cols, boundary)
             if candidate is None:
                 continue
             candidate_score = _crossing_count(
@@ -335,7 +353,7 @@ def _total_crossings(placements: list[_Placement]) -> int:
 def generate(
     candidates: list[tuple[int, str]], attempts: int = 15,
     max_grid: int = MAX_GRID, target_count: int | None = None,
-    compact: bool = False,
+    compact: bool = False, target_aspect: float | None = None,
 ) -> Puzzle | None:
     """candidates: [(word_id, english), ...]（英大文字小文字は問わないが
     内部ではそのまま比較に使うので、呼び出し側で大文字化しておくこと）。
@@ -359,11 +377,31 @@ def generate(
     ``compact=True``(2026-09-05ユーザー要望「選択できるだけ面積減らして
     クロスを多くするモード」)のときは、面積の小ささを交差数より優先
     する(配置数最優先は変えず、2番目の判定基準を入れ替えるだけ)。
-    既定(False)は従来通り交差数優先の「普通モード」。"""
+    既定(False)は従来通り交差数優先の「普通モード」。
+
+    ``target_aspect``(2026-09-06ユーザー要望「画面サイズを考慮し、縦長
+    画面なら縦長のクロスワードを作りたい」・幅/高さの比)を指定すると、
+    配置可能領域そのものを正方形(max_grid四方)ではなくこの比率に近い
+    長方形にする。配置アルゴリズムは領域外にはみ出せないため、結果の
+    盤面も自然とその比率に近づく(交差最大化を優先する探索なので、
+    必ずしも指定比率ぴったりにはならない=「可能な限り」)。"""
+    longest = max((len(w) for _, w in candidates), default=0)
+    # target_aspectはAPI経由でクライアントの入力値がそのまま届く
+    # (games.py NewGamePayload.screen_aspect)。math.isfinite()で
+    # Infinity/-Infinityを弾かないと、_rect_dimsのmath.sqrt/roundが
+    # OverflowErrorを投げてリクエストが500相当で落ちる
+    # (2026-09-06発覚)。NaNは`target_aspect > 0`がFalseになるため
+    # 元々素通りしない。
+    if target_aspect and target_aspect > 0 and math.isfinite(target_aspect):
+        max_rows, max_cols = _rect_dims(max_grid, target_aspect)
+        max_rows = max(max_rows, longest)
+        max_cols = max(max_cols, longest)
+    else:
+        max_rows = max_cols = max_grid
     best: list[_Placement] = []
     best_key = (-1, -1, float("-inf"))
     for _ in range(attempts):
-        result = _run_attempt(candidates, max_grid, target_count)
+        result = _run_attempt(candidates, max_rows, max_cols, target_count)
         crossings = _total_crossings(result)
         area = _bbox_area(result)
         key = ((len(result), -area, crossings) if compact

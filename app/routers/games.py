@@ -333,26 +333,27 @@ def _leaks_answer(text: str, english: str, japanese: str = "") -> bool:
 def _fetch_candidate_words(
     conn, source_type: str, domains: list[str] | None, deck_id: int | None,
     level_min: str | None = None, level_max: str | None = None,
+    category: str | None = None,
 ) -> list[dict]:
     """クロスワードの候補語(id/english/japanese/example/synonyms)を
     取得する。禁止用語は常に除外する(V1の簡略化・ユーザーのallow_banned
     に関わらず)。level_min/level_max はTOEIC目安の難易度絞り込み
     (2026-09-05ユーザー要望・分野選択時のみ有効、単語帳選択時は単語帳の
-    中身をそのまま使うため無視する)。"""
+    中身をそのまま使うため無視する)。domains未指定でcategoryのみなら
+    大分類配下の全分野、両方未指定なら全分野を対象にする(2026-09-06
+    ユーザー指摘: 分野を何も絞らず「全て」のまま作ろうとすると
+    「分野を1つ以上選んでください」エラーになっていた不具合の修正・
+    /api/wordsのcategory対応と同じ`_word_filter`をそのまま使う)。"""
     if source_type == "domain":
-        if not domains:
-            raise errors.http_error("7002", "分野を1つ以上選んでください。")
         from .vocabulary import BANNED_DOMAIN, _word_filter
         # _word_filterはdomain<>'禁止用語'を必ず付けるが、多義語の
         # word_domain_tags経由で禁止用語がタグ付けされているケースの
         # 防御線として、リクエスト自体からも明示的に除く(2026-09-05
         # fable監査指摘の念のための多重防御)。
-        domains = [d for d in domains if d != BANNED_DOMAIN]
-        if not domains:
-            raise errors.http_error("7002", "分野を1つ以上選んでください。")
+        domains = [d for d in (domains or []) if d != BANNED_DOMAIN]
         where, params = _word_filter(
-            ",".join(domains), None, level_min, level_max, False, False,
-            None)
+            ",".join(domains) if domains else None, None, level_min,
+            level_max, False, False, None, category)
         clause = " WHERE " + " AND ".join(where)
     elif source_type == "deck":
         if not deck_id:
@@ -471,6 +472,7 @@ def _ensure_ai_hints(
         results = list(pool_exec.map(_call, batches))
 
     total_cost = sum(r.cost_usd for r in results)
+    updates = []
     for r in results:
         if not r.ok:
             # 2026-09-05: 失敗を握りつぶすとAI不調に誰も気づけないため、
@@ -489,10 +491,20 @@ def _ensure_ai_hints(
             c[cache_key] = hint
             detail = c.get("_detail") or {}
             detail[cache_key] = hint
-            conn.execute(
-                "UPDATE words SET detail = ? WHERE id = ?",
-                (json.dumps(detail, ensure_ascii=False), c["id"]),
-            )
+            updates.append((json.dumps(detail, ensure_ascii=False), c["id"]))
+    if updates:
+        # 2026-09-06発覚: 呼び出し元の接続(connは呼び出し元のwith db()が
+        # リクエスト終了までコミットしない設計)でここを直接UPDATEすると、
+        # そのトランザクションが開いたままになり、以降の照査/再生成
+        # フェーズが並列に行うai_usageへの書き込み(_record_usage)と
+        # 衝突してdatabase is lockedを頻発させていた(照査機能追加で
+        # フェーズ数が増えたことで顕在化)。ヒントキャッシュはゲーム生成
+        # 全体のアトミック性と無関係(AI原価は既に発生済みで、キャッシュ
+        # だけ独立してコミットしても問題ない)ため、専用の短命な接続で
+        # まとめて書き込み、即コミットして早めに解放する。
+        with db() as cache_conn:
+            cache_conn.executemany(
+                "UPDATE words SET detail = ? WHERE id = ?", updates)
     return total_cost
 
 
@@ -522,12 +534,101 @@ _JA_HINT_SYSTEM = (
 )
 
 
+_REVIEW_EN_SYSTEM = (
+    "クロスワードの英語ヒント文(定義文)の品質チェックをします。各語に"
+    "ついて、①その単語自身や単純な語形変化を含んでいないか、②与えられた"
+    "日本語訳が表す意味と食い違っていないか、③英語の定義として自然で"
+    "分かりやすいか、を確認してください。問題が無ければverdictを\"ok\"、"
+    "問題があれば\"ng\"にしてください(理由は不要)。"
+    'JSON配列のみ出力: [{"english":"GRAVITY","verdict":"ok"},'
+    '{"english":"X","verdict":"ng"}]'
+)
+_REVIEW_JA_SYSTEM = (
+    "クロスワードの日本語ヒント文の品質チェックをします。各語について、"
+    "①その単語自身の英語綴りやカタカナ読みをそのまま含んでいないか、"
+    "②与えられた日本語訳が表す意味と食い違っていないか、③クロスワード"
+    "のヒントとして自然で分かりやすいか、を確認してください。問題が"
+    "無ければverdictを\"ok\"、問題があれば\"ng\"にしてください"
+    "(理由は不要)。"
+    'JSON配列のみ出力: [{"english":"PHONON","verdict":"ok"},'
+    '{"english":"X","verdict":"ng"}]'
+)
+
+
+def _review_ai_hints(
+    pool: list[dict], cache_key: str, review_system: str,
+) -> tuple[set[str], float]:
+    """生成済みのAIヒントをレビューし、問題がありそうな語のenglishの
+    集合を返す(2026-09-06ユーザー要望「作成→照査→再作成」)。生成本体
+    (_ensure_ai_hints・openai_model)より軽量なquality_modelを使い、
+    照査ぶんの体感速度への影響を抑える。レビュー自体が失敗した場合は
+    安全側(既存ヒントをそのまま採用・再生成なし)に倒す。"""
+    from concurrent.futures import ThreadPoolExecutor
+    from ..config import load_settings
+    from ..services import ai
+    checked = [c for c in pool if c.get(cache_key)]
+    if not checked:
+        return set(), 0.0
+    model = load_settings().quality_model
+    CHUNK = 10
+    batches = [checked[i:i + CHUNK] for i in range(0, len(checked), CHUNK)]
+
+    def _call(batch: list[dict]):
+        listing = "\n".join(
+            f"{c['english']} | 訳:{c['japanese']} | ヒント:{c[cache_key]}"
+            for c in batch)
+        return ai.chat(
+            review_system, f"チェック対象:\n{listing}",
+            temperature=0.0, max_tokens=600,
+            feature="crossword_hint_review", model=model)
+
+    with ThreadPoolExecutor(max_workers=min(8, len(batches))) as pool_exec:
+        results = list(pool_exec.map(_call, batches))
+
+    flagged: set[str] = set()
+    for r in results:
+        if not r.ok:
+            continue
+        for item in _json_array(r.text):
+            if str(item.get("verdict", "")).strip().lower() == "ng":
+                en = str(item.get("english", "")).strip().upper()
+                if en:
+                    flagged.add(en)
+    return flagged, sum(r.cost_usd for r in results)
+
+
+def _ensure_ai_hints_reviewed(
+    conn, pool: list[dict], cache_key: str, gen_system: str,
+    review_system: str,
+) -> float:
+    """生成(_ensure_ai_hints)→レビュー(_review_ai_hints)→問題があった語
+    だけ1回だけ再生成、という一連の流れをまとめる(2026-09-06新設)。
+    再生成後は再レビューしない(無限ループ防止・既存の他フォールバックと
+    同じく「ベストエフォート」の方針)。"""
+    cost = _ensure_ai_hints(conn, pool, cache_key, gen_system)
+    flagged, review_cost = _review_ai_hints(pool, cache_key, review_system)
+    cost += review_cost
+    if not flagged:
+        return cost
+    log.info(
+        "crossword hint review: %d件を再生成(cache_key=%s)",
+        len(flagged), cache_key)
+    for c in pool:
+        if c["english"].upper() in flagged:
+            c[cache_key] = ""
+            (c.get("_detail") or {}).pop(cache_key, None)
+    cost += _ensure_ai_hints(conn, pool, cache_key, gen_system)
+    return cost
+
+
 def _ensure_english_ai_hints(conn, pool: list[dict]) -> float:
-    return _ensure_ai_hints(conn, pool, "crossword_hint_en", _EN_HINT_SYSTEM)
+    return _ensure_ai_hints_reviewed(
+        conn, pool, "crossword_hint_en", _EN_HINT_SYSTEM, _REVIEW_EN_SYSTEM)
 
 
 def _ensure_japanese_ai_hints(conn, pool: list[dict]) -> float:
-    return _ensure_ai_hints(conn, pool, "crossword_hint_ja", _JA_HINT_SYSTEM)
+    return _ensure_ai_hints_reviewed(
+        conn, pool, "crossword_hint_ja", _JA_HINT_SYSTEM, _REVIEW_JA_SYSTEM)
 
 
 # 穴埋め(fill_blank)用の専用例文(2026-09-05ユーザー指示「サンプルに
@@ -561,6 +662,10 @@ JAPANESE_STYLES = ("simple", "explanation", "hybrid", "rich")
 class NewGamePayload(BaseModel):
     source_type: str  # 'domain' | 'deck'
     domains: list[str] | None = None
+    # 大分類(2026-09-06追加)。domainsが空でcategoryのみ指定なら大分類
+    # 配下の全分野、両方空なら全分野を対象にする(「分野を1つ以上選んで
+    # ください」エラーの回避・_fetch_candidate_words参照)。
+    category: str | None = None
     deck_id: int | None = None
     # TOEIC目安の難易度絞り込み(2026-09-05・分野選択時のみ有効。
     # 値はapp/routers/vocabulary.pyのLEVEL_ORDERに従う文字列)。
@@ -587,6 +692,14 @@ class NewGamePayload(BaseModel):
     # crossword_gen.generate()のcompact=Trueを使い、交差数よりも面積の
     # 小ささを優先する。既定Falseは従来通り交差数優先。
     compact: bool = False
+    # 画面サイズを考慮したパズル形状(2026-09-06ユーザー要望「縦長画面
+    # なら縦長のクロスワードを作りたい」)。Trueならscreen_aspect(画面の
+    # 幅/高さ比・クライアントがwindow.innerWidth/innerHeightから算出)に
+    # 近い縦横比の盤面になるよう試みる(crossword_gen.generateの
+    # target_aspect参照・アルゴリズムの都合上「可能な限り」の近似)。
+    # compactとは独立(両方Trueなら画面形状に寄せつつ面積も優先する)。
+    screen_fit: bool = False
+    screen_aspect: float | None = None
     # 不正解時の部分一致開示の甘さ(2026-09-05ユーザー要望)。
     # PARTIAL_MATCH_THRESHOLD_BY_DIFFICULTY参照。"normal"が既存動作
     # (旧・全員一律0.8)のまま。
@@ -913,18 +1026,33 @@ def _free_clue_text(
     return ""
 
 
+def _crossword_source_label(
+    domains: list[str] | None, category: str | None,
+) -> str:
+    """再開一覧等の「対象」欄に出す短い表示名(2026-09-06新設)。
+    分野を個別に絞っていればそのまま列挙するが、大分類まるごと/
+    未指定(全分野)のときは205件の分野名を並べると読めなくなるため
+    (ユーザー指摘)、大分類名または「すべて」で代表させる。"""
+    if domains:
+        return ",".join(domains)
+    if category:
+        return f"{category}(全分野)"
+    return "すべて"
+
+
 def _create_crossword_session(
     conn, uid: int, source_type: str, domains: list[str] | None,
     deck_id: int | None, level_min: str | None, level_max: str | None,
     word_count: int, clue_mode: str, english_style: str,
     japanese_style: str, compact: bool = False,
-    answer_difficulty: str = "normal",
+    answer_difficulty: str = "normal", category: str | None = None,
+    screen_fit: bool = False, screen_aspect: float | None = None,
 ) -> dict:
     """クロスワードセッションを1つ生成してDBへ保存し、フロント表示用の
     状態を返す共通処理(2026-09-05・従来crossword_new直書きだった処理を
     /restart(同じ設定で最初から作り直す)と共有できるよう切り出した)。"""
     candidates = _fetch_candidate_words(
-        conn, source_type, domains, deck_id, level_min, level_max)
+        conn, source_type, domains, deck_id, level_min, level_max, category)
     # 選んだモード/スタイルの無料ヒントに必要なデータが無い語は
     # あらかじめ除外する(全クリューに無料ヒントが表示できるように)。
     # AI有効時は「語の説明」をその場で生成できるため、既存synonyms
@@ -980,7 +1108,8 @@ def _create_crossword_session(
     word_pairs = [(c["id"], c["english"]) for c in pool]
     puzzle = crossword_gen.generate(
         word_pairs, attempts=40, target_count=word_count,
-        max_grid=crossword_gen.grid_size_for(word_count), compact=compact)
+        max_grid=crossword_gen.grid_size_for(word_count), compact=compact,
+        target_aspect=screen_aspect if screen_fit else None)
     if puzzle is None or len(puzzle.clues) < MIN_PLACED_WORDS:
         raise errors.http_error(
             "7005",
@@ -1035,29 +1164,36 @@ def _create_crossword_session(
         "cells": sorted(list(puzzle.cells)),
         "clues": clues_full,
     })
+    # source_refは常に実際の分野名(カンマ区切り・restart時に再構築する
+    # ため)を格納する。表示用の短いラベル("すべて"等)は一覧取得時に
+    # _crossword_source_labelで別途組み立てる(2026-09-06ユーザー指摘
+    # 「全分野/大分類まるごとのとき分野名の羅列は読みにくい」対応・
+    # ストレージには生データを保つことでrestartの再現性を壊さない)。
     source_ref = (
         ",".join(domains or []) if source_type == "domain"
         else str(deck_id)
     )
     cur = conn.execute(
         "INSERT INTO crossword_sessions "
-        "(user_id, source_type, source_ref, clue_mode, score_multiplier, "
-        "word_count, english_style, japanese_style, level_min, level_max, "
-        "compact, answer_difficulty, puzzle_json) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-        (uid, source_type, source_ref, clue_mode,
+        "(user_id, source_type, source_ref, category, clue_mode, "
+        "score_multiplier, word_count, english_style, japanese_style, "
+        "level_min, level_max, compact, screen_fit, answer_difficulty, "
+        "puzzle_json) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (uid, source_type, source_ref, category or "", clue_mode,
          CLUE_MODE_SCORE_MULTIPLIER[clue_mode], word_count, english_style,
-         japanese_style, level_min, level_max, compact, answer_difficulty,
-         puzzle_json),
+         japanese_style, level_min, level_max, compact, screen_fit,
+         answer_difficulty, puzzle_json),
     )
     session_id = cur.lastrowid
     _enforce_session_cap(conn, uid)
-    # 2026-09-05新課金式: 呼び出し毎の自動課金(ai.py `_LUMP_SUM_FEATURES`
-    # によりcrossword_hintは自動課金対象外)ではなく、このゲーム1回分の
-    # AI原価合計(ai_cost_total、キャッシュ済みのみなら0)をまとめて課金
-    # する。保存(ピン留め)の有無に関わらず、ゲームを作るたびに毎回課金
-    # する(docs/COST_ESTIMATE.md §1.5「新課金式案」)。
-    ai.charge_crossword_game(conn, uid, ai_cost_total)
+    # 2026-09-06確定の新課金式: 呼び出し毎の自動課金(ai.py
+    # `_LUMP_SUM_FEATURES`によりcrossword_hint/crossword_hint_reviewは
+    # 自動課金対象外)ではなく、このゲーム1回分をまとめて課金する。
+    # AI呼び出しが0回(ai_cost_total<=0)なら固定最低額、それ以外は語数に
+    # 比例した式(docs/COST_ESTIMATE.md §1.5参照)。保存(ピン留め)の
+    # 有無に関わらず、ゲームを作るたびに毎回課金する。
+    ai.charge_crossword_game(conn, uid, ai_cost_total, word_count)
     state = _session_state(conn, session_id, uid, by_id, clue_mode)
     # 希望語数より少なく配置された場合、原因と対策(分野を増やす等)を
     # 案内する(2026-09-03ユーザー指示「うまく作れない場合は分野を
@@ -1327,11 +1463,19 @@ def crossword_new(payload: NewGamePayload):
             payload.deck_id, payload.level_min, payload.level_max,
             payload.word_count, payload.clue_mode, payload.english_style,
             payload.japanese_style, payload.compact,
-            payload.answer_difficulty)
+            payload.answer_difficulty, payload.category,
+            payload.screen_fit, payload.screen_aspect)
+
+
+class RestartPayload(BaseModel):
+    # 「画面に合わせる」モードだったセッションの作り直し時、その場の
+    # (現在の)画面比を使い直すための値(2026-09-06)。省略時は画面形状
+    # 考慮なしになる(旧クライアント・compact/普通モードのセッション用)。
+    screen_aspect: float | None = None
 
 
 @router.post("/crossword/{session_id}/restart")
-def crossword_restart(session_id: int):
+def crossword_restart(session_id: int, payload: RestartPayload | None = None):
     """既存(完了・進行中問わず)セッションと同じ設定で、新しいパズルを
     作り直す「最初から」用(2026-09-05ユーザー要望「クリアしたものも
     再開可能・最初からと、途中かを選べる」の「最初から」側)。"""
@@ -1351,7 +1495,9 @@ def crossword_restart(session_id: int):
             old["level_min"], old["level_max"], old["word_count"],
             old["clue_mode"], old["english_style"], old["japanese_style"],
             bool(old["compact"]),
-            old["answer_difficulty"] or "normal")
+            old["answer_difficulty"] or "normal", old.get("category"),
+            bool(old["screen_fit"]),
+            payload.screen_aspect if payload else None)
 
 
 class PinPayload(BaseModel):
@@ -1528,12 +1674,112 @@ def crossword_sessions():
     with db() as conn:
         _guard_games_access(conn, uid)
         rows = conn.execute(
-            "SELECT id, source_type, source_ref, status, score, created_at, "
-            "word_count, pinned FROM crossword_sessions WHERE user_id = ? "
-            "AND source_type != 'sample' ORDER BY created_at DESC LIMIT 30",
+            "SELECT id, source_type, source_ref, category, status, score, "
+            "created_at, word_count, pinned FROM crossword_sessions "
+            "WHERE user_id = ? AND source_type != 'sample' "
+            "ORDER BY created_at DESC LIMIT 30",
             (uid,),
         ).fetchall()
-        return [dict(r) for r in rows]
+        out = []
+        for r in rows:
+            d = dict(r)
+            # 一覧の「対象」表示用ラベル(2026-09-06新設)。分野を大量に
+            # 列挙すると読みにくいため、大分類/全分野はまとめて表示する
+            # (_crossword_source_label参照)。
+            if d["source_type"] == "domain":
+                domains = d["source_ref"].split(",") if d["source_ref"] \
+                    else []
+                d["source_label"] = _crossword_source_label(
+                    domains, d.get("category"))
+            else:
+                d["source_label"] = d["source_ref"]
+            out.append(d)
+        return out
+
+
+CROSSWORD_RANKING_TOP_N = 10
+
+
+@router.get("/crossword/ranking")
+def crossword_ranking(period: str = "month"):
+    """クロスワードのスコアランキング(2026-09-06新設)。上位10位+自分の
+    順位(圏外なら別途)。**課金ユーザーのみ集計対象**(`user_tier`が
+    "charged"のユーザー=残高>0またはチャージキー償還履歴あり。管理者
+    というだけでは対象にならない・2026-09-06ユーザー指示)。**サンプル
+    クロスワード(source_type='sample')のスコアは対象外**(自分で作る
+    ゲームのみ集計・同ユーザー指示)。他ユーザーの表示名は本名/ニック
+    ネームを一切出さず、ユーザー名の頭文字ローマ字1文字+「さん」に
+    匿名化する(例: "yutaka"→"Yさん")。自分の行だけ実際のニックネーム
+    (無ければユーザー名)を表示する。"""
+    if period not in ("month", "total"):
+        raise errors.http_error("7002", "periodはmonthかtotalを指定してください。")
+    uid = current_user_id()
+    with db() as conn:
+        _guard_games_access(conn, uid)
+        period_clause = (
+            "AND strftime('%Y-%m', datetime(cs.created_at, '+9 hours')) "
+            "= strftime('%Y-%m', datetime('now', '+9 hours'))"
+            if period == "month" else ""
+        )
+        rows = conn.execute(
+            "SELECT cs.user_id AS user_id, u.username AS username, "
+            "SUM(cs.score) AS total_score "
+            "FROM crossword_sessions cs JOIN users u ON u.id = cs.user_id "
+            "WHERE cs.source_type != 'sample' "
+            "AND u.balance_jpy IS NOT NULL AND u.balance_jpy != 0 "
+            f"{period_clause} "
+            "GROUP BY cs.user_id HAVING total_score > 0 "
+            "ORDER BY total_score DESC",
+            (),
+        ).fetchall()
+        # user_tierの「チャージキー償還履歴あり」条件(残高0でも過去に
+        # チャージ済みなら対象)も満たすユーザーを追加で拾う(残高が
+        # ちょうど0円のヘビーユーザーを取りこぼさないため)。
+        redeemed_rows = conn.execute(
+            "SELECT cs.user_id AS user_id, u.username AS username, "
+            "SUM(cs.score) AS total_score "
+            "FROM crossword_sessions cs JOIN users u ON u.id = cs.user_id "
+            "WHERE cs.source_type != 'sample' "
+            "AND (u.balance_jpy IS NULL OR u.balance_jpy = 0) "
+            "AND EXISTS (SELECT 1 FROM charge_keys ck "
+            "            WHERE ck.used_by_user_id = u.id) "
+            f"{period_clause} "
+            "GROUP BY cs.user_id HAVING total_score > 0",
+            (),
+        ).fetchall()
+        ranked = sorted(
+            [dict(r) for r in rows] + [dict(r) for r in redeemed_rows],
+            key=lambda r: -r["total_score"],
+        )
+        from ..services.auth import get_user_settings
+        my_nickname = get_user_settings(conn, uid).get("nickname") or ""
+
+    def _anon(username: str) -> str:
+        first = (username or "?")[:1].upper()
+        return f"{first}さん"
+
+    top = []
+    my_entry = None
+    for i, r in enumerate(ranked):
+        rank = i + 1
+        is_me = r["user_id"] == uid
+        entry = {
+            "rank": rank,
+            "display": (my_nickname or r["username"]) if is_me
+                       else _anon(r["username"]),
+            "total_score": r["total_score"],
+            "is_me": is_me,
+        }
+        if rank <= CROSSWORD_RANKING_TOP_N:
+            top.append(entry)
+        if is_me:
+            my_entry = entry
+    return {
+        "period": period,
+        "top": top,
+        "me": my_entry,
+        "me_in_top": bool(my_entry and my_entry["rank"] <= CROSSWORD_RANKING_TOP_N),
+    }
 
 
 @router.get("/crossword/{session_id}")

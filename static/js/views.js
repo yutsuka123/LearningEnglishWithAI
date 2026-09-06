@@ -4077,6 +4077,7 @@ export async function admin(root) {
   const TABS = [
     ["user-manage", "👤 ユーザー別管理"],
     ["user-usage", "📊 ユーザー別使用状況"],
+    ["cost-report", "💰 コスト管理"],
     ["logs", `📜 ログ`],
     ["inquiries", `📮 問い合わせ対応${pendingInquiries ? ` (${pendingInquiries})` : ""}`],
     ["charge-keys", `🧾 購入チャージキー対応${pendingOrders ? ` (${pendingOrders})` : ""}`],
@@ -4482,6 +4483,30 @@ export async function admin(root) {
           `<span class="badge-warn">未配送 ${pendingOrders}件</span>` :
           `<span class="muted">未配送はありません。</span>`}</p>
         <a class="btn good" href="/admin/fulfillment">フルフィルメント管理を開く →</a>
+      </div>
+    </div>
+
+    <div class="admin-sec" data-sec="cost-report" style="display:none">
+      <div class="card">
+        <h2>💰 コスト管理(原価・課金・粗利)</h2>
+        <p class="muted">AI原価(ai_usage)と実際の課金控除額(balance_ledger)
+          を突き合わせた、機能別・ユーザー別の粗利レポートです。粗利率
+          0%未満は赤字(<span class="badge-bad">赤字</span>)、20%未満は
+          低粗利(<span class="badge-warn">低粗利</span>)として警告表示
+          します(閾値はapp/routers/system.pyのCOST_REPORT_*_MARGIN_PCT
+          と対応)。無料枠内の利用(課金¥0)はそのぶん赤字寄りに出ますが、
+          想定内の場合も多いため実態と合わせて確認してください。</p>
+        <div class="row" style="align-items:center">
+          <label>集計期間:
+            <select id="costReportDays">
+              <option value="7">直近7日</option>
+              <option value="30" selected>直近30日</option>
+              <option value="90">直近90日</option>
+              <option value="365">直近1年</option>
+            </select>
+          </label>
+        </div>
+        <div id="costReportWrap" class="mt"><p class="muted">読み込み中…</p></div>
       </div>
     </div>
 
@@ -5646,6 +5671,66 @@ export async function admin(root) {
     ?.addEventListener("click", () => {
       if (!diskUsageLoaded) { diskUsageLoaded = true; loadDiskUsage(); }
     });
+
+  // --- コスト管理(原価/課金/粗利)レポート(2026-09-06新設) -------------
+  function marginBadge(row) {
+    if (row.is_loss) return `<span class="badge-bad">赤字</span>`;
+    if (row.is_low_margin) return `<span class="badge-warn">低粗利</span>`;
+    return `<span class="badge-ok">健全</span>`;
+  }
+  function costReportRow(label, row) {
+    return `<tr>
+      <td>${escapeHtml(label)}</td>
+      <td>¥${row.cost_jpy.toLocaleString()}</td>
+      <td>¥${row.charged_jpy.toLocaleString()}</td>
+      <td>¥${row.profit_jpy.toLocaleString()}</td>
+      <td>${row.margin_pct}%</td>
+      <td>${marginBadge(row)}</td>
+    </tr>`;
+  }
+  async function loadCostReport() {
+    const wrap = root.querySelector("#costReportWrap");
+    if (!wrap) return;
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    const days = root.querySelector("#costReportDays")?.value || 30;
+    try {
+      const res = await api.get(`/api/system/admin/cost-report?days=${days}`);
+      const head = `<thead><tr><th>対象</th><th>原価</th><th>課金額</th>
+        <th>粗利</th><th>粗利率</th><th>状態</th></tr></thead>`;
+      wrap.innerHTML = `
+        <div class="grid cols-4 mt">
+          <div class="stat"><div class="num">¥${res.total.cost_jpy.toLocaleString()}</div>
+            <div class="lbl">総原価</div></div>
+          <div class="stat"><div class="num">¥${res.total.charged_jpy.toLocaleString()}</div>
+            <div class="lbl">総課金額</div></div>
+          <div class="stat"><div class="num">¥${res.total.profit_jpy.toLocaleString()}</div>
+            <div class="lbl">総粗利</div></div>
+          <div class="stat"><div class="num">${res.total.margin_pct}%</div>
+            <div class="lbl">粗利率 ${marginBadge(res.total)}</div></div>
+        </div>
+        <h3 class="mt">機能別</h3>
+        ${res.by_feature.length ? `<table><tbody>` +
+          `${head}${res.by_feature.map((r) =>
+            costReportRow(r.feature, r)).join("")}</tbody></table>`
+          : `<p class="muted">この期間のデータはありません。</p>`}
+        <h3 class="mt">ユーザー別(粗利の低い順)</h3>
+        ${res.by_user.length ? `<table><tbody>` +
+          `${head}${res.by_user.map((r) =>
+            costReportRow(
+              `${r.username}${r.role === "admin" ? "(管理者)" : ""}`, r)
+          ).join("")}</tbody></table>`
+          : `<p class="muted">この期間のデータはありません。</p>`}`;
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  let costReportLoaded = false;
+  root.querySelector('.step-chip[data-sec="cost-report"]')
+    ?.addEventListener("click", () => {
+      if (!costReportLoaded) { costReportLoaded = true; loadCostReport(); }
+    });
+  root.querySelector("#costReportDays")
+    ?.addEventListener("change", loadCostReport);
 
   root.querySelectorAll(".iq-done").forEach((btn) => {
     btn.addEventListener("click", async () => {
@@ -7406,7 +7491,7 @@ async function cwRenderHub(root) {
     <h1>🎮 ゲーム ${infoIcon("help-games",
       "単語を使ったミニゲームで遊びながら学べる機能です。" +
       "分野・単語帳から出題範囲を選んで挑戦できます。")}</h1>
-    <div class="grid cols-2 mt">
+    <div class="grid cols-3 mt">
       <div class="card" id="cwCardStart"
         style="cursor:pointer;border-color:var(--accent);border-width:2px">
         <h2>✏️ クロスワード作成${state.isGuest
@@ -7419,6 +7504,11 @@ async function cwRenderHub(root) {
         <p class="muted">あらかじめ用意した固定のパズルで手軽に挑戦。
           ログイン不要(ゲストは5個まで)。</p>
       </div>
+      <div class="card" id="cwCardRanking" style="cursor:pointer">
+        <h2>🏆 ランキング</h2>
+        <p class="muted">自分で作ったクロスワードの合計スコアで、他の
+          課金ユーザーと比較できます。</p>
+      </div>
     </div>
     ${sessions.length ? `<div class="card mt">
       <h3>再開できるゲーム</h3>
@@ -7429,7 +7519,7 @@ async function cwRenderHub(root) {
         <th>対象</th><th>状態</th><th>語数</th><th>スコア</th><th>日時</th>
         <th>保存</th><th></th>
       </tr></thead><tbody>${sessions.map((s) => `<tr>
-        <td>${escapeHtml(s.source_ref)}</td>
+        <td>${escapeHtml(s.source_label || s.source_ref)}</td>
         <td class="muted">${s.status === "completed" ? "完了" : "進行中"}</td>
         <td>${s.word_count ?? "-"}</td>
         <td>${s.score}</td>
@@ -7448,6 +7538,8 @@ async function cwRenderHub(root) {
     .addEventListener("click", () => cwRenderSamples(root));
   root.querySelector("#cwCardStart")
     .addEventListener("click", () => cwRenderSetup(root));
+  root.querySelector("#cwCardRanking")
+    .addEventListener("click", () => cwRenderRanking(root));
   root.querySelectorAll("[data-resume]").forEach((b) => {
     b.addEventListener("click", () => {
       cwRenderPlay(root, Number(b.dataset.resume));
@@ -7457,8 +7549,12 @@ async function cwRenderHub(root) {
     b.addEventListener("click", async () => {
       b.disabled = true;
       try {
+        // 「画面に合わせる」モードだった場合に備え、その場の画面比を
+        // 送っておく(screen_fitでないセッションではサーバー側で無視
+        // される・_create_crossword_session参照)。
         const session = await api.post(
-          `/api/games/crossword/${b.dataset.restart}/restart`, {});
+          `/api/games/crossword/${b.dataset.restart}/restart`,
+          { screen_aspect: window.innerWidth / window.innerHeight });
         cwRenderPlay(root, session.session_id, session);
       } catch (e) {
         toast(e.message || "作り直しに失敗しました。");
@@ -7478,6 +7574,66 @@ async function cwRenderHub(root) {
       }
     });
   });
+}
+
+// クロスワードのスコアランキング(2026-09-06新設)。今月/トータルの
+// 2種類、上位10位+自分の順位(圏外なら別枠で表示)。課金ユーザーのみが
+// 集計対象・サンプルクロスワードのスコアは対象外(games.py
+// crossword_ranking参照)。
+async function cwRenderRanking(root, period) {
+  period = period === "total" ? "total" : "month";
+  root.innerHTML = `<p class="muted">読み込み中…</p>`;
+  let data;
+  try {
+    data = await api.get(`/api/games/crossword/ranking?period=${period}`);
+  } catch (e) {
+    root.innerHTML = `<div class="card">読み込みに失敗しました: ${
+      escapeHtml(e.message || "")}</div>`;
+    return;
+  }
+  const rankRow = (e) => `<tr${e.is_me ? ' style="font-weight:bold"' : ""}>
+    <td>${e.rank}</td>
+    <td>${escapeHtml(e.display)}${e.is_me ? ` <span class="pill">自分</span>` : ""}</td>
+    <td>${e.total_score}</td>
+  </tr>`;
+  root.innerHTML = `
+    <div class="row">
+      <button type="button" class="btn ghost" id="cwRankingBack">
+        ← ゲームメニューに戻る</button>
+    </div>
+    <h1 class="mt">🏆 クロスワード ランキング ${infoIcon("help-cw-ranking",
+      "自分で作ったクロスワードの合計スコアのランキングです。集計対象は"
+      + "課金ユーザーのみ、サンプルクロスワードのスコアは対象外です。"
+      + "他の方の名前は表示されません(ユーザー名の頭文字のみ)。")}</h1>
+    <div class="sample-gate-banner">
+      ⚠️ このランキングは<b>課金ユーザーのみ</b>が集計対象です。また
+      <b>サンプルクロスワードのスコアは対象外</b>で、「✏️ クロスワード
+      作成」で自分で作ったゲームのスコアのみ合計されます。他の方の
+      お名前は表示されません(ユーザー名の頭文字のローマ字1文字のみ
+      表示)。
+    </div>
+    <div class="row mt" style="align-items:center">
+      <button type="button" class="btn ${period === "month" ? "primary" : "ghost"}"
+        id="cwRankMonth">今月のランキング</button>
+      <button type="button" class="btn ${period === "total" ? "primary" : "ghost"}"
+        id="cwRankTotal">トータルランキング</button>
+    </div>
+    ${data.top.length ? `<table class="mt"><thead><tr>
+      <th>順位</th><th>ユーザー</th><th>合計スコア</th>
+    </tr></thead><tbody>${data.top.map(rankRow).join("")}</tbody></table>`
+      : `<p class="muted mt">まだこの期間のランキングデータがありません。</p>`}
+    ${data.me && !data.me_in_top ? `<p class="muted mt">あなたの順位:</p>
+      <table><tbody>${rankRow(data.me)}</tbody></table>`
+      : (!data.me ? `<p class="muted mt">あなたはまだ集計対象外です
+        (課金ユーザーになると、自分で作ったゲームのスコアが集計対象に
+        なります)。</p>` : "")}
+  `;
+  root.querySelector("#cwRankingBack")
+    .addEventListener("click", () => cwRenderHub(root));
+  root.querySelector("#cwRankMonth")
+    .addEventListener("click", () => cwRenderRanking(root, "month"));
+  root.querySelector("#cwRankTotal")
+    .addEventListener("click", () => cwRenderRanking(root, "total"));
 }
 
 // サンプルクロスワード一覧(2026-09-05・集客用に一般公開する固定パズル)。
@@ -7566,6 +7722,73 @@ async function cwRenderSamples(root) {
   });
 }
 
+// クロスワード生成の所要時間を語数/モードから概算し、進捗バーを動かす
+// (2026-09-06ユーザー要望「語数から推測される最大所要時間×1.3でバーを
+// 動かせば、バーが100%なのにまだ待たされる体験を減らせる」)。表は
+// 実測(語数{3,5,10,20,40,50}×分野条件3パターンの計18件、always_both・
+// english_style=japanese_style=rich=最もAI負荷が高い組み合わせ)での
+// 各語数ごとの最大値(3語分野中の最大値等)。中間の語数は線形補間する。
+// AI不要(fill_blank/simple等)なら盤面生成のみでほぼ即時(1.5秒と仮定)。
+const CW_MAX_SECONDS_BOTH_PHASES = [
+  [3, 17.3], [5, 11.8], [10, 16.9], [20, 18.1], [40, 22.5], [50, 30.2],
+];
+function cwMaxSecondsBothPhases(wordCount) {
+  const pts = CW_MAX_SECONDS_BOTH_PHASES;
+  if (wordCount <= pts[0][0]) return pts[0][1];
+  if (wordCount >= pts[pts.length - 1][0]) return pts[pts.length - 1][1];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x0, y0] = pts[i], [x1, y1] = pts[i + 1];
+    if (wordCount >= x0 && wordCount <= x1) {
+      return y0 + (y1 - y0) * (wordCount - x0) / (x1 - x0);
+    }
+  }
+  return pts[pts.length - 1][1];
+}
+function cwEstimateSeconds(clueMode, englishStyle, japaneseStyle, wordCount) {
+  const wantsJa = clueMode === "always_ja" || clueMode === "always_both";
+  const wantsEn = clueMode === "always_english" || clueMode === "always_both";
+  const jaNeedsAi = wantsJa
+    && ["explanation", "hybrid", "rich"].includes(japaneseStyle);
+  const enNeedsAi = wantsEn
+    && ["definition", "hybrid", "rich"].includes(englishStyle);
+  const aiPhases = (state.aiEnabled === false) ? 0
+    : (jaNeedsAi ? 1 : 0) + (enNeedsAi ? 1 : 0);
+  if (aiPhases === 0) return 1.5;
+  const bothMax = cwMaxSecondsBothPhases(wordCount);
+  return aiPhases === 2 ? bothMax : bothMax / 1.8;
+}
+
+// cwEstimateSecondsは実測の「最大値」ベースの見積もりなので、そこから
+// さらに×1.3かけて0→99%まで進め、実際の完了時にcompleteFn側で100%に
+// する(2026-09-06ユーザー指示「語数から推測される最大所要時間×1.3」)。
+// バーが先に100%へ到達して「まだ待たされる」体験を避けるため、99%
+// までしか自動では進めない。
+function cwStartProgressBar(root, estimateSeconds) {
+  const wrap = root.querySelector("#cwProgressWrap");
+  const bar = root.querySelector("#cwProgressBar");
+  if (!wrap || !bar) return () => {};
+  const durationMs = Math.max(1000, estimateSeconds * 1.3 * 1000);
+  const t0 = performance.now();
+  wrap.style.display = "";
+  bar.style.width = "0%";
+  let raf = 0;
+  const tick = () => {
+    const pct = Math.min(99, ((performance.now() - t0) / durationMs) * 100);
+    bar.style.width = pct + "%";
+    raf = requestAnimationFrame(tick);
+  };
+  raf = requestAnimationFrame(tick);
+  return (finished) => {
+    cancelAnimationFrame(raf);
+    if (finished) {
+      bar.style.width = "100%";
+      setTimeout(() => { wrap.style.display = "none"; }, 300);
+    } else {
+      wrap.style.display = "none";
+    }
+  };
+}
+
 async function cwRenderSetup(root, preset) {
   const [facets, decks] = await Promise.all([
     api.get("/api/words/facets"),
@@ -7588,6 +7811,7 @@ async function cwRenderSetup(root, preset) {
   const englishStyle = effective?.englishStyle || "fill_blank";
   const japaneseStyle = effective?.japaneseStyle || "simple";
   const compact = effective?.compact || false;
+  const screenFit = effective?.screenFit || false;
   const answerDifficulty = effective?.answerDifficulty || "normal";
   const catOpts = ['<option value="">全カテゴリ</option>']
     .concat(Object.keys(domainGroups).map((c) => `<option
@@ -7667,10 +7891,15 @@ async function cwRenderSetup(root, preset) {
       <div class="cw-optgroup mt">
         <div class="cw-optgroup-title">パズルの詰め方</div>
         <div class="cw-radio-col">
-          ${cwRadioOpt("cwCompact", "0", !compact, "普通",
+          ${cwRadioOpt("cwShapeMode", "0", !compact && !screenFit, "普通",
             "交差(クロス)の多さを優先して配置します")}
-          ${cwRadioOpt("cwCompact", "1", compact, "コンパクト(面積優先)",
+          ${cwRadioOpt("cwShapeMode", "1", compact && !screenFit,
+            "コンパクト(面積優先)",
             "できるだけ盤面の面積が小さくなるよう配置します")}
+          ${cwRadioOpt("cwShapeMode", "screen", screenFit,
+            "画面に合わせる(縦横比を考慮)",
+            "今の画面の縦横比に近い形の盤面にします" +
+            "(可能な範囲での近似・スマホ縦持ちなら縦長に)")}
         </div>
       </div>
       <div class="cw-optgroup mt">
@@ -7725,6 +7954,9 @@ async function cwRenderSetup(root, preset) {
       <button class="btn primary mt" id="cwStart" ${
         state.isGuest ? "disabled" : ""}>${
         state.isGuest ? "🔒 スタート(要登録)" : "スタート"}</button>
+      <div class="bar mt" id="cwProgressWrap" style="display:none">
+        <span id="cwProgressBar" style="width:0%"></span>
+      </div>
       <p class="muted mt" id="cwError" style="display:none"></p>
     </div>
   `;
@@ -7870,30 +8102,44 @@ async function cwRenderSetup(root, preset) {
       'input[name="cwEnglishStyle"]:checked')?.value || "fill_blank";
     const selJapaneseStyle = root.querySelector(
       'input[name="cwJapaneseStyle"]:checked')?.value || "simple";
-    const selCompact = root.querySelector(
-      'input[name="cwCompact"]:checked')?.value === "1";
+    const selShapeMode = root.querySelector(
+      'input[name="cwShapeMode"]:checked')?.value || "0";
+    const selCompact = selShapeMode === "1";
+    const selScreenFit = selShapeMode === "screen";
+    // 画面の縦横比(可能な限りこれに近い盤面形状にする・
+    // crossword_gen.generateのtarget_aspect参照)。
+    const selScreenAspect = selScreenFit
+      ? window.innerWidth / window.innerHeight : null;
     const selAnswerDifficulty = root.querySelector(
       'input[name="cwAnswerDifficulty"]:checked')?.value || "normal";
     const body = {
       source_type: sourceType, word_count: wordCount,
       clue_mode: selClueMode, english_style: selEnglishStyle,
       japanese_style: selJapaneseStyle, compact: selCompact,
+      screen_fit: selScreenFit, screen_aspect: selScreenAspect,
       answer_difficulty: selAnswerDifficulty,
     };
     let recentEntry = {
       sourceType, wordCount, clueMode: selClueMode,
       englishStyle: selEnglishStyle, japaneseStyle: selJapaneseStyle,
-      compact: selCompact, answerDifficulty: selAnswerDifficulty,
+      compact: selCompact, screenFit: selScreenFit,
+      answerDifficulty: selAnswerDifficulty,
     };
     if (sourceType === "domain") {
+      const selCategory = root.querySelector("#cwCategory").value;
       body.domains = [...selectedDomains];
+      // 分野を個別に絞っていなければ大分類(あれば)、それも無ければ
+      // 全分野を対象にする(2026-09-06ユーザー指摘「分野を1つ以上選んで
+      // ください、というエラーが出る・全て選択も許容すべき」)。
+      body.category = selCategory || null;
       body.level_min = levelMin || null;
       body.level_max = levelMax || null;
       recentEntry.domains = body.domains;
-      recentEntry.majorCategory = root.querySelector("#cwCategory").value;
+      recentEntry.majorCategory = selCategory;
       recentEntry.levelMin = levelMin;
       recentEntry.levelMax = levelMax;
-      recentEntry.label = body.domains.join("・") || "分野未選択";
+      recentEntry.label = body.domains.length ? body.domains.join("・")
+        : selCategory ? `${selCategory}(全分野)` : "すべて";
     } else {
       const deckSel = root.querySelector("#cwDeck");
       body.deck_id = deckSel ? Number(deckSel.value) || null : null;
@@ -7905,13 +8151,18 @@ async function cwRenderSetup(root, preset) {
     errEl.style.display = "none";
     const origLabel = startBtn.textContent;
     startBtn.disabled = true;
-    startBtn.textContent = "⏳ クロスワード生成中…(ヒント作成のため数秒" +
-      "かかることがあります)";
+    startBtn.textContent = "⏳ クロスワード生成中…(ヒント作成のため数十秒" +
+      "かかる場合があります)";
+    const estimateSeconds = cwEstimateSeconds(
+      selClueMode, selEnglishStyle, selJapaneseStyle, wordCount);
+    const finishProgress = cwStartProgressBar(root, estimateSeconds);
     try {
       const session = await api.post("/api/games/crossword/new", body);
+      finishProgress(true);
       cwSaveRecent(recentEntry);
       cwRenderPlay(root, session.session_id, session);
     } catch (e) {
+      finishProgress(false);
       errEl.textContent = e.message || "生成に失敗しました。";
       errEl.style.display = "";
       startBtn.disabled = false;
@@ -7925,21 +8176,28 @@ async function cwRenderSetup(root, preset) {
 // 大きくなりすぎると見づらい」)。従来は28px固定だったため、語数上限を
 // 50まで拡大した後は最大34x34マス(app/services/crossword_gen.pyの
 // MAX_GRID)まで育ち、固定サイズのままだと表示が際限なく巨大になって
-// いた。目標合計サイズ(TARGET_PX)をマスの多い辺で割ってセルサイズを
+// いた。目標合計サイズ(TARGET_BOARD_PX)をマスの多い辺で割ってセルサイズを
 // 決めることで、語数が増えるほどセルを縮小し、盤面全体の面積を一定
-// 範囲に抑える(既定10語・20x20相当の盤面ではTARGET_PX/20=28pxとなり、
-// 従来の見た目のまま)。画面幅が狭い場合はさらにそちらを優先する。
+// 範囲に抑える(既定10語・20x20相当の盤面ではTARGET_BOARD_PX/20=28pxと
+// なり、従来の見た目のまま)。
+// 2026-09-06: 一時「14px未満に縮めず、大きい盤面はスクロールで見る」
+// 方針(縮小なし)に変更したが、実際の40語盤面(34x29マス)を見た
+// ユーザーから「大きすぎるのでもう少し縮めてよい・16pxぐらいなら
+// 問題ない、最小は14px」との判断があり、上記の目標サイズ縮小方式に
+// 戻した。猫画像はSVG化せず常に実写PNGを使う(SVGアイコン案は
+// 「かわいさが失われる」との理由で不採用済み)。画面幅が狭い場合は
+// そちらも考慮して更に縮める。
 const CW_MAX_CELL_PX = 28;
 const CW_MIN_CELL_PX = 14;
 const CW_TARGET_BOARD_PX = 560;
 function cwCellSizing(rows, cols) {
-  const maxDim = Math.max(rows, cols, 1);
+  const maxDim = Math.max(rows, cols);
   const availableWidth = Math.max(
     (typeof window !== "undefined" ? window.innerWidth : 600) - 32, 200);
   const cellPx = Math.max(CW_MIN_CELL_PX, Math.min(
     CW_MAX_CELL_PX,
-    Math.floor(availableWidth / cols),
     Math.floor(CW_TARGET_BOARD_PX / maxDim),
+    Math.floor(availableWidth / cols),
   ));
   return {
     cellPx,
@@ -8095,7 +8353,12 @@ async function cwRenderPlay(root, sessionId, initialState) {
             || clues[0];
           if (primary) {
             // 元画像に横顔/正面/背面などのポーズが揃っているため、
-            // CSS回転はしない(2026-09-05ユーザー指摘)。
+            // CSS回転はしない(2026-09-05ユーザー指摘)。SVGアイコンへの
+            // フォールバックも試したが「SVGは厳しい」とのユーザー判断で
+            // 不採用(2026-09-06)。マスが小さくなる問題自体は、盤面全体を
+            // 縮めてでも詰め込む従来方式をやめ、セルサイズに14pxの下限を
+            // 設けて盤面ごとスクロールで見る方式に変更して対応する
+            // (cwCellSizing参照)。
             catImg = `<img class="cw-cell-cat" src="${
               cwCatImageFor(primary)}" alt=""/>`;
           }
