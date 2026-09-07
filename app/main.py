@@ -248,7 +248,17 @@ async def _auth_context(request, call_next):
             elif not allowed:
                 if path.startswith("/api"):
                     return error_response("2003", "要ログイン")
-                return RedirectResponse("/login")
+                # 2026-09-07・Fable監査指摘: 元のURL(例: PayPay決済から
+                # 戻ってきた/paypay-charge?mpid=...)を保持せず常に/login
+                # へ飛ばしていたため、モバイルでPayPayアプリから別ブラウザ
+                # /セッション無しで開いた場合、ログイン後に確認画面
+                # (mpid)を見失い「支払ったのに反映が見えない」体験になって
+                # いた(pt自体はcronで安全に付与されるが、体験が悪い)。
+                # nextパラメータで元のURLへ戻す。
+                from urllib.parse import quote
+                query = f"?{request.url.query}" if request.url.query else ""
+                next_url = quote(f"{path}{query}", safe="")
+                return RedirectResponse(f"/login?next={next_url}")
     token = auth_svc.set_current_user_id(
         uid if uid is not None else OWNER_USER_ID)
     ip_token = auth_svc.set_current_ip(client_ip)

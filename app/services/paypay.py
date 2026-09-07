@@ -289,6 +289,7 @@ def refund(
 
 def credit_if_completed(
     conn, payment_row, status: str, payment_id: str,
+    paypay_amount_jpy: int | None = None,
 ) -> bool:
     """`paypay_payments`の1行(sqlite3.Row)に対し、statusがCOMPLETEDで
     かつ未付与の場合に限り、原子的にpt付与する。付与できたかどうかを
@@ -330,6 +331,20 @@ def credit_if_completed(
             "mpid=%s user_id=%s amount_jpy=%s — see comment above before "
             "changing this.",
             mpid, payment_row["user_id"], payment_row["amount_jpy"])
+        return False
+    # 2026-09-07・Fable監査指摘: 付与前にPayPay側が実際に確認した金額
+    # (Get Payment Detailsのdata.amount.amount)とDB側の想定金額
+    # (create時にこちらが指定した額)を突き合わせる安価な不変条件チェック。
+    # 現状これが食い違う経路は無い(merchantPaymentId は作成時に1回だけ
+    # 発番・以後不変)はずだが、万一の実装ミスや将来の変更で金額が
+    # ズレた場合に無条件でpt付与してしまわないための最終防衛線。
+    # 呼び出し元がamountを渡さない(未対応)場合はチェックをスキップする。
+    if (paypay_amount_jpy is not None
+            and int(paypay_amount_jpy) != int(payment_row["amount_jpy"])):
+        log.error(
+            "paypay: AMOUNT MISMATCH mpid=%s db_amount_jpy=%s "
+            "paypay_amount_jpy=%s — pt付与を拒否しました。要手動確認。",
+            mpid, payment_row["amount_jpy"], paypay_amount_jpy)
         return False
     cur = conn.execute(
         "UPDATE paypay_payments SET credited_at = datetime('now') "

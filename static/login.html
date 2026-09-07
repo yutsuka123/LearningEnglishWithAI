@@ -270,6 +270,22 @@
       try { localStorage.setItem(key, value); } catch (_) { /* ignore */ }
     }
 
+    // ログイン/登録後の戻り先(2026-09-07・Fable監査指摘)。PayPay決済から
+    // 戻ってきてセッションが無かった場合(app/main.pyの_auth_contextが
+    // /login?next=...で送り返す)、ログイン後にそのままpaypay-charge画面
+    // (mpid付き)へ戻し、支払い確認・pt反映を見せる。オープンリダイレクト
+    // 対策として「/」始まり・「//」始まりでない同一オリジンの相対パスのみ
+    // 許可し、それ以外(未指定・不正値)は従来通りトップへ。
+    function safeNextUrl() {
+      try {
+        const next = new URLSearchParams(location.search).get('next');
+        if (next && next.startsWith('/') && !next.startsWith('//')) {
+          return next;
+        }
+      } catch (_) { /* ignore */ }
+      return '/';
+    }
+
     // テーマ/文字サイズはメインアプリ(static/js/app.js)と同じ
     // localStorageキー("theme"/"fontSize")を使い、ログイン前後で
     // 設定が引き継がれるようにする。
@@ -516,7 +532,7 @@
           }),
         });
         const d = await r.json();
-        if (d.ok) { location.href = '/'; }
+        if (d.ok) { location.href = safeNextUrl(); }
         else { e.textContent = d.error || 'ログインに失敗しました。'; }
       } catch (_) { e.textContent = '通信エラーが発生しました。'; }
     });
@@ -584,7 +600,7 @@
           }),
         });
         const d = await r.json();
-        if (d.ok) { location.href = '/'; }
+        if (d.ok) { location.href = safeNextUrl(); }
         else { se.textContent = d.error || '登録に失敗しました。'; }
       } catch (_) { se.textContent = '通信エラーが発生しました。';
       } finally { if (submitBtn) submitBtn.disabled = false; }

@@ -50,9 +50,15 @@ def main() -> int:
         return 0
     checked = credited = errored = 0
     with db() as conn:
+        # credit_if_completedはCOMPLETED以外でもPayPay側の最新statusを
+        # 書き戻す(create()直後のFAILEDと同じ理由)。CANCELED/EXPIREDに
+        # なった行を除外し忘れると、7日間・15分おきに同じ結論(未払いの
+        # まま)を問い合わせ続けてしまう(2026-09-07・Fable監査指摘。
+        # 一般公開後は「作っただけで払わない」が常態化するため無視できない
+        # ノイズになる)。
         rows = conn.execute(
             "SELECT * FROM paypay_payments WHERE credited_at IS NULL "
-            "AND status != 'FAILED' "
+            "AND status NOT IN ('FAILED', 'CANCELED', 'EXPIRED') "
             "AND created_at <= datetime('now', '-10 minutes') "
             "AND created_at >= datetime('now', '-7 days') "
             "ORDER BY created_at"
@@ -70,9 +76,11 @@ def main() -> int:
         body = data.get("data") or {}
         status = body.get("status") or ""
         payment_id = body.get("paymentId") or ""
+        paypay_amount_jpy = (body.get("amount") or {}).get("amount")
         with db() as conn:
             did_credit = paypay.credit_if_completed(
-                conn, row, status, payment_id)
+                conn, row, status, payment_id,
+                paypay_amount_jpy=paypay_amount_jpy)
         if did_credit:
             credited += 1
             log.info(

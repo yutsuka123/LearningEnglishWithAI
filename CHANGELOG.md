@@ -45,6 +45,20 @@
 - `app_state.paypay_charge_public_enabled`は2026-09-07 18:00に有効化予定
   (`scripts/reconcile_paypay_payments.py`のcron登録(`*/15分`)は9/2時点で
   完了済みのため追加対応不要)。
+- **公開直前にclaude-fable-5へ最終監査を依頼し、NO-GO(要修正)判定を受けて
+  修正**: ①PayPay直接決済の¥8,000がBASE(¥8,000→8,800pt、特定商取引法
+  ページにも明記)と食い違い8,000ptしか付与されない不具合を発見
+  (ユーザー方針「BASEとPayPay同じ値段にするつもり」を確認のうえ修正)。
+  `app/services/paypay.py`に`credited_pt_for()`を新設し、
+  `app/routers/fulfillment.py`の`PRICE_TABLE`を単一の情報源として
+  `credit_if_completed`/`reverse_credit_if_refunded`両方から参照する
+  ことで、付与・返金取消のどちらも同じ基準になるよう統一。②直前の
+  `can_charge()`統一コミットで`paypay_test.py`のselfcheckが削除済みの
+  `paypay_charge._public_enabled`を参照したままになりAttributeErrorに
+  なる回帰が入っていたのを修正。③`tokushoho.html`の「お支払方法」
+  「お支払時期」「商品の引渡し時期」がBASE経由のみの記載で、PayPay
+  直接決済公開後の実態と乖離していたため追記。④購入ボタン欄外にも
+  ¥8,000→8,800pt(+10%)である旨を明記。
 
 ## ver1.3.10 (未デプロイ・2026-09-07作業・commit 96aeb4d)
 

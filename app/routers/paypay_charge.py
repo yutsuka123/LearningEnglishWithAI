@@ -204,7 +204,6 @@ def confirm(merchant_payment_id: str = Path(pattern=_ID_PATTERN)):
             raise errors.http_error("7001", "対象の支払いが見つかりません。")
         if row["user_id"] != uid:
             raise errors.http_error("3021")
-        already_credited = row["credited_at"] is not None
         amount_jpy = row["amount_jpy"]
 
     try:
@@ -225,8 +224,23 @@ def confirm(merchant_payment_id: str = Path(pattern=_ID_PATTERN)):
         # 二重付与を構造的に防ぐ核心ロジックはapp/services/paypay.pyの
         # credit_if_completedに一本化(scripts/reconcile_paypay_payments.py
         # と挙動を一致させるため)。
+        paypay_amount_jpy = (body.get("amount") or {}).get("amount")
         credited_now = paypay.credit_if_completed(
-            conn, row, status, payment_id)
+            conn, row, status, payment_id,
+            paypay_amount_jpy=paypay_amount_jpy)
+        # 2026-09-07・Fable監査指摘: リクエスト開始時に読んだ行の
+        # credited_atで「既に付与済みか」を判定すると、その間にcron
+        # (reconcile_paypay_payments.py)が横から先に付与した場合、
+        # credited_now=False(このリクエストからは更新できなかった)
+        # already_credited=False(開始時点ではまだ未付与)の両方falseと
+        # なり、実際は付与済みなのに「まだ確認できません」と誤表示
+        # してしまう。付与直後の最新状態を読み直して判定する。
+        fresh = conn.execute(
+            "SELECT credited_at FROM paypay_payments "
+            "WHERE merchant_payment_id = ?", (merchant_payment_id,),
+        ).fetchone()
+        is_credited = credited_now or bool(
+            fresh and fresh["credited_at"] is not None)
         me = auth.get_user(conn, uid)
         _record(conn, "details", uid, mpid=merchant_payment_id,
                 payment_id=payment_id, amount_jpy=amount_jpy,
@@ -239,7 +253,7 @@ def confirm(merchant_payment_id: str = Path(pattern=_ID_PATTERN)):
     return {
         "ok": True,
         "status": status,
-        "credited": credited_now or already_credited,
+        "credited": is_credited,
         "balance_jpy": round(balance_jpy, 1) if balance_jpy is not None
         else None,
         "amount_jpy": amount_jpy,

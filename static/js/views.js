@@ -6037,6 +6037,9 @@ export async function settings(root) {
           <button class="btn good" id="pp_pay_800">¥800で購入</button>
           <button class="btn good" id="pp_pay_8000">¥8000で購入</button>
         </div>
+        <p class="muted" style="margin:4px 0 0;font-size:12px">
+          ¥800→800pt付与 / ¥8000→<b>8,800pt付与(+10%お得)</b>
+          （BASEでの購入と同じ付与数です）</p>
         <p class="muted mt" id="pp_out"></p>
         ${state.showPaypayDevTools ? `
         <details class="mt">
