@@ -468,6 +468,7 @@ def _json_array(text: str) -> list:
 
 def _ensure_ai_hints(
     conn, pool: list[dict], cache_key: str, system: str,
+    check_leak: bool = False,
 ) -> float:
     """クロスワードのヒント文を、未生成の語のみAIでバッチ生成しwords.
     detail[cache_key]にキャッシュする共通処理(2026-09-03)。一度生成した
@@ -476,7 +477,22 @@ def _ensure_ai_hints(
     の両方で使う。AI無効時/失敗時は呼び出し元が別のフィールドへ
     フォールバックする。戻り値: 実際に発生したAI原価合計(USD、失敗した
     呼び出し分は0)。2026-09-05新課金式(1ゲームまとめて課金)の原価
-    集計に使う(呼び出し元の_create_crossword_session参照)。"""
+    集計に使う(呼び出し元の_create_crossword_session参照)。
+
+    check_leak=True の場合、生成された各ヒントに_leaks_answer()による
+    機械的な自己言及チェックをキャッシュ前にかけ、答え(英語綴り/日本語訳)
+    をそのまま含むヒントはキャッシュせず捨てる(2026-09-07発覚: 生成
+    プロンプトには「日本語訳の単語をそのまま書かない」という指示が
+    あるのに、AIが指示に反する場合があり(例: extinguish/消すの説明文に
+    「明かりを消すこと」とそのまま書く)、しかもAIによる照査
+    (_review_ai_hints)はバッチサイズが大きいと見逃す率が高い(実測:
+    18件中2件しか検出できなかった)ことが判明したため、_free_clue_text
+    が表示直前に使っているのと同じ機械的チェックを生成・キャッシュの
+    時点でも先にかける。該当語は次回呼び出し時に再度AI生成を試みる
+    (missing判定に残るだけで、無限リトライにはならない=1ゲーム内では
+    最大1回リトライされるだけ)。英語ヒント(crossword_hint_en)・
+    日本語ヒント(crossword_hint_ja)では有効にし、答えの英語綴りを
+    意図的に含む穴埋め例文(crossword_fillblank_en)では使わないこと。"""
     from concurrent.futures import ThreadPoolExecutor
     from ..config import load_settings
     from ..services import ai
@@ -535,6 +551,12 @@ def _ensure_ai_hints(
             hint = str(item.get("hint", "")).strip()
             c = by_en.get(en)
             if not c or not hint:
+                continue
+            if check_leak and _leaks_answer(hint, c["english"], c["japanese"]):
+                log.warning(
+                    "crossword AI hint leaks answer, discarding "
+                    "(cache_key=%s english=%s): %.100s",
+                    cache_key, c["english"], hint)
                 continue
             c[cache_key] = hint
             detail = c.get("_detail") or {}
@@ -599,10 +621,14 @@ _REVIEW_EN_SYSTEM = (
 _REVIEW_JA_SYSTEM = (
     "クロスワードの日本語ヒント文の品質チェックをします。各語について、"
     "①その単語自身の英語綴りやカタカナ読みをそのまま含んでいないか、"
-    "②与えられた日本語訳が表す意味と食い違っていないか、③クロスワード"
-    "のヒントとして自然で分かりやすいか、を確認してください。問題が"
-    "無ければverdictを\"ok\"、問題があれば\"ng\"にしてください"
-    "(理由は不要)。"
+    "①-2 与えられた日本語訳の単語をそのまま(または「〜すること」等の"
+    "軽い言い換えだけで)使っていないか(例えば「消す」の説明文に「明かりを"
+    "消すこと」のように答えの単語をそのまま書いてしまっていないか。2026-"
+    "09-07発覚: 生成側には同じ指示があるのに照査側の基準に含まれておらず"
+    "見逃されていたケースがあったため追加)、②与えられた日本語訳が表す"
+    "意味と食い違っていないか、③クロスワードのヒントとして自然で"
+    "分かりやすいか、を確認してください。問題が無ければverdictを\"ok\"、"
+    "問題があれば\"ng\"にしてください(理由は不要)。"
     'JSON配列のみ出力: [{"english":"PHONON","verdict":"ok"},'
     '{"english":"X","verdict":"ng"}]'
 )
@@ -657,8 +683,12 @@ def _ensure_ai_hints_reviewed(
     """生成(_ensure_ai_hints)→レビュー(_review_ai_hints)→問題があった語
     だけ1回だけ再生成、という一連の流れをまとめる(2026-09-06新設)。
     再生成後は再レビューしない(無限ループ防止・既存の他フォールバックと
-    同じく「ベストエフォート」の方針)。"""
-    cost = _ensure_ai_hints(conn, pool, cache_key, gen_system)
+    同じく「ベストエフォート」の方針)。
+
+    check_leak=True で生成する(2026-09-07・AIによる照査だけではバッチが
+    大きいと見逃しが多いと判明したため、_ensure_ai_hints内の機械的
+    チェックを併用する。_ensure_ai_hints側のdocstring参照)。"""
+    cost = _ensure_ai_hints(conn, pool, cache_key, gen_system, check_leak=True)
     flagged, review_cost = _review_ai_hints(pool, cache_key, review_system)
     cost += review_cost
     if not flagged:
@@ -670,7 +700,7 @@ def _ensure_ai_hints_reviewed(
         if c["english"].upper() in flagged:
             c[cache_key] = ""
             (c.get("_detail") or {}).pop(cache_key, None)
-    cost += _ensure_ai_hints(conn, pool, cache_key, gen_system)
+    cost += _ensure_ai_hints(conn, pool, cache_key, gen_system, check_leak=True)
     return cost
 
 
