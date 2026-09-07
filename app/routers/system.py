@@ -478,6 +478,13 @@ def my_usage():
         # と完全に同じ判定をフロントにも渡し、表示と実際の可否がズレない
         # ようにする)。
         is_charged = is_charged_or_admin(conn, uid)
+        # 2026-09-07・一般公開対応: can_chargeはconn(DB接続)を使うため、
+        # withブロックの外(connクローズ後)で呼ぶと`Cannot operate on a
+        # closed database`で毎回500になる(公開直後に発覚した重大な回帰。
+        # 全ユーザーの/my-usageが失敗しログイン後に情報が引けずゲスト
+        # 相当の表示になっていた)。ブロック内で計算して変数に保持する。
+        can_paypay_charge = paypay.can_charge(
+            conn, uid, u.get("username", ""), u.get("role", ""), is_guest)
     rate = s.usd_jpy_rate
     # 実効上限(USD)：_user_guardと同じロジック(個別設定→既定=旧ユーザーの
     # みEmail未設定なら¥150/日、それ以外0円)を使う。以前はここだけ別計算
@@ -525,8 +532,7 @@ def my_usage():
         # (`app/routers/paypay_charge.py`の`_guard_not_yet_public`と同じ
         # `paypay.can_charge`を呼ぶため、表示可否と実際の可否がズレない)。
         # ゲスト(未登録)は常にFalse。
-        "can_paypay_charge": paypay.can_charge(
-            conn, uid, u.get("username", ""), u.get("role", ""), is_guest),
+        "can_paypay_charge": can_paypay_charge,
     }
 
 
