@@ -11,19 +11,31 @@
 `app/services/paypay.py`の`credit_if_completed`を呼ぶ(挙動を一致させ、
 実装を2箇所でずらさないため)。
 
-対象の絞り込み:
-  - 作成から1分以上経過（支払い中の可能性が高い直近の行には触れない。
-    2026-09-07・当初は10分だったが、実機で「支払い後すぐタブを閉じた」
-    ケースの反映が最大25分ほど遅れた実例が出たため短縮。PayPay側の
-    決済画面に出る「◯分以内にお支払いください」という案内は支払う側
-    への呼びかけであり、実際にはコードは支払われるまでstatus="CREATED"
-    のまま自動失効しないことを実機確認済み。そのため早めに・頻繁に
-    見に行っても無駄がなく、むしろ反映を早くできる）
-  - 作成から7日以内（それ以上古い行は放置された/キャンセルされた支払いの
-    ノイズとして扱い、必要なら別途手動で調査する。cron間隔を短くした分
-    問い合わせ回数は増えるが、CANCELED/EXPIRED等の終端状態になった行は
-    除外されるため実際に無限に叩き続けるのは「支払われずCREATEDのまま
-    残り続ける行」だけに限られる）
+確認間隔(バックオフ方式・2026-09-08ユーザー指示「1決済に対してすでに
+確認済みの内容を何度も確認している」問題への対応。cron自体は2分おきの
+ままだが、このスクリプト側で「今回の実行で本当にPayPayに問い合わせる
+必要がある行」だけに絞り込む・`_due_for_check`参照):
+  - 作成から10分未満: 支払い直後の反映を早くしたいため、cronが回る
+    たびに毎回確認する(2026-09-07に「10分以内の反映遅延」対応で短縮
+    した当初の挙動を維持)。
+  - 作成から10分〜24時間: 30分・1時間・2時間・4時間・6時間・12時間・
+    24時間の各経過時点で1回だけ確認する(`_CHECKPOINTS_MIN`)。
+  - 作成から24時間を超えた行: 経過時間ベースの間隔をやめ、1晩1回・
+    深夜のアクセスが少ない時間帯(JST 3:30〜4:00)にまとめて確認する
+    (2026-09-08ユーザー指示「負荷分散」。各行の作成時刻に関わらず同じ
+    時間帯に集約するため、日中にバラバラと無駄な問い合わせが発生しない)。
+  - 作成から7日(元々の仕様どおり・2026-09-08ユーザー確認で維持)を
+    過ぎたら、その夜の確認を最後としてタイムアウト扱いにし
+    (status='EXPIRED')、以後は`status NOT IN (...)`の条件で対象から
+    外れ二度と問い合わせない。
+
+  ⚠️ `paypay_payments.created_at`/`updated_at`はSQLiteの`datetime('now')`
+  (=UTC)で記録されている。アプリコンテナ内にタイムゾーン情報が無く
+  (`datetime('now','localtime')`を試してもUTCのまま・2026-09-08実機確認)、
+  VPSホストのタイムゾーン(Asia/Tokyo)とは無関係なため、夜間バッチの
+  時刻判定は`_NIGHT_START_UTC`/`_NIGHT_END_UTC`(UTC 18:30〜19:00 =
+  JST 3:30〜4:00)を直接比較する。安易にJSTだと思って時刻を変更しない
+  こと。
 
 使い方(VPSのコンテナ内・cronで2〜3分おきを想定・2026-09-07に15分おきから
 短縮):
@@ -38,6 +50,8 @@ VPSホストのcrontabへの登録例(2分おき):
 from __future__ import annotations
 
 import sys
+from datetime import datetime
+from datetime import time as dt_time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -45,6 +59,51 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.config import log  # noqa: E402
 from app.database import db  # noqa: E402
 from app.services import paypay  # noqa: E402
+
+_DT_FMT = "%Y-%m-%d %H:%M:%S"
+
+# 作成から10分未満は常に確認対象(毎回のcronで確認)。
+_FAST_STAGE_MAX_MIN = 10.0
+# 10分〜24時間の間の確認チェックポイント(分・2026-09-08ユーザー指示)。
+_CHECKPOINTS_MIN = (30, 60, 120, 240, 360, 720, 1440)
+# 24時間経過後の夜間バッチ枠(UTC。JST 3:30〜4:00 = UTC 18:30〜19:00)。
+_NIGHT_START_UTC = dt_time(18, 30)
+_NIGHT_END_UTC = dt_time(19, 0)
+# タイムアウト: 作成から7日(元の仕様どおり・2026-09-08ユーザー確認)。
+_TIMEOUT_MIN = 7 * 24 * 60
+
+
+def _parse(s: str) -> datetime:
+    return datetime.strptime(s, _DT_FMT)
+
+
+def _minutes_since(created_at: str, at: str) -> float:
+    return (_parse(at) - _parse(created_at)).total_seconds() / 60.0
+
+
+def _stage(elapsed_min: float) -> int:
+    """経過時間(分)の時点で「到達済みの最後のチェックポイント(分)」を返す。
+    まだどのチェックポイントにも到達していなければ-1。"""
+    reached = [cp for cp in _CHECKPOINTS_MIN if cp <= elapsed_min]
+    return reached[-1] if reached else -1
+
+
+def _in_night_window(now: str) -> bool:
+    return _NIGHT_START_UTC <= _parse(now).time() < _NIGHT_END_UTC
+
+
+def _due_for_check(created_at: str, updated_at: str, now: str) -> bool:
+    """今回の実行でこの行をPayPayに問い合わせるべきか判定する
+    (バックオフ方式・モジュールdocstring参照)。"""
+    since_now = _minutes_since(created_at, now)
+    if since_now < _FAST_STAGE_MAX_MIN:
+        return True
+    if since_now <= _CHECKPOINTS_MIN[-1]:
+        since_last = _minutes_since(created_at, updated_at)
+        return _stage(since_now) > _stage(since_last)
+    # 24時間超: 深夜バッチ枠内、かつ今日(UTC日付)まだ確認していなければ
+    # 確認する(1晩1回・負荷分散)。
+    return _in_night_window(now) and updated_at[:10] != now[:10]
 
 
 def main() -> int:
@@ -56,23 +115,25 @@ def main() -> int:
     if not paypay.is_production():
         print("PAYPAY_PRODUCTION_MODE=false のためスキップしました。")
         return 0
-    checked = credited = errored = 0
+    checked = credited = timed_out = errored = 0
     with db() as conn:
-        # credit_if_completedはCOMPLETED以外でもPayPay側の最新statusを
-        # 書き戻す(create()直後のFAILEDと同じ理由)。CANCELED/EXPIREDに
-        # なった行を除外し忘れると、7日間・15分おきに同じ結論(未払いの
-        # まま)を問い合わせ続けてしまう(2026-09-07・Fable監査指摘。
-        # 一般公開後は「作っただけで払わない」が常態化するため無視できない
-        # ノイズになる)。
+        now = conn.execute("SELECT datetime('now')").fetchone()[0]
+        # CANCELED/EXPIREDになった行を除外し忘れると、同じ結論(未払いの
+        # まま)を無期限に問い合わせ続けてしまう(2026-09-07・Fable監査
+        # 指摘)。作成からの年齢による上限はここでは設けず、7日超過は
+        # 下のタイムアウト処理でEXPIREDにして自然に対象から外す。
         rows = conn.execute(
             "SELECT * FROM paypay_payments WHERE credited_at IS NULL "
             "AND status NOT IN ('FAILED', 'CANCELED', 'EXPIRED') "
             "AND created_at <= datetime('now', '-1 minutes') "
-            "AND created_at >= datetime('now', '-7 days') "
             "ORDER BY created_at"
         ).fetchall()
     for row in rows:
         mpid = row["merchant_payment_id"]
+        created_at = row["created_at"]
+        updated_at = row["updated_at"] or created_at
+        if not _due_for_check(created_at, updated_at, now):
+            continue
         checked += 1
         try:
             data = paypay.get_payment_details(mpid)
@@ -89,12 +150,27 @@ def main() -> int:
             did_credit = paypay.credit_if_completed(
                 conn, row, status, payment_id,
                 paypay_amount_jpy=paypay_amount_jpy)
+            if not did_credit and _minutes_since(created_at, now) >= (
+                    _TIMEOUT_MIN):
+                conn.execute(
+                    "UPDATE paypay_payments SET status = 'EXPIRED', "
+                    "updated_at = datetime('now') "
+                    "WHERE merchant_payment_id = ? AND credited_at IS NULL",
+                    (mpid,),
+                )
+                conn.commit()
+                timed_out += 1
+                log.info(
+                    "reconcile_paypay_payments: timed out (7days over) "
+                    "uid=%s mpid=%s", row["user_id"], mpid)
         if did_credit:
             credited += 1
             log.info(
                 "reconcile_paypay_payments: credited uid=%s mpid=%s "
                 "amount=%s", row["user_id"], mpid, row["amount_jpy"])
-    print(f"確認 {checked} 件 / 新規付与 {credited} 件 / 失敗 {errored} 件")
+    print(
+        f"確認 {checked} 件 / 新規付与 {credited} 件 / "
+        f"タイムアウト {timed_out} 件 / 失敗 {errored} 件")
     return 0
 
 
