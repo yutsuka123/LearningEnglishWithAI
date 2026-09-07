@@ -441,10 +441,15 @@ export async function refreshCost() {
     const u = await api.get("/api/system/my-usage");
     const isAdmin = u.role === "admin";
     state.isAdmin = isAdmin;       // 各ビューのロール別表示に使う
-    // PayPay新チャージ画面の限定公開(2026-09-02)。管理者に加えて、
-    // 個別に許可されたアカウントにも表示する
-    // (app/services/paypay.pyのis_test_allowedと対応)。
-    state.canTestPaypayCharge = isAdmin || !!u.paypay_charge_test_allowed;
+    // PayPayチャージ画面(2026-09-07・一般公開)。実際に使えるかどうかは
+    // サーバー側のpaypay.can_charge(=app/routers/paypay_charge.pyの
+    // バックエンドガードと同一ロジック)の結果をそのまま使う(ここで
+    // 独自に条件を組み立てるとサーバー側とズレるため)。ゲストは
+    // can_paypay_chargeが常にfalseで返る。
+    state.canPaypayCharge = !!u.can_paypay_charge;
+    // 開発者向け「テスト確認チェックリスト」の表示可否(一般ユーザーには
+    // 出さない・admin/テスト許可リストのみ)。
+    state.showPaypayDevTools = isAdmin || !!u.paypay_charge_test_allowed;
     // ゲーム機能(クロスワード等)は2026-09-05〜一般公開(サンプルは
     // ゲスト含め誰でも、自分で作るはログイン済みユーザーなら誰でも。
     // ゲスト/未ログイン時の判定はapp.js側では行わずcwRenderHub内で

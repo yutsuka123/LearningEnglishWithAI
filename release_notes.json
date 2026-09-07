@@ -15,6 +15,24 @@
  ],
  "versions": [
   {
+   "version": "ver1.4.0",
+   "date": "2026-09-07",
+   "title": "PayPayでの即時チャージを正式公開",
+   "public": [
+    "PayPayでの決済を、すべてのご登録ユーザーにご利用いただけるようにしました。設定・チャージ画面の「PayPayで購入」ボタンから、支払い完了と同時にキーの発行・入力なしでそのまま残高に反映されます（BASEでの購入も引き続きご利用いただけます）。",
+    "未登録（ゲスト）の状態ではPayPay決済はご利用いただけません。登録・ログイン後にご利用ください。",
+    "取扱説明ページの案内も、試験運用中の表記から正式運用に合わせて更新しました。"
+   ],
+   "admin": [
+    "app/services/paypay.pyにcan_charge()を新設し、app/routers/paypay_charge.pyの_guard_not_yet_publicとapp/routers/system.py(/my-usageのcan_paypay_chargeフラグ、フロント表示制御用)の判定ロジックを一本化。ゲスト(共有ゲストアカウント)はis_guest優先判定で常に不可とし、エラーコード3022(要登録)を新設。表示可否と実際の可否がズレるリスクを解消。",
+    "static/js/app.js/views.jsのcanTestPaypayCharge(admin/テスト許可リストのみ)をcanPaypayCharge(公開判定と同一ロジック、対象拡大)とshowPaypayDevTools(開発者向け「テスト確認チェックリスト」の表示可否、admin/テスト許可リストのみ継続)に分離。",
+    "app/routers/paypay_test.pyの/history(管理画面の決済履歴)が実課金導線(paypay_charge.py)側のuser_idを見ておらず、実ユーザーの操作履歴に誰が操作したか表示されていなかった不備を修正。COALESCE(user_id, admin_user_id)で一本化し、admin_paypay_test.htmlの列見出しも「管理者」→「ユーザー」+user_id表示に変更。",
+    "static/about.htmlの「PayPay即時チャージ機能も準備中」表記を削除し、実際の操作手順・決済情報の扱い(BASE/PayPay直それぞれ)・BASEとの使い分け(即時性 vs 決済手段の多さ)を案内するFAQに置き換え。「試験公開・最終テスト期間」表記も削除(正式運用中のため)。",
+    "2026-09-02の本番モード化以降ずっと401 UNAUTHORIZEDで失敗していた原因(VPS本番のdeploy/.env.studyがサンドボックス時代のPAYPAY_API_KEY/API_SECRET/CLIENT_IDのまま更新されていなかったこと)を、値を表示せずSHA256ハッシュ突き合わせで特定・修正(docs/TODO.md 2026-09-07エントリ参照)。実際の¥800決済でstatus=COMPLETED・pt付与(credited_now=True)を確認済み。",
+    "app_state.paypay_charge_public_enabledを2026-09-07 18:00に有効化。scripts/reconcile_paypay_payments.pyのcron登録(*/15分)は9/2時点で完了済みのため追加対応なし。"
+   ]
+  },
+  {
    "version": "ver1.3.10",
    "date": "2026-09-07",
    "title": "クロスワード作成のさらなる高速化",

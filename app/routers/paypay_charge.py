@@ -48,38 +48,28 @@ ALLOWED_AMOUNTS = {800, 8000}
 # merchantPaymentId用の形式検証(パス注入対策、paypay_test.pyと同じ方針)。
 _ID_PATTERN = r"^[A-Za-z0-9_-]{1,64}$"
 
-# app_stateのキー。一般公開のON/OFF切替(2026-09-01・ユーザー指示
-# 「本番環境が開通後、管理者がテストしてそれが成功した後公開します」)。
-_PUBLIC_FLAG_KEY = "paypay_charge_public_enabled"
-
-
-def _public_enabled(conn) -> bool:
-    row = conn.execute(
-        "SELECT value FROM app_state WHERE key = ?", (_PUBLIC_FLAG_KEY,)
-    ).fetchone()
-    return bool(row and row["value"] == "true")
-
 
 def _guard_not_yet_public(conn, uid: int) -> None:
-    """一般公開前は管理者だけがこの導線を使える(2段階ゲート):
-    1) PAYPAY_PRODUCTION_MODE=trueでないとサンドボックスのままお金を
-       払わずにptだけ付与されてしまう(is_production()がFalseの間は常に
-       ブロック)。
-    2) 本番モードになった後も、_PUBLIC_FLAG_KEYが'true'になるまでは
-       一般ユーザーには公開しない(管理者が実機で動作確認してから
-       app_stateを更新して公開する運用)。
-    どちらの段階でも管理者(role='admin')は自分自身のテストのため常に
-    通す。2026-09-02〜: role='admin'でなくても、
-    `paypay.is_test_allowed`のテスト許可リストに載っているアカウントも
-    同様に通す(少人数への限定公開・詳細は同関数のdocstring参照)。"""
+    """PayPay購入導線を今このユーザーが使えるかのガード(2026-09-07・一般
+    公開対応)。判定ロジック本体は`paypay.can_charge`に一本化済み(フロント
+    表示用の`app/routers/system.py`のcan_paypay_chargeフラグと条件が
+    ズレないようにするため)。
+    - ゲスト(未登録の共有ゲストアカウント)は常に不可(要登録・エラー
+      コード3022)。
+    - admin/`paypay.is_test_allowed`のテスト許可リストは常に可。
+    - それ以外は、PAYPAY_PRODUCTION_MODE=true かつ app_stateの
+      公開フラグがtrueの場合のみ可(管理者が実機確認後に公開する運用)。
+      未公開の間はエラーコード3020(準備中)。"""
     me = auth.get_user(conn, uid)
-    is_admin = bool(me and me.get("role") == "admin")
-    is_test_allowed = bool(me and paypay.is_test_allowed(
-        me.get("username", "")))
-    if is_admin or is_test_allowed:
+    is_guest = auth.is_guest_user_id(conn, uid)
+    if paypay.can_charge(
+        conn, uid, (me or {}).get("username", ""),
+        (me or {}).get("role", ""), is_guest,
+    ):
         return
-    if not paypay.is_production() or not _public_enabled(conn):
-        raise errors.http_error("3020")
+    if is_guest:
+        raise errors.http_error("3022")
+    raise errors.http_error("3020")
 
 
 def _record(

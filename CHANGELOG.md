@@ -8,6 +8,44 @@
 （例: 1.1.0→1.1.1）。ユーザーから別途指示があった場合のみ上位の桁を
 上げる。
 
+## ver1.4.0 (未デプロイ・2026-09-07作業・ユーザー指示によりV桁を上げた大きな追加)
+
+**💳 PayPayでの即時チャージを正式公開。管理者/テスト許可リスト限定だった導線を全登録ユーザーへ開放し、ゲストは常に不可に。**
+
+- `app/services/paypay.py`に`can_charge()`を新設し、`app/routers/paypay_charge.py`の
+  `_guard_not_yet_public`(バックエンドの実際の可否)と`app/routers/system.py`
+  (`/my-usage`の`can_paypay_charge`、フロント表示制御用)の判定ロジックを一本化。
+  2箇所で条件がズレて「見えるのに使えない/見えないのに使える」が起きるのを防止。
+- ゲスト(共有ゲストアカウント)は`is_guest`優先判定で常に不可。新エラーコード
+  `3022`(「PayPayでの購入には登録(無料)が必要です」)を追加、`docs/ERROR_CODES.md`
+  /`.csv`にも反映。
+- `static/js/app.js`/`views.js`: `state.canTestPaypayCharge`(admin/テスト許可
+  リストのみ)を`state.canPaypayCharge`(公開判定と同一ロジック、対象拡大)と
+  `state.showPaypayDevTools`(開発者向け「テスト確認チェックリスト」、admin/
+  テスト許可リストのみ継続表示)に分離。購入ボタンの見出しから「限定テスト中」
+  表記を削除。
+- `app/routers/paypay_test.py`の`/history`(管理画面の決済履歴一覧)が
+  `admin_user_id`しか見ておらず、実課金導線(`paypay_charge.py`)が使う`user_id`
+  列を見ていなかったため、実ユーザーの決済履歴に誰が操作したか表示されない
+  不備があった。`COALESCE(pa.user_id, pa.admin_user_id)`で一本化し、
+  `admin_paypay_test.html`の列見出しも「管理者」→「ユーザー」+user_id表示に
+  変更(失敗理由は既存の`note`列にそのまま表示、対応済みだったので変更なし)。
+- `static/about.html`: 「PayPay即時チャージ機能も準備中」の案内を削除し、実際の
+  操作手順・決済情報の扱い(BASE/PayPay直それぞれで開発者はカード番号等に一切
+  触れない旨)・BASEとの使い分け(即時性 vs 決済手段の多さ)を案内するFAQに
+  置き換え。「試験公開・最終テスト期間」表記も削除(正式運用中のため)。
+- **9/2の本番モード化以降ずっと本番決済が401 UNAUTHORIZEDで失敗していた原因を
+  特定・修正**(別項目として記録): VPS本番`deploy/.env.study`の
+  `PAYPAY_API_KEY`/`API_SECRET`/`CLIENT_ID`が2026-08-26のサンドボックス時代の
+  値のまま、ユーザーが本日取得した正式な本番用の値に一度も更新されていなかった。
+  値は表示せずSHA256ハッシュ(先頭12桁)+文字数のみで突き合わせて特定、SSH標準
+  入力経由(argvに載せない)で安全に反映、`eigo-app`コンテナ再作成で反映確認。
+  実際の¥800決済でstatus=COMPLETED・pt付与(credited_now=True)を確認済み。
+  詳細はdocs/TODO.md 2026-09-07エントリ参照。
+- `app_state.paypay_charge_public_enabled`は2026-09-07 18:00に有効化予定
+  (`scripts/reconcile_paypay_payments.py`のcron登録(`*/15分`)は9/2時点で
+  完了済みのため追加対応不要)。
+
 ## ver1.3.10 (未デプロイ・2026-09-07作業・commit 96aeb4d)
 
 **⚡ クロスワードAIヒント生成モデルを高速なものに変更（並列化と合わせて約30秒→約10秒）。**

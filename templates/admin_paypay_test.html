@@ -89,9 +89,9 @@
               <th style="padding:4px 8px">操作</th>
               <th style="padding:4px 8px">金額</th>
               <th style="padding:4px 8px">状態</th>
-              <th style="padding:4px 8px">管理者</th>
+              <th style="padding:4px 8px">ユーザー</th>
               <th style="padding:4px 8px">merchantPaymentId</th>
-              <th style="padding:4px 8px">備考</th>
+              <th style="padding:4px 8px">備考(失敗理由等)</th>
             </tr>
           </thead>
           <tbody id="historyBody"></tbody>
@@ -254,7 +254,7 @@
             <td style="padding:4px 8px">${escapeHtml(r.action)}</td>
             <td style="padding:4px 8px">${r.amount_jpy != null ? '¥' + escapeHtml(r.amount_jpy) : '-'}</td>
             <td style="padding:4px 8px">${badge}</td>
-            <td style="padding:4px 8px">${escapeHtml(r.admin_username || '-')}</td>
+            <td style="padding:4px 8px">${escapeHtml(r.actor_username || '-')}${r.actor_user_id != null ? ' (id:' + escapeHtml(r.actor_user_id) + ')' : ''}</td>
             <td style="padding:4px 8px;font-size:11px;word-break:break-all">${escapeHtml(r.merchant_payment_id)}</td>
             <td style="padding:4px 8px;font-size:11px">${escapeHtml(r.note)}</td>
           </tr>`;

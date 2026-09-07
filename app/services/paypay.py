@@ -67,6 +67,36 @@ def is_test_allowed(username: str) -> bool:
     return (username or "").strip().lower() in _TEST_ALLOWED_USERNAMES
 
 
+# app_stateのキー。一般公開のON/OFF切替(2026-09-01・ユーザー指示
+# 「本番環境が開通後、管理者がテストしてそれが成功した後公開します」)。
+# app/routers/paypay_charge.pyとapp/routers/system.py(フロント向け
+# can_paypay_chargeフラグ)の両方から参照するため、ここに一本化する
+# (2026-09-07・一般公開対応)。
+PUBLIC_FLAG_KEY = "paypay_charge_public_enabled"
+
+
+def public_enabled(conn) -> bool:
+    row = conn.execute(
+        "SELECT value FROM app_state WHERE key = ?", (PUBLIC_FLAG_KEY,)
+    ).fetchone()
+    return bool(row and row["value"] == "true")
+
+
+def can_charge(conn, uid: int, username: str, role: str,
+               is_guest: bool) -> bool:
+    """このユーザーが実際にPayPay購入導線を使えるか(2026-09-07・一般公開
+    対応)。app/routers/paypay_charge.pyの`_guard_not_yet_public`と
+    app/routers/system.py(フロント表示用フラグ)の両方から呼ばれる、
+    唯一の判定ロジック(2箇所で条件がズレるのを防ぐ)。
+    ゲスト(未登録・共有のゲストアカウント)は、本番公開後・admin/
+    テスト許可リストであっても常に不可(要登録)。"""
+    if is_guest:
+        return False
+    if role == "admin" or is_test_allowed(username):
+        return True
+    return is_production() and public_enabled(conn)
+
+
 # 支払いコード発行(Create a Code)の濫用防止（2026-09-02・公開前の残作業
 # 対応）。それまでは無制限に発行できてしまっていた。総当たり対策の
 # app/services/charge_keys.py の redeem_locked と同じユーザー単位・時間窓

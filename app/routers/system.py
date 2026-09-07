@@ -521,6 +521,12 @@ def my_usage():
         # (app/routers/paypay_charge.pyのバックエンド側ガードと同じ判定)。
         "paypay_charge_test_allowed": paypay.is_test_allowed(
             u.get("username", "")),
+        # 2026-09-07・一般公開対応: 実際に購入ボタンを表示してよいかどうか
+        # (`app/routers/paypay_charge.py`の`_guard_not_yet_public`と同じ
+        # `paypay.can_charge`を呼ぶため、表示可否と実際の可否がズレない)。
+        # ゲスト(未登録)は常にFalse。
+        "can_paypay_charge": paypay.can_charge(
+            conn, uid, u.get("username", ""), u.get("role", ""), is_guest),
     }
 
 

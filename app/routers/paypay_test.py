@@ -440,12 +440,18 @@ def history(limit: int = 50):
     limit = max(1, min(limit, 200))
     with db() as conn:
         _require_admin(conn)
+        # admin_user_id(管理者テストページ経由)とuser_id(実課金導線
+        # app/routers/paypay_charge.py経由)は別の列に記録されるため、
+        # どちらの行でも「誰の操作か」が履歴に出るようCOALESCEで一本化
+        # (2026-09-07・一般公開対応で実ユーザーの操作を追えるようにする
+        # ため、履歴にユーザーIDが出ていなかった不備を修正)。
         rows = conn.execute(
             "SELECT pa.id, pa.action, pa.merchant_payment_id, pa.code_id, "
             "pa.payment_id, pa.amount_jpy, pa.status, pa.ok, pa.note, "
-            "pa.created_at, u.username AS admin_username "
+            "pa.created_at, COALESCE(pa.user_id, pa.admin_user_id) "
+            "AS actor_user_id, u.username AS actor_username "
             "FROM paypay_actions pa LEFT JOIN users u "
-            "ON u.id = pa.admin_user_id "
+            "ON u.id = COALESCE(pa.user_id, pa.admin_user_id) "
             "ORDER BY pa.id DESC LIMIT ?",
             (limit,),
         ).fetchall()

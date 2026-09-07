@@ -6028,10 +6028,9 @@ export async function settings(root) {
     <div class="card" id="chargeCard" style="display:none">
       <h2>💳 チャージ</h2>
       <p>現在の残高: <b id="ptBalance">-</b> pt</p>
-      ${state.canTestPaypayCharge ? `
+      ${state.canPaypayCharge ? `
       <div id="paypayChargeBlock" class="mt">
-        <h3 style="margin-bottom:4px">① PayPayで購入(即時反映・限定
-          テスト中)</h3>
+        <h3 style="margin-bottom:4px">① PayPayで購入(即時反映)</h3>
         <p class="muted" style="margin-top:0">支払いが完了すると、キーの
           発行・入力なしでそのまま残高に反映されます。</p>
         <div class="row">
@@ -6039,6 +6038,7 @@ export async function settings(root) {
           <button class="btn good" id="pp_pay_8000">¥8000で購入</button>
         </div>
         <p class="muted mt" id="pp_out"></p>
+        ${state.showPaypayDevTools ? `
         <details class="mt">
           <summary>✅ テスト確認チェックリスト
             <span id="pp_checklist_progress" class="muted"></span></summary>
@@ -6052,6 +6052,7 @@ export async function settings(root) {
           <p class="muted mt" id="pp_selfcheck_err"></p>
           <div id="pp_checklist_items" class="mt"></div>
         </details>
+        ` : ""}
       </div>
       <hr class="mt" />
       <h3 style="margin-bottom:4px">② BASEで購入してキーを入力</h3>
