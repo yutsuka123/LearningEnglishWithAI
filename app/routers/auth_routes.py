@@ -33,19 +33,25 @@ SIGNUP_CLOSED_MESSAGE = (
 def _record_signup_attempt(
     request: Request, ip: str, success: bool,
     background_tasks: BackgroundTasks,
+    fail_reason: str = "", is_disposable_email: bool = False,
 ) -> None:
     """新規登録の試行(成否問わず)をlanding_visitsに記録する（2026-08-20・
     管理画面「未登録アクセス状況」の「登録しようとしたか」判定用）。
-    書き込み失敗は登録処理自体を妨げないよう握りつぶす。"""
+    2026-09-07・fail_reason(エラーコード)とis_disposable_emailを追加し、
+    失敗理由を多角的に分析できるようにした(管理画面「登録に至らない
+    原因分析」から失敗理由内訳として参照)。書き込み失敗は登録処理自体を
+    妨げないよう握りつぶす。"""
     try:
         with db() as conn:
             conn.execute(
                 "INSERT INTO landing_visits "
-                "(ip, kind, success, user_agent, guest_sid) "
-                "VALUES (?, 'signup', ?, ?, ?)",
+                "(ip, kind, success, user_agent, guest_sid, fail_reason, "
+                " is_disposable_email) "
+                "VALUES (?, 'signup', ?, ?, ?, ?, ?)",
                 (ip, 1 if success else 0,
                  request.headers.get("user-agent", "")[:300],
-                 auth.current_guest_sid()),
+                 auth.current_guest_sid(), fail_reason,
+                 1 if is_disposable_email else 0),
             )
         background_tasks.add_task(geoip.enrich_ip, ip)
     except Exception:
@@ -90,9 +96,17 @@ def signup(
     from ..services import charge_keys
 
     ip = auth.real_client_ip(request)
+    # 使い捨てメールかどうかは成否によらず記録する(下のfail()クロージャが
+    # 参照するため、emailを解析した時点で更新する)。以前はここで登録自体を
+    # 拒否していたが、プライバシー志向の正規利用者を誤って弾いている懸念が
+    # 強く、実際の悪用有無をログで見極められるようにする方針に変更した
+    # (2026-09-07ユーザー指示「使い捨ても許可したい、弊害ないか」)。
+    is_disposable_email = False
 
     def fail(code: str, message: str | None = None):
-        _record_signup_attempt(request, ip, False, background_tasks)
+        _record_signup_attempt(
+            request, ip, False, background_tasks,
+            fail_reason=code, is_disposable_email=is_disposable_email)
         return error_response(code, message)
 
     if not SIGNUP_OPEN:
@@ -105,10 +119,11 @@ def signup(
     if "@" not in email or "." not in email.split("@")[-1]:
         log.warning("signup: invalid email format ip=%s email=%r", ip, email)
         return fail("2010")
-    if auth.is_disposable_email_domain(email):
-        log.warning(
-            "signup: disposable email domain ip=%s email=%s", ip, email)
-        return fail("2011")
+    is_disposable_email = auth.is_disposable_email_domain(email)
+    if is_disposable_email:
+        log.info(
+            "signup: disposable email domain (許可・記録のみ) ip=%s email=%s",
+            ip, email)
     pw_error = auth.password_policy_error(password)
     if pw_error:
         log.warning("signup: password policy error ip=%s email=%s reason=%s",
@@ -166,7 +181,9 @@ def signup(
         return fail("2014" if is_dup_email else "3001", str(e))
     log.info("signup: ok ip=%s email=%s uid=%s charge_key=%s",
               ip, email, uid, bool(payload.charge_key.strip()))
-    _record_signup_attempt(request, ip, True, background_tasks)
+    _record_signup_attempt(
+        request, ip, True, background_tasks,
+        is_disposable_email=is_disposable_email)
     token = auth.make_session_token(
         secret, uid, u.get("session_epoch", 0), int(time.time()))
     resp = JSONResponse({"ok": True, "user": {

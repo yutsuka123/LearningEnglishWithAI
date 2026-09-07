@@ -236,15 +236,11 @@ const WELCOME_HIDDEN_FEATURE_TABS = new Set([
 ]);
 
 export async function welcome(root) {
-  let domains = [], domainCounts = {};
-  try {
-    const facets = await api.get("/api/words/facets");
-    domains = facets.domains || [];
-    domainCounts = facets.domain_counts || {};
-  } catch (e) { /* 取得失敗しても本体の表示は妨げない */ }
-  const domainChips = domains.map((d) =>
-    `<span class="pill">${escapeHtml(d)} ${domainCounts[d] ?? 0}</span>`)
-    .join("");
+  // facetsは本体表示に必須ではない「収録語彙分野一覧」の飾りチップにしか
+  // 使わないため、これを待たずに先にヒーロー本体(見出し・CTA)を描画する
+  // (2026-09-07・初期表示速度の改善。以前はfacets取得完了までroot自体が
+  // 空のままで、直列3回目のAPI呼び出し待ちが白画面離脱の一因になって
+  // いた)。取得でき次第、非同期にチップ部分だけ差し込む。
   const featureChips = TABS
     .filter(([tab]) => !WELCOME_HIDDEN_FEATURE_TABS.has(tab))
     .map(([, label]) => `<span class="pill">${escapeHtml(label)}</span>`)
@@ -278,9 +274,9 @@ export async function welcome(root) {
         <p class="muted mt">
           <a href="/static/about.html">詳しい説明・料金の目安を見る →</a></p>
 
-        <p class="welcome-scroll-label" style="margin-top:28px">
-          収録語彙分野一覧（${domains.length}分野・枠内スクロールで見られます）</p>
-        <div class="row welcome-scroll-row">${domainChips}</div>
+        <p class="welcome-scroll-label" style="margin-top:28px"
+          id="welcomeDomainLabel">収録語彙分野一覧（読み込み中…）</p>
+        <div class="row welcome-scroll-row" id="welcomeDomainChips"></div>
 
         <p class="welcome-scroll-label">収録機能一覧</p>
         <div class="row welcome-scroll-row">${featureChips}</div>
@@ -288,23 +284,54 @@ export async function welcome(root) {
     </div>`;
   root.querySelector("#welcomeTryBtn")
     ?.addEventListener("click", () => go("vocab"));
+
+  // ここから先は非同期(fire-and-forget)。ユーザーが既に別タブへ移動して
+  // rootの中身が差し替わっていた場合はquerySelectorがnullを返すだけなので
+  // 安全（該当id要素が無ければ何もしない）。
+  api.get("/api/words/facets").then((facets) => {
+    const domains = facets.domains || [];
+    const domainCounts = facets.domain_counts || {};
+    const label = root.querySelector("#welcomeDomainLabel");
+    const chips = root.querySelector("#welcomeDomainChips");
+    if (label) {
+      label.textContent =
+        `収録語彙分野一覧（${domains.length}分野・枠内スクロールで見られます）`;
+    }
+    if (chips) {
+      chips.innerHTML = domains.map((d) =>
+        `<span class="pill">${escapeHtml(d)} ${domainCounts[d] ?? 0}</span>`)
+        .join("");
+    }
+  }).catch(() => {
+    const label = root.querySelector("#welcomeDomainLabel");
+    if (label) label.remove();
+  });
 }
 
 // --- Dashboard --------------------------------------------------------------
 
 export async function dashboard(root) {
-  const p = await api.get("/api/system/progress");
-  let mu = null;
-  try { mu = await api.get("/api/system/my-usage"); } catch (_) { /* */ }
+  // 6本のAPI呼び出しをすべて並列実行する(2026-09-07・以前はprogress→
+  // my-usage→デッキ系4本の3段階直列で、初期表示までの待ち時間が
+  // 積み上がっていた)。Promise.allSettledで、各呼び出しの成功/失敗
+  // 判定・部分失敗時のフォールバックという元の挙動はそのまま保つ。
+  const [pRes, muRes, decksRes] = await Promise.allSettled([
+    api.get("/api/system/progress"),
+    api.get("/api/system/my-usage"),
+    Promise.all([
+      api.get("/api/decks/summary"), api.get("/api/phrase-decks/summary"),
+      api.get("/api/decks"), api.get("/api/phrase-decks"),
+    ]),
+  ]);
+  if (pRes.status === "rejected") throw pRes.reason;
+  const p = pRes.value;
+  const mu = muRes.status === "fulfilled" ? muRes.value : null;
   let deckSummary = null, phraseDeckSummary = null;
   let myWordDecks = [], myPhraseDecks = [];
-  try {
+  if (decksRes.status === "fulfilled") {
     [deckSummary, phraseDeckSummary, myWordDecks, myPhraseDecks] =
-      await Promise.all([
-        api.get("/api/decks/summary"), api.get("/api/phrase-decks/summary"),
-        api.get("/api/decks"), api.get("/api/phrase-decks"),
-      ]);
-  } catch (_) { /* 未ログイン等で失敗しても致命的ではない */ }
+      decksRes.value;
+  } // 未ログイン等で失敗しても致命的ではない
   const isAdmin = mu && mu.role === "admin";
   const toeic = (p.toeic_estimate == null) ? "未判定" : p.toeic_estimate;
   // 一般ユーザーには費用額を見せない（管理者のみ）。残高があれば残高を表示。
@@ -683,13 +710,15 @@ function voiceButtonsItem(itemType, id, kind, fallback, getMode, isFreeRange) {
   return cell;
 }
 
-// --- ページネーション（1ページ50件 標準）---------------------------------
+// --- ページネーション（1ページ20件 標準）---------------------------------
+// 2026-09-07: 英単語・フレーズ一覧の初期表示速度改善のため既定を50→20に
+// 変更(ユーザー指示)。1ページの描画件数を減らし体感速度を上げる狙い。
 
-// 表示件数セレクト（20/50/100/500/全件、既定50）。value は数値 or 'all'。
+// 表示件数セレクト（20/50/100/500/全件、既定20）。value は数値 or 'all'。
 function pageSizeSelect(id) {
   return `<select id="${id}" title="1ページの表示件数">
-    <option value="20">20件/ページ</option>
-    <option value="50" selected>50件/ページ</option>
+    <option value="20" selected>20件/ページ</option>
+    <option value="50">50件/ページ</option>
     <option value="100">100件/ページ</option>
     <option value="500">500件/ページ</option>
     <option value="all">全件</option></select>`;
@@ -698,7 +727,7 @@ function pageSizeSelect(id) {
 // list を page/size で切り出す。size='all' は全件。
 function pageSlice(list, page, size) {
   if (size === "all") return { slice: list, page: 0, pages: 1 };
-  const n = parseInt(size, 10) || 50;
+  const n = parseInt(size, 10) || 20;
   const pages = Math.max(1, Math.ceil(list.length / n));
   const p = Math.min(Math.max(0, page), pages - 1);
   return { slice: list.slice(p * n, p * n + n), page: p, pages };
@@ -1390,17 +1419,22 @@ function runFlashcards(stage, initialQueue, opts) {
 }
 
 export async function flashcard(root) {
-  const facets = await api.get(
-    "/api/words/facets" + (showBanned() ? "?include_banned=true" : ""));
+  // 3本とも互いに依存が無いため並列実行する(2026-09-07・以前は直列3回で
+  // 表示までの待ち時間が積み上がっていた)。
+  const [facets, hideMasteredDefault, deckList] = await Promise.all([
+    api.get(
+      "/api/words/facets" + (showBanned() ? "?include_banned=true" : "")),
+    // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定は
+    // オフ(=含む)として扱う。
+    api.get("/api/system/user-settings")
+      .catch(() => ({ settings: {} }))
+      .then((r) => !!r.settings?.hide_mastered),
+    // 自分の単語帳から選んでフラッシュする(2026-08-18・ユーザー要望:「作った
+    // 単語帳のフラッシュをやることが多い」)。未ログイン/単語帳0件では
+    // セレクタ自体を出さない。
+    api.get("/api/decks").catch(() => []),
+  ]);
   const domainGroups = facets.domain_groups || {};
-  // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定は
-  // オフ(=含む)として扱う。
-  const hideMasteredDefault = !!(await api.get("/api/system/user-settings")
-    .catch(() => ({ settings: {} }))).settings?.hide_mastered;
-  // 自分の単語帳から選んでフラッシュする(2026-08-18・ユーザー要望:「作った
-  // 単語帳のフラッシュをやることが多い」)。未ログイン/単語帳0件では
-  // セレクタ自体を出さない。
-  const deckList = await api.get("/api/decks").catch(() => []);
   const deckOpts = ['<option value="">-- 単語帳を使わない(分野・レベルで選ぶ) --</option>']
     .concat(deckList.map((d) =>
       `<option value="${d.id}">${escapeHtml(d.name)}（${d.total}語）</option>`))
@@ -1568,17 +1602,22 @@ export async function flashcard(root) {
 }
 
 export async function flashPhrase(root) {
-  const [sceneFacets, levelFacets] = await Promise.all([
-    api.get("/api/phrases/scenes" + (showBanned() ? "?include_banned=true" : "")),
-    api.get("/api/phrases/facets"),
-  ]);
-  // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定は
-  // オフ(=含む)として扱う。
-  const hideMasteredDefault = !!(await api.get("/api/system/user-settings")
-    .catch(() => ({ settings: {} }))).settings?.hide_mastered;
-  // 自分のフレーズ帳から選んでフラッシュする(2026-08-18・フラッシュ単語と
-  // 同じ理由)。未ログイン/フレーズ帳0件ではセレクタ自体を出さない。
-  const deckList = await api.get("/api/phrase-decks").catch(() => []);
+  // 4本とも互いに依存が無いため並列実行する(2026-09-07・以前は末尾2本が
+  // 直列だった)。
+  const [sceneFacets, levelFacets, hideMasteredDefault, deckList] =
+    await Promise.all([
+      api.get(
+        "/api/phrases/scenes" + (showBanned() ? "?include_banned=true" : "")),
+      api.get("/api/phrases/facets"),
+      // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定は
+      // オフ(=含む)として扱う。
+      api.get("/api/system/user-settings")
+        .catch(() => ({ settings: {} }))
+        .then((r) => !!r.settings?.hide_mastered),
+      // 自分のフレーズ帳から選んでフラッシュする(2026-08-18・フラッシュ単語と
+      // 同じ理由)。未ログイン/フレーズ帳0件ではセレクタ自体を出さない。
+      api.get("/api/phrase-decks").catch(() => []),
+    ]);
   const deckOpts = ['<option value="">-- フレーズ帳を使わない(シーン・レベルで選ぶ) --</option>']
     .concat(deckList.map((d) =>
       `<option value="${d.id}">${escapeHtml(d.name)}（${d.total}件）</option>`))
@@ -1814,14 +1853,18 @@ function initCheckDropdown(root, btnId, panelId, groupsGetter, selected,
 }
 
 export async function vocab(root) {
-  const facets = await api.get(
-    "/api/words/facets" + (showBanned() ? "?include_banned=true" : ""));
+  // 3本とも互いに依存が無いため並列実行する(2026-09-07・以前は直列3回で
+  // 表示までの待ち時間が積み上がっていた)。
+  const [facets, myDecks, us] = await Promise.all([
+    api.get(
+      "/api/words/facets" + (showBanned() ? "?include_banned=true" : "")),
+    api.get("/api/decks").catch(() => []),
+    // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定
+    // フィルター無し(={})として扱う(2026-08-11・ゲスト実装で発見)。
+    api.get("/api/system/user-settings")
+      .catch(() => ({ settings: {} })).then((r) => r.settings || {}),
+  ]);
   const domainGroups = facets.domain_groups || {};
-  const myDecks = await api.get("/api/decks").catch(() => []);
-  // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定
-  // フィルター無し(={})として扱う(2026-08-11・ゲスト実装で発見)。
-  const us = (await api.get("/api/system/user-settings")
-    .catch(() => ({ settings: {} }))).settings || {};
   const dfw = us.default_word_filters || {};
   const dfwActive = !!(dfw.category || dfw.level_min || dfw.level_max
     || dfw.mastered);
@@ -2054,16 +2097,19 @@ export async function vocab(root) {
 
 export async function phrases(root) {
   const sb = bannedParam(showBanned());
-  const sceneData = await api.get(
-    "/api/phrases/scenes" + (sb ? "?" + sb : ""));
+  // 5本とも互いに依存が無いため並列実行する(2026-09-07・以前は直列5回で
+  // 表示までの待ち時間が積み上がっていた)。
+  const [sceneData, pfacets, list, myDecks, usP] = await Promise.all([
+    api.get("/api/phrases/scenes" + (sb ? "?" + sb : "")),
+    api.get("/api/phrases/facets"),
+    api.get("/api/phrases" + (sb ? "?" + sb : "")),
+    api.get("/api/phrase-decks").catch(() => []),
+    // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定
+    // フィルター無し(={})として扱う(2026-08-11・ゲスト実装で発見)。
+    api.get("/api/system/user-settings")
+      .catch(() => ({ settings: {} })).then((r) => r.settings || {}),
+  ]);
   const sceneGroups = sceneData.scene_groups || {};
-  const pfacets = await api.get("/api/phrases/facets");
-  const list = await api.get("/api/phrases" + (sb ? "?" + sb : ""));
-  const myDecks = await api.get("/api/phrase-decks").catch(() => []);
-  // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定
-  // フィルター無し(={})として扱う(2026-08-11・ゲスト実装で発見)。
-  const usP = (await api.get("/api/system/user-settings")
-    .catch(() => ({ settings: {} }))).settings || {};
   const dfp = usP.default_phrase_filters || {};
   const dfpActive = !!(dfp.category || dfp.level_min || dfp.level_max
     || dfp.mastered);
@@ -3682,8 +3728,11 @@ export async function assess(root) {
 // --- History (study log + memory + session end) ----------------------------
 
 export async function history(root) {
-  const log = await api.get("/api/system/study-log");
-  const mem = await api.get("/api/system/memory");
+  // 互いに依存が無いため並列実行する(2026-09-07)。
+  const [log, mem] = await Promise.all([
+    api.get("/api/system/study-log"),
+    api.get("/api/system/memory"),
+  ]);
   root.innerHTML = `
     <h1>学習履歴</h1>
     <p class="sub">学習の記録・メモリ・セッション終了処理。</p>
@@ -3992,24 +4041,27 @@ function wireMaintenanceEditor(box) {
 
 
 export async function admin(root) {
-  let d;
-  try {
-    d = await api.get(`/api/system/admin/overview?${adminAggQuery()}`);
-  } catch (e) {
+  // 3本とも互いに依存が無いため並列実行する(2026-09-07・以前は直列
+  // 3回だった)。dの失敗だけは権限エラー画面に切り替える特別扱いが
+  // 必要なため、Promise.allSettledで個別に結果を見る。
+  const [dRes, inquiriesRes, ordersRes] = await Promise.allSettled([
+    api.get(`/api/system/admin/overview?${adminAggQuery()}`),
+    api.get("/api/inquiries"),
+    // 購入キー発行待ち(BASE注文)の件数。フルフィルメント画面に行かなくても
+    // 管理者情報画面の更新だけで気づけるようにする(2026-08-19ユーザー要望)。
+    api.get("/api/fulfillment/orders?status=pending"),
+  ]);
+  if (dRes.status === "rejected") {
     root.innerHTML = `<h1>管理者情報</h1>
-      <p class="muted">管理者のみ閲覧できます（${escapeHtml(e.message)}）。</p>`;
+      <p class="muted">管理者のみ閲覧できます
+        （${escapeHtml(dRes.reason.message)}）。</p>`;
     return;
   }
-  let inquiries = [];
-  try { inquiries = (await api.get("/api/inquiries")).inquiries || []; }
-  catch (_) { /* */ }
-  // 購入キー発行待ち(BASE注文)の件数。フルフィルメント画面に行かなくても
-  // 管理者情報画面の更新だけで気づけるようにする(2026-08-19ユーザー要望)。
-  let pendingOrders = 0;
-  try {
-    pendingOrders =
-      (await api.get("/api/fulfillment/orders?status=pending")).pending || 0;
-  } catch (_) { /* */ }
+  const d = dRes.value;
+  const inquiries = inquiriesRes.status === "fulfilled"
+    ? (inquiriesRes.value.inquiries || []) : [];
+  const pendingOrders = ordersRes.status === "fulfilled"
+    ? (ordersRes.value.pending || 0) : 0;
   const sec = d.security || {};
   const fmtDate = fmtDateJST;
   const pendingInquiries =
@@ -4906,6 +4958,19 @@ export async function admin(root) {
           <span class="muted" style="width:120px; font-size:12px">
             ${s.rate_from_start}%（前段階比${s.rate_from_prev}%）</span>
         </div>`).join("");
+      const botExcluded = res.bot_excluded || 0;
+      const deviceBreakdown = res.device_breakdown || [];
+      const deviceRows = deviceBreakdown.map((d) => `<tr>
+        <td>${escapeHtml(d.device)}</td><td>${escapeHtml(d.browser)}</td>
+        <td>${d.count}</td>
+      </tr>`).join("");
+      const failReasons = res.fail_reasons || [];
+      const failReasonRows = failReasons.map((f) => `<tr>
+        <td>${escapeHtml(f.label)}</td>
+        <td class="muted">${escapeHtml(f.code)}</td>
+        <td>${f.count}</td>
+      </tr>`).join("");
+      const dispo = res.disposable_email_stats || {};
       const dropoffSummary = res.dropoff_summary || [];
       const summaryRows = dropoffSummary.map((d) => `<tr>
         <td>${escapeHtml(d.category)}</td><td>${d.count}</td>
@@ -4924,6 +4989,30 @@ export async function admin(root) {
             未読み込み</div></td>
         </tr>`).join("");
       wrap.innerHTML = `${tilesHtml}${barsHtml}
+        <p class="muted mt" style="font-size:12px">
+          ⚙️ ボット・クローラー(curl等の機械的アクセス)と判定した
+          ${botExcluded}件は上記の集計から除外済みです。</p>
+        <h3 class="mt">端末・ブラウザの内訳（「訪問」段階・人間判定分のみ）</h3>
+        ${deviceBreakdown.length
+          ? `<table class="mt"><thead><tr>
+              <th>端末</th><th>ブラウザ</th><th>人数</th>
+              </tr></thead><tbody>${deviceRows}</tbody></table>`
+          : `<p class="muted">対象者がいません。</p>`}
+
+        <h3 class="mt">登録試行の失敗理由内訳（多角的分析用・2026-09-07〜
+          記録開始）</h3>
+        <p class="muted" style="font-size:12px">
+          使い捨てメールは2026-09-07〜ブロックせず許可制に変更（弊害の
+          方が大きいと判断）。参考として使用件数を記録: 使い捨てメールで
+          登録成功 ${dispo.succeeded ?? 0}件・使い捨てメールで
+          （別の理由により）失敗 ${dispo.failed_other_reason ?? 0}件。</p>
+        ${failReasons.length
+          ? `<table class="mt"><thead><tr>
+              <th>理由</th><th>コード</th><th>件数</th>
+              </tr></thead><tbody>${failReasonRows}</tbody></table>`
+          : `<p class="muted">この期間の登録失敗はありません
+              （2026-09-07より前のデータは対象外です）。</p>`}
+
         <h3 class="mt">離脱ポイント（訪問したが登録を試みなかった人が
           最後に見ていた画面）</h3>
         ${dropoffSummary.length
@@ -5496,8 +5585,14 @@ export async function admin(root) {
       setAll(msg);
       return;
     }
-    root.querySelector("#uaSummaryWrap").textContent =
-      `対象期間の総イベント数: ${res.total_events}件`;
+    const filteredOut = res.filtered_out_events || 0;
+    root.querySelector("#uaSummaryWrap").innerHTML =
+      `対象期間の総イベント数: ${res.total_events}件`
+      + (filteredOut > 0
+        ? ` <span class="muted">（上のフィルタ条件で除外された分が別途
+            ${filteredOut}件あります。0件が並ぶ場合はフィルタを
+            緩めてご確認ください）</span>`
+        : "");
 
     const groupTable = (rows, catLabel, opts) => {
       opts = opts || {};
@@ -5868,31 +5963,33 @@ export async function settings(root) {
   // 自体が開けなくなる不具合が発生していたため、フォールバックする
   // （2026-08-13修正）。値そのものは.admin-onlyカードでのみ使われ、
   // それらは後段でmu.role!=='admin'のとき非表示にされるので実害無い。
-  let s;
-  try {
-    s = await api.get("/api/system/settings");
-  } catch (_) {
-    const mu2 = await api.get("/api/system/my-usage");
-    s = {
-      ai_enabled: mu2.ai_enabled, model: "", quality_model: "",
-      api_key_masked: "", host: "", port: "",
-      tokushoho_ready: true, version: mu2.version,
-    };
-  }
-  // /api/system/usage is admin-only (全ユーザー横断の使用量のため); 一般
-  // ユーザーは403になるので、その場合は空扱いにしてページ全体は描画する。
-  let usage = {
-    total_cost_usd: 0, today_cost_usd: 0, total_cost_jpy: 0,
-    today_cost_jpy: 0, calls: 0, jpy_rate: 0, jpy_as_of: "", recent: [],
-  };
-  try { usage = await api.get("/api/system/usage"); } catch (_) { /* not admin */ }
-  const wFacets = await api.get("/api/words/facets?include_hidden=true");
+  // 6本とも互いに依存が無いため並列実行する(2026-09-07・以前は直列6回で
+  // 設定画面の表示までの待ち時間が積み上がっていた、アプリ内で最も
+  // 直列awaitが多い画面だった)。各々の元々のフォールバック挙動は
+  // そのまま維持する。
+  const [s, usage, wFacets, sceneGroups, pLevels, us0] = await Promise.all([
+    api.get("/api/system/settings").catch(async () => {
+      const mu2 = await api.get("/api/system/my-usage");
+      return {
+        ai_enabled: mu2.ai_enabled, model: "", quality_model: "",
+        api_key_masked: "", host: "", port: "",
+        tokushoho_ready: true, version: mu2.version,
+      };
+    }),
+    // /api/system/usage is admin-only (全ユーザー横断の使用量のため); 一般
+    // ユーザーは403になるので、その場合は空扱いにしてページ全体は描画する。
+    api.get("/api/system/usage").catch(() => ({
+      total_cost_usd: 0, today_cost_usd: 0, total_cost_jpy: 0,
+      today_cost_jpy: 0, calls: 0, jpy_rate: 0, jpy_as_of: "", recent: [],
+    })),
+    api.get("/api/words/facets?include_hidden=true"),
+    api.get("/api/phrases/scenes?include_hidden=true")
+      .then((r) => r.scene_groups || {}),
+    api.get("/api/phrases/facets").then((r) => r.range_levels || []),
+    api.get("/api/system/user-settings").then((r) => r.settings || {}),
+  ]);
   const domainGroups = wFacets.domain_groups || {};
   const wLevels = wFacets.range_levels || [];
-  const sceneGroups = (await api.get(
-    "/api/phrases/scenes?include_hidden=true")).scene_groups || {};
-  const pLevels = (await api.get("/api/phrases/facets")).range_levels || [];
-  const us0 = (await api.get("/api/system/user-settings")).settings || {};
   const hiddenDomains = new Set(us0.hidden_domains || []);
   const hiddenScenes = new Set(us0.hidden_scenes || []);
   const dfw = us0.default_word_filters || {};

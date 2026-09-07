@@ -15,6 +15,19 @@
  ],
  "versions": [
   {
+   "version": "ver1.3.8",
+   "date": "2026-09-07",
+   "title": "画面表示の高速化＋使い捨てメールの登録許可",
+   "public": [
+    "トップページ・英単語・ミニフレーズ・ダッシュボード・設定画面など主要な画面で、表示までの待ち時間を短縮しました。英単語・ミニフレーズ一覧の1ページあたりの表示件数も、既定を50件→20件に変更しています。",
+    "これまで使い捨て・一時的なメールアドレスでの新規登録はお断りしていましたが、正規のお客様まで誤って弾いてしまう可能性を考慮し、ご利用いただけるように変更しました。"
+   ],
+   "admin": [
+    "初期表示速度改善: static/js/app.jsのboot()でtaxonomy/my-usageを並列化。static/js/views.jsのwelcome()はfacets取得を待たずに描画するよう変更。dashboard/vocab/phrases/flashcard/flashPhrase/history/admin/settingsの直列await(最大6本)をPromise.all/allSettledで並列化。pageSizeSelect()の既定を50→20に変更。",
+    "使い捨てメール拒否(エラー2011)を廃止し許可制に変更。landing_visitsにfail_reason/is_disposable_email列を新設し、登録試行の成否・理由コード・使い捨てメール使用有無を記録。admin_registration_funnelに失敗理由内訳・使い捨てメール成功/失敗件数を追加。admin_registration_funnelにvisitor_kind.classify_ua()によるボット除外・端末/ブラウザ内訳を追加。admin_usage_analyticsにfiltered_out_events(既定フィルタでの除外件数)を追加。about.htmlの使い捨てメール拒否に関する誤記載を削除。"
+   ]
+  },
+  {
    "version": "ver1.3.7",
    "date": "2026-09-07",
    "title": "英単語用語集・フレーズ集・クロスワード紹介ページを追加",

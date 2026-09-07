@@ -1143,16 +1143,47 @@ def admin_registration_funnel(days: int = 30):
     guest_sidについて、最後に触れていた画面(usage_events.category)を
     集計し離脱ポイントの見当をつける。既存のadmin_anon_access(IP単位)は
     guest_sid導入前のデータも見られるよう残したまま、こちらは導入後の
-    正確な人単位集計を担う。"""
+    正確な人単位集計を担う。
+
+    **2026-09-07追記(ユーザー指摘「登録試行がほぼ無いのはなぜか」への
+    調査対応)**: 従来はボット除外を一切行っておらず(admin_visit_trend等
+    兄弟エンドポイントはvisitor_kind.classify()でボット除外済みなのに
+    ここだけ漏れていた)、curl/HeadlessChrome等の機械的アクセスが素通り
+    して分母(訪問数)を水増ししていた。UA単体判定のclassify_ua()で
+    guest_sid単位のボット判定を行い、全段階の集計から除外する
+    (IP単位のclassify()と違いip_geo_cache/管理者IP照合は行わない簡易
+    判定だが、UAが無い/curl等の明白なボットは十分検出できる)。
+    あわせて「訪問」段階の端末/ブラウザ内訳(ua_parse.parse_ua)も返す。"""
     _require_admin()
     days = max(1, min(days, 365))
     since = f"-{days} days"
     with db() as conn:
+        visit_ua_rows = conn.execute(
+            "SELECT guest_sid, user_agent FROM landing_visits "
+            "WHERE guest_sid != '' AND kind='visit' "
+            "AND created_at >= datetime('now', ?)", (since,),
+        ).fetchall()
+        # guest_sidごとの代表UA(最初に見つかったもの)でボット判定する。
+        # 同一guest_sidに複数UAが記録されることは通常なく、あっても
+        # どれか1つで十分ボット兆候を拾える。
+        ua_by_guest: dict[str, str] = {}
+        for r in visit_ua_rows:
+            ua_by_guest.setdefault(r["guest_sid"], r["user_agent"] or "")
+        bot_guests = {
+            g for g, ua in ua_by_guest.items()
+            if visitor_kind.classify_ua(ua)[0] != visitor_kind.MARK_NONE
+        }
+        bot_placeholders = ",".join("?" * len(bot_guests)) if bot_guests else ""
+        bot_excl_sql = (
+            f" AND guest_sid NOT IN ({bot_placeholders})"
+            if bot_guests else "")
+
         def count_distinct_guest(where_sql: str) -> int:
             row = conn.execute(
                 "SELECT COUNT(DISTINCT guest_sid) AS c FROM landing_visits "
                 f"WHERE guest_sid != '' AND created_at >= datetime('now', ?) "
-                f"AND {where_sql}", (since,),
+                f"AND {where_sql}{bot_excl_sql}",
+                (since, *bot_guests),
             ).fetchone()
             return row["c"]
 
@@ -1162,6 +1193,20 @@ def admin_registration_funnel(days: int = 30):
         signup_attempted = count_distinct_guest("kind='signup'")
         signup_succeeded = count_distinct_guest(
             "kind='signup' AND success=1")
+
+        # 「訪問」段階(人間判定分のみ)の端末/ブラウザ内訳。
+        device_counts: dict[tuple[str, str], int] = {}
+        for g, ua in ua_by_guest.items():
+            if g in bot_guests:
+                continue
+            device, browser = ua_parse.parse_ua(ua)
+            key = (device, browser)
+            device_counts[key] = device_counts.get(key, 0) + 1
+        device_breakdown = sorted(
+            [{"device": d, "browser": b, "count": c}
+             for (d, b), c in device_counts.items()],
+            key=lambda x: -x["count"],
+        )
 
         dropoff_rows = conn.execute(
             "SELECT ue.guest_sid, ue.category, ue.created_at "
@@ -1175,10 +1220,47 @@ def admin_registration_funnel(days: int = 30):
             "AND ue.guest_sid NOT IN ("
             "  SELECT guest_sid FROM landing_visits WHERE kind='signup' "
             "  AND guest_sid != '' AND created_at >= datetime('now', ?)"
-            ") "
+            f") {bot_excl_sql.replace('guest_sid', 'ue.guest_sid')} "
             "ORDER BY ue.guest_sid, ue.created_at",
-            (since, since, since),
+            (since, since, since, *bot_guests),
         ).fetchall()
+
+        # 登録試行の失敗理由内訳(2026-09-07・ユーザー要望「失敗理由を
+        # 多角的に評価したい」)。fail_reasonはapp/services/errors.pyの
+        # エラーコード(2026-09-07以前のデータは列が無いため空文字)。
+        fail_reason_rows = conn.execute(
+            "SELECT fail_reason, COUNT(*) AS c FROM landing_visits "
+            "WHERE kind='signup' AND success=0 AND guest_sid != '' "
+            "AND created_at >= datetime('now', ?)"
+            f"{bot_excl_sql} "
+            "GROUP BY fail_reason ORDER BY c DESC",
+            (since, *bot_guests),
+        ).fetchall()
+        fail_reasons = [{
+            "code": r["fail_reason"] or "(不明・旧データ)",
+            "label": errors.ERROR_CODES.get(
+                r["fail_reason"], (r["fail_reason"] or "不明", 0))[0],
+            "count": r["c"],
+        } for r in fail_reason_rows]
+
+        # 使い捨てメールドメイン使用の内訳(2026-09-07・以前はここで登録を
+        # ブロックしていたが、正規利用者を弾く弊害の方が大きいと判断し
+        # 許可制に変更。今後も悪用が増えていないか監視できるよう、
+        # 成功/失敗別の件数を出す)。
+        disposable_rows = conn.execute(
+            "SELECT success, COUNT(*) AS c FROM landing_visits "
+            "WHERE kind='signup' AND is_disposable_email=1 "
+            "AND guest_sid != '' AND created_at >= datetime('now', ?)"
+            f"{bot_excl_sql} "
+            "GROUP BY success",
+            (since, *bot_guests),
+        ).fetchall()
+        disposable_email_stats = {
+            "succeeded": next(
+                (r["c"] for r in disposable_rows if r["success"] == 1), 0),
+            "failed_other_reason": next(
+                (r["c"] for r in disposable_rows if r["success"] == 0), 0),
+        }
     # guest_sidごとに最後のイベントだけ残す(created_at昇順で走査して
     # 上書きしていくため、最後に残った値が最新になる)。
     last_event: dict[str, dict] = {}
@@ -1219,6 +1301,10 @@ def admin_registration_funnel(days: int = 30):
         "days": days, "stages": stages,
         "dropoff_summary": dropoff_summary,
         "dropoff_sessions": dropoff_sessions,
+        "bot_excluded": len(bot_guests),
+        "device_breakdown": device_breakdown,
+        "fail_reasons": fail_reasons,
+        "disposable_email_stats": disposable_email_stats,
     }
 
 
@@ -1677,6 +1763,18 @@ def admin_usage_analytics(
             f"WHERE ue.created_at >= datetime('now', ?) AND {filter_sql}",
             (since,),
         ).fetchone()[0]
+        # フィルタ無しの総数(2026-09-07追記・ユーザー指摘「1時間に集中
+        # している、集計が合っているか確認したい」への対応)。既定
+        # (include_admin/invited/test=false)だとほぼ全イベントが除外
+        # されるケースがあり(admin自身の操作+email未設定の招待ユーザー
+        # だけで実運用では大半を占めていた)、above のtotal_eventsだけ
+        # 見ると「ほぼ何も記録されていない」ように誤解されるため、
+        # 差分(filtered_out_events)を管理画面に出して気づけるようにする。
+        total_events_unfiltered = conn.execute(
+            "SELECT COUNT(*) FROM usage_events "
+            "WHERE created_at >= datetime('now', ?)",
+            (since,),
+        ).fetchone()[0]
 
     # 管理者自身の既知IP(.env の ADMIN_KNOWN_IPS)には is_admin フラグを
     # 立てる。実訪問者と管理者自身のテスト操作を見分けやすくするため
@@ -1728,6 +1826,7 @@ def admin_usage_analytics(
         "include_invited": include_invited,
         "include_test": include_test,
         "total_events": total_events,
+        "filtered_out_events": total_events_unfiltered - total_events,
         "pages": pages,
         "plays": plays,
         "clicks": clicks,

@@ -686,17 +686,19 @@ async function boot() {
   initTheme();
   initFontSize();
 
-  try {
-    state.taxonomy = await api.get("/api/system/taxonomy");
-    if (state.taxonomy.tts_voices) {
-      speech.setOpenAIVoices(state.taxonomy.tts_voices);
-    }
-  } catch (e) { /* ignore */ }
+  // taxonomyとmy-usage(refreshCost)は互いに依存が無いため並列実行する
+  // (2026-09-07・体感初期表示速度の改善。直列だと初回表示までAPI3回分
+  // (taxonomy→my-usage→facets)を待つことになり、遅い回線での白画面
+  // 離脱の一因になっていた)。
+  const taxonomyPromise = api.get("/api/system/taxonomy").then((t) => {
+    state.taxonomy = t;
+    if (t.tts_voices) speech.setOpenAIVoices(t.tts_voices);
+  }).catch(() => { /* ignore */ });
 
   // ロール/ゲスト判定を先に済ませてからnavを組み立てる（先にnavを全件
   // 描画してから隠す順序だと、未ログインでも一瞬「管理者」「設定」等が
   // 見えてちらつく問題があったため・2026-08-12ユーザー指摘）。
-  await refreshCost();      // sets state.isAdmin / state.multiuser / state.isGuest
+  await Promise.all([taxonomyPromise, refreshCost()]); // sets state.isAdmin / state.multiuser / state.isGuest
   await loadDismissedHints(); // isGuestが決まった後(保存先の出し分けに必要)
   // pt残高は未登録/無課金でも0ptのまま常に表示され、何の数字か分かり
   // づらいという指摘(2026-08-30)を受けⓘヒントを追加。

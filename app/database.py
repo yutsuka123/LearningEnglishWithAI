@@ -939,6 +939,17 @@ def _migrate(conn: sqlite3.Connection) -> None:
     # auth.pyのGUEST_SID_COOKIE参照)。
     _add_col(conn, "landing_visits", "guest_sid", "guest_sid TEXT DEFAULT ''")
     _add_col(conn, "usage_events", "guest_sid", "guest_sid TEXT DEFAULT ''")
+    # 登録試行の失敗理由を多角的に分析できるようにする(2026-09-07・
+    # ユーザー要望「離脱しそうなところ様々なログ分析できるように」)。
+    # kind='signup'の行にだけ意味を持つ: fail_reasonはapp/services/
+    # errors.pyのエラーコード(成功時は空文字)、is_disposable_emailは
+    # 使い捨てメールの既知ドメインだったか(成否を問わず記録。以前は
+    # ブロックしていたが、正規利用者を弾く弊害の方が大きいと判断し
+    # 許可制に変更、代わりにログでの可視化に切り替えた)。
+    _add_col(conn, "landing_visits", "fail_reason",
+             "fail_reason TEXT DEFAULT ''")
+    _add_col(conn, "landing_visits", "is_disposable_email",
+             "is_disposable_email INTEGER DEFAULT 0")
     # paypay_actionsは元々admin専用テストツールの監査ログだったが、
     # 実課金導線(paypay_charge.py)の追加でユーザー本人の操作も記録する
     # ようになったため、admin_user_idとは別にuser_idを追加(2026-09-01)。

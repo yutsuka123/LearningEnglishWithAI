@@ -8,6 +8,67 @@
 （例: 1.1.0→1.1.1）。ユーザーから別途指示があった場合のみ上位の桁を
 上げる。
 
+## ver1.3.8 (未デプロイ・2026-09-07作業)
+
+**⚡ 初期表示速度の改善＋登録ファネルのボット除外・端末内訳追加＋利用状況分析の見え方改善。**
+
+- **トップページの初期表示速度改善**: `static/js/app.js`の`boot()`で
+  `/api/system/taxonomy`と`/api/system/my-usage`を直列awaitから
+  `Promise.all`による並列実行に変更(互いに依存が無いため)。
+  `static/js/views.js`の`welcome()`(ゲスト向けトップ画面)は、従来
+  `/api/words/facets`の取得完了を待ってからでないと本体(見出し・
+  CTA)すら描画していなかったのを、facetsを待たずに先に描画し、
+  「収録語彙分野一覧」チップだけ後から非同期に差し込むよう変更
+  (`#welcomeDomainLabel`/`#welcomeDomainChips`)。従来は直列3回のAPI
+  待ちで白画面になっていた区間が、facets分は完全に非ブロッキングに
+  なった。ローカルでPlaywrightにより描画・エラー無し・クリック動作を
+  確認済み。
+- **登録ファネル(「登録に至らない原因分析」)のボット除外**: 兄弟の
+  `admin_visit_trend`等は`visitor_kind.classify()`でボット除外して
+  いたのに、`admin_registration_funnel`だけ除外が漏れており、curl等の
+  機械的アクセスが「訪問」の分母を水増ししていた(ユーザー指摘
+  「登録試行がほぼ無いのはなぜか」の調査で発覚)。`visitor_kind.
+  classify_ua()`でguest_sid単位のボット判定を追加し全段階の集計から
+  除外、除外件数(`bot_excluded`)を画面にも表示。あわせて「訪問」段階の
+  端末・ブラウザ内訳(`ua_parse.parse_ua()`)を追加。
+- **利用状況分析(usage-analytics)の見え方改善**: 既定フィルタ
+  (`include_admin`/`include_invited`/`include_test`=false)が意図せず
+  ほぼ全イベントを除外してしまうケースがあり(実運用ではadmin自身の
+  操作+email未設定の招待ユーザーだけで大半を占めていた)、時間帯別
+  グラフ等が「ほぼ全部0件」に見えて集計が壊れているかのような誤解を
+  招いていた(ユーザー指摘「ログが一つの時間帯に集中している」の調査で
+  判明。集計ロジック自体は正しかった)。フィルタで除外された件数
+  (`filtered_out_events`)を集計し、0件でない場合は画面にも注記する
+  よう変更(`app/routers/system.py`の`admin_usage_analytics`・
+  `static/js/views.js`)。
+- **追記(同日・未デプロイのため同一バージョンのまま)**: ユーザー指摘
+  「英単語・フレーズ・ダッシュボード・設定等の画面遷移も遅い」を受け、
+  `static/js/views.js`の主要画面(`dashboard`/`vocab`/`phrases`/
+  `flashcard`/`flashPhrase`/`history`/`admin`/`settings`)を監査した
+  ところ、いずれも複数の独立したAPI呼び出しを直列awaitしていた(最悪は
+  `settings`の6本直列)。各画面につき互いに依存の無い呼び出しを
+  `Promise.all`(一部`allSettled`で個別の成否ハンドリングを維持)にまとめ、
+  1回の並列往復に短縮。ローカルでPlaywrightにより全8画面の描画・
+  コンソールエラー無しを確認済み。
+- **追記(同日)**: 英単語・ミニフレーズ一覧の1ページあたり表示件数の
+  既定を50件→20件に変更(`pageSizeSelect()`、ユーザー指示)。描画件数を
+  減らして体感速度を上げる狙い。
+- **追記(同日・重要)**: ユーザー指摘「使い捨てメールも許可したい、弊害
+  ないか」を受け、使い捨てメールドメインの登録拒否(エラー2011)を廃止し
+  許可制に変更。あわせてユーザー要望「失敗理由を多角的に評価したい・
+  離脱しそうなところを分析できるように」に対応するため、`landing_visits`
+  に`fail_reason`(エラーコード)・`is_disposable_email`列を新設
+  (`app/database.py`)し、登録試行の成否と理由(コード)・使い捨てメール
+  使用の有無を毎回記録するよう変更(`app/routers/auth_routes.py`の
+  `signup`/`_record_signup_attempt`)。管理画面「登録に至らない原因分析」
+  に「登録試行の失敗理由内訳」表と使い捨てメールの成功/失敗件数を追加
+  (`app/routers/system.py`の`admin_registration_funnel`・
+  `static/js/views.js`)。`static/about.html`の「使い捨てメールは
+  ご利用いただけません」という今や誤りになった案内文も削除。
+  ローカルAPIで実際に使い捨てメール(mailinator.com)で登録成功すること・
+  fail_reason/is_disposable_emailが正しく記録され集計に反映されることを
+  確認済み。
+
 ## ver1.3.7 (2026-09-07デプロイ・2026-09-06作業・commit 98bf846)
 
 **🔍 SEO/LLMO改善: 公開用語集・フレーズ集・クロスワード紹介ページを新設。**
