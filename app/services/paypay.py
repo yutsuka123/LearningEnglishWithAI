@@ -108,6 +108,19 @@ _CREATE_MAX = 10        # 直近_CREATE_WINDOW秒でこの回数を超えたら�
 _CREATE_WINDOW = 3600.0  # 1時間
 
 
+def credited_pt_for(amount_jpy: int) -> int:
+    """支払い金額(円)から実際に付与するpt数を返す(2026-09-07・Fable監査
+    指摘で発覚: PayPay直接決済がBASEと同じ¥8,000でも8,000ptしか付与
+    しておらず、BASEの¥8,000→8,800pt(+10%ボーナス、特定商取引法ページ
+    にも明記)と食い違っていた。BASE側の`app/routers/fulfillment.py`の
+    `PRICE_TABLE`を単一の情報源として再利用し、両決済手段で同額なら
+    同じptになるようにする(ユーザー指示: 「BASEとPayPay同じ値段にする
+    つもり」)。未定義額(想定外の値)は額面通り(1:1)にフォールバック。"""
+    from ..routers.fulfillment import PRICE_TABLE
+    pt, _pattern = PRICE_TABLE.get(amount_jpy, (amount_jpy, ""))
+    return pt
+
+
 def create_rate_limited(user_id: int) -> bool:
     """直近1時間に_CREATE_MAX回を超えて支払いコードを作成していればTrue
     （呼び出し側は成功時のみ加算されるよう、コード作成前に1回だけ呼ぶ）。"""
@@ -325,9 +338,12 @@ def credit_if_completed(
     )
     if cur.rowcount != 1:
         return False
+    credited_pt = credited_pt_for(payment_row["amount_jpy"])
     auth.add_balance(
-        conn, payment_row["user_id"], float(payment_row["amount_jpy"]),
-        reason="paypay_charge", note=f"mpid={mpid} mode=production")
+        conn, payment_row["user_id"], float(credited_pt),
+        reason="paypay_charge",
+        note=f"mpid={mpid} mode=production amount_jpy="
+             f"{payment_row['amount_jpy']} credited_pt={credited_pt}")
     return True
 
 
@@ -368,7 +384,11 @@ def reverse_credit_if_refunded(conn, payment_row) -> bool:
     ).fetchone()
     cur_balance = (float(row["balance_jpy"])
                    if row and row["balance_jpy"] is not None else 0.0)
-    full_amount = float(payment_row["amount_jpy"])
+    # 取り消すのは実際に付与したpt(credited_pt_for、ボーナス込み)であって
+    # 支払い額面(amount_jpy)ではない(2026-09-07・credit_if_completedと
+    # 対で修正。ここがamount_jpyのままだと¥8,000決済の返金で800pt分
+    # 回収し損ねる)。
+    full_amount = float(credited_pt_for(payment_row["amount_jpy"]))
     deduct = min(full_amount, max(0.0, cur_balance))
     note = f"mpid={mpid}"
     if deduct < full_amount:

@@ -384,8 +384,7 @@ def _selfcheck_rate_limit_counter(conn, me: dict) -> tuple[bool, str]:
 
 def _selfcheck_public_flag(conn, me: dict) -> tuple[bool, str]:
     """一般公開フラグが意図せずtrueになっていないか(読み取りのみ)。"""
-    from . import paypay_charge
-    is_public = paypay_charge._public_enabled(conn)
+    is_public = paypay.public_enabled(conn)
     is_prod = paypay.is_production()
     # 本番モードがまだ有効化されていない間は、公開フラグの値に関わらず
     # 問題ない(_guard_not_yet_publicがis_production()も見ているため)。
