@@ -1163,19 +1163,35 @@ def _create_crossword_session(
     # 絞る(オーバーサンプルした候補全体ではなく)。
     placed_ids = {cl.word_id for cl in puzzle.clues}
     used_pool = [c for c in pool if c["id"] in placed_ids]
-    ai_cost_total = 0.0
+    # 英語ヒント・穴埋め例文・日本語ヒントの3系統は互いに独立(別々の
+    # cache_keyに書き込むだけで、他系統の結果を参照しない)なので、
+    # 直列に呼ぶと(生成→照査→再生成)×系統数ぶん待ち時間が積み上がって
+    # いた(2026-09-07ユーザー指摘「クロスワード作成が数十秒かかる」の
+    # 調査で発覚。特に「両方モード」はEN+JAの2系統がまるごと直列で、
+    # 体感速度の主因になっていた)。_ensure_ai_hints内で実際にDB書き込みに
+    # 使うのは専用の短命接続(cache_conn)であり引数のconnは未使用のため、
+    # 系統間でconnを共有してもスレッド安全。ThreadPoolExecutorで並列化する
+    # (バッチ単位の並列化と同じ、このファイル既存のパターン)。
+    from concurrent.futures import ThreadPoolExecutor as _TPE
+    tasks: list = []
     if wants_en and english_style in ("definition", "hybrid", "rich"):
-        ai_cost_total += _ensure_english_ai_hints(conn, used_pool)
+        tasks.append(lambda: _ensure_english_ai_hints(conn, used_pool))
     if wants_en and english_style == "fill_blank":
         # words.exampleが既にある語はAIを呼ばず流用する(コスト削減・
         # 2026-09-05ユーザー指示「穴埋め文はクロスワード用に動的に
         # 作っていい」の対象はexampleが無い語のみ)。
         needs_fillblank = [c for c in used_pool if not c["example"]]
         if needs_fillblank:
-            ai_cost_total += _ensure_english_fillblank_examples(
-                conn, needs_fillblank)
+            tasks.append(lambda: _ensure_english_fillblank_examples(
+                conn, needs_fillblank))
     if wants_ja and japanese_style in ("explanation", "hybrid", "rich"):
-        ai_cost_total += _ensure_japanese_ai_hints(conn, used_pool)
+        tasks.append(lambda: _ensure_japanese_ai_hints(conn, used_pool))
+    ai_cost_total = 0.0
+    if tasks:
+        with _TPE(max_workers=len(tasks)) as hint_pool_exec:
+            ai_cost_total = sum(
+                f.result() for f in
+                [hint_pool_exec.submit(t) for t in tasks])
 
     by_id = {c["id"]: c for c in used_pool}
     clues_full = []
