@@ -12,17 +12,25 @@
 実装を2箇所でずらさないため)。
 
 対象の絞り込み:
-  - 作成から10分以上経過（支払い中の可能性がある直近の行には触れない）
-  - 作成から7日以内（それ以上古い行はPayPay側のコード有効期限も切れて
-    おり、今さら救済してもユーザー体験上意味が薄いため対象外。7日を
-    超えて未確定のまま残る行は、放置された/キャンセルされた支払いの
-    ノイズとして扱い、必要なら別途手動で調査する）
+  - 作成から1分以上経過（支払い中の可能性が高い直近の行には触れない。
+    2026-09-07・当初は10分だったが、実機で「支払い後すぐタブを閉じた」
+    ケースの反映が最大25分ほど遅れた実例が出たため短縮。PayPay側の
+    決済画面に出る「◯分以内にお支払いください」という案内は支払う側
+    への呼びかけであり、実際にはコードは支払われるまでstatus="CREATED"
+    のまま自動失効しないことを実機確認済み。そのため早めに・頻繁に
+    見に行っても無駄がなく、むしろ反映を早くできる）
+  - 作成から7日以内（それ以上古い行は放置された/キャンセルされた支払いの
+    ノイズとして扱い、必要なら別途手動で調査する。cron間隔を短くした分
+    問い合わせ回数は増えるが、CANCELED/EXPIRED等の終端状態になった行は
+    除外されるため実際に無限に叩き続けるのは「支払われずCREATEDのまま
+    残り続ける行」だけに限られる）
 
-使い方(VPSのコンテナ内・cronで15〜30分おき程度を想定):
+使い方(VPSのコンテナ内・cronで2〜3分おきを想定・2026-09-07に15分おきから
+短縮):
     docker cp scripts/reconcile_paypay_payments.py eigo-app:/app/scripts/
     docker exec -i eigo-app python scripts/reconcile_paypay_payments.py
-VPSホストのcrontabへの登録例(15分おき):
-    */15 * * * * cd ~/eigo && docker exec eigo-app \
+VPSホストのcrontabへの登録例(2分おき):
+    */2 * * * * cd ~/eigo && docker exec eigo-app \
         python scripts/reconcile_paypay_payments.py \
         >> data/reconcile_paypay_cron.log 2>&1
 """
@@ -59,7 +67,7 @@ def main() -> int:
         rows = conn.execute(
             "SELECT * FROM paypay_payments WHERE credited_at IS NULL "
             "AND status NOT IN ('FAILED', 'CANCELED', 'EXPIRED') "
-            "AND created_at <= datetime('now', '-10 minutes') "
+            "AND created_at <= datetime('now', '-1 minutes') "
             "AND created_at >= datetime('now', '-7 days') "
             "ORDER BY created_at"
         ).fetchall()

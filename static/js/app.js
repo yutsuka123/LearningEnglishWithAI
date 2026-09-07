@@ -784,7 +784,16 @@ async function boot() {
 
   // 上記の非同期処理中にユーザーが既に別タブへナビゲートしていたら、
   // ダッシュボードで上書きしない（レースコンディション対策）。
-  if (!userNavigated) go(state.isGuest ? "welcome" : "dashboard");
+  if (!userNavigated) {
+    // about.html「課金して使うには？」の「PayPayで購入」リンク
+    // (/?tab=settings)等、外部ページから特定タブへ直接誘導するための
+    // ディープリンク(2026-09-07)。ゲストには見せないタブ
+    // (GUEST_HIDDEN_TABS)を指定された場合は無視して既定へ。
+    const requestedTab = new URLSearchParams(location.search).get("tab");
+    const canDeepLink = requestedTab && ROUTES[requestedTab]
+      && !(state.isGuest && GUEST_HIDDEN_TABS.has(requestedTab));
+    go(canDeepLink ? requestedTab : (state.isGuest ? "welcome" : "dashboard"));
+  }
 }
 
 boot();
