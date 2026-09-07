@@ -478,12 +478,21 @@ def _ensure_ai_hints(
     呼び出し分は0)。2026-09-05新課金式(1ゲームまとめて課金)の原価
     集計に使う(呼び出し元の_create_crossword_session参照)。"""
     from concurrent.futures import ThreadPoolExecutor
+    from ..config import load_settings
     from ..services import ai
     if not ai.is_enabled():
         return 0.0
     missing = [c for c in pool if not c.get(cache_key)]
     if not missing:
         return 0.0
+    # 2026-09-07・モデル比較ベンチマーク(docs/BENCHMARK_CROSSWORD_MODELS.md
+    # 参照・gitignore対象のため非公開)の結果、既定のgpt-5.6-lunaより
+    # quality_model(gpt-5.4-mini)の方が生成が明確に高速(語数20〜50語で
+    # 約50〜67%高速化)かつ自動照査によるng率も現行同等以上と判明した
+    # ため、生成モデルを照査(_review_ai_hints)と同じquality_modelに
+    # 統一する。ベンチマークは日本語ヒントのみで実施したが、英語ヒント・
+    # 穴埋め例文もこの関数を共用しており、プロンプト構造・出力形式
+    # (短いJSON配列)が同種のタスクのため同様の効果を見込んで適用する。
     # 1回のAI呼び出しでmax_tokensを使い切って途中の語のヒントが欠ける
     # (JSON配列が閉じずに切れる)ことがあったため(2026-09-03ユーザー
     # 報告: 英英ハイブリッドで穴埋めのみになる語があった)、8語ずつの
@@ -497,11 +506,14 @@ def _ensure_ai_hints(
     by_en = {c["english"]: c for c in missing}
     batches = [missing[i:i + CHUNK] for i in range(0, len(missing), CHUNK)]
 
+    model = load_settings().quality_model
+
     def _call(batch: list[dict]):
         listing = "\n".join(f"{c['english']} | {c['japanese']}" for c in batch)
         return ai.chat(
             system, f"単語(英語 | 日本語訳):\n{listing}",
             temperature=0.4, max_tokens=1200, feature="crossword_hint",
+            model=model,
         )
 
     with ThreadPoolExecutor(max_workers=min(8, len(batches))) as pool_exec:
