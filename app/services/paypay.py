@@ -57,9 +57,17 @@ def is_production() -> bool:
 # ytsuka-biz1@nyangailab.comにチャージ新画面を開放する」への対応)。
 # role='admin'ではない特定アカウントにだけ、新チャージ画面(PayPay購入)を
 # 限定的に開放するための一時的な仕組み。対象が少人数のうちはapp_state等の
-# DB管理にはせず、コード直書きのシンプルな方式で運用する(必要になれば
-# 後日DB管理に拡張)。
-_TEST_ALLOWED_USERNAMES = {"ytsuka-biz1@nyangailab.com"}
+# DB管理にはせず、環境変数で運用する(必要になれば後日DB管理に拡張)。
+# 2026-09-08: 実メールアドレスを公開リポジトリのソースに直書きしない
+# ルール(CLAUDE.md)に合わせ、環境変数`PAYPAY_TEST_ALLOWED_USERNAMES`
+# (カンマ区切り)に切り出した。**デプロイ時は本番の.env.studyにも
+# 同じ値を追加すること**(無いと対象アカウントが単に新画面を使えなく
+# なるだけで安全側だが、機能retentionのため設定を忘れないよう注意)。
+_TEST_ALLOWED_USERNAMES = {
+    u.strip().lower()
+    for u in os.getenv("PAYPAY_TEST_ALLOWED_USERNAMES", "").split(",")
+    if u.strip()
+}
 
 
 def is_test_allowed(username: str) -> bool:

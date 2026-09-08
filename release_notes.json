@@ -15,6 +15,19 @@
  ],
  "versions": [
   {
+   "version": "ver1.4.1",
+   "date": "2026-09-09",
+   "title": "セキュリティ強化と管理画面のログ表示改善",
+   "public": [
+    "セキュリティを強化しました（ログイン画面の遷移先チェックの厳格化など）。ご利用中の操作方法に変更はありません。"
+   ],
+   "admin": [
+    "Fable監査対応: (1) login.htmlのnextパラメータでバックスラッシュを使ったオープンリダイレクトを防止、(2) 本番(MULTIUSER=1)でSwagger UI(/docs)・/openapi.json・/redocを非公開化(app/main.py、ローカル開発時は従来通り開放。非公開化前のスキーマはbusiness_planのtech_docs/にバックアップ)、(3) views.jsのエラー表示2箇所でescapeHtml漏れを修正、(4) paypay.pyのPayPayテスト許可メールアドレスを環境変数PAYPAY_TEST_ALLOWED_USERNAMESへ切り出し。",
+    "クリックジャッキング対策(X-Frame-Options/CSP frame-ancestors)をCaddyfile.study.snippetに追加。共有Caddyコンテナの手動反映が別途必要なため今回の自動デプロイ範囲外。",
+    "管理画面「利用状況分析」の日別/時間帯別の表に、フィルタ除外件数の注意書きを追加(既定フィルタが厳しく直近14日でusage_events 8,051件中36件しか表示されず「集計が壊れている」ように見えていた問題への対応)。"
+   ]
+  },
+  {
    "version": "ver1.4.0",
    "date": "2026-09-07",
    "title": "PayPayでの即時チャージを正式公開",

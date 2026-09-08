@@ -279,7 +279,12 @@
     function safeNextUrl() {
       try {
         const next = new URLSearchParams(location.search).get('next');
-        if (next && next.startsWith('/') && !next.startsWith('//')) {
+        // "\"を含む値はブラウザのURL正規化で「/」扱いされ得るため
+        // (例: "/\evil.example" → "//evil.example" → 外部オリジンへの
+        // オープンリダイレクト)、"/"始まりチェックだけでは不十分。
+        // バックスラッシュを含む時点で拒否する(2026-09-08 Fable監査指摘)。
+        if (next && next.startsWith('/') && !next.startsWith('//')
+            && !next.includes('\\')) {
           return next;
         }
       } catch (_) { /* ignore */ }

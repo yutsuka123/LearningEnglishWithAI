@@ -146,7 +146,17 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="English Learning with AI", lifespan=lifespan)
+# 本番(MULTIUSER=1)ではSwagger UI/OpenAPIスキーマをログイン済みユーザー
+# 全員に公開しない(2026-09-08 Fable監査指摘・エンドポイント一覧の露出を
+# 防ぐ)。ローカル単一ユーザー開発時(MULTIUSER未設定/0)は従来通り開放。
+_api_docs_enabled = not auth_svc.multiuser_enabled()
+app = FastAPI(
+    title="English Learning with AI",
+    lifespan=lifespan,
+    docs_url="/docs" if _api_docs_enabled else None,
+    openapi_url="/openapi.json" if _api_docs_enabled else None,
+    redoc_url="/redoc" if _api_docs_enabled else None,
+)
 
 
 @app.exception_handler(Exception)

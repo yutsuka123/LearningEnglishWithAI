@@ -1061,7 +1061,8 @@ function showWordDetail(w) {
             `<p class="muted">${escapeHtml(r.error || "失敗")}</p>`;
         }
       } catch (e) {
-        detailBox.innerHTML = `<p class="muted">失敗: ${e.message}</p>`;
+        detailBox.innerHTML =
+          `<p class="muted">失敗: ${escapeHtml(e.message || "")}</p>`;
       }
     };
     if (w.has_detail) {
@@ -1137,7 +1138,8 @@ function showPhraseDetail(p) {
             `<p class="muted">${escapeHtml(r.error || "失敗")}</p>`;
         }
       } catch (e) {
-        detailBox.innerHTML = `<p class="muted">失敗: ${e.message}</p>`;
+        detailBox.innerHTML =
+          `<p class="muted">失敗: ${escapeHtml(e.message || "")}</p>`;
       }
     };
     if (p.has_detail) {
@@ -5640,7 +5642,16 @@ export async function admin(root) {
         </tr>`).join("")}</tbody></table>` :
       `<p class="muted">まだありません。</p>`;
 
+    // 上の総イベント数と同じ注意書き(2026-09-08追記)。この表は上の
+    // フィルタ条件(管理者/招待/テスト除外)を継承しているため、フィルタが
+    // 厳しいと「0件が並ぶ」だけになり、下にスクロールしてこの表だけ見た
+    // 場合に上の注意書きを見落として「集計が壊れている」と誤解しやすい。
+    const filterCaveat = filteredOut > 0
+      ? `<p class="muted">（フィルタ条件で除外された分が別途${filteredOut}件
+          あります。0件が並ぶ場合は上のフィルタを緩めてご確認ください）</p>`
+      : "";
     root.querySelector("#uaDailyWrap").innerHTML = res.daily.length ?
+      filterCaveat +
       `<table><thead><tr>
         <th>日付(JST)</th><th>画面表示</th><th>再生</th><th>クリック</th>
         <th>新規登録</th>
@@ -5654,6 +5665,7 @@ export async function admin(root) {
     const hourlyMax = Math.max(1, ...hourly.map((h) =>
       h.pages + h.plays + h.clicks));
     root.querySelector("#uaHourlyWrap").innerHTML = hourly.length ?
+      filterCaveat +
       `<table><thead><tr>
         <th>時</th><th>画面表示</th><th>再生</th><th>クリック</th>
         <th>合計</th><th></th>
