@@ -479,6 +479,19 @@ th { color: var(--muted); font-weight: 600; }
   table.rtable .ops-cell { flex-wrap: wrap; white-space: normal; gap: 6px; }
   table.rtable .ops-cell .ops-break { flex: 1 0 100%; }
 
+  /* 英語・日本語列は幅指定なし(残り幅を均等折半)のため、サイドバー
+     ピン留め時等でcard幅が狭まると他の固定幅列に押されてこの2列が0近く
+     まで潰れ、文字が隣の列と重なって見える不具合があった(2026-09-10
+     ユーザー報告・iPad幅でサイドバーピン留め時に再現)。table-layout:
+     fixedの下ではth/td個別のmin-widthは無視され0になってしまう
+     (実機検証で確認済み)ため、table要素自体にmin-widthを与えて下限を
+     作る(固定幅列の合計+英語/日本語2列分の最低幅)。これを下回る場合は
+     .cardのoverflow-x:auto(2026-08-29追加)による横スクロールに委ねる。
+     通常のPC/モバイル幅では十分な余裕がありmin-widthが効かないため
+     見た目は変わらない。 */
+  table.rtable-words { min-width: 700px; }         /* 固定7列539px+200px */
+  table.rtable:not(.rtable-words) { min-width: 600px; }  /* 固定5列437px+163px */
+
   table.rtable th:nth-child(1), table.rtable td:nth-child(1) {
     width: 50px; padding-left: 4px; padding-right: 4px;
   }
