@@ -944,7 +944,12 @@ function renderWordDetail(box, d, primaryEn) {
   sec("発音:", d.pronunciation ? escapeHtml(d.pronunciation) : "");
   sec("品詞:", d.pos ? escapeHtml(d.pos) : "");
   sec("意味:", arr(d.meanings));
-  // 例文(英文＋日本語訳)。訳は淡色で英文の下に。発声は不要なので再生ボタンなし。
+  // 例文(英文＋日本語訳)。各例文に男声/女声の再生ボタンを付ける
+  // (2026-09-09・多義語のように複数例文を持つ語で、それぞれの意味を
+  // 音でも確認したいという要望に対応。POST /api/learn/tts はテキスト
+  // 直接指定で都度合成するキャッシュ無し方式のため、再生のたびにAI
+  // コストがかかる点に注意。頻繁に再生されるなら事前生成+キャッシュ化
+  // を別途検討(docs/TODO.md参照)。
   // 先頭の読み上げ例文(primaryEn)と同じ文は重複表示しない。
   if (Array.isArray(d.examples) && d.examples.length) {
     const norm = (s) => (s || "").trim().toLowerCase().replace(/\.+$/, "");
@@ -952,11 +957,16 @@ function renderWordDetail(box, d, primaryEn) {
       ? d.examples.filter((x) => norm(x.en) !== norm(primaryEn))
       : d.examples;
     if (exs.length) {
-      const exHtml = exs.map((x) =>
-        `${escapeHtml(x.en || "")}<br>`
-        + `<span class="muted">${escapeHtml(x.ja || "")}</span>`)
-        .join(`<br>`);
-      sec("例文:", exHtml);
+      const wrap = el(`<div style="margin:6px 0"><b>例文:</b></div>`);
+      exs.forEach((x) => {
+        const row = el(`<div class="row" style="align-items:center; gap:8px; margin:4px 0">
+          <div>${escapeHtml(x.en || "")}<br>
+            <span class="muted">${escapeHtml(x.ja || "")}</span></div>
+        </div>`);
+        row.appendChild(voiceButtons(() => x.en || ""));
+        wrap.appendChild(row);
+      });
+      box.appendChild(wrap);
     }
   }
   if (Array.isArray(d.derivatives) && d.derivatives.length) {

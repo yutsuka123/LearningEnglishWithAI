@@ -25,7 +25,8 @@
     "Fable監査対応: (1) login.htmlのnextパラメータでバックスラッシュを使ったオープンリダイレクトを防止、(2) 本番(MULTIUSER=1)でSwagger UI(/docs)・/openapi.json・/redocを非公開化(app/main.py、ローカル開発時は従来通り開放。非公開化前のスキーマはbusiness_planのtech_docs/にバックアップ)、(3) views.jsのエラー表示2箇所でescapeHtml漏れを修正、(4) paypay.pyのPayPayテスト許可メールアドレスを環境変数PAYPAY_TEST_ALLOWED_USERNAMESへ切り出し。",
     "クリックジャッキング対策(X-Frame-Options/CSP frame-ancestors)をCaddyfile.study.snippetに追加。共有Caddyコンテナの手動反映が別途必要なため今回の自動デプロイ範囲外。",
     "管理画面「利用状況分析」の日別/時間帯別の表に、フィルタ除外件数の注意書きを追加(既定フィルタが厳しく直近14日でusage_events 8,051件中36件しか表示されず「集計が壊れている」ように見えていた問題への対応)。",
-    "管理画面に「実収支」レポートを新設(/api/system/admin/pl-report)。BASE+PayPayの実入金合計からAI原価・サーバー代・広告費(Google Ads運用開始に伴い追加)を差し引いた本当の損益を表示。既存の「コスト管理」(内部ポイント経済の粗利チェック)とは別指標。"
+    "管理画面に「実収支」レポートを新設(/api/system/admin/pl-report)。BASE+PayPayの実入金合計からAI原価・サーバー代・広告費(Google Ads運用開始に伴い追加)を差し引いた本当の損益を表示。既存の「コスト管理」(内部ポイント経済の粗利チェック)とは別指標。",
+    "単語詳細画面の複数例文(detail.examples[])に男声/女声の再生ボタンを追加(今まではテキスト表示のみだった)。「多義語」語彙追加に合わせて対応。都度AI合成する方式のためコストに注意、再生頻度次第で事前生成キャッシュ方式への切替を検討予定。"
    ]
   },
   {
