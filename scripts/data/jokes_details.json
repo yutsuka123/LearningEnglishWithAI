@@ -1,0 +1,558 @@
+[
+  {
+    "english": "Why did the scarecrow win an award? Because he was outstanding in his field.",
+    "detail": {
+      "nuance": "典型的な「dad joke(オヤジギャグ)」。Q&A形式で、答えの中の1語に二重の意味を仕込むパターン。",
+      "similar_expressions": [],
+      "background": "dad jokeとは、駄洒落オチで思わず「うっ」と苦笑いさせるタイプの他愛ないジョークの総称。家庭で父親がよく言うことからこう呼ばれ、内容よりも「あえてベタなオチを堂々と言う」こと自体がお約束として楽しまれる。",
+      "caution": "意図的に「つまらないオチ」であることが笑いどころなので、本当に面白いジョークとして期待して聞くと肩透かしを食う。聞き手がわざとらしく呆れて見せる(groan)のがお約束の反応。",
+      "trivia": "",
+      "explanation": "outstanding には「傑出している・優秀な」という意味と、文字通り「(a field=畑の)外に立っている(out+standing)」という意味が重なっている。かかしは畑に一日中突っ立っている存在なので、両方の意味が同時に成立するのがオチ。"
+    }
+  },
+  {
+    "english": "I used to be a baker, but I couldn't make enough dough, so I gave it up.",
+    "detail": {
+      "nuance": "職業ネタの駄洒落。「辞める理由」を語る形で意外な単語の二重の意味に着地させる。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "dough(パン生地)を「お金」の意味で使うのは英語の口語で非常によくあるスラング(例: make dough=稼ぐ)。",
+      "explanation": "dough には「パン生地」と口語で「お金」の2つの意味がある。「dough(生地)を十分作れなかった」が同時に「dough(お金)を十分稼げなかった」とも読めるのが仕掛け。"
+    }
+  },
+  {
+    "english": "Why don't skeletons fight each other? They don't have the guts.",
+    "detail": {
+      "nuance": "なぞなぞ形式の駄洒落。ホラー要素(ガイコツ)を使った定番の子ども向けジョークパターン。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "guts には「はらわた・内臓」という文字通りの意味と、「度胸・勇気」という比喩的な意味がある。ガイコツには内臓が無いので、両方の意味で「guts が無い」が成立する。"
+    }
+  },
+  {
+    "english": "I told my computer I needed a break, and it froze.",
+    "detail": {
+      "nuance": "現代的なテック小ネタ。人間の「休憩」とパソコンの動作を重ねる観察系のジョーク。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "人間が「休憩(break)」を取るのと、パソコンが「フリーズ(動かなくなる)」ことを重ね、あたかもパソコンが文字通り「break(休む)」を実行したかのように見せている。皮肉にもフリーズは休憩どころかトラブルだ、というズレが笑いどころ。"
+    }
+  },
+  {
+    "english": "Knock, knock. Who's there? Lettuce. Lettuce who? Lettuce in, it's freezing out here!",
+    "detail": {
+      "nuance": "knock-knock joke(ノックノック・ジョーク)の定番形式。「Lettuce」という単語が導入部分。",
+      "similar_expressions": [
+        {
+          "en": "Knock, knock. Who's there? Orange. Orange who? Orange you glad I didn't say banana?",
+          "ja": "「トントン」「どなた?」「オレンジです」「オレンジって?」「バナナって言わなくてよかったでしょ?(Orange=Aren't you)」",
+          "diff": "同じknock-knock jokeの型で、別の同音異義語(orange/aren't you)を使った超定番の例。"
+        }
+      ],
+      "background": "knock-knock jokeはアメリカの子ども文化に深く根付いた定型ジョークの型。「Knock knock./Who's there?/(名前)./(名前) who?」という4行のやり取りが必ず決まっており、最後に名前と文がつながって意味を成す(たいてい同音異義語オチ)。",
+      "caution": "この型自体を知らないと、なぜこの掛け合いをするのか分かりにくい。まず型を覚えることが理解の第一歩。",
+      "trivia": "",
+      "explanation": "Lettuce(レタス)は \"Let us\"(私たちに~させて)と発音がほぼ同じ。「Lettuce in」で \"Let us in\"(中に入れて)という意味になる同音異義語オチ。"
+    }
+  },
+  {
+    "english": "I'm reading a book about anti-gravity. It's impossible to put down.",
+    "detail": {
+      "nuance": "慣用句を文字通りの意味に読み替えるタイプの駄洒落。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"impossible to put down\" は「(本が面白すぎて)途中でやめられない」という慣用句だが、反重力の本なので「物理的に下に置けない(put down できない)」とも読める。テーマ(反重力)と慣用句の文字通りの意味が重なるのがオチ。"
+    }
+  },
+  {
+    "english": "My bed is a magical place. I lie down, and suddenly it is morning.",
+    "detail": {
+      "nuance": "駄洒落ではなく、誰もが共感する「あるある」を大げさに表現する観察系ジョーク。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "言葉遊びではなく、「横になった途端に眠り込んでしまい、気づいたら朝(＝時間の感覚が飛ぶ)」という誰もが経験する感覚を「魔法」と大げさに表現することで笑いを生む、共感型(observational)のジョーク。"
+    }
+  },
+  {
+    "english": "I'm not lazy, I'm just on energy-saving mode.",
+    "detail": {
+      "nuance": "自虐ネタ。人間の性質を機械の用語に例える現代的な比喩。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "「怠け者」という直接的な自己評価を避け、家電製品の「省エネモード(energy-saving mode)」という婉曲的でポジティブに聞こえる言葉に置き換えることで、自虐でありながら軽やかに聞こえるのが笑いどころ。"
+    }
+  },
+  {
+    "english": "Why did the coffee file a police report? It got mugged.",
+    "detail": {
+      "nuance": "なぞなぞ形式の駄洒落。犯罪用語とコーヒー用語を掛ける。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "mug には「マグカップ」という名詞の意味と、「(路上などで)襲って金品を奪う」という動詞の意味がある。コーヒーが「mugged(カップに入れられた/襲われた)」の両方の意味で成立するのがオチ。"
+    }
+  },
+  {
+    "english": "I only know 25 letters of the alphabet. I don't know Y.",
+    "detail": {
+      "nuance": "シンプルな同音異義語オチの一言ジョーク(one-liner)。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "アルファベットの \"Y\" と疑問詞 \"why(なぜ)\" が同じ発音であることを利用し、「Yを知らない」＝「whyが分からない、理由が分からない」の意味を重ねている。"
+    }
+  },
+  {
+    "english": "Knock, knock. Who's there? Boo. Boo who? Aw, don't cry, it's just a joke.",
+    "detail": {
+      "nuance": "knock-knock jokeのもう1つの定番例。感嘆詞の同音異義語オチ。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"Boo\"(お化けが驚かすときの声)と \"boo-hoo\"(めそめそ泣く様子を表す擬音)を重ね、「Boo who?」の答えとして「泣かないで、ただの冗談だよ」とつながるオチになっている。"
+    }
+  },
+  {
+    "english": "I used to hate facial hair, but then it grew on me.",
+    "detail": {
+      "nuance": "慣用句を文字通りの意味に読み替えるタイプの駄洒落。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"grow on someone\" は「(最初は苦手だったものが)だんだん好きになる」という慣用句だが、ヒゲ(facialhair)は文字通り「生える(grow)」ものでもあるため、両方の意味が重なるのがオチ。"
+    }
+  },
+  {
+    "english": "I'm on a seafood diet. Every time I see food, I eat it.",
+    "detail": {
+      "nuance": "同音異義語(ホモフォン)を使った非常に有名な定番駄洒落。",
+      "similar_expressions": [],
+      "background": "この「seafood diet」ジョークは作者不明のまま何十年も英語圏で語り継がれている定番の駄洒落で、joke book やSNSなどで頻繁に見かける「型」そのものとして扱われる。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"seafood\"(シーフード)と \"see food\"(食べ物を見る)が同じ発音であることを利用し、「シーフードダイエット」という健康的そうな名前を、「見たものは何でも食べる」というズボラな意味にすり替えている。"
+    }
+  },
+  {
+    "english": "Why did the bicycle fall over? Because it was two-tired.",
+    "detail": {
+      "nuance": "非常によく知られた定番の同音異義語ジョーク。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"two-tired\"(タイヤが2つ)と \"too tired\"(疲れすぎている)が同じ発音であることを利用した駄洒落。自転車には車輪(タイヤ)が2つあるという事実と「疲れて倒れた」という擬人化を重ねている。"
+    }
+  },
+  {
+    "english": "I have a fear of speed bumps, but I'm slowly getting over it.",
+    "detail": {
+      "nuance": "慣用句を文字通りに読み替えるタイプの駄洒落。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"get over it\" は「(恐怖や困難を)乗り越える・克服する」という慣用句だが、speed bump(道路の段差)は文字通り車で「乗り越える」ものでもあるため、両方の意味が重なるのがオチ。"
+    }
+  },
+  {
+    "english": "My New Year's resolution is to stop procrastinating. I'll start next December.",
+    "detail": {
+      "nuance": "皮肉(irony)によるオチ。先延ばし癖をやめる決意自体を先延ばしにするという矛盾。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "「先延ばしをやめる」という目標を語りながら、その目標の実行開始自体を1年近く先延ばしにする、という自己矛盾がそのままオチになっている。"
+    }
+  },
+  {
+    "english": "I told my suitcase there'd be no vacation this year. Now I'm dealing with emotional baggage.",
+    "detail": {
+      "nuance": "慣用句を文字通りに読み替えるタイプの駄洒落。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"baggage\" には「(スーツケースなどの)荷物」という文字通りの意味と、「(過去の傷やトラウマからくる)心の重荷」という比喩的な意味(emotional baggage)がある。休暇に行けなかった悲しみを、両方の意味が重なる形で表現している。"
+    }
+  },
+  {
+    "english": "Why do we tell actors to break a leg? Because every good play needs a little drama.",
+    "detail": {
+      "nuance": "慣用句の由来を絡めた駄洒落。",
+      "similar_expressions": [],
+      "background": "\"break a leg\" は演劇の世界で「頑張って」という意味で使われる有名な慣用句(縁起を担いで、直接\"good luck\" と言うのを避ける習慣に由来するという説がある)。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"drama\" には「演劇」というジャンル名の意味と、「(日常の)もめ事・波乱」という口語的な意味がある。「良い芝居には波乱(drama)が必要」という文で、「break a leg」という物騒な響きの慣用句を正当化しているのがオチ。"
+    }
+  },
+  {
+    "english": "I invested in a company that makes mirrors. I can really see myself working there.",
+    "detail": {
+      "nuance": "慣用句を文字通りに読み替えるタイプの駄洒落。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"see myself doing something\" は「自分がそれをしている姿を想像できる」という慣用表現だが、鏡(mirror)工場の話なので、文字通り鏡に映る自分の姿を「見る」の意味も重なる。"
+    }
+  },
+  {
+    "english": "My therapist says I have an issue with revenge. We'll see about that.",
+    "detail": {
+      "nuance": "言葉の裏に隠れた意味をあえて明示しない、ドライなone-liner。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "日本語話者には特にニュアンスが伝わりにくい。\"We'll see about that\" は文字通りには「様子を見よう」だが、実際には「そうはさせない/思い知らせてやる」という静かな決意・反抗を示す口語表現。",
+      "trivia": "",
+      "explanation": "セラピストに「復讐にこだわりすぎ」と指摘された直後に「We'll see about that(それはどうかな)」と返すことで、まさに指摘通り「仕返ししてやる」という態度を示してしまっている、という自己矛盾がオチ。"
+    }
+  },
+  {
+    "english": "I used to play piano by ear, but now I use my hands.",
+    "detail": {
+      "nuance": "慣用句を文字通りに読み替えるタイプの駄洒落。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"play by ear\" は「楽譜を見ずに耳で聞いた感覚で演奏する」という慣用句。それに対し「今は手を使う」とわざわざ当たり前のこと(楽器は手で弾くもの)を続けることで、慣用句の比喩的な意味と文字通りの身体動作を対比させて笑わせている。"
+    }
+  },
+  {
+    "english": "I was going to tell a chemistry joke, but I knew I wouldn't get a reaction.",
+    "detail": {
+      "nuance": "理系ネタの定番駄洒落。学校の理科の授業でもよく使われる型。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"reaction\" には「化学反応」という理科用語の意味と、「(聞き手の)反応・ウケ」という意味がある。「反応が得られないと分かっていた」の一言で両方の意味が重なるのがオチ。"
+    }
+  },
+  {
+    "english": "The math teacher called in sick. She said she had too many problems.",
+    "detail": {
+      "nuance": "なぞなぞ形式の駄洒落。学校ネタの定番。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"problem\" には「数学の問題」という意味と、「(個人的な)悩み事・トラブル」という意味がある。数学の先生が「problemsが多すぎる」と言うことで、職業(数学)と体調不良の言い訳が両方の意味で成立するのがオチ。"
+    }
+  },
+  {
+    "english": "When a phone gets stolen at the shop, is the person who saw it called an iWitness?",
+    "detail": {
+      "nuance": "現代的なブランド接頭辞(i-)をもじった言葉遊び。",
+      "similar_expressions": [],
+      "background": "スマートフォンや関連製品の名称に \"i\" を付ける命名の流行(iPhone、iPad等)を踏まえた、ネット上でよく見かけるタイプの言葉遊び。特定の企業やブランドを指すものではなく、この命名の流行そのものをネタにしている。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"eyewitness\"(目撃者)の \"eye\" 部分を、スマートフォン関連の製品名によくある接頭辞\"i-\" に置き換えた駄洒落(eye と i は同じ発音)。"
+    }
+  },
+  {
+    "english": "Time flies like an arrow; fruit flies like a banana.",
+    "detail": {
+      "nuance": "言語学でもよく引用される、構文の多義性(構造的あいまいさ)を利用した高度な言葉遊び。",
+      "similar_expressions": [],
+      "background": "この一文は言語学の授業で「同じ構造の文でも解釈が複数ありうる」ことを示す例として古くから使われており、作者不明のまま広く言語学・コンピュータ言語学の分野で引用される定番フレーズになっている。",
+      "caution": "",
+      "trivia": "\"flies\" を名詞(ハエ)として読むか動詞(飛ぶ)として読むかで文全体の意味が変わる、という点が自然言語処理(構文解析)の分野でもよく例に挙げられる。",
+      "explanation": "前半 \"Time flies like an arrow\"(時は矢のように飛び去る)の \"flies\" は動詞「飛ぶ」。後半\"fruit flies like a banana\" は、同じ構文のパロディとして \"fruit flies\"(ショウジョウバエ)という名詞句＋\"like\"(好む)という動詞に読み替えられる。「Aのように~する」という同じ形の文が、まったく違う構造で2通りに読めてしまう面白さ。"
+    }
+  },
+  {
+    "english": "The forecast said 'a few clouds.' It hasn't stopped raining for six hours.",
+    "detail": {
+      "nuance": "understatement(控えめな言い方)による皮肉。イギリスジョークの典型パターン。",
+      "similar_expressions": [],
+      "background": "イギリスのユーモアでは、実際の状況よりも意図的に控えめな表現を使うことで、その落差自体を笑いに変える手法(understatement)が非常によく使われる。イギリスの天気の変わりやすさ・雨の多さも自虐ネタの定番の題材。",
+      "caution": "表現だけを見ると単なる天気の話に見えるため、「控えめな言葉と実際の落差が笑いどころ」という前提を知らないと皮肉だと気づきにくい。",
+      "trivia": "",
+      "explanation": "天気予報の「ところにより曇り(a few clouds)」という軽い表現と、実際には6時間降り続く本降りの雨との落差が大きいほど面白い、というunderstatementの典型例。"
+    }
+  },
+  {
+    "english": "I wouldn't say the meeting was a disaster — nothing useful happened, nobody agreed on anything, and we booked another meeting to discuss it.",
+    "detail": {
+      "nuance": "understatementのもう1つの型。「~だとは言わないが」と前置きしつつ、具体的な事実を並べて実質的に酷評する。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "「disaster(大失敗)だとは言わない」と否定して見せながら、直後に「何も進まず、誰も合意できず、また会議を予約しただけ」という具体的でネガティブな事実を淡々と並べることで、実質的に「disasterだった」と認めるより辛辣に伝わるのがオチ。"
+    }
+  },
+  {
+    "english": "I'm not saying I'm bad at cooking, but the smoke alarm is basically my kitchen timer.",
+    "detail": {
+      "nuance": "自虐ネタ+understatement。直接的な自己評価を避けつつ、具体的なエピソードで結果的に認めてしまう型。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "「料理が下手だとは言わない」と否定しながら、「火災報知器がタイマー代わり(＝毎回焦がして鳴らしてしまう)」という具体例を出すことで、むしろ強く「下手だ」と伝わる仕組み。"
+    }
+  },
+  {
+    "english": "Sorry, could I just squeeze past? I promise it won't take more than five minutes of apologising.",
+    "detail": {
+      "nuance": "イギリス的な過剰な丁寧さ・謝罪癖を自虐的に誇張したジョーク。",
+      "similar_expressions": [],
+      "background": "イギリス英語では、他人のそばを通るだけでも\"sorry\" を連発する文化があり、これ自体がしばしば自虐ネタになる。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "ちょっと通してもらうだけの動作に対し、「謝るのに5分もかからない」とわざわざ言うことで、普段どれだけ謝罪の言葉を重ねているかを誇張して自虐的に見せている。"
+    }
+  },
+  {
+    "english": "He said he was 'a bit peckish,' then ate an entire pizza by himself.",
+    "detail": {
+      "nuance": "understatement。控えめな表現と実際の行動の落差で笑わせる。",
+      "similar_expressions": [],
+      "background": "\"peckish\" は「少しお腹が空いた」という非常に控えめな表現で、イギリス英語で日常的に使われる。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "「ちょっとお腹が空いた(a bit peckish)」という控えめな表現の直後に、ピザを1枚丸ごと平らげたと続けることで、言葉と行動の落差そのものが笑いどころになっている。"
+    }
+  },
+  {
+    "english": "The doctor told me to cut down on tea. I told him that simply isn't an option.",
+    "detail": {
+      "nuance": "紅茶文化を絡めた自虐ネタ。理性より習慣を優先するドライな開き直り。",
+      "similar_expressions": [],
+      "background": "紅茶はイギリス文化を象徴する飲み物として、セルフパロディ・自虐ネタの定番の題材になる。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "健康上の助言(紅茶を減らす)を真面目に検討するそぶりすら見せず、「それは選択肢にない」と即座にきっぱり否定する、真顔での頑固さがオチ。"
+    }
+  },
+  {
+    "english": "I queued for forty-five minutes just to be told I was in the wrong line. Typical.",
+    "detail": {
+      "nuance": "行列文化への軽い愚痴。「Typical(まあ、いつものこと)」という諦めのドライなオチ。",
+      "similar_expressions": [],
+      "background": "イギリスでは「きちんと並ぶ(queueing)」ことへのこだわりが強い文化として知られ、それにまつわる不運話は定番の自虐ネタになる。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "45分も並んだ末に無駄足だったという不運な出来事に対し、怒るのではなく \"Typical\"(まあ、よくあることだ)と諦めたように一言で片付けることで、感情を抑えたドライな反応そのものが笑いどころになっている。"
+    }
+  },
+  {
+    "english": "My holiday was 'quite eventful' — the flight was delayed twice, my luggage went missing, and it rained the whole week.",
+    "detail": {
+      "nuance": "understatement。ポジティブに聞こえる形容詞(eventful=いろいろあった)で悪い出来事をまとめて包み隠す。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"quite eventful\"(なかなか波乱万丈)という、一見中立〜ポジティブにも聞こえる表現の中身が、実際には遅延・紛失・悪天候という散々な内容である落差がオチ。"
+    }
+  },
+  {
+    "english": "I told him his plan was 'interesting.' What I meant was that it was a terrible idea.",
+    "detail": {
+      "nuance": "イギリス英語の婉曲表現(euphemism)の代表例。",
+      "similar_expressions": [],
+      "background": "イギリス英語では、直接的な批判を避けるために\"interesting\"(興味深い)という言葉を、実際には「良くない・賛成できない」という意味で使うことがしばしばある、とよく言われる。",
+      "caution": "額面通り「本当に興味を持たれた」と受け取ると、実際の評価(否定的)を読み違えてしまう。婉曲表現の裏を読む必要がある典型例。",
+      "trivia": "",
+      "explanation": "表向きの発言 \"interesting\" と、本音の\"a terrible idea(ひどい考え)\" をあえて両方並べて見せることで、イギリス英語の婉曲表現の「裏の意味」を種明かししているジョーク。"
+    }
+  },
+  {
+    "english": "We had a slight disagreement, in the sense that he shouted and I quietly left the room.",
+    "detail": {
+      "nuance": "understatement。「ちょっとした」という言葉と、実際の深刻な内容(怒鳴る・退室)との落差。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"a slight disagreement\"(ちょっとした意見の食い違い)という控えめな表現の直後に、「相手が怒鳴り、自分は黙って部屋を出た」というかなり深刻な内容を続けることで、控えめな表現の裏にある本当の深刻さを際立たせている。"
+    }
+  },
+  {
+    "english": "I'm not much of a morning person, unless you count silently glaring at my tea until it's ready.",
+    "detail": {
+      "nuance": "自虐ネタ。紅茶への依存を「得意なこと」と皮肉る。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "「朝が得意ではない」という一般的な自己評価の後に、「紅茶ができるまで無言でにらみ続けることを得意と呼ぶなら別だが」と条件を付け足すことで、紅茶が入るまで機嫌が悪いという自虐的な習慣をユーモラスに見せている。"
+    }
+  },
+  {
+    "english": "The film was 'not entirely to my taste' — I fell asleep twice and left before the end.",
+    "detail": {
+      "nuance": "understatement。婉曲的な不満表現の裏に、実際には強い不満(居眠り・途中退席)が隠れている。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"not entirely to my taste\"(あまり好みではなかった)という遠回しな表現の直後に、「2回も居眠りして最後まで見なかった」という具体的な事実を続けることで、遠回しな言い方の裏にある本音の強さを見せている。"
+    }
+  },
+  {
+    "english": "Apparently I have 'a lot of potential.' I've had a lot of potential since I was seven.",
+    "detail": {
+      "nuance": "自虐ネタ。ほめ言葉「potential(可能性)」を長年実現していないことへの皮肉。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "\"a lot of potential\"(大きな可能性がある)という一見ポジティブな評価が、実は何年も同じ評価のまま変わっていない(＝いまだに実現できていない)ことを自虐的に明かしているのがオチ。"
+    }
+  },
+  {
+    "english": "He apologised for being two hours late by saying the traffic was 'a bit tricky.'",
+    "detail": {
+      "nuance": "understatement。「a bit tricky(ちょっと厄介)」という軽い表現と、2時間遅刻という重大な結果との落差。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "2時間もの遅刻という重大な事態の言い訳として「交通事情がちょっと厄介だった」という控えめな表現を使うことで、深刻さを軽く見せようとする姿勢そのものがユーモアになっている。"
+    }
+  },
+  {
+    "english": "I'm training for a marathon, in the sense that I once walked briskly to catch a bus.",
+    "detail": {
+      "nuance": "自虐的な誇張。大げさな目標(マラソン)を、ささやかな現実(早歩き1回)と対比させる。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "「マラソンのトレーニング中」という大きな宣言の直後に、「実際にはバス1本を逃さないよう早歩きしただけ」という極めてささやかな実態を明かすことで、誇張と現実の落差を笑いに変えている。"
+    }
+  },
+  {
+    "english": "The waiter asked how the food was. I said, 'Lovely, thank you,' while quietly picking something unidentifiable out of my teeth.",
+    "detail": {
+      "nuance": "社交辞令と本音のギャップを描く、イギリス的な礼儀正しさの自虐ネタ。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "ウェイターへの返事「Lovely, thank you」という社交的な建前と、裏でこっそり歯の汚れを気にしているという本音の行動を並べて見せることで、表向きの礼儀正しさの裏側にある本音を種明かししている。"
+    }
+  },
+  {
+    "english": "My New Year's resolution is the same as last year's: complain about the weather with slightly more creativity.",
+    "detail": {
+      "nuance": "自虐ネタ。天気への愚痴という国民的習慣そのものをネタにする。",
+      "similar_expressions": [],
+      "background": "イギリス人は天気の話題(特に愚痴)を会話のきっかけによく使うことで知られ、それ自体がしばしば自虐ネタの題材になる。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "毎年恒例の「新年の抱負」という前向きな響きの言葉を使いながら、その中身が「天気の愚痴をもう少し工夫して言うこと」という後ろ向きで些細な内容である落差がオチ。"
+    }
+  },
+  {
+    "english": "I asked if the trains were running on time. The man laughed for quite a long time before answering.",
+    "detail": {
+      "nuance": "ドライなブラックユーモア。答える代わりに「長く笑う」という反応だけで状況を物語らせる。",
+      "similar_expressions": [],
+      "background": "イギリスの鉄道の遅延は、イギリス人自身がよく自虐ネタにする定番の話題。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "「電車は時間通りに来るか」という質問に対し、言葉での返事の代わりに「長く笑ってから答えた」とだけ描写することで、答えを言わずとも「まったく時間通りではない」ことを暗に伝えている。"
+    }
+  },
+  {
+    "english": "I'm not saying the queue was long, but I aged considerably while standing in it.",
+    "detail": {
+      "nuance": "understatement+誇張。「長かったとは言わない」と前置きしつつ、あり得ない誇張(歳をとった)で笑わせる。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "「列が長かったとは言わない」と否定しながら、「並んでいる間に歳をとった」というあり得ない誇張を続けることで、実際にはかなり長い行列だったことを遠回しに、かつユーモラスに伝えている。"
+    }
+  },
+  {
+    "english": "He described the exam as 'a bit of a challenge.' He failed every single question.",
+    "detail": {
+      "nuance": "understatement。「a bit of a challenge(まあまあ手強い)」という控えめな表現と、全問不正解という結果との落差。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "全問不正解という完全な失敗を、「a bit of achallenge(ちょっとした難関だった)」という非常に控えめな言葉で表現する落差がオチ。"
+    }
+  },
+  {
+    "english": "The English are famous for their reserve — or so I've been told, though no one has ever actually confirmed it to my face.",
+    "detail": {
+      "nuance": "自己言及的な皮肉。「イギリス人は控えめ」というステレオタイプ自体を、控えめに(誰も直接言わない)表現することで裏付けてしまう入れ子構造。",
+      "similar_expressions": [],
+      "background": "「イギリス人は感情を表に出さず控えめ(reserved)」というのは、イギリス人自身もよく自虐的に語る有名なステレオタイプ。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "「イギリス人は控えめで有名」と言いながら、「でも誰も面と向かってそう言ったことはない」と続けることで、まさにその「言いたいことを面と向かって言わない」控えめさを体現してしまっている、という入れ子状の皮肉。"
+    }
+  },
+  {
+    "english": "I told my boss the project was 'coming along nicely.' It was on fire, both figuratively and, at one point, almost literally.",
+    "detail": {
+      "nuance": "職場での婉曲表現+誇張のコンボ。深刻な状況を軽い言葉で包み隠す。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "上司への報告「coming along nicely(順調です)」という当たり障りのない言葉と、実際には比喩的にも文字通りにも「燃えていた(on fire)」という深刻な状況との落差が笑いどころ。\"on fire\" が「炎上している(比喩)」と「実際に燃えかけた(文字通り)」の両方で読める二重の意味も仕込まれている。"
+    }
+  },
+  {
+    "english": "We don't complain — we just mention things repeatedly in a slightly disappointed tone.",
+    "detail": {
+      "nuance": "自己言及的な皮肉。「文句を言わない」と宣言しつつ、その直後に事実上の文句の言い方を説明してしまう。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "「私たちは文句を言わない」と誇らしげに宣言した直後に、「ただ同じことをがっかりした口調で繰り返すだけ」と、実質的には文句を言っている行動を説明してしまう自己矛盾がオチ。"
+    }
+  },
+  {
+    "english": "I said 'I'm fine' seventeen times today, and not once did I mean it.",
+    "detail": {
+      "nuance": "社交辞令と本音の落差を数字で誇張して見せる。",
+      "similar_expressions": [],
+      "background": "\"I'm fine\" は英語圏で本音を隠すための決まり文句として非常によく使われ、特にイギリス英語の感情を表に出さない文化とよく結び付けられる。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "「今日は17回も言った」と具体的な回数を挙げることで誇張しつつ、「一度も本気ではなかった」と続けることで、\"I'm fine\" という言葉が本音を隠す社交辞令として機能している実態を明かしている。"
+    }
+  },
+  {
+    "english": "The instructions said assembly takes ten minutes. Three hours, two arguments, and one missing screw later, we agreed the instructions had lied.",
+    "detail": {
+      "nuance": "understatement的な前提(説明書の記載)と、現実(トラブル続き)との極端な落差、そして最後に「説明書が嘘をついた」と擬人化して結論づけるドライなオチ。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "「組み立ては10分」という説明書の記載に対し、実際には3時間・口論2回・ネジの紛失という大きく食い違う結果になったことを、感情的に怒るのではなく「説明書が嘘をついていた」と静かに、まるで人を評価するかのように結論づける、抑えたトーンの皮肉が笑いどころ。"
+    }
+  }
+]

@@ -1,0 +1,1634 @@
+[
+  {
+    "english": "No thank you, I'm not interested.",
+    "detail": {
+      "nuance": "最もシンプルで直接的な断り方。短く言い切ることで「これ以上話を続けるつもりはない」という意思がはっきり伝わる。",
+      "similar_expressions": [
+        {
+          "en": "I'm good, thanks.",
+          "ja": "大丈夫です、ありがとう。",
+          "diff": "よりくだけた言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "口調によっては素っ気なく聞こえるので、笑顔や穏やかなトーンを添えると角が立ちにくい。",
+      "trivia": "",
+      "explanation": "電話勧誘や訪問販売で長々と話を続けられそうなとき、最初にはっきり断ることで会話を長引かせずに済む定番表現。"
+    }
+  },
+  {
+    "english": "I appreciate you stopping by, but we're all set.",
+    "detail": {
+      "nuance": "訪問販売員などに対して、相手の労力に感謝を示しつつやんわり断る言い方。",
+      "similar_expressions": [
+        {
+          "en": "Thanks for coming by, but we don't need anything today.",
+          "ja": "わざわざ来ていただきありがとう、でも今日は何も必要ありません。",
+          "diff": "ほぼ同義でより具体的。"
+        }
+      ],
+      "background": "「we're all set」は「もう十分足りている、必要ない」という意味の口語表現。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "訪問営業に対して敵対的にならず、感謝の言葉とともに断る典型例。"
+    }
+  },
+  {
+    "english": "We're happy with our current provider, thanks.",
+    "detail": {
+      "nuance": "既に他社と契約していることを理由に、比較検討の余地がないと伝える断り方。ビジネス・家庭どちらでも使える。",
+      "similar_expressions": [
+        {
+          "en": "We're satisfied with what we have right now.",
+          "ja": "今のもので満足しています。",
+          "diff": "providerを明示しない、より一般的な言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "携帯・保険・電力会社などの乗り換え営業によく使われる断り文句。"
+    }
+  },
+  {
+    "english": "Could you take my number off your call list, please?",
+    "detail": {
+      "nuance": "今後の勧誘電話自体を止めてほしいと、丁寧だが明確に依頼する表現。",
+      "similar_expressions": [
+        {
+          "en": "Please stop calling this number.",
+          "ja": "この番号にはもう電話しないでください。",
+          "diff": "より直接的で強め。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "一度の勧誘だけでなく「今後の連絡自体」を断りたいときに使う。"
+    }
+  },
+  {
+    "english": "I'm not in a position to make a decision today.",
+    "detail": {
+      "nuance": "即決を求められた場面で、決定権がない・準備ができていないことを理由に先延ばしにする婉曲的な断り方。",
+      "similar_expressions": [
+        {
+          "en": "I can't commit to anything right now.",
+          "ja": "今は何も確約できません。",
+          "diff": "より直接的。"
+        }
+      ],
+      "background": "",
+      "caution": "その場での契約を急かす営業トーク（high-pressure sales）への対処として有効。",
+      "trivia": "",
+      "explanation": "「今日は決められない」と伝えることで、その場でのクロージングを避ける常套句。"
+    }
+  },
+  {
+    "english": "Please don't call this number again.",
+    "detail": {
+      "nuance": "しつこい勧誘電話に対して、はっきりと今後の連絡を拒否する強めの表現。",
+      "similar_expressions": [
+        {
+          "en": "Take me off your list, please.",
+          "ja": "リストから外してください。",
+          "diff": "婉曲的でやや柔らかい。"
+        }
+      ],
+      "background": "",
+      "caution": "何度も断っているのに繰り返し電話がかかってくる場合に使う、少し強めの言い方。感情的にならず淡々と言うのがコツ。",
+      "trivia": "",
+      "explanation": "複数回断っても引き下がらない相手に対する最終手段的な一言。"
+    }
+  },
+  {
+    "english": "I'll have to say no, but thanks for the information.",
+    "detail": {
+      "nuance": "説明してくれたこと自体には感謝しつつ、結論としては断るという、礼儀を保ったバランスの良い言い方。",
+      "similar_expressions": [
+        {
+          "en": "I appreciate the info, but I'll pass.",
+          "ja": "情報はありがたいですが、遠慮しておきます。",
+          "diff": "ほぼ同義でよりくだけた言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "説明を最後まで聞いた上で断る、丁寧な締めくくりの一言。"
+    }
+  },
+  {
+    "english": "We don't accept unsolicited sales calls at this number.",
+    "detail": {
+      "nuance": "会社の方針として営業電話自体を受け付けていないと伝える、やや事務的でフォーマルな断り方。",
+      "similar_expressions": [
+        {
+          "en": "This line doesn't take cold calls.",
+          "ja": "この電話番号では飛び込みの営業電話は受け付けていません。",
+          "diff": "よりくだけた言い方。"
+        }
+      ],
+      "background": "「unsolicited」は「頼んでもいないのに一方的に送られてくる」という意味。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "オフィスの受付などが繰り返し使う定型的な断り文句。"
+    }
+  },
+  {
+    "english": "I'd rather not sign anything on the spot.",
+    "detail": {
+      "nuance": "契約書などにその場でサインすることを避けたいという意思を伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "I need time to think this over before signing anything.",
+          "ja": "サインする前に、少し考える時間が必要です。",
+          "diff": "理由をより明確にした言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "訪問販売や展示会での即決契約トラブルを避けるための基本フレーズ。",
+      "trivia": "",
+      "explanation": "「今すぐ決めさせよう」とする営業手法への予防線として使える。"
+    }
+  },
+  {
+    "english": "Can you send me something in writing instead?",
+    "detail": {
+      "nuance": "口頭での説明だけで判断せず、書面で内容を確認したいという理由で即決を避ける言い方。",
+      "similar_expressions": [
+        {
+          "en": "Could you email me the details so I can look them over?",
+          "ja": "詳細をメールしていただければ、確認します。",
+          "diff": "より具体的な依頼。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "その場での判断を避けつつ、話自体は無下に切り捨てない中立的な返し方。"
+    }
+  },
+  {
+    "english": "I'm going to pass on the extended warranty.",
+    "detail": {
+      "nuance": "家電や車の購入時などによく勧められる延長保証を断る、カジュアルながら明確な言い方。",
+      "similar_expressions": [
+        {
+          "en": "I don't think I need the extended warranty.",
+          "ja": "延長保証は必要ないと思います。",
+          "diff": "やや控えめな言い方。"
+        }
+      ],
+      "background": "「pass on ~」は「（勧められたものを）遠慮する、見送る」という口語表現。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "追加オプションのアップセルを断る際の定番の言い回し。"
+    }
+  },
+  {
+    "english": "No, I don't want to upgrade my plan right now.",
+    "detail": {
+      "nuance": "契約プランの上位版を勧められた際、現状維持を望むとはっきり伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "I'll stick with my current plan for now.",
+          "ja": "今のところ今のプランのままにしておきます。",
+          "diff": "より柔らかい言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "携帯電話やサブスクリプションサービスのアップセル営業への返答としてよく使う。"
+    }
+  },
+  {
+    "english": "I'm not the person who handles these decisions.",
+    "detail": {
+      "nuance": "決定権が自分にないことを理由に、その場での判断を回避する表現。営業を担当者に丸投げせず穏やかに終わらせられる。",
+      "similar_expressions": [
+        {
+          "en": "You'll need to speak with someone else about that.",
+          "ja": "その件は別の担当者にお話しいただく必要があります。",
+          "diff": "より直接的な言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "職場での営業電話に対して、自分の立場を理由に断る際の便利な一言。"
+    }
+  },
+  {
+    "english": "We already have someone who does that for us.",
+    "detail": {
+      "nuance": "既に同様のサービスを別の業者に依頼していることを理由に断る表現。",
+      "similar_expressions": [
+        {
+          "en": "We already have that covered, thanks.",
+          "ja": "それはすでに対応済みです、ありがとう。",
+          "diff": "より簡潔な言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "サービス業者の飛び込み営業によく使われる断り文句。"
+    }
+  },
+  {
+    "english": "I'm going to have to stop you there — we're not interested.",
+    "detail": {
+      "nuance": "相手の説明を途中で丁寧に遮り、これ以上話を続ける必要がないと伝える表現。長い売り込みトークを早めに切り上げたいときに便利。",
+      "similar_expressions": [
+        {
+          "en": "I'm sorry to interrupt, but we're not interested.",
+          "ja": "話の途中で申し訳ありませんが、興味はありません。",
+          "diff": "より謝罪のニュアンスが強い。"
+        }
+      ],
+      "background": "",
+      "caution": "相手を遮る表現なので、口調は柔らかく保つことが大切。",
+      "trivia": "",
+      "explanation": "説明が長引きそうな営業電話を早めに終わらせるための表現。"
+    }
+  },
+  {
+    "english": "Please remove me from your mailing list.",
+    "detail": {
+      "nuance": "メールマガジンや広告メールの配信停止を依頼する表現。",
+      "similar_expressions": [
+        {
+          "en": "Could you unsubscribe me from these emails?",
+          "ja": "このメールの配信を停止していただけますか。",
+          "diff": "unsubscribeを使ったより一般的な言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "電話だけでなくメール営業を断る際にも使える定番表現。"
+    }
+  },
+  {
+    "english": "I get a lot of these calls, so I have a rule of saying no.",
+    "detail": {
+      "nuance": "個人的なポリシーとして断っていると伝えることで、相手を否定せずに断る柔らかい言い方。",
+      "similar_expressions": [
+        {
+          "en": "I make it a policy not to buy anything over the phone.",
+          "ja": "電話でものを買わないことにしています。",
+          "diff": "より明確なルールとして伝える言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "「あなたが悪いわけではない、自分のルールだ」というニュアンスで角を立てずに断れる。"
+    }
+  },
+  {
+    "english": "Thanks, but we don't do cold calls here.",
+    "detail": {
+      "nuance": "会社として飛び込みの営業電話に対応しない方針であると伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "We don't take unscheduled sales calls at this office.",
+          "ja": "このオフィスでは予定のない営業電話には対応していません。",
+          "diff": "よりフォーマルな言い方。"
+        }
+      ],
+      "background": "「cold call」は事前の関係やアポイントなしにかける営業電話のこと。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "受付担当者が来客や電話対応の際によく使う定型句。"
+    }
+  },
+  {
+    "english": "I'm not comfortable buying anything at the door.",
+    "detail": {
+      "nuance": "訪問販売でその場で購入することへの抵抗感を理由に断る表現。",
+      "similar_expressions": [
+        {
+          "en": "I don't buy things from door-to-door salespeople.",
+          "ja": "訪問販売の方からは物を買わないようにしています。",
+          "diff": "より一般化した言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "訪問販売特有の状況を理由にした、角の立ちにくい断り方。"
+    }
+  },
+  {
+    "english": "If I'm interested later, I'll reach out myself.",
+    "detail": {
+      "nuance": "今は必要ないが、将来必要になれば自分から連絡すると伝える、関係を完全には断ち切らない断り方。",
+      "similar_expressions": [
+        {
+          "en": "I'll get in touch if I ever need this.",
+          "ja": "必要になったらこちらから連絡します。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "その場では断りつつ、今後の可能性を完全には閉じない柔らかい言い方。"
+    }
+  },
+  {
+    "english": "I hear this pitch a lot, so I'll pass this time.",
+    "detail": {
+      "nuance": "同じような売り込みを何度も聞いていることを伝えつつ、今回は断ると柔らかく述べる表現。",
+      "similar_expressions": [
+        {
+          "en": "I've heard this kind of offer before, so I'll pass.",
+          "ja": "こういった売り込みは以前にも聞いたことがあるので、遠慮しておきます。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「pitch」は営業トークや売り込みの説明のこと。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "使い古された売り込み文句に対して軽くいなすように断る表現。"
+    }
+  },
+  {
+    "english": "We're not taking on new vendors this year.",
+    "detail": {
+      "nuance": "企業の調達方針として、新規取引先を増やす予定がないと伝える、ビジネス文脈での断り方。",
+      "similar_expressions": [
+        {
+          "en": "We're not looking for new suppliers at the moment.",
+          "ja": "現在のところ、新しい仕入れ先を探していません。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "BtoBの飛び込み営業に対して会社の方針を理由に断る際の表現。"
+    }
+  },
+  {
+    "english": "I'm so sorry for the trouble this has caused you.",
+    "detail": {
+      "nuance": "クレーム対応の冒頭で使う、相手の被った不便に対する共感を示す謝罪表現。",
+      "similar_expressions": [
+        {
+          "en": "I'm really sorry you've had to deal with this.",
+          "ja": "このようなことに対応させてしまい、本当に申し訳ございません。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "クレーム対応の最初に相手の気持ちに寄り添う姿勢を示す、基本の切り出し方。"
+    }
+  },
+  {
+    "english": "Let me look into this for you right away.",
+    "detail": {
+      "nuance": "問題をすぐに調査すると約束することで、対応の速さと誠意を伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "I'll check into this immediately.",
+          "ja": "すぐに確認いたします。",
+          "diff": "ほぼ同義でやや簡潔。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "苦情を受けたあと、すぐに行動に移す意思を示す一言。"
+    }
+  },
+  {
+    "english": "You're absolutely right, and I apologize for the mistake.",
+    "detail": {
+      "nuance": "相手の指摘が正しいと認め、責任を認めて謝罪する誠実な対応の表現。",
+      "similar_expressions": [
+        {
+          "en": "You have a valid point, and I'm sorry for the error.",
+          "ja": "ごもっともです、ミスをお詫びいたします。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "言い訳をせずまず非を認めることで、相手の怒りを和らげやすくなる。",
+      "trivia": "",
+      "explanation": "誤りを認めて信頼回復につなげる、クレーム対応の重要な一言。"
+    }
+  },
+  {
+    "english": "Let me see what I can do to make this right.",
+    "detail": {
+      "nuance": "問題を解決するために努力する姿勢を示す表現。具体的な解決策を提示する前置きとして使われる。",
+      "similar_expressions": [
+        {
+          "en": "Let me figure out how to fix this for you.",
+          "ja": "どうすれば直せるか考えさせてください。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「make this right」は「事態を正す、埋め合わせをする」という意味の口語表現。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "解決策を提示する前に、まず誠意を示すための定番フレーズ。"
+    }
+  },
+  {
+    "english": "I completely understand your frustration.",
+    "detail": {
+      "nuance": "相手の苛立ちに理解を示す共感の表現。反論せずまず受け止める姿勢を示す。",
+      "similar_expressions": [
+        {
+          "en": "I can see why you're upset.",
+          "ja": "ご立腹なのも当然だと思います。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "クレーム対応において、相手の感情をまず認める共感表現。"
+    }
+  },
+  {
+    "english": "We'd like to offer you a full refund for the inconvenience.",
+    "detail": {
+      "nuance": "迷惑をかけたお詫びとして全額返金を申し出る、具体的な解決策の提示。",
+      "similar_expressions": [
+        {
+          "en": "We're happy to give you a full refund for the trouble.",
+          "ja": "ご迷惑をおかけしたので、喜んで全額返金いたします。",
+          "diff": "ほぼ同義でより柔らかい。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "問題解決の具体策として返金を提示する際の定型表現。"
+    }
+  },
+  {
+    "english": "Would a replacement work for you, or would you prefer a refund?",
+    "detail": {
+      "nuance": "解決策として交換と返金の選択肢を提示し、顧客に選んでもらう表現。",
+      "similar_expressions": [
+        {
+          "en": "Would you like us to replace it, or issue a refund instead?",
+          "ja": "交換をご希望ですか、それとも返金にいたしましょうか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "相手に選択肢を与えることで納得感を高める対応の一例。"
+    }
+  },
+  {
+    "english": "I'll personally make sure this doesn't happen again.",
+    "detail": {
+      "nuance": "今後の再発防止を個人的に保証する、責任感を強調した表現。",
+      "similar_expressions": [
+        {
+          "en": "I'll make sure our team doesn't repeat this mistake.",
+          "ja": "同じミスを繰り返さないよう、チームに徹底します。",
+          "diff": "個人ではなくチーム全体の責任として述べる言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "再発防止への強いコミットメントを示すことで信頼を回復する表現。"
+    }
+  },
+  {
+    "english": "Thank you for bringing this to our attention.",
+    "detail": {
+      "nuance": "クレームを申し出てくれたこと自体に感謝を示す表現。苦情を前向きなフィードバックとして受け止める姿勢を示す。",
+      "similar_expressions": [
+        {
+          "en": "Thank you for letting us know about this.",
+          "ja": "これについてお知らせいただきありがとうございます。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "クレームを歓迎する姿勢を示すことで、対立ではなく協力的な雰囲気を作る一言。"
+    }
+  },
+  {
+    "english": "Let me get my manager, who can help resolve this.",
+    "detail": {
+      "nuance": "自分の権限で解決できない場合に、責任者へ引き継ぐことを伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "I'll bring in my supervisor to help with this.",
+          "ja": "この件について、上長を呼んでまいります。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "エスカレーションが必要な場面で、対応を放棄せず次の担当者につなぐ丁寧な言い方。"
+    }
+  },
+  {
+    "english": "I apologize for the delay — let me explain what happened.",
+    "detail": {
+      "nuance": "遅延について謝罪した上で、経緯を説明する姿勢を示す表現。",
+      "similar_expressions": [
+        {
+          "en": "Sorry for the wait — here's what caused it.",
+          "ja": "お待たせして申し訳ありません、原因をご説明します。",
+          "diff": "ほぼ同義でよりくだけた言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "説明責任を果たすことで、単なる謝罪以上の誠実さを伝える表現。"
+    }
+  },
+  {
+    "english": "We take full responsibility for this error.",
+    "detail": {
+      "nuance": "問題の原因が自社側にあることを明確に認める、責任の所在を明らかにする表現。",
+      "similar_expressions": [
+        {
+          "en": "This was entirely our fault, and we own that.",
+          "ja": "これは完全にこちらの落ち度であり、その責任を負います。",
+          "diff": "ほぼ同義でよりくだけた言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "責任転嫁をせず明確に非を認めることが、信頼回復の第一歩になる。",
+      "trivia": "",
+      "explanation": "サービス業のクレーム対応で、責任の所在をはっきりさせる重要な一言。"
+    }
+  },
+  {
+    "english": "Is there anything else I can do to fix this for you?",
+    "detail": {
+      "nuance": "追加でできることがないか確認し、対応に漏れがないか丁寧に尋ねる表現。",
+      "similar_expressions": [
+        {
+          "en": "Is there anything more I can help with here?",
+          "ja": "他に何かお手伝いできることはありますか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "対応の最後に、顧客満足を確認するための締めくくりの一言。"
+    }
+  },
+  {
+    "english": "I'll follow up with you personally by tomorrow.",
+    "detail": {
+      "nuance": "翌日までに個人的にフォローアップの連絡をすると約束する表現。",
+      "similar_expressions": [
+        {
+          "en": "I'll get back to you myself no later than tomorrow.",
+          "ja": "遅くとも明日までに、私から直接ご連絡いたします。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "対応の進捗を必ず伝えるという責任感を示す表現。"
+    }
+  },
+  {
+    "english": "We'll cover the cost of the repair.",
+    "detail": {
+      "nuance": "修理費用を店舗・会社側が負担すると申し出る、具体的な補償の表現。",
+      "similar_expressions": [
+        {
+          "en": "We'll pay for the repair costs.",
+          "ja": "修理費用はこちらで支払います。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "製品の不具合などに対して具体的な補償を提示する際の表現。"
+    }
+  },
+  {
+    "english": "I'm going to escalate this to make sure it gets handled quickly.",
+    "detail": {
+      "nuance": "問題を上位の担当者に報告し、迅速な対応を確保すると伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "I'll bump this up so it gets resolved faster.",
+          "ja": "早く解決するよう、この件を上に報告します。",
+          "diff": "よりくだけた言い方。"
+        }
+      ],
+      "background": "「escalate」はビジネスで「上位の担当者・部署に問題を引き上げる」という意味でよく使われる。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "自分の権限では解決できない問題を上位に報告する際の定番表現。"
+    }
+  },
+  {
+    "english": "Please accept this discount as an apology for the inconvenience.",
+    "detail": {
+      "nuance": "迷惑をかけたお詫びとして割引を提供する、具体的な誠意の示し方。",
+      "similar_expressions": [
+        {
+          "en": "As an apology, we'd like to give you a discount on your next visit.",
+          "ja": "お詫びとして、次回ご来店時の割引をご用意いたします。",
+          "diff": "次回来店時の割引に限定した言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "金銭的な補償として割引を提示する際の丁寧な言い回し。"
+    }
+  },
+  {
+    "english": "I understand why you're upset, and I'd feel the same way.",
+    "detail": {
+      "nuance": "相手の感情に強く共感し、自分も同じ立場なら同様に感じるだろうと伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "I'd probably feel just as frustrated in your shoes.",
+          "ja": "私もあなたの立場なら、きっと同じように苛立つと思います。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "共感を強調することで、単なる形式的な謝罪以上の誠意を伝える表現。"
+    }
+  },
+  {
+    "english": "Let's find a solution that works for you.",
+    "detail": {
+      "nuance": "一方的に解決策を押し付けるのではなく、顧客と一緒に納得できる解決策を探す姿勢を示す表現。",
+      "similar_expressions": [
+        {
+          "en": "Let's figure out something that works well for you.",
+          "ja": "あなたにとって良い方法を一緒に考えましょう。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "協力的な姿勢で解決を目指すことを伝える表現。"
+    }
+  },
+  {
+    "english": "We'll make sure your next visit goes more smoothly.",
+    "detail": {
+      "nuance": "次回の来店・利用時に同じ問題が起きないよう配慮すると約束する表現。",
+      "similar_expressions": [
+        {
+          "en": "We'll do better to make sure your next visit is smooth.",
+          "ja": "次回はスムーズにご利用いただけるよう努めます。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "リピート利用を前提に、今後の改善を約束する前向きな表現。"
+    }
+  },
+  {
+    "english": "I'd like to give you a call back once I have an update.",
+    "detail": {
+      "nuance": "進捗があり次第、改めて連絡すると約束する表現。",
+      "similar_expressions": [
+        {
+          "en": "I'll call you back as soon as I know more.",
+          "ja": "詳しいことが分かり次第、折り返しお電話します。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "その場で解決できない問題について、フォローアップを約束する際の表現。"
+    }
+  },
+  {
+    "english": "That should never have happened, and I'm sorry it did.",
+    "detail": {
+      "nuance": "起きたこと自体があってはならないミスだったと明確に認め、謝罪する強い表現。",
+      "similar_expressions": [
+        {
+          "en": "This never should have happened, and I apologize.",
+          "ja": "これはあってはならないことでした、お詫び申し上げます。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "深刻なミスに対して、言い訳をせずしっかりと謝罪する際の表現。"
+    }
+  },
+  {
+    "english": "Here's my direct contact in case this happens again.",
+    "detail": {
+      "nuance": "今後同様の問題が起きた際にすぐ連絡できるよう、自分の直通連絡先を渡す表現。",
+      "similar_expressions": [
+        {
+          "en": "Feel free to reach me directly if this comes up again.",
+          "ja": "また何かあれば、遠慮なく私に直接ご連絡ください。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "個人としての責任と対応の継続性を示すことで信頼を高める表現。"
+    }
+  },
+  {
+    "english": "We appreciate your patience while we sort this out.",
+    "detail": {
+      "nuance": "問題解決までの間、辛抱してくれていることへの感謝を伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "Thanks for bearing with us while we work this out.",
+          "ja": "解決までの間、ご協力いただきありがとうございます。",
+          "diff": "ほぼ同義でよりくだけた言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "対応が長引く場合に、相手の忍耐に感謝を示す表現。"
+    }
+  },
+  {
+    "english": "Would you take 20 dollars for this?",
+    "detail": {
+      "nuance": "フリマや個人売買で、具体的な金額を提示して値引き交渉を切り出す最も基本的な表現。",
+      "similar_expressions": [
+        {
+          "en": "Would 20 dollars work for you?",
+          "ja": "20ドルでいかがですか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "「Would you take ~ dollars」は値段交渉を始める際の定番の切り出し方。"
+    }
+  },
+  {
+    "english": "Is that your final price?",
+    "detail": {
+      "nuance": "提示された価格がこれ以上下がらないものかを確認する表現。交渉の余地を探る際に使う。",
+      "similar_expressions": [
+        {
+          "en": "Is there any room to come down on the price?",
+          "ja": "価格を下げる余地はありますか。",
+          "diff": "より遠回しな聞き方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "値段交渉の初手として、相手の柔軟性を探るための質問。"
+    }
+  },
+  {
+    "english": "I could do 15 if you can come down a little.",
+    "detail": {
+      "nuance": "自分から具体的な希望額を提示しつつ、相手にも歩み寄りを求める交渉表現。",
+      "similar_expressions": [
+        {
+          "en": "I'd be able to pay 15 if you can lower it a bit.",
+          "ja": "少し下げてもらえるなら15ドル出せます。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「come down」は価格交渉で「値段を下げる」という意味でよく使われる口語表現。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "自分の希望額を明示しつつ交渉を進める前向きなアプローチ。"
+    }
+  },
+  {
+    "english": "That's a bit steep for me — can we work something out?",
+    "detail": {
+      "nuance": "提示価格が自分にとって高いと伝えつつ、妥協点を探りたいと申し出る表現。",
+      "similar_expressions": [
+        {
+          "en": "That's a little too much for me — can we meet somewhere in between?",
+          "ja": "私にはちょっと高すぎます、間を取れませんか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「steep」は値段について「（法外に）高い」という意味の口語表現。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "価格への不満を伝えつつ、対立を避けて交渉を続けたいときの表現。"
+    }
+  },
+  {
+    "english": "I'll give you cash right now if you knock off a few dollars.",
+    "detail": {
+      "nuance": "即金での支払いを交渉材料にして値引きを求める表現。個人間売買でよく使われる。",
+      "similar_expressions": [
+        {
+          "en": "I can pay in cash today if you take a bit off the price.",
+          "ja": "少し値引きしてもらえるなら、今日現金で支払えます。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「knock off ~」は値段交渉で「（金額を）値引きする」という意味の口語表現。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "即決・即金を条件に値引きを引き出す、フリマでよく使われる交渉術。"
+    }
+  },
+  {
+    "english": "What's the lowest you'd go on this?",
+    "detail": {
+      "nuance": "相手が受け入れられる最低価格を直接尋ねる、率直な交渉表現。",
+      "similar_expressions": [
+        {
+          "en": "What's the best price you can offer?",
+          "ja": "一番良い値段はいくら出せますか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "遠回しに探らず、最低ラインを直接聞くカジュアルな交渉の切り出し方。"
+    }
+  },
+  {
+    "english": "If I buy the whole set, can you give me a better deal?",
+    "detail": {
+      "nuance": "複数商品をまとめて購入することを条件に割引を求める表現。",
+      "similar_expressions": [
+        {
+          "en": "Would you give me a discount if I take everything?",
+          "ja": "全部買うなら割引してもらえますか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "まとめ買いを交渉材料にする、フリマ・ガレージセールでの定番の交渉術。"
+    }
+  },
+  {
+    "english": "I noticed a small scratch — would you take a bit less for it?",
+    "detail": {
+      "nuance": "商品の傷や状態の悪さを理由に値引きを求める、具体的な根拠を示した交渉表現。",
+      "similar_expressions": [
+        {
+          "en": "There's a scratch here, so could you lower the price a little?",
+          "ja": "ここに傷があるので、少し値段を下げてもらえますか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "商品の欠点を指摘して値引きを求める、根拠のある交渉の仕方。"
+    }
+  },
+  {
+    "english": "I really like it, but it's out of my budget at that price.",
+    "detail": {
+      "nuance": "商品自体への好意を示しつつ、価格が予算を超えていることを理由にやんわり交渉する表現。",
+      "similar_expressions": [
+        {
+          "en": "I love it, but it's a bit more than I wanted to spend.",
+          "ja": "とても気に入っていますが、予定していたより少し高いです。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "相手の気分を害さずに、遠回しに値引きを促す言い方。"
+    }
+  },
+  {
+    "english": "Let me think about it — could you hold it for me?",
+    "detail": {
+      "nuance": "即決を避けつつ、商品を確保しておいてもらうよう頼む表現。",
+      "similar_expressions": [
+        {
+          "en": "Can you put this aside for me while I decide?",
+          "ja": "決めるまでの間、これを取り置きしてもらえますか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "その場での判断を避けたいときに、商品確保を依頼する便利な表現。"
+    }
+  },
+  {
+    "english": "I'll take it if you can throw in the extra cable.",
+    "detail": {
+      "nuance": "本体価格はそのままに、付属品をおまけとして付けてもらうことを条件にする交渉表現。",
+      "similar_expressions": [
+        {
+          "en": "I'll buy it if the cable is included too.",
+          "ja": "ケーブルも込みなら買います。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「throw in ~」は「（取引に）おまけとして付ける」という意味の口語表現。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "価格自体は交渉せず、付属品を交渉材料にするテクニック。"
+    }
+  },
+  {
+    "english": "Sorry, that price is firm — I can't go any lower.",
+    "detail": {
+      "nuance": "売り手側の視点で、これ以上の値引きはできないと明確に伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "I'm afraid the price is set — I can't reduce it further.",
+          "ja": "恐れ入りますが、価格は決まっており、これ以上は下げられません。",
+          "diff": "ほぼ同義でよりフォーマル。"
+        }
+      ],
+      "background": "「firm」は価格について「確定していて動かせない」という意味。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "買い手からの値引き交渉に対して、売り手が丁寧に断る際の表現。"
+    }
+  },
+  {
+    "english": "I could let it go for 30, but that's as low as I can go.",
+    "detail": {
+      "nuance": "売り手側から、これ以上は下げられない限界の価格を提示する表現。",
+      "similar_expressions": [
+        {
+          "en": "30 is the lowest I can do on this.",
+          "ja": "これに関しては30ドルが限界です。",
+          "diff": "ほぼ同義でより簡潔。"
+        }
+      ],
+      "background": "「let it go for ~」は「～の値段で手放す」という意味。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "売り手が交渉の落としどころを提示する際の表現。"
+    }
+  },
+  {
+    "english": "I'm willing to negotiate a little, but not by much.",
+    "detail": {
+      "nuance": "交渉に応じる姿勢は見せつつ、値下げ幅には限度があると伝える売り手側の表現。",
+      "similar_expressions": [
+        {
+          "en": "I can come down a little, but not too much.",
+          "ja": "少しなら下げられますが、大幅には無理です。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "交渉自体は拒否せず、範囲を限定して応じる柔軟な対応の仕方。"
+    }
+  },
+  {
+    "english": "How about we split the difference?",
+    "detail": {
+      "nuance": "買い手と売り手の希望価格の中間をとることを提案する、対等な交渉表現。",
+      "similar_expressions": [
+        {
+          "en": "Why don't we meet halfway on the price?",
+          "ja": "価格について、お互い半分ずつ歩み寄りませんか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「split the difference」は交渉で「差額を半分ずつ譲り合う」という意味の定型表現。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "双方が納得しやすい落としどころを提案する際の便利な表現。"
+    }
+  },
+  {
+    "english": "It's already priced to sell, honestly.",
+    "detail": {
+      "nuance": "売り手側から、提示価格が既に十分お買い得であると伝え、これ以上の値引きに難色を示す表現。",
+      "similar_expressions": [
+        {
+          "en": "Honestly, I've already priced it to move quickly.",
+          "ja": "正直、もう早く売れるような値段にしてあります。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「priced to sell」は「早く売れるように、あらかじめ安く値付けしてある」という意味。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "既に値引き済みであることを理由に、さらなる交渉をやんわり断る表現。"
+    }
+  },
+  {
+    "english": "I found the same item cheaper somewhere else — can you match that?",
+    "detail": {
+      "nuance": "他店・他の出品者の価格を引き合いに出し、同じ価格に合わせてほしいと交渉する表現。",
+      "similar_expressions": [
+        {
+          "en": "Someone else is selling this cheaper — could you match their price?",
+          "ja": "他の方がこれをもっと安く出しているのですが、その価格に合わせていただけますか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「price match」（価格を他と合わせること）は小売業でもよく使われる考え方。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "比較対象を示すことで説得力のある交渉材料にする表現。"
+    }
+  },
+  {
+    "english": "If you can pick it up today, I'll take 25.",
+    "detail": {
+      "nuance": "即日引き取りを条件に値引きを提示する、売り手側からの交渉表現。",
+      "similar_expressions": [
+        {
+          "en": "I'll do 25 if you can come get it today.",
+          "ja": "今日中に取りに来てもらえるなら25ドルにします。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "在庫をすぐに手放したい売り手が使う、条件付きの値引き提案。"
+    }
+  },
+  {
+    "english": "I'm not going to haggle over a couple of dollars.",
+    "detail": {
+      "nuance": "わずかな金額差にこだわって交渉を長引かせるつもりはないと伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "A dollar or two doesn't matter to me — let's just close the deal.",
+          "ja": "1、2ドルの差はどうでもいいので、取引をまとめましょう。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「haggle」は「（金額について）しつこく値切る、交渉する」という意味の動詞。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "細かい金額にこだわらず、スムーズに取引を成立させたいときの表現。"
+    }
+  },
+  {
+    "english": "Cash only, and the price is non-negotiable.",
+    "detail": {
+      "nuance": "現金払い限定で、価格交渉には応じないという条件を明確に伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "The price is fixed, and I only accept cash.",
+          "ja": "価格は固定で、現金のみ受け付けます。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "個人売買で取引条件をあらかじめはっきりさせておく表現。"
+    }
+  },
+  {
+    "english": "Would you consider trading instead of selling?",
+    "detail": {
+      "nuance": "現金での売買ではなく、物々交換を提案する表現。",
+      "similar_expressions": [
+        {
+          "en": "Would you be open to a trade instead of cash?",
+          "ja": "現金の代わりに交換というのはどうですか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "趣味のコレクター同士の売買などでよく使われる、交換を持ちかける表現。"
+    }
+  },
+  {
+    "english": "That seems fair — I'll take it at that price.",
+    "detail": {
+      "nuance": "提示された価格に納得し、その金額で購入を決める表現。",
+      "similar_expressions": [
+        {
+          "en": "That works for me — I'll buy it at that price.",
+          "ja": "それで大丈夫です、その値段で買います。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "交渉の結果に納得して取引を成立させる際の締めくくりの表現。"
+    }
+  },
+  {
+    "english": "I'm on a tight budget, so anything you can do would help.",
+    "detail": {
+      "nuance": "予算が限られていることを正直に伝え、相手の裁量に委ねる形で値引きを依頼する表現。",
+      "similar_expressions": [
+        {
+          "en": "Money's a bit tight for me right now, so any discount would be appreciated.",
+          "ja": "今あまり余裕がないので、少しでも割引していただけると助かります。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "強く要求せず、事情を伝えて相手の善意に頼る柔らかい交渉の仕方。"
+    }
+  },
+  {
+    "english": "Let's call it 40 and shake on it.",
+    "detail": {
+      "nuance": "交渉の結果、40ドルで合意し握手で取引を締結する、口語的な決着の表現。",
+      "similar_expressions": [
+        {
+          "en": "Let's settle on 40 and call it done.",
+          "ja": "40ドルで決めて、これで完了にしましょう。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「shake on it」は「握手して合意を確認する」という意味の口語表現。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "対面での個人売買における、交渉成立を示す典型的な締めくくり方。"
+    }
+  },
+  {
+    "english": "I can throw in free delivery if you pay the asking price.",
+    "detail": {
+      "nuance": "提示価格のまま購入してもらう代わりに、配送を無料にするという条件を提示する売り手側の表現。",
+      "similar_expressions": [
+        {
+          "en": "I'll deliver it for free if you pay full price.",
+          "ja": "満額支払っていただければ、配送は無料にします。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「asking price」は「（売り手が）最初に提示した希望価格」のこと。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "値引きの代わりに付加価値（送料無料など）を提示する交渉テクニック。"
+    }
+  },
+  {
+    "english": "Sorry, I already agreed on a price with someone else.",
+    "detail": {
+      "nuance": "既に他の買い手と価格の合意ができていることを理由に、交渉を断る表現。",
+      "similar_expressions": [
+        {
+          "en": "I'm afraid I've already made a deal with another buyer.",
+          "ja": "恐れ入りますが、すでに別の買い手と話がまとまっています。",
+          "diff": "ほぼ同義でよりフォーマル。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "複数の問い合わせがある個人売買で、先約を理由に断る際の表現。"
+    }
+  },
+  {
+    "english": "Could you give me a rough estimate before I decide?",
+    "detail": {
+      "nuance": "サービスなどの発注前に、おおよその見積もりを求める表現。フリマの物品売買以外の値段交渉にも応用できる。",
+      "similar_expressions": [
+        {
+          "en": "Can I get a ballpark figure before I commit?",
+          "ja": "決める前に、大体の金額を教えてもらえますか。",
+          "diff": "「ballpark figure」を使ったよりくだけた言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "修理やサービスの依頼前に、契約前の目安金額を確認する表現。"
+    }
+  },
+  {
+    "english": "Is there any flexibility in your quote?",
+    "detail": {
+      "nuance": "提示された見積もり金額に交渉の余地があるかを尋ねる、ビジネスにも使えるやや丁寧な表現。",
+      "similar_expressions": [
+        {
+          "en": "Is the quote negotiable at all?",
+          "ja": "その見積もりは多少交渉できますか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "個人売買だけでなく、業者から見積もりをもらった際の値引き交渉にも使える表現。"
+    }
+  },
+  {
+    "english": "When did the symptoms start?",
+    "detail": {
+      "nuance": "医師が患者に症状の発症時期を尋ねる、問診で最も基本的な質問。",
+      "similar_expressions": [
+        {
+          "en": "When did you first notice this?",
+          "ja": "いつ最初にこれに気づきましたか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "問診の冒頭でよく使われる、症状の経過を確認するための質問。"
+    }
+  },
+  {
+    "english": "How long have you had this pain?",
+    "detail": {
+      "nuance": "痛みの持続期間を尋ねる質問。現在完了形を使い「今も続いている」ことを前提にした典型的な聞き方。",
+      "similar_expressions": [
+        {
+          "en": "How long has this pain been going on?",
+          "ja": "この痛みはどのくらい続いていますか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "症状の慢性度合いを把握するための基本的な問診表現。"
+    }
+  },
+  {
+    "english": "On a scale of one to ten, how would you rate the pain?",
+    "detail": {
+      "nuance": "痛みの強さを数値で客観的に評価してもらうための質問。医療現場で広く使われる。",
+      "similar_expressions": [
+        {
+          "en": "How bad is the pain, on a scale of one to ten?",
+          "ja": "痛みの強さは1から10でどのくらいですか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「pain scale」（痛みの数値評価）は医療現場で標準的に使われる評価方法。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "主観的な痛みの強さを数値で共有するための定番の問診表現。"
+    }
+  },
+  {
+    "english": "Does the pain come and go, or is it constant?",
+    "detail": {
+      "nuance": "痛みが断続的か持続的かを尋ねる質問。診断の手がかりとして重要な情報。",
+      "similar_expressions": [
+        {
+          "en": "Is the pain there all the time, or does it happen on and off?",
+          "ja": "痛みはずっとありますか、それとも時々ですか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "痛みのパターンを把握するための、問診でよく使われる質問。"
+    }
+  },
+  {
+    "english": "Have you had this kind of pain before?",
+    "detail": {
+      "nuance": "過去に同様の症状があったかを尋ね、既往歴を確認する質問。",
+      "similar_expressions": [
+        {
+          "en": "Has this happened to you before?",
+          "ja": "以前にもこのようなことがありましたか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "再発性の症状かどうかを確認するための基本的な質問。"
+    }
+  },
+  {
+    "english": "Are you currently taking any medication?",
+    "detail": {
+      "nuance": "現在服用中の薬について尋ねる、問診で必ず確認される質問。薬の飲み合わせを確認する目的がある。",
+      "similar_expressions": [
+        {
+          "en": "Are you on any medications right now?",
+          "ja": "現在、何かお薬を服用していますか。",
+          "diff": "ほぼ同義でよりくだけた言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "服薬状況は診断や処方の判断に直結するため、正確に答えることが大切。",
+      "trivia": "",
+      "explanation": "処方薬・市販薬を問わず、服薬状況を確認するための必須の質問。"
+    }
+  },
+  {
+    "english": "Do you have any allergies to medication?",
+    "detail": {
+      "nuance": "薬物アレルギーの有無を確認する質問。処方の安全性を確保するために欠かせない。",
+      "similar_expressions": [
+        {
+          "en": "Are you allergic to any medications?",
+          "ja": "何かのお薬にアレルギーはありますか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "アレルギーの申告漏れは重大な事故につながる可能性があるため、正確に伝えることが重要。",
+      "trivia": "",
+      "explanation": "処方前に必ず確認される、安全確保のための重要な質問。"
+    }
+  },
+  {
+    "english": "Does anything make the pain better or worse?",
+    "detail": {
+      "nuance": "痛みを軽減・悪化させる要因（体勢・食事・時間帯など）を尋ねる質問。",
+      "similar_expressions": [
+        {
+          "en": "Is there anything that makes it feel better or worse?",
+          "ja": "何か良くなったり悪くなったりするきっかけはありますか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "診断の手がかりとなる、症状の誘因・緩和要因を探る質問。"
+    }
+  },
+  {
+    "english": "Have you noticed any other symptoms along with this?",
+    "detail": {
+      "nuance": "主訴以外に併発している症状がないかを尋ねる質問。",
+      "similar_expressions": [
+        {
+          "en": "Are there any other symptoms you've noticed with this?",
+          "ja": "これと一緒に何か他の症状に気づいていますか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "関連症状を洗い出し、診断の精度を高めるための質問。"
+    }
+  },
+  {
+    "english": "Has anyone in your family had something similar?",
+    "detail": {
+      "nuance": "遺伝的・家族性の疾患を確認するための家族歴に関する質問。",
+      "similar_expressions": [
+        {
+          "en": "Does this run in your family?",
+          "ja": "これはご家族に多い症状ですか。",
+          "diff": "ほぼ同義でよりくだけた言い方。"
+        }
+      ],
+      "background": "「run in the family」は「（体質・病気などが）家系に多い」という意味の口語表現。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "家族歴を確認することで、遺伝的傾向のある疾患を見極める手がかりになる。"
+    }
+  },
+  {
+    "english": "I'm going to check your temperature and blood pressure.",
+    "detail": {
+      "nuance": "医師や看護師が、これから行うバイタルサインの測定を患者に説明する表現。",
+      "similar_expressions": [
+        {
+          "en": "Let me take your temperature and blood pressure.",
+          "ja": "体温と血圧を測らせてください。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "検査の内容を事前に説明することで、患者を安心させる配慮の表現。"
+    }
+  },
+  {
+    "english": "Take a deep breath for me, please.",
+    "detail": {
+      "nuance": "聴診などの際に、患者に深呼吸を促す指示表現。",
+      "similar_expressions": [
+        {
+          "en": "Could you breathe in deeply for me?",
+          "ja": "大きく息を吸っていただけますか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "診察中によく使われる、簡潔で分かりやすい指示表現。"
+    }
+  },
+  {
+    "english": "Let me know if it hurts when I press here.",
+    "detail": {
+      "nuance": "触診の際に、痛みの有無を伝えるよう患者に促す表現。",
+      "similar_expressions": [
+        {
+          "en": "Tell me if this is painful when I press.",
+          "ja": "押したときに痛かったら教えてください。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "触診中に患者とコミュニケーションを取りながら診察を進める表現。"
+    }
+  },
+  {
+    "english": "We'll need to run a few tests to be sure.",
+    "detail": {
+      "nuance": "確定診断のために追加検査が必要であると伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "Let's do a few tests just to confirm.",
+          "ja": "確認のためいくつか検査をしましょう。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "診断を確定させる前に、検査の必要性を患者に説明する表現。"
+    }
+  },
+  {
+    "english": "It looks like a mild case of the flu.",
+    "detail": {
+      "nuance": "問診・診察の結果、軽度のインフルエンザだろうという見立てを伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "It seems like you have a mild case of the flu.",
+          "ja": "軽いインフルエンザのようです。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "具体的な診断名や治療方針は必ず実際の医師の判断によるため、このフレーズは一般的な問診の型として学習する目的のもの。",
+      "trivia": "",
+      "explanation": "診察後、見立てを患者に分かりやすく伝える定番の言い回し。"
+    }
+  },
+  {
+    "english": "I'm going to prescribe something to help with the symptoms.",
+    "detail": {
+      "nuance": "症状を和らげるための薬を処方すると伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "I'll prescribe you something for the symptoms.",
+          "ja": "症状用のお薬を処方しますね。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "診察の締めくくりで、処方の方針を伝える際の基本表現。"
+    }
+  },
+  {
+    "english": "Come back if it doesn't improve in a few days.",
+    "detail": {
+      "nuance": "数日経っても症状が改善しない場合は再受診するよう促す表現。",
+      "similar_expressions": [
+        {
+          "en": "If it hasn't gotten better in a few days, come back and see me.",
+          "ja": "数日で良くならなければ、また診察に来てください。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "診察の最後に、経過観察の目安を伝える定番のフレーズ。"
+    }
+  },
+  {
+    "english": "Is there anything else that's been bothering you?",
+    "detail": {
+      "nuance": "主訴以外に気になっていることがないかを尋ねる、診察の締めくくりの質問。",
+      "similar_expressions": [
+        {
+          "en": "Is there anything else on your mind about your health?",
+          "ja": "健康面で他に気になっていることはありますか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "診察の見落としを防ぐための、締めくくりの確認質問。"
+    }
+  },
+  {
+    "english": "Have you been under a lot of stress lately?",
+    "detail": {
+      "nuance": "心因性の要因がないかを確認するため、最近のストレス状況を尋ねる質問。",
+      "similar_expressions": [
+        {
+          "en": "Has anything been stressing you out recently?",
+          "ja": "最近、何かストレスに感じていることはありますか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "身体症状の背景にある生活面の要因を確認するための質問。"
+    }
+  },
+  {
+    "english": "Let's schedule a follow-up in two weeks.",
+    "detail": {
+      "nuance": "経過観察のため、2週間後の再診予約を提案する表現。",
+      "similar_expressions": [
+        {
+          "en": "Let's set up a follow-up appointment for two weeks from now.",
+          "ja": "2週間後にフォローアップの予約を入れましょう。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "診察後、今後の通院計画を伝える際の基本表現。"
+    }
+  },
+  {
+    "english": "I'd like to refer you to a specialist just to be safe.",
+    "detail": {
+      "nuance": "念のため専門医への紹介を提案する、慎重な対応を示す表現。",
+      "similar_expressions": [
+        {
+          "en": "Just to be on the safe side, I'll refer you to a specialist.",
+          "ja": "念のため、専門医をご紹介しますね。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "診断に確信が持てない場合や、より専門的な検査が必要な場合に使う表現。"
+    }
+  },
+  {
+    "english": "It's nothing serious, but let's keep an eye on it.",
+    "detail": {
+      "nuance": "深刻な状態ではないと伝えつつ、経過観察の必要性を示す表現。",
+      "similar_expressions": [
+        {
+          "en": "It doesn't look serious, but we should monitor it.",
+          "ja": "深刻ではなさそうですが、様子を見ていく必要があります。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「keep an eye on ~」は「～を注意して見守る、経過観察する」という意味の口語表現。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "患者を安心させつつ、油断せず経過を見る姿勢を伝える表現。"
+    }
+  }
+]

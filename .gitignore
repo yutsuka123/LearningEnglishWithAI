@@ -16,6 +16,12 @@ data/
 *.db-journal
 *.db-wal
 *.db-shm
+# 上の`data/`はどの階層の`data`ディレクトリにもマッチするため、
+# scripts/add_*.py の素材データ置き場`scripts/data/`まで誤って除外して
+# いた(2026-09-09発覚: jokes_details.json等、複数のadd_*.pyが参照する
+# データファイルが未追跡のままだった)。scripts/data/だけ復元する。
+!scripts/data/
+!scripts/data/**
 
 # 機密化: 設計書・要件・進捗・コスト試算など事業情報はローカルのみ(git管理外)
 docs/

@@ -1,0 +1,3000 @@
+[
+ {
+  "english": "bank",
+  "japanese": "銀行",
+  "example": "I need to stop by the bank before it closes.",
+  "example_ja": "閉まる前に銀行に寄らないと。",
+  "detail": {
+   "pronunciation": "/bæŋk/",
+   "pos": "名詞",
+   "meanings": [
+    "銀行",
+    "(血液・データなどの)貯蔵所・バンク(blood bank, data bank)",
+    "(動詞)銀行に預ける・取引する(bank with 〜)"
+   ],
+   "examples": [
+    {
+     "en": "I need to stop by the bank before it closes.",
+     "ja": "閉まる前に銀行に寄らないと。"
+    },
+    {
+     "en": "Which bank do you bank with?",
+     "ja": "どこの銀行と取引しているの？"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "banker",
+     "pos": "名詞",
+     "ja": "銀行家・銀行員"
+    },
+    {
+     "word": "banking",
+     "pos": "名詞",
+     "ja": "銀行業務・銀行業"
+    },
+    {
+     "word": "bankrupt",
+     "pos": "形容詞・名詞",
+     "ja": "破産した・破産者"
+    },
+    {
+     "word": "bankruptcy",
+     "pos": "名詞",
+     "ja": "破産"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "financial institution",
+     "note": "銀行を含む金融機関全般を指す硬い言い方"
+    },
+    {
+     "word": "lender",
+     "note": "融資する側という役割に焦点を当てた語"
+    }
+   ],
+   "antonyms": [],
+   "origin": "イタリア語 banca「(両替商が使った)台・ベンチ」がフランス語 banque を経て15世紀ごろ英語に入ったもの。banca 自体はゲルマン系の語(「ベンチ」の意)がイタリア語に借用されたものとされる。同じ綴りの bank「土手・川岸」は古ノルド語 bakki「土手・堤」に由来し、英語には別々の経路で入ったため、現代の辞書では別の見出し語(同綴異義語・ホモニム)として扱われる。ただし両者をさらに遡ると、ゲルマン祖語の「盛り上がった台・ベンチ」を意味する共通の語根に行き着くとする説が有力で、「遠い親戚」と言える関係。",
+   "trivia": "bankrupt(破産した)はイタリア語 banca rotta「壊れた台」に由来するとされる。両替商が支払不能になると台が壊された、という話がよく語られるが、これは後付けの説明の可能性もあり、確実なのは語の成り立ちが「壊れた(rotta)台(banca)」であること。",
+   "explanation": "「銀行」の意味の bank。blood bank(血液バンク)、data bank(データバンク)のように「何かを貯めておく場所」にも広がる。bank on 〜(〜を当てにする)という句動詞もこの意味から。日本語の「土手」の bank とは語源が異なる別語なので注意。"
+  }
+ },
+ {
+  "english": "bank",
+  "japanese": "土手・川岸",
+  "example": "We sat on the bank and watched the boats go by.",
+  "example_ja": "川岸に座って、通り過ぎる船を眺めた。",
+  "detail": {
+   "pronunciation": "/bæŋk/",
+   "pos": "名詞",
+   "meanings": [
+    "土手・川岸・堤",
+    "(雲・雪などの)層・かたまり(a bank of clouds)",
+    "(動詞)(飛行機・車が)傾いて旋回する"
+   ],
+   "examples": [
+    {
+     "en": "We sat on the bank and watched the boats go by.",
+     "ja": "川岸に座って、通り過ぎる船を眺めた。"
+    },
+    {
+     "en": "The river burst its banks after three days of heavy rain.",
+     "ja": "3日間の大雨の後、川が土手を越えて氾濫した。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "riverbank",
+     "pos": "名詞",
+     "ja": "川岸"
+    },
+    {
+     "word": "embankment",
+     "pos": "名詞",
+     "ja": "堤防・盛り土"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "shore",
+     "note": "海・湖の岸。川には bank を使うのが普通"
+    },
+    {
+     "word": "embankment",
+     "note": "人工的に築いた堤防・盛り土"
+    },
+    {
+     "word": "levee",
+     "note": "洪水を防ぐための堤防(主に米)"
+    }
+   ],
+   "antonyms": [],
+   "origin": "中英語 banke で、古ノルド語 bakki「土手・堤・盛り上がった地形」に由来するとされる(ゲルマン祖語の「盛り上がった台」の語根から)。同じ綴りの bank「銀行」はイタリア語 banca「両替商の台」からフランス語経由で入った別ルートの語で、辞書では別見出しの同綴異義語(ホモニム)。ただし、両者をさらに遡るとゲルマン祖語の同じ語根(「ベンチ・台のように盛り上がったもの」)に行き着くとする説が有力で、完全な他人ではなく「遠い親戚」と言える。",
+   "trivia": "「雲の層」「雪の吹きだまり」を a bank of clouds / a snow bank と言うのはこの意味の広がり。飛行機が翼を傾けて旋回する bank(バンク)も「傾斜した土手」のイメージから来ている。",
+   "explanation": "川や湖の「岸・土手」の意味の bank。the river bank(川岸)、the left bank(左岸)のように使う。金融の bank とは別語源。"
+  }
+ },
+ {
+  "english": "bark",
+  "japanese": "(犬が)吠える(動詞)・吠え声",
+  "example": "The dog barks every time someone rings the doorbell.",
+  "example_ja": "誰かが玄関のチャイムを鳴らすたびに、その犬は吠える。",
+  "detail": {
+   "pronunciation": "/bɑːrk/",
+   "pos": "動詞・名詞",
+   "meanings": [
+    "(犬などが)吠える",
+    "(人が)怒鳴る・どなるように言う(bark orders)",
+    "吠え声"
+   ],
+   "examples": [
+    {
+     "en": "The dog barks every time someone rings the doorbell.",
+     "ja": "誰かが玄関のチャイムを鳴らすたびに、その犬は吠える。"
+    },
+    {
+     "en": "The coach barked orders at the players from the sideline.",
+     "ja": "コーチはサイドラインから選手たちに怒鳴るように指示を出した。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "barking",
+     "pos": "名詞・形容詞",
+     "ja": "吠えること・吠えている"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "yap",
+     "note": "小型犬がキャンキャン吠える"
+    },
+    {
+     "word": "howl",
+     "note": "遠吠えする"
+    },
+    {
+     "word": "growl",
+     "note": "うなる"
+    },
+    {
+     "word": "snap",
+     "note": "(人が)きつく言い放つ"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "whisper",
+     "note": "(人が)ささやく"
+    }
+   ],
+   "origin": "古英語 beorcan「吠える」に由来するゲルマン系の語。犬の声をまねた擬音語的な起源とする説がある。同じ綴りの bark「樹皮」は古ノルド語 bǫrkr に由来する別の語で、語源上の関係はなく、たまたま綴りが一致した同綴異義語(ホモニム)。",
+   "trivia": "ことわざ His bark is worse than his bite.(口ほど怖くない=大声で脅すが実害はない)はこの「吠える」。また barking up the wrong tree(見当違いをする)は、猟犬が獲物の逃げた木とは別の木に向かって吠える様子から生まれた表現で、「吠える」bark と「木」が偶然一緒に登場する。",
+   "explanation": "犬が「吠える」の動詞、およびその「吠え声」。人に対して bark を使うと「怒鳴る・きつく言う」の意味になる。木の皮の bark とは無関係の別語。"
+  }
+ },
+ {
+  "english": "bark",
+  "japanese": "木の皮・樹皮",
+  "example": "The bark of a birch tree peels off in thin white layers.",
+  "example_ja": "シラカバの樹皮は薄い白い層になってはがれる。",
+  "detail": {
+   "pronunciation": "/bɑːrk/",
+   "pos": "名詞",
+   "meanings": [
+    "樹皮・木の皮",
+    "(動詞)(木の)皮をはぐ・(皮膚を)すりむく(bark one's shin)"
+   ],
+   "examples": [
+    {
+     "en": "The bark of a birch tree peels off in thin white layers.",
+     "ja": "シラカバの樹皮は薄い白い層になってはがれる。"
+    },
+    {
+     "en": "Deer sometimes strip the bark off young trees in winter.",
+     "ja": "冬になると鹿が若木の樹皮をはぎ取ってしまうことがある。"
+    }
+   ],
+   "derivatives": [],
+   "synonyms": [
+    {
+     "word": "rind",
+     "note": "果物やチーズの外皮。樹皮には通常使わない"
+    },
+    {
+     "word": "husk",
+     "note": "穀物や実の殻"
+    }
+   ],
+   "antonyms": [],
+   "origin": "中英語で古ノルド語 bǫrkr「樹皮」から入った語。ゲルマン祖語の語根に遡り、birch(シラカバ)と関係があるとする説もあるが確実ではない。同じ綴りの bark「吠える」は古英語 beorcan に由来する別語で、両者は語源的に無関係な同綴異義語(ホモニム)。なお「帆船」を意味する bark(barque)はさらに別で、ラテン語 barca「小舟」からフランス語経由で入った第三のホモニム。",
+   "trivia": "シナモン(cinnamon)は樹皮を乾燥させた香辛料で、cinnamon bark と呼ばれる。またコルク(cork)はコルクガシの樹皮。英語の bark は「吠える」「樹皮」「帆船」の三つの無関係な語が同じ綴りになっている。",
+   "explanation": "木の「皮・樹皮」の意味の bark。tree bark、the bark of an oak のように使う。犬の「吠える」bark とは別の語源。"
+  }
+ },
+ {
+  "english": "bear",
+  "japanese": "熊",
+  "example": "We saw a bear crossing the road on the way to the campsite.",
+  "example_ja": "キャンプ場へ向かう途中、道路を横切る熊を見た。",
+  "detail": {
+   "pronunciation": "/beər/",
+   "pos": "名詞",
+   "meanings": [
+    "熊",
+    "(株式で)弱気筋・相場の下落を予想する人(bear market=弱気相場)"
+   ],
+   "examples": [
+    {
+     "en": "We saw a bear crossing the road on the way to the campsite.",
+     "ja": "キャンプ場へ向かう途中、道路を横切る熊を見た。"
+    },
+    {
+     "en": "Polar bears depend on sea ice to hunt seals.",
+     "ja": "ホッキョクグマはアザラシを狩るのに海氷に依存している。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "bearish",
+     "pos": "形容詞",
+     "ja": "(相場が)弱気の"
+    },
+    {
+     "word": "teddy bear",
+     "pos": "名詞",
+     "ja": "テディベア・くまのぬいぐるみ"
+    }
+   ],
+   "synonyms": [],
+   "antonyms": [
+    {
+     "word": "bull",
+     "note": "(株式で)強気筋。bull market=強気相場"
+    }
+   ],
+   "origin": "古英語 bera「熊」に由来するゲルマン系の語(ドイツ語 Bär と同源)。有力な説では、本来の名を口にするのを避けるタブーから「茶色いもの」を意味する婉曲表現が名前になったとされるが、異説もある。同じ綴りの bear「耐える・運ぶ」は古英語 beran「運ぶ」に由来する別語で、語源上のつながりはない同綴異義語(ホモニム)。",
+   "trivia": "株式の「弱気相場(bear market)」の由来は諸説あるが、「熊を捕まえる前に熊の皮を売る(sell the bear's skin before one has caught the bear)」ということわざから、値下がりを見込んで先に売る投機家を bear と呼ぶようになったとする説がよく知られている。",
+   "explanation": "動物の「熊」。brown bear(ヒグマ)、polar bear(ホッキョクグマ)、teddy bear(ぬいぐるみ)。金融では bear market(弱気相場)。動詞の bear(耐える)とは別語。"
+  }
+ },
+ {
+  "english": "bear",
+  "japanese": "耐える・我慢する(動詞)",
+  "example": "I can't bear the thought of moving again.",
+  "example_ja": "また引っ越すなんて、考えるだけで耐えられない。",
+  "detail": {
+   "pronunciation": "/beər/",
+   "pos": "動詞",
+   "meanings": [
+    "耐える・我慢する(主に否定文・can't bear)",
+    "(責任・費用・重さを)負う・支える(bear the cost)",
+    "(子を)産む・(実を)つける(bear fruit)",
+    "(態度・名前などを)持つ・帯びる(bear a resemblance)"
+   ],
+   "examples": [
+    {
+     "en": "I can't bear the thought of moving again.",
+     "ja": "また引っ越すなんて、考えるだけで耐えられない。"
+    },
+    {
+     "en": "The company will bear the full cost of the repairs.",
+     "ja": "修理費用は会社が全額負担する。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "bearable",
+     "pos": "形容詞",
+     "ja": "耐えられる"
+    },
+    {
+     "word": "unbearable",
+     "pos": "形容詞",
+     "ja": "耐えられない"
+    },
+    {
+     "word": "bearer",
+     "pos": "名詞",
+     "ja": "運ぶ人・持参人"
+    },
+    {
+     "word": "bearing",
+     "pos": "名詞",
+     "ja": "態度・関係・方角"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "stand",
+     "note": "can't stand で「我慢できない」。口語的"
+    },
+    {
+     "word": "tolerate",
+     "note": "不快なものを許容する。やや硬い"
+    },
+    {
+     "word": "endure",
+     "note": "長く苦しいことに耐え抜く"
+    },
+    {
+     "word": "put up with",
+     "note": "口語で「〜を我慢する」"
+    }
+   ],
+   "antonyms": [],
+   "origin": "古英語 beran「運ぶ・支える・産む」に由来し、ゲルマン祖語を経て印欧祖語の「運ぶ」を意味する語根 *bher- に遡る(ラテン語 ferre「運ぶ」、ギリシャ語 pherein と同源)。「重いものを運ぶ・支える」→「(苦しみを)背負う・耐える」と意味が広がった。同じ綴りの bear「熊」は古英語 bera に由来するまったく別の語で、語源上の関係はない同綴異義語(ホモニム)。「耐える」「負う」「産む」「実をつける」は、いずれもこの一つの動詞の意味の分岐(多義)。",
+   "trivia": "過去分詞は borne だが、「生まれる」の be born だけは born と綴る(He was born in 1990.)。born と borne は元々同じ語で、「産む」の受動態だけが別綴りとして定着したもの。",
+   "explanation": "活用は bear-bore-borne。「耐える」は主に can't bear の形で使う。「(費用・責任を)負う」「(子を)産む」「(実を)つける」も同じ動詞。名詞の bear(熊)とは無関係の別語。"
+  }
+ },
+ {
+  "english": "spring",
+  "japanese": "春",
+  "example": "The cherry trees bloom in early spring.",
+  "example_ja": "桜は春の初めに咲く。",
+  "detail": {
+   "pronunciation": "/sprɪŋ/",
+   "pos": "名詞",
+   "meanings": [
+    "春",
+    "(動詞)跳ぶ・跳ねる・急に現れる(spring up)"
+   ],
+   "examples": [
+    {
+     "en": "The cherry trees bloom in early spring.",
+     "ja": "桜は春の初めに咲く。"
+    },
+    {
+     "en": "New cafes seem to spring up on every corner these days.",
+     "ja": "最近はあちこちの角に新しいカフェが次々と現れているようだ。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "springtime",
+     "pos": "名詞",
+     "ja": "春季・春の時期"
+    },
+    {
+     "word": "springlike",
+     "pos": "形容詞",
+     "ja": "春らしい"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "springtime",
+     "note": "「春の季節」を情緒的に言う語"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "autumn",
+     "note": "秋(主に英)"
+    },
+    {
+     "word": "fall",
+     "note": "秋(主に米)"
+    }
+   ],
+   "origin": "古英語の動詞 springan「跳ぶ・勢いよく出る・芽吹く」に由来する。季節の「春」は「草木が芽を出す(spring up)時期」という意味で、16世紀ごろ spring of the year などの形から定着した比較的新しい用法。「泉」「ばね」も同じ動詞から生まれた意味で、spring の各意味は一つの語根から分岐した典型的な多義語(ポリセミー)であり、別語源の同綴異義語ではない。",
+   "trivia": "古英語で「春」は lencten と呼ばれ、これが現代英語の Lent(四旬節)の語源。「春」を spring と呼ぶのが一般化したのは16世紀以降で、それまでは Lent がその季節名だった。",
+   "explanation": "季節の「春」。in spring / in the spring のように使う。動詞 spring(跳ぶ・spring-sprang-sprung)から「芽吹く季節」として派生した意味で、「泉」「ばね」とも同じ語源。"
+  }
+ },
+ {
+  "english": "spring",
+  "japanese": "泉・湧き水",
+  "example": "The village gets its drinking water from a natural spring.",
+  "example_ja": "その村は天然の泉から飲み水を得ている。",
+  "detail": {
+   "pronunciation": "/sprɪŋ/",
+   "pos": "名詞",
+   "meanings": [
+    "泉・湧き水",
+    "(比喩的に)源泉・源(the spring of inspiration)"
+   ],
+   "examples": [
+    {
+     "en": "The village gets its drinking water from a natural spring.",
+     "ja": "その村は天然の泉から飲み水を得ている。"
+    },
+    {
+     "en": "Hikers stopped to fill their bottles at a mountain spring.",
+     "ja": "ハイカーたちは山の湧き水でボトルを満たすために足を止めた。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "spring water",
+     "pos": "名詞",
+     "ja": "湧き水・天然水"
+    },
+    {
+     "word": "hot spring",
+     "pos": "名詞",
+     "ja": "温泉"
+    },
+    {
+     "word": "offspring",
+     "pos": "名詞",
+     "ja": "子孫・子"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "source",
+     "note": "川などの「水源」。比喩的な「源」にも"
+    },
+    {
+     "word": "fountain",
+     "note": "噴水。文語では「泉」の意味も"
+    },
+    {
+     "word": "well",
+     "note": "人が掘った井戸"
+    }
+   ],
+   "antonyms": [],
+   "origin": "古英語 spring は名詞として「水の湧き出る所」の意味ですでに使われており、動詞 springan「跳ぶ・勢いよく出る」から「地面から水が勢いよく出てくる場所」として生まれた。季節の「春」「ばね」も同じ動詞に由来するため、spring の各意味は同一語源から分かれた多義語(ポリセミー)。",
+   "trivia": "offspring(子孫)は off + spring で「〜から生じたもの」。「源から湧き出る」というイメージが人にも当てはめられた語。hot spring(温泉)は日本を紹介する英語で頻出。",
+   "explanation": "地面から水が湧き出る「泉」。hot spring(温泉)、spring water(天然水)でよく使う。「湧き出る」という動詞のイメージから来た意味で、「春」「ばね」と同じ語源。"
+  }
+ },
+ {
+  "english": "spring",
+  "japanese": "ばね・スプリング",
+  "example": "One of the springs in the old mattress is poking through.",
+  "example_ja": "古いマットレスのばねが一本、表に飛び出している。",
+  "detail": {
+   "pronunciation": "/sprɪŋ/",
+   "pos": "名詞",
+   "meanings": [
+    "ばね・スプリング",
+    "弾力・跳ね返る力(a spring in one's step)"
+   ],
+   "examples": [
+    {
+     "en": "One of the springs in the old mattress is poking through.",
+     "ja": "古いマットレスのばねが一本、表に飛び出している。"
+    },
+    {
+     "en": "The suspension springs absorb the bumps in the road.",
+     "ja": "サスペンションのばねが道路の凹凸を吸収する。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "springy",
+     "pos": "形容詞",
+     "ja": "弾力のある"
+    },
+    {
+     "word": "springboard",
+     "pos": "名詞",
+     "ja": "跳躍板・(比喩)踏み台"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "coil",
+     "note": "らせん状に巻いたもの。coil spring=コイルばね"
+    }
+   ],
+   "antonyms": [],
+   "origin": "動詞 spring「跳ぶ・跳ね返る」から、「押すと跳ね返る部品」として15世紀ごろに生まれた意味。「春」「泉」と同じく古英語 springan に遡るため、spring の各意味は一つの語根から分かれた多義語(ポリセミー)であり、偶然綴りが同じになった別語ではない。",
+   "trivia": "a spring in one's step(足取りが軽い・元気がある)は、歩みに「ばねのような弾み」があるという表現。「春」「泉」「ばね」「跳ぶ」がすべて同じ語というのは、英語学習者が多義語を実感しやすい例。",
+   "explanation": "機械や寝具の「ばね」。coil spring(コイルばね)、spring mattress のように使う。「跳ね返る」という動詞のイメージから来ており、「春」「泉」と同じ語源。"
+  }
+ },
+ {
+  "english": "light",
+  "japanese": "光・明かり",
+  "example": "Could you turn on the light? It's getting dark in here.",
+  "example_ja": "明かりをつけてくれる？ここ、暗くなってきた。",
+  "detail": {
+   "pronunciation": "/laɪt/",
+   "pos": "名詞",
+   "meanings": [
+    "光・明かり・照明",
+    "(形容詞)明るい(a light room)・(色が)淡い(light blue)"
+   ],
+   "examples": [
+    {
+     "en": "Could you turn on the light? It's getting dark in here.",
+     "ja": "明かりをつけてくれる？ここ、暗くなってきた。"
+    },
+    {
+     "en": "The room gets plenty of natural light in the morning.",
+     "ja": "その部屋は午前中に自然光がたっぷり入る。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "lighting",
+     "pos": "名詞",
+     "ja": "照明"
+    },
+    {
+     "word": "lighthouse",
+     "pos": "名詞",
+     "ja": "灯台"
+    },
+    {
+     "word": "daylight",
+     "pos": "名詞",
+     "ja": "日光・昼の光"
+    },
+    {
+     "word": "enlighten",
+     "pos": "動詞",
+     "ja": "啓発する・教え導く"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "lamp",
+     "note": "照明器具そのもの"
+    },
+    {
+     "word": "illumination",
+     "note": "照明・光で照らすこと(硬い)"
+    },
+    {
+     "word": "brightness",
+     "note": "明るさ"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "darkness",
+     "note": "暗さ・闇"
+    },
+    {
+     "word": "dark",
+     "note": "(形容詞)暗い"
+    }
+   ],
+   "origin": "古英語 lēoht「光」に由来し、印欧祖語の「光・輝き」を意味する語根 *leuk- に遡る(ラテン語 lux「光」、lucid、lunar などと同源)。同じ綴りの light「軽い」は古英語 lēoht/līht「軽い」で、印欧祖語の別の語根(「軽い・素早い」・ラテン語 levis と同源)に由来するため、両者は偶然綴りが一致した同綴異義語(ホモニム)。一方、動詞 light「火をつける」はこの「光」の名詞から派生したもので、こちらは同一語源の多義語(ポリセミー)。",
+   "trivia": "「光」の light はラテン語 lux と同じ語根で、lucid(明快な)、Lucifer(光をもたらす者)、illustrate(元は「照らす」)などがみな親戚にあたる。一方 light(軽い)はまったく別の家系。",
+   "explanation": "「光・明かり」の light。turn on/off the light(明かりをつける/消す)、traffic light(信号)。形容詞「明るい・淡い色の」もこの意味から。「軽い」の light とは別語源。"
+  }
+ },
+ {
+  "english": "light",
+  "japanese": "軽い(形容詞)",
+  "example": "This laptop is so light that I barely notice it in my bag.",
+  "example_ja": "このノートパソコンはとても軽くて、カバンに入れていてもほとんど気にならない。",
+  "detail": {
+   "pronunciation": "/laɪt/",
+   "pos": "形容詞",
+   "meanings": [
+    "(重量が)軽い",
+    "(程度が)軽い・軽度の(a light meal, light rain)",
+    "気楽な・軽やかな(light reading, a light heart)"
+   ],
+   "examples": [
+    {
+     "en": "This laptop is so light that I barely notice it in my bag.",
+     "ja": "このノートパソコンはとても軽くて、カバンに入れていてもほとんど気にならない。"
+    },
+    {
+     "en": "I usually just have a light lunch on weekdays.",
+     "ja": "平日はたいてい軽い昼食で済ませる。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "lightly",
+     "pos": "副詞",
+     "ja": "軽く・そっと"
+    },
+    {
+     "word": "lightness",
+     "pos": "名詞",
+     "ja": "軽さ"
+    },
+    {
+     "word": "lighten",
+     "pos": "動詞",
+     "ja": "軽くする・(気持ちを)楽にする"
+    },
+    {
+     "word": "lightweight",
+     "pos": "形容詞・名詞",
+     "ja": "軽量の・軽量級"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "lightweight",
+     "note": "製品などが「軽量の」"
+    },
+    {
+     "word": "slight",
+     "note": "程度がわずかな"
+    },
+    {
+     "word": "mild",
+     "note": "(症状・味などが)軽い・穏やかな"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "heavy",
+     "note": "重い"
+    }
+   ],
+   "origin": "古英語 lēoht/līht「軽い」に由来し、ゲルマン祖語を経て印欧祖語の「軽い・素早い」を意味する語根に遡る(ラテン語 levis「軽い」、サンスクリット laghu と同源)。同じ綴りの light「光」は印欧祖語の別の語根 *leuk-「光る」に由来し、二つの light は音と綴りが英語の中で偶然一致した同綴異義語(ホモニム)。動詞 light「火をつける」は「光」の側から派生した語なので、「軽い」とは無関係。",
+   "trivia": "lung(肺)はこの「軽い」の light と同じ語根から来ているとされる。肺は水に浮く軽い臓器で、英語では古くから動物の肺(内臓)を lights と呼んでいた。ラテン語側の親戚には levity(軽薄さ)、elevate(持ち上げる)、relieve(軽くする→楽にする)などがある。",
+   "explanation": "重さや程度が「軽い」の light。反対は heavy。a light meal(軽食)、light rain(小雨)、travel light(身軽に旅する)。「光」の light とは語源が異なる別語。"
+  }
+ },
+ {
+  "english": "light",
+  "japanese": "火をつける(動詞)",
+  "example": "Let's light the candles before the guests arrive.",
+  "example_ja": "お客さんが来る前にろうそくに火をつけよう。",
+  "detail": {
+   "pronunciation": "/laɪt/",
+   "pos": "動詞",
+   "meanings": [
+    "火をつける・点火する",
+    "(場所を)照らす・明るくする(light up the room)",
+    "(顔が)明るくなる(light up)"
+   ],
+   "examples": [
+    {
+     "en": "Let's light the candles before the guests arrive.",
+     "ja": "お客さんが来る前にろうそくに火をつけよう。"
+    },
+    {
+     "en": "Her face lit up when she saw the puppy.",
+     "ja": "子犬を見て彼女の顔がぱっと明るくなった。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "lighter",
+     "pos": "名詞",
+     "ja": "ライター"
+    },
+    {
+     "word": "lit",
+     "pos": "形容詞",
+     "ja": "明かりのついた・照らされた"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "ignite",
+     "note": "点火する(硬い・技術的)"
+    },
+    {
+     "word": "kindle",
+     "note": "火をおこす。比喩的に「(感情を)かき立てる」"
+    },
+    {
+     "word": "illuminate",
+     "note": "照らす(硬い)"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "extinguish",
+     "note": "(火・明かりを)消す"
+    },
+    {
+     "word": "put out",
+     "note": "口語で「火を消す」"
+    }
+   ],
+   "origin": "古英語 līhtan「照らす・火をともす」に由来し、名詞 light「光」から作られた動詞。したがって「光」の light とは同一語源の多義語(ポリセミー)。一方、形容詞 light「軽い」は別の語根から来た同綴異義語(ホモニム)で、動詞「火をつける」とは無関係。なお「(鳥が)降り立つ・(馬から)降りる」という古風な動詞 light/alight は「軽い」の側から来た語で、こちらもまた別の系統。",
+   "trivia": "過去形・過去分詞は lit が普通だが、lighted も使われる。形容詞として名詞の前に置くときは a lighted candle のように lighted が好まれる傾向がある。",
+   "explanation": "「火をつける・照らす」の動詞。活用は light-lit-lit(lighted も可)。light a fire/cigarette/candle。light up は「照らす・(顔が)明るくなる」。名詞 light(光)と同じ語源。"
+  }
+ },
+ {
+  "english": "mean",
+  "japanese": "意味する(動詞)",
+  "example": "What does this word mean?",
+  "example_ja": "この単語はどういう意味？",
+  "detail": {
+   "pronunciation": "/miːn/",
+   "pos": "動詞",
+   "meanings": [
+    "意味する",
+    "〜のつもりで言う・意図する(I mean it.)",
+    "〜する結果になる・〜を伴う(This means more work.)",
+    "(人にとって)大切である(mean a lot to 〜)"
+   ],
+   "examples": [
+    {
+     "en": "What does this word mean?",
+     "ja": "この単語はどういう意味？"
+    },
+    {
+     "en": "I didn't mean to hurt your feelings.",
+     "ja": "あなたを傷つけるつもりはなかったんだ。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "meaning",
+     "pos": "名詞",
+     "ja": "意味"
+    },
+    {
+     "word": "meaningful",
+     "pos": "形容詞",
+     "ja": "意味のある・有意義な"
+    },
+    {
+     "word": "meaningless",
+     "pos": "形容詞",
+     "ja": "無意味な"
+    },
+    {
+     "word": "well-meaning",
+     "pos": "形容詞",
+     "ja": "善意の"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "signify",
+     "note": "意味する・示す(硬い)"
+    },
+    {
+     "word": "intend",
+     "note": "意図する。mean to do の硬い言い換え"
+    },
+    {
+     "word": "imply",
+     "note": "暗に意味する・ほのめかす"
+    }
+   ],
+   "antonyms": [],
+   "origin": "古英語 mǣnan「意味する・意図する・話す」に由来するゲルマン系の語で、ドイツ語 meinen「思う・意味する」と同源。同じ綴りの mean「意地悪な」は古英語 gemǣne「共通の・ありふれた」から、mean「平均」はラテン語 medianus「中間の」からフランス語経由で入った語で、三つの mean はそれぞれ別の語源を持つ同綴異義語(ホモニム)。英語で三つの無関係な語が一つの綴りに重なった珍しい例。",
+   "trivia": "I mean...(つまり・ええと)は会話で言い直しや補足をするときの定番のつなぎ表現。You mean 〜?(〜ってこと?)も確認によく使う。",
+   "explanation": "「意味する」の動詞。活用は mean-meant-meant。mean to do(〜するつもり)、mean a lot to me(私にとって大切)も頻出。形容詞「意地悪な」、名詞「平均」とはそれぞれ別語源の別語。"
+  }
+ },
+ {
+  "english": "mean",
+  "japanese": "意地悪な・不親切な(形容詞)",
+  "example": "Don't be so mean to your little brother.",
+  "example_ja": "弟にそんなに意地悪しないの。",
+  "detail": {
+   "pronunciation": "/miːn/",
+   "pos": "形容詞",
+   "meanings": [
+    "意地悪な・不親切な(主に米)",
+    "ケチな・けちくさい(主に英)",
+    "(口語)すごく上手な(a mean guitar player)",
+    "(古風)卑しい・粗末な"
+   ],
+   "examples": [
+    {
+     "en": "Don't be so mean to your little brother.",
+     "ja": "弟にそんなに意地悪しないの。"
+    },
+    {
+     "en": "He's too mean to buy a round of drinks.",
+     "ja": "彼はケチすぎて一杯おごることもしない。(英)"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "meanly",
+     "pos": "副詞",
+     "ja": "意地悪く・ケチに"
+    },
+    {
+     "word": "meanness",
+     "pos": "名詞",
+     "ja": "意地悪さ・ケチさ"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "unkind",
+     "note": "不親切な。mean より穏やか"
+    },
+    {
+     "word": "nasty",
+     "note": "たちの悪い・意地の悪い"
+    },
+    {
+     "word": "cruel",
+     "note": "残酷な。mean より強い"
+    },
+    {
+     "word": "stingy",
+     "note": "ケチな(英の mean に近い)"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "kind",
+     "note": "親切な"
+    },
+    {
+     "word": "nice",
+     "note": "感じのいい・優しい"
+    },
+    {
+     "word": "generous",
+     "note": "気前のよい(ケチの反対)"
+    }
+   ],
+   "origin": "古英語 gemǣne「共通の・みんなの」に由来し(ドイツ語 gemein と同源、ラテン語 communis とも遠い親戚)、「誰にでもある・ありふれた」→「並以下の・卑しい」→「けちな・心の狭い」→「意地悪な」と意味が下落していった。同じ綴りの mean「意味する」(古英語 mǣnan)、mean「平均」(ラテン語 medianus)とはいずれも別語源で、三つの mean は偶然綴りが一致した同綴異義語(ホモニム)。",
+   "trivia": "ドイツ語の gemein も「共通の」と「卑劣な・意地悪な」の両方の意味を持ち、英語 mean とまったく同じ意味変化をたどっている。「みんなのもの=ありふれた=下等」という発想は、英語 common や vulgar(元は「庶民の」)にも見られる。",
+   "explanation": "「意地悪な」の形容詞。be mean to 〜(〜に意地悪する)。イギリス英語では「ケチな」の意味で使われることが多い(He's too mean to buy a round.)。口語では a mean cook(料理がすごくうまい)のように「見事な」の意味にもなる。動詞「意味する」・名詞「平均」とは別語源。"
+  }
+ },
+ {
+  "english": "mean",
+  "japanese": "平均(名詞・数学)",
+  "example": "The mean of 2, 4, and 9 is 5.",
+  "example_ja": "2、4、9の平均は5だ。",
+  "detail": {
+   "pronunciation": "/miːn/",
+   "pos": "名詞・形容詞",
+   "meanings": [
+    "平均・平均値(数学・統計)",
+    "(形容詞)平均の・中間の(mean temperature)"
+   ],
+   "examples": [
+    {
+     "en": "The mean of 2, 4, and 9 is 5.",
+     "ja": "2、4、9の平均は5だ。"
+    },
+    {
+     "en": "The mean temperature in July was two degrees above normal.",
+     "ja": "7月の平均気温は平年より2度高かった。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "means",
+     "pos": "名詞",
+     "ja": "手段・方法(by means of)・資力"
+    },
+    {
+     "word": "meantime",
+     "pos": "名詞",
+     "ja": "その間(in the meantime)"
+    },
+    {
+     "word": "meanwhile",
+     "pos": "副詞",
+     "ja": "その間に・一方で"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "average",
+     "note": "日常語の「平均」。会話では average が普通"
+    },
+    {
+     "word": "median",
+     "note": "中央値。mean(平均値)とは別の統計量"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "extreme",
+     "note": "極端な値"
+    }
+   ],
+   "origin": "古フランス語 meien「中間の」(現代フランス語 moyen)を経て、ラテン語 medianus「中間の」に由来する。median(中央値)、medium、middle と同じ家系。同じ綴りの mean「意味する」(古英語 mǣnan)、mean「意地悪な」(古英語 gemǣne)はいずれもゲルマン系の別語で、三つの mean は偶然綴りが一致した同綴異義語(ホモニム)。なお means(手段)、meanwhile(その間に)は「中間・仲立ち」のこの mean から来ており、「意味する」の mean とは無関係。",
+   "trivia": "by means of(〜によって)、meanwhile(その間に)、in the meantime は「意味する」の mean ではなく「中間」の mean の仲間。「意味」とは関係ないのに同じ綴りなのでまぎらわしい。統計では mean(平均値)、median(中央値)、mode(最頻値)を区別する。",
+   "explanation": "数学・統計での「平均(値)」。日常会話では average の方が普通で、mean は統計・理系の文脈で使う。形容詞として mean temperature(平均気温)のようにも使う。「意味する」「意地悪な」とは別語源の別語。"
+  }
+ },
+ {
+  "english": "fine",
+  "japanese": "元気な・問題ない・結構な(形容詞)",
+  "example": "Don't worry about the mess. It's fine.",
+  "example_ja": "散らかっているのは気にしないで。大丈夫だから。",
+  "detail": {
+   "pronunciation": "/faɪn/",
+   "pos": "形容詞",
+   "meanings": [
+    "元気な・問題ない・大丈夫な",
+    "見事な・上質な(fine wine, fine art)",
+    "(天気が)晴れた・好天の(主に英)",
+    "(副詞・口語)うまく・ちゃんと(It works fine.)"
+   ],
+   "examples": [
+    {
+     "en": "Don't worry about the mess. It's fine.",
+     "ja": "散らかっているのは気にしないで。大丈夫だから。"
+    },
+    {
+     "en": "It was a fine day, so we ate lunch outside.",
+     "ja": "天気のいい日だったので、外で昼食を食べた。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "finely",
+     "pos": "副詞",
+     "ja": "見事に・細かく"
+    },
+    {
+     "word": "finery",
+     "pos": "名詞",
+     "ja": "晴れ着・華美な装い"
+    },
+    {
+     "word": "refine",
+     "pos": "動詞",
+     "ja": "精製する・洗練する"
+    },
+    {
+     "word": "finesse",
+     "pos": "名詞",
+     "ja": "手際のよさ・巧妙さ"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "okay",
+     "note": "「大丈夫・問題ない」の最も口語的な言い方"
+    },
+    {
+     "word": "excellent",
+     "note": "「見事な」の意味の fine に近い"
+    },
+    {
+     "word": "well",
+     "note": "I'm well.=元気です"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "poor",
+     "note": "質の悪い"
+    },
+    {
+     "word": "terrible",
+     "note": "ひどい"
+    }
+   ],
+   "origin": "古フランス語 fin「極上の・完成された・純粋な」に由来し、さらにラテン語 finis「終わり・限界」に遡る。「終わり」→「極限まで仕上げられた=最高の・洗練された」という意味変化を経て、さらに「良い・問題ない」という日常的な意味に広がった。名詞 fine「罰金」も同じラテン語 finis(「争いを終わらせる支払い」)から来ており、両者は同じ語根を持つ同根語。ただし形容詞と名詞は古フランス語の段階ですでに別の語として分かれていたため、辞書では別見出しにされることも多い。「細かい」の fine はこの形容詞の意味の一つ(多義)。",
+   "trivia": "fine の返事「I'm fine.」は、文脈や言い方によって「大丈夫」「(本当は不満だけど)別にいい」まで幅がある。「Fine!」と強く言うと「もういいよ!」という不満のニュアンスになるので注意。",
+   "explanation": "「元気な・問題ない」の日常的な fine。I'm fine. / That's fine. のほか、fine wine のように「上質な」の意味もある。イギリス英語では「晴れの」も一般的(a fine day)。名詞「罰金」と語源は同じだが、現在は意味が完全に離れている。"
+  }
+ },
+ {
+  "english": "fine",
+  "japanese": "罰金",
+  "example": "I got a $50 fine for parking in the wrong spot.",
+  "example_ja": "駐車場所を間違えて50ドルの罰金を取られた。",
+  "detail": {
+   "pronunciation": "/faɪn/",
+   "pos": "名詞・動詞",
+   "meanings": [
+    "罰金",
+    "(動詞)罰金を科す(be fined $50)"
+   ],
+   "examples": [
+    {
+     "en": "I got a $50 fine for parking in the wrong spot.",
+     "ja": "駐車場所を間違えて50ドルの罰金を取られた。"
+    },
+    {
+     "en": "The company was fined for dumping waste into the river.",
+     "ja": "その会社は川に廃棄物を投棄したとして罰金を科された。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "finance",
+     "pos": "名詞・動詞",
+     "ja": "財政・金融・資金を供給する(同じラテン語 finis に由来)"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "penalty",
+     "note": "罰則全般。罰金以外の罰も含む"
+    },
+    {
+     "word": "ticket",
+     "note": "交通違反の切符(口語では罰金の意味でも)"
+    },
+    {
+     "word": "forfeit",
+     "note": "没収・違約金(硬い)"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "reward",
+     "note": "報酬・褒美"
+    }
+   ],
+   "origin": "古フランス語 fin「終わり・(争いを終わらせる)決着・支払い」を経て、ラテン語 finis「終わり」に由来する。中世ラテン語で finis は「争いを終わらせるために払う金」の意味で使われ、そこから「罰として払う金=罰金」へ変化した。形容詞 fine「上質な・大丈夫な」も同じラテン語 finis から来た同根語で、こちらは「終わり=極限まで仕上がった」という別方向の意味変化をたどった。同じ根から古フランス語の段階で二つに分かれたため、辞書では別見出しにされることが多いが、語源的には親戚。",
+   "trivia": "finance(財政・金融)も同じ語源で、古フランス語 finer「終わらせる・(支払って)決着をつける」から来ている。「罰金」と「金融」が同じ「終わらせる」という語根から生まれたのは意外な事実。finish、final、define も同じラテン語 finis の仲間。",
+   "explanation": "「罰金」の名詞。pay a fine(罰金を払う)、a parking fine(駐車違反の罰金)。動詞「罰金を科す」もある(He was fined $50.)。形容詞の fine と語源は同じだが意味は完全に別。"
+  }
+ },
+ {
+  "english": "fine",
+  "japanese": "細かい・きめ細かい(形容詞)",
+  "example": "Make sure you read the fine print before you sign.",
+  "example_ja": "サインする前に細かい字の注意書きを必ず読んでね。",
+  "detail": {
+   "pronunciation": "/faɪn/",
+   "pos": "形容詞",
+   "meanings": [
+    "細かい・きめ細かい(fine sand, fine powder)",
+    "細い(fine hair, a fine line)",
+    "微妙な・繊細な(a fine distinction)"
+   ],
+   "examples": [
+    {
+     "en": "Make sure you read the fine print before you sign.",
+     "ja": "サインする前に細かい字の注意書きを必ず読んでね。"
+    },
+    {
+     "en": "Grind the coffee beans into a fine powder.",
+     "ja": "コーヒー豆を細かい粉に挽いてください。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "finely",
+     "pos": "副詞",
+     "ja": "細かく(finely chopped=みじん切りにした)"
+    },
+    {
+     "word": "fine-tune",
+     "pos": "動詞",
+     "ja": "微調整する"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "thin",
+     "note": "細い・薄い"
+    },
+    {
+     "word": "delicate",
+     "note": "繊細な・壊れやすい"
+    },
+    {
+     "word": "subtle",
+     "note": "微妙な(a subtle difference)"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "coarse",
+     "note": "粗い(coarse sand, coarse salt)"
+    },
+    {
+     "word": "thick",
+     "note": "太い・厚い"
+    }
+   ],
+   "origin": "形容詞 fine「上質な・洗練された」の意味の一つとして生まれたもので、「極限まで仕上げられ純度が高い」→「粒が細かい・繊細な・細い」へ広がった。したがって「元気な・問題ない」の fine と同一の語(多義・ポリセミー)であり、いずれも古フランス語 fin を経てラテン語 finis「終わり」に遡る。名詞 fine「罰金」も同じ finis から来た親戚だが、そちらは古フランス語の段階で別語として分かれている。",
+   "trivia": "the fine print(細かい字の注意書き)は、契約書などで不利な条件が小さな字で書かれていることから、「見落としがちな重要条件」の比喩としても使う。a fine line between A and B(AとBは紙一重)も定番表現。",
+   "explanation": "「細かい・細い・繊細な」の fine。fine sand(細かい砂)、fine hair(細い髪)、fine print(細かい字)、fine-tune(微調整する)。反対は coarse(粗い)。「上質な」から広がった意味で、「大丈夫」の fine と同じ語。"
+  }
+ },
+ {
+  "english": "kind",
+  "japanese": "親切な・優しい(形容詞)",
+  "example": "It was very kind of you to help me carry these boxes.",
+  "example_ja": "この箱を運ぶのを手伝ってくれるなんて、本当に親切ですね。",
+  "detail": {
+   "pronunciation": "/kaɪnd/",
+   "pos": "形容詞",
+   "meanings": [
+    "親切な・優しい・思いやりのある"
+   ],
+   "examples": [
+    {
+     "en": "It was very kind of you to help me carry these boxes.",
+     "ja": "この箱を運ぶのを手伝ってくれるなんて、本当に親切ですね。"
+    },
+    {
+     "en": "Would you be kind enough to hold the door for me?",
+     "ja": "ドアを押さえておいていただけますか？"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "kindly",
+     "pos": "副詞・形容詞",
+     "ja": "親切に・優しい"
+    },
+    {
+     "word": "kindness",
+     "pos": "名詞",
+     "ja": "親切・優しさ"
+    },
+    {
+     "word": "kind-hearted",
+     "pos": "形容詞",
+     "ja": "心の優しい"
+    },
+    {
+     "word": "unkind",
+     "pos": "形容詞",
+     "ja": "不親切な"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "nice",
+     "note": "感じがいい・優しい。より口語的"
+    },
+    {
+     "word": "considerate",
+     "note": "思いやりのある・気配りのある"
+    },
+    {
+     "word": "gentle",
+     "note": "穏やかな・優しい(態度・手つき)"
+    },
+    {
+     "word": "generous",
+     "note": "気前のいい・寛大な"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "unkind",
+     "note": "不親切な"
+    },
+    {
+     "word": "mean",
+     "note": "意地悪な"
+    },
+    {
+     "word": "cruel",
+     "note": "残酷な"
+    }
+   ],
+   "origin": "古英語 gecynde「生まれつきの・自然な・本来の」に由来し、名詞 gecynd「生まれ・性質・種族」(=現代の kind「種類」)から作られた形容詞。「生まれつき備わった性質」→「(身内に対して当然持つ)自然な情愛のある」→「親切な」と意味が変化した。したがって形容詞「親切な」と名詞「種類」は同じ語源から分かれた多義語(ポリセミー)であり、偶然綴りが一致した別語ではない。",
+   "trivia": "kind は kin(親族)、king(元は「一族の出の者」)と同じゲルマン語の語根から来ているとされ、さらに遡るとラテン語 genus(種類)、gene(遺伝子)、gentle(元は「良家の生まれの」)などとも印欧祖語の「生む」の語根でつながる。「生まれ」が「優しさ」になったのは、身内への自然な情愛という発想から。",
+   "explanation": "「親切な・優しい」の形容詞。It's kind of you to 〜(〜してくれて親切ですね)は定番の礼の表現。名詞「種類」の kind と語源は同じで、「生まれつきの性質」から両方の意味が生まれた。"
+  }
+ },
+ {
+  "english": "kind",
+  "japanese": "種類",
+  "example": "What kind of music do you listen to?",
+  "example_ja": "どんな種類の音楽を聴くの？",
+  "detail": {
+   "pronunciation": "/kaɪnd/",
+   "pos": "名詞",
+   "meanings": [
+    "種類・タイプ",
+    "(kind of で副詞的に)ちょっと・なんだか(I'm kind of tired.)"
+   ],
+   "examples": [
+    {
+     "en": "What kind of music do you listen to?",
+     "ja": "どんな種類の音楽を聴くの？"
+    },
+    {
+     "en": "I'm kind of nervous about the interview tomorrow.",
+     "ja": "明日の面接、なんだかちょっと緊張する。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "mankind",
+     "pos": "名詞",
+     "ja": "人類"
+    },
+    {
+     "word": "humankind",
+     "pos": "名詞",
+     "ja": "人類"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "type",
+     "note": "種類・型。kind とほぼ同じで最も一般的"
+    },
+    {
+     "word": "sort",
+     "note": "種類。主に英で kind と同様に使う"
+    },
+    {
+     "word": "category",
+     "note": "分類上の区分(硬い)"
+    },
+    {
+     "word": "variety",
+     "note": "変種・品種"
+    }
+   ],
+   "antonyms": [],
+   "origin": "古英語 gecynd「生まれ・本性・種族・種類」に由来し、印欧祖語の「生む」を意味する語根 *ǵenh₁- に遡る(kin、king、ラテン語 genus、generate と同源)。「同じ生まれのもの=同じ種族・種類」から「種類」の意味が定着した。形容詞 kind「親切な」はこの名詞から作られた語なので、両者は同じ語源から分かれた多義語(ポリセミー)。",
+   "trivia": "会話で頻出の kind of(ちょっと・なんか)は「〜の一種」がぼかし表現に転じたもので、くだけた発音では kinda と書かれる。「人類」を mankind と言うのは「人間という種族(kind)」の意味。",
+   "explanation": "「種類」の名詞。What kind of 〜?(どんな種類の〜?)、all kinds of(あらゆる種類の)、one of a kind(唯一無二の)。会話では kind of(ちょっと・なんか)としてぼかし表現に多用する。形容詞「親切な」と同語源。"
+  }
+ },
+ {
+  "english": "match",
+  "japanese": "試合",
+  "example": "The tennis match lasted almost four hours.",
+  "example_ja": "そのテニスの試合は4時間近く続いた。",
+  "detail": {
+   "pronunciation": "/mætʃ/",
+   "pos": "名詞",
+   "meanings": [
+    "試合",
+    "好敵手・互角の相手(be no match for 〜)",
+    "似合いの相手・組み合わせ(a perfect match)"
+   ],
+   "examples": [
+    {
+     "en": "The tennis match lasted almost four hours.",
+     "ja": "そのテニスの試合は4時間近く続いた。"
+    },
+    {
+     "en": "He's no match for the champion in a one-on-one game.",
+     "ja": "1対1では彼はチャンピオンにかなわない。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "matchmaker",
+     "pos": "名詞",
+     "ja": "縁結び役・仲人"
+    },
+    {
+     "word": "matchup",
+     "pos": "名詞",
+     "ja": "対戦カード・組み合わせ"
+    },
+    {
+     "word": "rematch",
+     "pos": "名詞",
+     "ja": "再試合"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "game",
+     "note": "試合。米では野球・バスケなどに game が普通"
+    },
+    {
+     "word": "contest",
+     "note": "競技・コンテスト全般"
+    },
+    {
+     "word": "bout",
+     "note": "ボクシング・格闘技の試合"
+    },
+    {
+     "word": "fixture",
+     "note": "(英)日程が決まった試合"
+    }
+   ],
+   "antonyms": [],
+   "origin": "古英語 gemæcca「仲間・配偶者・対になるもの」に由来し、ゲルマン祖語の「合う・ぴったり合わせる」の語根に遡る(make と同源とされる)。「対等な相手・釣り合う相手」→「対等な者同士が競う=試合」と意味が広がった(16世紀ごろ)。動詞 match「合う・一致する」もこの同じ語から出た意味なので、「試合」「合う」は多義語(ポリセミー)。一方、「マッチ(点火具)」の match は古フランス語 meiche「ろうそくの芯」に由来する別語源の同綴異義語(ホモニム)。",
+   "trivia": "「試合」の match は元々「釣り合う相手」の意味で、matchmaker(仲人)や a love match(恋愛結婚)は「対になる相手を組み合わせる」という古い意味の名残。試合の意味は「互角の相手との勝負」から。",
+   "explanation": "「試合」の match。アメリカ英語では野球・バスケなどの試合は game が普通で、match はテニス・ボクシングなどで使われることが多い。イギリス英語では football match のように広く使う。be no match for 〜(〜にかなわない)も重要。動詞「合う」と同語源だが、点火具の「マッチ」は別語。"
+  }
+ },
+ {
+  "english": "match",
+  "japanese": "マッチ(火をつける道具)",
+  "example": "Do you have a match? My lighter isn't working.",
+  "example_ja": "マッチ持ってる？ライターが使えなくて。",
+  "detail": {
+   "pronunciation": "/mætʃ/",
+   "pos": "名詞",
+   "meanings": [
+    "マッチ(点火具)"
+   ],
+   "examples": [
+    {
+     "en": "Do you have a match? My lighter isn't working.",
+     "ja": "マッチ持ってる？ライターが使えなくて。"
+    },
+    {
+     "en": "She struck a match and lit the candle.",
+     "ja": "彼女はマッチを擦ってろうそくに火をつけた。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "matchbox",
+     "pos": "名詞",
+     "ja": "マッチ箱"
+    },
+    {
+     "word": "matchstick",
+     "pos": "名詞",
+     "ja": "マッチ棒"
+    },
+    {
+     "word": "matchlock",
+     "pos": "名詞",
+     "ja": "火縄銃"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "lighter",
+     "note": "ライター"
+    }
+   ],
+   "antonyms": [],
+   "origin": "古フランス語 meiche「ろうそく・ランプの芯」に由来し、諸説あるが俗ラテン語を経てギリシャ語 myxa「ランプの芯」に遡るとされる。英語では「芯」→「火縄(銃の点火用の導火線)」→19世紀に発明された「擦って火をつける棒=マッチ」へと意味が移った。同じ綴りの match「試合・合う」は古英語 gemæcca「対になるもの」に由来するゲルマン系の別語で、両者は偶然綴りが一致した同綴異義語(ホモニム)。",
+   "trivia": "摩擦で発火する現代型のマッチは1826年ごろイギリスの薬剤師ジョン・ウォーカーが発明したとされる。それ以前の match は火縄銃の「火縄」を指していた(matchlock=火縄銃)。日本語の「マッチ」はこの英語からの外来語。",
+   "explanation": "点火具の「マッチ」。strike a match(マッチを擦る)、a box of matches(マッチ1箱)。「試合」「合う」の match とは語源が異なる別語。"
+  }
+ },
+ {
+  "english": "match",
+  "japanese": "合う・調和する・一致する(動詞)",
+  "example": "Your shoes don't match your belt.",
+  "example_ja": "靴とベルトの色が合ってないよ。",
+  "detail": {
+   "pronunciation": "/mætʃ/",
+   "pos": "動詞",
+   "meanings": [
+    "(色・柄などが)合う・調和する",
+    "一致する・合致する(match the description)",
+    "匹敵する・対抗する(match the offer)",
+    "組み合わせる・引き合わせる(match A with B)"
+   ],
+   "examples": [
+    {
+     "en": "Your shoes don't match your belt.",
+     "ja": "靴とベルトの色が合ってないよ。"
+    },
+    {
+     "en": "The fingerprints match those found at the scene.",
+     "ja": "指紋は現場で見つかったものと一致した。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "matching",
+     "pos": "形容詞",
+     "ja": "おそろいの・調和した"
+    },
+    {
+     "word": "mismatch",
+     "pos": "名詞・動詞",
+     "ja": "不釣り合い・組み合わせを誤る"
+    },
+    {
+     "word": "unmatched",
+     "pos": "形容詞",
+     "ja": "比類のない"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "go with",
+     "note": "口語で「(服などが)合う」"
+    },
+    {
+     "word": "suit",
+     "note": "(人に)似合う・都合がいい"
+    },
+    {
+     "word": "correspond",
+     "note": "一致・対応する(硬い)"
+    },
+    {
+     "word": "fit",
+     "note": "サイズや条件が合う"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "clash",
+     "note": "(色などが)ぶつかる・合わない"
+    },
+    {
+     "word": "differ",
+     "note": "異なる"
+    }
+   ],
+   "origin": "名詞 match「対になるもの・釣り合う相手」(古英語 gemæcca)から作られた動詞で、「対になる相手を見つける・組み合わせる」→「合う・一致する」と意味が広がった。したがって「試合」の match と同一語源の多義語(ポリセミー)。点火具の「マッチ」は古フランス語 meiche「芯」に由来する別語で、こちらとは無関係の同綴異義語(ホモニム)。",
+   "trivia": "マッチングアプリの「マッチ」はこの動詞。日本語でも「マッチする」と言うが、英語では match は他動詞なので The shoes match the belt. のように前置詞なしで使う(match with とは言わないのが基本)。",
+   "explanation": "「合う・一致する」の動詞。他動詞なので A matches B の形で使う(前置詞不要)。色や服の組み合わせ、データの一致、条件の合致など幅広く使う。「試合」の match と同語源。"
+  }
+ },
+ {
+  "english": "mine",
+  "japanese": "私のもの(代名詞)",
+  "example": "That umbrella is mine, not yours.",
+  "example_ja": "その傘は私のだよ、あなたのじゃない。",
+  "detail": {
+   "pronunciation": "/maɪn/",
+   "pos": "代名詞",
+   "meanings": [
+    "私のもの(所有代名詞)",
+    "(a friend of mine の形で)私の〜"
+   ],
+   "examples": [
+    {
+     "en": "That umbrella is mine, not yours.",
+     "ja": "その傘は私のだよ、あなたのじゃない。"
+    },
+    {
+     "en": "A friend of mine works at that hospital.",
+     "ja": "私の友人がその病院で働いている。"
+    }
+   ],
+   "derivatives": [],
+   "synonyms": [],
+   "antonyms": [
+    {
+     "word": "yours",
+     "note": "あなたのもの"
+    }
+   ],
+   "origin": "古英語 mīn「私の」に由来し、ゲルマン祖語を経て印欧祖語の一人称の語幹 *me- に遡る(ドイツ語 mein、ラテン語 meus と同源)。同じ綴りの mine「鉱山」は古フランス語 mine を経て中世ラテン語に由来する別系統の語で、両者は語源上まったく無関係な同綴異義語(ホモニム)。",
+   "trivia": "古い英語では mine は my の代わりに母音の前で使われた(mine eyes=my eyes)。冠詞 a/an の使い分けと同じ仕組みで、アメリカの愛国歌 The Battle Hymn of the Republic の冒頭 Mine eyes have seen the glory... にその名残がある。",
+   "explanation": "「私のもの」の所有代名詞。後ろに名詞を置かず、単独で使う(my は名詞が必要)。a friend of mine(私の友人)の形も頻出。「鉱山」「地雷」の mine とは別語源。"
+  }
+ },
+ {
+  "english": "mine",
+  "japanese": "鉱山",
+  "example": "My grandfather worked in a coal mine for thirty years.",
+  "example_ja": "祖父は30年間、炭鉱で働いていた。",
+  "detail": {
+   "pronunciation": "/maɪn/",
+   "pos": "名詞・動詞",
+   "meanings": [
+    "鉱山・炭鉱",
+    "(比喩)宝庫(a mine of information)",
+    "(動詞)採掘する・(データを)掘り起こす(data mining)"
+   ],
+   "examples": [
+    {
+     "en": "My grandfather worked in a coal mine for thirty years.",
+     "ja": "祖父は30年間、炭鉱で働いていた。"
+    },
+    {
+     "en": "The company mines copper in the north of the country.",
+     "ja": "その会社はその国の北部で銅を採掘している。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "miner",
+     "pos": "名詞",
+     "ja": "鉱夫・炭鉱労働者"
+    },
+    {
+     "word": "mining",
+     "pos": "名詞",
+     "ja": "採掘・鉱業"
+    },
+    {
+     "word": "mineral",
+     "pos": "名詞",
+     "ja": "鉱物"
+    },
+    {
+     "word": "undermine",
+     "pos": "動詞",
+     "ja": "(元は「下を掘る」)徐々に弱体化させる"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "pit",
+     "note": "(英)炭鉱・採掘坑"
+    },
+    {
+     "word": "quarry",
+     "note": "石切り場・採石場"
+    },
+    {
+     "word": "colliery",
+     "note": "(英)炭鉱(硬い)"
+    }
+   ],
+   "antonyms": [],
+   "origin": "中英語で古フランス語 mine「鉱山・鉱脈」から入った語で、中世ラテン語 mina に遡る。さらに古くはケルト系の語(「鉱石」を意味する語)に由来するとする説が有力だが確実ではない。「地雷・機雷」の mine はこの「鉱山・坑道」の意味から派生した多義語(ポリセミー)。一方、代名詞 mine「私のもの」は古英語 mīn に由来する無関係の語で、こちらは偶然綴りが一致した同綴異義語(ホモニム)。",
+   "trivia": "data mining(データマイニング)、bitcoin mining(ビットコインの採掘)など、「掘って価値あるものを取り出す」比喩は現代のIT用語にも広がっている。a mine of information(情報の宝庫)、a gold mine(金のなる木)も同じ発想。",
+   "explanation": "「鉱山」の名詞。coal mine(炭鉱)、gold mine(金鉱)。動詞では「採掘する」で、data mining のように比喩的にも使う。「地雷」の mine は同語源、「私のもの」の mine は別語。"
+  }
+ },
+ {
+  "english": "mine",
+  "japanese": "地雷・機雷",
+  "example": "The area is still dangerous because of land mines left over from the war.",
+  "example_ja": "戦争で残された地雷のせいで、その地域は今も危険だ。",
+  "detail": {
+   "pronunciation": "/maɪn/",
+   "pos": "名詞・動詞",
+   "meanings": [
+    "地雷・機雷",
+    "(動詞)地雷・機雷を敷設する"
+   ],
+   "examples": [
+    {
+     "en": "The area is still dangerous because of land mines left over from the war.",
+     "ja": "戦争で残された地雷のせいで、その地域は今も危険だ。"
+    },
+    {
+     "en": "The harbor was mined to keep enemy ships out.",
+     "ja": "敵の船を寄せ付けないよう、港には機雷が敷設された。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "minefield",
+     "pos": "名詞",
+     "ja": "地雷原・(比喩)危険だらけの状況"
+    },
+    {
+     "word": "minesweeper",
+     "pos": "名詞",
+     "ja": "掃海艇・(ゲーム)マインスイーパー"
+    },
+    {
+     "word": "landmine",
+     "pos": "名詞",
+     "ja": "地雷"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "explosive device",
+     "note": "爆発物全般の硬い言い方"
+    },
+    {
+     "word": "booby trap",
+     "note": "仕掛け爆弾・わな"
+    }
+   ],
+   "antonyms": [],
+   "origin": "「鉱山・坑道」の mine から派生した意味。中世の攻城戦で敵の城壁の下に坑道(mine)を掘って崩す戦法があり、後に火薬を使うようになったことから「坑道に仕掛けた爆薬」→「地面や海中に仕掛ける爆発物」へと意味が移った。したがって「鉱山」と「地雷」は同一語源の多義語(ポリセミー)。代名詞 mine「私のもの」(古英語 mīn)とは無関係の同綴異義語(ホモニム)。",
+   "trivia": "undermine(弱体化させる)は元々「城壁の下を掘り崩す」という文字通りの軍事用語で、地雷の mine と同じ発想から生まれた。パソコンの定番ゲーム「マインスイーパー(Minesweeper)」は「掃海艇・地雷除去」の意味。",
+   "explanation": "「地雷・機雷」の mine。land mine(地雷)、sea mine(機雷)、minefield(地雷原)。「鉱山」の mine から「坑道に仕掛けた爆薬」を経て生まれた意味。「私のもの」の mine とは別語。"
+  }
+ },
+ {
+  "english": "right",
+  "japanese": "正しい(形容詞)",
+  "example": "You were right about the restaurant. The food was amazing.",
+  "example_ja": "あのレストランについては、あなたの言う通りだったよ。料理が最高だった。",
+  "detail": {
+   "pronunciation": "/raɪt/",
+   "pos": "形容詞・副詞",
+   "meanings": [
+    "正しい・正確な",
+    "適切な・ふさわしい(the right person for the job)",
+    "(副詞)ちょうど・すぐに(right now, right here)",
+    "(間投詞)そうだね・了解"
+   ],
+   "examples": [
+    {
+     "en": "You were right about the restaurant. The food was amazing.",
+     "ja": "あのレストランについては、あなたの言う通りだったよ。料理が最高だった。"
+    },
+    {
+     "en": "I'll be right back.",
+     "ja": "すぐ戻るね。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "rightly",
+     "pos": "副詞",
+     "ja": "正しく・当然ながら"
+    },
+    {
+     "word": "righteous",
+     "pos": "形容詞",
+     "ja": "正義の・高潔な"
+    },
+    {
+     "word": "upright",
+     "pos": "形容詞",
+     "ja": "直立した・正直な"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "correct",
+     "note": "正しい・誤りのない(客観的)"
+    },
+    {
+     "word": "accurate",
+     "note": "正確な"
+    },
+    {
+     "word": "proper",
+     "note": "適切な・ふさわしい"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "wrong",
+     "note": "間違った"
+    },
+    {
+     "word": "incorrect",
+     "note": "不正確な(硬い)"
+    }
+   ],
+   "origin": "古英語 riht「正しい・公正な・まっすぐな」に由来し、ゲルマン祖語を経て印欧祖語の「まっすぐ導く・治める」を意味する語根 *h₃reǵ- に遡る(ラテン語 rectus「まっすぐな・正しい」、rex「王」、regulate、direct と同源)。「右(の)」も「権利」も、この一つの語から意味が分岐した多義語(ポリセミー)で、別語源の同綴異義語ではない。「まっすぐ=正しい」が基本のイメージ。",
+   "trivia": "right angle(直角)は「正しい角」ではなく「まっすぐ立った角」の意味。ラテン語側の親戚 rectus からは rectangle(長方形)、correct、direct、erect が生まれており、「まっすぐ」のイメージが共通している。",
+   "explanation": "「正しい」の形容詞。That's right.(その通り)、You're right.(あなたが正しい)。副詞では right now(今すぐ)、right here(まさにここ)のように「ちょうど・すぐ」の強調。「右」「権利」と同じ語源。"
+  }
+ },
+ {
+  "english": "right",
+  "japanese": "右・右の",
+  "example": "Turn right at the next traffic light.",
+  "example_ja": "次の信号を右に曲がって。",
+  "detail": {
+   "pronunciation": "/raɪt/",
+   "pos": "名詞・形容詞・副詞",
+   "meanings": [
+    "右・右の・右へ",
+    "(政治で)右派・保守派(the right)"
+   ],
+   "examples": [
+    {
+     "en": "Turn right at the next traffic light.",
+     "ja": "次の信号を右に曲がって。"
+    },
+    {
+     "en": "In Japan, cars drive on the left, so the driver sits on the right.",
+     "ja": "日本では車は左側通行なので、運転手は右側に座る。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "right-handed",
+     "pos": "形容詞",
+     "ja": "右利きの"
+    },
+    {
+     "word": "right-wing",
+     "pos": "形容詞",
+     "ja": "右派の・右翼の"
+    },
+    {
+     "word": "rightward",
+     "pos": "副詞・形容詞",
+     "ja": "右へ・右向きの"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "starboard",
+     "note": "船・飛行機の右舷"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "left",
+     "note": "左"
+    },
+    {
+     "word": "port",
+     "note": "船・飛行機の左舷"
+    }
+   ],
+   "origin": "「正しい・まっすぐな」の right(古英語 riht)から派生した意味。多くの人が使いやすく力の強い右手を「正しい手・本来の手」と呼んだことから「右」の意味が生まれた(13世紀ごろ)。それ以前の古英語では右を swīþra「より強い方」と呼んでいた。したがって「正しい」「右」「権利」はすべて同一語源の多義語(ポリセミー)。",
+   "trivia": "「右=正しい」という発想は英語に限らず、フランス語 droit(右・まっすぐ・法)、ドイツ語 recht(右・正しい)にも見られる。逆に left は古英語 lyft「弱い」に由来するとされ、ラテン語で「左」の sinister は英語で「不吉な」になった。政治の「右派・左派」はフランス革命期の議会で王党派が議長の右側に座ったことに由来するとされる。",
+   "explanation": "方向の「右」。turn right(右に曲がる)、on the right(右側に)、the right hand(右手)。「正しい」の意味から「正しい手=右手」として生まれた意味で、「権利」とも同語源。"
+  }
+ },
+ {
+  "english": "right",
+  "japanese": "権利",
+  "example": "Everyone has the right to a fair trial.",
+  "example_ja": "誰もが公正な裁判を受ける権利を持っている。",
+  "detail": {
+   "pronunciation": "/raɪt/",
+   "pos": "名詞",
+   "meanings": [
+    "権利(the right to 〜)",
+    "正しいこと・正義(right and wrong)",
+    "(複数形 rights で)著作権・版権などの権利"
+   ],
+   "examples": [
+    {
+     "en": "Everyone has the right to a fair trial.",
+     "ja": "誰もが公正な裁判を受ける権利を持っている。"
+    },
+    {
+     "en": "Children need to learn the difference between right and wrong.",
+     "ja": "子どもは善悪の違いを学ぶ必要がある。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "rightful",
+     "pos": "形容詞",
+     "ja": "正当な・当然の(the rightful owner)"
+    },
+    {
+     "word": "copyright",
+     "pos": "名詞",
+     "ja": "著作権"
+    },
+    {
+     "word": "birthright",
+     "pos": "名詞",
+     "ja": "生得権"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "entitlement",
+     "note": "受ける資格・権利(硬い)"
+    },
+    {
+     "word": "privilege",
+     "note": "特権(誰にでもあるわけではない権利)"
+    },
+    {
+     "word": "claim",
+     "note": "請求権・主張できる権利"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "duty",
+     "note": "義務"
+    },
+    {
+     "word": "obligation",
+     "note": "義務・責務"
+    },
+    {
+     "word": "wrong",
+     "note": "不正・悪"
+    }
+   ],
+   "origin": "古英語 riht は形容詞「正しい」と同時に名詞「正しいこと・正当な要求」としても使われており、そこから「法的に正当に主張できるもの=権利」の意味が生まれた。「正しい」「右」「権利」はすべて同じ古英語 riht に由来する一つの語の意味の分岐(多義語・ポリセミー)であり、偶然綴りが同じになった別語ではない。",
+   "trivia": "human rights(人権)、civil rights(公民権)、the Bill of Rights(権利章典)など、政治・法律の重要語に頻出。「正しいこと」と「権利」が同じ単語で表されるのはドイツ語 Recht、フランス語 droit も同じで、ヨーロッパの言語に共通する発想。",
+   "explanation": "「権利」の名詞。have the right to do(〜する権利がある)、human rights(人権)、all rights reserved(著作権所有)。「正しい」「右」と同語源で、「正当に主張できるもの」から権利の意味になった。"
+  }
+ },
+ {
+  "english": "sound",
+  "japanese": "音",
+  "example": "I heard a strange sound coming from the engine.",
+  "example_ja": "エンジンから変な音が聞こえた。",
+  "detail": {
+   "pronunciation": "/saʊnd/",
+   "pos": "名詞・動詞",
+   "meanings": [
+    "音・物音",
+    "(動詞)〜に聞こえる・〜のように思える(It sounds good.)",
+    "(動詞)音を鳴らす(sound the alarm)"
+   ],
+   "examples": [
+    {
+     "en": "I heard a strange sound coming from the engine.",
+     "ja": "エンジンから変な音が聞こえた。"
+    },
+    {
+     "en": "That sounds like a great idea.",
+     "ja": "それはいい考えのようだね。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "soundtrack",
+     "pos": "名詞",
+     "ja": "サウンドトラック・映画音楽"
+    },
+    {
+     "word": "soundproof",
+     "pos": "形容詞",
+     "ja": "防音の"
+    },
+    {
+     "word": "ultrasound",
+     "pos": "名詞",
+     "ja": "超音波"
+    },
+    {
+     "word": "resound",
+     "pos": "動詞",
+     "ja": "鳴り響く"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "noise",
+     "note": "騒音・不快な音"
+    },
+    {
+     "word": "tone",
+     "note": "音色・調子"
+    },
+    {
+     "word": "audio",
+     "note": "音声(録音・再生の文脈)"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "silence",
+     "note": "静寂・無音"
+    }
+   ],
+   "origin": "中英語 soun で、古フランス語 son を経てラテン語 sonus「音」に由来する(sonic、sonata、resonance などと同源)。語末の -d は15世紀ごろに英語内で付け加わったもの。同じ綴りの sound「健全な」は古英語 gesund に由来するゲルマン系の別語で、両者は語源的に無関係な同綴異義語(ホモニム)。",
+   "trivia": "英語の sound には別語源の語がさらに二つある。「海峡・入り江」の sound(古ノルド語 sund、例: Puget Sound)と、「(水深を)測る」の sound(古フランス語 sonder)で、合計四つの無関係な語が同じ綴りになっている。",
+   "explanation": "「音」の名詞。動詞では It sounds 〜(〜に聞こえる・〜のようだ)の形が会話で非常によく使う(Sounds good!=いいね)。「健全な」の sound とは別語源。"
+  }
+ },
+ {
+  "english": "sound",
+  "japanese": "健全な・しっかりした・的確な(形容詞)",
+  "example": "She gave me some sound advice about buying a house.",
+  "example_ja": "彼女は家を買うことについて的確なアドバイスをくれた。",
+  "detail": {
+   "pronunciation": "/saʊnd/",
+   "pos": "形容詞",
+   "meanings": [
+    "健全な・しっかりした(a sound structure)",
+    "的確な・理にかなった(sound advice)",
+    "(眠りが)深い(sound asleep)",
+    "無傷の・健康な(safe and sound)"
+   ],
+   "examples": [
+    {
+     "en": "She gave me some sound advice about buying a house.",
+     "ja": "彼女は家を買うことについて的確なアドバイスをくれた。"
+    },
+    {
+     "en": "The kids were sound asleep by nine.",
+     "ja": "子どもたちは9時にはぐっすり眠っていた。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "soundly",
+     "pos": "副詞",
+     "ja": "ぐっすり・徹底的に(sleep soundly)"
+    },
+    {
+     "word": "soundness",
+     "pos": "名詞",
+     "ja": "健全性"
+    },
+    {
+     "word": "unsound",
+     "pos": "形容詞",
+     "ja": "不健全な・根拠のない"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "solid",
+     "note": "しっかりした・確かな"
+    },
+    {
+     "word": "sensible",
+     "note": "分別のある・理にかなった"
+    },
+    {
+     "word": "reliable",
+     "note": "信頼できる"
+    },
+    {
+     "word": "healthy",
+     "note": "健康な・健全な"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "unsound",
+     "note": "不健全な"
+    },
+    {
+     "word": "flawed",
+     "note": "欠陥のある"
+    },
+    {
+     "word": "shaky",
+     "note": "不安定な・あやふやな"
+    }
+   ],
+   "origin": "古英語 gesund「無事な・健康な」に由来するゲルマン系の語で、ドイツ語 gesund「健康な」、オランダ語 gezond と同源。「体が健康」→「構造・判断・財務などがしっかりしている」と意味が広がった。同じ綴りの sound「音」はラテン語 sonus からフランス語経由で入った別語で、両者は偶然綴りが一致した同綴異義語(ホモニム)。",
+   "trivia": "ドイツ語でくしゃみをした人に言う Gesundheit!(お大事に=「健康」)は、この sound と同じ語。英語圏でも Gesundheit がくしゃみへの返しとして使われることがある。safe and sound(無事に)は「安全でしかも健康な」という同義語を重ねた定型句。",
+   "explanation": "「健全な・しっかりした・的確な」の形容詞。sound advice(的確な助言)、a sound investment(堅実な投資)、financially sound(財務的に健全な)、safe and sound(無事に)、sound asleep(ぐっすり眠って)。「音」の sound とは別語源。"
+  }
+ },
+ {
+  "english": "bill",
+  "japanese": "請求書・勘定",
+  "example": "The electricity bill was higher than usual this month.",
+  "example_ja": "今月の電気代の請求額はいつもより高かった。",
+  "detail": {
+   "pronunciation": "/bɪl/",
+   "pos": "名詞・動詞",
+   "meanings": [
+    "請求書・勘定",
+    "(レストランの)お会計(主に英)",
+    "(動詞)請求する(bill someone for 〜)"
+   ],
+   "examples": [
+    {
+     "en": "The electricity bill was higher than usual this month.",
+     "ja": "今月の電気代の請求額はいつもより高かった。"
+    },
+    {
+     "en": "Could we have the bill, please?",
+     "ja": "お会計をお願いします。(英)"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "billing",
+     "pos": "名詞",
+     "ja": "請求・課金"
+    },
+    {
+     "word": "billable",
+     "pos": "形容詞",
+     "ja": "請求可能な(billable hours)"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "invoice",
+     "note": "(業者間の)請求書・送り状"
+    },
+    {
+     "word": "check",
+     "note": "(米)レストランのお会計"
+    },
+    {
+     "word": "statement",
+     "note": "(銀行・カードの)明細書"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "receipt",
+     "note": "領収書(支払い済みの証明)"
+    }
+   ],
+   "origin": "アングロ・ノルマン語 bille を経て中世ラテン語 billa「文書」に由来し、さらにラテン語 bulla「(封印用の)印章・泡・突起」に遡るとされる。「印章のついた公式文書」→「書面」→「支払い項目を書いた書面=請求書」と意味が広がった。「紙幣」「法案」もこの「文書」の意味から派生した多義語(ポリセミー)。一方、「くちばし」の bill は古英語 bile に由来する別語で、こちらは偶然綴りが一致した同綴異義語(ホモニム)。",
+   "trivia": "ラテン語 bulla からは、教皇の公式文書 papal bull(教皇勅書)、bulletin(公報)、そしてフランス語 boule(球)を経て bullet(弾丸)も生まれたとされる。「泡・丸い突起」→「印章」→「文書」というつながり。",
+   "explanation": "「請求書・勘定」の bill。electricity bill(電気代の請求)、phone bill(電話代)。レストランの「お会計」はイギリスでは bill、アメリカでは check が一般的。「紙幣」「法案」と同語源、「くちばし」は別語。"
+  }
+ },
+ {
+  "english": "bill",
+  "japanese": "紙幣(米)",
+  "example": "Can you break a twenty-dollar bill for me?",
+  "example_ja": "20ドル札をくずしてもらえる？",
+  "detail": {
+   "pronunciation": "/bɪl/",
+   "pos": "名詞",
+   "meanings": [
+    "紙幣・お札(米)"
+   ],
+   "examples": [
+    {
+     "en": "Can you break a twenty-dollar bill for me?",
+     "ja": "20ドル札をくずしてもらえる？"
+    },
+    {
+     "en": "The vending machine only takes one-dollar bills and coins.",
+     "ja": "その自動販売機は1ドル札と硬貨しか使えない。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "billfold",
+     "pos": "名詞",
+     "ja": "(米)札入れ・二つ折り財布"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "note",
+     "note": "(英)紙幣(a ten-pound note)"
+    },
+    {
+     "word": "banknote",
+     "note": "紙幣(やや硬い・英米共通)"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "coin",
+     "note": "硬貨"
+    }
+   ],
+   "origin": "「文書・証書」の bill(中世ラテン語 billa、ラテン語 bulla「印章」に遡る)から派生した意味で、「支払いを約束する証書(bill of exchange など)」→「銀行が発行する支払約束の紙=紙幣」となった。「請求書」「法案」と同じ語源の多義語(ポリセミー)。「くちばし」の bill(古英語 bile)とは無関係の同綴異義語(ホモニム)。",
+   "trivia": "アメリカの紙幣を bill と呼ぶのは「銀行の支払い約束証書」という発想から。イギリスでは note(bank note の略)が普通で、a fiver(5ポンド札)、a tenner(10ポンド札)という俗語もある。",
+   "explanation": "アメリカ英語で「紙幣・お札」。a ten-dollar bill(10ドル札)。イギリス英語では紙幣は note(a ten-pound note)。「請求書」の bill から「支払い証書」を経て生まれた意味。"
+  }
+ },
+ {
+  "english": "bill",
+  "japanese": "(鳥の)くちばし",
+  "example": "The duck scooped up the bread with its bill.",
+  "example_ja": "アヒルはくちばしでパンをすくい上げた。",
+  "detail": {
+   "pronunciation": "/bɪl/",
+   "pos": "名詞",
+   "meanings": [
+    "(鳥の)くちばし(特に平たいもの)",
+    "(帽子の)つば(米)"
+   ],
+   "examples": [
+    {
+     "en": "The duck scooped up the bread with its bill.",
+     "ja": "アヒルはくちばしでパンをすくい上げた。"
+    },
+    {
+     "en": "The platypus has a soft, rubbery bill like a duck's.",
+     "ja": "カモノハシはアヒルのような柔らかいゴム状のくちばしを持っている。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "duck-billed",
+     "pos": "形容詞",
+     "ja": "アヒルのようなくちばしを持つ(duck-billed platypus)"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "beak",
+     "note": "くちばし全般。鋭く曲がったものには beak が普通"
+    }
+   ],
+   "antonyms": [],
+   "origin": "古英語 bile「くちばし」に由来する語で、起源ははっきりしない。古英語で刃物・武器を意味した bill(斧槍など)と関係があるとする説もある。「請求書・紙幣・法案」の bill はラテン語 bulla に遡るまったく別系統の語で、両者は偶然綴りが一致した同綴異義語(ホモニム)。",
+   "trivia": "アヒルなどの平たいくちばしには bill、ワシなど鋭く曲がったものには beak を使う傾向があるが、厳密な区別ではなく重なりも多い。カモノハシの英語名 duck-billed platypus は「アヒルのくちばしを持つ」の意味。野球帽のつばを bill と呼ぶのもくちばしとの形の類似から。",
+   "explanation": "鳥の「くちばし」。beak とほぼ同義だが、アヒル・カモなどの平たいくちばしには bill がよく使われる。「請求書」「紙幣」「法案」の bill とは語源が異なる別語。"
+  }
+ },
+ {
+  "english": "bill",
+  "japanese": "法案",
+  "example": "The bill passed the Senate by a narrow margin.",
+  "example_ja": "その法案は僅差で上院を通過した。",
+  "detail": {
+   "pronunciation": "/bɪl/",
+   "pos": "名詞",
+   "meanings": [
+    "法案",
+    "(演劇・イベントの)番組・出演表(top the bill=主役を務める)",
+    "(ポスターの)張り紙(古風)"
+   ],
+   "examples": [
+    {
+     "en": "The bill passed the Senate by a narrow margin.",
+     "ja": "その法案は僅差で上院を通過した。"
+    },
+    {
+     "en": "The government introduced a bill to raise the minimum wage.",
+     "ja": "政府は最低賃金を引き上げる法案を提出した。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "billboard",
+     "pos": "名詞",
+     "ja": "(広告用の)大看板"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "proposal",
+     "note": "提案全般"
+    },
+    {
+     "word": "measure",
+     "note": "(議会での)法案・措置"
+    },
+    {
+     "word": "legislation",
+     "note": "法律・立法(成立したものも含む)"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "act",
+     "note": "成立した法律(bill が可決されると act になる)"
+    },
+    {
+     "word": "law",
+     "note": "法律"
+    }
+   ],
+   "origin": "「文書・書面」の bill(中世ラテン語 billa、ラテン語 bulla「印章」に遡る)から、「議会に提出する書面=法案」の意味が生まれた。「請求書」「紙幣」と同じ語源の多義語(ポリセミー)。「くちばし」の bill(古英語 bile)とは無関係の同綴異義語(ホモニム)。",
+   "trivia": "アメリカ憲法の最初の10か条の修正条項は the Bill of Rights(権利章典)と呼ばれ、1689年のイギリスの権利章典に由来する名称。法案(bill)は議会を通過し署名されると法律(act)になる。billboard(大看板)は「張り紙(bill)を貼る板」の意味。",
+   "explanation": "議会に提出される「法案」。pass a bill(法案を可決する)、introduce a bill(法案を提出する)。成立すると act(法律)になる。「請求書」「紙幣」と同語源、「くちばし」は別語。"
+  }
+ },
+ {
+  "english": "fair",
+  "japanese": "公平な・公正な(形容詞)",
+  "example": "It's not fair that she gets paid more for the same work.",
+  "example_ja": "同じ仕事で彼女の方が給料が高いなんて不公平だ。",
+  "detail": {
+   "pronunciation": "/feər/",
+   "pos": "形容詞",
+   "meanings": [
+    "公平な・公正な",
+    "まずまずの・かなりの(a fair amount)",
+    "(天気が)晴れた(fair weather)",
+    "(古風・文語)美しい(fair maiden)"
+   ],
+   "examples": [
+    {
+     "en": "It's not fair that she gets paid more for the same work.",
+     "ja": "同じ仕事で彼女の方が給料が高いなんて不公平だ。"
+    },
+    {
+     "en": "To be fair, he did apologize afterward.",
+     "ja": "公平に言えば、彼はその後ちゃんと謝ったよ。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "fairly",
+     "pos": "副詞",
+     "ja": "公正に・かなり"
+    },
+    {
+     "word": "fairness",
+     "pos": "名詞",
+     "ja": "公平さ"
+    },
+    {
+     "word": "unfair",
+     "pos": "形容詞",
+     "ja": "不公平な"
+    },
+    {
+     "word": "fair play",
+     "pos": "名詞",
+     "ja": "フェアプレー・正々堂々"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "just",
+     "note": "正義にかなった(硬い)"
+    },
+    {
+     "word": "impartial",
+     "note": "偏りのない・中立の"
+    },
+    {
+     "word": "reasonable",
+     "note": "妥当な・筋の通った"
+    },
+    {
+     "word": "equitable",
+     "note": "公平な(法律・経済で硬い)"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "unfair",
+     "note": "不公平な"
+    },
+    {
+     "word": "biased",
+     "note": "偏った"
+    }
+   ],
+   "origin": "古英語 fæger「美しい・心地よい・快い」に由来するゲルマン系の語。「美しい・汚れのない」→「(偏りや汚点がなく)正しい・公正な」と意味が広がったのは14世紀ごろ。「金髪の・色白の」の fair もこの同じ形容詞から分岐した意味で、両者は多義語(ポリセミー)。一方、「お祭り・見本市」の fair はラテン語 feria「祝日」からフランス語経由で入った別語で、こちらは偶然綴りが一致した同綴異義語(ホモニム)。",
+   "trivia": "fair は元々「美しい」が中心の意味で、シェイクスピアの時代の fair lady は「美しい女性」。ミュージカル My Fair Lady の題名もこの古い意味を踏まえている。現代では「美しい」の意味はほぼ文語・古風で、「公平な」「金髪の」が主流になった。",
+   "explanation": "「公平な・公正な」の fair。That's not fair.(ずるい・不公平だ)は会話の定番。fair enough(まあ妥当だね)、to be fair(公平に言えば)も頻出。「金髪の」と同じ語だが、「お祭り」の fair は別語源。"
+  }
+ },
+ {
+  "english": "fair",
+  "japanese": "お祭り・見本市・縁日",
+  "example": "We rode the Ferris wheel at the county fair.",
+  "example_ja": "郡のお祭りで観覧車に乗った。",
+  "detail": {
+   "pronunciation": "/feər/",
+   "pos": "名詞",
+   "meanings": [
+    "お祭り・縁日・移動遊園地",
+    "見本市・展示会(trade fair, book fair)",
+    "(就職などの)フェア・説明会(job fair)"
+   ],
+   "examples": [
+    {
+     "en": "We rode the Ferris wheel at the county fair.",
+     "ja": "郡のお祭りで観覧車に乗った。"
+    },
+    {
+     "en": "Our company will have a booth at the trade fair in Frankfurt.",
+     "ja": "わが社はフランクフルトの見本市にブースを出す。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "fairground",
+     "pos": "名詞",
+     "ja": "お祭りの会場・催し物広場"
+    },
+    {
+     "word": "funfair",
+     "pos": "名詞",
+     "ja": "(英)移動遊園地"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "festival",
+     "note": "祭り・催し全般"
+    },
+    {
+     "word": "carnival",
+     "note": "(米)移動遊園地・カーニバル"
+    },
+    {
+     "word": "exhibition",
+     "note": "展示会(硬い)"
+    },
+    {
+     "word": "expo",
+     "note": "博覧会・大規模展示会"
+    }
+   ],
+   "antonyms": [],
+   "origin": "中英語 feire で、古フランス語 feire を経てラテン語 feria「祝日・休日」(複数形 feriae)に由来する。教会の祝日に人が集まって市が立ったことから「市・祭り」の意味になった。同じ綴りの fair「公平な・金髪の」は古英語 fæger「美しい」に由来するゲルマン系の別語で、両者は語源的に無関係な同綴異義語(ホモニム)。",
+   "trivia": "スペイン語の feria(祭り・市)、ドイツ語の Feier(祝い)も同じラテン語 feria から。英語の holiday(holy day=聖なる日)と同じく、「祝日」が「祭り」の語源になっている。なお「料金」の fare は古英語 faran「行く」に由来し、綴りは似ているが fair とは無関係。",
+   "explanation": "「お祭り・縁日・見本市」の fair。county fair / state fair はアメリカの郡・州単位の大きなお祭り(イギリスでは funfair とも)。job fair(就職説明会)、trade fair(見本市)、book fair(ブックフェア)のようにも使う。形容詞の fair(公平な)とは別語源。"
+  }
+ },
+ {
+  "english": "fair",
+  "japanese": "金髪の・色白の(形容詞)",
+  "example": "She has fair hair and blue eyes, just like her mother.",
+  "example_ja": "彼女は母親そっくりの金髪で青い目をしている。",
+  "detail": {
+   "pronunciation": "/feər/",
+   "pos": "形容詞",
+   "meanings": [
+    "(髪が)金髪の・明るい色の",
+    "(肌が)色白の(fair skin)"
+   ],
+   "examples": [
+    {
+     "en": "She has fair hair and blue eyes, just like her mother.",
+     "ja": "彼女は母親そっくりの金髪で青い目をしている。"
+    },
+    {
+     "en": "People with fair skin burn more easily in the sun.",
+     "ja": "色白の人は日焼けで肌が赤くなりやすい。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "fair-haired",
+     "pos": "形容詞",
+     "ja": "金髪の"
+    },
+    {
+     "word": "fair-skinned",
+     "pos": "形容詞",
+     "ja": "色白の"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "blond",
+     "note": "金髪の(女性には blonde とも)。日常ではこちらが普通"
+    },
+    {
+     "word": "light",
+     "note": "(色が)明るい・淡い"
+    },
+    {
+     "word": "pale",
+     "note": "(肌が)青白い・血色の悪い(やや否定的)"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "dark",
+     "note": "(髪・肌が)黒っぽい・浅黒い"
+    }
+   ],
+   "origin": "古英語 fæger「美しい」に由来する形容詞 fair の意味の一つで、16世紀ごろ「美しい」→「明るい色の・色白の」へと広がった(当時の美の基準が「明るい色」と結びついていたことが背景にあるとされる)。「公平な」の fair と同一の語から分岐した多義語(ポリセミー)。「お祭り」の fair はラテン語 feria に由来する別語で、こちらとは無関係の同綴異義語(ホモニム)。",
+   "trivia": "fair は「美しい」→「明るい色」と変化したが、対になる dark も「暗い」から「浅黒い・黒髪の」の意味を持つ。fair-weather friend(都合のいい時だけの友人)は「晴れた天気」の fair で、こちらも「美しい・快い」から派生した意味。",
+   "explanation": "「金髪の・色白の」の fair。fair hair(金髪)、fair skin(色白の肌)。髪については blond(e) の方が日常的に使われることも多い。「公平な」と同じ語で、「美しい」という元の意味から広がった。"
+  }
+ },
+ {
+  "english": "scale",
+  "japanese": "はかり・体重計",
+  "example": "I step on the scale every morning before breakfast.",
+  "example_ja": "毎朝、朝食の前に体重計に乗る。",
+  "detail": {
+   "pronunciation": "/skeɪl/",
+   "pos": "名詞",
+   "meanings": [
+    "はかり・体重計(英では scales)",
+    "(天秤の)皿"
+   ],
+   "examples": [
+    {
+     "en": "I step on the scale every morning before breakfast.",
+     "ja": "毎朝、朝食の前に体重計に乗る。"
+    },
+    {
+     "en": "Put the flour on the kitchen scales and weigh out 200 grams.",
+     "ja": "小麦粉を計量器にのせて200グラム量ってください。(英)"
+    }
+   ],
+   "derivatives": [],
+   "synonyms": [
+    {
+     "word": "balance",
+     "note": "天秤・上皿天秤"
+    },
+    {
+     "word": "weighing machine",
+     "note": "計量器(硬い)"
+    }
+   ],
+   "antonyms": [],
+   "origin": "中英語で古ノルド語 skál「鉢・杯」から入った語で、天秤の「皿」を指したことから「はかり」の意味になった。ゲルマン祖語の「割る・裂く」を意味する語根に遡り、shell(貝殻)などと同源とされる。「魚のうろこ」の scale は古フランス語 escale「殻・うろこ」を経てゲルマン系の同じ語根に由来するが、英語に入った経路が異なるため辞書では別見出し(遠い親戚の同綴異義語)。「規模」「音階」の scale はラテン語 scala「はしご」に由来するまったく別系統の語(ホモニム)。",
+   "trivia": "tip the scales(形勢を決定づける・重さが〜になる)は天秤の皿が傾くイメージ。正義の女神が持つ天秤も scales(of justice)。イギリス英語では bathroom scales、kitchen scales と複数形が普通で、これは天秤に皿が二つあった名残。",
+   "explanation": "「はかり・体重計」の scale。イギリス英語では scales と複数形で使うのが普通(bathroom scales)。アメリカ英語では a scale と単数形も一般的。「うろこ」とは遠い親戚、「規模」「音階」は別語源。"
+  }
+ },
+ {
+  "english": "scale",
+  "japanese": "規模",
+  "example": "The company is planning to expand on a much larger scale next year.",
+  "example_ja": "その会社は来年、はるかに大きな規模で事業を拡大する計画だ。",
+  "detail": {
+   "pronunciation": "/skeɪl/",
+   "pos": "名詞・動詞",
+   "meanings": [
+    "規模・程度(on a large scale)",
+    "目盛り・尺度・等級(a scale of 1 to 10)",
+    "(地図・模型の)縮尺(a scale model)",
+    "(動詞)(規模を)拡大・縮小する(scale up / scale down)",
+    "(動詞)(壁・山を)よじ登る"
+   ],
+   "examples": [
+    {
+     "en": "The company is planning to expand on a much larger scale next year.",
+     "ja": "その会社は来年、はるかに大きな規模で事業を拡大する計画だ。"
+    },
+    {
+     "en": "On a scale of one to ten, how would you rate the movie?",
+     "ja": "10段階で言うと、その映画は何点？"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "scalable",
+     "pos": "形容詞",
+     "ja": "拡張可能な・規模を変えられる"
+    },
+    {
+     "word": "scalability",
+     "pos": "名詞",
+     "ja": "拡張性・スケーラビリティ"
+    },
+    {
+     "word": "large-scale",
+     "pos": "形容詞",
+     "ja": "大規模な"
+    },
+    {
+     "word": "full-scale",
+     "pos": "形容詞",
+     "ja": "全面的な・実物大の"
+    },
+    {
+     "word": "escalate",
+     "pos": "動詞",
+     "ja": "段階的に拡大する(同じラテン語 scala に由来)"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "extent",
+     "note": "範囲・程度"
+    },
+    {
+     "word": "magnitude",
+     "note": "大きさ・規模(硬い)"
+    },
+    {
+     "word": "ratio",
+     "note": "比率(縮尺の意味に近い)"
+    }
+   ],
+   "antonyms": [],
+   "origin": "ラテン語 scala「はしご・階段」(scandere「登る」に由来)から、古フランス語または直接ラテン語を経て英語に入った。「はしごの段」→「段階的な目盛り」→「尺度・縮尺・規模」と意味が広がった。「音階」の scale もこの同じ「はしご」の scale から分岐した多義語(ポリセミー)。一方、「はかり」(古ノルド語 skál)と「うろこ」(古フランス語 escale)の scale はゲルマン系の別語根に由来し、こちらとは無関係の同綴異義語(ホモニム)。",
+   "trivia": "escalator(エスカレーター)、escalate(段階的に拡大する)は同じラテン語 scala「はしご」の仲間。動詞 scale a wall(壁をよじ登る)は「はしごで登る」という元の意味そのもの。ITでよく使う「スケールする(scale up/out)」もこの意味。",
+   "explanation": "「規模・尺度・縮尺」の scale。on a large scale(大規模に)、a scale of 1 to 10(10段階)、scale up/down(規模を拡大/縮小する)。「音階」と同語源だが、「はかり」「うろこ」は別語源。"
+  }
+ },
+ {
+  "english": "scale",
+  "japanese": "(魚の)うろこ",
+  "example": "You need to remove the scales before you cook the fish.",
+  "example_ja": "魚を調理する前にうろこを取らないといけない。",
+  "detail": {
+   "pronunciation": "/skeɪl/",
+   "pos": "名詞・動詞",
+   "meanings": [
+    "(魚・爬虫類の)うろこ",
+    "(皮膚などの)薄片・(湯垢などの)スケール",
+    "(動詞)うろこを取る"
+   ],
+   "examples": [
+    {
+     "en": "You need to remove the scales before you cook the fish.",
+     "ja": "魚を調理する前にうろこを取らないといけない。"
+    },
+    {
+     "en": "A snake's scales help it grip the ground as it moves.",
+     "ja": "ヘビのうろこは、動くときに地面をつかむのに役立っている。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "scaly",
+     "pos": "形容詞",
+     "ja": "うろこ状の・かさかさした"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "flake",
+     "note": "薄片・かけら"
+    },
+    {
+     "word": "plate",
+     "note": "(装甲のような)板状の部分"
+    }
+   ],
+   "antonyms": [],
+   "origin": "中英語で古フランス語 escale「殻・うろこ・さや」から入った語で、この古フランス語はフランク語などゲルマン系の「割れて剥がれるもの」を意味する語に由来するとされる。「はかり」の scale(古ノルド語 skál「鉢」)も同じゲルマン祖語の語根に遡るとされるが、英語への入り方が異なるため辞書では別見出しにされる「遠い親戚」の関係。「規模」「音階」の scale はラテン語 scala「はしご」に由来する無関係の語(ホモニム)。",
+   "trivia": "the scales fall from one's eyes(目からうろこが落ちる)は新約聖書(使徒言行録)の一節に由来する表現で、日本語の「目からうろこ」もこの聖書の表現が元とされる。ボイラーなどに付く湯垢を「スケール」と呼ぶのもこのうろこの意味から。",
+   "explanation": "魚やヘビの「うろこ」。fish scales。動詞では「うろこを取る」。「はかり」の scale とは遠い親戚、「規模」「音階」の scale とは別語源。"
+  }
+ },
+ {
+  "english": "scale",
+  "japanese": "音階",
+  "example": "The piano teacher made me practice scales for twenty minutes.",
+  "example_ja": "ピアノの先生に20分間、音階の練習をさせられた。",
+  "detail": {
+   "pronunciation": "/skeɪl/",
+   "pos": "名詞",
+   "meanings": [
+    "音階・スケール(a major scale)"
+   ],
+   "examples": [
+    {
+     "en": "The piano teacher made me practice scales for twenty minutes.",
+     "ja": "ピアノの先生に20分間、音階の練習をさせられた。"
+    },
+    {
+     "en": "Most pop songs are built on a major or minor scale.",
+     "ja": "ほとんどのポップソングは長音階か短音階を土台にしている。"
+    }
+   ],
+   "derivatives": [],
+   "synonyms": [
+    {
+     "word": "mode",
+     "note": "旋法(教会旋法など、音階の一種)"
+    }
+   ],
+   "antonyms": [],
+   "origin": "ラテン語 scala「はしご・階段」から来た scale の意味の一つで、音を低い方から高い方へ「はしごの段のように」並べたものを指す(16世紀ごろ)。「規模・尺度」の scale と同一語源の多義語(ポリセミー)。「はかり」「うろこ」の scale はゲルマン系の別語根に由来する無関係の語(ホモニム)。",
+   "trivia": "イタリア語でも音階を scala と言い、ミラノの歌劇場スカラ座(Teatro alla Scala)の名も同じ語(ただしこちらは教会の名に由来し「音階」とは直接関係ない)。ドレミの「階名」も「音のはしごの段」という発想が日本語訳に反映されている。",
+   "explanation": "音楽の「音階」。practice scales(音階練習をする)、a major/minor scale(長/短音階)。「はしご」が語源で、「規模・尺度」の scale と同じ語。「はかり」「うろこ」は別語源。"
+  }
+ },
+ {
+  "english": "seal",
+  "japanese": "アザラシ",
+  "example": "We watched the seals sunbathing on the rocks.",
+  "example_ja": "岩の上で日なたぼっこをしているアザラシたちを眺めた。",
+  "detail": {
+   "pronunciation": "/siːl/",
+   "pos": "名詞",
+   "meanings": [
+    "アザラシ(広義にはアシカ・オットセイも含む)"
+   ],
+   "examples": [
+    {
+     "en": "We watched the seals sunbathing on the rocks.",
+     "ja": "岩の上で日なたぼっこをしているアザラシたちを眺めた。"
+    },
+    {
+     "en": "Harbor seals can hold their breath for up to thirty minutes.",
+     "ja": "ゼニガタアザラシは最長30分ほど息を止めていられる。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "sealskin",
+     "pos": "名詞",
+     "ja": "アザラシの毛皮"
+    },
+    {
+     "word": "sealer",
+     "pos": "名詞",
+     "ja": "アザラシ猟師・猟船"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "sea lion",
+     "note": "アシカ(耳たぶがあり、ひれ足で歩ける)"
+    },
+    {
+     "word": "fur seal",
+     "note": "オットセイ"
+    }
+   ],
+   "antonyms": [],
+   "origin": "古英語 seolh「アザラシ」に由来するゲルマン系の語で、それ以前の起源ははっきりしない(ゲルマン語以外からの借用とする説もある)。同じ綴りの seal「封・印章」はラテン語 sigillum「小さな印」からフランス語経由で入った別語で、両者は語源的に無関係な同綴異義語(ホモニム)。",
+   "trivia": "英語で seal は広くアザラシ・アシカ・オットセイの仲間(鰭脚類)を指し、耳たぶのある sea lion(アシカ)や fur seal(オットセイ)と、耳たぶのない true seal(アザラシ)を区別する。アメリカ海軍の特殊部隊 Navy SEALs は Sea, Air, Land の頭文字で、動物のアザラシとかけた命名。",
+   "explanation": "動物の「アザラシ」。広義にはアシカ(sea lion)・オットセイ(fur seal)も seal の仲間として扱われる。「封をする」の seal とは別語源。"
+  }
+ },
+ {
+  "english": "seal",
+  "japanese": "封をする・密閉する(動詞)・封印",
+  "example": "Make sure you seal the envelope before you mail it.",
+  "example_ja": "投函する前に封筒にきちんと封をしてね。",
+  "detail": {
+   "pronunciation": "/siːl/",
+   "pos": "動詞・名詞",
+   "meanings": [
+    "封をする・密閉する",
+    "(取引・運命などを)確定させる(seal the deal)",
+    "印章・封印・(承認の)しるし(seal of approval)",
+    "(容器などの)シール材・パッキン"
+   ],
+   "examples": [
+    {
+     "en": "Make sure you seal the envelope before you mail it.",
+     "ja": "投函する前に封筒にきちんと封をしてね。"
+    },
+    {
+     "en": "A handshake sealed the deal.",
+     "ja": "握手で取引が成立した。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "sealed",
+     "pos": "形容詞",
+     "ja": "密封された"
+    },
+    {
+     "word": "sealant",
+     "pos": "名詞",
+     "ja": "シーラント・密封材"
+    },
+    {
+     "word": "unseal",
+     "pos": "動詞",
+     "ja": "封を開ける"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "close",
+     "note": "閉じる(密閉のニュアンスは弱い)"
+    },
+    {
+     "word": "fasten",
+     "note": "留める・固定する"
+    },
+    {
+     "word": "stamp",
+     "note": "(印章の意味で)スタンプ・印"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "unseal",
+     "note": "封を開ける"
+    },
+    {
+     "word": "open",
+     "note": "開ける"
+    }
+   ],
+   "origin": "中英語 seel で、古フランス語 seel を経てラテン語 sigillum「小さな印・封印」(signum「しるし」の指小形)に由来する。sign、signal、signature と同じ家系。「印章を押して封じる」→「密閉する」→「(取引を)確定させる」と意味が広がった(多義)。同じ綴りの seal「アザラシ」は古英語 seolh に由来するゲルマン系の別語で、両者は偶然綴りが一致した同綴異義語(ホモニム)。",
+   "trivia": "日本語の「シール(貼るもの)」は英語では sticker で、seal を使うと「封印・印章」の意味になってしまう。my lips are sealed(口外しません)、seal one's fate(運命を決定づける)など、「封じて確定する」イメージの慣用句が多い。",
+   "explanation": "「封をする・密閉する」の動詞と、「封印・印章」の名詞。seal an envelope(封筒に封をする)、seal the deal(取引を成立させる)、seal of approval(お墨付き)。日本語の「シール(貼るもの)」は英語では sticker。「アザラシ」の seal とは別語源。"
+  }
+ },
+ {
+  "english": "present",
+  "japanese": "贈り物・プレゼント",
+  "example": "I still haven't bought a present for Dad's birthday.",
+  "example_ja": "父の誕生日プレゼントをまだ買っていない。",
+  "detail": {
+   "pronunciation": "/ˈprezənt/",
+   "pos": "名詞",
+   "meanings": [
+    "贈り物・プレゼント"
+   ],
+   "examples": [
+    {
+     "en": "I still haven't bought a present for Dad's birthday.",
+     "ja": "父の誕生日プレゼントをまだ買っていない。"
+    },
+    {
+     "en": "The kids couldn't wait to open their presents on Christmas morning.",
+     "ja": "子どもたちはクリスマスの朝、プレゼントを開けるのが待ちきれなかった。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "presentation",
+     "pos": "名詞",
+     "ja": "贈呈・発表・プレゼン"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "gift",
+     "note": "贈り物。present よりやや改まった響きで、米では gift が多い"
+    },
+    {
+     "word": "donation",
+     "note": "寄付・寄贈"
+    }
+   ],
+   "antonyms": [],
+   "origin": "古フランス語 present「贈り物」に由来し、mettre en present「(人の)目の前に差し出す」という言い回しから「差し出されたもの=贈り物」の意味が生まれた(13世紀ごろ)。元をたどるとラテン語 praesens「目の前にある・居合わせる」(prae-「前に」+ esse「ある」)で、形容詞 present「現在の・出席している」、動詞 present「提示する・贈呈する」と同じ語源。present の三つの意味はすべて「目の前にある」というラテン語の一つの語から分岐した多義語(ポリセミー)。",
+   "trivia": "名詞・形容詞の present はアクセントが前(PRE-sent)、動詞は後ろ(pre-SENT)。record、object、permit など、英語には名詞と動詞でアクセント位置が変わる語が多く、これは英語の代表的なパターンの一つ。",
+   "explanation": "「贈り物・プレゼント」の名詞。a birthday present、give someone a present。アメリカ英語では gift も非常によく使う。形容詞「現在の」、動詞「提示する」と同語源で、「目の前に差し出されたもの」という発想から生まれた。"
+  }
+ },
+ {
+  "english": "present",
+  "japanese": "現在(の)・出席している(形容詞)",
+  "example": "Only twelve of the twenty members were present at the meeting.",
+  "example_ja": "会議に出席していたのは20人のメンバーのうち12人だけだった。",
+  "detail": {
+   "pronunciation": "/ˈprezənt/",
+   "pos": "形容詞・名詞",
+   "meanings": [
+    "出席している・居合わせている(be present at)",
+    "現在の・今の(the present situation)",
+    "(名詞)現在(at present, the present)",
+    "(文法)現在時制(the present tense)"
+   ],
+   "examples": [
+    {
+     "en": "Only twelve of the twenty members were present at the meeting.",
+     "ja": "会議に出席していたのは20人のメンバーのうち12人だけだった。"
+    },
+    {
+     "en": "At present, we have no plans to open a second store.",
+     "ja": "現在のところ、2号店を出す計画はない。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "presence",
+     "pos": "名詞",
+     "ja": "存在・出席・存在感"
+    },
+    {
+     "word": "presently",
+     "pos": "副詞",
+     "ja": "まもなく(英)・現在(米)"
+    },
+    {
+     "word": "present-day",
+     "pos": "形容詞",
+     "ja": "現代の"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "current",
+     "note": "現在の・最新の(the current situation)"
+    },
+    {
+     "word": "attending",
+     "note": "出席している"
+    },
+    {
+     "word": "existing",
+     "note": "既存の・現存する"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "absent",
+     "note": "欠席の・不在の"
+    },
+    {
+     "word": "past",
+     "note": "過去の"
+    },
+    {
+     "word": "future",
+     "note": "未来の"
+    }
+   ],
+   "origin": "古フランス語を経てラテン語 praesens「目の前にある・居合わせる・今の」(prae-「前に」+ esse「ある」の現在分詞)に由来する。「そこにいる」→「出席している」、「目の前にある時=今」→「現在の」という二つの意味は、どちらもラテン語の段階からある。名詞 present「贈り物」、動詞 present「提示する」も同じ praesens に由来し、present の三つの意味はすべて同一語源の多義語(ポリセミー)。",
+   "trivia": "presently は米では「現在」、英では「まもなく」の意味で使われることが多く、米英で意味がずれる語として知られる。there's no time like the present(思い立ったが吉日)は「今」の意味の present。",
+   "explanation": "「出席している」「現在の」の形容詞、および名詞「現在」。be present at 〜(〜に出席している)、at present(現在は)、the present(現在)、the present tense(現在時制)。アクセントは前(PRE-sent)。「贈り物」「提示する」と同語源。"
+  }
+ },
+ {
+  "english": "present",
+  "japanese": "発表する・提示する・贈呈する(動詞)",
+  "example": "She will present her research findings at the conference next week.",
+  "example_ja": "彼女は来週の学会で研究結果を発表する。",
+  "detail": {
+   "pronunciation": "/prɪˈzent/",
+   "pos": "動詞",
+   "meanings": [
+    "発表する・プレゼンする",
+    "提示する・提出する(present evidence)",
+    "贈呈する・授与する(present A with B)",
+    "(問題などを)もたらす(present a challenge)",
+    "(番組の)司会をする(英)"
+   ],
+   "examples": [
+    {
+     "en": "She will present her research findings at the conference next week.",
+     "ja": "彼女は来週の学会で研究結果を発表する。"
+    },
+    {
+     "en": "The mayor presented the firefighters with medals for their bravery.",
+     "ja": "市長は消防士たちにその勇敢さをたたえてメダルを授与した。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "presentation",
+     "pos": "名詞",
+     "ja": "発表・プレゼン・贈呈"
+    },
+    {
+     "word": "presenter",
+     "pos": "名詞",
+     "ja": "発表者・(英)番組司会者"
+    },
+    {
+     "word": "presentable",
+     "pos": "形容詞",
+     "ja": "人前に出せる・見苦しくない"
+    },
+    {
+     "word": "represent",
+     "pos": "動詞",
+     "ja": "代表する・表す"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "show",
+     "note": "見せる(最も一般的)"
+    },
+    {
+     "word": "submit",
+     "note": "提出する"
+    },
+    {
+     "word": "award",
+     "note": "授与する(賞など)"
+    },
+    {
+     "word": "introduce",
+     "note": "紹介する・導入する"
+    }
+   ],
+   "antonyms": [
+    {
+     "word": "withhold",
+     "note": "差し控える・出さない"
+    },
+    {
+     "word": "conceal",
+     "note": "隠す"
+    }
+   ],
+   "origin": "古フランス語 presenter を経てラテン語 praesentare「目の前に置く・見せる」に由来し、これはラテン語 praesens「目の前にある」(prae-「前に」+ esse「ある」)から作られた動詞。「人の前に差し出す」→「提示する・発表する・贈呈する」と意味が広がった。名詞 present「贈り物」、形容詞 present「現在の・出席している」と同じ語源で、present の三つの意味はすべて同一語源の多義語(ポリセミー)。",
+   "trivia": "動詞はアクセントが後ろ(pre-SENT)、名詞・形容詞は前(PRE-sent)。この「名詞は前・動詞は後ろ」のアクセント移動は record、export、increase、contract など多くの語に見られ、TOEIC などでも発音問題の定番。",
+   "explanation": "「発表する・提示する・贈呈する」の動詞。present A with B / present B to A(AにBを贈呈する)。動詞はアクセントが後ろ(pre-SENT)、名詞・形容詞は前(PRE-sent)。「贈り物」「現在の」と同語源。"
+  }
+ },
+ {
+  "english": "spell",
+  "japanese": "(単語を)つづる(動詞)",
+  "example": "How do you spell your last name?",
+  "example_ja": "名字はどうつづりますか？",
+  "detail": {
+   "pronunciation": "/spel/",
+   "pos": "動詞",
+   "meanings": [
+    "(単語を)つづる・スペルを言う",
+    "(文字が並んで)〜という語になる(C-A-T spells cat.)",
+    "〜を意味する・〜という結果を招く(spell trouble/disaster)",
+    "(spell out で)はっきり説明する"
+   ],
+   "examples": [
+    {
+     "en": "How do you spell your last name?",
+     "ja": "名字はどうつづりますか？"
+    },
+    {
+     "en": "The new tax could spell trouble for small businesses.",
+     "ja": "新しい税は中小企業に困難をもたらしかねない。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "spelling",
+     "pos": "名詞",
+     "ja": "つづり・スペリング"
+    },
+    {
+     "word": "misspell",
+     "pos": "動詞",
+     "ja": "つづりを間違える"
+    },
+    {
+     "word": "spell-checker",
+     "pos": "名詞",
+     "ja": "スペルチェッカー"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "write out",
+     "note": "(文字を)書き出す"
+    },
+    {
+     "word": "mean",
+     "note": "spell trouble の意味では「〜を意味する」"
+    }
+   ],
+   "antonyms": [],
+   "origin": "中英語 spellen で、古フランス語 espeller「読み上げる・一字ずつ言う」から入った語。この古フランス語自体はフランク語(ゲルマン系)の「語る・述べる」を意味する語に由来するとされ、古英語で「話・言葉」を意味した spell(=現代の「呪文」の spell)と同じゲルマン語の語根に遡る。つまり「つづる」と「呪文」は同じ語根を持つ親戚だが、片方はフランス語経由、片方は古英語から直接という別ルートで英語に入ったため、辞書では別見出しにされることが多い。一方、「一時期」の spell は古英語 spelian「交代する」に由来し、こちらは別語源の同綴異義語(ホモニム)とするのが通説。",
+   "trivia": "gospel(福音)は古英語 gōd spell「良い知らせ・良い話」で、「話・言葉」を意味した古い spell の名残。「つづる」の spell と「呪文」の spell が「言葉を並べる・唱える」という共通イメージでつながっているのは偶然ではない。",
+   "explanation": "「(単語を)つづる」の動詞。活用は spell-spelled-spelled(英では spelt も)。How do you spell 〜?(〜のつづりは?)は必須表現。spell trouble(困難を招く)、spell out(はっきり説明する)も重要。「呪文」の spell とは同じ語根の親戚、「一時期」の spell は別語。"
+  }
+ },
+ {
+  "english": "spell",
+  "japanese": "呪文・魔法",
+  "example": "The witch cast a spell on the prince and turned him into a frog.",
+  "example_ja": "魔女は王子に呪文をかけ、カエルに変えてしまった。",
+  "detail": {
+   "pronunciation": "/spel/",
+   "pos": "名詞",
+   "meanings": [
+    "呪文・魔法(cast a spell)",
+    "魅力・魔力(be under someone's spell)"
+   ],
+   "examples": [
+    {
+     "en": "The witch cast a spell on the prince and turned him into a frog.",
+     "ja": "魔女は王子に呪文をかけ、カエルに変えてしまった。"
+    },
+    {
+     "en": "The audience was completely under the spell of her voice.",
+     "ja": "観客は彼女の歌声にすっかり魅了されていた。"
+    }
+   ],
+   "derivatives": [
+    {
+     "word": "spellbound",
+     "pos": "形容詞",
+     "ja": "魔法にかかったように魅了された"
+    },
+    {
+     "word": "spellbinding",
+     "pos": "形容詞",
+     "ja": "うっとりさせる・魅惑的な"
+    }
+   ],
+   "synonyms": [
+    {
+     "word": "charm",
+     "note": "魔よけ・呪文。また「魅力」"
+    },
+    {
+     "word": "incantation",
+     "note": "呪文(唱える言葉そのもの・硬い)"
+    },
+    {
+     "word": "curse",
+     "note": "呪い(悪い spell)"
+    },
+    {
+     "word": "enchantment",
+     "note": "魔法・魅了(文語)"
+    }
+   ],
+   "antonyms": [],
+   "origin": "古英語 spell「話・言葉・物語・説教」に由来するゲルマン系の語(ゲルマン祖語の「語る」の語根)。「力を持つ言葉」→「呪文」の意味は16世紀ごろに定着した。「つづる」の spell は同じゲルマン語の語根がフランク語→古フランス語 espeller を経て英語に戻ってきたもので、両者は同根の親戚だが別ルートで入ったため辞書では別見出しにされることが多い。「一時期」の spell は古英語 spelian「交代する」に由来する別語源の同綴異義語(ホモニム)とするのが通説。",
+   "trivia": "gospel(福音書)は「良い(good)話(spell)」が語源で、この「話・言葉」の spell の生き残り。cast a spell(呪文をかける)、break the spell(魔法を解く)は物語・ファンタジー作品の定番表現。",
+   "explanation": "「呪文・魔法」の spell。cast a spell on 〜(〜に呪文をかける)、under a spell(魔法にかかって)、比喩的に「魅力にとりつかれて」。「つづる」の spell とは同じ語根の親戚。「一時期」の spell は別語。"
+  }
+ },
+ {
+  "english": "spell",
+  "japanese": "(天候などの)一時期・しばらくの間",
+  "example": "We had a cold spell in late March.",
+  "example_ja": "3月下旬にしばらく寒い日が続いた。",
+  "detail": {
+   "pronunciation": "/spel/",
+   "pos": "名詞",
+   "meanings": [
+    "(天候などの)一時期・ひとしきり(a cold spell)",
+    "(病気の)発作(a dizzy spell)",
+    "(仕事の)交代・ひと働き(take a spell at the wheel)"
+   ],
+   "examples": [
+    {
+     "en": "We had a cold spell in late March.",
+     "ja": "3月下旬にしばらく寒い日が続いた。"
+    },
+    {
+     "en": "After a long dry spell, the farmers finally got some rain.",
+     "ja": "長い日照りの後、農家はようやく雨に恵まれた。"
+    }
+   ],
+   "derivatives": [],
+   "synonyms": [
+    {
+     "word": "period",
+     "note": "期間(最も一般的)"
+    },
+    {
+     "word": "stretch",
+     "note": "ひと続きの期間"
+    },
+    {
+     "word": "bout",
+     "note": "(病気などの)ひとしきり・発作"
+    },
+    {
+     "word": "stint",
+     "note": "(仕事の)一定期間"
+    }
+   ],
+   "antonyms": [],
+   "origin": "古英語の動詞 spelian「代わりを務める・交代する」に由来するとされ、「交代でひと働きする時間」→「一続きの期間」と意味が変化した(18世紀ごろ)。この spelian の起源は不明で、「つづる・呪文」の spell(「語る」の語根)とは無関係の別語とするのが通説。したがって「一時期」の spell は他の二つとは別語源の同綴異義語(ホモニム)。",
+   "trivia": "a cold spell(寒の戻り・寒い時期)、a dry spell(日照り・雨の降らない期間)、a dizzy spell(めまいの発作)など、「一時的に続く状態」を表す決まった組み合わせが多い。オーストラリア英語では動詞で「一休みする(spell the horses)」の意味も残っている。",
+   "explanation": "「(天候などの)一時期・しばらくの間」の spell。a cold spell(寒い時期)、a dry spell(雨の降らない期間)、a dizzy spell(めまいの発作)など。「つづる」「呪文」の spell とは別語源の別語。"
+  }
+ }
+]

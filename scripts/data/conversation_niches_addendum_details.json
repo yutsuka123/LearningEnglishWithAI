@@ -1,0 +1,648 @@
+[
+  {
+    "english": "I don't feel comfortable lending money, even to friends.",
+    "detail": {
+      "nuance": "お金の貸し借りという、人間関係を壊しかねないデリケートな依頼を、個人的な方針として断る表現。",
+      "similar_expressions": [
+        {
+          "en": "I have a personal rule about not lending money.",
+          "ja": "お金を貸さないと個人的に決めているんです。",
+          "diff": "ほぼ同義で「ルール」を前面に出した言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "相手を疑っているわけではなく、自分のポリシーとして伝えることで角が立ちにくくなる。",
+      "trivia": "",
+      "explanation": "友人・知人からの金銭の貸し借りの申し出を、関係を壊さずに断るための定番表現。"
+    }
+  },
+  {
+    "english": "I'd rather not get involved in this one, if that's okay.",
+    "detail": {
+      "nuance": "対立やもめ事など、巻き込まれたくない事柄への関与を丁寧に断る表現。",
+      "similar_expressions": [
+        {
+          "en": "I think I'll stay out of this one.",
+          "ja": "この件には関わらないでおこうと思います。",
+          "diff": "より簡潔でくだけた言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "職場や友人間のトラブルに中立を保ちたいときに使える便利な一言。"
+    }
+  },
+  {
+    "english": "I appreciate the suggestion, but I think I'll do it my own way.",
+    "detail": {
+      "nuance": "アドバイスへの感謝を示しつつ、それに従わず自分のやり方を貫くと伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "Thanks for the advice, but I'll handle it differently.",
+          "ja": "アドバイスはありがたいのですが、違うやり方で対応します。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "善意のアドバイスを否定せずに、やんわり不採用にする言い方。"
+    }
+  },
+  {
+    "english": "That's really kind, but I couldn't possibly impose on you like that.",
+    "detail": {
+      "nuance": "相手の厚意ある申し出を、恐縮の気持ちを示しながら遠慮する表現。",
+      "similar_expressions": [
+        {
+          "en": "That's very generous, but I don't want to trouble you that much.",
+          "ja": "とてもありがたいのですが、そこまでご迷惑はおかけできません。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「impose on ~」は「（人に）迷惑をかける、負担をかける」という意味。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "過度に世話になることを遠慮する、礼儀正しい断り方。"
+    }
+  },
+  {
+    "english": "I'm full, thanks, but it was delicious.",
+    "detail": {
+      "nuance": "食事の場でお代わりを勧められた際、満足感を伝えつつ丁寧に断る定番表現。",
+      "similar_expressions": [
+        {
+          "en": "I couldn't eat another bite, but it was wonderful.",
+          "ja": "もう一口も入りませんが、とても美味しかったです。",
+          "diff": "より強調した言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "ホームパーティーなどで食事を勧められた際の、感謝を伝えつつ断る一言。"
+    }
+  },
+  {
+    "english": "Thanks for offering a ride, but I've already got a way home.",
+    "detail": {
+      "nuance": "送迎の申し出に感謝しつつ、既に別の手段があることを理由に断る表現。",
+      "similar_expressions": [
+        {
+          "en": "That's kind of you, but I've got a ride sorted already.",
+          "ja": "ご親切にありがとうございます、でも帰る手段はもう手配済みです。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "相手の厚意を無下にせず、具体的な理由を添えて断る言い方。"
+    }
+  },
+  {
+    "english": "I don't think I'm the right fit for that role, but I appreciate you thinking of me.",
+    "detail": {
+      "nuance": "役割や依頼を辞退する際、声をかけてくれたこと自体への感謝を忘れずに伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "I'm not sure I'm the best person for that, but thanks for considering me.",
+          "ja": "自分がその適任者かは分かりませんが、候補に入れてくださりありがとうございます。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "昇進・委員会・イベントの役割などを辞退する際の丁寧な言い回し。"
+    }
+  },
+  {
+    "english": "I'd prefer not to switch shifts this time, sorry.",
+    "detail": {
+      "nuance": "同僚からのシフト交代の依頼を、今回に限定して断る表現。",
+      "similar_expressions": [
+        {
+          "en": "I can't swap shifts this time around, sorry.",
+          "ja": "今回はシフトを交代できません、すみません。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "職場でよくある依頼を、次回以降の可能性を残しつつ断る言い方。"
+    }
+  },
+  {
+    "english": "My food came out cold.",
+    "detail": {
+      "nuance": "レストランで提供された料理が冷めていたことを伝える、具体的な不満の表現。",
+      "similar_expressions": [
+        {
+          "en": "This came out cold — could you warm it up?",
+          "ja": "これ冷めた状態で出てきました、温め直していただけますか。",
+          "diff": "対応を具体的に求めた言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "飲食店での品質面の不満を、事実ベースで簡潔に伝える表現。"
+    }
+  },
+  {
+    "english": "The room wasn't cleaned before we checked in.",
+    "detail": {
+      "nuance": "ホテルでチェックイン前に部屋が清掃されていなかったことを伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "Our room hadn't been cleaned when we arrived.",
+          "ja": "到着したとき、部屋がまだ清掃されていませんでした。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "宿泊施設での基本的なサービス不備を指摘する際の表現。"
+    }
+  },
+  {
+    "english": "My package never arrived, even though it shows as delivered.",
+    "detail": {
+      "nuance": "配送ステータス上は「配達済み」なのに実際には荷物が届いていないという、よくある配送トラブルを伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "The tracking says it was delivered, but I never got it.",
+          "ja": "追跡情報では配達済みとなっていますが、実際には受け取っていません。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "オンラインショッピングでの配送トラブルを説明する際の定番表現。"
+    }
+  },
+  {
+    "english": "The item arrived damaged.",
+    "detail": {
+      "nuance": "注文した商品が破損した状態で届いたことを伝える、簡潔な苦情表現。",
+      "similar_expressions": [
+        {
+          "en": "The item was broken when it arrived.",
+          "ja": "商品は届いたときに壊れていました。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "通販での商品トラブルを伝える際の基本的な言い方。"
+    }
+  },
+  {
+    "english": "I've been on hold for over twenty minutes.",
+    "detail": {
+      "nuance": "カスタマーサポートへの電話で長時間待たされていることへの不満を伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "I've been waiting on the line for twenty minutes now.",
+          "ja": "もう20分も電話で待たされています。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「on hold」は電話で「保留状態にされている」という意味。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "サポートセンターへの電話で、対応の遅さを指摘する際の表現。"
+    }
+  },
+  {
+    "english": "Nobody got back to me like you said they would.",
+    "detail": {
+      "nuance": "以前約束された折り返し連絡が来ていないことを指摘する、フォローアップの苦情表現。",
+      "similar_expressions": [
+        {
+          "en": "I was told someone would follow up, but no one did.",
+          "ja": "誰かが折り返すと言われましたが、誰からも連絡がありませんでした。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "以前の対応の約束が果たされていないことを指摘する際の表現。"
+    }
+  },
+  {
+    "english": "Natural twenty! Critical hit!",
+    "detail": {
+      "nuance": "d20で最高値(20)が出た際の興奮を示す、TRPGセッション中の定番の掛け声。",
+      "similar_expressions": [
+        {
+          "en": "Nat twenty, that's a critical!",
+          "ja": "ナチュラル20、クリティカルだ！",
+          "diff": "ほぼ同義でより短い言い方。"
+        }
+      ],
+      "background": "「natural twenty」はダイスの目そのもの(修正値を足す前)が20であることを指す。多くのTRPGシステムでクリティカルヒット(大成功)を意味する。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "D&D等のTRPGで、判定が大成功したときに使う盛り上がる決まり文句。"
+    }
+  },
+  {
+    "english": "That's a critical fail, unfortunately.",
+    "detail": {
+      "nuance": "ダイスで最低値(1)が出て判定が大失敗した際に使う表現。",
+      "similar_expressions": [
+        {
+          "en": "Ouch, that's a natural one — critical failure.",
+          "ja": "うわ、ナチュラル1だ、クリティカルフェイルだね。",
+          "diff": "ほぼ同義でよりくだけた言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "判定の大失敗をユーモラスに受け止める際に使われる表現。"
+    }
+  },
+  {
+    "english": "I cast fireball on the group of goblins.",
+    "detail": {
+      "nuance": "TRPGの戦闘中に、特定の呪文を対象に唱える行動を宣言する表現。",
+      "similar_expressions": [
+        {
+          "en": "I'll throw a fireball at those goblins.",
+          "ja": "あのゴブリンたちにファイアーボールを放ちます。",
+          "diff": "ほぼ同義でよりくだけた言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "ファンタジー系TRPGの戦闘で、行動を宣言する際の基本的な言い回し。"
+    }
+  },
+  {
+    "english": "Roll for damage.",
+    "detail": {
+      "nuance": "攻撃が命中した際、GMがダメージ量を決めるダイスロールを促す表現。",
+      "similar_expressions": [
+        {
+          "en": "Go ahead and roll your damage dice.",
+          "ja": "ダメージダイスを振ってください。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "戦闘の流れの中で頻繁に使われる、GMからプレイヤーへの指示表現。"
+    }
+  },
+  {
+    "english": "Can I make an insight check to see if he's lying?",
+    "detail": {
+      "nuance": "NPCの発言の真偽を見極めるための判定を提案する表現。",
+      "similar_expressions": [
+        {
+          "en": "Can I roll insight to tell if he's being honest?",
+          "ja": "彼が正直かどうか、〈看破〉判定を振ってもいいですか。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「insight check」はD&D系のTRPGで、相手の意図や嘘を見抜く際に使う判定。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "会話パートで駆け引きを判断するための、プレイヤーからの提案表現。"
+    }
+  },
+  {
+    "english": "Let's narrate this out instead of rolling for it.",
+    "detail": {
+      "nuance": "些細な行動について、ダイスロールをせず自由な描写で処理することを提案する表現。",
+      "similar_expressions": [
+        {
+          "en": "We don't need a roll for this — let's just describe it.",
+          "ja": "これは判定不要でしょう、描写だけで進めましょう。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "テンポを重視して、重要でない場面のロールを省略する際の提案。"
+    }
+  },
+  {
+    "english": "In character, I'd say something like this...",
+    "detail": {
+      "nuance": "プレイヤーがキャラクターになりきってセリフを言う際の前置き表現。",
+      "similar_expressions": [
+        {
+          "en": "My character would probably say something like...",
+          "ja": "自分のキャラクターなら、きっとこう言うと思います…",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "ロールプレイのセリフに入る前に使う、TRPGならではの前置き。"
+    }
+  },
+  {
+    "english": "Let's take five to look up that rule.",
+    "detail": {
+      "nuance": "細かいルールの確認のために短い休憩を提案する表現。",
+      "similar_expressions": [
+        {
+          "en": "Let's pause for a few minutes to check the rule.",
+          "ja": "数分休憩してルールを確認しましょう。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「take five」は「5分ほど休憩する」という意味の口語表現。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "セッションの流れを止めずにルール確認を行うための便利な提案。"
+    }
+  },
+  {
+    "english": "What's your QTH?",
+    "detail": {
+      "nuance": "相手局の所在地を尋ねる、交信で頻出するQ符号。",
+      "similar_expressions": [
+        {
+          "en": "Where are you located?",
+          "ja": "どちらにいらっしゃいますか。",
+          "diff": "Q符号を使わない平易な言い方。"
+        }
+      ],
+      "background": "QTHは元々モールス通信の時代からある国際Q符号の一つで、「あなたの位置は？」を意味する（WebSearchで裏取り済み）。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "交信相手の場所を尋ねる、アマチュア無線で最も基本的なQ符号の一つ。"
+    }
+  },
+  {
+    "english": "My QTH is just outside Denver, Colorado.",
+    "detail": {
+      "nuance": "自局の所在地を伝える表現。QTHへの応答としてよく使われる。",
+      "similar_expressions": [
+        {
+          "en": "I'm located just outside Denver, Colorado.",
+          "ja": "私はコロラド州デンバー郊外にいます。",
+          "diff": "Q符号を使わない言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "QTHの質問に対する典型的な返答の形。"
+    }
+  },
+  {
+    "english": "I need to run QRO tonight to punch through this noise.",
+    "detail": {
+      "nuance": "電波状況が悪い夜に、高出力(QRO)での運用が必要だと伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "I'll need to run high power tonight to get through this noise.",
+          "ja": "今夜はこのノイズを突破するため高出力で運用する必要があります。",
+          "diff": "Q符号を使わない言い方。"
+        }
+      ],
+      "background": "QRO(高出力)はQRP(低出力・省電力運用)の対義語にあたるQ符号（WebSearchで裏取り済み）。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "電波コンディションが悪いときに高出力運用を説明する表現。"
+    }
+  },
+  {
+    "english": "You're fading in and out — a bit of QSB tonight.",
+    "detail": {
+      "nuance": "相手の信号が強くなったり弱くなったりするフェージング現象(QSB)を伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "Your signal keeps fading tonight — some QSB going on.",
+          "ja": "今夜は信号が出たり消えたりしていますね、QSBが出ています。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "QSBは「信号がフェージングしていますか／しています」を意味する国際Q符号（WebSearchで裏取り済み）。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "電離層の状態などによる信号の強弱変化を伝える際の表現。"
+    }
+  },
+  {
+    "english": "Please don't say 'over and out' — pick one or the other.",
+    "detail": {
+      "nuance": "「over and out」という組み合わせが、実は矛盾した誤用であることを指摘する表現。",
+      "similar_expressions": [
+        {
+          "en": "'Over' and 'out' shouldn't be used together.",
+          "ja": "「over」と「out」は一緒に使うべきではありません。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "「over」は「応答を待っている（まだ交信を続ける）」、「out」は「これで交信終了、応答は不要」という正反対の意味を持つため、本来同時には使わない。訓練を受けた運用者はこの組み合わせを使わない（WebSearchで裏取り済み）。",
+      "trivia": "映画・ドラマでよく耳にする「Over and out」は実際の無線運用では誤用とされ、ハリウッド由来の慣用句として広まったとされる。",
+      "explanation": "無線交信のマナー・正しい用語を教える際に役立つ、豆知識を兼ねた注意喚起の表現。"
+    }
+  },
+  {
+    "english": "That's a DX station, all the way from New Zealand.",
+    "detail": {
+      "nuance": "遠距離から届いた交信相手(DX局)であることに驚き・喜びを示す表現。",
+      "similar_expressions": [
+        {
+          "en": "That's a DX contact — all the way from New Zealand!",
+          "ja": "DX交信ですね、ニュージーランドからとは！",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "DXは「distant（遠距離）」を意味する電信由来の略語で、遠距離局やその追跡を趣味とすることをDXingと呼ぶ（WebSearchで裏取り済み）。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "遠距離との交信を喜ぶ、アマチュア無線ならではの表現。"
+    }
+  },
+  {
+    "english": "I'm heading out to activate a park for POTA this weekend.",
+    "detail": {
+      "nuance": "POTA(Parks on the Air)のため、公園から移動運用を行う予定を伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "I'm going to operate from a park for POTA this weekend.",
+          "ja": "今週末、POTAのため公園から運用する予定です。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "POTAは公園・公有地から移動運用を行う国際的な賞制度で、運用する側をactivator、それを呼ぶ側をhunterと呼ぶ（WebSearchで裏取り済み）。既存フレーズにあるSOTA(summit=山頂からの運用)の公園版にあたる。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "近年人気の高い移動運用アクティビティを説明する表現。"
+    }
+  },
+  {
+    "english": "88 to you and the family — talk again soon.",
+    "detail": {
+      "nuance": "親しい間柄でのサインオフとして使われる「88」を使った別れの挨拶。",
+      "similar_expressions": [
+        {
+          "en": "73 to you and the family — talk again soon.",
+          "ja": "あなたとご家族に73(よろしく)、また話しましょう。",
+          "diff": "73は誰に対しても使える中立的な挨拶。88はより親密な間柄向け。"
+        }
+      ],
+      "background": "88は「love and kisses」を意味する伝統的なサインオフで、73(よろしく、敬具に近い中立的な挨拶)よりも親しい友人や夫婦の間で使われる（WebSearchで裏取り済み）。",
+      "caution": "面識のない相手や公式な交信では73を使うのが無難で、88は親しい間柄に限定するのがマナー。",
+      "trivia": "",
+      "explanation": "73との使い分けを理解した上で使う、より親密な間柄向けのサインオフ表現。"
+    }
+  },
+  {
+    "english": "The foreshadowing in the first episode was so subtle, I missed it completely.",
+    "detail": {
+      "nuance": "初回放送時には気づかなかった伏線を、後から振り返って評価する考察的な表現。",
+      "similar_expressions": [
+        {
+          "en": "I totally missed the foreshadowing in episode one.",
+          "ja": "1話の伏線、完全に見逃してた。",
+          "diff": "ほぼ同義でよりくだけた言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "海外アニメファンのコミュニティで、伏線への気づきを語る際によく使われる表現。"
+    }
+  },
+  {
+    "english": "This arc is loaded with symbolism if you look closely.",
+    "detail": {
+      "nuance": "作品中の象徴的な演出・モチーフに注目した、深読み系の考察表現。",
+      "similar_expressions": [
+        {
+          "en": "There's a lot of symbolism packed into this arc.",
+          "ja": "この編には象徴表現がたくさん詰まっている。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "動画エッセイやディスカッションスレッドでよく使われる、考察トーク特有の言い回し。"
+    }
+  },
+  {
+    "english": "I think this theme is more nuanced than people give it credit for.",
+    "detail": {
+      "nuance": "作品のテーマについて、一般的な評価より深みがあると主張する考察的な表現。",
+      "similar_expressions": [
+        {
+          "en": "This theme deserves more credit than it usually gets.",
+          "ja": "このテーマは、実際にはもっと評価されるべきだと思う。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「give ~ credit for」は「～を正当に評価する」という意味の口語表現。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "作品への一般的な評価に一石を投じる、考察トークらしい主張の仕方。"
+    }
+  },
+  {
+    "english": "The way they handled that moral dilemma was genuinely thought-provoking.",
+    "detail": {
+      "nuance": "作中の倫理的な葛藤の描写を高く評価する、批評的な感想表現。",
+      "similar_expressions": [
+        {
+          "en": "That moral dilemma was handled in a really thought-provoking way.",
+          "ja": "あの倫理的ジレンマの扱い方は、本当に考えさせられるものだった。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "作品のテーマ性の深さを評価する際に使われる、やや硬めの考察表現。"
+    }
+  },
+  {
+    "english": "On rewatch, so many small details make sense now.",
+    "detail": {
+      "nuance": "作品を見返した際に、初見では気づかなかった細部の意味が分かるようになったという発見を伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "Rewatching this, a lot of little details finally click.",
+          "ja": "見返してみると、細かい部分がやっと腑に落ちる。",
+          "diff": "ほぼ同義でよりくだけた言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "海外アニメファンの間でよく見られる「rewatch」文化を反映した表現。"
+    }
+  },
+  {
+    "english": "This episode recontextualizes everything we thought we knew.",
+    "detail": {
+      "nuance": "新しいエピソードによって、それまでの物語理解が根本から覆されたという強い感想を伝える表現。",
+      "similar_expressions": [
+        {
+          "en": "This episode completely changes how I see everything that came before.",
+          "ja": "このエピソードで、これまでの見方が完全に変わった。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「recontextualize」は「文脈・前提を新たに捉え直す」という意味のやや硬い語。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "大きなどんでん返しや新事実の開示があった際の、考察トークらしい表現。"
+    }
+  },
+  {
+    "english": "The visual metaphor in that scene was incredible.",
+    "detail": {
+      "nuance": "映像表現に込められた比喩的な意味を高く評価する表現。",
+      "similar_expressions": [
+        {
+          "en": "That scene's visual symbolism was amazing.",
+          "ja": "あのシーンの視覚的な象徴表現は素晴らしかった。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "動画エッセイ的な考察でよく使われる、映像面への言及表現。"
+    }
+  },
+  {
+    "english": "I don't think the pacing issues undercut the character work, honestly.",
+    "detail": {
+      "nuance": "作品の欠点（テンポの悪さ）を認めつつ、他の長所（キャラクター描写）は損なわれていないと擁護する、バランスの取れた考察表現。",
+      "similar_expressions": [
+        {
+          "en": "The pacing problems don't really hurt the character development, in my opinion.",
+          "ja": "個人的には、テンポの問題がキャラクターの成長描写を損なっているとは思わない。",
+          "diff": "ほぼ同義。"
+        }
+      ],
+      "background": "「undercut」は「（価値や効果を）弱める、損なう」という意味。",
+      "caution": "",
+      "trivia": "",
+      "explanation": "作品の一部の弱点を認めつつ、全体的な評価とのバランスを取る考察トークの言い回し。"
+    }
+  }
+]
