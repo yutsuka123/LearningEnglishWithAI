@@ -4369,6 +4369,8 @@ export async function admin(root) {
             style="padding:3px 10px">🔄 再読み込み</button>
           <label><input type="checkbox" id="visitTrendCumulative" checked />
             累積(延べ)</label>
+          <label><input type="checkbox" id="visitTrendShowBot" checked />
+            クローラー表示</label>
         </div>
         <div id="visitTrendWrap" class="mt"><p class="muted">未読み込み</p></div>
       </details>
@@ -5391,12 +5393,18 @@ export async function admin(root) {
   });
 
   // --- 訪問者数の推移(2026-08-24) ------------------------------------------
-  function buildVisitTrendSvg(daily) {
+  // クローラーは人間より桁が大きいことが多く、同じY軸に乗せると人間側の
+  // 折れ線がほぼ潰れて見えなくなる問題があった(2026-09-09ユーザー指摘)。
+  // Y軸2軸は異なる尺度を重ねると誤解を招きやすいため採用せず、代わりに
+  // クローラー線の表示on/offでY軸の基準(maxVal)を人間側だけに合わせ
+  // 直せるようにする。
+  function buildVisitTrendSvg(daily, showBot) {
     const W = 680, H = 220, padL = 40, padR = 14, padT = 10, padB = 24;
     const innerW = W - padL - padR, innerH = H - padT - padB;
     const n = daily.length;
     const maxVal = Math.max(
-      1, ...daily.map((d) => Math.max(d.human_total, d.bot_total)));
+      1, ...daily.map((d) =>
+        showBot ? Math.max(d.human_total, d.bot_total) : d.human_total));
     const magnitude = Math.pow(10, Math.floor(Math.log10(maxVal || 1)));
     const niceMax = [1, 2, 5, 10].map((s) => s * magnitude)
       .find((v) => maxVal <= v) || 10 * magnitude;
@@ -5435,19 +5443,20 @@ export async function admin(root) {
 
     return `
       <svg viewBox="0 0 ${W} ${H}" class="visit-trend-svg" role="img"
-        aria-label="訪問者数(人間/クローラー)の日別推移グラフ">
+        aria-label="訪問者数(人間${
+          showBot ? "/クローラー" : ""})の日別推移グラフ">
         ${gridLines}
         ${xLabels}
-        <path d="${linePath("bot_total")}" fill="none"
+        ${showBot ? `<path d="${linePath("bot_total")}" fill="none"
           stroke="var(--vt-bot)" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" />
+          stroke-linecap="round" stroke-linejoin="round" />` : ""}
         <path d="${linePath("human_total")}" fill="none"
           stroke="var(--vt-human)" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" />
-        ${dots("bot_total", "vt-dot-bot")}
+        ${showBot ? dots("bot_total", "vt-dot-bot") : ""}
         ${dots("human_total", "vt-dot-human")}
         ${last ? endLabel(last.human_total, -8) : ""}
-        ${last ? endLabel(last.bot_total, 16) : ""}
+        ${last && showBot ? endLabel(last.bot_total, 16) : ""}
         <line class="vt-crosshair" x1="-100" x2="-100"
           y1="${padT}" y2="${H - padB}" stroke="var(--line)"
           stroke-width="1" />
@@ -5516,6 +5525,7 @@ export async function admin(root) {
       return;
     }
     const cumulative = root.querySelector("#visitTrendCumulative").checked;
+    const showBot = root.querySelector("#visitTrendShowBot").checked;
     const daily = cumulative ? toCumulativeVisits(rawDaily) : rawDaily;
     const s = res.summary || {};
     const summaryHtml = `<div class="grid cols-4 mt">
@@ -5531,8 +5541,8 @@ export async function admin(root) {
     const legendHtml = `<div class="row mt visit-trend-legend">
       <span class="vt-legend-item"><span class="vt-swatch vt-dot-human">
         </span>人間</span>
-      <span class="vt-legend-item"><span class="vt-swatch vt-dot-bot">
-        </span>クローラー</span>
+      ${showBot ? `<span class="vt-legend-item">
+        <span class="vt-swatch vt-dot-bot"></span>クローラー</span>` : ""}
     </div>`;
     const rowsHtml = daily.slice().reverse().map((d) => `<tr>
       <td class="muted">${escapeHtml(d.date)}</td>
@@ -5541,7 +5551,7 @@ export async function admin(root) {
     </tr>`).join("");
     wrap.innerHTML = `${summaryHtml}${legendHtml}
       <div class="visit-trend-wrap mt">
-        ${buildVisitTrendSvg(daily)}
+        ${buildVisitTrendSvg(daily, showBot)}
         <div class="vt-tooltip" style="display:none"></div>
       </div>
       <table class="mt"><thead><tr>
@@ -5563,6 +5573,8 @@ export async function admin(root) {
   root.querySelector("#visitTrendReload")
     .addEventListener("click", loadVisitTrend);
   root.querySelector("#visitTrendCumulative")
+    .addEventListener("change", loadVisitTrend);
+  root.querySelector("#visitTrendShowBot")
     .addEventListener("change", loadVisitTrend);
 
   async function runAiUsageSearch() {
