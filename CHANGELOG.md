@@ -59,7 +59,7 @@ Fable監査によるセキュリティ強化と、管理画面のログ表示の
   の`FIXED_MONTHLY_SERVER_COST_JPY`(VPS代¥1,958/月をn8n/ecopy/
   homeassistant等との相乗り実態に合わせ1/3按分)・
   `FIXED_MONTHLY_AD_COST_JPY`(¥3,000/月)で管理、金額が変わったら
-  都度更新が必要。
+  都度更新が必要。(commit `ac7084d`)
 
 ## ver1.4.0 (2026-09-07デプロイ済み・ユーザー指示によりV桁を上げた大きな追加)
 
