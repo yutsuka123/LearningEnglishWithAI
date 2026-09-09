@@ -1887,6 +1887,15 @@ _TABLE_GROUPS = {
 COST_REPORT_LOSS_MARGIN_PCT = 0.0
 COST_REPORT_WARN_MARGIN_PCT = 20.0
 
+# 実収支(pl-report)用の固定費(2026-09-09新設・ユーザー指示の実額)。
+# サーバー代はdocs/COST_ESTIMATE.md記載の月額¥1,958(n8n等との相乗り按分
+# 込み)を、さらに他プロジェクト(n8n/ecopy/homeassistant等)との相乗り
+# 実態に合わせて1/3按分。広告費はGoogle Ads(nyangailabアカウント)の
+# 日予算¥100×30日。いずれも「月額」なので、pl-reportの集計期間(days)に
+# 応じて日割りする。
+FIXED_MONTHLY_SERVER_COST_JPY = 1958.0 / 3
+FIXED_MONTHLY_AD_COST_JPY = 3000.0
+
 
 def _cost_report_feature_bucket(feature: str) -> str:
     """crossword_hint/crossword_hint_reviewは1ゲーム単位でまとめて
@@ -2004,6 +2013,67 @@ def admin_cost_report(days: int = 30):
         "by_feature": by_feature,
         "by_user": by_user,
         "total": _cost_report_margin(total_cost, total_charged),
+    }
+
+
+@router.get("/admin/pl-report")
+def admin_pl_report(days: int = 30):
+    """実収支(実際に入金された円 - 実コスト)レポート(2026-09-09新設)。
+    上の`cost-report`は内部ポイント経済の粗利チェック(AI原価 vs ポイント
+    控除額)であって実際の円の売上/損益ではないため、別途こちらを新設した。
+    売上はBASE注文(`base_orders`、status='cancelled'以外は入金済みとみなす。
+    BASE側で決済が完了してから当システムに注文が記録されるため)と
+    PayPay決済(`paypay_payments`、status='COMPLETED'のみ)の合計。コストは
+    AI原価(`ai_usage.cost_usd`を為替換算)に、サーバー代・広告費等の固定費
+    (`FIXED_MONTHLY_*_JPY`、月額を集計期間の日数で日割り)を加えたもの。"""
+    _require_admin()
+    days = max(1, min(days, 365))
+    since = f"-{days} days"
+    rate = load_settings().usd_jpy_rate
+
+    with db() as conn:
+        base_revenue = conn.execute(
+            "SELECT COALESCE(SUM(amount_jpy), 0) FROM base_orders "
+            "WHERE status != 'cancelled' "
+            "AND detected_at >= datetime('now', ?)",
+            (since,),
+        ).fetchone()[0]
+        paypay_revenue = conn.execute(
+            "SELECT COALESCE(SUM(amount_jpy), 0) FROM paypay_payments "
+            "WHERE status = 'COMPLETED' "
+            "AND created_at >= datetime('now', ?)",
+            (since,),
+        ).fetchone()[0]
+        ai_cost_usd = conn.execute(
+            "SELECT COALESCE(SUM(cost_usd), 0) FROM ai_usage "
+            "WHERE created_at >= datetime('now', ?)",
+            (since,),
+        ).fetchone()[0]
+
+    revenue_jpy = int(base_revenue) + int(paypay_revenue)
+    ai_cost_jpy = (ai_cost_usd or 0.0) * rate
+    day_ratio = days / 30.0
+    server_cost_jpy = FIXED_MONTHLY_SERVER_COST_JPY * day_ratio
+    ads_cost_jpy = FIXED_MONTHLY_AD_COST_JPY * day_ratio
+    fixed_cost_jpy = server_cost_jpy + ads_cost_jpy
+    total_cost_jpy = ai_cost_jpy + fixed_cost_jpy
+    profit_jpy = revenue_jpy - total_cost_jpy
+
+    return {
+        "days": days,
+        "revenue": {
+            "base_jpy": int(base_revenue),
+            "paypay_jpy": int(paypay_revenue),
+            "total_jpy": revenue_jpy,
+        },
+        "cost": {
+            "ai_jpy": round(ai_cost_jpy, 2),
+            "server_jpy": round(server_cost_jpy, 2),
+            "ads_jpy": round(ads_cost_jpy, 2),
+            "total_jpy": round(total_cost_jpy, 2),
+        },
+        "profit_jpy": round(profit_jpy, 2),
+        "is_loss": profit_jpy < 0,
     }
 
 

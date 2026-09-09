@@ -4132,6 +4132,7 @@ export async function admin(root) {
     ["user-manage", "👤 ユーザー別管理"],
     ["user-usage", "📊 ユーザー別使用状況"],
     ["cost-report", "💰 コスト管理"],
+    ["pl-report", "💹 実収支"],
     ["logs", `📜 ログ`],
     ["inquiries", `📮 問い合わせ対応${pendingInquiries ? ` (${pendingInquiries})` : ""}`],
     ["charge-keys", `🧾 購入チャージキー対応${pendingOrders ? ` (${pendingOrders})` : ""}`],
@@ -4561,6 +4562,30 @@ export async function admin(root) {
           </label>
         </div>
         <div id="costReportWrap" class="mt"><p class="muted">読み込み中…</p></div>
+      </div>
+    </div>
+
+    <div class="admin-sec" data-sec="pl-report" style="display:none">
+      <div class="card">
+        <h2>💹 実収支(実際の売上-実際のコスト)</h2>
+        <p class="muted">BASE注文・PayPay決済の実入金額(円)から、AI原価
+          (為替換算)とサーバー代・広告費などの固定費(月額を集計期間で
+          日割り)を差し引いた、本当の損益です。上の「コスト管理」は
+          内部ポイント経済の粗利チェック(ポイント付与額とAI原価の
+          突き合わせ)であり、これとは別の指標です。固定費の金額は
+          `app/routers/system.py`の`FIXED_MONTHLY_*_JPY`で管理していて、
+          金額が変わったら都度更新が必要です。</p>
+        <div class="row" style="align-items:center">
+          <label>集計期間:
+            <select id="plReportDays">
+              <option value="7">直近7日</option>
+              <option value="30" selected>直近30日</option>
+              <option value="90">直近90日</option>
+              <option value="365">直近1年</option>
+            </select>
+          </label>
+        </div>
+        <div id="plReportWrap" class="mt"><p class="muted">読み込み中…</p></div>
       </div>
     </div>
 
@@ -5838,6 +5863,51 @@ export async function admin(root) {
     });
   root.querySelector("#costReportDays")
     ?.addEventListener("change", loadCostReport);
+
+  // --- 実収支(実売上-実コスト)レポート(2026-09-09新設) ---------------
+  async function loadPLReport() {
+    const wrap = root.querySelector("#plReportWrap");
+    if (!wrap) return;
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    const days = root.querySelector("#plReportDays")?.value || 30;
+    try {
+      const res = await api.get(`/api/system/admin/pl-report?days=${days}`);
+      const profitBadge = res.is_loss
+        ? `<span class="badge-bad">赤字</span>`
+        : `<span class="badge-ok">黒字</span>`;
+      wrap.innerHTML = `
+        <div class="grid cols-4 mt">
+          <div class="stat"><div class="num">¥${res.revenue.total_jpy.toLocaleString()}</div>
+            <div class="lbl">売上(BASE+PayPay)</div></div>
+          <div class="stat"><div class="num">¥${res.cost.total_jpy.toLocaleString()}</div>
+            <div class="lbl">コスト合計</div></div>
+          <div class="stat"><div class="num">¥${res.profit_jpy.toLocaleString()}</div>
+            <div class="lbl">損益 ${profitBadge}</div></div>
+          <div class="stat"><div class="num">${res.days}日</div>
+            <div class="lbl">集計期間</div></div>
+        </div>
+        <h3 class="mt">売上の内訳</h3>
+        <table><tbody>
+          <tr><td>BASE注文</td><td>¥${res.revenue.base_jpy.toLocaleString()}</td></tr>
+          <tr><td>PayPay決済</td><td>¥${res.revenue.paypay_jpy.toLocaleString()}</td></tr>
+        </tbody></table>
+        <h3 class="mt">コストの内訳</h3>
+        <table><tbody>
+          <tr><td>AI原価(円換算)</td><td>¥${res.cost.ai_jpy.toLocaleString()}</td></tr>
+          <tr><td>サーバー代(日割り)</td><td>¥${res.cost.server_jpy.toLocaleString()}</td></tr>
+          <tr><td>広告費(日割り)</td><td>¥${res.cost.ads_jpy.toLocaleString()}</td></tr>
+        </tbody></table>`;
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  let plReportLoaded = false;
+  root.querySelector('.step-chip[data-sec="pl-report"]')
+    ?.addEventListener("click", () => {
+      if (!plReportLoaded) { plReportLoaded = true; loadPLReport(); }
+    });
+  root.querySelector("#plReportDays")
+    ?.addEventListener("change", loadPLReport);
 
   root.querySelectorAll(".iq-done").forEach((btn) => {
     btn.addEventListener("click", async () => {
