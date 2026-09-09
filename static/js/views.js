@@ -687,6 +687,14 @@ function speedOpts(mode) {
 // 「再生できるのに🔒が出るのは変・再生できないなら🔒でよい」という指摘
 // (2026-08-13)に沿い、ゲスト一律ではなく実際の可否(管理者=常に可・
 // ゲスト=常に不可・それ以外は残高の有無)で判定する。
+// 単語/フレーズ一覧の操作セルで「うろ覚え」と「覚えた/卒業」を別行に
+// 分けるための0サイズの改行用要素。ボタン自体にflex-basis:100%を付けると
+// ボタンの見た目まで幅いっぱいに伸びて他のボタンよりサイズが大きく見えて
+// しまう(2026-09-09ユーザー指摘)ため、ボタンとは別に挟んで改行だけ起こす。
+function opsBreak() {
+  return el(`<span class="ops-break"></span>`);
+}
+
 function voiceButtonsItem(itemType, id, kind, fallback, getMode, isFreeRange) {
   const locked = isFreeRange === false && !state.hasAiBalance;
   const free = isFreeRange === true;
@@ -1950,7 +1958,8 @@ export async function vocab(root) {
         <th>再生${infoIcon("voice-icon-legend",
           "🆓誰でも無料で再生できます。🔊ログイン/チャージ等で再生できます。"
           + "🔒現在の状態では再生できません(ログインまたはチャージが必要な"
-          + "場合があります)。")}</th><th>英語</th><th>日本語</th><th>Lv</th>
+          + "場合があります)。")}</th><th>英語</th><th>日本語</th><th>詳細</th>
+        <th>Lv</th>
         <th>分野</th><th>習熟度</th><th>正答率</th><th>操作</th></tr></thead>
         <tbody id="rows"></tbody></table>
       <div id="pager" class="mt"></div>
@@ -1983,6 +1992,7 @@ export async function vocab(root) {
         <td></td>
         <td data-label="英語">${escapeHtml(w.english)}</td>
         <td data-label="日本語">${escapeHtml(w.japanese)}</td>
+        <td><div class="detail-cell"></div></td>
         <td class="muted pair2" data-label="Lv">${w.level || ""}</td>
         <td class="pair2" data-label="分野">${w.domain
           ? `<span class="pill">${escapeHtml(w.domain)}</span>` : ""}</td>
@@ -1998,8 +2008,11 @@ export async function vocab(root) {
         () => root.querySelector("#wSpeed").value, w.is_free_range));
       const ops = tr.querySelector("td:last-child .ops-cell");
       const mc = tr.querySelector("[data-mc]");
+      // 「詳細」は押し間違い防止のため他の操作ボタンから離し、日本語列の
+      // すぐ横に専用列として表示する(2026-09-09ユーザー要望)。
       const ex = el(`<button class="btn good">詳細</button>`);
       ex.addEventListener("click", () => showWordDetail(w));
+      tr.querySelector(".detail-cell").appendChild(ex);
       let onChange = () => {};
       const { btn: clearBtn, paint: paintClear } =
         clearButton("/api/words", w, () => onChange());
@@ -2007,7 +2020,7 @@ export async function vocab(root) {
       const vague = vagueButton("/api/words", w, onChange);
       const known = knownButton("/api/words", w, onChange);
       const perfect = perfectButton("/api/words", w, onChange);
-      ops.append(ex, vague, known, perfect, clearBtn);
+      ops.append(vague, opsBreak(), known, perfect, clearBtn);
       rowsBody.appendChild(tr);
     });
   };
@@ -2196,7 +2209,7 @@ export async function phrases(root) {
         <th>再生${infoIcon("voice-icon-legend",
           "🆓誰でも無料で再生できます。🔊ログイン/チャージ等で再生できます。"
           + "🔒現在の状態では再生できません(ログインまたはチャージが必要な"
-          + "場合があります)。")}</th><th>英語</th><th>日本語</th>
+          + "場合があります)。")}</th><th>英語</th><th>日本語</th><th>詳細</th>
         <th>シーン</th><th>習熟度</th><th>操作</th></tr></thead>
         <tbody id="rows"></tbody></table>
       <div id="pager" class="mt"></div>
@@ -2228,6 +2241,7 @@ export async function phrases(root) {
         <td></td>
         <td data-label="英語">${escapeHtml(p.english)}</td>
         <td data-label="日本語">${escapeHtml(p.japanese)}</td>
+        <td><div class="detail-cell"></div></td>
         <td data-label="シーン"><span class="pill">
           ${escapeHtml(p.scene || "")}</span></td>
         <td data-mc="1" data-label="習熟度">${masteryCell(p)}</td>
@@ -2240,6 +2254,7 @@ export async function phrases(root) {
       const mc = tr.querySelector("[data-mc]");
       const det = el(`<button class="btn good">詳細</button>`);
       det.addEventListener("click", () => showPhraseDetail(p));
+      tr.querySelector(".detail-cell").appendChild(det);
       let onChange = () => {};
       const { btn: clearBtn, paint: paintClear } =
         clearButton("/api/phrases", p, () => onChange());
@@ -2247,7 +2262,7 @@ export async function phrases(root) {
       const vague = vagueButton("/api/phrases", p, onChange);
       const known = knownButton("/api/phrases", p, onChange);
       const perfect = perfectButton("/api/phrases", p, onChange);
-      ops.append(det, vague, known, perfect, clearBtn);
+      ops.append(vague, opsBreak(), known, perfect, clearBtn);
       rows.appendChild(tr);
     });
   };
@@ -4583,7 +4598,7 @@ export async function admin(root) {
           日割り)を差し引いた、本当の損益です。上の「コスト管理」は
           内部ポイント経済の粗利チェック(ポイント付与額とAI原価の
           突き合わせ)であり、これとは別の指標です。固定費の金額は
-          `app/routers/system.py`の`FIXED_MONTHLY_*_JPY`で管理していて、
+          app/routers/system.pyのFIXED_MONTHLY_*_JPYで管理していて、
           金額が変わったら都度更新が必要です。</p>
         <div class="row" style="align-items:center">
           <label>集計期間:

@@ -346,22 +346,35 @@ body.sidebar-collapsed .topbar-brand { display: inline-flex; font-size: 15px; }
   table.rtable.rtable-words td:nth-child(1) {               /* 再生 */
     order: 3; grid-column: span 1;
   }
-  table.rtable.rtable-words td:nth-child(8) {               /* 操作 */
-    order: 4; grid-column: span 3;
+  /* 「詳細」は専用列(2026-09-09〜)。押し間違い防止のため他の操作ボタン
+     (うろ覚え/覚えた/卒業等)とは分け、再生の隣に置く。 */
+  table.rtable.rtable-words td:nth-child(4) {               /* 詳細 */
+    order: 4; grid-column: span 1;
   }
-  table.rtable.rtable-words td:nth-child(4) { order: 5; }  /* Lv */
-  table.rtable.rtable-words td:nth-child(5) { order: 6; }  /* 分野 */
-  table.rtable.rtable-words td:nth-child(6) { order: 7; }  /* 習熟度 */
-  table.rtable.rtable-words td:nth-child(7) { order: 8; }  /* 正答率 */
-  /* 操作ボタン群(詳細/うろ覚え/覚えた/削除)は1行に収まらない場合、
+  table.rtable.rtable-words td:nth-child(9) {               /* 操作 */
+    order: 5; grid-column: span 2;
+  }
+  table.rtable.rtable-words td:nth-child(5) { order: 6; }  /* Lv */
+  table.rtable.rtable-words td:nth-child(6) { order: 7; }  /* 分野 */
+  table.rtable.rtable-words td:nth-child(7) { order: 8; }  /* 習熟度 */
+  table.rtable.rtable-words td:nth-child(8) { order: 9; }  /* 正答率 */
+  /* 操作ボタン群(うろ覚え/覚えた/卒業/削除)は1行に収まらない場合、
      nowrapだと削除ボタンがカード枠の外へはみ出す不具合になっていた
      （2026-08-08実機報告で発覚）ので折り返し可に戻し、削除ボタンの
      余白も詰めて1行に収まりやすくする。 */
-  table.rtable.rtable-words td:nth-child(8) .ops-cell {
+  table.rtable.rtable-words td:nth-child(9) .ops-cell {
     flex-wrap: wrap; justify-content: flex-end;
   }
-  table.rtable.rtable-words td:nth-child(8) .ops-cell .del-btn {
+  table.rtable.rtable-words td:nth-child(9) .ops-cell .del-btn {
     margin-left: 6px;
+  }
+  /* 「うろ覚え」を「覚えた/卒業」と別の行に離し、押し間違いを防ぐ
+     (2026-09-09ユーザー要望)。0サイズの.ops-break要素(JS側で挿入)が
+     幅100%を取ることで改行させ、うろ覚えボタン自体は他のボタンと同じ
+     自然なサイズのまま(ボタンに直接flex-basis:100%を付けるとボタンの
+     見た目まで伸びて大きく見えてしまう、というユーザー指摘への対応)。 */
+  table.rtable.rtable-words td:nth-child(9) .ops-cell .ops-break {
+    flex: 1 0 100%;
   }
   /* 英語/日本語: ラベルを外し、本文を大きく・太く・左揃えにして
      操作ボタンより先に目に入るようにする。 */
@@ -444,6 +457,56 @@ th { color: var(--muted); font-weight: 600; }
 /* ダークモードでは表ヘッダー(Lv/分野/習熟度等)が薄すぎて読みにくいとの
    指摘(2026-08-13)により、ダークモード限定で本文と同じ明るさに強調。 */
 :root:not([data-theme="light"]) th { color: var(--text); }
+
+/* 単語/フレーズ一覧(表・タブレット/PC幅): 主役である英語・日本語列が
+   狭く読みにくいとの指摘(2026-09-09ユーザー要望)。再生(男声/女声)・
+   詳細・操作(うろ覚え/覚えた/卒業等)の列を縦積み・幅縮小にし、浮いた分を
+   英語・日本語列(幅指定なし=残り幅を均等に2分)へ回す。「詳細」は他の
+   操作ボタンから離れた専用列(日本語のすぐ横=4列目)にして押し間違いを
+   防ぐ(2026-09-09ユーザー要望・単語/フレーズ両テーブルで4列目に統一)。
+   モバイル幅(max-width:760px、上のtable.rtable用ルール)はカード型に
+   変わるため対象外。 */
+@media (min-width: 761px) {
+  table.rtable { table-layout: fixed; }
+  table.rtable .voice-cell { flex-direction: column; gap: 6px; }
+  /* 操作ボタン群(うろ覚え/覚えた/卒業/クリア)を縦積みに。うろ覚えと
+     覚えた/卒業の間は0サイズの.ops-break要素(JS側で挿入)で改行させる
+     (押し間違い防止・2026-09-09ユーザー要望)。ボタン自体にflex-basis:
+     100%を付けるとボタンの見た目まで伸びて他より大きく見えてしまう
+     ため、うろ覚えボタン自体は他と同じ自然なサイズのまま。行間・列間の
+     余白も少し広げる(この列内に限定し、他のops-cell(履歴パネル等)には
+     波及させない)。 */
+  table.rtable .ops-cell { flex-wrap: wrap; white-space: normal; gap: 6px; }
+  table.rtable .ops-cell .ops-break { flex: 1 0 100%; }
+
+  table.rtable th:nth-child(1), table.rtable td:nth-child(1) {
+    width: 50px; padding-left: 4px; padding-right: 4px;
+  }
+  table.rtable th:nth-child(4), table.rtable td:nth-child(4) {
+    width: 70px; padding-left: 4px; padding-right: 4px;
+  }
+  table.rtable th:last-child, table.rtable td:last-child {
+    width: 150px; padding-left: 4px; padding-right: 4px;
+  }
+
+  table.rtable-words th:nth-child(5), table.rtable-words td:nth-child(5) {
+    width: 46px;  /* Lv */
+  }
+  table.rtable-words th:nth-child(6), table.rtable-words td:nth-child(6) {
+    width: 90px;  /* 分野 */
+  }
+  /* 習熟度: 従来幅(110px)の70%(2026-09-09ユーザー要望)。 */
+  table.rtable-words th:nth-child(7), table.rtable-words td:nth-child(7) {
+    width: 77px;  /* 習熟度 */
+  }
+  table.rtable-words th:nth-child(8), table.rtable-words td:nth-child(8) {
+    width: 56px;  /* 正答率 */
+  }
+  table.rtable:not(.rtable-words) th:nth-child(5),
+  table.rtable:not(.rtable-words) td:nth-child(5) { width: 90px; }  /* シーン */
+  table.rtable:not(.rtable-words) th:nth-child(6),
+  table.rtable:not(.rtable-words) td:nth-child(6) { width: 77px; } /* 習熟度 */
+}
 
 .pill {
   display: inline-block; padding: 2px 9px; border-radius: 12px;
@@ -635,10 +698,20 @@ th { color: var(--muted); font-weight: 600; }
   white-space: nowrap;
 }
 .ops-cell .btn { padding: 2px 8px; }
+/* うろ覚え/覚えた等の間で改行だけ起こす0サイズのスペーサー
+   (2026-09-09〜・詳細はopsBreak()のコメント参照)。空要素でも行の高さを
+   持ってしまわないようheight:0で潰す。 */
+.ops-break { height: 0; }
+/* 「詳細」専用列(2026-09-09〜)のボタンも他の操作ボタンと同じ
+   コンパクトなpaddingに揃える(基本の.btnは9px 16pxで狭い列には大きすぎる)。 */
+.detail-cell .btn { padding: 2px 8px; }
 /* 「詳細」の直後にある「うろ覚え」だけ少し離す（押し間違え防止・
    2026-08-23ユーザー指摘。他のボタン間隔(gap:4px)は改行が増えないよう
-   そのまま）。 */
+   そのまま）。単語/フレーズ一覧の表(table.rtable)では詳細ボタン自体を
+   別行に分離した(上記参照・2026-09-09)ため、うろ覚えが行の先頭に来て
+   この余白が不要な段差に見えてしまう。表内だけ打ち消す。 */
 .ops-cell .vague-btn { margin-left: 1em; }
+table.rtable .ops-cell .vague-btn { margin-left: 0; }
 
 /* 覚えたボタン: 青背景。 */
 .btn.blue { background: #3b82f6; color: #fff; }
