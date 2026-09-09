@@ -144,6 +144,11 @@ VPS の `~/eigo/` へ `rsync --delete` した際、ソース側に存在しな�
     には実値は一切置かない**（本項目の通りbusiness_plan側のみに保管）。
     値を更新したら都度手動で同期すること（詳細・復元手順は
     `products/study_nyangailab/secrets_backup/README.md`参照）。
+- **関連する別プロダクト**: `nyangai.lab`宣伝アカウント（Instagram/X）は
+  元々このアプリ用ではなく、別のAndroidアプリ紹介サイト
+  （`nyangailab.com`）の宣伝用に作られたものを流用している。そちらの
+  サイト・関連リポジトリ名・構成の詳細は`business_plan`の
+  `products/nyangailab_android/README.md`を参照。
 
 ## 💻 作業機が macOS / Windows の2系統になった（2026-08-21〜）
 
