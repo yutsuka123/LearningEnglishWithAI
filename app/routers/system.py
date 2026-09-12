@@ -51,12 +51,23 @@ def _user_filter_sql(
     - include_invited=False: 「メール以外の招待ユーザー」= 自己サイン
       アップ(email列あり)ではない従来ユーザーを除外
     - include_test=False: 開発用テストアカウント(is_test=1)を除外
+
+    2026-09-12修正: 未ログインの匿名アクセスはuser_idがNULLになる訳では
+    なく、起動時に一度だけ作られる共有の「ゲスト疑似ユーザー」行
+    (auth.GUEST_USERNAME・email=''・role='user')が入る
+    (app/database.py の usage_events 定義コメント参照)。そのため
+    include_invited=False時の`email != ''`条件がゲスト由来の行(＝実際の
+    匿名訪問者のイベントの大半)を「メール未設定の招待ユーザー」と誤認して
+    除外し、管理画面の日別/時間帯別集計等がほぼ空になる不具合があった。
+    ゲスト行は`id IS NULL`と同様に常にフィルタ対象外(＝含める)とする。
     """
     conds = []
     if not include_admin:
         conds.append(f"({alias}.role IS NULL OR {alias}.role != 'admin')")
     if not include_invited:
-        conds.append(f"({alias}.id IS NULL OR {alias}.email != '')")
+        conds.append(
+            f"({alias}.id IS NULL OR {alias}.username = "
+            f"'{auth.GUEST_USERNAME}' OR {alias}.email != '')")
     if not include_test:
         conds.append(f"({alias}.id IS NULL OR {alias}.is_test = 0)")
     return " AND ".join(conds) if conds else "1=1"
@@ -100,6 +111,11 @@ def admin_registrants(
             "survey_age_group, survey_gender, survey_purpose, "
             "survey_referral, survey_interest_areas, survey_free_text "
             f"FROM users u WHERE {filter_sql} "
+            # ゲスト疑似ユーザー行そのものは登録者ではないので常に除外
+            # (2026-09-12・_user_filter_sqlはinclude_invited=Falseでも
+            # usage_events集計向けにゲストを常に含める仕様に変更したため、
+            # ここは別途明示的に弾く)。
+            f"AND u.username != '{auth.GUEST_USERNAME}' "
             "ORDER BY created_at DESC LIMIT ?",
             (limit,),
         ).fetchall()
@@ -133,7 +149,8 @@ def admin_survey_summary(
             "survey_occupation_detail, survey_age_group, survey_gender, "
             "survey_purpose, survey_referral, survey_interest_areas, "
             "survey_free_text "
-            f"FROM users u WHERE {filter_sql}"
+            f"FROM users u WHERE {filter_sql} "
+            f"AND u.username != '{auth.GUEST_USERNAME}'"
         ).fetchall()
     total = len(rows)
     answered = 0
@@ -863,7 +880,11 @@ def admin_overview(
             "   SELECT MAX(created_at) FROM phrase_attempts "
             "    WHERE user_id=u.id"
             "  )) last_studied "
-            f"FROM users u WHERE {filter_sql} ORDER BY u.id"
+            f"FROM users u WHERE {filter_sql} "
+            # ゲスト疑似ユーザー行は実在の利用者ではないので常に除外
+            # (2026-09-12・admin_registrants と同じ理由。詳細は
+            # _user_filter_sql のdocstring参照)。
+            f"AND u.username != '{auth.GUEST_USERNAME}' ORDER BY u.id"
         ).fetchall()
     users = []
     for r in rows:
@@ -1707,7 +1728,8 @@ def admin_usage_analytics(
         # 分解してから件数を数える）。集計期間はusers.created_atで絞る。
         referral_text_rows = conn.execute(
             "SELECT survey_referral FROM users u "
-            "WHERE survey_referral != '' AND username != 'guest' "
+            "WHERE survey_referral != '' "
+            f"AND username != '{auth.GUEST_USERNAME}' "
             f"AND created_at >= datetime('now', ?) AND {filter_sql}",
             (since,),
         ).fetchall()
@@ -1744,11 +1766,15 @@ def admin_usage_analytics(
         ).fetchall()
 
         # 日別の新規登録数（2026-08-19・ユーザー要望。ゲスト疑似ユーザー
-        # は起動時に一度だけ作られる行なので実登録者数を歪めないよう除外）。
+        # は起動時に一度だけ作られる行なので実登録者数を歪めないよう除外
+        # 2026-09-12・除外条件が実際のユーザー名'__guest__'ではなく
+        # 'guest'という誤った文字列と比較しており機能していなかったのを
+        # 修正)。
         signup_rows = conn.execute(
             "SELECT substr(datetime(created_at, '+9 hours'), 1, 10) AS date, "
             "COUNT(*) AS signups FROM users u "
-            "WHERE created_at >= datetime('now', ?) AND username != 'guest' "
+            "WHERE created_at >= datetime('now', ?) "
+            f"AND username != '{auth.GUEST_USERNAME}' "
             f"AND {filter_sql} "
             "GROUP BY date ORDER BY date",
             (since,),

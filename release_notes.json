@@ -15,6 +15,19 @@
  ],
  "versions": [
   {
+   "version": "ver1.4.2",
+   "date": "2026-09-12",
+   "title": "広告タグ設置と利用状況分析の集計バグ修正",
+   "public": [
+    "サイトの利用状況を正しく把握できるよう、管理画面の集計処理を修正しました。ご利用中の操作方法に変更はありません。"
+   ],
+   "admin": [
+    "Google広告キャンペーン(nyangai_english_20260909)の診断で「Googleタグ未設定」と警告が出ていたため、gtag.js(コンバージョンID AW-17457232912)をstatic/index.html・about.html・login.html・terms.html・privacy.htmlの5ページ全てに設置。",
+    "バグ修正: 管理画面「利用状況分析」の日別/時間帯別集計が実態と大きく乖離していた原因を特定。未ログインの匿名アクセスはusage_events.user_idがNULLではなく共有の「ゲスト疑似ユーザー」行(email='')が入る仕様のため、_user_filter_sql(app/routers/system.py)のinclude_invited=False(既定)条件がゲスト由来の行を「メール未設定の招待ユーザー」と誤認して除外し、直近30日でusage_events 13,309件中13,268件が集計から消えていた。2026-09-08時点では「フィルタが厳しいだけで集計ロジックは正しい」と誤診断していたが実際はバグだった。ゲスト行をid IS NULLと同様に常時含める形に修正(フィルタ後の件数は36件→1,731件に回復)。",
+    "副作用対応: 上記修正でゲスト疑似ユーザー行が/admin/registrants・/admin/survey-summary・/admin/overviewに表示されうる状態になったため、3箇所に明示的な除外条件を追加。あわせてadmin_usage_analyticsの日別新規登録数(signup_rows)・アンケート集計(referral_text_rows)のゲスト除外条件が実際のユーザー名'__guest__'ではなく'guest'という誤った文字列と比較しており機能していなかった不具合も修正。"
+   ]
+  },
+  {
    "version": "ver1.4.1",
    "date": "2026-09-09",
    "title": "セキュリティ強化と管理画面のログ表示改善",
