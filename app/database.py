@@ -950,6 +950,11 @@ def _migrate(conn: sqlite3.Connection) -> None:
              "fail_reason TEXT DEFAULT ''")
     _add_col(conn, "landing_visits", "is_disposable_email",
              "is_disposable_email INTEGER DEFAULT 0")
+    # ブラウザのAccept-Languageヘッダー(2026-09-13・ユーザー要望「ブラウザ/
+    # OSの言語設定を拾って集計に生かしたい」)。非日本語話者からのアクセス
+    # 有無を確認する目的。過去分は遡って取得できないため空文字のまま。
+    _add_col(conn, "landing_visits", "accept_language",
+             "accept_language TEXT DEFAULT ''")
     # paypay_actionsは元々admin専用テストツールの監査ログだったが、
     # 実課金導線(paypay_charge.py)の追加でユーザー本人の操作も記録する
     # ようになったため、admin_user_idとは別にuser_idを追加(2026-09-01)。

@@ -46,12 +46,13 @@ def _record_signup_attempt(
             conn.execute(
                 "INSERT INTO landing_visits "
                 "(ip, kind, success, user_agent, guest_sid, fail_reason, "
-                " is_disposable_email) "
-                "VALUES (?, 'signup', ?, ?, ?, ?, ?)",
+                " is_disposable_email, accept_language) "
+                "VALUES (?, 'signup', ?, ?, ?, ?, ?, ?)",
                 (ip, 1 if success else 0,
                  request.headers.get("user-agent", "")[:300],
                  auth.current_guest_sid(), fail_reason,
-                 1 if is_disposable_email else 0),
+                 1 if is_disposable_email else 0,
+                 request.headers.get("accept-language", "")[:100]),
             )
         background_tasks.add_task(geoip.enrich_ip, ip)
     except Exception:

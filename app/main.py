@@ -226,11 +226,14 @@ async def _auth_context(request, call_next):
                     with db() as conn:
                         conn.execute(
                             "INSERT INTO landing_visits "
-                            "(ip, path, user_agent, guest_sid) "
-                            "VALUES (?, ?, ?, ?)",
+                            "(ip, path, user_agent, guest_sid, "
+                            " accept_language) "
+                            "VALUES (?, ?, ?, ?, ?)",
                             (client_ip, path,
                              request.headers.get("user-agent", "")[:300],
-                             gsid),
+                             gsid,
+                             request.headers.get(
+                                 "accept-language", "")[:100]),
                         )
                     # 国・場所・接続元組織名の非同期エンリッチ（未キャッ
                     # シュのIPのみ実際に外部API呼び出しが走る・失敗しても

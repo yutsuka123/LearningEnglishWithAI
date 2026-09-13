@@ -1096,7 +1096,9 @@ def admin_anon_access(days: int = 30, limit: int = 500):
             " MAX(CASE WHEN kind='signup' THEN 1 ELSE 0 END) "
             "     AS signup_attempted, "
             " MAX(CASE WHEN kind='signup' AND success=1 THEN 1 ELSE 0 END) "
-            "     AS signup_succeeded "
+            "     AS signup_succeeded, "
+            " MAX(CASE WHEN accept_language != '' THEN accept_language "
+            "     END) AS accept_language "
             "FROM landing_visits "
             "WHERE created_at >= datetime('now', ?) AND ip != '' "
             "GROUP BY ip ORDER BY last_seen DESC",
@@ -1105,6 +1107,20 @@ def admin_anon_access(days: int = 30, limit: int = 500):
         geo_rows = conn.execute(
             "SELECT ip, country, region, city, org, hostname "
             "FROM ip_geo_cache",
+        ).fetchall()
+        # 「英単語ページを開いたか」「音声再生を試みたか」(2026-09-13
+        # ユーザー要望・登録ファネル同様の2シグナルをIP単位の明細にも追加)。
+        # usage_eventsはip列を持つのでguest_sid無しでもIP単位に集計できる。
+        usage_rows = conn.execute(
+            "SELECT ip, "
+            " MAX(CASE WHEN kind='page' AND category='word_detail' "
+            "     THEN 1 ELSE 0 END) AS viewed_word, "
+            " MAX(CASE WHEN kind='play' AND category='word' "
+            "     THEN 1 ELSE 0 END) AS tried_audio "
+            "FROM usage_events "
+            "WHERE created_at >= datetime('now', ?) AND ip != '' "
+            "GROUP BY ip",
+            (since,),
         ).fetchall()
         # 訪問者種別(※1〜※4)の判定材料。1つのIPが複数のUAを名乗ることが
         # あるので DISTINCT で全部拾う（GROUP_CONCATはUA中のカンマで
@@ -1125,6 +1141,7 @@ def admin_anon_access(days: int = 30, limit: int = 500):
     ua_map: dict[str, list[str]] = {}
     for r in ua_rows:
         ua_map.setdefault(r["ip"], []).append(r["user_agent"] or "")
+    usage_map = {r["ip"]: dict(r) for r in usage_rows}
     admin_ips = load_admin_known_ips()
     items = []
     # 印ごとのIP数と延べアクセス回数。画面先頭の「総数」に使うので、
@@ -1148,6 +1165,9 @@ def admin_anon_access(days: int = 30, limit: int = 500):
         # 端末・ブラウザ（2026-08-23・IPからの国/組織解析に加えて
         # 「iPad/Android/Windows/Macが分かるといい」という要望対応）。
         d["device"], d["browser"] = ua_parse.summarize(ua_map.get(d["ip"], []))
+        usage = usage_map.get(d["ip"], {})
+        d["viewed_word"] = usage.get("viewed_word", 0)
+        d["tried_audio"] = usage.get("tried_audio", 0)
         mark_counts[d["mark"]] += 1
         mark_visits[d["mark"]] += d["visit_count"] or 0
         items.append(d)
@@ -1220,7 +1240,24 @@ def admin_registration_funnel(days: int = 30):
             ).fetchone()
             return row["c"]
 
+        def count_distinct_guest_usage(where_sql: str) -> int:
+            """`count_distinct_guest`と同じ判定をusage_events向けに行う版
+            (2026-09-13新設: 「英単語のページをみた」「音声再生を試みた」の
+            ファネル追加ステップ用。usage_eventsはtracking.log_eventが
+            page/play/click等を記録するテーブルで、landing_visitsとは別)。"""
+            row = conn.execute(
+                "SELECT COUNT(DISTINCT guest_sid) AS c FROM usage_events "
+                f"WHERE guest_sid != '' AND created_at >= datetime('now', ?) "
+                f"AND {where_sql}{bot_excl_sql}",
+                (since, *bot_guests),
+            ).fetchone()
+            return row["c"]
+
         visited = count_distinct_guest("kind='visit'")
+        viewed_word = count_distinct_guest_usage(
+            "kind='page' AND category='word_detail'")
+        tried_audio = count_distinct_guest_usage(
+            "kind='play' AND category='word'")
         viewed_about = count_distinct_guest(
             "kind='visit' AND path='/static/about.html'")
         signup_attempted = count_distinct_guest("kind='signup'")
@@ -1319,6 +1356,10 @@ def admin_registration_funnel(days: int = 30):
 
     stages = [
         {"key": "visited", "label": "訪問", "count": visited},
+        {"key": "viewed_word", "label": "英単語のページをみた",
+         "count": viewed_word},
+        {"key": "tried_audio", "label": "音声再生を試みた",
+         "count": tried_audio},
         {"key": "viewed_about", "label": "「このアプリについて」を確認",
          "count": viewed_about},
         {"key": "signup_attempted", "label": "登録を試みた",

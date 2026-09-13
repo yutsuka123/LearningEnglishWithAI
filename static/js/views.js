@@ -1039,6 +1039,11 @@ function showWordChoices(hits) {
 // 単語の詳細ポップアップ: 例文(再生)＋AI詳細(品詞/意味複数/派生/類義/対義/
 // 由来/豆知識/解説)。詳細は押した時にAI生成→キャッシュ（2回目以降は無料）。
 function showWordDetail(w) {
+  // 登録に至らない原因分析(ファネル)の追加ステップ用(2026-09-13)。
+  // 「英単語のページをみた」＝単語詳細を開いた回数(ゲストの guest_sid でも
+  // 記録される。api.track内部でPOST /api/system/trackを叩くだけの
+  // best-effort送信なので、失敗しても画面表示は妨げない)。
+  api.track("page", "word_detail", w.english);
   openModal(w.english, (body) => {
     body.appendChild(el(`<p class="quiz-answer">${escapeHtml(w.english)}
       <span class="muted">${escapeHtml(w.japanese || "")}
@@ -4848,12 +4853,19 @@ export async function admin(root) {
     }
     const place = (r) => [r.country, r.region, r.city]
       .filter(Boolean).join(" / ") || "—";
+    // Accept-Languageの先頭タグだけ抜き出す（例:
+    // "ja-JP,ja;q=0.9,en-US;q=0.8" → "ja-JP"）。フルの値はtitleで見せる。
+    const primaryLang = (r) => (r.accept_language || "").split(",")[0]
+      .split(";")[0].trim();
     const val = (r, k) => {
       if (k === "place") return place(r);
       if (k === "org") return r.org || r.hostname || "";
       if (k === "signup") return (r.signup_attempted ? 1 : 0)
         + (r.signup_succeeded ? 1 : 0);
       if (k === "viewed_about") return r.viewed_about ? 1 : 0;
+      if (k === "lang") return primaryLang(r);
+      if (k === "viewed_word") return r.viewed_word ? 1 : 0;
+      if (k === "tried_audio") return r.tried_audio ? 1 : 0;
       return r[k];
     };
     rows.sort((a, b) => {
@@ -4865,8 +4877,9 @@ export async function admin(root) {
     });
     const COLS = [
       ["ip", "IP"], ["place", "国/地域/市区"], ["org", "接続元組織・ホスト名"],
-      ["device", "端末"], ["browser", "ブラウザ"],
+      ["device", "端末"], ["browser", "ブラウザ"], ["lang", "言語設定"],
       ["first_seen", "初回"], ["last_seen", "最終"], ["visit_count", "回数"],
+      ["viewed_word", "単語ページ閲覧"], ["tried_audio", "音声再生"],
       ["viewed_about", "説明書閲覧"], ["signup", "登録試行"],
     ];
     const head = COLS.map(([k, label]) => {
@@ -4887,9 +4900,15 @@ export async function admin(root) {
         <td class="muted">${escapeHtml(r.org || r.hostname || "—")}</td>
         <td class="muted">${escapeHtml(r.device || "—")}</td>
         <td class="muted">${escapeHtml(r.browser || "—")}</td>
+        <td class="muted" title="${escapeHtml(r.accept_language || "")}">
+          ${escapeHtml(primaryLang(r) || "—")}</td>
         <td class="muted">${fmtDate(r.first_seen)}</td>
         <td class="muted">${fmtDate(r.last_seen)}</td>
         <td>${r.visit_count}</td>
+        <td>${r.viewed_word
+          ? '<span class="badge-ok">見た</span>' : "—"}</td>
+        <td>${r.tried_audio
+          ? '<span class="badge-ok">再生した</span>' : "—"}</td>
         <td>${r.viewed_about
           ? '<span class="badge-ok">見た</span>' : "—"}</td>
         <td>${r.signup_attempted
