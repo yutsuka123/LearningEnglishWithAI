@@ -1,0 +1,89 @@
+[
+  {
+    "english": "heat death of the universe",
+    "detail": {
+      "pronunciation": "/hiːt dɛθ ʌv ðə ˈjuːnɪˌvɜːrs/",
+      "pos": "名詞",
+      "meanings": ["宇宙の熱的死", "エントロピー最大化による宇宙の終焉"],
+      "examples": [
+        {
+          "en": "According to the heat death hypothesis, the universe will eventually reach a state of maximum entropy where no more work can be extracted from it.",
+          "ja": "熱的死仮説によれば、宇宙は最終的にエントロピーが最大になり、そこからはもはや仕事を取り出せない状態に達するとされる。"
+        },
+        {
+          "en": "Even the last black holes are expected to evaporate long before the heat death of the universe is complete.",
+          "ja": "最後に残ったブラックホールでさえ、宇宙の熱的死が完了するよりずっと前に蒸発してしまうと考えられている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {"word": "the Big Freeze", "note": "同じ最終シナリオを指す別名。永久に膨張し続けながら冷え切っていくイメージを強調する呼び方。"}
+      ],
+      "antonyms": [
+        {"word": "Big Crunch", "note": "膨張ではなく収縮によって宇宙が終わるとする対照的なシナリオ。"}
+      ],
+      "origin": "熱力学第二法則(エントロピー増大則)を宇宙全体に適用したところから、19世紀後半にKelvin卿らが提唱した考え方に由来する。",
+      "trivia": "現在の観測が示す加速膨張(ダークエネルギー)を踏まえると、熱的死は現時点で最も有力視されている宇宙の終焉シナリオの一つとされるが、実際に起こるとしても今から少なくとも10の100乗年程度先の出来事と見積もられている。",
+      "explanation": "「死」といっても宇宙そのものが消えてなくなるわけではなく、あらゆる場所の温度が均一になりエネルギーの偏りが失われることで、星の形成や生命活動などあらゆる変化が事実上止まってしまう状態を指す。",
+      "example_ja": "熱的死仮説によれば、宇宙は最終的にエントロピーが最大になり、そこからはもはや仕事を取り出せない状態に達するとされる。",
+      "example_ja_src": "According to the heat death hypothesis, the universe will eventually reach a state of maximum entropy where no more work can be extracted from it."
+    }
+  },
+  {
+    "english": "Big Rip",
+    "detail": {
+      "pronunciation": "/bɪɡ rɪp/",
+      "pos": "名詞",
+      "meanings": ["宇宙の「大裂断」", "ファントムエネルギーによる宇宙の破局的な終焉シナリオ"],
+      "examples": [
+        {
+          "en": "In the Big Rip scenario, phantom dark energy grows so strong that it eventually tears apart galaxies, stars, and even atoms.",
+          "ja": "ビッグリップのシナリオでは、ファントムダークエネルギーが極めて強くなり、最終的には銀河や恒星、さらには原子までも引き裂いてしまうとされる。"
+        },
+        {
+          "en": "Unlike the heat death, the Big Rip predicts a definite, finite moment at which the universe is destroyed.",
+          "ja": "熱的死とは異なり、ビッグリップは宇宙が破壊される具体的で有限な瞬間を予測する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {"word": "Big Crunch", "note": "膨張ではなく収縮によって宇宙が終わるとする対照的なシナリオ。"}
+      ],
+      "origin": "2003年に物理学者Robert Caldwellらの論文で提唱された比較的新しい用語。「引き裂く(rip)」という語感を使い、破局的な終わり方を強調している。",
+      "trivia": "このシナリオが実際に起こるかどうかは、ダークエネルギーの状態方程式パラメータwが-1より小さい「ファントム領域」にあるかどうかに懸かっており、現在の観測データはこれを支持も否定もしていない。",
+      "explanation": "宇宙の膨張率が時間とともに加速度的に増大し続けると仮定するモデルで、銀河団→銀河→太陽系→惑星→原子核という順に、あらゆるスケールの構造が有限の時刻(ビッグリップ)に向かって次々と引き裂かれていくと予測される。",
+      "example_ja": "ビッグリップのシナリオでは、ファントムダークエネルギーが極めて強くなり、最終的には銀河や恒星、さらには原子までも引き裂いてしまうとされる。",
+      "example_ja_src": "In the Big Rip scenario, phantom dark energy grows so strong that it eventually tears apart galaxies, stars, and even atoms."
+    }
+  },
+  {
+    "english": "Big Crunch",
+    "detail": {
+      "pronunciation": "/bɪɡ krʌntʃ/",
+      "pos": "名詞",
+      "meanings": ["宇宙の「大収縮」", "膨張が反転し宇宙が再収縮して終わるとする仮説"],
+      "examples": [
+        {
+          "en": "If the universe's expansion were to reverse, the Big Crunch would compress all matter back into an extremely hot, dense state.",
+          "ja": "もし宇宙の膨張が反転すれば、ビッグクランチによってあらゆる物質が再び極めて高温・高密度の状態へと圧縮されることになる。"
+        },
+        {
+          "en": "Some cosmologists have speculated that a Big Crunch could be followed by a new Big Bang, in an endlessly repeating cycle.",
+          "ja": "一部の宇宙論学者は、ビッグクランチの後に新たなビッグバンが続き、無限に繰り返すサイクルになる可能性を考察してきた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {"word": "Big Rip", "note": "収縮ではなく膨張の加速によって宇宙が引き裂かれるとする対照的なシナリオ。"},
+        {"word": "heat death of the universe", "note": "収縮ではなく永遠の膨張と冷却によって宇宙が終わるとするシナリオ。"}
+      ],
+      "origin": "ビッグバン(Big Bang)という呼び名に合わせて、その正反対の収縮過程を指す言葉として作られた対句的な造語。",
+      "trivia": "1990年代後半の超新星観測でダークエネルギーによる宇宙の加速膨張が発見されて以降、宇宙が将来収縮に転じるビッグクランチのシナリオは、現在の主流の宇宙モデルでは可能性が低いと考えられるようになった。",
+      "explanation": "宇宙の平均密度が十分大きい、あるいはダークエネルギーの性質が将来変化するなどの条件のもとで、現在の膨張がいずれ減速し反転、最終的に宇宙全体が一点に向かって収縮していくと考えるシナリオ。",
+      "example_ja": "もし宇宙の膨張が反転すれば、ビッグクランチによってあらゆる物質が再び極めて高温・高密度の状態へと圧縮されることになる。",
+      "example_ja_src": "If the universe's expansion were to reverse, the Big Crunch would compress all matter back into an extremely hot, dense state."
+    }
+  }
+]

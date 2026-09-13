@@ -1,0 +1,3570 @@
+[
+  {
+    "english": "waifu",
+    "detail": {
+      "pronunciation": "/ˈwaɪfuː/",
+      "pos": "名詞",
+      "meanings": [
+        "(ファンにとって理想の)女性キャラクター",
+        "アニメ・ゲームの女性キャラへの強い愛着を表すスラング"
+      ],
+      "examples": [
+        {
+          "en": "He jokingly called the character his waifu and collected every figure of her he could find.",
+          "ja": "彼は冗談交じりにそのキャラクターを自分のwaifuだと呼び、見つけられる限りのフィギュアを集めた。"
+        },
+        {
+          "en": "Fans online endlessly debate whose waifu is the best girl in the series.",
+          "ja": "ネット上のファンたちは、その作品で誰のwaifuが一番かをいつまでも議論している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "husbando",
+          "note": "男性キャラクターに対する同様の語。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "日本語の「wife」の発音を英語話者がまねた語とされ、1990年代のアニメファンの掲示板文化から広まったとされる。",
+      "trivia": "元々は「自分にとって唯一の相手」というニュアンスが強かったが、現在は単に「お気に入りの女性キャラ」程度の軽い意味でも使われる。",
+      "explanation": "恋愛対象としての「妻」を意味する語をもじった、主にオンラインのアニメファンコミュニティで使われるくだけたスラングで、フォーマルな場では使わない。",
+      "example_ja": "彼は冗談交じりにそのキャラクターを自分のwaifuだと呼び、見つけられる限りのフィギュアを集めた。",
+      "example_ja_src": "He jokingly called the character his waifu and collected every figure of her he could find."
+    }
+  },
+  {
+    "english": "husbando",
+    "detail": {
+      "pronunciation": "/hʌzˈbændoʊ/",
+      "pos": "名詞",
+      "meanings": [
+        "(ファンにとって理想の)男性キャラクター",
+        "waifuの男性版"
+      ],
+      "examples": [
+        {
+          "en": "She proudly declared the stoic swordsman to be her husbando.",
+          "ja": "彼女は誇らしげに、あの無口な剣士を自分のhusbandoだと宣言した。"
+        },
+        {
+          "en": "It's a running joke that every otome game gives you a new husbando to fall for.",
+          "ja": "乙女ゲームを出すたびに新しいhusbandoが用意されるのは、もはやお決まりのネタになっている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "waifu",
+          "note": "女性キャラクターに対する対になる語。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「husband(夫)」を「waifu」の語感に合わせてもじった、ファンコミュニティ発の造語とされる。",
+      "trivia": "「waifu」よりやや後に広まった語で、女性ファンや男性キャラクターを好むファンの間で定着した。",
+      "explanation": "「waifu」と対をなす男性版のスラングで、同じくインターネットのファンダムに特有のくだけた表現。",
+      "example_ja": "彼女は誇らしげに、あの無口な剣士を自分のhusbandoだと宣言した。",
+      "example_ja_src": "She proudly declared the stoic swordsman to be her husbando."
+    }
+  },
+  {
+    "english": "isekai",
+    "detail": {
+      "pronunciation": "/ˌiːseɪˈkaɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "異世界転移・転生もの",
+        "現代の主人公が別世界へ移る物語のジャンル"
+      ],
+      "examples": [
+        {
+          "en": "In this isekai series, an office worker is hit by a truck and reborn as a prince in a fantasy kingdom.",
+          "ja": "このisekai作品では、会社員がトラックにはねられ、ファンタジー王国の王子として生まれ変わる。"
+        },
+        {
+          "en": "The isekai genre became so popular that dozens of nearly identical series were released in a single year.",
+          "ja": "isekaiジャンルはあまりに人気となり、同じような作品が一年に何十本も発売されるほどになった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "日本語で「異世界」を意味する語がそのまま英語圏のファンにも借用され、ジャンル名として定着したとされる。",
+      "trivia": "「事故死してすぐ転生する」という導入部があまりに多用されたため、ファンの間ではしばしばパロディの対象にもなる。",
+      "explanation": "主人公が現代日本などから異世界へ転移・転生し、多くの場合新しい力を得て冒険する物語類型を指すジャンル名。",
+      "example_ja": "このisekai作品では、会社員がトラックにはねられ、ファンタジー王国の王子として生まれ変わる。",
+      "example_ja_src": "In this isekai series, an office worker is hit by a truck and reborn as a prince in a fantasy kingdom."
+    }
+  },
+  {
+    "english": "tsundere",
+    "detail": {
+      "pronunciation": "/tsuːnˈdɛreɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "ツンデレ",
+        "最初はそっけないが徐々に優しさを見せるキャラクター類型"
+      ],
+      "examples": [
+        {
+          "en": "The tsundere heroine insisted she didn't care about him, even while secretly making him lunch every day.",
+          "ja": "そのtsundereのヒロインは彼を気にしていないと言い張りながら、こっそり毎日お弁当を作っていた。"
+        },
+        {
+          "en": "Her tsundere reaction — insulting the gift while secretly treasuring it — is a classic trope.",
+          "ja": "贈り物を悪く言いながらも実は大切にしているという、いかにもtsundere的な反応は定番のお決まりの展開だ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "kuudere",
+          "note": "冷静さの内側に優しさを隠す点は似るが、当初からきつく当たる「tsundere」とは態度の出し方が異なる。"
+        }
+      ],
+      "origin": "日本語の擬態語「ツンツン(そっけない)」と「デレデレ(甘える)」を組み合わせた語が、そのまま英語圏でも使われるようになったとされる。",
+      "trivia": "元々は恋愛シミュレーションゲームのキャラクター類型として広まった語で、後にキャラクター性格全般を表す一般的な語彙になった。",
+      "explanation": "最初は冷たい態度やきつい言葉で相手に接するが、物語が進むにつれて本当は好意や優しさを持っていることが明らかになっていくキャラクター類型。",
+      "example_ja": "そのtsundereのヒロインは彼を気にしていないと言い張りながら、こっそり毎日お弁当を作っていた。",
+      "example_ja_src": "The tsundere heroine insisted she didn't care about him, even while secretly making him lunch every day."
+    }
+  },
+  {
+    "english": "kuudere",
+    "detail": {
+      "pronunciation": "/kuːˈdɛreɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "クーデレ",
+        "冷静な外見の下に優しさを隠すキャラクター類型"
+      ],
+      "examples": [
+        {
+          "en": "The kuudere classmate rarely smiled, but she always quietly helped anyone who was struggling.",
+          "ja": "そのkuudereの同級生はめったに笑わなかったが、困っている人にはいつも静かに手を差し伸べていた。"
+        },
+        {
+          "en": "Unlike a tsundere, a kuudere rarely raises her voice even when she secretly cares deeply.",
+          "ja": "tsundereとは違い、kuudereは内心深く思いやっていても、めったに声を荒げたりしない。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "tsundere",
+          "note": "内面の優しさは共通するが、tsundereのようにきつい態度で反発することは少ない。"
+        }
+      ],
+      "origin": "日本語の「クール(冷静)」と「デレ(甘える)」を組み合わせた和製英語的な語とされる。",
+      "trivia": "「tsundere」の派生語として2000年代以降のオタク用語の中で体系化された、いわゆる「〜デレ」系キャラ類型の一つ。",
+      "explanation": "普段は感情をほとんど表に出さず冷静沈着に振る舞うが、内面には他人への思いやりや優しさを秘めているキャラクター類型。",
+      "example_ja": "そのkuudereの同級生はめったに笑わなかったが、困っている人にはいつも静かに手を差し伸べていた。",
+      "example_ja_src": "The kuudere classmate rarely smiled, but she always quietly helped anyone who was struggling."
+    }
+  },
+  {
+    "english": "yandere",
+    "detail": {
+      "pronunciation": "/ˈjændɛreɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "ヤンデレ",
+        "愛情ゆえに病的・暴力的になるキャラクター類型"
+      ],
+      "examples": [
+        {
+          "en": "The yandere character's sweet smile turned unsettling the moment anyone got too close to her crush.",
+          "ja": "そのyandereのキャラクターの甘い笑顔は、誰かが好きな人に近づいた途端に不気味なものへと変わった。"
+        },
+        {
+          "en": "The horror game is famous for its yandere character, who will do anything to keep her crush all to herself.",
+          "ja": "そのホラーゲームは、好きな人を独り占めするためなら何でもするyandereキャラクターで有名だ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "日本語の「病む(やむ、精神的に病んでいる)」と「デレ(甘える)」を組み合わせた語とされる。",
+      "trivia": "元々は健全な「デレ」系キャラの一種として生まれたが、現在ではホラー・スリラー的な文脈で使われることも多い。",
+      "explanation": "表面上は相手に深い愛情を示す一方で、その愛情ゆえの嫉妬や執着から異常な、時に暴力的な行動に走ることがあるキャラクター類型。",
+      "example_ja": "そのyandereのキャラクターの甘い笑顔は、誰かが好きな人に近づいた途端に不気味なものへと変わった。",
+      "example_ja_src": "The yandere character's sweet smile turned unsettling the moment anyone got too close to her crush."
+    }
+  },
+  {
+    "english": "dandere",
+    "detail": {
+      "pronunciation": "/ˈdændɛreɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "ダンデレ",
+        "人見知りだが心を許すと素直になるキャラクター類型"
+      ],
+      "examples": [
+        {
+          "en": "As a dandere, he barely spoke to strangers, but he chatted happily once his new friend broke the ice.",
+          "ja": "dandereである彼は見知らぬ人にはほとんど話しかけなかったが、新しい友人が心を開かせると楽しそうにおしゃべりした。"
+        },
+        {
+          "en": "The dandere character barely says a word in class but chats happily once she's alone with close friends.",
+          "ja": "そのdandereのキャラクターは授業中ほとんど口を利かないが、親しい友人と二人きりになると楽しそうに話す。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "日本語の「無口(だんまり)」と「デレ(甘える)」を組み合わせた語とされる。",
+      "trivia": "「〜デレ」系のキャラクター分類の中では比較的地味だが、内気なキャラクターを好むファンから根強い人気がある。",
+      "explanation": "普段は人見知りで無口だが、心を許した相手や慣れた状況では素直に気持ちを表すようになるキャラクター類型。",
+      "example_ja": "dandereである彼は見知らぬ人にはほとんど話しかけなかったが、新しい友人が心を開かせると楽しそうにおしゃべりした。",
+      "example_ja_src": "As a dandere, he barely spoke to strangers, but he chatted happily once his new friend broke the ice."
+    }
+  },
+  {
+    "english": "moe",
+    "detail": {
+      "pronunciation": "/ˈmoʊeɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "萌え",
+        "キャラクターの可愛らしさなどへの庇護欲を伴う愛おしさ"
+      ],
+      "examples": [
+        {
+          "en": "Fans praised the show's moe art style, which made even minor characters feel adorable.",
+          "ja": "ファンたちはその作品のmoeな絵柄を絶賛し、脇役でさえ愛おしく感じられると評した。"
+        },
+        {
+          "en": "Character designers deliberately add moe traits, like clumsiness or a soft voice, to make a character more endearing.",
+          "ja": "キャラクターデザイナーは、そそっかしさや柔らかい声といったmoeな要素をあえて加え、キャラクターをより愛おしく見せる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "日本語の「萌え」がそのまま英語圏のファンにも借用された語で、語源には諸説あり定説はないとされる。",
+      "trivia": "単なる「可愛い」よりも、見る側の庇護欲や愛おしさを強く刺激する要素・感情を指す点が特徴とされる。",
+      "explanation": "主にキャラクターの可愛らしさや弱さ、健気さなどに対してファンが抱く、庇護欲を伴う強い愛おしさの感情、またはそれを引き出すような要素・作風を指す語。",
+      "example_ja": "ファンたちはその作品のmoeな絵柄を絶賛し、脇役でさえ愛おしく感じられると評した。",
+      "example_ja_src": "Fans praised the show's moe art style, which made even minor characters feel adorable."
+    }
+  },
+  {
+    "english": "chuunibyou",
+    "detail": {
+      "pronunciation": "/tʃuːniˈbjoʊ/",
+      "pos": "名詞",
+      "meanings": [
+        "中二病",
+        "自分に秘めた力があると思い込む言動・またそれを描く作品類型"
+      ],
+      "examples": [
+        {
+          "en": "The chuunibyou protagonist insisted his eyepatch sealed away a demonic power.",
+          "ja": "そのchuunibyouの主人公は、自分の眼帯には悪魔の力が封じられていると言い張っていた。"
+        },
+        {
+          "en": "Many viewers found the chuunibyou comedy relatable, remembering their own dramatic teenage delusions.",
+          "ja": "多くの視聴者は、自分自身も思春期に大げさな妄想を抱いていたことを思い出し、そのchuunibyouコメディに親近感を覚えた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "直訳すると「中学2年生の病気」という意味の日本語の俗語で、そのまま英語圏のファンにも借用されたとされる。",
+      "trivia": "医学的な病気ではなく、思春期特有の誇大妄想的な言動を茶化して呼ぶ、日本発のユーモラスな俗語表現である。",
+      "explanation": "自分には秘めた特別な力や過去があると思い込み、大げさで芝居がかった言動を取る(主に思春期の)人物像、またはそれを面白おかしく描く作品類型。",
+      "example_ja": "そのchuunibyouの主人公は、自分の眼帯には悪魔の力が封じられていると言い張っていた。",
+      "example_ja_src": "The chuunibyou protagonist insisted his eyepatch sealed away a demonic power."
+    }
+  },
+  {
+    "english": "seiyuu",
+    "detail": {
+      "pronunciation": "/seɪˈjuː/",
+      "pos": "名詞",
+      "meanings": [
+        "声優",
+        "日本のアニメ・ゲーム業界の声優"
+      ],
+      "examples": [
+        {
+          "en": "Fans lined up for hours to get an autograph from their favorite seiyuu at the convention.",
+          "ja": "ファンはお気に入りのseiyuuからサインをもらうため、会場で何時間も列を作った。"
+        },
+        {
+          "en": "A talented seiyuu can bring a two-dimensional character to life with just their voice.",
+          "ja": "才能あるseiyuuは、声だけで平面的なキャラクターに命を吹き込むことができる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "voice actor",
+          "note": "英語の一般的な語。seiyuuは特に日本のアニメ業界の文脈で好んで使われる。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "日本語の「声優」の音がそのまま英語圏のファンに取り入れられた借用語である。",
+      "trivia": "近年は声優自身がアイドルのようにライブやイベントに出演するなど、単なる裏方を超えた人気職業になっている。",
+      "explanation": "日本のアニメ・ゲーム業界で活動する声優を指す語で、ファンの間では英語の「voice actor」よりも日本のアニメ文化に特化した文脈でこの語が好んで使われる。",
+      "example_ja": "ファンはお気に入りのseiyuuからサインをもらうため、会場で何時間も列を作った。",
+      "example_ja_src": "Fans lined up for hours to get an autograph from their favorite seiyuu at the convention."
+    }
+  },
+  {
+    "english": "sakuga",
+    "detail": {
+      "pronunciation": "/sɑːˈkuːɡɑː/",
+      "pos": "名詞",
+      "meanings": [
+        "作画(の質が特に高いカット)",
+        "特に力の入った滑らかな動きの作画を指すファン用語"
+      ],
+      "examples": [
+        {
+          "en": "Fans replayed the fight scene repeatedly, marveling at the sakuga during the final showdown.",
+          "ja": "ファンたちは最終決戦のsakugaに感嘆しながら、その戦闘シーンを何度も見返した。"
+        },
+        {
+          "en": "Fan compilation videos dedicated entirely to sakuga moments get millions of views online.",
+          "ja": "sakugaの名場面だけを集めたファン制作の動画は、ネット上で何百万回も再生されている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "日本語の「作画」がそのまま英語圏のファンダムに借用された語である。",
+      "trivia": "本来は単に「作画」全般を指す語だが、英語圏のファンの間では特に「際立って質の高い作画」を指す専門用語として定着している。",
+      "explanation": "特定のカットやシーンにおいて、作画スタッフが力を入れて描いた、とりわけ滑らかで質の高い作画・動きを指すファン用語。",
+      "example_ja": "ファンたちは最終決戦のsakugaに感嘆しながら、その戦闘シーンを何度も見返した。",
+      "example_ja_src": "Fans replayed the fight scene repeatedly, marveling at the sakuga during the final showdown."
+    }
+  },
+  {
+    "english": "OTP",
+    "detail": {
+      "pronunciation": "/ˌoʊtiːˈpiː/",
+      "pos": "名詞",
+      "meanings": [
+        "一推しのカップリング",
+        "「one true pairing」の略"
+      ],
+      "examples": [
+        {
+          "en": "She has shipped the same OTP since her very first anime convention.",
+          "ja": "彼女は最初のアニメイベントに参加して以来、ずっと同じOTPを推し続けている。"
+        },
+        {
+          "en": "She got into a friendly argument online about whether her OTP was truly canon.",
+          "ja": "彼女は自分のOTPが本当に公式設定として成立しているかどうかで、ネット上で友好的な論争になった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "ship",
+          "note": "特定の2人の関係を応援する行為・組み合わせそのものを指す、より広い意味の語。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「one true pairing(唯一無二の組み合わせ)」の頭文字を取った略語で、2000年代のファンフィクション文化から広まったとされる。",
+      "trivia": "複数のカップリングを応援するファンも多い中、「OTP」はその中でも特に別格・一番のお気に入りを指す点が特徴とされる。",
+      "explanation": "「one true pairing」の略で、あるファンが数あるカップリングの中で最も好み、最も「本命」だと考える2人の組み合わせを指す語。",
+      "example_ja": "彼女は最初のアニメイベントに参加して以来、ずっと同じOTPを推し続けている。",
+      "example_ja_src": "She has shipped the same OTP since her very first anime convention."
+    }
+  },
+  {
+    "english": "Mary Sue",
+    "detail": {
+      "pronunciation": "/ˈmɛri suː/",
+      "pos": "名詞",
+      "meanings": [
+        "メアリー・スー",
+        "欠点なく理想化されすぎたキャラクター"
+      ],
+      "examples": [
+        {
+          "en": "Critics complained that the new character felt like a Mary Sue who could do no wrong.",
+          "ja": "批評家たちは、その新キャラクターが何をやっても失敗しない、まるでMary Sueのようだと不満を述べた。"
+        },
+        {
+          "en": "Critics accused the fan-made protagonist of being a Mary Sue who effortlessly outshone every canon character.",
+          "ja": "批評家たちは、そのファン創作の主人公が、原作のどのキャラクターよりも苦もなく優れているMary Sueだと批判した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1970年代のスタートレックのファンフィクション作品に登場した、あまりに完璧すぎる自己投影キャラクターの名前に由来するとされる。",
+      "trivia": "元はファンフィクション批評から生まれた語だが、現在は原作の商業作品を批判する際にも広く使われている。",
+      "explanation": "欠点がほとんどなく、あらゆる面で理想化・完璧に描かれた(しばしば作者の願望が投影された)フィクション上の登場人物を指し、しばしば人物造形の粗さを批判する意味で使われる語。",
+      "example_ja": "批評家たちは、その新キャラクターが何をやっても失敗しない、まるでMary Sueのようだと不満を述べた。",
+      "example_ja_src": "Critics complained that the new character felt like a Mary Sue who could do no wrong."
+    }
+  },
+  {
+    "english": "BL",
+    "detail": {
+      "pronunciation": "/biː ɛl/",
+      "pos": "名詞",
+      "meanings": [
+        "ボーイズラブ",
+        "男性同士の恋愛を描くジャンル"
+      ],
+      "examples": [
+        {
+          "en": "The bookstore has an entire shelf dedicated to BL manga.",
+          "ja": "その書店には、BLマンガだけを集めた棚が一つ丸ごとある。"
+        },
+        {
+          "en": "The convention had an entire section dedicated to BL titles aimed at female readers.",
+          "ja": "そのイベント会場には、女性読者向けのBL作品だけを集めたコーナーが一区画丸ごとあった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "yaoi",
+          "note": "同様に男性同士の恋愛を描く、より古くからある呼び方。"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "GL",
+          "note": "女性同士の恋愛を描くジャンル(yuriとほぼ同義)。"
+        }
+      ],
+      "origin": "英語の「Boys' Love」の頭文字を取った略語で、日本発のジャンル区分がそのまま国際的にも使われるようになったとされる。",
+      "trivia": "主に女性読者・視聴者を対象読者層として想定して作られている点が特徴とされる。",
+      "explanation": "「Boys' Love」の略で、男性同士の恋愛関係を描いた、主に女性読者・視聴者を対象とするマンガ・アニメのジャンル。",
+      "example_ja": "その書店には、BLマンガだけを集めた棚が一つ丸ごとある。",
+      "example_ja_src": "The bookstore has an entire shelf dedicated to BL manga."
+    }
+  },
+  {
+    "english": "yuri",
+    "detail": {
+      "pronunciation": "/ˈjʊəri/",
+      "pos": "名詞",
+      "meanings": [
+        "百合",
+        "女性同士の恋愛を描くジャンル"
+      ],
+      "examples": [
+        {
+          "en": "The convention panel discussed the growing popularity of yuri series among Western fans.",
+          "ja": "そのイベントのパネルでは、欧米のファンの間でyuri作品の人気が高まっていることが話題になった。"
+        },
+        {
+          "en": "The bookstore's yuri section has grown considerably as the genre gains more mainstream attention.",
+          "ja": "そのジャンルがより広く注目されるようになるにつれ、書店のyuriコーナーはかなり充実してきた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "BL",
+          "note": "男性同士の恋愛を描く対になるジャンル。"
+        }
+      ],
+      "origin": "日本語で「ユリ(百合の花)」を意味する語が、女性同士の恋愛を描くジャンル名としてそのまま定着したとされる。",
+      "trivia": "花の「百合」が清らかさや女性らしさの象徴とされてきたことから、このジャンル名に選ばれたとされる。",
+      "explanation": "女性同士の恋愛関係を描いたマンガ・アニメのジャンルを指す語。",
+      "example_ja": "そのイベントのパネルでは、欧米のファンの間でyuri作品の人気が高まっていることが話題になった。",
+      "example_ja_src": "The convention panel discussed the growing popularity of yuri series among Western fans."
+    }
+  },
+  {
+    "english": "shounen",
+    "detail": {
+      "pronunciation": "/ˈʃoʊnɛn/",
+      "pos": "名詞",
+      "meanings": [
+        "少年向け作品",
+        "アクション・友情・成長を描く少年向けジャンル"
+      ],
+      "examples": [
+        {
+          "en": "The story follows a classic shounen formula: a young hero training to become the strongest fighter.",
+          "ja": "その物語は、最強の戦士になるために修行する若い主人公という、まさに王道のshounenの筋書きをたどる。"
+        },
+        {
+          "en": "Most shounen series share a similar structure: a determined hero, a rival, and a tournament arc.",
+          "ja": "多くのshounen作品は、決意を秘めた主人公、ライバル、そしてトーナメント編という似た構成を共有している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "shoujo",
+          "note": "少女向けのジャンル区分。"
+        }
+      ],
+      "origin": "日本語で「少年」を意味する語がそのまま、ジャンル・対象読者層を表す語として英語圏に借用されたとされる。",
+      "trivia": "対象読者層を示す言葉であって、必ずしも内容の高度さや対象年齢の上限を意味するわけではない点に注意が必要とされる。",
+      "explanation": "主に少年・若い男性読者を対象とした、アクションや友情・成長をテーマに据えることが多いマンガ・アニメのジャンル区分。",
+      "example_ja": "その物語は、最強の戦士になるために修行する若い主人公という、まさに王道のshounenの筋書きをたどる。",
+      "example_ja_src": "The story follows a classic shounen formula: a young hero training to become the strongest fighter."
+    }
+  },
+  {
+    "english": "shoujo",
+    "detail": {
+      "pronunciation": "/ˈʃoʊdʒoʊ/",
+      "pos": "名詞",
+      "meanings": [
+        "少女向け作品",
+        "恋愛・人間関係を描く少女向けジャンル"
+      ],
+      "examples": [
+        {
+          "en": "This shoujo series focuses on the heroine's slow-burn romance with her childhood friend.",
+          "ja": "このshoujo作品は、ヒロインと幼なじみとの、じっくり進んでいく恋愛模様を中心に描かれる。"
+        },
+        {
+          "en": "Shoujo manga often uses delicate, flowery panel layouts to convey the characters' emotions.",
+          "ja": "shoujoマンガでは、登場人物の感情を伝えるために、繊細で花をあしらったようなコマ割りがよく使われる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "shounen",
+          "note": "少年向けのジャンル区分。"
+        }
+      ],
+      "origin": "日本語で「少女」を意味する語がそのまま、ジャンル・対象読者層を表す語として英語圏に借用されたとされる。",
+      "trivia": "恋愛ものに限らず、友情や自己成長を描く作品も多く含まれる、幅広いジャンル区分である。",
+      "explanation": "主に少女・若い女性読者を対象とした、恋愛や人間関係の機微を中心に描くことが多いマンガ・アニメのジャンル区分。",
+      "example_ja": "このshoujo作品は、ヒロインと幼なじみとの、じっくり進んでいく恋愛模様を中心に描かれる。",
+      "example_ja_src": "This shoujo series focuses on the heroine's slow-burn romance with her childhood friend."
+    }
+  },
+  {
+    "english": "seinen",
+    "detail": {
+      "pronunciation": "/ˈseɪnɛn/",
+      "pos": "名詞",
+      "meanings": [
+        "青年向け作品",
+        "成人男性向けの、より成熟したジャンル"
+      ],
+      "examples": [
+        {
+          "en": "The seinen manga tackles morally gray themes that wouldn't appear in a typical shounen title.",
+          "ja": "そのseinenマンガは、典型的なshounen作品には出てこないような、道徳的に複雑なテーマを扱っている。"
+        },
+        {
+          "en": "Seinen titles are more likely to feature graphic violence or morally complex antiheroes than typical shounen fare.",
+          "ja": "seinen作品は典型的なshounen作品に比べ、生々しい暴力描写や道徳的に複雑なアンチヒーローを扱うことが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "shounen",
+          "note": "より若い読者層を対象とするジャンル区分。"
+        }
+      ],
+      "origin": "日本語で「青年」を意味する語がそのまま、対象読者層を示す語として英語圏に借用されたとされる。",
+      "trivia": "必ずしも過激な内容を意味するわけではないが、shounenよりも成熟したテーマや複雑な人間描写を扱う傾向があるとされる。",
+      "explanation": "主に成人男性読者を対象とした、より複雑なテーマや成熟した表現を扱うことも多いマンガ・アニメのジャンル区分。",
+      "example_ja": "そのseinenマンガは、典型的なshounen作品には出てこないような、道徳的に複雑なテーマを扱っている。",
+      "example_ja_src": "The seinen manga tackles morally gray themes that wouldn't appear in a typical shounen title."
+    }
+  },
+  {
+    "english": "josei",
+    "detail": {
+      "pronunciation": "/dʒoʊˈseɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "女性向け作品",
+        "成人女性向けの、より現実的なジャンル"
+      ],
+      "examples": [
+        {
+          "en": "Josei manga often portrays the everyday struggles of adult women more realistically than shoujo does.",
+          "ja": "josei作品は、shoujoよりも大人の女性が抱える日常の悩みを、より現実的に描くことが多い。"
+        },
+        {
+          "en": "Josei stories often explore the realities of adult careers and relationships that shoujo rarely touches on.",
+          "ja": "josei作品は、shoujoではあまり扱われない、大人のキャリアや人間関係の現実をよく描いている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "shoujo",
+          "note": "より若い読者層を対象とするジャンル区分。"
+        }
+      ],
+      "origin": "日本語で「女性」を意味する語がそのまま、対象読者層を示す語として英語圏に借用されたとされる。",
+      "trivia": "shoujoと同じく女性読者を対象とするが、より年齢層の高い、現実的な悩みを描く点が異なるとされる。",
+      "explanation": "主に成人女性読者を対象とした、恋愛や仕事、日常生活をより現実的に描くことが多いマンガ・アニメのジャンル区分。",
+      "example_ja": "josei作品は、shoujoよりも大人の女性が抱える日常の悩みを、より現実的に描くことが多い。",
+      "example_ja_src": "Josei manga often portrays the everyday struggles of adult women more realistically than shoujo does."
+    }
+  },
+  {
+    "english": "slice of life",
+    "detail": {
+      "pronunciation": "/slaɪs ʌv laɪf/",
+      "pos": "名詞",
+      "meanings": [
+        "日常系",
+        "劇的な事件よりも日常の出来事を描くジャンル"
+      ],
+      "examples": [
+        {
+          "en": "Instead of a dramatic plot, the slice of life anime simply follows the characters' daily routines at school.",
+          "ja": "劇的な筋書きの代わりに、そのslice of lifeのアニメは単に登場人物たちの学校での日常を追うだけだ。"
+        },
+        {
+          "en": "Slice of life shows rarely have a central conflict, focusing instead on small, relatable moments.",
+          "ja": "slice of lifeの作品には中心的な対立構造がほとんどなく、代わりに小さくて共感できる瞬間に焦点を当てている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "iyashikei",
+          "note": "日常系の中でも特に癒やしを重視する作風。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "日常のありふれた瞬間を切り取るという意味の一般英語表現が、そのままジャンル名として定着したとされる。",
+      "trivia": "アニメ・マンガに限らず、文学や映画などフィクション全般で使われてきた古くからの表現でもある。",
+      "explanation": "劇的な事件よりも登場人物の日常生活の細やかな出来事や人間関係を中心に描く物語のジャンル。",
+      "example_ja": "劇的な筋書きの代わりに、そのslice of lifeのアニメは単に登場人物たちの学校での日常を追うだけだ。",
+      "example_ja_src": "Instead of a dramatic plot, the slice of life anime simply follows the characters' daily routines at school."
+    }
+  },
+  {
+    "english": "iyashikei",
+    "detail": {
+      "pronunciation": "/iːjɑːˈʃiːkeɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "癒し系",
+        "視聴者を癒すことを目的とした穏やかな作品類型"
+      ],
+      "examples": [
+        {
+          "en": "After a stressful week, she liked to unwind with an iyashikei show about a quiet countryside cafe.",
+          "ja": "ストレスの多い一週間を過ごした後、彼女は静かな田舎のカフェを描いたiyashikeiの作品でくつろぐのが好きだった。"
+        },
+        {
+          "en": "Iyashikei shows deliberately avoid conflict, letting viewers simply relax alongside the characters.",
+          "ja": "iyashikeiの作品はあえて対立を避け、視聴者が登場人物と一緒にただくつろげるようにしている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "slice of life",
+          "note": "日常を描く点は共通するが、iyashikeiは特に「癒し」の効果を重視する。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "日本語の「癒し」に形容詞的な接尾辞「〜系」を付けた語が、そのまま英語圏のファンにも借用されたとされる。",
+      "trivia": "日常系(slice of life)の一種と位置づけられることが多いが、より意識的に穏やかさ・安らぎを追求する点が特徴とされる。",
+      "explanation": "「癒し系」の意で、穏やかで安らぎを与えるような雰囲気を持ち、視聴者を癒すことを主眼に置いた作品類型。",
+      "example_ja": "ストレスの多い一週間を過ごした後、彼女は静かな田舎のカフェを描いたiyashikeiの作品でくつろぐのが好きだった。",
+      "example_ja_src": "After a stressful week, she liked to unwind with an iyashikei show about a quiet countryside cafe."
+    }
+  },
+  {
+    "english": "harem",
+    "detail": {
+      "pronunciation": "/ˈhɛərəm/",
+      "pos": "名詞",
+      "meanings": [
+        "ハーレムもの",
+        "一人の主人公に複数の異性が好意を寄せるジャンル"
+      ],
+      "examples": [
+        {
+          "en": "In this harem comedy, the shy protagonist is somehow adored by every girl in his class.",
+          "ja": "このharemコメディでは、内気な主人公がなぜかクラスの女子全員から好かれている。"
+        },
+        {
+          "en": "The harem anime introduces a new potential love interest for the protagonist almost every episode.",
+          "ja": "そのharemアニメでは、ほぼ毎話のように主人公にとって新たな恋愛対象候補が登場する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "reverse harem",
+          "note": "主人公が女性で、複数の男性が好意を寄せる版。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "元々は複数の妻・側室を意味する一般英語の「harem」が、ジャンル名として転用されたとされる。",
+      "trivia": "多くの場合、主人公自身は誰か一人を選ぶことを避け、宙ぶらりんの関係が続く点が定番の展開とされる。",
+      "explanation": "一人の主人公(多くは男性)を中心に、複数の異性キャラクターが恋愛的な好意を寄せる状況を描く作品ジャンル。",
+      "example_ja": "このharemコメディでは、内気な主人公がなぜかクラスの女子全員から好かれている。",
+      "example_ja_src": "In this harem comedy, the shy protagonist is somehow adored by every girl in his class."
+    }
+  },
+  {
+    "english": "reverse harem",
+    "detail": {
+      "pronunciation": "/rɪˈvɜːrs ˈhɛərəm/",
+      "pos": "名詞",
+      "meanings": [
+        "逆ハーレムもの",
+        "女性主人公に複数の男性が好意を寄せるジャンル"
+      ],
+      "examples": [
+        {
+          "en": "The reverse harem game lets players choose which of the five love interests to pursue.",
+          "ja": "そのreverse harem向けのゲームでは、プレイヤーは5人の攻略対象の誰を狙うか選ぶことができる。"
+        },
+        {
+          "en": "In the reverse harem drama, the heroine is unknowingly pursued by every prince in the kingdom.",
+          "ja": "そのreverse harem的なドラマでは、ヒロインは知らないうちに王国中の王子全員から言い寄られている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "otome game",
+          "note": "reverse harem的な構造を持つ、女性向け恋愛シミュレーションゲームの総称。"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "harem",
+          "note": "主人公が男性で、複数の女性が好意を寄せる版。"
+        }
+      ],
+      "origin": "「harem」に「逆」を意味する「reverse」を付け加えた語で、女性主人公版のハーレムものとして定着したとされる。",
+      "trivia": "少女向けの恋愛ゲーム(乙女ゲーム)のジャンルとして特に発展してきた経緯がある。",
+      "explanation": "一人の女性主人公を中心に、複数の男性キャラクターが恋愛的な好意を寄せる状況を描く、ハーレムものの女性主人公版のジャンル。",
+      "example_ja": "そのreverse harem向けのゲームでは、プレイヤーは5人の攻略対象の誰を狙うか選ぶことができる。",
+      "example_ja_src": "The reverse harem game lets players choose which of the five love interests to pursue."
+    }
+  },
+  {
+    "english": "magical girl",
+    "detail": {
+      "pronunciation": "/ˈmædʒɪkəl ɡɜːrl/",
+      "pos": "名詞",
+      "meanings": [
+        "魔法少女もの",
+        "変身して魔法の力を得る主人公を描くジャンル"
+      ],
+      "examples": [
+        {
+          "en": "The magical girl transforms into her powered-up form whenever a new monster appears.",
+          "ja": "新しい怪物が現れるたびに、そのmagical girlは強化された姿へと変身する。"
+        },
+        {
+          "en": "Magical girl shows typically feature an elaborate transformation sequence before every battle.",
+          "ja": "magical girlの作品では、戦いの前に手の込んだ変身シーンが描かれるのが定番だ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「魔法」を意味する「magical」と「少女」を意味する「girl」を組み合わせた、和製英語的な直訳表現とされる。",
+      "trivia": "1960年代の日本のテレビアニメにルーツを持つとされ、以後世界的に広く模倣・翻案されてきたジャンルである。",
+      "explanation": "多くは少女である主人公が、変身することで魔法の力を得て戦ったり問題を解決したりする物語のジャンル。",
+      "example_ja": "新しい怪物が現れるたびに、そのmagical girlは強化された姿へと変身する。",
+      "example_ja_src": "The magical girl transforms into her powered-up form whenever a new monster appears."
+    }
+  },
+  {
+    "english": "mecha",
+    "detail": {
+      "pronunciation": "/ˈmɛkə/",
+      "pos": "名詞",
+      "meanings": [
+        "メカもの",
+        "巨大ロボット兵器を描くジャンル"
+      ],
+      "examples": [
+        {
+          "en": "The mecha anime is famous for its detailed battles between giant piloted robots.",
+          "ja": "そのmechaアニメは、パイロットが操縦する巨大ロボット同士の緻密な戦闘シーンで有名だ。"
+        },
+        {
+          "en": "Mecha designs range from bulky military hardware to sleek, almost organic-looking machines.",
+          "ja": "mechaのデザインは、無骨な軍用兵器のようなものから、有機的にすら見える洗練された機体まで幅広い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "英語の「mechanical(機械の)」を短縮した語が、ジャンル名としてそのまま定着したとされる。",
+      "trivia": "単に巨大ロボットが登場するだけでなく、パイロットとの人間ドラマが重視される作品も多いジャンルである。",
+      "explanation": "巨大なロボットや人が搭乗して操縦する機械兵器を主題として描く作品ジャンル。",
+      "example_ja": "そのmechaアニメは、パイロットが操縦する巨大ロボット同士の緻密な戦闘シーンで有名だ。",
+      "example_ja_src": "The mecha anime is famous for its detailed battles between giant piloted robots."
+    }
+  },
+  {
+    "english": "bishounen",
+    "detail": {
+      "pronunciation": "/bɪˈʃoʊnɛn/",
+      "pos": "名詞",
+      "meanings": [
+        "美少年",
+        "中性的で華やかな美男子キャラクター類型"
+      ],
+      "examples": [
+        {
+          "en": "The manga is filled with elegant bishounen characters with long flowing hair.",
+          "ja": "そのマンガは、長い髪をなびかせた優美なbishounenキャラクターであふれている。"
+        },
+        {
+          "en": "The idol group in the anime is made up entirely of bishounen characters designed to appeal to female fans.",
+          "ja": "そのアニメに登場するアイドルグループは、女性ファンに向けて作られたbishounenキャラクターだけで構成されている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "bishoujo",
+          "note": "女性版の対になる語。"
+        }
+      ],
+      "origin": "日本語で「美少年」を意味する語がそのまま、キャラクター類型を表す語として英語圏に借用されたとされる。",
+      "trivia": "少女マンガやBL作品で特に多用される、中性的で華やかな容姿を持つ男性キャラクター類型である。",
+      "explanation": "中性的で華やかな美しさを持つ、若い美男子として描かれるキャラクター類型。",
+      "example_ja": "そのマンガは、長い髪をなびかせた優美なbishounenキャラクターであふれている。",
+      "example_ja_src": "The manga is filled with elegant bishounen characters with long flowing hair."
+    }
+  },
+  {
+    "english": "bishoujo",
+    "detail": {
+      "pronunciation": "/bɪˈʃoʊdʒoʊ/",
+      "pos": "名詞",
+      "meanings": [
+        "美少女",
+        "非常に整った容姿の美少女キャラクター類型"
+      ],
+      "examples": [
+        {
+          "en": "The visual novel is centered around several bishoujo characters the player can befriend.",
+          "ja": "そのビジュアルノベルは、プレイヤーが親しくなれる何人かのbishoujoキャラクターを中心に展開する。"
+        },
+        {
+          "en": "Bishoujo character designs are a defining visual staple of many Japanese visual novels and gacha games.",
+          "ja": "bishoujoのキャラクターデザインは、多くの日本のビジュアルノベルやガチャゲームを特徴づける定番の要素だ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "bishounen",
+          "note": "男性版の対になる語。"
+        }
+      ],
+      "origin": "日本語で「美少女」を意味する語がそのまま、キャラクター類型を表す語として英語圏に借用されたとされる。",
+      "trivia": "ギャルゲー・ビジュアルノベルというジャンルの成立に深く関わってきたキャラクター類型とされる。",
+      "explanation": "非常に整った可愛らしい容姿を持つ、若い美少女として描かれるキャラクター類型。",
+      "example_ja": "そのビジュアルノベルは、プレイヤーが親しくなれる何人かのbishoujoキャラクターを中心に展開する。",
+      "example_ja_src": "The visual novel is centered around several bishoujo characters the player can befriend."
+    }
+  },
+  {
+    "english": "cel animation",
+    "detail": {
+      "pronunciation": "/sɛl ˌænɪˈmeɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "セルアニメーション",
+        "セル画を用いた伝統的な作画技法"
+      ],
+      "examples": [
+        {
+          "en": "Older fans still feel nostalgic for the distinct look of cel animation from the 1980s and '90s.",
+          "ja": "年配のファンは今でも、1980〜90年代のcel animation特有の風合いに懐かしさを感じている。"
+        },
+        {
+          "en": "Studios gradually phased out cel animation in favor of digital coloring during the late 1990s and 2000s.",
+          "ja": "多くのスタジオは1990年代後半から2000年代にかけて、cel animationから徐々にデジタル彩色へと移行していった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "digital animation",
+          "note": "コンピューター上で作画・彩色を行う、セル画に代わる現在主流の技法。"
+        }
+      ],
+      "origin": "英語の「cel」はアニメーションに使われる透明なセルロイド(celluloid)シートの略とされる。",
+      "trivia": "1コマごとに手作業で絵の具を塗る必要があったため、非常に手間のかかる技法だったとされる。",
+      "explanation": "透明なセルロイド(セル画)に手描きで彩色し、それを背景画の上に重ねて撮影する伝統的なアニメーション制作技法。現在は多くがデジタル作画に置き換わっている。",
+      "example_ja": "年配のファンは今でも、1980〜90年代のcel animation特有の風合いに懐かしさを感じている。",
+      "example_ja_src": "Older fans still feel nostalgic for the distinct look of cel animation from the 1980s and '90s."
+    }
+  },
+  {
+    "english": "in-between",
+    "detail": {
+      "pronunciation": "/ɪn bɪˈtwiːn/",
+      "pos": "名詞",
+      "meanings": [
+        "中割り",
+        "原画と原画の間をつなぐアニメーションの絵・工程"
+      ],
+      "examples": [
+        {
+          "en": "Junior animators are often assigned to draw the in-betweens under a senior artist's key animation.",
+          "ja": "新人のアニメーターは、たいてい先輩の描いた原画のin-betweenを描く担当を任される。"
+        },
+        {
+          "en": "Drawing clean, consistent in-betweens is one of the most fundamental skills an animator must learn.",
+          "ja": "滑らかで一貫性のあるin-betweenを描くことは、アニメーターが身につけるべき最も基本的な技術の一つだ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "key animation",
+          "note": "動きの要となる原画そのものを描く、より上位の工程。"
+        }
+      ],
+      "origin": "文字どおり「(原画と原画の)間に」を意味する一般英語表現が、そのまま業界用語として使われている。",
+      "trivia": "日本語では「中割り」または「動画」と呼ばれる工程に相当する。",
+      "explanation": "アニメーションにおいて、動きの要となる原画(キーフレーム)と原画の間を滑らかにつなぐために描かれる中割りの絵、またはその工程。",
+      "example_ja": "新人のアニメーターは、たいてい先輩の描いた原画のin-betweenを描く担当を任される。",
+      "example_ja_src": "Junior animators are often assigned to draw the in-betweens under a senior artist's key animation."
+    }
+  },
+  {
+    "english": "key animation",
+    "detail": {
+      "pronunciation": "/kiː ˌænɪˈmeɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "原画",
+        "シーンの重要な動きを決める作画工程"
+      ],
+      "examples": [
+        {
+          "en": "The veteran animator was credited for the key animation in the episode's climactic battle.",
+          "ja": "その熟練アニメーターは、そのエピソードのクライマックスの戦闘シーンのkey animationを担当したとしてクレジットされた。"
+        },
+        {
+          "en": "Key animation determines the essential poses of a scene, while less experienced staff fill in the movement between them.",
+          "ja": "key animationはシーンの要となるポーズを決定し、その間の動きは経験の浅いスタッフが描き足すことになる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "in-between",
+          "note": "原画と原画の間を埋める、より下位の工程。"
+        }
+      ],
+      "origin": "文字どおり「要となる(key)作画(animation)」を意味する英語表現で、日本語の「原画」に相当する業界用語である。",
+      "trivia": "誰が原画を担当したかは、しばしばファンの間で作画の質を評価する際の注目ポイントになる。",
+      "explanation": "シーンの重要な動き・ポーズを決定づける原画を描く工程で、通常は経験豊富なアニメーターが担当し、その後に中割り(in-between)が描き足される。",
+      "example_ja": "その熟練アニメーターは、そのエピソードのクライマックスの戦闘シーンのkey animationを担当したとしてクレジットされた。",
+      "example_ja_src": "The veteran animator was credited for the key animation in the episode's climactic battle."
+    }
+  },
+  {
+    "english": "opening theme",
+    "detail": {
+      "pronunciation": "/ˈoʊpənɪŋ θiːm/",
+      "pos": "名詞",
+      "meanings": [
+        "オープニング(OP)",
+        "各話冒頭に流れる主題歌・映像"
+      ],
+      "examples": [
+        {
+          "en": "Fans immediately recognized the show from just the first few notes of its opening theme.",
+          "ja": "ファンたちは、そのopening themeの最初の数音を聞いただけで、すぐにその作品だと気づいた。"
+        },
+        {
+          "en": "The show changed its opening theme every season to reflect the story's shifting tone.",
+          "ja": "その作品は、物語の雰囲気の変化に合わせて、シーズンごとにopening themeを変えていった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "ending theme",
+          "note": "各話の終わりに流れる主題歌・映像。"
+        }
+      ],
+      "origin": "文字どおり「始まりの(opening)主題歌(theme)」を意味する一般英語表現がそのまま業界用語として使われている。",
+      "trivia": "しばしば「OP」と略され、映像自体に本編のネタバレとなる伏線が仕込まれることもある。",
+      "explanation": "アニメ各話の冒頭に流れる主題歌と、それに合わせた映像のことで、しばしば「OP」と略される。",
+      "example_ja": "ファンたちは、そのopening themeの最初の数音を聞いただけで、すぐにその作品だと気づいた。",
+      "example_ja_src": "Fans immediately recognized the show from just the first few notes of its opening theme."
+    }
+  },
+  {
+    "english": "ending theme",
+    "detail": {
+      "pronunciation": "/ˈɛndɪŋ θiːm/",
+      "pos": "名詞",
+      "meanings": [
+        "エンディング(ED)",
+        "各話終わりに流れる主題歌・映像"
+      ],
+      "examples": [
+        {
+          "en": "The ending theme's melancholic melody perfectly matched the episode's bittersweet conclusion.",
+          "ja": "そのending themeの物悲しい旋律は、そのエピソードのほろ苦い結末とぴったり合っていた。"
+        },
+        {
+          "en": "Some shows use a calm ending theme to help viewers decompress after an intense episode.",
+          "ja": "作品によっては、激しい展開の話の後に視聴者が気持ちを落ち着けられるよう、穏やかなending themeを使うこともある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "opening theme",
+          "note": "各話の冒頭に流れる主題歌・映像。"
+        }
+      ],
+      "origin": "文字どおり「終わりの(ending)主題歌(theme)」を意味する一般英語表現がそのまま業界用語として使われている。",
+      "trivia": "しばしば「ED」と略され、オープニングとは対照的に落ち着いた曲調が選ばれることも多い。",
+      "explanation": "アニメ各話の終わりに流れる主題歌と、それに合わせた映像のことで、しばしば「ED」と略される。",
+      "example_ja": "そのending themeの物悲しい旋律は、そのエピソードのほろ苦い結末とぴったり合っていた。",
+      "example_ja_src": "The ending theme's melancholic melody perfectly matched the episode's bittersweet conclusion."
+    }
+  },
+  {
+    "english": "light novel",
+    "detail": {
+      "pronunciation": "/laɪt ˈnɑːvəl/",
+      "pos": "名詞",
+      "meanings": [
+        "ライトノベル",
+        "挿絵入りの若年層向け日本の小説形式"
+      ],
+      "examples": [
+        {
+          "en": "The anime is based on a best-selling light novel series with over a dozen volumes.",
+          "ja": "そのアニメは、10巻を超える売れ行き好調なlight novelシリーズを原作としている。"
+        },
+        {
+          "en": "Light novels are typically written in a simple, easy-to-read style aimed at teenage readers.",
+          "ja": "light novelは通常、ティーン読者に向けて、平易で読みやすい文体で書かれている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "日本語の「ライトノベル」は和製英語で、比較的軽い読み口の小説を指す語として作られたとされる。",
+      "trivia": "近年は長く回りくどいタイトルが流行の一つになっており、しばしばファンの間で話題になる。",
+      "explanation": "主にティーン・若年層向けに書かれた、比較的短くマンガ風のイラストが多数挿入される日本の小説形式で、しばしばアニメ化される。",
+      "example_ja": "そのアニメは、10巻を超える売れ行き好調なlight novelシリーズを原作としている。",
+      "example_ja_src": "The anime is based on a best-selling light novel series with over a dozen volumes."
+    }
+  },
+  {
+    "english": "doujinshi",
+    "detail": {
+      "pronunciation": "/ˌdoʊdʒɪnˈʃiː/",
+      "pos": "名詞",
+      "meanings": [
+        "同人誌",
+        "ファンが自費出版する非公式の二次創作マンガ"
+      ],
+      "examples": [
+        {
+          "en": "She sold her doujinshi based on her favorite series at the convention's artist alley.",
+          "ja": "彼女はお気に入りの作品を題材にしたdoujinshiを、同人誌即売会のアーティストアレイで販売した。"
+        },
+        {
+          "en": "Some professional manga artists got their start by selling doujinshi at conventions before being scouted.",
+          "ja": "プロのマンガ家の中には、コンベンションでdoujinshiを販売していたことがきっかけでスカウトされた人もいる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "日本語の「同人誌」がそのまま英語圏のファンにも借用された語である。",
+      "trivia": "既存作品の二次創作だけでなく、完全にオリジナルの自主制作作品を指すこともある。",
+      "explanation": "既存の作品を題材にすることも多い、ファン自身が自費出版する非公式の同人誌・マンガで、主に同人即売会で販売される。",
+      "example_ja": "彼女はお気に入りの作品を題材にしたdoujinshiを、同人誌即売会のアーティストアレイで販売した。",
+      "example_ja_src": "She sold her doujinshi based on her favorite series at the convention's artist alley."
+    }
+  },
+  {
+    "english": "fan art",
+    "detail": {
+      "pronunciation": "/fæn ɑːrt/",
+      "pos": "名詞",
+      "meanings": [
+        "ファンアート",
+        "ファンが非公式に描く二次創作の絵"
+      ],
+      "examples": [
+        {
+          "en": "The artist posted a piece of fan art depicting her favorite two characters together.",
+          "ja": "そのイラストレーターは、お気に入りのキャラクター二人を一緒に描いたfan artを投稿した。"
+        },
+        {
+          "en": "Artists often post fan art online to show appreciation for a series without any official endorsement.",
+          "ja": "アーティストたちは、公式の承認なしに、ある作品への愛着を表すためにネット上でfan artを投稿することが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「ファン(fan)」と「作品・芸術(art)」を組み合わせた、比較的分かりやすい一般英語の複合語である。",
+      "trivia": "アニメ・マンガに限らず、映画やゲームなどあらゆるフィクション作品のファンダムで広く使われる語である。",
+      "explanation": "公式のライセンスを受けていない、ファンが自主的に制作する既存キャラクターや作品を題材にした絵。",
+      "example_ja": "そのイラストレーターは、お気に入りのキャラクター二人を一緒に描いたfan artを投稿した。",
+      "example_ja_src": "The artist posted a piece of fan art depicting her favorite two characters together."
+    }
+  },
+  {
+    "english": "fanfiction",
+    "detail": {
+      "pronunciation": "/ˈfænfɪkʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "ファンフィクション",
+        "ファンが書く非公式の二次創作小説"
+      ],
+      "examples": [
+        {
+          "en": "He has written over a hundred chapters of fanfiction exploring an alternate ending to the series.",
+          "ja": "彼は、その作品の別のエンディングを描く、100章を超えるfanfictionを書き続けている。"
+        },
+        {
+          "en": "Fanfiction lets writers explore what-if scenarios that the original creators never touched on.",
+          "ja": "fanfictionを書くことで、原作の作者が扱わなかった「もしも」のシナリオを自由に描くことができる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "fic",
+          "note": "fanfictionのくだけた略称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「ファン(fan)」と「フィクション(fiction)」を組み合わせた、分かりやすい一般英語の複合語である。",
+      "trivia": "近年ではオリジナル小説投稿サイトの中にも、元々はfanfiction投稿サイトから発展したものがある。",
+      "explanation": "既存の作品の登場人物や世界観を借りて、ファンが公式の許可なく執筆する二次創作の小説。",
+      "example_ja": "彼は、その作品の別のエンディングを描く、100章を超えるfanfictionを書き続けている。",
+      "example_ja_src": "He has written over a hundred chapters of fanfiction exploring an alternate ending to the series."
+    }
+  },
+  {
+    "english": "sub",
+    "detail": {
+      "pronunciation": "/sʌb/",
+      "pos": "名詞",
+      "meanings": [
+        "字幕版",
+        "音声はそのままで字幕を付けたバージョン"
+      ],
+      "examples": [
+        {
+          "en": "He prefers watching anime in sub rather than dub to hear the original Japanese performances.",
+          "ja": "彼は、オリジナルの日本語での演技を聞きたいので、吹き替えよりもsubで見る方を好む。"
+        },
+        {
+          "en": "Streaming platforms usually release the sub before the dub, since dubbing takes longer to produce.",
+          "ja": "配信プラットフォームは通常、吹き替えより先にsubを配信する。吹き替え制作の方が時間がかかるためだ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "dub",
+          "note": "声を別の言語に吹き替えたバージョン。"
+        }
+      ],
+      "origin": "「subtitled(字幕付きの)」を短縮した略語である。",
+      "trivia": "熱心なファンの間では、「sub派」か「dub派」かで好みが分かれ、しばしば話題になる。",
+      "explanation": "「subtitled」の略で、声は原語のまま字幕を付けたバージョンの作品を指し、声を吹き替えた「dub」と対比される。",
+      "example_ja": "彼は、オリジナルの日本語での演技を聞きたいので、吹き替えよりもsubで見る方を好む。",
+      "example_ja_src": "He prefers watching anime in sub rather than dub to hear the original Japanese performances."
+    }
+  },
+  {
+    "english": "OVA",
+    "detail": {
+      "pronunciation": "/ˌoʊviːˈeɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "OVA",
+        "テレビ・劇場を経ず映像ソフトとして発売される作品"
+      ],
+      "examples": [
+        {
+          "en": "The extra story arc was never broadcast on TV and was instead released as an OVA.",
+          "ja": "その追加のストーリー編はテレビでは一度も放送されず、代わりにOVAとして発売された。"
+        },
+        {
+          "en": "Many OVAs from the 1980s and '90s featured more graphic violence than their TV counterparts.",
+          "ja": "1980〜90年代の多くのOVAは、テレビ版よりも生々しい暴力描写を含んでいた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "ONA",
+          "note": "テレビ放送を経ず、インターネット配信を前提に作られる作品。"
+        }
+      ],
+      "origin": "「original video animation」の頭文字を取った略語である。",
+      "trivia": "テレビ放送の規制を受けにくいため、より過激な表現やニッチな題材に挑戦しやすい媒体だったとされる。",
+      "explanation": "「original video animation」の略で、テレビ放送や劇場公開を経ずに、ビデオソフトとして直接発売されるアニメ作品。",
+      "example_ja": "その追加のストーリー編はテレビでは一度も放送されず、代わりにOVAとして発売された。",
+      "example_ja_src": "The extra story arc was never broadcast on TV and was instead released as an OVA."
+    }
+  },
+  {
+    "english": "ONA",
+    "detail": {
+      "pronunciation": "/ˌoʊɛnˈeɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "ONA",
+        "インターネット配信を前提に作られる作品"
+      ],
+      "examples": [
+        {
+          "en": "The studio released the short series as an ONA exclusively on a streaming platform.",
+          "ja": "そのスタジオは、その短編シリーズをテレビ放送を経ず、配信プラットフォーム限定のONAとして公開した。"
+        },
+        {
+          "en": "The rise of streaming platforms has made ONA an increasingly common way to release short anime series.",
+          "ja": "配信プラットフォームの台頭により、ONAは短編アニメシリーズを公開する手段としてますます一般的になっている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "OVA",
+          "note": "映像ソフトとして直接発売される作品。"
+        }
+      ],
+      "origin": "「original net animation」の頭文字を取った略語である。",
+      "trivia": "インターネット配信の普及とともに、近年OVAに代わって使われる頻度が増えている呼び方とされる。",
+      "explanation": "「original net animation」の略で、テレビ放送を経ずにインターネット配信を前提として直接公開されるアニメ作品。",
+      "example_ja": "そのスタジオは、その短編シリーズをテレビ放送を経ず、配信プラットフォーム限定のONAとして公開した。",
+      "example_ja_src": "The studio released the short series as an ONA exclusively on a streaming platform."
+    }
+  },
+  {
+    "english": "shipping",
+    "detail": {
+      "pronunciation": "/ˈʃɪpɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "カップリング支持",
+        "2人のキャラの恋愛関係を望むファンの行為"
+      ],
+      "examples": [
+        {
+          "en": "Fans have been shipping the two rival characters together since the very first season.",
+          "ja": "ファンたちは、最初のシーズン以来ずっと、その2人のライバルキャラクターのshippingを続けている。"
+        },
+        {
+          "en": "Shipping two characters doesn't require the story itself to confirm a romance between them.",
+          "ja": "2人のキャラクターをshippingすることは、物語自体がその2人の恋愛関係を確定させることを必ずしも必要としない。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "OTP",
+          "note": "shippingしている組み合わせの中でも特に一番のお気に入り。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「(貨物を)輸送する」という意味の一般英語「ship」が転じて、「relationship(関係)」を望むという意味のファン用語になったとされる。",
+      "trivia": "作中で実際に恋人同士になる「canon(公式)」の関係と、ファンの想像・願望に留まる関係を区別する際にも使われる語である。",
+      "explanation": "特定の2人のキャラクターが恋愛関係にあることを望んだり、その組み合わせを応援したりするファンの行為。",
+      "example_ja": "ファンたちは、最初のシーズン以来ずっと、その2人のライバルキャラクターのshippingを続けている。",
+      "example_ja_src": "Fans have been shipping the two rival characters together since the very first season."
+    }
+  },
+  {
+    "english": "cour",
+    "detail": {
+      "pronunciation": "/kʊər/",
+      "pos": "名詞",
+      "meanings": [
+        "クール",
+        "約3か月を単位とする日本のテレビ放送期間"
+      ],
+      "examples": [
+        {
+          "en": "The series was originally planned as a single cour but was extended to two cours due to its popularity.",
+          "ja": "その作品は元々1クール(1cour)だけの予定だったが、人気が出たため2クールに延長された。"
+        },
+        {
+          "en": "A typical one-cour anime runs for about twelve or thirteen episodes.",
+          "ja": "典型的な1クール(one-cour)のアニメは、およそ12〜13話にわたって放送される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "フランス語で「(学校の)過程・期間」を意味する語に由来するとされ、日本のテレビ業界用語として定着したものが英語圏にも借用されたとされる。",
+      "trivia": "1クールは日本の放送業界の慣行に基づく単位で、海外の視聴者にとってはやや分かりにくい概念とされる。",
+      "explanation": "日本のテレビアニメ業界で使われる、およそ3か月(1クール)を単位とする放送期間の呼び方で、作品の長さを「2クール」のように表す際に用いられる。",
+      "example_ja": "その作品は元々1クール(1cour)だけの予定だったが、人気が出たため2クールに延長された。",
+      "example_ja_src": "The series was originally planned as a single cour but was extended to two cours due to its popularity."
+    }
+  },
+  {
+    "english": "recap episode",
+    "detail": {
+      "pronunciation": "/ˈriːkæp ˈɛpɪsoʊd/",
+      "pos": "名詞",
+      "meanings": [
+        "総集編",
+        "過去の映像を振り返るだけで新展開のない回"
+      ],
+      "examples": [
+        {
+          "en": "Fans were disappointed to find that the tenth episode was just a recap episode with no new footage.",
+          "ja": "ファンたちは、10話目が新しい映像のない、単なるrecap episodeだったことにがっかりした。"
+        },
+        {
+          "en": "Some anime insert a recap episode near the end of a cour to give the animation staff extra production time.",
+          "ja": "一部のアニメは、制作スタッフに追加の作業時間を確保させるため、クールの終盤近くにrecap episodeを挟むことがある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「要約する(recap)」と「話数(episode)」を組み合わせた、分かりやすい一般英語の複合語である。",
+      "trivia": "しばしば制作スケジュールの遅れを調整するための、いわば「時間稼ぎ」の回として挿入されるとされる。",
+      "explanation": "新しい展開を進めず、これまでの回想映像を中心に構成して物語を振り返る回のこと。",
+      "example_ja": "ファンたちは、10話目が新しい映像のない、単なるrecap episodeだったことにがっかりした。",
+      "example_ja_src": "Fans were disappointed to find that the tenth episode was just a recap episode with no new footage."
+    }
+  },
+  {
+    "english": "metroidvania",
+    "detail": {
+      "pronunciation": "/məˈtrɔɪdˌvɑːniə/",
+      "pos": "名詞",
+      "meanings": [
+        "メトロイドヴァニア",
+        "非線形な広い一枚マップを探索するアクションゲームのジャンル"
+      ],
+      "examples": [
+        {
+          "en": "The indie game is a metroidvania where you gain new abilities that let you revisit earlier areas.",
+          "ja": "そのインディーゲームはmetroidvaniaで、新しい能力を得ることで以前訪れたエリアを再訪できるようになる。"
+        },
+        {
+          "en": "Metroidvania fans love the moment a new ability suddenly reveals a shortcut back to an earlier area.",
+          "ja": "metroidvaniaのファンは、新しい能力を得た瞬間に以前のエリアへの近道が突然見えてくる、あの感覚を愛している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "『メトロイド』と『悪魔城ドラキュラ(Castlevania)』という2つの代表的なシリーズ名を組み合わせた造語である。",
+      "trivia": "ジャンルの名付け親であるこの2作は直接の関係はないが、探索型のゲームデザインという共通点からファンにこう呼ばれるようになったとされる。",
+      "explanation": "『メトロイド』と『悪魔城ドラキュラ』に由来する名称で、広大な一つのマップを、新しい能力を獲得しながら非線形に探索していくアクションアドベンチャーゲームのジャンル。",
+      "example_ja": "そのインディーゲームはmetroidvaniaで、新しい能力を得ることで以前訪れたエリアを再訪できるようになる。",
+      "example_ja_src": "The indie game is a metroidvania where you gain new abilities that let you revisit earlier areas."
+    }
+  },
+  {
+    "english": "soulslike",
+    "detail": {
+      "pronunciation": "/soʊlz laɪk/",
+      "pos": "名詞",
+      "meanings": [
+        "ソウルライク",
+        "『ダークソウル』を手本とした高難度アクションRPGのジャンル"
+      ],
+      "examples": [
+        {
+          "en": "Critics called the new title a soulslike thanks to its punishing bosses and stamina-based combat.",
+          "ja": "批評家たちは、その理不尽なボスとスタミナ管理型の戦闘から、その新作をsoulslikeと評した。"
+        },
+        {
+          "en": "Soulslike games are notorious for punishing players who get careless, even against seemingly weak enemies.",
+          "ja": "soulslikeのゲームは、一見弱そうな敵が相手でも、油断したプレイヤーを容赦なく罰することで悪名高い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "souls-like",
+          "note": "同じ語のハイフンありの表記ゆれ。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "フロム・ソフトウェアの『ダークソウル(Dark Souls)』シリーズの名前に、「〜のような」を意味する「-like」を付けた語である。",
+      "trivia": "『ダークソウル』自体はさらに前作『デモンズソウル』の精神的続編であり、両者ともこのジャンルの源流とされる。",
+      "explanation": "フロム・ソフトウェアの『ダークソウル』シリーズを手本とした、高い難易度と丁寧な戦闘、少ないチュートリアルを特徴とするアクションRPGのジャンル・作風。",
+      "example_ja": "批評家たちは、その理不尽なボスとスタミナ管理型の戦闘から、その新作をsoulslikeと評した。",
+      "example_ja_src": "Critics called the new title a soulslike thanks to its punishing bosses and stamina-based combat."
+    }
+  },
+  {
+    "english": "battle royale",
+    "detail": {
+      "pronunciation": "/ˈbætəl rɔɪˈɑːl/",
+      "pos": "名詞",
+      "meanings": [
+        "バトルロイヤル",
+        "多数のプレイヤーが生き残りを競うゲームジャンル"
+      ],
+      "examples": [
+        {
+          "en": "A hundred players parachute onto the island at the start of every battle royale match.",
+          "ja": "百人のプレイヤーが、それぞれのbattle royaleの試合開始と同時に島へパラシュート降下する。"
+        },
+        {
+          "en": "The battle royale map slowly shrinks over time, forcing surviving players closer together.",
+          "ja": "battle royaleのマップは時間とともに徐々に縮小し、生き残ったプレイヤー同士を否応なく近づけていく。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "日本の映画『バトル・ロワイアル』の英語タイトルに由来するとされ、後にこのゲームジャンル全体の名称として定着した。",
+      "trivia": "この映画自体は「多数の参加者が生き残りをかけて戦う」という設定で知られ、ジャンル名の由来として広く語られている。",
+      "explanation": "多数のプレイヤーが縮小していくマップの中で戦い、最後まで生き残った一人(またはチーム)が勝者となる対戦ゲームのジャンル。",
+      "example_ja": "百人のプレイヤーが、それぞれのbattle royaleの試合開始と同時に島へパラシュート降下する。",
+      "example_ja_src": "A hundred players parachute onto the island at the start of every battle royale match."
+    }
+  },
+  {
+    "english": "tier list",
+    "detail": {
+      "pronunciation": "/tɪər lɪst/",
+      "pos": "名詞",
+      "meanings": [
+        "ティア表",
+        "強さの序列でキャラ等を分類した一覧表"
+      ],
+      "examples": [
+        {
+          "en": "According to the latest tier list, that character has fallen from S-rank to B-rank after the balance patch.",
+          "ja": "最新のtier listによれば、そのキャラクターはバランス調整パッチの後、Sランクからaランクに落ちてしまった。"
+        },
+        {
+          "en": "Competitive players constantly argue online about whether a given tier list is accurate.",
+          "ja": "競技志向のプレイヤーたちは、あるtier listが本当に正確かどうかをめぐって、ネット上で常に議論している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "強さの「等級・段階」を意味する「tier」と、一覧を意味する「list」を組み合わせた表現である。",
+      "trivia": "ゲームバランスの調整パッチが出るたびに、ファンや攻略サイトが新しいtier listを作り直すのが恒例になっている。",
+      "explanation": "キャラクターや武器、戦術などを強さの序列に応じてS・A・Bのような等級(ティア)に分類した一覧表。",
+      "example_ja": "最新のtier listによれば、そのキャラクターはバランス調整パッチの後、Sランクからaランクに落ちてしまった。",
+      "example_ja_src": "According to the latest tier list, that character has fallen from S-rank to B-rank after the balance patch."
+    }
+  },
+  {
+    "english": "gacha",
+    "detail": {
+      "pronunciation": "/ˈɡɑːtʃə/",
+      "pos": "名詞",
+      "meanings": [
+        "ガチャ",
+        "ランダムでキャラ等が手に入る課金システム"
+      ],
+      "examples": [
+        {
+          "en": "She spent all her saved-up currency trying to pull the new character from the gacha.",
+          "ja": "彼女は貯めていたゲーム内通貨を全部使って、新キャラクターをgachaから引き当てようとした。"
+        },
+        {
+          "en": "Many mobile games earn most of their revenue through gacha mechanics rather than upfront purchases.",
+          "ja": "多くのスマートフォンゲームは、最初の購入代金よりもgachaの仕組みを通じて大半の収益を得ている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "loot box",
+          "note": "同様にランダムでアイテムが手に入る仕組みだが、キャラクター獲得に特化することが多いgachaとはやや文脈が異なる。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "日本語の「ガチャガチャ(カプセルトイの自動販売機)」に由来する語がそのまま英語圏にも借用されたとされる。",
+      "trivia": "ギャンブルに類似した仕組みだとして、一部の国では法規制の対象になっている点でも話題になる用語である。",
+      "explanation": "カプセルトイの自動販売機になぞらえた仕組みで、現実のお金やゲーム内通貨を使い、ランダムにキャラクターやアイテムを入手できる課金システム。",
+      "example_ja": "彼女は貯めていたゲーム内通貨を全部使って、新キャラクターをgachaから引き当てようとした。",
+      "example_ja_src": "She spent all her saved-up currency trying to pull the new character from the gacha."
+    }
+  },
+  {
+    "english": "whale (gaming)",
+    "detail": {
+      "pronunciation": "/weɪl/",
+      "pos": "名詞",
+      "meanings": [
+        "(ゲームへの)大口課金者",
+        "極端に多額を課金するプレイヤーを指すスラング"
+      ],
+      "examples": [
+        {
+          "en": "A single whale can generate more revenue for the game than thousands of free players combined.",
+          "ja": "たった一人のwhaleが、何千人もの無課金プレイヤーを合計したよりも多くの収益をゲームにもたらすことがある。"
+        },
+        {
+          "en": "Game developers sometimes design special offers specifically to attract whales.",
+          "ja": "ゲーム開発者は、whaleを引き付けることを特に狙った特別なオファーを用意することがある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "カジノ業界で「大金を賭ける客」を「whale(クジラ)」と呼んでいた俗語が、ゲーム業界にも転用されたとされる。",
+      "trivia": "課金者全体のごく一部にすぎないwhaleが、多くの基本プレイ無料ゲームの収益の大部分を占めているとされる。",
+      "explanation": "基本プレイ無料のゲームに対して、通常のプレイヤーよりも極端に多額の実際のお金を課金するプレイヤーを指すスラング。",
+      "example_ja": "たった一人のwhaleが、何千人もの無課金プレイヤーを合計したよりも多くの収益をゲームにもたらすことがある。",
+      "example_ja_src": "A single whale can generate more revenue for the game than thousands of free players combined."
+    }
+  },
+  {
+    "english": "MMR",
+    "detail": {
+      "pronunciation": "/ˌɛmɛmˈɑːr/",
+      "pos": "名詞",
+      "meanings": [
+        "マッチメイキングレーティング",
+        "プレイヤーの実力を表す評価値"
+      ],
+      "examples": [
+        {
+          "en": "Winning ranked matches gradually increased his MMR, matching him against tougher opponents.",
+          "ja": "ランク戦での勝利を重ねるうちに、彼のMMRは徐々に上がり、より手強い対戦相手と組まれるようになった。"
+        },
+        {
+          "en": "A sudden losing streak can cause a player's MMR to drop rapidly.",
+          "ja": "急に連敗が続くと、プレイヤーのMMRは急速に下がってしまうことがある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "elo",
+          "note": "同様にプレイヤーの実力を数値化する評価方式で、元々はチェス向けに考案された。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「matchmaking rating(マッチメイキングの評価値)」の頭文字を取った略語である。",
+      "trivia": "多くの対戦ゲームでは、このMMRをもとに近い実力同士のプレイヤーが自動的に組み合わされる。",
+      "explanation": "「matchmaking rating」の略で、プレイヤーの実力を数値化し、近い実力同士の対戦相手を組み合わせるために使われる評価値。",
+      "example_ja": "ランク戦での勝利を重ねるうちに、彼のMMRは徐々に上がり、より手強い対戦相手と組まれるようになった。",
+      "example_ja_src": "Winning ranked matches gradually increased his MMR, matching him against tougher opponents."
+    }
+  },
+  {
+    "english": "frame data",
+    "detail": {
+      "pronunciation": "/freɪm ˈdeɪtə/",
+      "pos": "名詞",
+      "meanings": [
+        "フレームデータ",
+        "技の発生・持続・硬直をフレーム単位で表す数値情報"
+      ],
+      "examples": [
+        {
+          "en": "Competitive players memorize frame data to know exactly which moves are safe to punish.",
+          "ja": "競技志向のプレイヤーたちは、どの技が反撃を確実に受けるかを知るために、frame dataを暗記している。"
+        },
+        {
+          "en": "Studying frame data can reveal that a flashy-looking move is actually very unsafe on block.",
+          "ja": "frame dataを研究すると、見た目は派手な技が実はガードされた際に非常に危険だということが分かることがある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「フレーム(frame、映像の1コマ)」と「データ(data)」を組み合わせた表現である。",
+      "trivia": "格闘ゲームは通常1秒間に60フレームで動作しており、frame dataはこの単位を基準に技の性能を表す。",
+      "explanation": "格闘ゲームにおいて、ある技が発生してからヒットし、動作から復帰するまでにかかる正確なフレーム数の数値情報で、上級者が戦略を練るために参照する。",
+      "example_ja": "競技志向のプレイヤーたちは、どの技が反撃を確実に受けるかを知るために、frame dataを暗記している。",
+      "example_ja_src": "Competitive players memorize frame data to know exactly which moves are safe to punish."
+    }
+  },
+  {
+    "english": "esports",
+    "detail": {
+      "pronunciation": "/ˈiːspɔːrts/",
+      "pos": "名詞",
+      "meanings": [
+        "eスポーツ",
+        "組織的・競技的なビデオゲーム対戦全般"
+      ],
+      "examples": [
+        {
+          "en": "The esports tournament filled an entire arena with fans cheering for their favorite teams.",
+          "ja": "そのesportsの大会は、お気に入りのチームを応援するファンで会場全体が埋め尽くされた。"
+        },
+        {
+          "en": "Esports has grown to the point where top players can earn a living entirely through tournament winnings and sponsorships.",
+          "ja": "esportsは、トッププレイヤーが大会賞金やスポンサー契約だけで生計を立てられるほどにまで成長した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「エレクトロニック(electronic)」と「スポーツ(sports)」を組み合わせた略語である。",
+      "trivia": "現在では多くの国際大会が大規模なスタジアムで開催され、テレビの伝統的なスポーツ中継に匹敵する規模になっている。",
+      "explanation": "観客やスポンサー、賞金を伴い、プロとしても行われる組織的な対戦型ビデオゲームの競技全般を指す語。",
+      "example_ja": "そのesportsの大会は、お気に入りのチームを応援するファンで会場全体が埋め尽くされた。",
+      "example_ja_src": "The esports tournament filled an entire arena with fans cheering for their favorite teams."
+    }
+  },
+  {
+    "english": "LAN party",
+    "detail": {
+      "pronunciation": "/læn ˈpɑːrti/",
+      "pos": "名詞",
+      "meanings": [
+        "LANパーティー",
+        "各自のPCを持ち寄って行う対戦ゲーム会"
+      ],
+      "examples": [
+        {
+          "en": "Before online gaming became common, friends would host a LAN party to play together in one room.",
+          "ja": "オンライン対戦が一般的になる以前、友人たちは一つの部屋に集まって一緒に遊ぶため、LAN partyを開いていた。"
+        },
+        {
+          "en": "Before broadband internet was widespread, a LAN party was often the only practical way to play multiplayer PC games together.",
+          "ja": "ブロードバンド回線が普及する以前は、LAN partyがPCの対戦ゲームを一緒に遊ぶ、ほぼ唯一の現実的な方法だったこともある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「ローカルエリアネットワーク(local area network、LAN)」と「パーティー(party、集まり)」を組み合わせた表現である。",
+      "trivia": "オンライン対戦網が発達した現在では下火になったが、一部の熱心なファンの間では今も開催され続けている。",
+      "explanation": "複数のプレイヤーが各自のパソコンを持ち寄り、同じ場所でローカルネットワークを組んで一緒に対戦ゲームを楽しむ集まり。",
+      "example_ja": "オンライン対戦が一般的になる以前、友人たちは一つの部屋に集まって一緒に遊ぶため、LAN partyを開いていた。",
+      "example_ja_src": "Before online gaming became common, friends would host a LAN party to play together in one room."
+    }
+  },
+  {
+    "english": "hotfix",
+    "detail": {
+      "pronunciation": "/ˈhɑːtfɪks/",
+      "pos": "名詞",
+      "meanings": [
+        "緊急修正パッチ",
+        "重大な不具合を急いで直す小規模な更新"
+      ],
+      "examples": [
+        {
+          "en": "The developers pushed out a hotfix within hours after the exploit was discovered.",
+          "ja": "開発チームは、その悪用手法が見つかってから数時間のうちにhotfixを配信した。"
+        },
+        {
+          "en": "A hotfix usually addresses a single critical issue, unlike a full patch that bundles many changes together.",
+          "ja": "多くの変更をまとめた通常のパッチとは異なり、hotfixは通常一つの重大な問題だけに対応する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「緊急の(hot)」と「修正(fix)」を組み合わせた、ソフトウェア業界全般で使われる表現である。",
+      "trivia": "ゲームに限らず、あらゆるソフトウェア開発で使われる一般的な業界用語でもある。",
+      "explanation": "重大な不具合を修正するために、通常の大型パッチのサイクルを待たずに緊急で配信される小規模な更新。",
+      "example_ja": "開発チームは、その悪用手法が見つかってから数時間のうちにhotfixを配信した。",
+      "example_ja_src": "The developers pushed out a hotfix within hours after the exploit was discovered."
+    }
+  },
+  {
+    "english": "loot box",
+    "detail": {
+      "pronunciation": "/luːt bɑːks/",
+      "pos": "名詞",
+      "meanings": [
+        "ルートボックス",
+        "ランダムなアイテムが手に入る購入型の入れ物"
+      ],
+      "examples": [
+        {
+          "en": "The game was criticized for selling loot boxes that gave players a random chance at rare weapons.",
+          "ja": "そのゲームは、レアな武器が当たるランダムな確率のloot boxを販売していることで批判を浴びた。"
+        },
+        {
+          "en": "Several countries have debated whether loot boxes should be regulated like gambling.",
+          "ja": "いくつかの国では、loot boxをギャンブルと同様に規制すべきかどうかが議論されてきた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "gacha",
+          "note": "同様の仕組みを指す、特に日本のスマートフォンゲームで使われる呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "戦利品を意味する「loot」と、箱を意味する「box」を組み合わせた表現である。",
+      "trivia": "その確率がギャンブルの仕組みに類似しているとして、各国の規制当局から注目されている用語である。",
+      "explanation": "購入することで、ランダムに選ばれたゲーム内アイテムが手に入る仕組みの入れ物で、一部からギャンブルに近いと批判されることもある。",
+      "example_ja": "そのゲームは、レアな武器が当たるランダムな確率のloot boxを販売していることで批判を浴びた。",
+      "example_ja_src": "The game was criticized for selling loot boxes that gave players a random chance at rare weapons."
+    }
+  },
+  {
+    "english": "pay-to-win",
+    "detail": {
+      "pronunciation": "/peɪ tə wɪn/",
+      "pos": "形容詞",
+      "meanings": [
+        "ペイトゥウィン",
+        "課金者が有利になるゲームの仕組み"
+      ],
+      "examples": [
+        {
+          "en": "Fans complained that the sequel had become far more pay-to-win than the original game.",
+          "ja": "ファンたちは、続編がオリジナル版よりもはるかにpay-to-winになってしまったと不満を述べた。"
+        },
+        {
+          "en": "Critics call a game pay-to-win when spending money is far more efficient than simply playing more.",
+          "ja": "単にプレイ時間を増やすよりも課金する方がはるかに効率的な場合、批評家たちはそのゲームをpay-to-winと呼ぶ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "free-to-play",
+          "note": "課金が任意で、優位性に直結しない設計を指す、より中立的な語。"
+        }
+      ],
+      "origin": "「お金を払う(pay)」と「勝つ(win)」を「〜するために」を意味する「to」でつないだ表現である。",
+      "trivia": "同じ基本プレイ無料のゲームでも、課金要素が見た目だけの「化粧」に留まるものは批判の対象になりにくいとされる。",
+      "explanation": "実際にお金を課金したプレイヤーが、そうでないプレイヤーに対して大きな競技上の優位を得られるようなゲームの仕組みを指す形容表現。",
+      "example_ja": "ファンたちは、続編がオリジナル版よりもはるかにpay-to-winになってしまったと不満を述べた。",
+      "example_ja_src": "Fans complained that the sequel had become far more pay-to-win than the original game."
+    }
+  },
+  {
+    "english": "free-to-play",
+    "detail": {
+      "pronunciation": "/friː tə pleɪ/",
+      "pos": "形容詞",
+      "meanings": [
+        "基本プレイ無料",
+        "購入せず遊べ、追加課金が任意のゲーム形態"
+      ],
+      "examples": [
+        {
+          "en": "The free-to-play game earns its revenue almost entirely from optional cosmetic purchases.",
+          "ja": "そのfree-to-playのゲームは、ほぼ全ての収益を見た目だけの任意課金アイテムから得ている。"
+        },
+        {
+          "en": "Free-to-play games need to balance monetization carefully so players don't feel pressured to spend money.",
+          "ja": "free-to-playのゲームは、プレイヤーが課金を強いられていると感じないよう、マネタイズのバランスを慎重に取る必要がある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "F2P",
+          "note": "free-to-playのくだけた略称。"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "pay-to-win",
+          "note": "課金が競技上の優位に直結してしまう、批判的な意味合いを持つ語。"
+        }
+      ],
+      "origin": "「無料で(free)」「遊ぶ(play)」ことが「〜できる(to)」という一般英語の表現をそのまま組み合わせた語である。",
+      "trivia": "近年のゲーム業界で最も一般的な収益モデルの一つになっている呼び方である。",
+      "explanation": "購入せずに遊ぶことができ、追加のコンテンツなどは任意で課金できるようになっているゲームの形態を指す形容表現。",
+      "example_ja": "そのfree-to-playのゲームは、ほぼ全ての収益を見た目だけの任意課金アイテムから得ている。",
+      "example_ja_src": "The free-to-play game earns its revenue almost entirely from optional cosmetic purchases."
+    }
+  },
+  {
+    "english": "toxic (gaming)",
+    "detail": {
+      "pronunciation": "/ˈtɑːksɪk/",
+      "pos": "形容詞",
+      "meanings": [
+        "(ゲームで)攻撃的・非協力的な",
+        "暴言などの敵意ある振る舞いを指すゲーマー用語"
+      ],
+      "examples": [
+        {
+          "en": "He muted the chat because one player kept being toxic toward the rest of the team.",
+          "ja": "彼は、一人のプレイヤーがチームの他のメンバーに対してtoxicな態度を取り続けたため、チャットをミュートにした。"
+        },
+        {
+          "en": "Voice chat bans are one way developers try to reduce toxic behavior in competitive matches.",
+          "ja": "ボイスチャットの利用制限は、開発側が対戦モードでのtoxicな振る舞いを減らそうとする対策の一つだ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「有毒な」を意味する一般英語の「toxic」が、ゲーマーコミュニティの中で「有害な振る舞い」を表す比喩的な意味に転用されたとされる。",
+      "trivia": "多くの対戦ゲームの運営会社が、この種の言動をチャット制限やアカウント停止の対象にしている。",
+      "explanation": "チームメイトや対戦相手に対する、暴言や非協力的な態度など敵意ある・スポーツマンシップに欠ける振る舞いを指すゲーマー用語。",
+      "example_ja": "彼は、一人のプレイヤーがチームの他のメンバーに対してtoxicな態度を取り続けたため、チャットをミュートにした。",
+      "example_ja_src": "He muted the chat because one player kept being toxic toward the rest of the team."
+    }
+  },
+  {
+    "english": "rubberbanding",
+    "detail": {
+      "pronunciation": "/ˈrʌbərˌbændɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "ラバーバンディング",
+        "通信遅延で位置が巻き戻る現象"
+      ],
+      "examples": [
+        {
+          "en": "His car appeared to teleport backward due to rubberbanding caused by a poor connection.",
+          "ja": "通信状態が悪かったせいで、彼の車はrubberbandingによって突然後ろに瞬間移動したように見えた。"
+        },
+        {
+          "en": "Severe rubberbanding can make it nearly impossible to aim accurately in a fast-paced shooter.",
+          "ja": "深刻なrubberbandingが起きると、テンポの速いシューティングゲームで正確に照準を合わせることがほとんど不可能になる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "伸びたゴムひも(rubber band)に引き戻されるような動きに見えることから名付けられたとされる比喩的な表現である。",
+      "trivia": "オンライン対戦ゲームで通信環境が不安定なときに起こりやすい、代表的な技術的な不具合現象の一つである。",
+      "explanation": "通信の遅延を補正するために、プレイヤーやオブジェクトの位置が突然巻き戻ったように見える現象を、ゴムひもに引き戻されるさまにたとえた表現。",
+      "example_ja": "通信状態が悪かったせいで、彼の車はrubberbandingによって突然後ろに瞬間移動したように見えた。",
+      "example_ja_src": "His car appeared to teleport backward due to rubberbanding caused by a poor connection."
+    }
+  },
+  {
+    "english": "hitbox",
+    "detail": {
+      "pronunciation": "/ˈhɪtbɑːks/",
+      "pos": "名詞",
+      "meanings": [
+        "ヒットボックス",
+        "攻撃・衝突判定に使われる見えない境界領域"
+      ],
+      "examples": [
+        {
+          "en": "The sword's hitbox extended slightly beyond the visible blade, surprising the opponent.",
+          "ja": "その剣のhitboxは見た目の刃の範囲より少し広く、相手を驚かせた。"
+        },
+        {
+          "en": "Designers sometimes shrink a projectile's hitbox slightly to make dodging feel fair to players.",
+          "ja": "デザイナーは、プレイヤーが回避を公平だと感じられるよう、飛び道具のhitboxをあえて少し小さくすることがある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "hurtbox",
+          "note": "攻撃を受ける側の判定範囲。hitboxは攻撃を与える側の判定範囲。"
+        }
+      ],
+      "origin": "「命中(hit)」と「箱・領域(box)」を組み合わせた、ゲーム開発の技術用語である。",
+      "trivia": "見た目のグラフィックと実際の判定範囲が完全には一致しないよう、意図的に調整されることも多い。",
+      "explanation": "ゲーム内でキャラクターや物体の衝突・攻撃判定を行うために設定された、目に見えない境界領域。",
+      "example_ja": "その剣のhitboxは見た目の刃の範囲より少し広く、相手を驚かせた。",
+      "example_ja_src": "The sword's hitbox extended slightly beyond the visible blade, surprising the opponent."
+    }
+  },
+  {
+    "english": "hurtbox",
+    "detail": {
+      "pronunciation": "/ˈhɜːrtbɑːks/",
+      "pos": "名詞",
+      "meanings": [
+        "ハートボックス",
+        "攻撃を受ける判定範囲を示す見えない境界領域"
+      ],
+      "examples": [
+        {
+          "en": "Crouching shrinks the character's hurtbox, letting certain high attacks whiff harmlessly overhead.",
+          "ja": "しゃがむとキャラクターのhurtboxが縮まり、一部の高い位置を狙う攻撃を無害にかわせるようになる。"
+        },
+        {
+          "en": "A well-timed dodge can move a character's hurtbox completely out of an incoming attack's range.",
+          "ja": "タイミングよく回避すれば、キャラクターのhurtboxを迫り来る攻撃の範囲から完全に外すことができる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "hitbox",
+          "note": "攻撃を与える側の判定範囲。hurtboxは攻撃を受ける側の判定範囲。"
+        }
+      ],
+      "origin": "「傷つく(hurt)」と「箱・領域(box)」を組み合わせた、格闘ゲーム開発でよく使われる技術用語である。",
+      "trivia": "「hitbox」と混同されがちだが、格闘ゲームの上級者やゲーム開発者の間では明確に区別されている概念である。",
+      "explanation": "攻撃判定を持つ「hitbox」とは区別して、キャラクターが実際に攻撃を受けてダメージを負う範囲を示す、目に見えない境界領域。",
+      "example_ja": "しゃがむとキャラクターのhurtboxが縮まり、一部の高い位置を狙う攻撃を無害にかわせるようになる。",
+      "example_ja_src": "Crouching shrinks the character's hurtbox, letting certain high attacks whiff harmlessly overhead."
+    }
+  },
+  {
+    "english": "spectator mode",
+    "detail": {
+      "pronunciation": "/spɛkˈteɪtər moʊd/",
+      "pos": "名詞",
+      "meanings": [
+        "観戦モード",
+        "参加せず試合を観戦できる機能"
+      ],
+      "examples": [
+        {
+          "en": "Eliminated players can switch to spectator mode to keep watching how the match ends.",
+          "ja": "脱落したプレイヤーは、試合がどう終わるかを見届けるためにspectator modeに切り替えることができる。"
+        },
+        {
+          "en": "Esports broadcasts rely heavily on spectator mode to show viewers multiple players' perspectives at once.",
+          "ja": "eスポーツの中継は、複数のプレイヤーの視点を同時に視聴者へ見せるため、spectator modeに大きく依存している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「観戦者(spectator)」と「モード(mode)」を組み合わせた、分かりやすい一般的なゲーム用語である。",
+      "trivia": "大会中継のディレクターは、このモードを使って最も見どころのある試合展開を選んで視聴者に届けている。",
+      "explanation": "自らは対戦に参加せず、進行中の試合を観戦できるモードで、大会中継などでよく使われる。",
+      "example_ja": "脱落したプレイヤーは、試合がどう終わるかを見届けるためにspectator modeに切り替えることができる。",
+      "example_ja_src": "Eliminated players can switch to spectator mode to keep watching how the match ends."
+    }
+  },
+  {
+    "english": "paywall",
+    "detail": {
+      "pronunciation": "/ˈpeɪwɔːl/",
+      "pos": "名詞",
+      "meanings": [
+        "ペイウォール",
+        "課金しないとアクセスできない制限"
+      ],
+      "examples": [
+        {
+          "en": "The best weapons in the game were locked behind a paywall, frustrating free players.",
+          "ja": "そのゲームの最強クラスの武器はpaywallの向こうに隠されており、無課金プレイヤーを苛立たせた。"
+        },
+        {
+          "en": "Some free demos put entire chapters behind a paywall to encourage players to buy the full game.",
+          "ja": "一部の無料体験版は、プレイヤーに製品版の購入を促すため、丸ごと一章をpaywallの向こうに隠している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "料金を意味する「pay」と、壁を意味する「wall」を組み合わせた表現で、ニュースサイトの有料会員制などにも使われる一般的な語である。",
+      "trivia": "ゲーム業界に限らず、オンラインニュースやサブスクリプションサービス全般で広く使われる語でもある。",
+      "explanation": "料金を支払わない限り、コンテンツや機能へのアクセスを制限する仕組み。",
+      "example_ja": "そのゲームの最強クラスの武器はpaywallの向こうに隠されており、無課金プレイヤーを苛立たせた。",
+      "example_ja_src": "The best weapons in the game were locked behind a paywall, frustrating free players."
+    }
+  },
+  {
+    "english": "season pass",
+    "detail": {
+      "pronunciation": "/ˈsiːzən pæs/",
+      "pos": "名詞",
+      "meanings": [
+        "シーズンパス",
+        "今後配信予定のコンテンツをまとめて買えるパス"
+      ],
+      "examples": [
+        {
+          "en": "Buying the season pass in advance guarantees access to every future expansion.",
+          "ja": "season passを前もって購入しておけば、今後配信されるすべての拡張コンテンツへのアクセスが保証される。"
+        },
+        {
+          "en": "A season pass is usually cheaper than buying each piece of downloadable content separately later on.",
+          "ja": "season passは通常、後から個別に追加コンテンツを買うよりも割安に設定されている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "battle pass",
+          "note": "プレイして条件を満たすことで段階的に報酬を解除していく、より周期の短い仕組み。"
+        }
+      ],
+      "origin": "「シーズン(season、配信サイクルの期間)」と「パス(pass、通行証)」を組み合わせた表現である。",
+      "trivia": "購入後にゲーム自体の売れ行きが振るわず、予定していた追加コンテンツの一部が配信中止になることもまれにある。",
+      "explanation": "決められた期間にわたり、今後配信される追加コンテンツや報酬をまとめて入手できる購入型のパス。",
+      "example_ja": "season passを前もって購入しておけば、今後配信されるすべての拡張コンテンツへのアクセスが保証される。",
+      "example_ja_src": "Buying the season pass in advance guarantees access to every future expansion."
+    }
+  },
+  {
+    "english": "battle pass",
+    "detail": {
+      "pronunciation": "/ˈbætəl pæs/",
+      "pos": "名詞",
+      "meanings": [
+        "バトルパス",
+        "シーズン中のプレイで段階的に報酬を得る仕組み"
+      ],
+      "examples": [
+        {
+          "en": "She grinded daily challenges to level up her battle pass before the season ended.",
+          "ja": "彼女はシーズンが終わる前に自分のbattle passのレベルを上げようと、毎日デイリーチャレンジに励んだ。"
+        },
+        {
+          "en": "Unlike a loot box, a battle pass rewards players with a guaranteed set of items simply for playing.",
+          "ja": "loot boxとは異なり、battle passはただプレイするだけで確実に手に入る報酬が保証されている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "season pass",
+          "note": "より長期間にわたる、配信予定コンテンツ全体へのアクセス権を指すことが多い仕組み。"
+        }
+      ],
+      "origin": "「シーズン(season)」を短縮した「バトル(battle、対戦の期間を指す業界の慣用表現)」と「パス(pass)」を組み合わせた表現である。",
+      "trivia": "近年の基本プレイ無料のオンラインゲームにおいて、最も一般的な収益モデルの一つになっている。",
+      "explanation": "期間限定のシーズン中にプレイすることで段階的に報酬を解除していく仕組みで、全ての報酬を得るには通常購入が必要となる。",
+      "example_ja": "彼女はシーズンが終わる前に自分のbattle passのレベルを上げようと、毎日デイリーチャレンジに励んだ。",
+      "example_ja_src": "She grinded daily challenges to level up her battle pass before the season ended."
+    }
+  },
+  {
+    "english": "cross-play",
+    "detail": {
+      "pronunciation": "/krɔːs pleɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "クロスプレイ",
+        "異なる機種のプレイヤー同士が一緒に遊べる機能"
+      ],
+      "examples": [
+        {
+          "en": "Thanks to cross-play, PC and console players can now team up in the same lobby.",
+          "ja": "cross-playのおかげで、PCと家庭用ゲーム機のプレイヤーが今では同じロビーで一緒にチームを組める。"
+        },
+        {
+          "en": "Cross-play has made it much easier for friends on different consoles to play together in the same match.",
+          "ja": "cross-playのおかげで、異なる機種を持つ友人同士でも同じ試合で一緒に遊びやすくなった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「相互に(cross)」と「遊ぶ(play)」を組み合わせた表現である。",
+      "trivia": "対戦バランスの公平性の観点から、PCとゲーム機のプレイヤーを別々のマッチメイキングに分けるゲームも一部にはある。",
+      "explanation": "PCと家庭用ゲーム機など、異なるプラットフォームのプレイヤー同士が同じ試合で一緒に遊べる機能。",
+      "example_ja": "cross-playのおかげで、PCと家庭用ゲーム機のプレイヤーが今では同じロビーで一緒にチームを組める。",
+      "example_ja_src": "Thanks to cross-play, PC and console players can now team up in the same lobby."
+    }
+  },
+  {
+    "english": "slash command",
+    "detail": {
+      "pronunciation": "/slæʃ kəˈmænd/",
+      "pos": "名詞",
+      "meanings": [
+        "スラッシュコマンド",
+        "スラッシュから始まるチャット上の命令文"
+      ],
+      "examples": [
+        {
+          "en": "Typing the slash command /mute instantly silenced the noisy bot in the channel.",
+          "ja": "slash commandの/muteを入力すると、そのチャンネルのうるさいbotを即座に黙らせることができた。"
+        },
+        {
+          "en": "Discord servers rely on slash commands so bots know exactly what action a user wants to perform.",
+          "ja": "Discordのサーバーは、ユーザーがどんな操作を望んでいるかをbotが正確に把握できるよう、slash commandに頼っている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "区切り記号の「スラッシュ(slash、/)」と「命令(command)」を組み合わせた表現である。",
+      "trivia": "以前は各Botが独自の書式のコマンドを使っていたが、Discordが公式にslash commandの仕組みを整備したことで統一感が増したとされる。",
+      "explanation": "Discordなどのチャットプラットフォームで、スラッシュ(/)から始まる文字列を入力してBotを操作したり動作を実行したりするコマンド。",
+      "example_ja": "slash commandの/muteを入力すると、そのチャンネルのうるさいbotを即座に黙らせることができた。",
+      "example_ja_src": "Typing the slash command /mute instantly silenced the noisy bot in the channel."
+    }
+  },
+  {
+    "english": "rage quit",
+    "detail": {
+      "pronunciation": "/reɪdʒ kwɪt/",
+      "pos": "動詞",
+      "meanings": [
+        "(激怒して)途中でやめる",
+        "怒りから試合を放棄すること"
+      ],
+      "examples": [
+        {
+          "en": "After losing his fourth match in a row, he rage quit and slammed his controller down.",
+          "ja": "4連敗した後、彼はrage quitしてコントローラーを叩きつけた。"
+        },
+        {
+          "en": "Streamers who rage quit on camera often become the subject of viral highlight clips.",
+          "ja": "カメラの前でrage quitした配信者は、しばしば拡散されるハイライト動画のネタにされてしまう。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「激怒(rage)」と「やめる(quit)」を組み合わせた、分かりやすい一般英語の複合語である。",
+      "trivia": "オンライン対戦ゲームでは、途中離脱によるペナルティ(段位剥奪など)が課されることも多い。",
+      "explanation": "怒りや苛立ちから、特に敗北や不運な出来事の後に、突然ゲームを途中で投げ出してやめてしまうこと。",
+      "example_ja": "4連敗した後、彼はrage quitしてコントローラーを叩きつけた。",
+      "example_ja_src": "After losing his fourth match in a row, he rage quit and slammed his controller down."
+    }
+  },
+  {
+    "english": "aimbot",
+    "detail": {
+      "pronunciation": "/ˈeɪmbɑːt/",
+      "pos": "名詞",
+      "meanings": [
+        "エイムボット",
+        "自動照準を行う不正行為用ソフトウェア"
+      ],
+      "examples": [
+        {
+          "en": "The player was banned after an anti-cheat system detected he was using an aimbot.",
+          "ja": "そのプレイヤーは、アンチチート機能がaimbotの使用を検知したためにアカウントを停止された。"
+        },
+        {
+          "en": "Anti-cheat software constantly scans for patterns typical of aimbot usage, like inhumanly precise flick shots.",
+          "ja": "アンチチートソフトは、人間離れした正確な瞬間照準など、aimbotの使用に典型的なパターンを常に監視している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「狙いを定める(aim)」と、自動化されたプログラムを意味する「ボット(bot)」を組み合わせた表現である。",
+      "trivia": "多くのオンライン対戦ゲームの利用規約で、明確に使用を禁止されている代表的な不正行為ソフトウェアである。",
+      "explanation": "プレイヤーの武器を自動的に敵に照準させ、不当に有利にする不正行為用のソフトウェア。",
+      "example_ja": "そのプレイヤーは、アンチチート機能がaimbotの使用を検知したためにアカウントを停止された。",
+      "example_ja_src": "The player was banned after an anti-cheat system detected he was using an aimbot."
+    }
+  },
+  {
+    "english": "wallhack",
+    "detail": {
+      "pronunciation": "/ˈwɔːlhæk/",
+      "pos": "名詞",
+      "meanings": [
+        "ウォールハック",
+        "壁越しに透視できる不正行為用ソフトウェア"
+      ],
+      "examples": [
+        {
+          "en": "With a wallhack enabled, the cheater always knew exactly where enemies were hiding.",
+          "ja": "wallhackを有効にしていたそのチーターは、常に敵がどこに隠れているかを正確に把握していた。"
+        },
+        {
+          "en": "Some anti-cheat systems detect wallhack use by noticing when a player consistently looks directly at hidden enemies.",
+          "ja": "一部のアンチチートシステムは、プレイヤーが隠れた敵を一貫して正確に見ていることに気づくことで、wallhackの使用を検知する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「壁(wall)」と、不正な改造を意味する「ハック(hack)」を組み合わせた表現である。",
+      "trivia": "aimbotと並んで、競技シーンにおけるチート行為の代表格として問題視されている。",
+      "explanation": "本来なら壁などの障害物に遮られて見えないはずの相手の位置を透視できるようにする不正行為用のソフトウェア。",
+      "example_ja": "wallhackを有効にしていたそのチーターは、常に敵がどこに隠れているかを正確に把握していた。",
+      "example_ja_src": "With a wallhack enabled, the cheater always knew exactly where enemies were hiding."
+    }
+  },
+  {
+    "english": "elo",
+    "detail": {
+      "pronunciation": "/ˈeɪloʊ/",
+      "pos": "名詞",
+      "meanings": [
+        "イロレーティング",
+        "対戦結果から実力を数値化する評価方式"
+      ],
+      "examples": [
+        {
+          "en": "Winning against a higher-rated opponent boosted his elo more than beating a weaker one.",
+          "ja": "格上の相手に勝ったことで、格下相手に勝つよりも大きく彼のeloは上がった。"
+        },
+        {
+          "en": "Elo ratings were originally designed for chess before being adapted for countless competitive video games.",
+          "ja": "eloのレーティングは元々チェス向けに設計されたものだったが、後に数え切れないほど多くの競技系ビデオゲームに応用された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "MMR",
+          "note": "同様にプレイヤーの実力を数値化する評価値の一種。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "この方式を考案した物理学者アーパド・エロ(Arpad Elo)の名前に由来する。",
+      "trivia": "格上を倒すとレーティングが大きく上がり、格下に負けると大きく下がるという、相対的な仕組みが特徴とされる。",
+      "explanation": "元々チェス向けに開発された評価方式で、対戦相手との勝敗結果をもとにプレイヤーの相対的な実力を数値化するレーティングシステム。",
+      "example_ja": "格上の相手に勝ったことで、格下相手に勝つよりも大きく彼のeloは上がった。",
+      "example_ja_src": "Winning against a higher-rated opponent boosted his elo more than beating a weaker one."
+    }
+  },
+  {
+    "english": "LFG",
+    "detail": {
+      "pronunciation": "/ˌɛlɛfˈdʒiː/",
+      "pos": "名詞",
+      "meanings": [
+        "LFG",
+        "「一緒に遊ぶ仲間募集」を意味する呼びかけ"
+      ],
+      "examples": [
+        {
+          "en": "He posted \"LFG for tonight's raid, need one more healer\" in the Discord server.",
+          "ja": "彼は「今夜のレイド、LFG。ヒーラーもう一人欲しい」とDiscordサーバーに投稿した。"
+        },
+        {
+          "en": "Dedicated LFG channels on Discord make it much easier to find strangers to team up with.",
+          "ja": "Discordの専用LFGチャンネルのおかげで、見知らぬ人ともチームを組む相手をずっと見つけやすくなった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「looking for group(グループを探している)」の頭文字を取った略語である。",
+      "trivia": "オンラインゲームのチャットやDiscordサーバーで、仲間を募集する際の定番の呼びかけ表現になっている。",
+      "explanation": "「looking for group」の略で、特定の目的のために一緒に遊ぶ仲間を募集する際に使われる呼びかけ。",
+      "example_ja": "彼は「今夜のレイド、LFG。ヒーラーもう一人欲しい」とDiscordサーバーに投稿した。",
+      "example_ja_src": "He posted \"LFG for tonight's raid, need one more healer\" in the Discord server."
+    }
+  },
+  {
+    "english": "deathmatch",
+    "detail": {
+      "pronunciation": "/ˈdɛθmætʃ/",
+      "pos": "名詞",
+      "meanings": [
+        "デスマッチ",
+        "自由に戦い撃破数を競う対戦モード"
+      ],
+      "examples": [
+        {
+          "en": "The free-for-all deathmatch mode pits every player against everyone else at once.",
+          "ja": "全員参加のdeathmatchモードでは、一度に全プレイヤーが互いに戦い合う。"
+        },
+        {
+          "en": "In a team deathmatch, players are split into two sides competing for the most combined eliminations.",
+          "ja": "チームdeathmatchでは、プレイヤーは2つの陣営に分かれ、合計の撃破数を競う。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「死(death)」と「対戦(match)」を組み合わせた、シューティングゲームで広く使われる基本的な対戦モード名である。",
+      "trivia": "多くのシューティングゲームにおいて、最も基本的で歴史の長い対戦モードの一つとされる。",
+      "explanation": "プレイヤー同士が自由に戦い、制限時間やスコアの上限までに最も多く敵を倒した者が勝者となる対戦モード。",
+      "example_ja": "全員参加のdeathmatchモードでは、一度に全プレイヤーが互いに戦い合う。",
+      "example_ja_src": "The free-for-all deathmatch mode pits every player against everyone else at once."
+    }
+  },
+  {
+    "english": "space opera",
+    "detail": {
+      "pronunciation": "/speɪs ˈɑːpərə/",
+      "pos": "名詞",
+      "meanings": [
+        "スペースオペラ",
+        "壮大な冒険・戦いを描く宇宙SFのサブジャンル"
+      ],
+      "examples": [
+        {
+          "en": "The saga is a classic space opera, complete with galactic empires, star battles, and a chosen hero.",
+          "ja": "その大河作品はまさに古典的なspace operaで、銀河帝国と星々をまたぐ戦い、そして選ばれし英雄が登場する。"
+        },
+        {
+          "en": "Space opera prioritizes sweeping adventure and heroism over rigorous scientific accuracy.",
+          "ja": "space operaは、厳密な科学的正確さよりも、壮大な冒険や英雄的な活躍を優先するジャンルだ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "hard science fiction",
+          "note": "科学的な厳密さを重視する、対照的なサブジャンル。"
+        }
+      ],
+      "origin": "「宇宙(space)」と、大げさで感傷的な物語を揶揄する「ソープオペラ(soap opera)」をもじった「オペラ(opera)」を組み合わせた語とされる。",
+      "trivia": "元々は1940年代に、質の低い量産型の宇宙冒険活劇を軽んじる意味で使われ始めた語とされるが、現在は必ずしも否定的な意味ではない。",
+      "explanation": "科学的な厳密さよりも、壮大な冒険やロマンス、英雄的な戦いなど物語性・スペクタクルを重視する、宇宙を舞台にしたSFのサブジャンル。",
+      "example_ja": "その大河作品はまさに古典的なspace operaで、銀河帝国と星々をまたぐ戦い、そして選ばれし英雄が登場する。",
+      "example_ja_src": "The saga is a classic space opera, complete with galactic empires, star battles, and a chosen hero."
+    }
+  },
+  {
+    "english": "hard science fiction",
+    "detail": {
+      "pronunciation": "/hɑːrd ˈsaɪəns ˈfɪkʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "ハードSF",
+        "科学的正確さを重視するSFのサブジャンル"
+      ],
+      "examples": [
+        {
+          "en": "As hard science fiction, the novel meticulously calculates the fuel requirements for interstellar travel.",
+          "ja": "そのhard science fictionの小説は、恒星間飛行に必要な燃料の量を細部まで綿密に計算して描いている。"
+        },
+        {
+          "en": "Hard science fiction authors often consult real physicists to keep their depictions of space travel plausible.",
+          "ja": "hard science fictionの作家は、宇宙旅行の描写を現実的に保つため、実際の物理学者に助言を求めることも多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "soft science fiction",
+          "note": "科学的厳密さより社会的・心理的テーマを重視する、対照的なサブジャンル。"
+        }
+      ],
+      "origin": "「堅い・厳密な(hard)」を「サイエンスフィクション(science fiction)」に付けて、科学的な厳密さを強調した呼び方とされる。",
+      "trivia": "既知の物理法則を破らないことにこだわるあまり、恒星間移動などの派手な展開を描きにくいという制約も指摘される。",
+      "explanation": "科学的な正確さや、実現しうる技術・物理法則の描写を重視するSFのサブジャンル。",
+      "example_ja": "そのhard science fictionの小説は、恒星間飛行に必要な燃料の量を細部まで綿密に計算して描いている。",
+      "example_ja_src": "As hard science fiction, the novel meticulously calculates the fuel requirements for interstellar travel."
+    }
+  },
+  {
+    "english": "soft science fiction",
+    "detail": {
+      "pronunciation": "/sɔːft ˈsaɪəns ˈfɪkʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "ソフトSF",
+        "社会・心理的テーマを重視するSFのサブジャンル"
+      ],
+      "examples": [
+        {
+          "en": "Rather than focus on technical accuracy, the soft science fiction story explores how the colonists' society evolves.",
+          "ja": "技術的な正確さに焦点を当てる代わりに、そのsoft science fictionの物語は入植者たちの社会がどう変化していくかを描いている。"
+        },
+        {
+          "en": "Soft science fiction often draws more on sociology or psychology than on physics or engineering.",
+          "ja": "soft science fictionは、物理学や工学よりも社会学や心理学に着想を得ることが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "hard science fiction",
+          "note": "科学的厳密さを重視する、対照的なサブジャンル。"
+        }
+      ],
+      "origin": "「柔らかい・厳密でない(soft)」を「サイエンスフィクション」に付けて、hard science fictionと対比する形で作られた呼び方とされる。",
+      "trivia": "「ソフト」という言葉には優劣の意味合いはなく、単に扱うテーマの重心が異なることを示す分類とされる。",
+      "explanation": "厳密な科学的描写よりも、社会・心理・哲学的なテーマを重視するSFのサブジャンル。",
+      "example_ja": "技術的な正確さに焦点を当てる代わりに、そのsoft science fictionの物語は入植者たちの社会がどう変化していくかを描いている。",
+      "example_ja_src": "Rather than focus on technical accuracy, the soft science fiction story explores how the colonists' society evolves."
+    }
+  },
+  {
+    "english": "grimdark",
+    "detail": {
+      "pronunciation": "/ˈɡrɪmdɑːrk/",
+      "pos": "名詞",
+      "meanings": [
+        "グリムダーク",
+        "希望のない陰惨で暴力的な作品世界"
+      ],
+      "examples": [
+        {
+          "en": "The setting is famously grimdark, where every faction is corrupt and no one truly wins.",
+          "ja": "その舞台設定はまさにgrimdarkで有名で、あらゆる勢力が腐敗しており、誰も本当の意味では勝てない。"
+        },
+        {
+          "en": "Grimdark settings often subvert the idea that good will ultimately triumph over evil.",
+          "ja": "grimdarkの世界観は、善が最終的に悪に打ち勝つという前提そのものを覆すことが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "high fantasy",
+          "note": "善悪がより明確で、希望が持てる展開を描くことが多い、対照的な作風。"
+        }
+      ],
+      "origin": "「陰惨な(grim)」と「暗い(dark)」を組み合わせた語で、イギリスのミニチュアゲーム『ウォーハンマー40,000』の宣伝文句「in the grim darkness of the far future」に由来するとされる。",
+      "trivia": "元々はある特定の作品の宣伝文句だったが、後に陰惨で救いのない作風全般を指す一般的な分類語として広まったとされる。",
+      "explanation": "希望がほとんど残されておらず、暴力や道徳的な曖昧さが常態化している、陰惨で救いのない作品世界を指す形容・分類語。",
+      "example_ja": "その舞台設定はまさにgrimdarkで有名で、あらゆる勢力が腐敗しており、誰も本当の意味では勝てない。",
+      "example_ja_src": "The setting is famously grimdark, where every faction is corrupt and no one truly wins."
+    }
+  },
+  {
+    "english": "biopunk",
+    "detail": {
+      "pronunciation": "/ˈbaɪoʊpʌŋk/",
+      "pos": "名詞",
+      "meanings": [
+        "バイオパンク",
+        "遺伝子操作等の負の側面を描くSFのサブジャンル"
+      ],
+      "examples": [
+        {
+          "en": "The biopunk thriller centers on black-market gene hackers who splice DNA in illegal back-alley labs.",
+          "ja": "そのbiopunkのスリラーは、違法な裏路地の研究室でDNAを組み換える闇市場の遺伝子ハッカーたちを中心に描かれる。"
+        },
+        {
+          "en": "Biopunk stories often depict a world where genetic modification has become as commonplace, and as dangerous, as computer hacking.",
+          "ja": "biopunkの物語は、遺伝子改変がコンピューターのハッキングと同じくらい日常的で、同じくらい危険になった世界を描くことが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「バイオ(bio、生命)」と「サイバーパンク(cyberpunk)」の「パンク(punk)」を組み合わせた語とされる。",
+      "trivia": "コンピューター技術を中心に据えるサイバーパンクに対し、biopunkは生命科学・遺伝子工学を中心に据える点が異なるとされる。",
+      "explanation": "サイバーパンクの技術面をコンピューターではなく生命科学に置き換えた、遺伝子操作やバイオテクノロジーとその社会的な負の側面を主題とするSFのサブジャンル。",
+      "example_ja": "そのbiopunkのスリラーは、違法な裏路地の研究室でDNAを組み換える闇市場の遺伝子ハッカーたちを中心に描かれる。",
+      "example_ja_src": "The biopunk thriller centers on black-market gene hackers who splice DNA in illegal back-alley labs."
+    }
+  },
+  {
+    "english": "solarpunk",
+    "detail": {
+      "pronunciation": "/ˈsoʊlərpʌŋk/",
+      "pos": "名詞",
+      "meanings": [
+        "ソーラーパンク",
+        "楽観的なエコ未来を描くSFのサブジャンル・運動"
+      ],
+      "examples": [
+        {
+          "en": "The solarpunk illustration depicts a city where solar panels and gardens cover every rooftop.",
+          "ja": "そのsolarpunkのイラストは、どの屋根にも太陽光パネルと庭園が広がる都市を描いている。"
+        },
+        {
+          "en": "Solarpunk imagines a future where renewable technology and nature coexist rather than conflict.",
+          "ja": "solarpunkは、再生可能技術と自然が対立するのではなく共存する未来を思い描く。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "cyberpunk",
+          "note": "テクノロジーと社会の暗い側面を強調する、対照的な作風。"
+        }
+      ],
+      "origin": "「太陽の(solar)」と「サイバーパンク」の「パンク(punk)」を組み合わせた語とされる。",
+      "trivia": "暗く悲観的な未来像が多いSFの中で、あえて楽観的で持続可能な未来を描こうとする運動としても広がっているとされる。",
+      "explanation": "再生可能エネルギーや生態系との共生によって環境問題が克服された、楽観的な未来社会を描くSFのサブジャンル・運動。",
+      "example_ja": "そのsolarpunkのイラストは、どの屋根にも太陽光パネルと庭園が広がる都市を描いている。",
+      "example_ja_src": "The solarpunk illustration depicts a city where solar panels and gardens cover every rooftop."
+    }
+  },
+  {
+    "english": "ansible",
+    "detail": {
+      "pronunciation": "/ˈænsɪbəl/",
+      "pos": "名詞",
+      "meanings": [
+        "アンシブル",
+        "光速の制限を受けない架空の瞬時通信装置"
+      ],
+      "examples": [
+        {
+          "en": "Thanks to the ansible, the fleet commander could speak with headquarters light-years away with no delay.",
+          "ja": "ansibleのおかげで、艦隊司令官は何光年も離れた司令部と、遅延なしで話すことができた。"
+        },
+        {
+          "en": "Many space opera writers borrowed the concept of the ansible to sidestep the problem of light-speed delays.",
+          "ja": "多くのスペースオペラの作家は、光速による通信の遅れという問題を回避するため、ansibleという概念を借用してきた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "SF作家アーシュラ・K・ル=グウィンが自身の作品のために考案した造語とされる。",
+      "trivia": "彼女の作品以降、他の多くのSF作家たちが同様の装置を指す一般名詞として「ansible」を借用するようになったとされる。",
+      "explanation": "アーシュラ・K・ル=グウィンが考案した架空の装置で、どれほど距離が離れていても光速の制限を受けずに瞬時に情報をやり取りできるとされる。",
+      "example_ja": "ansibleのおかげで、艦隊司令官は何光年も離れた司令部と、遅延なしで話すことができた。",
+      "example_ja_src": "Thanks to the ansible, the fleet commander could speak with headquarters light-years away with no delay."
+    }
+  },
+  {
+    "english": "Kardashev scale",
+    "detail": {
+      "pronunciation": "/kɑːrˈdɑːʃɛf skeɪl/",
+      "pos": "名詞",
+      "meanings": [
+        "カルダシェフ・スケール",
+        "文明を利用エネルギー量で分類する仮説的尺度"
+      ],
+      "examples": [
+        {
+          "en": "On the Kardashev scale, humanity is still far from even becoming a full Type I civilization.",
+          "ja": "Kardashev scaleで見ると、人類はまだ完全な意味でのタイプI文明にすら達していない。"
+        },
+        {
+          "en": "A Type III civilization on the Kardashev scale would theoretically harness the energy output of an entire galaxy.",
+          "ja": "Kardashev scaleでいうタイプIII文明は、理論上、銀河系全体のエネルギー出力を利用できるとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "この尺度を1964年に提唱したソ連の天文学者ニコライ・カルダシェフ(Nikolai Kardashev)の名前に由来する。",
+      "trivia": "タイプIは惑星規模、タイプIIは恒星規模、タイプIIIは銀河規模のエネルギーを利用する文明と定義されている。",
+      "explanation": "文明がどれだけのエネルギーを利用できるかによって、惑星規模・恒星規模・銀河規模の段階に分類する、ニコライ・カルダシェフが提唱した仮説的な尺度。",
+      "example_ja": "Kardashev scaleで見ると、人類はまだ完全な意味でのタイプI文明にすら達していない。",
+      "example_ja_src": "On the Kardashev scale, humanity is still far from even becoming a full Type I civilization."
+    }
+  },
+  {
+    "english": "cosmic horror",
+    "detail": {
+      "pronunciation": "/ˈkɑːzmɪk ˈhɔːrər/",
+      "pos": "名詞",
+      "meanings": [
+        "コズミックホラー",
+        "人類の無力さを描くホラーのサブジャンル"
+      ],
+      "examples": [
+        {
+          "en": "The cosmic horror story ends with the protagonist realizing humanity was never anything more than an afterthought to the ancient beings.",
+          "ja": "そのcosmic horrorの物語は、主人公が、人類など太古の存在にとって最初から取るに足らない存在だったと悟る場面で終わる。"
+        },
+        {
+          "en": "Cosmic horror derives its dread not from monsters that can be defeated, but from the sheer insignificance of humanity.",
+          "ja": "cosmic horrorが生み出す恐怖は、倒せる怪物からではなく、人類そのものがいかに取るに足らない存在かという事実そのものから来る。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Lovecraftian horror",
+          "note": "H・P・ラヴクラフトの作風に直接ちなんだ、ほぼ同義の呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「宇宙的な(cosmic)」と「恐怖(horror)」を組み合わせた語で、作家H・P・ラヴクラフトの作風と強く結び付けられる呼び方とされる。",
+      "trivia": "倒せる怪物ではなく、理解も対抗もできないほど巨大で無関心な存在を描くことに主眼が置かれる点が特徴とされる。",
+      "explanation": "人類が広大で理解しがたく、無関心な宇宙的存在の前ではいかに無力かを描く、H・P・ラヴクラフトと結び付けられるホラーのサブジャンル。",
+      "example_ja": "そのcosmic horrorの物語は、主人公が、人類など太古の存在にとって最初から取るに足らない存在だったと悟る場面で終わる。",
+      "example_ja_src": "The cosmic horror story ends with the protagonist realizing humanity was never anything more than an afterthought to the ancient beings."
+    }
+  },
+  {
+    "english": "steampunk",
+    "detail": {
+      "pronunciation": "/ˈstiːmpʌŋk/",
+      "pos": "名詞",
+      "meanings": [
+        "スチームパンク",
+        "蒸気機関のレトロフューチャーを描くSFのサブジャンル"
+      ],
+      "examples": [
+        {
+          "en": "The steampunk city is filled with brass airships and steam-powered mechanical contraptions.",
+          "ja": "そのsteampunkの都市は、真鍮製の飛行船と蒸気で動く空想的な機械であふれている。"
+        },
+        {
+          "en": "Steampunk fashion combines Victorian-era clothing with brass goggles and mechanical accessories.",
+          "ja": "steampunk風のファッションは、ヴィクトリア朝時代の服装と、真鍮のゴーグルや機械仕掛けの装飾品を組み合わせている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "dieselpunk",
+          "note": "蒸気機関ではなく、ディーゼル機関の時代の美意識を土台にしたサブジャンル。"
+        }
+      ],
+      "origin": "「蒸気(steam)」と「サイバーパンク」の「パンク(punk)」を組み合わせた語である。",
+      "trivia": "ヴィクトリア朝時代の実際の歴史というより、その時代の美意識を借りた空想的な設定であることがほとんどとされる。",
+      "explanation": "蒸気機関を動力とする、ヴィクトリア朝風の美意識をまとったレトロフューチャーな技術を描くSFのサブジャンル。",
+      "example_ja": "そのsteampunkの都市は、真鍮製の飛行船と蒸気で動く空想的な機械であふれている。",
+      "example_ja_src": "The steampunk city is filled with brass airships and steam-powered mechanical contraptions."
+    }
+  },
+  {
+    "english": "dieselpunk",
+    "detail": {
+      "pronunciation": "/ˈdiːzəlpʌŋk/",
+      "pos": "名詞",
+      "meanings": [
+        "ディーゼルパンク",
+        "戦間期のディーゼル機関時代を土台にしたSFのサブジャンル"
+      ],
+      "examples": [
+        {
+          "en": "The dieselpunk setting combines 1940s-style fighter planes with fantastical energy weapons.",
+          "ja": "そのdieselpunkの世界観は、1940年代風の戦闘機と空想的なエネルギー兵器を組み合わせている。"
+        },
+        {
+          "en": "Dieselpunk draws its aesthetic from the interwar and World War II eras rather than the Victorian age favored by steampunk.",
+          "ja": "dieselpunkは、steampunkが好むヴィクトリア朝時代ではなく、戦間期から第二次世界大戦にかけての時代の美意識を土台にしている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "steampunk",
+          "note": "より古い蒸気機関の時代の美意識を土台にしたサブジャンル。"
+        }
+      ],
+      "origin": "「ディーゼル(diesel)」と「サイバーパンク」の「パンク(punk)」を組み合わせた語である。",
+      "trivia": "steampunkの成功を受けて、時代設定をずらす形で2000年代以降に定着した比較的新しい呼び方とされる。",
+      "explanation": "第一次・第二次世界大戦の頃のディーゼル機関の時代の美意識や技術を土台に、空想的な要素を組み合わせたSFのサブジャンル。",
+      "example_ja": "そのdieselpunkの世界観は、1940年代風の戦闘機と空想的なエネルギー兵器を組み合わせている。",
+      "example_ja_src": "The dieselpunk setting combines 1940s-style fighter planes with fantastical energy weapons."
+    }
+  },
+  {
+    "english": "climate fiction",
+    "detail": {
+      "pronunciation": "/ˈklaɪmət ˈfɪkʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "気候フィクション",
+        "気候変動とその影響を描くジャンル"
+      ],
+      "examples": [
+        {
+          "en": "The climate fiction novel imagines a coastal city struggling to survive after decades of rising sea levels.",
+          "ja": "そのclimate fictionの小説は、何十年も海面上昇が続いた後、生き残ろうともがく沿岸都市を描いている。"
+        },
+        {
+          "en": "Climate fiction, often called cli-fi, has grown alongside real-world concern over global warming.",
+          "ja": "しばしば「cli-fi」とも呼ばれるclimate fictionは、現実世界での地球温暖化への懸念の高まりとともに広がってきた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "cli-fi",
+          "note": "climate fictionのくだけた略称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「気候(climate)」と「フィクション(fiction)」を組み合わせた、比較的近年になって定着した呼び方である。",
+      "trivia": "純粋な空想の未来というより、現実の気候変動の延長線上にありうる将来を描く点が特徴とされる。",
+      "explanation": "気候変動とそれが社会に及ぼす影響を主題とするジャンルで、「cli-fi」とも呼ばれる。",
+      "example_ja": "そのclimate fictionの小説は、何十年も海面上昇が続いた後、生き残ろうともがく沿岸都市を描いている。",
+      "example_ja_src": "The climate fiction novel imagines a coastal city struggling to survive after decades of rising sea levels."
+    }
+  },
+  {
+    "english": "multiverse",
+    "detail": {
+      "pronunciation": "/ˈmʌltivɜːrs/",
+      "pos": "名詞",
+      "meanings": [
+        "マルチバース",
+        "無数の宇宙が並行して存在するという仮説的な集合体"
+      ],
+      "examples": [
+        {
+          "en": "In the multiverse, there could be a version of you living a completely different life.",
+          "ja": "multiverseの中には、あなたが全く違う人生を送っているバージョンが存在するかもしれない。"
+        },
+        {
+          "en": "Some multiverse stories use the concept to justify wildly different versions of the same characters meeting each other.",
+          "ja": "multiverseを扱う物語の中には、同じキャラクターの全く異なるバージョン同士が出会う展開を正当化するために、この概念を利用するものもある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "parallel universe",
+          "note": "multiverseを構成する個々の宇宙を指すのに使われることが多い、より単数的な言い方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「多数の(multi-)」と「宇宙(universe)」を組み合わせた語である。",
+      "trivia": "近年では物理学の理論としてだけでなく、映画やアニメなど大衆文化でも頻繁に扱われる題材になっている。",
+      "explanation": "私たちの宇宙と並行して、無数かもしれない別の宇宙が同時に存在するとする仮説的な集合体。",
+      "example_ja": "multiverseの中には、あなたが全く違う人生を送っているバージョンが存在するかもしれない。",
+      "example_ja_src": "In the multiverse, there could be a version of you living a completely different life."
+    }
+  },
+  {
+    "english": "FTL travel",
+    "detail": {
+      "pronunciation": "/ˌɛftiːˈɛl ˈtrævəl/",
+      "pos": "名詞",
+      "meanings": [
+        "FTL航法",
+        "光速を超える架空の移動手段"
+      ],
+      "examples": [
+        {
+          "en": "Without some form of FTL travel, reaching even the nearest star system would take generations.",
+          "ja": "何らかのFTL travelがなければ、最も近い恒星系にたどり着くだけでも何世代もかかってしまうだろう。"
+        },
+        {
+          "en": "Writers often invent a fictional form of FTL travel, like a warp drive or hyperspace, to make interstellar stories possible.",
+          "ja": "作家たちはしばしば、恒星間を舞台にした物語を成立させるため、ワープドライブやハイパースペースのような架空のFTL travelの手段を考案する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "hyperdrive",
+          "note": "FTL travelを実現する具体的な架空の技術の一つ。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「faster-than-light(光速より速い)」の頭文字を取った略語に「travel(移動)」を付けた表現である。",
+      "trivia": "現実の物理学では光速を超える移動は認められていないため、あくまでSF上の架空の技術・現象として扱われる。",
+      "explanation": "「faster-than-light travel」の略で、光速を超えて移動する架空の手段全般を指し、恒星間を舞台にした物語を成立させるためによく用いられる設定。",
+      "example_ja": "何らかのFTL travelがなければ、最も近い恒星系にたどり着くだけでも何世代もかかってしまうだろう。",
+      "example_ja_src": "Without some form of FTL travel, reaching even the nearest star system would take generations."
+    }
+  },
+  {
+    "english": "planetary romance",
+    "detail": {
+      "pronunciation": "/ˈplænɪtɛri roʊˈmæns/",
+      "pos": "名詞",
+      "meanings": [
+        "惑星ロマンス",
+        "異星での冒険を描くSFのサブジャンル"
+      ],
+      "examples": [
+        {
+          "en": "The planetary romance follows an adventurer exploring the jungles of a primitive alien world.",
+          "ja": "そのplanetary romanceは、原始的な異星のジャングルを探検する冒険家を主人公にしている。"
+        },
+        {
+          "en": "Planetary romance emphasizes swashbuckling adventure on an alien world over rigorous scientific speculation.",
+          "ja": "planetary romanceは、厳密な科学的考察よりも、異星を舞台にした痛快な冒険を重視する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "hard science fiction",
+          "note": "科学的な厳密さを重視する、対照的なサブジャンル。"
+        }
+      ],
+      "origin": "「惑星の(planetary)」と、冒険物語を意味する「ロマンス(romance)」を組み合わせた語である。",
+      "trivia": "20世紀初頭のパルプ雑誌で人気を博したジャンルで、後の宇宙冒険活劇全般に大きな影響を与えたとされる。",
+      "explanation": "科学的な厳密さよりも探検やロマンスを重視して、しばしば未開の異星を舞台に冒険を描くSFのサブジャンル。",
+      "example_ja": "そのplanetary romanceは、原始的な異星のジャングルを探検する冒険家を主人公にしている。",
+      "example_ja_src": "The planetary romance follows an adventurer exploring the jungles of a primitive alien world."
+    }
+  },
+  {
+    "english": "weird fiction",
+    "detail": {
+      "pronunciation": "/wɪərd ˈfɪkʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "ウィアードフィクション",
+        "奇妙さを重視するホラー・ファンタジー・SFの融合ジャンル"
+      ],
+      "examples": [
+        {
+          "en": "Early weird fiction blurred the line between science fiction and horror long before cosmic horror became its own genre.",
+          "ja": "初期のweird fictionは、コズミックホラーが独立したジャンルとして確立されるずっと前から、SFとホラーの境界をあいまいにしていた。"
+        },
+        {
+          "en": "Weird fiction blends genres freely, refusing to fit neatly into horror, fantasy, or science fiction alone.",
+          "ja": "weird fictionはジャンルを自由に融合させ、ホラーやファンタジー、SFのどれか一つにきれいに収まることを拒む。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「奇妙な(weird)」と「フィクション(fiction)」を組み合わせた、20世紀初頭のパルプ雑誌文化に由来する呼び方とされる。",
+      "trivia": "H・P・ラヴクラフトを含む多くの作家がこのジャンルの雑誌に寄稿しており、cosmic horrorの直接の源流の一つとされる。",
+      "explanation": "ホラー・ファンタジー・SFの要素を融合させ、奇妙で不可解な感覚を呼び起こすことを目指すジャンルで、後のコズミックホラーにも影響を与えた。",
+      "example_ja": "初期のweird fictionは、コズミックホラーが独立したジャンルとして確立されるずっと前から、SFとホラーの境界をあいまいにしていた。",
+      "example_ja_src": "Early weird fiction blurred the line between science fiction and horror long before cosmic horror became its own genre."
+    }
+  },
+  {
+    "english": "uplift",
+    "detail": {
+      "pronunciation": "/ˈʌplɪft/",
+      "pos": "名詞",
+      "meanings": [
+        "アップリフト",
+        "他種族の知能を人為的に高めるSFのトロープ"
+      ],
+      "examples": [
+        {
+          "en": "In the novel, humanity uses genetic uplift to grant dolphins and apes human-level intelligence.",
+          "ja": "その小説では、人類が遺伝子的なuplift技術を使って、イルカや類人猿に人間並みの知能を与える。"
+        },
+        {
+          "en": "In uplift stories, the newly sapient species often struggles with its complicated debt to its creators.",
+          "ja": "uplift(知性化)を描く物語では、新たに知性を得た種族が、自分たちを作り出した存在への複雑な負い目に苦しむことも多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「(地位・水準を)引き上げる」を意味する一般英語の「uplift」が、SF作家デイヴィッド・ブリンらによってこのトロープの名称として定着したとされる。",
+      "trivia": "知性を与えられた側と与えた側との間に生じる、恩義や支配関係といった倫理的な緊張がしばしば物語の主題になる。",
+      "explanation": "高度な文明が遺伝子操作や技術的介入によって、別の種の知能を意図的に向上させ知性を持たせるSFのトロープ。",
+      "example_ja": "その小説では、人類が遺伝子的なuplift技術を使って、イルカや類人猿に人間並みの知能を与える。",
+      "example_ja_src": "In the novel, humanity uses genetic uplift to grant dolphins and apes human-level intelligence."
+    }
+  },
+  {
+    "english": "space western",
+    "detail": {
+      "pronunciation": "/speɪs ˈwɛstərn/",
+      "pos": "名詞",
+      "meanings": [
+        "スペースウエスタン",
+        "西部劇の要素を宇宙に置き換えたSFのサブジャンル"
+      ],
+      "examples": [
+        {
+          "en": "The show is a space western where bounty hunters chase outlaws across the edges of settled space.",
+          "ja": "その番組はspace westernで、賞金稼ぎたちが開拓された宇宙空間の辺境で無法者を追いかける。"
+        },
+        {
+          "en": "Space western settings often feature frontier outposts and gunslingers, just relocated to distant star systems.",
+          "ja": "space westernの設定では、フロンティアの前哨基地やガンマンといった要素が、そのまま遠い星系に置き換えられていることが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「宇宙(space)」と、アメリカ西部劇のジャンルを指す「ウエスタン(western)」を組み合わせた語である。",
+      "trivia": "無法者やフロンティアの町といった西部劇の定番要素を、そのまま宇宙船や辺境の惑星に置き換えるのが典型的な手法とされる。",
+      "explanation": "アメリカ西部劇のフロンティアの町やアウトロー、ガンマンといった要素を、宇宙を舞台にしたSF設定に置き換えたサブジャンル。",
+      "example_ja": "その番組はspace westernで、賞金稼ぎたちが開拓された宇宙空間の辺境で無法者を追いかける。",
+      "example_ja_src": "The show is a space western where bounty hunters chase outlaws across the edges of settled space."
+    }
+  },
+  {
+    "english": "megastructure",
+    "detail": {
+      "pronunciation": "/ˈmɛɡəˌstrʌktʃər/",
+      "pos": "名詞",
+      "meanings": [
+        "巨大構造物",
+        "惑星・恒星規模の人工建造物の総称"
+      ],
+      "examples": [
+        {
+          "en": "The alien megastructure was so vast that it dwarfed every planet in the system.",
+          "ja": "そのエイリアンのmegastructureはあまりに巨大で、その恒星系のどの惑星よりも大きく見えた。"
+        },
+        {
+          "en": "A Dyson sphere is one of the most famous examples of a hypothetical megastructure.",
+          "ja": "ダイソン球は、仮説上のmegastructureの中でも最も有名な例の一つだ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「巨大な(mega-)」と「構造物(structure)」を組み合わせた、分かりやすい一般的なSF用語である。",
+      "trivia": "ダイソン球やリングワールド、軌道エレベーターなど、個別の具体的な発明の総称としても使われる語である。",
+      "explanation": "ダイソン球や軌道エレベーターのように、惑星や恒星規模に達するほど巨大な人工構造物の総称。",
+      "example_ja": "そのエイリアンのmegastructureはあまりに巨大で、その恒星系のどの惑星よりも大きく見えた。",
+      "example_ja_src": "The alien megastructure was so vast that it dwarfed every planet in the system."
+    }
+  },
+  {
+    "english": "ringworld",
+    "detail": {
+      "pronunciation": "/ˈrɪŋwɜːrld/",
+      "pos": "名詞",
+      "meanings": [
+        "リングワールド",
+        "恒星を取り巻く輪状の仮説的巨大構造物"
+      ],
+      "examples": [
+        {
+          "en": "The explorers landed on the inner surface of the ringworld, which curved endlessly toward the horizon.",
+          "ja": "探検隊は、地平線に向かって果てしなく弧を描いて続くringworldの内側の表面に降り立った。"
+        },
+        {
+          "en": "A ringworld would rotate to generate artificial gravity along its enormous inner surface.",
+          "ja": "ringworldは、その巨大な内側の表面全体に人工重力を生み出すため、回転しているとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "megastructure",
+          "note": "リングワールドを含む、巨大人工構造物全般を指すより広い語。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "SF作家ラリー・ニーヴンが1970年に発表した同名の小説によって広く知られるようになった語である。",
+      "trivia": "その構造上、恒星の周囲を回転しながら、内側の表面全体に地球に匹敵する居住可能な面積を生み出せるとされる。",
+      "explanation": "恒星を取り巻く巨大な輪の形をした仮説的な巨大構造物で、ラリー・ニーヴンの同名小説によって広く知られるようになった。",
+      "example_ja": "探検隊は、地平線に向かって果てしなく弧を描いて続くringworldの内側の表面に降り立った。",
+      "example_ja_src": "The explorers landed on the inner surface of the ringworld, which curved endlessly toward the horizon."
+    }
+  },
+  {
+    "english": "psionics",
+    "detail": {
+      "pronunciation": "/saɪˈɑːnɪks/",
+      "pos": "名詞",
+      "meanings": [
+        "サイオニクス",
+        "疑似科学的に説明される架空の超能力"
+      ],
+      "examples": [
+        {
+          "en": "The soldier's psionics let her read enemy thoughts from a distance and crush objects with her mind.",
+          "ja": "その兵士のpsionicsのおかげで、彼女は遠くから敵の考えを読み取り、念じるだけで物を押しつぶすことができた。"
+        },
+        {
+          "en": "Unlike pure magic, psionics is usually explained through pseudo-scientific concepts like brainwaves or mental energy.",
+          "ja": "純粋な魔法とは異なり、psionicsは通常、脳波や精神エネルギーといった疑似科学的な概念を通して説明される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "telepathy",
+          "note": "psionicsに含まれる、代表的な個別の能力の一つ。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「精神の(psi-、ギリシャ文字プシーに由来)」と「電子工学(electronics)」を組み合わせた造語とされる。",
+      "trivia": "テレパシーや念動力(テレキネシス)など、他のSF作品では「超能力」とだけ呼ばれる能力に、科学めいた設定を与える際によく使われる語である。",
+      "explanation": "純粋な魔法ではなく、擬似科学的な仕組みによって説明・行使されるとされる、テレパシーや念動力などの架空の超能力全般。",
+      "example_ja": "その兵士のpsionicsのおかげで、彼女は遠くから敵の考えを読み取り、念じるだけで物を押しつぶすことができた。",
+      "example_ja_src": "The soldier's psionics let her read enemy thoughts from a distance and crush objects with her mind."
+    }
+  },
+  {
+    "english": "xenobiology",
+    "detail": {
+      "pronunciation": "/ˌziːnoʊbaɪˈɑːlədʒi/",
+      "pos": "名詞",
+      "meanings": [
+        "異星生物学",
+        "地球外生命体の生物学を研究する仮説的学問"
+      ],
+      "examples": [
+        {
+          "en": "The crew's xenobiology team studied the alien organism's unusual cellular structure.",
+          "ja": "乗組員のxenobiologyの研究チームは、その異星生物の変わった細胞構造を調べた。"
+        },
+        {
+          "en": "Xenobiology remains a purely theoretical field, since no confirmed alien life has ever been discovered.",
+          "ja": "確認された地球外生命がこれまで一度も発見されていないため、xenobiologyは今のところ純粋に理論上の学問分野にとどまっている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「異質な・異星の(xeno-)」と「生物学(biology)」を組み合わせた語である。",
+      "trivia": "現実の科学としても、地球外生命の可能性を検討する学問領域として真剣に議論されている用語でもある。",
+      "explanation": "地球外生命体の生物学的な性質を研究する、仮説上の学問分野。",
+      "example_ja": "乗組員のxenobiologyの研究チームは、その異星生物の変わった細胞構造を調べた。",
+      "example_ja_src": "The crew's xenobiology team studied the alien organism's unusual cellular structure."
+    }
+  },
+  {
+    "english": "rules lawyer",
+    "detail": {
+      "pronunciation": "/ruːlz ˈlɔːjər/",
+      "pos": "名詞",
+      "meanings": [
+        "ルールの重箱の隅をつつくプレイヤー",
+        "自分に有利なルール解釈を主張しがちな人"
+      ],
+      "examples": [
+        {
+          "en": "The rules lawyer at the table spent ten minutes arguing that his character should get an extra bonus.",
+          "ja": "そのrules lawyerは、自分のキャラクターが追加ボーナスを得られるはずだと10分も議論していた。"
+        },
+        {
+          "en": "A good game master learns to gently shut down a rules lawyer without derailing the whole session.",
+          "ja": "優れたゲームマスターは、セッション全体を脱線させることなく、rules lawyerをやんわりと黙らせる術を身につけていく。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「(細かい規則を振りかざす)弁護士(lawyer)」に例えた、ユーモラスな比喩表現である。",
+      "trivia": "必ずしも悪意があるわけではなく、単にルールに厳密であろうとするだけの場合もあるが、進行の妨げになりやすいとされる。",
+      "explanation": "自分に有利になるようルールの解釈をめぐって議論しがちで、時にグループの他のメンバーを苛立たせるプレイヤーを指す語。",
+      "example_ja": "そのrules lawyerは、自分のキャラクターが追加ボーナスを得られるはずだと10分も議論していた。",
+      "example_ja_src": "The rules lawyer at the table spent ten minutes arguing that his character should get an extra bonus."
+    }
+  },
+  {
+    "english": "session zero",
+    "detail": {
+      "pronunciation": "/ˈsɛʃən ˈzɪroʊ/",
+      "pos": "名詞",
+      "meanings": [
+        "セッションゼロ",
+        "本編開始前に合意形成を行う準備会"
+      ],
+      "examples": [
+        {
+          "en": "During session zero, the group agreed on which themes were off-limits before creating their characters.",
+          "ja": "session zeroの間に、グループはキャラクターを作る前に、どのテーマを扱わないかについて合意した。"
+        },
+        {
+          "en": "Skipping session zero can lead to awkward surprises later when players disagree about the campaign's tone.",
+          "ja": "session zeroを省略すると、後になってキャンペーンの雰囲気について意見が食い違い、気まずい事態になりかねない。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "本編を「第1話」とみなし、それ以前の準備段階を「第0回(zero)」と呼ぶ発想から名付けられたとされる。",
+      "trivia": "近年、安全なプレイ環境を作るための重要な手順として、TRPGコミュニティで広く推奨されるようになった慣行である。",
+      "explanation": "本格的なキャンペーンを始める前に行う準備の場で、扱う内容の範囲や雰囲気について合意し、キャラクターを一緒に作成したりするための顔合わせ回。",
+      "example_ja": "session zeroの間に、グループはキャラクターを作る前に、どのテーマを扱わないかについて合意した。",
+      "example_ja_src": "During session zero, the group agreed on which themes were off-limits before creating their characters."
+    }
+  },
+  {
+    "english": "X-card",
+    "detail": {
+      "pronunciation": "/ɛks kɑːrd/",
+      "pos": "名詞",
+      "meanings": [
+        "Xカード",
+        "理由を説明せず場面を止められる安全ツール"
+      ],
+      "examples": [
+        {
+          "en": "She tapped the X-card to signal that the scene had crossed a line she wasn't comfortable with.",
+          "ja": "彼女は、その場面が自分にとって受け入れがたい一線を越えたことを伝えるため、X-cardを叩いた。"
+        },
+        {
+          "en": "The beauty of the X-card is that a player can stop a scene without having to explain why in front of the group.",
+          "ja": "X-cardの良いところは、グループの前でその理由を説明する必要なく、プレイヤーが場面を止められる点にある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「X」と書かれた実物のカードを使うことが多いことから、そのまま「X-card」と呼ばれるようになった安全ツールである。",
+      "trivia": "ゲームデザイナーのジョン・スタヴロプロス(John Stavropoulos)が考案したとされ、以後さまざまなTRPGコミュニティに広まった。",
+      "explanation": "プレイヤーが理由を説明することなく、特定の場面や話題を止めたり飛ばしたりしてほしいと合図するために、「X」と書かれたカードを掲げたり叩いたりする安全ツール。",
+      "example_ja": "彼女は、その場面が自分にとって受け入れがたい一線を越えたことを伝えるため、X-cardを叩いた。",
+      "example_ja_src": "She tapped the X-card to signal that the scene had crossed a line she wasn't comfortable with."
+    }
+  },
+  {
+    "english": "murder hobo",
+    "detail": {
+      "pronunciation": "/ˈmɜːrdər ˈhoʊboʊ/",
+      "pos": "名詞",
+      "meanings": [
+        "マーダーホーボー",
+        "暴力で問題を解決しながら放浪するキャラクター"
+      ],
+      "examples": [
+        {
+          "en": "His character had become such a murder hobo that the party was banned from three towns.",
+          "ja": "彼のキャラクターはすっかりmurder hoboと化してしまい、パーティーは3つの町から出入り禁止にされた。"
+        },
+        {
+          "en": "The term murder hobo pokes fun at how many player characters solve every problem with violence, then move on without consequences.",
+          "ja": "murder hoboという語は、多くのプレイヤーキャラクターがあらゆる問題を暴力で解決し、その後何の責任も負わずに立ち去ってしまうという傾向をからかっている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「殺人者(murderer)」と、定住せず放浪する人を意味する「ホーボー(hobo)」を組み合わせた、ユーモラスな造語である。",
+      "trivia": "冒険者が法や社会的な結果をほとんど気にせず行動しがちな、TRPGにありがちなプレイスタイルを自虐的に表す語として広まったとされる。",
+      "explanation": "法や結果をほとんど気にせず、行く先々で暴力によって問題を解決しながら放浪するプレイヤーキャラクターを、ユーモラスに指す語。",
+      "example_ja": "彼のキャラクターはすっかりmurder hoboと化してしまい、パーティーは3つの町から出入り禁止にされた。",
+      "example_ja_src": "His character had become such a murder hobo that the party was banned from three towns."
+    }
+  },
+  {
+    "english": "splatbook",
+    "detail": {
+      "pronunciation": "/ˈsplætbʊk/",
+      "pos": "名詞",
+      "meanings": [
+        "スプラットブック",
+        "特定のクラス等を掘り下げる追加ルールブック"
+      ],
+      "examples": [
+        {
+          "en": "The new splatbook adds a dozen fresh subclasses focused entirely on wilderness survival.",
+          "ja": "その新しいsplatbookは、もっぱら荒野でのサバイバルに特化した10種類以上の新しいサブクラスを追加する。"
+        },
+        {
+          "en": "Splatbooks let players heavily customize their characters far beyond what the core rulebook alone allows.",
+          "ja": "splatbookのおかげで、プレイヤーは基本ルールブックだけでは実現できないほど、キャラクターを大きくカスタマイズできる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "sourcebook",
+          "note": "特定のクラスに限らず、幅広い題材を扱う追加ルールブック全般を指す、より一般的な語。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "スラング的な擬音語「splat(ぺちゃっと音を立てる)」に由来するとされる、ファンの間の俗称である。",
+      "trivia": "特に1990年代の『Dungeons & Dragons』第2版・第3版時代に多数刊行され、この呼び方が定着したとされる。",
+      "explanation": "TRPGのシステムにおいて、特定のクラスや種族、テーマを掘り下げて拡張する追加のルールブック。",
+      "example_ja": "その新しいsplatbookは、もっぱら荒野でのサバイバルに特化した10種類以上の新しいサブクラスを追加する。",
+      "example_ja_src": "The new splatbook adds a dozen fresh subclasses focused entirely on wilderness survival."
+    }
+  },
+  {
+    "english": "dice pool",
+    "detail": {
+      "pronunciation": "/daɪs puːl/",
+      "pos": "名詞",
+      "meanings": [
+        "ダイスプール",
+        "複数のダイスをまとめて振り成功数を数える方式"
+      ],
+      "examples": [
+        {
+          "en": "Instead of rolling one die and adding modifiers, this system uses a dice pool where sixes count as successes.",
+          "ja": "1つのダイスを振って修正値を足す代わりに、このシステムはdice poolを使い、6の目が出た数を成功として数える。"
+        },
+        {
+          "en": "A larger dice pool generally gives a character a better statistical chance of succeeding at a task.",
+          "ja": "dice poolが大きいほど、一般にキャラクターがその行為に成功する統計的な確率は高くなる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「サイコロ(dice)」と、まとめて集めたものを意味する「プール(pool)」を組み合わせた表現である。",
+      "trivia": "単一のダイスに修正値を加算する方式に比べ、確率のばらつきが小さくなりやすいという特徴があるとされる。",
+      "explanation": "単一の合計値を出すのではなく、複数のダイスをまとめて振り、一定の目以上が出た数を成功として数えるゲームの仕組み。",
+      "example_ja": "1つのダイスを振って修正値を足す代わりに、このシステムはdice poolを使い、6の目が出た数を成功として数える。",
+      "example_ja_src": "Instead of rolling one die and adding modifiers, this system uses a dice pool where sixes count as successes."
+    }
+  },
+  {
+    "english": "crunch (TRPG)",
+    "detail": {
+      "pronunciation": "/krʌntʃ/",
+      "pos": "名詞",
+      "meanings": [
+        "ルールの緻密さ",
+        "ゲームシステムの数値的な複雑さの度合い"
+      ],
+      "examples": [
+        {
+          "en": "The rulebook is famous for its heavy crunch, with pages of detailed combat modifiers.",
+          "ja": "そのルールブックは重厚なcrunchで有名で、何ページにもわたる詳細な戦闘修正値が記載されている。"
+        },
+        {
+          "en": "A game with heavy crunch can feel intimidating to newcomers who just want to jump into the story.",
+          "ja": "重いcrunchを持つゲームは、ただ物語に飛び込みたいだけの初心者にとっては敷居が高く感じられることがある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "fluff (TRPG)",
+          "note": "ゲームの物語的な雰囲気・設定を指す、対になる語。"
+        }
+      ],
+      "origin": "食べ物を「ばりばりと噛み砕く(crunch)」様子になぞらえ、数値処理の重さを比喩的に表した語とされる。",
+      "trivia": "「fluff」と対で語られることが多く、両者のバランスがそのゲームシステムの特徴を語るうえでよく話題になる。",
+      "explanation": "ゲームシステムがどれだけ詳細で数値的に複雑なルールを持っているかを表す度合いで、物語的な雰囲気を指す「fluff」と対比される。",
+      "example_ja": "そのルールブックは重厚なcrunchで有名で、何ページにもわたる詳細な戦闘修正値が記載されている。",
+      "example_ja_src": "The rulebook is famous for its heavy crunch, with pages of detailed combat modifiers."
+    }
+  },
+  {
+    "english": "fluff (TRPG)",
+    "detail": {
+      "pronunciation": "/flʌf/",
+      "pos": "名詞",
+      "meanings": [
+        "雰囲気設定・背景描写",
+        "ゲームの物語的・世界観的な説明部分"
+      ],
+      "examples": [
+        {
+          "en": "She skimmed past the fluff describing the kingdom's history to get to the actual character rules.",
+          "ja": "彼女は、実際のキャラクタールールにたどり着くため、王国の歴史を説明するfluffを読み飛ばした。"
+        },
+        {
+          "en": "Some players skip the fluff entirely, while others say it's what makes a game world feel alive.",
+          "ja": "fluffを丸ごと読み飛ばすプレイヤーもいれば、それこそがゲーム世界に命を吹き込むのだと語るプレイヤーもいる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "crunch (TRPG)",
+          "note": "ゲームの数値的・機械的なルールを指す、対になる語。"
+        }
+      ],
+      "origin": "綿毛やふわふわした軽いものを意味する一般英語「fluff」が、「軽い読み物・肉付け」という比喩的な意味に転用されたとされる。",
+      "trivia": "ルール上は不要でも、プレイヤーの没入感を高めるために重視するゲームマスターも多いとされる。",
+      "explanation": "ゲームの機械的なルール(「crunch」)とは対照的に、世界観や設定、物語的な雰囲気を伝える説明文・背景設定。",
+      "example_ja": "彼女は、実際のキャラクタールールにたどり着くため、王国の歴史を説明するfluffを読み飛ばした。",
+      "example_ja_src": "She skimmed past the fluff describing the kingdom's history to get to the actual character rules."
+    }
+  },
+  {
+    "english": "area control",
+    "detail": {
+      "pronunciation": "/ˈɛəriə kənˈtroʊl/",
+      "pos": "名詞",
+      "meanings": [
+        "陣取り",
+        "領地の奪い合いで得点を競うボードゲームの仕組み"
+      ],
+      "examples": [
+        {
+          "en": "The board game revolves around area control, as players fight to hold the most regions by the end of the round.",
+          "ja": "そのボードゲームはarea controlを中心に展開し、プレイヤーはラウンドの終わりに最も多くの地域を確保しようと争う。"
+        },
+        {
+          "en": "Area control games often reward players for holding contested regions rather than simply occupying empty ones.",
+          "ja": "area controlのゲームでは、単に空いている地域を占領するよりも、争いのある地域を確保することの方が高く評価されることが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「地域・領地(area)」と「支配・統制(control)」を組み合わせた、ボードゲーム設計の分類用語である。",
+      "trivia": "複数のプレイヤーが同じ限られた領地を奪い合う構造が、しばしば激しい駆け引きや交渉を生むとされる。",
+      "explanation": "プレイヤーがボード上の領地を奪い合い、確保することで得点や優位を得るボードゲームの仕組み。",
+      "example_ja": "そのボードゲームはarea controlを中心に展開し、プレイヤーはラウンドの終わりに最も多くの地域を確保しようと争う。",
+      "example_ja_src": "The board game revolves around area control, as players fight to hold the most regions by the end of the round."
+    }
+  },
+  {
+    "english": "push your luck",
+    "detail": {
+      "pronunciation": "/pʊʃ jʊər lʌk/",
+      "pos": "名詞",
+      "meanings": [
+        "運試し(の続行判断)",
+        "追加の見返りを狙ってリスクを取り続ける仕組み"
+      ],
+      "examples": [
+        {
+          "en": "The push your luck mechanic tempts players to draw one more card, even though busting means losing everything.",
+          "ja": "push your luckの仕組みは、失敗すればすべてを失うと分かっていても、プレイヤーにもう1枚引きたいという誘惑を抱かせる。"
+        },
+        {
+          "en": "Push your luck games create tension by making players decide exactly when to stop before it's too late.",
+          "ja": "push your luckのゲームは、手遅れになる前にいつやめるべきかをプレイヤー自身に判断させることで、緊張感を生み出す。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「運(luck)」を「押す(push)」、つまり「調子に乗って運を試し続ける」という意味の一般英語表現から名付けられたとされる。",
+      "trivia": "サイコロを使ったシンプルなゲームから、リスク管理が中心となる本格的なボードゲームまで、幅広く使われる仕組みとされる。",
+      "explanation": "現在得ている利益をあきらめて手を引くか、それともさらに大きな見返りを狙ってリスクを取り続けるかを繰り返し選ぶ、ゲームの仕組み・ジャンル。",
+      "example_ja": "push your luckの仕組みは、失敗すればすべてを失うと分かっていても、プレイヤーにもう1枚引きたいという誘惑を抱かせる。",
+      "example_ja_src": "The push your luck mechanic tempts players to draw one more card, even though busting means losing everything."
+    }
+  },
+  {
+    "english": "social deduction",
+    "detail": {
+      "pronunciation": "/ˈsoʊʃəl dɪˈdʌkʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "正体隠匿",
+        "隠れた役職を推理で見つけ出すゲームジャンル"
+      ],
+      "examples": [
+        {
+          "en": "In this social deduction game, players must debate and vote to identify who among them is secretly the traitor.",
+          "ja": "このsocial deductionのゲームでは、プレイヤーは議論と投票を通じて、誰が密かに裏切り者なのかを突き止めなければならない。"
+        },
+        {
+          "en": "Social deduction games thrive on players bluffing, forming alliances, and second-guessing each other's motives.",
+          "ja": "social deductionのゲームは、プレイヤー同士の駆け引きや同盟形成、互いの意図を疑い合う様子によって盛り上がる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "hidden traitor mechanic",
+          "note": "正体を隠した裏切り者役を用いる、社会的推理ゲームの具体的な仕組みの一つ。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「社会的な(social)」と「推理・推論(deduction)」を組み合わせた、ジャンルを表す一般的な呼び方である。",
+      "trivia": "『人狼』や『Mafia』のような古典的なパーティーゲームが、このジャンルの原型としてよく挙げられる。",
+      "explanation": "プレイヤー同士の会話や推理を通じて、正体を隠した裏切り者や特殊な役職を見つけ出すことを目的とするゲームのジャンル。",
+      "example_ja": "このsocial deductionのゲームでは、プレイヤーは議論と投票を通じて、誰が密かに裏切り者なのかを突き止めなければならない。",
+      "example_ja_src": "In this social deduction game, players must debate and vote to identify who among them is secretly the traitor."
+    }
+  },
+  {
+    "english": "legacy game",
+    "detail": {
+      "pronunciation": "/ˈlɛɡəsi ɡeɪm/",
+      "pos": "名詞",
+      "meanings": [
+        "レガシーゲーム",
+        "プレイを重ねるごとに恒久的に変化するボードゲーム"
+      ],
+      "examples": [
+        {
+          "en": "In the legacy game, the players permanently sealed off a region of the map after their disastrous third session.",
+          "ja": "そのlegacy gameの中で、プレイヤーたちは悲惨な結果に終わった3回目のセッションの後、マップの一部の地域を恒久的に封鎖した。"
+        },
+        {
+          "en": "Legacy games often ask players to tear up cards or write directly on the board, permanently altering future sessions.",
+          "ja": "legacy gameでは、カードを破ったりボードに直接書き込んだりすることが求められ、それが今後のセッションを恒久的に変えていくことも多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「(代々受け継がれる)遺産(legacy)」という一般英語の語が、プレイの積み重ねが引き継がれていく様を表す語として転用されたとされる。",
+      "trivia": "一度使い終えた後は元の状態に戻せない、いわば「使い捨て」のコンポーネントを含むことが多いのも特徴とされる。",
+      "explanation": "ボードに書き込んだりカードを破いたりすることで、複数回のプレイを通じて盤面やルールが恒久的に変化していく、キャンペーン形式のボードゲーム。",
+      "example_ja": "そのlegacy gameの中で、プレイヤーたちは悲惨な結果に終わった3回目のセッションの後、マップの一部の地域を恒久的に封鎖した。",
+      "example_ja_src": "In the legacy game, the players permanently sealed off a region of the map after their disastrous third session."
+    }
+  },
+  {
+    "english": "asymmetric game",
+    "detail": {
+      "pronunciation": "/ˌeɪsɪˈmɛtrɪk ɡeɪm/",
+      "pos": "名詞",
+      "meanings": [
+        "非対称ゲーム",
+        "プレイヤーごとに能力や目標が異なるゲーム"
+      ],
+      "examples": [
+        {
+          "en": "The asymmetric game gives one player overwhelming power, while the others must cooperate just to survive.",
+          "ja": "そのasymmetric gameは、一人のプレイヤーに圧倒的な力を与える一方、他のプレイヤーたちはただ生き残るために協力しなければならない。"
+        },
+        {
+          "en": "Designing a balanced asymmetric game is notoriously difficult, since each side plays by completely different rules.",
+          "ja": "asymmetric gameでバランスを取ることは非常に難しいとされる。それぞれの陣営がまったく異なるルールでプレイするためだ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "symmetric game",
+          "note": "全プレイヤーが同一のルール・条件で対戦する、対照的なゲーム。"
+        }
+      ],
+      "origin": "「非対称の(asymmetric)」と「ゲーム(game)」を組み合わせた、ゲームデザインの分類用語である。",
+      "trivia": "1人対多数の構図を持つゲームなど、公平性の調整が特に難しいジャンルとしてデザイナーの間で議論されることが多い。",
+      "explanation": "全プレイヤーが同一のルールに従うのではなく、それぞれ異なる能力や目標、開始条件を持つゲーム。",
+      "example_ja": "そのasymmetric gameは、一人のプレイヤーに圧倒的な力を与える一方、他のプレイヤーたちはただ生き残るために協力しなければならない。",
+      "example_ja_src": "The asymmetric game gives one player overwhelming power, while the others must cooperate just to survive."
+    }
+  },
+  {
+    "english": "GM screen",
+    "detail": {
+      "pronunciation": "/dʒiː ɛm skriːn/",
+      "pos": "名詞",
+      "meanings": [
+        "GMスクリーン",
+        "ゲームマスターの手元を隠す折りたたみ式のついたて"
+      ],
+      "examples": [
+        {
+          "en": "He kept the encounter notes hidden behind the GM screen so the players couldn't peek at what was coming.",
+          "ja": "彼は、これから起こる展開をプレイヤーに覗き見されないよう、遭遇のメモをGM screenの後ろに隠しておいた。"
+        },
+        {
+          "en": "A GM screen typically shows helpful reference charts to the game master while hiding dice rolls from the players.",
+          "ja": "GM screenは通常、ゲームマスター側には便利な参照表を見せる一方で、プレイヤー側からはダイスの出目を隠すようになっている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "dungeon master screen",
+          "note": "『Dungeons & Dragons』でのゲームマスターの呼称に合わせた、ほぼ同義の言い方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「ゲームマスター(game master、GM)」と「ついたて(screen)」を組み合わせた表現である。",
+      "trivia": "近年は、プレイヤーとの間に物理的な壁を作りすぎるとして、あえて使わないゲームマスターも増えているとされる。",
+      "explanation": "折りたたみ式のついたてで、ゲームマスターの手元にあるメモやダイスの出目をプレイヤーから隠しつつ、プレイヤー側からは参照用の表が見えるように置く。",
+      "example_ja": "彼は、これから起こる展開をプレイヤーに覗き見されないよう、遭遇のメモをGM screenの後ろに隠しておいた。",
+      "example_ja_src": "He kept the encounter notes hidden behind the GM screen so the players couldn't peek at what was coming."
+    }
+  },
+  {
+    "english": "total party kill (TPK)",
+    "detail": {
+      "pronunciation": "/ˈtoʊtəl ˈpɑːrti kɪl/",
+      "pos": "名詞",
+      "meanings": [
+        "全滅(TPK)",
+        "パーティー全員が死亡してしまう出来事"
+      ],
+      "examples": [
+        {
+          "en": "A single ambush led to a total party kill, forcing the group to start a brand-new campaign.",
+          "ja": "たった一度の待ち伏せがtotal party killを招き、グループは新しいキャンペーンを一から始めざるを得なくなった。"
+        },
+        {
+          "en": "A total party kill doesn't always end a campaign — some groups simply roll up new characters and continue the story.",
+          "ja": "total party killが起きても、必ずしもキャンペーンが終わるとは限らない。新しいキャラクターを作って物語を続けるグループもある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「全体の(total)」「パーティー(party)」「死亡(kill)」を組み合わせ、頭文字を取って「TPK」とも略される。",
+      "trivia": "難易度の高い戦闘設計を語る際、しばしばゲームマスターたちの間で自虐的・冗談交じりに使われる語である。",
+      "explanation": "「TPK」と略される、パーティーの全プレイヤーキャラクターが死亡してしまう出来事で、多くの場合キャンペーンの終了や大きな展開の変更を招く。",
+      "example_ja": "たった一度の待ち伏せがtotal party killを招き、グループは新しいキャンペーンを一から始めざるを得なくなった。",
+      "example_ja_src": "A single ambush led to a total party kill, forcing the group to start a brand-new campaign."
+    }
+  },
+  {
+    "english": "natural 20",
+    "detail": {
+      "pronunciation": "/ˈnætʃərəl ˈtwɛnti/",
+      "pos": "名詞",
+      "meanings": [
+        "ナチュラル20",
+        "20面ダイスで出目そのものが20になること"
+      ],
+      "examples": [
+        {
+          "en": "He rolled a natural 20 on his attack, landing a critical hit that finished off the dragon.",
+          "ja": "彼は攻撃判定でnatural 20を出し、クリティカルヒットでドラゴンにとどめを刺した。"
+        },
+        {
+          "en": "Rolling a natural 20 is considered an automatic success in many tabletop systems, regardless of modifiers.",
+          "ja": "多くのTRPGシステムでは、natural 20を出すことは修正値にかかわらず自動的な成功とみなされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "natural 1",
+          "note": "修正前の出目そのものが1であることを指し、しばしば自動的な失敗(ファンブル)として扱われる。"
+        }
+      ],
+      "origin": "「本来の・生の(natural)」という語を付けて、修正値を加える前のダイス自体の出目であることを明示した表現である。",
+      "trivia": "多くのシステムで、修正値の合計にかかわらず自動的な成功として扱われる、いわば「ダイスの女神の祝福」とされる出目である。",
+      "explanation": "20面ダイスを使うゲームにおいて、修正値を加える前のダイス自体の出目が20であることを指し、多くの場合自動的な決定的成功として扱われる。",
+      "example_ja": "彼は攻撃判定でnatural 20を出し、クリティカルヒットでドラゴンにとどめを刺した。",
+      "example_ja_src": "He rolled a natural 20 on his attack, landing a critical hit that finished off the dragon."
+    }
+  },
+  {
+    "english": "alignment (TRPG)",
+    "detail": {
+      "pronunciation": "/əˈlaɪnmənt/",
+      "pos": "名詞",
+      "meanings": [
+        "属性(道徳的傾向)",
+        "キャラクターの倫理観を表す特性"
+      ],
+      "examples": [
+        {
+          "en": "Her character's alignment was lawful good, so she refused to lie even to save herself.",
+          "ja": "彼女のキャラクターのalignmentは秩序にして善であり、自分の身を守るためであっても嘘をつくことを拒んだ。"
+        },
+        {
+          "en": "A character's alignment is meant to guide roleplaying decisions, though many players treat it loosely.",
+          "ja": "キャラクターのalignmentはロールプレイ上の判断の指針となるものだが、多くのプレイヤーはそれをゆるやかにしか扱わない。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「(方向性の)整合・一致(alignment)」という一般英語の語が、『Dungeons & Dragons』でキャラクターの倫理的立場を表す用語として転用されたとされる。",
+      "trivia": "秩序・中立・混沌と、善・中立・悪の2つの軸を組み合わせた9種類に分類されるのが伝統的な形式とされる。",
+      "explanation": "『ダンジョンズ&ドラゴンズ』などで特に使われる、キャラクターの道徳的・倫理的な傾向(秩序と善、混沌と悪など)を表す特性。",
+      "example_ja": "彼女のキャラクターのalignmentは秩序にして善であり、自分の身を守るためであっても嘘をつくことを拒んだ。",
+      "example_ja_src": "Her character's alignment was lawful good, so she refused to lie even to save herself."
+    }
+  },
+  {
+    "english": "player agency",
+    "detail": {
+      "pronunciation": "/ˈpleɪər ˈeɪdʒənsi/",
+      "pos": "名詞",
+      "meanings": [
+        "プレイヤーの主体性",
+        "選択が物語に実質的な影響を与える度合い"
+      ],
+      "examples": [
+        {
+          "en": "The sandbox campaign was praised for giving players real agency instead of railroading them down one path.",
+          "ja": "そのサンドボックス型キャンペーンは、プレイヤーを一本道に誘導する代わりに、本物のplayer agencyを与えてくれると評価された。"
+        },
+        {
+          "en": "High player agency means the story can genuinely change direction based on the choices players make.",
+          "ja": "player agencyが高いということは、プレイヤーが下す選択によって物語が本当に方向を変えうるということを意味する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "railroading",
+          "note": "プレイヤーの選択にかかわらず、あらかじめ決められた筋書きへ強制的に誘導する、対照的な進行手法。"
+        }
+      ],
+      "origin": "「行為主体性(agency)」という一般的な語が、TRPGにおけるプレイヤーの選択の重みを表す用語として使われるようになったとされる。",
+      "trivia": "「railroading(レールローディング)」と対比して語られることが多く、キャンペーン設計の良し悪しを論じる際の重要な観点とされる。",
+      "explanation": "プレイヤーの選択がストーリーや結果にどれだけ実質的な影響を与えるかという度合いで、あらかじめ決められた筋書きに沿って進める「レールローディング」と対比される。",
+      "example_ja": "そのサンドボックス型キャンペーンは、プレイヤーを一本道に誘導する代わりに、本物のplayer agencyを与えてくれると評価された。",
+      "example_ja_src": "The sandbox campaign was praised for giving players real agency instead of railroading them down one path."
+    }
+  }
+]

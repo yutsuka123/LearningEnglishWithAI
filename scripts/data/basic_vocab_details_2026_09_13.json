@@ -1,0 +1,2902 @@
+[
+  {
+    "english": "table",
+    "detail": {
+      "pronunciation": "/ˈteɪbl/",
+      "pos": "名詞",
+      "meanings": ["テーブル・机", "(数値の)表・一覧"],
+      "examples": [
+        {"en": "There is a book on the table.", "ja": "テーブルの上に本がある。"},
+        {"en": "Let's set the table before dinner.", "ja": "夕食の前にテーブルの準備をしよう。"}
+      ],
+      "derivatives": [{"word": "tablet", "pos": "名詞", "ja": "錠剤・タブレット端末"}],
+      "synonyms": [{"word": "desk", "note": "机(主に作業用)。"}],
+      "antonyms": [],
+      "origin": "ラテン語 tabula「板」に由来し、古フランス語 table を経て英語に入った。もともとは平らな板を指した。",
+      "trivia": "「数表」「一覧表」の意味の table(例: table of contents)も同じ語源で、平らな板に書き並べたイメージから来ている。",
+      "explanation": "テーブル・机。データの「表」の意味でもよく使う。",
+      "example_ja": "テーブルの上に本がある。",
+      "example_ja_src": "There is a book on the table."
+    }
+  },
+  {
+    "english": "chair",
+    "detail": {
+      "pronunciation": "/tʃer/",
+      "pos": "名詞",
+      "meanings": ["椅子", "(会議などの)議長"],
+      "examples": [
+        {"en": "Please have a seat on that chair.", "ja": "どうぞその椅子におかけください。"},
+        {"en": "She pulled up a chair and sat down next to me.", "ja": "彼女は椅子を引き寄せて私の隣に座った。"}
+      ],
+      "derivatives": [{"word": "chairman", "pos": "名詞", "ja": "議長"}],
+      "synonyms": [{"word": "seat", "note": "座席。"}],
+      "antonyms": [],
+      "origin": "ラテン語 cathedra「(背もたれ付きの)椅子・司教座」がフランス語 chaiere を経て英語 chair になった。",
+      "trivia": "会議で司会を務める人を chair(または chairperson)と呼ぶのは、かつて議長だけが椅子に座ることを許された名残とされる。",
+      "explanation": "椅子。会議の「議長」の意味でも使われる。",
+      "example_ja": "どうぞその椅子におかけください。",
+      "example_ja_src": "Please have a seat on that chair."
+    }
+  },
+  {
+    "english": "cup",
+    "detail": {
+      "pronunciation": "/kʌp/",
+      "pos": "名詞",
+      "meanings": ["カップ・(取っ手付きの)コップ", "(スポーツの)優勝カップ"],
+      "examples": [
+        {"en": "He poured hot coffee into the cup.", "ja": "彼は熱いコーヒーをカップに注いだ。"},
+        {"en": "Would you like a cup of tea?", "ja": "紅茶を一杯いかがですか。"}
+      ],
+      "derivatives": [{"word": "cupful", "pos": "名詞", "ja": "カップ1杯分"}],
+      "synonyms": [{"word": "mug", "note": "取っ手付きの大きめのカップ。"}],
+      "antonyms": [],
+      "origin": "ラテン語 cuppa「杯・容器」に由来し、古英語 cuppe を経て現在の cup になった。",
+      "trivia": "スポーツの優勝トロフィーを the Cup と呼ぶのも、元々は本物のカップ型の賞杯を贈っていたことに由来する。",
+      "explanation": "取っ手付きの飲み物用カップ。「〜杯」という単位としても使う。",
+      "example_ja": "彼は熱いコーヒーをカップに注いだ。",
+      "example_ja_src": "He poured hot coffee into the cup."
+    }
+  },
+  {
+    "english": "bed",
+    "detail": {
+      "pronunciation": "/bed/",
+      "pos": "名詞",
+      "meanings": ["ベッド・寝床", "(花壇などの)苗床"],
+      "examples": [
+        {"en": "The children were already in bed by nine o'clock.", "ja": "子どもたちは9時にはもうベッドに入っていた。"},
+        {"en": "She made the bed as soon as she woke up.", "ja": "彼女は起きるとすぐにベッドを整えた。"}
+      ],
+      "derivatives": [{"word": "bedroom", "pos": "名詞", "ja": "寝室"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 bedd に由来するゲルマン語系の語で、元々は「掘った寝床・寝る場所」を意味したとされる。",
+      "trivia": "in bed(ベッドの中で)と on the bed(ベッドの上に)は使い分けに注意が必要な代表的な前置詞表現。",
+      "explanation": "ベッド・寝床。花壇の意味の flower bed もある。",
+      "example_ja": "子どもたちは9時にはもうベッドに入っていた。",
+      "example_ja_src": "The children were already in bed by nine o'clock."
+    }
+  },
+  {
+    "english": "door",
+    "detail": {
+      "pronunciation": "/dɔːr/",
+      "pos": "名詞",
+      "meanings": ["ドア・扉", "(比喩的に)機会・入り口"],
+      "examples": [
+        {"en": "Someone knocked on the door.", "ja": "誰かがドアをノックした。"},
+        {"en": "Please close the door behind you.", "ja": "入ったらドアを閉めてください。"}
+      ],
+      "derivatives": [{"word": "doorway", "pos": "名詞", "ja": "出入り口"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 duru/dor に由来するゲルマン語系の語。ラテン語 foris(「戸外」)とも同じ印欧語根を持つとされる。",
+      "trivia": "open the door for〜(〜への道を開く)のように、比喩的に「機会」を表す表現でもよく使われる。",
+      "explanation": "ドア・扉。比喩的に「機会」の意味でも使う。",
+      "example_ja": "誰かがドアをノックした。",
+      "example_ja_src": "Someone knocked on the door."
+    }
+  },
+  {
+    "english": "window",
+    "detail": {
+      "pronunciation": "/ˈwɪndoʊ/",
+      "pos": "名詞",
+      "meanings": ["窓", "(限られた)期間・機会"],
+      "examples": [
+        {"en": "She opened the window to let in some fresh air.", "ja": "彼女は新鮮な空気を入れるため窓を開けた。"},
+        {"en": "There is only a small window of time to submit the application.", "ja": "申し込みができる期間はわずかしかない。"}
+      ],
+      "derivatives": [{"word": "windowsill", "pos": "名詞", "ja": "窓の下枠、窓辺"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古ノルド語 vindauga に由来し、vindr「風」+ auga「目」で文字通り「風の目」を意味した。",
+      "trivia": "window が元々「風の目」だったのは、ガラス窓が普及する前、壁に開けた穴から風や光が出入りしていた名残とされる。",
+      "explanation": "窓。「(短い)期間・好機」の比喩的な意味でも使う。",
+      "example_ja": "彼女は新鮮な空気を入れるため窓を開けた。",
+      "example_ja_src": "She opened the window to let in some fresh air."
+    }
+  },
+  {
+    "english": "big",
+    "detail": {
+      "pronunciation": "/bɪɡ/",
+      "pos": "形容詞",
+      "meanings": ["大きい", "(年齢が)年上の・重大な"],
+      "examples": [
+        {"en": "They live in a big house near the park.", "ja": "彼らは公園の近くの大きな家に住んでいる。"},
+        {"en": "It was a big decision for the whole family.", "ja": "それは家族全員にとって大きな決断だった。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "large", "note": "大きい(やや形式的)。"}],
+      "antonyms": [{"word": "small", "note": "小さい。"}],
+      "origin": "中英語期に現れた語で、正確な語源ははっきりしないが、北欧系の言語から入った可能性が指摘されている。",
+      "trivia": "big はもともと「かさばった、太った」に近いニュアンスで使われ始め、次第に単純な「大きい」を表す最も一般的な語になった。",
+      "explanation": "大きい。反対語は small。",
+      "example_ja": "彼らは公園の近くの大きな家に住んでいる。",
+      "example_ja_src": "They live in a big house near the park."
+    }
+  },
+  {
+    "english": "small",
+    "detail": {
+      "pronunciation": "/smɔːl/",
+      "pos": "形容詞",
+      "meanings": ["小さい", "(規模・程度が)わずかな"],
+      "examples": [
+        {"en": "We rented a small car for the trip.", "ja": "私たちは旅行のために小さな車を借りた。"},
+        {"en": "There is only a small chance of rain today.", "ja": "今日雨が降る可能性はわずかだ。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "little", "note": "小さい(親しみを込めて使うことが多い)。"}],
+      "antonyms": [{"word": "big", "note": "大きい。"}, {"word": "large", "note": "大きい。"}],
+      "origin": "古英語 smæl に由来するゲルマン語系の語で、古くから一貫して「小さい・細い」を意味してきた。",
+      "trivia": "small talk(世間話)のように、比喩的に「ちょっとした・気軽な」を表す表現にも使われる。",
+      "explanation": "小さい。反対語は big / large。",
+      "example_ja": "私たちは旅行のために小さな車を借りた。",
+      "example_ja_src": "We rented a small car for the trip."
+    }
+  },
+  {
+    "english": "hot",
+    "detail": {
+      "pronunciation": "/hɑːt/",
+      "pos": "形容詞",
+      "meanings": ["熱い・暑い", "(味が)辛い", "人気のある"],
+      "examples": [
+        {"en": "Be careful, the soup is very hot.", "ja": "気をつけて、スープはとても熱いよ。"},
+        {"en": "This restaurant serves very hot curry.", "ja": "このレストランはとても辛いカレーを出す。"}
+      ],
+      "derivatives": [{"word": "heat", "pos": "名詞・動詞", "ja": "熱、熱する"}],
+      "synonyms": [],
+      "antonyms": [{"word": "cold", "note": "冷たい・寒い。"}],
+      "origin": "古英語 hat に由来するゲルマン語系の語。",
+      "trivia": "食べ物の「辛い」という意味も hot で表せるが、香辛料由来の辛さ(spicy)と唐辛子系の辛さの両方に使われる。",
+      "explanation": "熱い・暑い。食べ物が「辛い」、話題が「人気・最新」の意味でも使う。",
+      "example_ja": "気をつけて、スープはとても熱いよ。",
+      "example_ja_src": "Be careful, the soup is very hot."
+    }
+  },
+  {
+    "english": "cold",
+    "detail": {
+      "pronunciation": "/koʊld/",
+      "pos": "形容詞・名詞",
+      "meanings": ["冷たい・寒い", "(名詞)風邪"],
+      "examples": [
+        {"en": "It's too cold to go outside without a coat.", "ja": "コートなしで外に出るには寒すぎる。"},
+        {"en": "She caught a cold last week.", "ja": "彼女は先週風邪をひいた。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "chilly", "note": "肌寒い。"}],
+      "antonyms": [{"word": "hot", "note": "熱い・暑い。"}, {"word": "warm", "note": "暖かい。"}],
+      "origin": "古英語 ceald に由来するゲルマン語系の語。",
+      "trivia": "catch a cold(風邪をひく)のように、体調を表す名詞としても非常によく使われる。",
+      "explanation": "冷たい・寒い。名詞では「風邪」の意味。",
+      "example_ja": "コートなしで外に出るには寒すぎる。",
+      "example_ja_src": "It's too cold to go outside without a coat."
+    }
+  },
+  {
+    "english": "eat",
+    "detail": {
+      "pronunciation": "/iːt/",
+      "pos": "動詞",
+      "meanings": ["食べる", "(eat out)外食する"],
+      "examples": [
+        {"en": "We usually eat dinner at seven.", "ja": "私たちはたいてい7時に夕食を食べる。"},
+        {"en": "Let's eat out tonight instead of cooking.", "ja": "今夜は料理せずに外食しよう。"}
+      ],
+      "derivatives": [{"word": "eatable", "pos": "形容詞", "ja": "食べられる"}],
+      "synonyms": [{"word": "have", "note": "(食事を)とる、口語的。"}],
+      "antonyms": [],
+      "origin": "古英語 etan に由来し、ラテン語 edere とも同じ印欧語根を共有する非常に古い基本動詞。",
+      "trivia": "eat out(外食する)、eat up(食べ尽くす)など、eat を使った基本的な句動詞は日常会話で頻出する。",
+      "explanation": "食べる。過去形 ate、過去分詞 eaten。",
+      "example_ja": "私たちはたいてい7時に夕食を食べる。",
+      "example_ja_src": "We usually eat dinner at seven."
+    }
+  },
+  {
+    "english": "run",
+    "detail": {
+      "pronunciation": "/rʌn/",
+      "pos": "動詞",
+      "meanings": ["走る", "(会社などを)経営する・運営する", "(機械が)動く"],
+      "examples": [
+        {"en": "He runs five kilometers every morning.", "ja": "彼は毎朝5キロ走る。"},
+        {"en": "She runs a small bakery in town.", "ja": "彼女は町で小さなパン屋を経営している。"}
+      ],
+      "derivatives": [{"word": "runner", "pos": "名詞", "ja": "走者、ランナー"}],
+      "synonyms": [{"word": "jog", "note": "ゆっくり走る、ジョギングする。"}],
+      "antonyms": [{"word": "walk", "note": "歩く。"}],
+      "origin": "古英語 rinnan/iernan に由来するゲルマン語系の語。",
+      "trivia": "run a business(事業を経営する)のように、「動かし続ける」というイメージから「経営する」の意味に発展した。",
+      "explanation": "走る。「経営する」「(機械が)動く」など幅広い意味で使われる基本動詞。",
+      "example_ja": "彼は毎朝5キロ走る。",
+      "example_ja_src": "He runs five kilometers every morning."
+    }
+  },
+  {
+    "english": "sleep",
+    "detail": {
+      "pronunciation": "/sliːp/",
+      "pos": "動詞・名詞",
+      "meanings": ["眠る", "(名詞)睡眠"],
+      "examples": [
+        {"en": "I didn't sleep well last night.", "ja": "昨夜はよく眠れなかった。"},
+        {"en": "Adults need about eight hours of sleep.", "ja": "大人は約8時間の睡眠が必要だ。"}
+      ],
+      "derivatives": [{"word": "sleepy", "pos": "形容詞", "ja": "眠い"}],
+      "synonyms": [{"word": "doze", "note": "うたた寝する。"}],
+      "antonyms": [{"word": "wake", "note": "目覚める。"}],
+      "origin": "古英語 slæpan に由来するゲルマン語系の基本動詞。",
+      "trivia": "sleep on it(一晩よく考える)は、決断を翌日まで持ち越すという意味の便利な慣用表現。",
+      "explanation": "眠る。名詞としては「睡眠」。",
+      "example_ja": "昨夜はよく眠れなかった。",
+      "example_ja_src": "I didn't sleep well last night."
+    }
+  },
+  {
+    "english": "sit",
+    "detail": {
+      "pronunciation": "/sɪt/",
+      "pos": "動詞",
+      "meanings": ["座る", "(試験を)受ける(sit an exam、主に英)"],
+      "examples": [
+        {"en": "Please sit down and make yourself comfortable.", "ja": "どうぞお座りになって、楽になさってください。"},
+        {"en": "She sat quietly in the corner of the room.", "ja": "彼女は部屋の隅に静かに座っていた。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [{"word": "stand", "note": "立つ。"}],
+      "origin": "古英語 sittan に由来するゲルマン語系の基本動詞。",
+      "trivia": "sit an exam(試験を受ける)はイギリス英語でよく使われ、アメリカ英語では take an exam が一般的。",
+      "explanation": "座る。反対語は stand。",
+      "example_ja": "どうぞお座りになって、楽になさってください。",
+      "example_ja_src": "Please sit down and make yourself comfortable."
+    }
+  },
+  {
+    "english": "stand",
+    "detail": {
+      "pronunciation": "/stænd/",
+      "pos": "動詞",
+      "meanings": ["立つ", "(考えなどに)耐える・我慢する", "(名詞)売店・観客席"],
+      "examples": [
+        {"en": "The old man was standing at the bus stop.", "ja": "その老人はバス停に立っていた。"},
+        {"en": "I can't stand loud noises early in the morning.", "ja": "私は朝早くの大きな音に耐えられない。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [{"word": "sit", "note": "座る。"}],
+      "origin": "古英語 standan に由来し、ラテン語 stare とも同じ印欧語根を共有する。",
+      "trivia": "I can't stand〜(〜に耐えられない)は、単に「立つ」以外の非常によく使われる口語表現。",
+      "explanation": "立つ。「耐える」という意味の否定表現(can't stand)も頻出。",
+      "example_ja": "その老人はバス停に立っていた。",
+      "example_ja_src": "The old man was standing at the bus stop."
+    }
+  },
+  {
+    "english": "open",
+    "detail": {
+      "pronunciation": "/ˈoʊpən/",
+      "pos": "動詞・形容詞",
+      "meanings": ["開ける", "(形容詞)開いている・営業中の"],
+      "examples": [
+        {"en": "Could you open the window a little?", "ja": "窓を少し開けてもらえますか。"},
+        {"en": "The store is open until nine every day.", "ja": "その店は毎日9時まで開いている。"}
+      ],
+      "derivatives": [{"word": "opening", "pos": "名詞", "ja": "開始、隙間、空き"}],
+      "synonyms": [],
+      "antonyms": [{"word": "close", "note": "閉める・閉じている。"}],
+      "origin": "古英語 open に由来するゲルマン語系の語で、「上の(up)」と関連があるとされる。",
+      "trivia": "open-minded(心の広い)のように、比喩的に「開かれた」考え方を表す複合語も多い。",
+      "explanation": "開ける。形容詞では「開いている・営業中」。",
+      "example_ja": "窓を少し開けてもらえますか。",
+      "example_ja_src": "Could you open the window a little?"
+    }
+  },
+  {
+    "english": "close",
+    "detail": {
+      "pronunciation": "(動詞)/kloʊz/、(形容詞)/kloʊs/",
+      "pos": "動詞・形容詞",
+      "meanings": ["(動詞)閉める・閉じる", "(形容詞)近い・親しい"],
+      "examples": [
+        {"en": "Please close the door when you leave.", "ja": "出るときはドアを閉めてください。"},
+        {"en": "She is close to her older sister.", "ja": "彼女はお姉さんと仲が良い。"}
+      ],
+      "derivatives": [{"word": "closed", "pos": "形容詞", "ja": "閉まっている"}, {"word": "closely", "pos": "副詞", "ja": "綿密に、密接に"}],
+      "synonyms": [{"word": "shut", "note": "閉める。"}],
+      "antonyms": [{"word": "open", "note": "開ける・開いている。"}],
+      "origin": "ラテン語 claudere「閉じる」に由来し、古フランス語 clore/clos を経て英語に入った。",
+      "trivia": "動詞の close は語尾が /z/、形容詞・副詞の close(近い)は語尾が /s/ と発音が違う点に注意。",
+      "explanation": "動詞は「閉める」、形容詞は「近い・親しい」。発音が意味によって変わる。",
+      "example_ja": "出るときはドアを閉めてください。",
+      "example_ja_src": "Please close the door when you leave."
+    }
+  },
+  {
+    "english": "buy",
+    "detail": {
+      "pronunciation": "/baɪ/",
+      "pos": "動詞",
+      "meanings": ["買う"],
+      "examples": [
+        {"en": "I need to buy some milk on the way home.", "ja": "家に帰る途中で牛乳を買う必要がある。"},
+        {"en": "She bought a new laptop last week.", "ja": "彼女は先週新しいノートパソコンを買った。"}
+      ],
+      "derivatives": [{"word": "buyer", "pos": "名詞", "ja": "買い手"}],
+      "synonyms": [{"word": "purchase", "note": "購入する(やや形式的)。"}],
+      "antonyms": [{"word": "sell", "note": "売る。"}],
+      "origin": "古英語 bycgan に由来するゲルマン語系の基本動詞。",
+      "trivia": "buy は不規則動詞で、過去形・過去分詞ともに bought になる。",
+      "explanation": "買う。反対語は sell。過去形は bought。",
+      "example_ja": "家に帰る途中で牛乳を買う必要がある。",
+      "example_ja_src": "I need to buy some milk on the way home."
+    }
+  },
+  {
+    "english": "old",
+    "detail": {
+      "pronunciation": "/oʊld/",
+      "pos": "形容詞",
+      "meanings": ["古い", "年をとった", "(年齢を表して)〜歳の"],
+      "examples": [
+        {"en": "This is the oldest building in the city.", "ja": "これは市内で最も古い建物だ。"},
+        {"en": "My grandfather is eighty years old.", "ja": "私の祖父は80歳だ。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "aged", "note": "年をとった。"}],
+      "antonyms": [{"word": "new", "note": "新しい。"}, {"word": "young", "note": "若い。"}],
+      "origin": "古英語 eald に由来するゲルマン語系の語。",
+      "trivia": "年齢を尋ねる How old are you? のように、old は「古い」以外に単に「年齢」を表す時にも使われる。",
+      "explanation": "古い、年をとった。年齢を表す基本表現にも使う。",
+      "example_ja": "これは市内で最も古い建物だ。",
+      "example_ja_src": "This is the oldest building in the city."
+    }
+  },
+  {
+    "english": "new",
+    "detail": {
+      "pronunciation": "/nuː/",
+      "pos": "形容詞",
+      "meanings": ["新しい"],
+      "examples": [
+        {"en": "She just moved into a new apartment.", "ja": "彼女は新しいアパートに引っ越したばかりだ。"},
+        {"en": "Have you met the new employee yet?", "ja": "もう新入社員には会いましたか。"}
+      ],
+      "derivatives": [{"word": "newly", "pos": "副詞", "ja": "新たに"}],
+      "synonyms": [],
+      "antonyms": [{"word": "old", "note": "古い。"}],
+      "origin": "古英語 neowe に由来し、ラテン語 novus とも同じ印欧語根を共有する。",
+      "trivia": "brand new(新品同様の)のように、new を強調する表現も日常的によく使われる。",
+      "explanation": "新しい。反対語は old。",
+      "example_ja": "彼女は新しいアパートに引っ越したばかりだ。",
+      "example_ja_src": "She just moved into a new apartment."
+    }
+  },
+  {
+    "english": "long",
+    "detail": {
+      "pronunciation": "/lɔːŋ/",
+      "pos": "形容詞・副詞",
+      "meanings": ["長い", "(副詞)長く"],
+      "examples": [
+        {"en": "It's a long way from here to the station.", "ja": "ここから駅まではかなり距離がある。"},
+        {"en": "We haven't seen each other for a long time.", "ja": "私たちは長い間会っていない。"}
+      ],
+      "derivatives": [{"word": "length", "pos": "名詞", "ja": "長さ"}],
+      "synonyms": [],
+      "antonyms": [{"word": "short", "note": "短い。"}],
+      "origin": "古英語 lang に由来し、ラテン語 longus とも同じ印欧語根を共有する。",
+      "trivia": "as long as(〜する限りは)のように、条件を表す接続表現としても頻出する。",
+      "explanation": "長い。反対語は short。",
+      "example_ja": "ここから駅まではかなり距離がある。",
+      "example_ja_src": "It's a long way from here to the station."
+    }
+  },
+  {
+    "english": "short",
+    "detail": {
+      "pronunciation": "/ʃɔːrt/",
+      "pos": "形容詞",
+      "meanings": ["短い", "背が低い", "(お金が)不足している"],
+      "examples": [
+        {"en": "We only have a short break between classes.", "ja": "授業の合間には短い休憩しかない。"},
+        {"en": "I'm a little short on cash right now.", "ja": "今ちょっと現金が足りない。"}
+      ],
+      "derivatives": [{"word": "shortly", "pos": "副詞", "ja": "まもなく"}],
+      "synonyms": [],
+      "antonyms": [{"word": "long", "note": "長い。"}, {"word": "tall", "note": "背が高い。"}],
+      "origin": "古英語 sceort に由来するゲルマン語系の語。",
+      "trivia": "be short of〜(〜が不足している)のように、お金や時間の不足を表す表現でもよく使われる。",
+      "explanation": "短い、背が低い。「不足している」の意味でも使う。",
+      "example_ja": "授業の合間には短い休憩しかない。",
+      "example_ja_src": "We only have a short break between classes."
+    }
+  },
+  {
+    "english": "happy",
+    "detail": {
+      "pronunciation": "/ˈhæpi/",
+      "pos": "形容詞",
+      "meanings": ["幸せな・うれしい", "(happy to do)喜んで〜する"],
+      "examples": [
+        {"en": "She looked really happy when she heard the news.", "ja": "彼女はその知らせを聞いてとても嬉しそうだった。"},
+        {"en": "I'd be happy to help you with that.", "ja": "喜んでそれをお手伝いします。"}
+      ],
+      "derivatives": [{"word": "happiness", "pos": "名詞", "ja": "幸せ"}, {"word": "happily", "pos": "副詞", "ja": "幸せに"}],
+      "synonyms": [{"word": "glad", "note": "嬉しい。"}],
+      "antonyms": [{"word": "sad", "note": "悲しい。"}],
+      "origin": "中英語 hap「運・偶然」+ -y。古ノルド語 happ「幸運」に由来し、元々は「運が良い」という意味だった。",
+      "trivia": "happen(起こる)や perhaps(おそらく)も同じ hap「偶然」という語根を持つ仲間の単語。",
+      "explanation": "幸せな。happy to do で「喜んで〜する」。",
+      "example_ja": "彼女はその知らせを聞いてとても嬉しそうだった。",
+      "example_ja_src": "She looked really happy when she heard the news."
+    }
+  },
+  {
+    "english": "sad",
+    "detail": {
+      "pronunciation": "/sæd/",
+      "pos": "形容詞",
+      "meanings": ["悲しい"],
+      "examples": [
+        {"en": "He felt sad when his best friend moved away.", "ja": "親友が引っ越してしまい、彼は悲しくなった。"},
+        {"en": "It's a sad story, but it has a hopeful ending.", "ja": "それは悲しい話だが、希望のある結末を迎える。"}
+      ],
+      "derivatives": [{"word": "sadness", "pos": "名詞", "ja": "悲しみ"}, {"word": "sadly", "pos": "副詞", "ja": "悲しいことに"}],
+      "synonyms": [{"word": "unhappy", "note": "不幸な。"}],
+      "antonyms": [{"word": "happy", "note": "幸せな。"}],
+      "origin": "古英語 sæd はもともと「満腹の・満ち足りた」という意味で、後に「(重苦しく)沈んだ」の意味を経て「悲しい」に変化した。",
+      "trivia": "元々「満足した」という意味だった sad が正反対に近い「悲しい」に意味変化したのは興味深い例としてよく挙げられる。",
+      "explanation": "悲しい。反対語は happy。",
+      "example_ja": "親友が引っ越してしまい、彼は悲しくなった。",
+      "example_ja_src": "He felt sad when his best friend moved away."
+    }
+  },
+  {
+    "english": "box",
+    "detail": {
+      "pronunciation": "/bɑːks/",
+      "pos": "名詞",
+      "meanings": ["箱", "(動詞)ボクシングをする"],
+      "examples": [
+        {"en": "She put all the old photos in a cardboard box.", "ja": "彼女は古い写真を全部段ボール箱にしまった。"},
+        {"en": "Could you check the box before you sign it?", "ja": "サインする前にその欄にチェックを入れてもらえますか。"}
+      ],
+      "derivatives": [{"word": "boxing", "pos": "名詞", "ja": "ボクシング"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "後期ラテン語 buxis(ギリシャ語 pyxis「ツゲの木の箱」に由来)から。もともとツゲの木で作られた容器を指した。",
+      "trivia": "フォームなどの「チェック欄」も box と呼ばれ、check the box(欄にチェックを入れる)は頻出表現。",
+      "explanation": "箱。書類の「記入欄」の意味でも使う。",
+      "example_ja": "彼女は古い写真を全部段ボール箱にしまった。",
+      "example_ja_src": "She put all the old photos in a cardboard box."
+    }
+  },
+  {
+    "english": "bag",
+    "detail": {
+      "pronunciation": "/bæɡ/",
+      "pos": "名詞",
+      "meanings": ["かばん・袋"],
+      "examples": [
+        {"en": "He forgot his bag on the train.", "ja": "彼は電車にかばんを忘れた。"},
+        {"en": "Could you hand me that paper bag?", "ja": "その紙袋を取ってもらえますか。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "sack", "note": "(粗い素材の)袋。"}],
+      "antonyms": [],
+      "origin": "古ノルド語 baggi「袋・包み」に由来するとされる。",
+      "trivia": "plastic bag(ビニール袋)や shopping bag(買い物袋)のように、素材や用途を表す語と組み合わせて非常によく使われる。",
+      "explanation": "かばん・袋。用途に応じて様々な複合語を作る。",
+      "example_ja": "彼は電車にかばんを忘れた。",
+      "example_ja_src": "He forgot his bag on the train."
+    }
+  },
+  {
+    "english": "sun",
+    "detail": {
+      "pronunciation": "/sʌn/",
+      "pos": "名詞",
+      "meanings": ["太陽"],
+      "examples": [
+        {"en": "The sun rises in the east.", "ja": "太陽は東から昇る。"},
+        {"en": "We sat outside enjoying the warm sun.", "ja": "私たちは暖かい日差しを楽しみながら外に座っていた。"}
+      ],
+      "derivatives": [{"word": "sunny", "pos": "形容詞", "ja": "晴れた、日当たりの良い"}],
+      "synonyms": [],
+      "antonyms": [{"word": "moon", "note": "月。"}],
+      "origin": "古英語 sunne に由来するゲルマン語系の語。",
+      "trivia": "under the sun(この世に、どこを探しても)のように、比喩的な言い回しにも使われる。",
+      "explanation": "太陽。形容詞 sunny(晴れた)は天気を表す基本語。",
+      "example_ja": "太陽は東から昇る。",
+      "example_ja_src": "The sun rises in the east."
+    }
+  },
+  {
+    "english": "moon",
+    "detail": {
+      "pronunciation": "/muːn/",
+      "pos": "名詞",
+      "meanings": ["月"],
+      "examples": [
+        {"en": "A full moon was shining over the lake.", "ja": "満月が湖の上に輝いていた。"},
+        {"en": "Astronauts first landed on the moon in 1969.", "ja": "宇宙飛行士は1969年に初めて月に着陸した。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [{"word": "sun", "note": "太陽。"}],
+      "origin": "古英語 mona に由来するゲルマン語系の語で、「measure(測る)」と語源的に関連があるとされる(月の満ち欠けで時を測ったため)。",
+      "trivia": "once in a blue moon(めったにない)のように、moon を使った慣用表現も多い。",
+      "explanation": "月。地球の衛星。",
+      "example_ja": "満月が湖の上に輝いていた。",
+      "example_ja_src": "A full moon was shining over the lake."
+    }
+  },
+  {
+    "english": "sky",
+    "detail": {
+      "pronunciation": "/skaɪ/",
+      "pos": "名詞",
+      "meanings": ["空"],
+      "examples": [
+        {"en": "The sky turned orange as the sun went down.", "ja": "太陽が沈むにつれ、空はオレンジ色に染まった。"},
+        {"en": "Not a single cloud was in the sky today.", "ja": "今日は空に雲一つなかった。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古ノルド語 sky「雲」に由来し、英語に入って「空」の意味に変化した。もとの「雲」の意味は現代の cloud に取って代わられた。",
+      "trivia": "skyscraper(超高層ビル、直訳すると「空をこする物」)のように、sky を使った複合語も多い。",
+      "explanation": "空。",
+      "example_ja": "太陽が沈むにつれ、空はオレンジ色に染まった。",
+      "example_ja_src": "The sky turned orange as the sun went down."
+    }
+  },
+  {
+    "english": "rain",
+    "detail": {
+      "pronunciation": "/reɪn/",
+      "pos": "名詞・動詞",
+      "meanings": ["雨", "(動詞)雨が降る"],
+      "examples": [
+        {"en": "It started to rain just as we left the house.", "ja": "家を出たとたんに雨が降り始めた。"},
+        {"en": "We stayed inside because of the heavy rain.", "ja": "大雨のため私たちは屋内にいた。"}
+      ],
+      "derivatives": [{"word": "rainy", "pos": "形容詞", "ja": "雨の、雨がちな"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 regn に由来するゲルマン語系の語。",
+      "trivia": "rain cats and dogs(土砂降りになる)は「雨が激しく降る」を表す有名な慣用句。",
+      "explanation": "雨。動詞としても使う(it rains)。",
+      "example_ja": "家を出たとたんに雨が降り始めた。",
+      "example_ja_src": "It started to rain just as we left the house."
+    }
+  },
+  {
+    "english": "snow",
+    "detail": {
+      "pronunciation": "/snoʊ/",
+      "pos": "名詞・動詞",
+      "meanings": ["雪", "(動詞)雪が降る"],
+      "examples": [
+        {"en": "The mountains were covered with snow.", "ja": "山々は雪に覆われていた。"},
+        {"en": "It rarely snows in this part of the country.", "ja": "この地域ではめったに雪が降らない。"}
+      ],
+      "derivatives": [{"word": "snowy", "pos": "形容詞", "ja": "雪の多い"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 snaw に由来するゲルマン語系の語。",
+      "trivia": "snowball effect(雪だるま式に大きくなる効果)のように、比喩表現にもよく使われる。",
+      "explanation": "雪。動詞としても使う(it snows)。",
+      "example_ja": "山々は雪に覆われていた。",
+      "example_ja_src": "The mountains were covered with snow."
+    }
+  },
+  {
+    "english": "wind",
+    "detail": {
+      "pronunciation": "/wɪnd/",
+      "pos": "名詞",
+      "meanings": ["風"],
+      "examples": [
+        {"en": "A strong wind blew all the leaves off the tree.", "ja": "強い風が木の葉をすべて吹き飛ばした。"},
+        {"en": "The wind picked up just before the storm arrived.", "ja": "嵐が来る直前に風が強くなった。"}
+      ],
+      "derivatives": [{"word": "windy", "pos": "形容詞", "ja": "風の強い"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 wind に由来するゲルマン語系の語。",
+      "trivia": "window(窓)は元々「風の目」を意味し、wind と同じ語根を共有している。",
+      "explanation": "風。形容詞 windy(風が強い)は天気表現の基本語。",
+      "example_ja": "強い風が木の葉をすべて吹き飛ばした。",
+      "example_ja_src": "A strong wind blew all the leaves off the tree."
+    }
+  },
+  {
+    "english": "river",
+    "detail": {
+      "pronunciation": "/ˈrɪvər/",
+      "pos": "名詞",
+      "meanings": ["川"],
+      "examples": [
+        {"en": "They fish in the river every weekend.", "ja": "彼らは毎週末その川で釣りをする。"},
+        {"en": "The village lies on the bank of a small river.", "ja": "その村は小さな川のほとりにある。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "stream", "note": "小川。"}],
+      "antonyms": [],
+      "origin": "ラテン語 riparius(「岸の」、ripa「岸」から)に由来し、古フランス語 riviere を経て英語に入った。",
+      "trivia": "rival(ライバル)も同じ ripa「岸」に由来し、元々は「同じ川の岸を共有する者」を意味したとされる。",
+      "explanation": "川。",
+      "example_ja": "彼らは毎週末その川で釣りをする。",
+      "example_ja_src": "They fish in the river every weekend."
+    }
+  },
+  {
+    "english": "lake",
+    "detail": {
+      "pronunciation": "/leɪk/",
+      "pos": "名詞",
+      "meanings": ["湖"],
+      "examples": [
+        {"en": "We rented a small boat and rowed across the lake.", "ja": "私たちは小さなボートを借りて湖を漕いで渡った。"},
+        {"en": "The lake freezes over completely in winter.", "ja": "その湖は冬にはすっかり凍りつく。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語 lacus「湖・くぼ地」に由来し、古フランス語 lac を経て英語に入った。",
+      "trivia": "北米五大湖は the Great Lakes と呼ばれ、世界最大級の淡水湖群として知られる。",
+      "explanation": "湖。",
+      "example_ja": "私たちは小さなボートを借りて湖を漕いで渡った。",
+      "example_ja_src": "We rented a small boat and rowed across the lake."
+    }
+  },
+  {
+    "english": "mountain",
+    "detail": {
+      "pronunciation": "/ˈmaʊntən/",
+      "pos": "名詞",
+      "meanings": ["山"],
+      "examples": [
+        {"en": "They spent the weekend hiking in the mountains.", "ja": "彼らは週末を山でハイキングして過ごした。"},
+        {"en": "The village sits at the foot of a tall mountain.", "ja": "その村は高い山のふもとにある。"}
+      ],
+      "derivatives": [{"word": "mountainous", "pos": "形容詞", "ja": "山の多い"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語 mons/montis「山」に由来し、古フランス語 montaigne を経て英語に入った。",
+      "trivia": "make a mountain out of a molehill(ささいなことを大げさに騒ぐ)は mountain を使った有名な慣用句。",
+      "explanation": "山。",
+      "example_ja": "彼らは週末を山でハイキングして過ごした。",
+      "example_ja_src": "They spent the weekend hiking in the mountains."
+    }
+  },
+  {
+    "english": "forest",
+    "detail": {
+      "pronunciation": "/ˈfɔːrɪst/",
+      "pos": "名詞",
+      "meanings": ["森"],
+      "examples": [
+        {"en": "A narrow path led deep into the forest.", "ja": "細い道が森の奥へと続いていた。"},
+        {"en": "Many rare animals live in this forest.", "ja": "この森には多くの希少な動物が生息している。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "woods", "note": "森、林(forestよりやや小規模)。"}],
+      "antonyms": [],
+      "origin": "後期ラテン語 forestis(「(村の)外の土地」)に由来し、古フランス語を経て英語に入った。",
+      "trivia": "deforestation(森林伐採)のように、環境問題に関する語彙のもとになっている。",
+      "explanation": "森。woods よりも規模の大きい森を指すことが多い。",
+      "example_ja": "細い道が森の奥へと続いていた。",
+      "example_ja_src": "A narrow path led deep into the forest."
+    }
+  },
+  {
+    "english": "island",
+    "detail": {
+      "pronunciation": "/ˈaɪlənd/",
+      "pos": "名詞",
+      "meanings": ["島"],
+      "examples": [
+        {"en": "The only way to reach the island is by boat.", "ja": "その島に行く唯一の方法はボートである。"},
+        {"en": "They spent their honeymoon on a small tropical island.", "ja": "彼らは小さな南国の島で新婚旅行を過ごした。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 igland(ieg「島」+ land「陸地」)に由来するが、綴りの s はラテン語由来の insula(現代語の isle と同語源)に影響されて後から加わった、発音されない文字。",
+      "trivia": "island の s は発音されないが、これはラテン語系の isle との綴りの混同から後付けで加わったためで、語源的には元々無かった文字。",
+      "explanation": "島。",
+      "example_ja": "その島に行く唯一の方法はボートである。",
+      "example_ja_src": "The only way to reach the island is by boat."
+    }
+  },
+  {
+    "english": "desert",
+    "detail": {
+      "pronunciation": "(名詞)/ˈdezərt/",
+      "pos": "名詞",
+      "meanings": ["砂漠", "(動詞 desert /dɪˈzɜːrt/)見捨てる"],
+      "examples": [
+        {"en": "Very little rain falls in the desert.", "ja": "その砂漠にはほとんど雨が降らない。"},
+        {"en": "Camels are well suited to life in the desert.", "ja": "ラクダは砂漠での生活によく適応している。"}
+      ],
+      "derivatives": [{"word": "deserted", "pos": "形容詞", "ja": "人けのない、見捨てられた"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語 desertus(「見捨てられた」、deserere「見捨てる」の過去分詞)に由来する。",
+      "trivia": "名詞の desert(砂漠、強勢は前)と動詞の desert(見捨てる、強勢は後ろ)はアクセント位置が異なる同形異義語。",
+      "explanation": "砂漠。動詞では「見捨てる」の意味になり発音が変わる。",
+      "example_ja": "その砂漠にはほとんど雨が降らない。",
+      "example_ja_src": "Very little rain falls in the desert."
+    }
+  },
+  {
+    "english": "bread",
+    "detail": {
+      "pronunciation": "/bred/",
+      "pos": "名詞",
+      "meanings": ["パン"],
+      "examples": [
+        {"en": "She bought a fresh loaf of bread from the bakery.", "ja": "彼女はパン屋で焼きたてのパンを一斤買った。"},
+        {"en": "We had soup and bread for lunch.", "ja": "私たちは昼食にスープとパンを食べた。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 bread に由来するゲルマン語系の語で、元々は「パンのかけら」を意味したとされる。",
+      "trivia": "earn one's bread(生計を立てる)のように、bread は「生活の糧」の比喩としても使われる。",
+      "explanation": "パン。",
+      "example_ja": "彼女はパン屋で焼きたてのパンを一斤買った。",
+      "example_ja_src": "She bought a fresh loaf of bread from the bakery."
+    }
+  },
+  {
+    "english": "butter",
+    "detail": {
+      "pronunciation": "/ˈbʌtər/",
+      "pos": "名詞",
+      "meanings": ["バター"],
+      "examples": [
+        {"en": "Spread some butter on the toast.", "ja": "トーストにバターを塗って。"},
+        {"en": "The recipe calls for two spoons of butter.", "ja": "そのレシピにはバター大さじ2杯が必要だ。"}
+      ],
+      "derivatives": [{"word": "buttery", "pos": "形容詞", "ja": "バターのような、バターたっぷりの"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ギリシャ語 boutyron(bous「牛」+ tyros「チーズ」)がラテン語 butyrum を経て英語 butter になった。",
+      "trivia": "butterfly(蝶)の語源は諸説あり、butter との関係ははっきりしないが、古くから使われてきた興味深い複合語とされる。",
+      "explanation": "バター。",
+      "example_ja": "トーストにバターを塗って。",
+      "example_ja_src": "Spread some butter on the toast."
+    }
+  },
+  {
+    "english": "cheese",
+    "detail": {
+      "pronunciation": "/tʃiːz/",
+      "pos": "名詞",
+      "meanings": ["チーズ"],
+      "examples": [
+        {"en": "This pizza has a lot of cheese on it.", "ja": "このピザにはチーズがたっぷり乗っている。"},
+        {"en": "France produces hundreds of different kinds of cheese.", "ja": "フランスは何百種類ものチーズを生産している。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語 caseus「チーズ」に由来し、古英語 cyse を経て現在の cheese になった。",
+      "trivia": "写真を撮る時に言う \"Say cheese!\" は、cheese と発音する時に口が笑顔の形になることから広まったとされる。",
+      "explanation": "チーズ。",
+      "example_ja": "このピザにはチーズがたっぷり乗っている。",
+      "example_ja_src": "This pizza has a lot of cheese on it."
+    }
+  },
+  {
+    "english": "milk",
+    "detail": {
+      "pronunciation": "/mɪlk/",
+      "pos": "名詞・動詞",
+      "meanings": ["牛乳・ミルク", "(動詞)乳を搾る"],
+      "examples": [
+        {"en": "Could you buy a carton of milk on your way home?", "ja": "帰り道に牛乳を1パック買ってきてもらえますか。"},
+        {"en": "Farmers milk the cows twice a day.", "ja": "農家は1日に2回牛の乳を搾る。"}
+      ],
+      "derivatives": [{"word": "milky", "pos": "形容詞", "ja": "乳白色の、ミルクのような"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 meolc に由来するゲルマン語系の語。",
+      "trivia": "the Milky Way(天の川)は、夜空に流れるミルクのように見えることから名付けられた。",
+      "explanation": "牛乳。動詞では「(乳を)搾る」の意味になる。",
+      "example_ja": "帰り道に牛乳を1パック買ってきてもらえますか。",
+      "example_ja_src": "Could you buy a carton of milk on your way home?"
+    }
+  },
+  {
+    "english": "egg",
+    "detail": {
+      "pronunciation": "/eɡ/",
+      "pos": "名詞",
+      "meanings": ["卵"],
+      "examples": [
+        {"en": "She fried two eggs for breakfast.", "ja": "彼女は朝食に卵を2個焼いた。"},
+        {"en": "Could you crack an egg into the bowl?", "ja": "ボウルに卵を1個割り入れてもらえますか。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古ノルド語 egg に由来し、元々の古英語形 ey に取って代わった。",
+      "trivia": "put all your eggs in one basket(一つのことに全てを賭ける)は egg を使った有名な慣用句。",
+      "explanation": "卵。",
+      "example_ja": "彼女は朝食に卵を2個焼いた。",
+      "example_ja_src": "She fried two eggs for breakfast."
+    }
+  },
+  {
+    "english": "meat",
+    "detail": {
+      "pronunciation": "/miːt/",
+      "pos": "名詞",
+      "meanings": ["肉"],
+      "examples": [
+        {"en": "He doesn't eat meat anymore.", "ja": "彼はもう肉を食べない。"},
+        {"en": "This dish uses very little meat.", "ja": "この料理は肉をほとんど使わない。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 mete に由来し、元々は「食べ物」全般を指す語だった。中英語期に意味が「肉」に限定されていった。",
+      "trivia": "sweetmeat(お菓子・砂糖漬け)のような古い複合語には、meat の「食べ物全般」という古い意味が残っている。",
+      "explanation": "肉。元々は「食べ物」全般を意味した語。",
+      "example_ja": "彼はもう肉を食べない。",
+      "example_ja_src": "He doesn't eat meat anymore."
+    }
+  },
+  {
+    "english": "soup",
+    "detail": {
+      "pronunciation": "/suːp/",
+      "pos": "名詞",
+      "meanings": ["スープ"],
+      "examples": [
+        {"en": "She made a pot of vegetable soup for dinner.", "ja": "彼女は夕食に野菜スープを一鍋作った。"},
+        {"en": "Would you like some soup before the main course?", "ja": "メインの前にスープはいかがですか。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "フランス語 soupe に由来し、さらにさかのぼるとゲルマン語系の「浸したパン」を意味する語に行き着くとされる。",
+      "trivia": "in the soup(困った状況にある)は soup を使ったくだけた慣用表現。",
+      "explanation": "スープ。",
+      "example_ja": "彼女は夕食に野菜スープを一鍋作った。",
+      "example_ja_src": "She made a pot of vegetable soup for dinner."
+    }
+  },
+  {
+    "english": "salad",
+    "detail": {
+      "pronunciation": "/ˈsæləd/",
+      "pos": "名詞",
+      "meanings": ["サラダ"],
+      "examples": [
+        {"en": "I'll just have a salad for lunch today.", "ja": "今日の昼食はサラダだけにしておく。"},
+        {"en": "He mixed the vegetables together to make a salad.", "ja": "彼は野菜を混ぜ合わせてサラダを作った。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古フランス語 salade に由来し、さらにラテン語 sal「塩」にさかのぼる。もともと野菜を塩水に浸して食べたことに由来する。",
+      "trivia": "salad と salt(塩)、salary(給料、かつて塩で支払われたことに由来)はいずれも同じラテン語 sal「塩」を語源に持つ。",
+      "explanation": "サラダ。",
+      "example_ja": "今日の昼食はサラダだけにしておく。",
+      "example_ja_src": "I'll just have a salad for lunch today."
+    }
+  },
+  {
+    "english": "sandwich",
+    "detail": {
+      "pronunciation": "/ˈsænwɪtʃ/",
+      "pos": "名詞",
+      "meanings": ["サンドイッチ"],
+      "examples": [
+        {"en": "He made a sandwich with cheese and ham.", "ja": "彼はチーズとハムのサンドイッチを作った。"},
+        {"en": "We stopped at a cafe and grabbed a quick sandwich.", "ja": "私たちはカフェに立ち寄り、手早くサンドイッチを買った。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "18世紀イギリスの貴族、第4代サンドウィッチ伯爵の名前に由来する。カードゲームをしながら片手で食べられるようパンに具を挟ませたのが始まりとされる。",
+      "trivia": "sandwich は数少ない「人名がそのまま食べ物の名前になった」語の代表例としてよく紹介される。",
+      "explanation": "サンドイッチ。第4代サンドウィッチ伯爵の名前に由来する。",
+      "example_ja": "彼はチーズとハムのサンドイッチを作った。",
+      "example_ja_src": "He made a sandwich with cheese and ham."
+    }
+  },
+  {
+    "english": "snack",
+    "detail": {
+      "pronunciation": "/snæk/",
+      "pos": "名詞・動詞",
+      "meanings": ["軽食・おやつ", "(動詞)軽食を食べる"],
+      "examples": [
+        {"en": "The kids had a snack after school.", "ja": "子どもたちは放課後におやつを食べた。"},
+        {"en": "I usually snack on fruit in the afternoon.", "ja": "私はたいてい午後に果物を軽く食べる。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "中世オランダ語 snacken「かむ、がぶりとかみつく」に由来するとされる。",
+      "trivia": "snack bar(軽食堂)のように、簡単に食べられる場所や食品を表す複合語が多い。",
+      "explanation": "軽食・おやつ。動詞としても使う。",
+      "example_ja": "子どもたちは放課後におやつを食べた。",
+      "example_ja_src": "The kids had a snack after school."
+    }
+  },
+  {
+    "english": "breakfast",
+    "detail": {
+      "pronunciation": "/ˈbrekfəst/",
+      "pos": "名詞",
+      "meanings": ["朝食"],
+      "examples": [
+        {"en": "What did you have for breakfast this morning?", "ja": "今朝は朝食に何を食べましたか。"},
+        {"en": "We usually eat breakfast together as a family.", "ja": "私たちはたいてい家族一緒に朝食を食べる。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "break(破る)+ fast(断食)から成り、文字通り「(夜の間の)断食を破ること」を意味する。",
+      "trivia": "breakfast はその成り立ち通り、一日の最初の食事で前夜からの空腹状態を「破る」ことに由来する非常に分かりやすい合成語。",
+      "explanation": "朝食。break(破る)+ fast(断食)からできた語。",
+      "example_ja": "今朝は朝食に何を食べましたか。",
+      "example_ja_src": "What did you have for breakfast this morning?"
+    }
+  },
+  {
+    "english": "lunch",
+    "detail": {
+      "pronunciation": "/lʌntʃ/",
+      "pos": "名詞",
+      "meanings": ["昼食"],
+      "examples": [
+        {"en": "Let's have lunch together sometime this week.", "ja": "今週のどこかで一緒に昼食を食べよう。"},
+        {"en": "She only has thirty minutes for lunch.", "ja": "彼女は昼食に30分しか時間がない。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "luncheon の短縮形とされ、luncheon 自体の語源ははっきりしないが、「軽い食事」を意味する語として19世紀に定着した。",
+      "trivia": "lunch break(昼休み)、lunch box(弁当箱)のように、日常語として非常に多くの複合語を作る。",
+      "explanation": "昼食。luncheon の短縮形。",
+      "example_ja": "今週のどこかで一緒に昼食を食べよう。",
+      "example_ja_src": "Let's have lunch together sometime this week."
+    }
+  },
+  {
+    "english": "dinner",
+    "detail": {
+      "pronunciation": "/ˈdɪnər/",
+      "pos": "名詞",
+      "meanings": ["夕食、(その日の主要な)食事"],
+      "examples": [
+        {"en": "We're having pasta for dinner tonight.", "ja": "今夜の夕食はパスタだ。"},
+        {"en": "They invited us to dinner at their house.", "ja": "彼らは私たちを自宅の夕食に招待してくれた。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古フランス語 disner(俗ラテン語 disjejunare「断食を終える」から)に由来し、元々は一日の最初の主要な食事を指した。",
+      "trivia": "地域や習慣によって dinner が昼食を指すこともあり、必ずしも「夕食」限定ではない点に注意。",
+      "explanation": "夕食、またはその日のメインの食事。",
+      "example_ja": "今夜の夕食はパスタだ。",
+      "example_ja_src": "We're having pasta for dinner tonight."
+    }
+  },
+  {
+    "english": "spoon",
+    "detail": {
+      "pronunciation": "/spuːn/",
+      "pos": "名詞",
+      "meanings": ["スプーン"],
+      "examples": [
+        {"en": "He stirred his coffee with a spoon.", "ja": "彼はスプーンでコーヒーをかき混ぜた。"},
+        {"en": "Add two spoons of sugar to the batter.", "ja": "生地に大さじ2杯の砂糖を加えて。"}
+      ],
+      "derivatives": [{"word": "spoonful", "pos": "名詞", "ja": "スプーン1杯分"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 spon「木片・削り屑」に由来し、元々は食事に使う木のへらや木片を指した。",
+      "trivia": "born with a silver spoon in one's mouth(裕福な家に生まれる)は spoon を使った有名な慣用句。",
+      "explanation": "スプーン。分量の単位としても使う。",
+      "example_ja": "彼はスプーンでコーヒーをかき混ぜた。",
+      "example_ja_src": "He stirred his coffee with a spoon."
+    }
+  },
+  {
+    "english": "parent",
+    "detail": {
+      "pronunciation": "/ˈperənt/",
+      "pos": "名詞",
+      "meanings": ["親"],
+      "examples": [
+        {"en": "Both of her parents work at the same hospital.", "ja": "彼女の両親は2人とも同じ病院で働いている。"},
+        {"en": "Being a parent is one of life's biggest responsibilities.", "ja": "親であることは人生最大の責任の一つだ。"}
+      ],
+      "derivatives": [{"word": "parenthood", "pos": "名詞", "ja": "親であること"}],
+      "synonyms": [],
+      "antonyms": [{"word": "child", "note": "子ども。"}],
+      "origin": "ラテン語 parens/parentem(parere「産む」の現在分詞)に由来し、古フランス語を経て英語に入った。",
+      "trivia": "parents(複数形)で「両親」を表すのが最も一般的な使い方。",
+      "explanation": "親。複数形 parents で「両親」。",
+      "example_ja": "彼女の両親は2人とも同じ病院で働いている。",
+      "example_ja_src": "Both of her parents work at the same hospital."
+    }
+  },
+  {
+    "english": "cousin",
+    "detail": {
+      "pronunciation": "/ˈkʌzən/",
+      "pos": "名詞",
+      "meanings": ["いとこ"],
+      "examples": [
+        {"en": "My cousin is coming to visit us next month.", "ja": "私のいとこが来月私たちを訪ねてくる。"},
+        {"en": "She grew up playing with her cousins every summer.", "ja": "彼女は毎夏いとこたちと遊んで育った。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古フランス語 cosin に由来し、ラテン語 consobrinus(「母方のいとこ」)にさかのぼる。",
+      "trivia": "英語の cousin は日本語の「いとこ」と違い、性別によって語が変わらない(男女ともcousin)。",
+      "explanation": "いとこ。性別に関係なく使う語。",
+      "example_ja": "私のいとこが来月私たちを訪ねてくる。",
+      "example_ja_src": "My cousin is coming to visit us next month."
+    }
+  },
+  {
+    "english": "aunt",
+    "detail": {
+      "pronunciation": "/ænt/",
+      "pos": "名詞",
+      "meanings": ["おば"],
+      "examples": [
+        {"en": "My aunt lives just down the street from us.", "ja": "私のおばは私たちの家のすぐ近くの通りに住んでいる。"},
+        {"en": "She often stayed with her aunt during the summer.", "ja": "彼女は夏の間よくおばの家に泊まっていた。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [{"word": "uncle", "note": "おじ。"}],
+      "origin": "古フランス語 ante に由来し、ラテン語 amita「父方のおば」にさかのぼる。",
+      "trivia": "英語の aunt は父方・母方どちらのおばにも区別なく使える。",
+      "explanation": "おば。父方・母方の区別なく使う。",
+      "example_ja": "私のおばは私たちの家のすぐ近くの通りに住んでいる。",
+      "example_ja_src": "My aunt lives just down the street from us."
+    }
+  },
+  {
+    "english": "uncle",
+    "detail": {
+      "pronunciation": "/ˈʌŋkəl/",
+      "pos": "名詞",
+      "meanings": ["おじ"],
+      "examples": [
+        {"en": "My uncle taught me how to fish when I was young.", "ja": "幼い頃、おじが釣りの仕方を教えてくれた。"},
+        {"en": "We're visiting my uncle's farm this weekend.", "ja": "今週末、私たちはおじの農場を訪ねる。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [{"word": "aunt", "note": "おば。"}],
+      "origin": "古フランス語 oncle に由来し、ラテン語 avunculus「母方のおじ」にさかのぼる。",
+      "trivia": "アメリカの象徴的キャラクター Uncle Sam(アンクル・サム)のように、uncle は親しみを込めた呼びかけにも使われる。",
+      "explanation": "おじ。父方・母方の区別なく使う。",
+      "example_ja": "幼い頃、おじが釣りの仕方を教えてくれた。",
+      "example_ja_src": "My uncle taught me how to fish when I was young."
+    }
+  },
+  {
+    "english": "nephew",
+    "detail": {
+      "pronunciation": "/ˈnefjuː/",
+      "pos": "名詞",
+      "meanings": ["甥"],
+      "examples": [
+        {"en": "My sister's son, my nephew, just turned ten.", "ja": "姉の息子、つまり私の甥が10歳になったばかりだ。"},
+        {"en": "I bought a birthday present for my nephew.", "ja": "私は甥のために誕生日プレゼントを買った。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [{"word": "niece", "note": "姪。"}],
+      "origin": "古フランス語 neveu に由来し、ラテン語 nepos「孫、甥」にさかのぼる。",
+      "trivia": "ラテン語 nepos は「孫」と「甥」の両方を意味しており、現代英語では nephew(甥)と grandson(孫)に役割が分かれた。",
+      "explanation": "甥。",
+      "example_ja": "姉の息子、つまり私の甥が10歳になったばかりだ。",
+      "example_ja_src": "My sister's son, my nephew, just turned ten."
+    }
+  },
+  {
+    "english": "niece",
+    "detail": {
+      "pronunciation": "/niːs/",
+      "pos": "名詞",
+      "meanings": ["姪"],
+      "examples": [
+        {"en": "I'm taking my niece to the zoo this Saturday.", "ja": "今度の土曜日、姪を動物園に連れて行く。"},
+        {"en": "My niece just started elementary school.", "ja": "私の姪は小学校に入ったばかりだ。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [{"word": "nephew", "note": "甥。"}],
+      "origin": "古フランス語 niece に由来し、ラテン語 neptis「孫娘、姪」にさかのぼる。",
+      "trivia": "nephew と同様、niece もラテン語では「孫娘」と「姪」を区別しない語から発展した。",
+      "explanation": "姪。",
+      "example_ja": "今度の土曜日、姪を動物園に連れて行く。",
+      "example_ja_src": "I'm taking my niece to the zoo this Saturday."
+    }
+  },
+  {
+    "english": "neighbor",
+    "detail": {
+      "pronunciation": "/ˈneɪbər/",
+      "pos": "名詞",
+      "meanings": ["隣人、近所の人"],
+      "examples": [
+        {"en": "Our neighbor kindly watered our plants while we were away.", "ja": "私たちの留守中、隣人が親切にも植物に水をやってくれた。"},
+        {"en": "We invited all our neighbors to the party.", "ja": "私たちは近所の人たち全員をパーティーに招待した。"}
+      ],
+      "derivatives": [{"word": "neighborhood", "pos": "名詞", "ja": "近所、地域"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 neahgebur(neah「近くの」+ gebur「住人・農民」)に由来し、文字通り「近くに住む人」を意味する。",
+      "trivia": "アメリカ英語では neighbor、イギリス英語では neighbour と綴りが異なる代表的な単語の一つ。",
+      "explanation": "隣人。米 neighbor / 英 neighbour の綴り違いがある。",
+      "example_ja": "私たちの留守中、隣人が親切にも植物に水をやってくれた。",
+      "example_ja_src": "Our neighbor kindly watered our plants while we were away."
+    }
+  },
+  {
+    "english": "guest",
+    "detail": {
+      "pronunciation": "/ɡest/",
+      "pos": "名詞",
+      "meanings": ["客、招待客"],
+      "examples": [
+        {"en": "We're expecting ten guests for the party tonight.", "ja": "今夜のパーティーには10人のお客さんが来る予定だ。"},
+        {"en": "Please make our guest feel welcome.", "ja": "お客様に心地よく感じてもらえるようにしてください。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "visitor", "note": "訪問者。"}],
+      "antonyms": [{"word": "host", "note": "主人、もてなす側。"}],
+      "origin": "古ノルド語 gestr に由来し、ラテン語 hostis(「よそ者、敵」、host や hostile の語源でもある)とも同じ印欧語根を共有する。",
+      "trivia": "guest と host は正反対の語のようだが、語源をたどると同じ印欧語根から枝分かれした語同士だとされる。",
+      "explanation": "客、招待客。反対語は host(もてなす側)。",
+      "example_ja": "今夜のパーティーには10人のお客さんが来る予定だ。",
+      "example_ja_src": "We're expecting ten guests for the party tonight."
+    }
+  },
+  {
+    "english": "husband",
+    "detail": {
+      "pronunciation": "/ˈhʌzbənd/",
+      "pos": "名詞",
+      "meanings": ["夫"],
+      "examples": [
+        {"en": "Her husband works as an engineer downtown.", "ja": "彼女の夫は都心でエンジニアとして働いている。"},
+        {"en": "They've been husband and wife for over twenty years.", "ja": "彼らは20年以上夫婦だ。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [{"word": "wife", "note": "妻。"}],
+      "origin": "古ノルド語 husbondi(hus「家」+ bondi「住人・所有者」)に由来し、元々は「家の主人」を意味した。",
+      "trivia": "husbandry(農業・家畜の管理)という語にも、husband の「(資源を)大事に管理する」という古い意味が残っている。",
+      "explanation": "夫。反対語は wife。",
+      "example_ja": "彼女の夫は都心でエンジニアとして働いている。",
+      "example_ja_src": "Her husband works as an engineer downtown."
+    }
+  },
+  {
+    "english": "wife",
+    "detail": {
+      "pronunciation": "/waɪf/",
+      "pos": "名詞",
+      "meanings": ["妻"],
+      "examples": [
+        {"en": "His wife is a teacher at the local elementary school.", "ja": "彼の妻は地元の小学校で教師をしている。"},
+        {"en": "He introduced his wife to all of his colleagues.", "ja": "彼は同僚全員に妻を紹介した。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [{"word": "husband", "note": "夫。"}],
+      "origin": "古英語 wif に由来し、元々は既婚・未婚を問わず単に「女性」を意味した(現代語 woman はwif+manから発展)。",
+      "trivia": "現代語 woman は古英語 wifman(wif「女性」+ man「人」)から発展した語で、wife と語源的なつながりがある。",
+      "explanation": "妻。反対語は husband。",
+      "example_ja": "彼の妻は地元の小学校で教師をしている。",
+      "example_ja_src": "His wife is a teacher at the local elementary school."
+    }
+  },
+  {
+    "english": "drink",
+    "detail": {
+      "pronunciation": "/drɪŋk/",
+      "pos": "動詞・名詞",
+      "meanings": ["飲む", "(名詞)飲み物"],
+      "examples": [
+        {"en": "Would you like something to drink?", "ja": "何かお飲み物はいかがですか。"},
+        {"en": "He drinks a glass of water every morning.", "ja": "彼は毎朝コップ1杯の水を飲む。"}
+      ],
+      "derivatives": [{"word": "drinkable", "pos": "形容詞", "ja": "飲用に適した"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 drincan に由来するゲルマン語系の基本動詞。",
+      "trivia": "drink and drive(飲酒運転をする)のように、社会的に重要な複合表現も多い。",
+      "explanation": "飲む。名詞では「飲み物」。",
+      "example_ja": "何かお飲み物はいかがですか。",
+      "example_ja_src": "Would you like something to drink?"
+    }
+  },
+  {
+    "english": "wash",
+    "detail": {
+      "pronunciation": "/wɑːʃ/",
+      "pos": "動詞",
+      "meanings": ["洗う"],
+      "examples": [
+        {"en": "Don't forget to wash your hands before dinner.", "ja": "夕食前に手を洗うのを忘れないで。"},
+        {"en": "She washes the dishes right after every meal.", "ja": "彼女は毎食後すぐに皿を洗う。"}
+      ],
+      "derivatives": [{"word": "washing", "pos": "名詞", "ja": "洗濯(物)"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 wascan に由来するゲルマン語系の基本動詞。",
+      "trivia": "wash one's hands of〜(〜から手を引く、関係を絶つ)は wash を使った比喩的な慣用句。",
+      "explanation": "洗う。",
+      "example_ja": "夕食前に手を洗うのを忘れないで。",
+      "example_ja_src": "Don't forget to wash your hands before dinner."
+    }
+  },
+  {
+    "english": "push",
+    "detail": {
+      "pronunciation": "/pʊʃ/",
+      "pos": "動詞・名詞",
+      "meanings": ["押す", "(名詞)ひと押し"],
+      "examples": [
+        {"en": "Push the door open; it's not locked.", "ja": "ドアを押して開けて。鍵はかかっていない。"},
+        {"en": "She gave the swing a gentle push.", "ja": "彼女はブランコを軽く押した。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [{"word": "pull", "note": "引く。"}],
+      "origin": "古フランス語 pousser(ラテン語 pulsare「打つ、押す」から)に由来する。",
+      "trivia": "push とpull は正反対の基本動詞として、ドアの表示(push/pull)でもおなじみ。",
+      "explanation": "押す。反対語は pull。",
+      "example_ja": "ドアを押して開けて。鍵はかかっていない。",
+      "example_ja_src": "Push the door open; it's not locked."
+    }
+  },
+  {
+    "english": "pull",
+    "detail": {
+      "pronunciation": "/pʊl/",
+      "pos": "動詞",
+      "meanings": ["引く"],
+      "examples": [
+        {"en": "Pull the rope as hard as you can.", "ja": "できるだけ強くロープを引いて。"},
+        {"en": "He pulled the curtains open to let the light in.", "ja": "彼は光を入れるためカーテンを開けた。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "drag", "note": "引きずる。"}],
+      "antonyms": [{"word": "push", "note": "押す。"}],
+      "origin": "古英語 pullian「引き抜く、むしる」に由来するゲルマン語系の語。",
+      "trivia": "pull over(車を路肩に寄せる)、pull off(うまくやり遂げる)など、句動詞として非常に多く使われる。",
+      "explanation": "引く。反対語は push。",
+      "example_ja": "できるだけ強くロープを引いて。",
+      "example_ja_src": "Pull the rope as hard as you can."
+    }
+  },
+  {
+    "english": "catch",
+    "detail": {
+      "pronunciation": "/kætʃ/",
+      "pos": "動詞",
+      "meanings": ["つかまえる、キャッチする", "(乗り物に)間に合う", "(病気に)かかる"],
+      "examples": [
+        {"en": "Try to catch the ball with both hands.", "ja": "両手でボールをキャッチしてみて。"},
+        {"en": "We need to hurry if we want to catch the train.", "ja": "電車に間に合わせたいなら急がないと。"}
+      ],
+      "derivatives": [{"word": "catchy", "pos": "形容詞", "ja": "人の心をつかむ、覚えやすい"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古北フランス語 cachier(ラテン語 captiare「捕らえる」から)に由来する。",
+      "trivia": "catch a cold(風邪をひく)のように、病気に「かかる」という意味でも非常によく使われる。",
+      "explanation": "つかまえる。乗り物に「間に合う」、病気に「かかる」の意味でも使う。",
+      "example_ja": "両手でボールをキャッチしてみて。",
+      "example_ja_src": "Try to catch the ball with both hands."
+    }
+  },
+  {
+    "english": "hold",
+    "detail": {
+      "pronunciation": "/hoʊld/",
+      "pos": "動詞",
+      "meanings": ["持つ、抱える", "(会議などを)開催する", "(名詞)つかむこと、支配"],
+      "examples": [
+        {"en": "Could you hold this bag for a second?", "ja": "このかばん、ちょっと持っていてもらえますか。"},
+        {"en": "The company will hold its annual meeting next week.", "ja": "その会社は来週、年次総会を開催する予定だ。"}
+      ],
+      "derivatives": [{"word": "holder", "pos": "名詞", "ja": "保持者、入れ物"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 healdan「保持する、守る」に由来するゲルマン語系の基本動詞。",
+      "trivia": "hold on(電話などで「そのまま待って」)は日常会話で非常によく使われる決まり文句。",
+      "explanation": "持つ、抱える。会議などを「開催する」の意味でも使う。",
+      "example_ja": "このかばん、ちょっと持っていてもらえますか。",
+      "example_ja_src": "Could you hold this bag for a second?"
+    }
+  },
+  {
+    "english": "break",
+    "detail": {
+      "pronunciation": "/breɪk/",
+      "pos": "動詞・名詞",
+      "meanings": ["壊す、割る", "(名詞)休憩"],
+      "examples": [
+        {"en": "Be careful not to break the glass.", "ja": "グラスを割らないように気をつけて。"},
+        {"en": "Let's take a short break before we continue.", "ja": "続ける前に少し休憩を取ろう。"}
+      ],
+      "derivatives": [{"word": "breakable", "pos": "形容詞", "ja": "壊れやすい"}],
+      "synonyms": [],
+      "antonyms": [{"word": "fix", "note": "直す。"}],
+      "origin": "古英語 brecan に由来するゲルマン語系の基本動詞。",
+      "trivia": "take a break(休憩を取る)は、仕事や作業の合間に休むことを表す最も一般的な表現。",
+      "explanation": "壊す。名詞では「休憩」の意味で非常によく使われる。",
+      "example_ja": "グラスを割らないように気をつけて。",
+      "example_ja_src": "Be careful not to break the glass."
+    }
+  },
+  {
+    "english": "cut",
+    "detail": {
+      "pronunciation": "/kʌt/",
+      "pos": "動詞・名詞",
+      "meanings": ["切る", "(名詞)切り傷、削減"],
+      "examples": [
+        {"en": "She cut the cake into eight equal pieces.", "ja": "彼女はケーキを8等分に切った。"},
+        {"en": "The company announced a cut in prices.", "ja": "その会社は値下げを発表した。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "中英語期に現れた語で、正確な由来は不明だが、北欧系の語との関連が指摘されている。",
+      "trivia": "cut は現在形・過去形・過去分詞がすべて同じ形になる不規則動詞として覚えられることが多い。",
+      "explanation": "切る。過去形・過去分詞も cut のまま変化しない。",
+      "example_ja": "彼女はケーキを8等分に切った。",
+      "example_ja_src": "She cut the cake into eight equal pieces."
+    }
+  },
+  {
+    "english": "drive",
+    "detail": {
+      "pronunciation": "/draɪv/",
+      "pos": "動詞",
+      "meanings": ["運転する", "(名詞)ドライブ、意欲"],
+      "examples": [
+        {"en": "She drives to work every day.", "ja": "彼女は毎日車で通勤している。"},
+        {"en": "We went for a long drive along the coast.", "ja": "私たちは海岸沿いに長時間ドライブに出かけた。"}
+      ],
+      "derivatives": [{"word": "driver", "pos": "名詞", "ja": "運転手"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 drifan「追い立てる、駆り立てる」に由来するゲルマン語系の語。",
+      "trivia": "馬車を「追い立てて」動かしたことから、自動車の「運転する」という意味へ発展した。",
+      "explanation": "運転する。名詞では「ドライブ」「(内なる)意欲」の意味もある。",
+      "example_ja": "彼女は毎日車で通勤している。",
+      "example_ja_src": "She drives to work every day."
+    }
+  },
+  {
+    "english": "ride",
+    "detail": {
+      "pronunciation": "/raɪd/",
+      "pos": "動詞・名詞",
+      "meanings": ["(乗り物に)乗る", "(名詞)乗ること、乗り物"],
+      "examples": [
+        {"en": "He rides his bike to school every morning.", "ja": "彼は毎朝自転車で学校に通っている。"},
+        {"en": "Can I get a ride to the station?", "ja": "駅まで乗せていってもらえますか。"}
+      ],
+      "derivatives": [{"word": "rider", "pos": "名詞", "ja": "乗る人"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 ridan に由来するゲルマン語系の基本動詞。",
+      "trivia": "give someone a ride(人を車で送る)は日常会話で非常によく使われる表現。",
+      "explanation": "(自転車・馬・乗り物に)乗る。",
+      "example_ja": "彼は毎朝自転車で学校に通っている。",
+      "example_ja_src": "He rides his bike to school every morning."
+    }
+  },
+  {
+    "english": "sing",
+    "detail": {
+      "pronunciation": "/sɪŋ/",
+      "pos": "動詞",
+      "meanings": ["歌う"],
+      "examples": [
+        {"en": "She loves to sing in the shower.", "ja": "彼女はシャワーを浴びながら歌うのが好きだ。"},
+        {"en": "The whole crowd sang along with the band.", "ja": "観衆全員がバンドに合わせて歌った。"}
+      ],
+      "derivatives": [{"word": "singer", "pos": "名詞", "ja": "歌手"}, {"word": "song", "pos": "名詞", "ja": "歌"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 singan に由来するゲルマン語系の基本動詞。",
+      "trivia": "sing-sang-sung という不規則変化は、母音が変化する古いゲルマン語系動詞の典型例。",
+      "explanation": "歌う。sing-sang-sungと不規則変化する。",
+      "example_ja": "彼女はシャワーを浴びながら歌うのが好きだ。",
+      "example_ja_src": "She loves to sing in the shower."
+    }
+  },
+  {
+    "english": "hug",
+    "detail": {
+      "pronunciation": "/hʌɡ/",
+      "pos": "動詞・名詞",
+      "meanings": ["抱きしめる", "(名詞)抱擁"],
+      "examples": [
+        {"en": "She gave her son a big hug before he left.", "ja": "彼女は息子が出発する前に大きなハグをした。"},
+        {"en": "They hugged each other tightly at the airport.", "ja": "彼らは空港でしっかりと抱き合った。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "embrace", "note": "抱擁する(やや形式的)。"}],
+      "antonyms": [],
+      "origin": "16世紀頃に現れた語で、正確な語源は不明だが、北欧系の言語(古ノルド語 hugga「慰める」)との関連が指摘されている。",
+      "trivia": "bear hug(熊のような力強い抱擁)のように、hug の強さを強調する表現もある。",
+      "explanation": "抱きしめる。名詞では「抱擁」。",
+      "example_ja": "彼女は息子が出発する前に大きなハグをした。",
+      "example_ja_src": "She gave her son a big hug before he left."
+    }
+  },
+  {
+    "english": "clean",
+    "detail": {
+      "pronunciation": "/kliːn/",
+      "pos": "形容詞・動詞",
+      "meanings": ["きれいな、清潔な", "(動詞)掃除する"],
+      "examples": [
+        {"en": "Please keep your room clean.", "ja": "部屋をきれいに保ってください。"},
+        {"en": "She cleans the kitchen every night before bed.", "ja": "彼女は毎晩寝る前に台所を掃除する。"}
+      ],
+      "derivatives": [{"word": "cleaner", "pos": "名詞", "ja": "掃除する人・道具"}],
+      "synonyms": [],
+      "antonyms": [{"word": "dirty", "note": "汚い。"}],
+      "origin": "古英語 clæne に由来するゲルマン語系の語。",
+      "trivia": "clean-cut(きちんとした身なりの)のように、比喩的に「きちんとした」を表す複合語も多い。",
+      "explanation": "きれいな。動詞では「掃除する」。",
+      "example_ja": "部屋をきれいに保ってください。",
+      "example_ja_src": "Please keep your room clean."
+    }
+  },
+  {
+    "english": "dry",
+    "detail": {
+      "pronunciation": "/draɪ/",
+      "pos": "形容詞・動詞",
+      "meanings": ["乾いた", "(動詞)乾かす、乾く", "(ユーモアが)そっけない"],
+      "examples": [
+        {"en": "Make sure your hair is completely dry before you go outside.", "ja": "外に出る前に髪が完全に乾いていることを確認して。"},
+        {"en": "Hang the towels outside to dry in the sun.", "ja": "タオルを外に干して日光で乾かして。"}
+      ],
+      "derivatives": [{"word": "dryness", "pos": "名詞", "ja": "乾燥"}],
+      "synonyms": [],
+      "antonyms": [{"word": "wet", "note": "濡れた。"}],
+      "origin": "古英語 dryge に由来するゲルマン語系の語。",
+      "trivia": "dry sense of humor(そっけない、皮肉めいたユーモア)のように、比喩的な意味でもよく使われる。",
+      "explanation": "乾いた。反対語は wet。動詞としても使う。",
+      "example_ja": "外に出る前に髪が完全に乾いていることを確認して。",
+      "example_ja_src": "Make sure your hair is completely dry before you go outside."
+    }
+  },
+  {
+    "english": "wet",
+    "detail": {
+      "pronunciation": "/wet/",
+      "pos": "形容詞・動詞",
+      "meanings": ["濡れた", "(動詞)濡らす"],
+      "examples": [
+        {"en": "Don't sit down, the paint is still wet.", "ja": "座らないで、ペンキがまだ濡れているから。"},
+        {"en": "My shoes got wet in the rain.", "ja": "私の靴は雨で濡れた。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [{"word": "dry", "note": "乾いた。"}],
+      "origin": "古英語 wæt に由来するゲルマン語系の語。",
+      "trivia": "wet paint(ペンキ塗りたて)は看板などでよく見かける決まり文句。",
+      "explanation": "濡れた。反対語は dry。",
+      "example_ja": "座らないで、ペンキがまだ濡れているから。",
+      "example_ja_src": "Don't sit down, the paint is still wet."
+    }
+  },
+  {
+    "english": "dark",
+    "detail": {
+      "pronunciation": "/dɑːrk/",
+      "pos": "形容詞・名詞",
+      "meanings": ["暗い", "(色が)濃い", "(名詞)暗闇"],
+      "examples": [
+        {"en": "It gets dark very early in winter.", "ja": "冬はとても早く暗くなる。"},
+        {"en": "She was afraid of the dark as a child.", "ja": "彼女は子どもの頃、暗闇を怖がっていた。"}
+      ],
+      "derivatives": [{"word": "darkness", "pos": "名詞", "ja": "暗闇"}],
+      "synonyms": [],
+      "antonyms": [{"word": "bright", "note": "明るい。"}, {"word": "light", "note": "明るい。"}],
+      "origin": "古英語 deorc に由来するゲルマン語系の語。",
+      "trivia": "in the dark(何も知らされていない状態で)のように、比喩的に「情報を知らない」ことを表す表現もある。",
+      "explanation": "暗い。反対語は bright / light。",
+      "example_ja": "冬はとても早く暗くなる。",
+      "example_ja_src": "It gets dark very early in winter."
+    }
+  },
+  {
+    "english": "bright",
+    "detail": {
+      "pronunciation": "/braɪt/",
+      "pos": "形容詞",
+      "meanings": ["明るい", "(色が)鮮やかな", "(頭が)聡明な"],
+      "examples": [
+        {"en": "The kitchen is very bright in the morning sun.", "ja": "朝日が差し込むと台所はとても明るくなる。"},
+        {"en": "She's one of the brightest students in her class.", "ja": "彼女はクラスで最も頭の良い生徒の一人だ。"}
+      ],
+      "derivatives": [{"word": "brightness", "pos": "名詞", "ja": "明るさ"}, {"word": "brighten", "pos": "動詞", "ja": "明るくする"}],
+      "synonyms": [],
+      "antonyms": [{"word": "dark", "note": "暗い。"}],
+      "origin": "古英語 beorht に由来するゲルマン語系の語。",
+      "trivia": "「聡明な」の意味でも使われるのは、光の「明るさ」が知性の比喩として広く使われるためとされる。",
+      "explanation": "明るい。「聡明な」の意味でも使う。反対語は dark。",
+      "example_ja": "朝日が差し込むと台所はとても明るくなる。",
+      "example_ja_src": "The kitchen is very bright in the morning sun."
+    }
+  },
+  {
+    "english": "quiet",
+    "detail": {
+      "pronunciation": "/ˈkwaɪət/",
+      "pos": "形容詞",
+      "meanings": ["静かな", "(名詞)静けさ"],
+      "examples": [
+        {"en": "Please be quiet in the library.", "ja": "図書館では静かにしてください。"},
+        {"en": "They live in a quiet neighborhood outside the city.", "ja": "彼らは都市の外の静かな地域に住んでいる。"}
+      ],
+      "derivatives": [{"word": "quietly", "pos": "副詞", "ja": "静かに"}],
+      "synonyms": [{"word": "silent", "note": "無音の。"}],
+      "antonyms": [{"word": "noisy", "note": "うるさい。"}, {"word": "loud", "note": "大きな音の。"}],
+      "origin": "ラテン語 quietus(quiescere「静止する、休む」の過去分詞)に由来し、古フランス語を経て英語に入った。",
+      "trivia": "on the quiet(こっそりと)は、quiet を名詞的に使ったくだけた表現。",
+      "explanation": "静かな。反対語は noisy / loud。",
+      "example_ja": "図書館では静かにしてください。",
+      "example_ja_src": "Please be quiet in the library."
+    }
+  },
+  {
+    "english": "busy",
+    "detail": {
+      "pronunciation": "/ˈbɪzi/",
+      "pos": "形容詞",
+      "meanings": ["忙しい", "(場所が)にぎやかな", "(電話が)話し中の"],
+      "examples": [
+        {"en": "I'm too busy to talk right now.", "ja": "今は忙しくて話せない。"},
+        {"en": "The station was busy with commuters this morning.", "ja": "今朝、駅は通勤客でにぎわっていた。"}
+      ],
+      "derivatives": [{"word": "busily", "pos": "副詞", "ja": "忙しそうに"}],
+      "synonyms": [],
+      "antonyms": [{"word": "free", "note": "暇な。"}],
+      "origin": "古英語 bisig に由来するゲルマン語系の語。",
+      "trivia": "アメリカ英語で電話が「話し中」の状態を busy signal と呼ぶのは、回線が「忙しい」というイメージから。",
+      "explanation": "忙しい。場所が「にぎやか」、電話が「話し中」の意味でも使う。",
+      "example_ja": "今は忙しくて話せない。",
+      "example_ja_src": "I'm too busy to talk right now."
+    }
+  },
+  {
+    "english": "free",
+    "detail": {
+      "pronunciation": "/friː/",
+      "pos": "形容詞・動詞",
+      "meanings": ["自由な、暇な", "無料の", "(動詞)自由にする、解放する"],
+      "examples": [
+        {"en": "Are you free this weekend?", "ja": "今週末は暇ですか。"},
+        {"en": "Admission to the museum is free on Sundays.", "ja": "その美術館は日曜日は入場無料だ。"}
+      ],
+      "derivatives": [{"word": "freedom", "pos": "名詞", "ja": "自由"}],
+      "synonyms": [],
+      "antonyms": [{"word": "busy", "note": "忙しい。"}],
+      "origin": "古英語 freo に由来するゲルマン語系の語で、元々は「(奴隷ではなく)自由な身分の」を意味した。",
+      "trivia": "for free(無料で)というくだけた表現も日常会話で非常によく使われる。",
+      "explanation": "自由な、暇な。「無料の」の意味でも非常によく使う。",
+      "example_ja": "今週末は暇ですか。",
+      "example_ja_src": "Are you free this weekend?"
+    }
+  },
+  {
+    "english": "above",
+    "detail": {
+      "pronunciation": "/əˈbʌv/",
+      "pos": "前置詞・副詞",
+      "meanings": ["〜の上方に", "(数量が)〜を超えて"],
+      "examples": [
+        {"en": "The plane flew above the clouds.", "ja": "飛行機は雲の上を飛んだ。"},
+        {"en": "The temperature rose above thirty degrees today.", "ja": "今日は気温が30度を超えた。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "over", "note": "〜の上に。"}],
+      "antonyms": [{"word": "below", "note": "〜の下に。"}],
+      "origin": "古英語 abufan(a-「上に」+ bufan「上へ」)に由来するゲルマン語系の語。",
+      "trivia": "above all(とりわけ、何よりも)は above を使った頻出の慣用表現。",
+      "explanation": "〜の上方に。反対語は below。",
+      "example_ja": "飛行機は雲の上を飛んだ。",
+      "example_ja_src": "The plane flew above the clouds."
+    }
+  },
+  {
+    "english": "below",
+    "detail": {
+      "pronunciation": "/bɪˈloʊ/",
+      "pos": "前置詞・副詞",
+      "meanings": ["〜の下方に", "(基準より)下回って"],
+      "examples": [
+        {"en": "The temperature dropped below zero last night.", "ja": "昨夜、気温は氷点下に下がった。"},
+        {"en": "Please see the note below for more details.", "ja": "詳細は下記の注記を参照してください。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "under", "note": "〜の下に。"}],
+      "antonyms": [{"word": "above", "note": "〜の上に。"}],
+      "origin": "中英語 by「〜のそばに」+ low「低い」から成る語。",
+      "trivia": "文書の中で「下記の」を表す below は、レポートやメールで非常によく使われる。",
+      "explanation": "〜の下方に。反対語は above。",
+      "example_ja": "昨夜、気温は氷点下に下がった。",
+      "example_ja_src": "The temperature dropped below zero last night."
+    }
+  },
+  {
+    "english": "behind",
+    "detail": {
+      "pronunciation": "/bɪˈhaɪnd/",
+      "pos": "前置詞・副詞",
+      "meanings": ["〜の後ろに", "(進度が)遅れて"],
+      "examples": [
+        {"en": "The car parked right behind ours.", "ja": "その車は私たちの車のすぐ後ろに止まった。"},
+        {"en": "He's a little behind on his homework this week.", "ja": "彼は今週宿題が少し遅れている。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [{"word": "ahead", "note": "前方に、進んで。"}],
+      "origin": "古英語 behindan(be-「〜のそばに」+ hindan「後ろに」)に由来する。",
+      "trivia": "fall behind(遅れをとる)、leave behind(置き去りにする)のように、句動詞としても非常によく使われる。",
+      "explanation": "〜の後ろに。進度が「遅れて」の意味でも使う。",
+      "example_ja": "その車は私たちの車のすぐ後ろに止まった。",
+      "example_ja_src": "The car parked right behind ours."
+    }
+  },
+  {
+    "english": "between",
+    "detail": {
+      "pronunciation": "/bɪˈtwiːn/",
+      "pos": "前置詞",
+      "meanings": ["(2つのものの)間に"],
+      "examples": [
+        {"en": "She sat between her two brothers.", "ja": "彼女は2人の兄弟の間に座った。"},
+        {"en": "Let's keep this between the two of us.", "ja": "これは私たち2人だけの秘密にしておこう。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 betweonum(be-「そばに」+ tweonum「2つ」)に由来し、「2つのものの間」を意味する。",
+      "trivia": "3つ以上のものの「間」には本来 among を使うとされるが、実際には between も広く使われている。",
+      "explanation": "(2つのものの)間に。",
+      "example_ja": "彼女は2人の兄弟の間に座った。",
+      "example_ja_src": "She sat between her two brothers."
+    }
+  },
+  {
+    "english": "through",
+    "detail": {
+      "pronunciation": "/θruː/",
+      "pos": "前置詞・副詞",
+      "meanings": ["〜を通り抜けて", "(期間を)通して", "(手段によって)〜を通じて"],
+      "examples": [
+        {"en": "We drove through the tunnel in just a few minutes.", "ja": "私たちはほんの数分でトンネルを通り抜けた。"},
+        {"en": "I got the job through a friend of mine.", "ja": "私は友人の紹介でその仕事を得た。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 þurh に由来するゲルマン語系の語。",
+      "trivia": "get through(乗り越える、電話がつながる)のように、句動詞として多くの意味を作る。",
+      "explanation": "〜を通り抜けて。手段の「〜を通じて」の意味でも使う。",
+      "example_ja": "私たちはほんの数分でトンネルを通り抜けた。",
+      "example_ja_src": "We drove through the tunnel in just a few minutes."
+    }
+  },
+  {
+    "english": "near",
+    "detail": {
+      "pronunciation": "/nɪr/",
+      "pos": "前置詞・形容詞・副詞",
+      "meanings": ["〜の近くに", "(形容詞)近い"],
+      "examples": [
+        {"en": "The hotel is very near the airport.", "ja": "そのホテルは空港のすぐ近くにある。"},
+        {"en": "We're getting near to the end of the project.", "ja": "私たちはプロジェクトの終わりに近づいている。"}
+      ],
+      "derivatives": [{"word": "nearby", "pos": "形容詞・副詞", "ja": "近くの、近くに"}],
+      "synonyms": [{"word": "close", "note": "近い。"}],
+      "antonyms": [{"word": "far", "note": "遠い。"}],
+      "origin": "古ノルド語 naer(「より近く」)に由来し、元々は near の比較級的な形だったとされる。",
+      "trivia": "near miss(危うく衝突しそうになったこと)のように、比喩的な複合語も多い。",
+      "explanation": "〜の近くに。反対語は far。",
+      "example_ja": "そのホテルは空港のすぐ近くにある。",
+      "example_ja_src": "The hotel is very near the airport."
+    }
+  },
+  {
+    "english": "storm",
+    "detail": {
+      "pronunciation": "/stɔːrm/",
+      "pos": "名詞",
+      "meanings": ["嵐"],
+      "examples": [
+        {"en": "A storm is expected to hit the coast tonight.", "ja": "今夜、嵐が沿岸部を襲うと予想されている。"},
+        {"en": "They took shelter until the storm passed.", "ja": "彼らは嵐が過ぎ去るまで避難した。"}
+      ],
+      "derivatives": [{"word": "stormy", "pos": "形容詞", "ja": "嵐の、荒れ模様の"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 storm に由来するゲルマン語系の語。",
+      "trivia": "a storm in a teacup(コップの中の嵐、ささいなことでの大騒ぎ)は英でよく使われる慣用句。",
+      "explanation": "嵐。",
+      "example_ja": "今夜、嵐が沿岸部を襲うと予想されている。",
+      "example_ja_src": "A storm is expected to hit the coast tonight."
+    }
+  },
+  {
+    "english": "fog",
+    "detail": {
+      "pronunciation": "/fɔːɡ/",
+      "pos": "名詞",
+      "meanings": ["霧"],
+      "examples": [
+        {"en": "Thick fog covered the entire valley this morning.", "ja": "今朝、濃い霧が谷全体を覆っていた。"},
+        {"en": "The flight was delayed because of the fog.", "ja": "そのフライトは霧のため遅れた。"}
+      ],
+      "derivatives": [{"word": "foggy", "pos": "形容詞", "ja": "霧の濃い"}],
+      "synonyms": [{"word": "mist", "note": "もや(fogより薄い)。"}],
+      "antonyms": [],
+      "origin": "16世紀頃に現れた語で、正確な語源は不明だが、スカンジナビア系の言語との関連が指摘されている。",
+      "trivia": "in a fog(頭がぼんやりして)のように、比喩的に「混乱した状態」を表す表現でも使われる。",
+      "explanation": "霧。mist より濃く視界が悪い状態を指すことが多い。",
+      "example_ja": "今朝、濃い霧が谷全体を覆っていた。",
+      "example_ja_src": "Thick fog covered the entire valley this morning."
+    }
+  },
+  {
+    "english": "ice",
+    "detail": {
+      "pronunciation": "/aɪs/",
+      "pos": "名詞",
+      "meanings": ["氷"],
+      "examples": [
+        {"en": "Would you like some ice in your drink?", "ja": "飲み物に氷を入れましょうか。"},
+        {"en": "The pond froze over and turned to solid ice.", "ja": "池は凍りついて固い氷になった。"}
+      ],
+      "derivatives": [{"word": "icy", "pos": "形容詞", "ja": "氷のように冷たい"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 is に由来するゲルマン語系の語。",
+      "trivia": "break the ice(その場の緊張をほぐす)は、船が氷を砕いて進む様子から生まれた有名な慣用句。",
+      "explanation": "氷。break the ice(場を和ませる)などの慣用句でも使われる。",
+      "example_ja": "飲み物に氷を入れましょうか。",
+      "example_ja_src": "Would you like some ice in your drink?"
+    }
+  },
+  {
+    "english": "beach",
+    "detail": {
+      "pronunciation": "/biːtʃ/",
+      "pos": "名詞",
+      "meanings": ["浜辺、ビーチ"],
+      "examples": [
+        {"en": "We spent the whole afternoon relaxing on the beach.", "ja": "私たちは午後ずっとビーチでのんびり過ごした。"},
+        {"en": "The kids built a sandcastle on the beach.", "ja": "子どもたちは浜辺で砂の城を作った。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "shore", "note": "岸辺。"}],
+      "antonyms": [],
+      "origin": "16世紀のイギリス南東部の方言で「小石、砂利」を意味した語に由来するとされ、正確な語源は不確かな部分もある。",
+      "trivia": "beach と beech(ブナの木)は発音が同じ同音異義語で、綴りの間違いに注意が必要。",
+      "explanation": "浜辺、ビーチ。",
+      "example_ja": "私たちは午後ずっとビーチでのんびり過ごした。",
+      "example_ja_src": "We spent the whole afternoon relaxing on the beach."
+    }
+  },
+  {
+    "english": "sand",
+    "detail": {
+      "pronunciation": "/sænd/",
+      "pos": "名詞",
+      "meanings": ["砂"],
+      "examples": [
+        {"en": "The children played happily in the sand.", "ja": "子どもたちは砂の中で楽しそうに遊んだ。"},
+        {"en": "Fine white sand stretched along the entire coastline.", "ja": "海岸線全体に沿ってきめ細かい白い砂が広がっていた。"}
+      ],
+      "derivatives": [{"word": "sandy", "pos": "形容詞", "ja": "砂の多い、砂質の"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 sand に由来するゲルマン語系の語。",
+      "trivia": "bury one's head in the sand(現実から目を背ける)は sand を使った有名な慣用句。",
+      "explanation": "砂。",
+      "example_ja": "子どもたちは砂の中で楽しそうに遊んだ。",
+      "example_ja_src": "The children played happily in the sand."
+    }
+  },
+  {
+    "english": "mud",
+    "detail": {
+      "pronunciation": "/mʌd/",
+      "pos": "名詞",
+      "meanings": ["泥"],
+      "examples": [
+        {"en": "His boots were completely covered in mud.", "ja": "彼のブーツはすっかり泥まみれだった。"},
+        {"en": "The truck got stuck in the mud after the rain.", "ja": "雨の後、そのトラックは泥にはまって動けなくなった。"}
+      ],
+      "derivatives": [{"word": "muddy", "pos": "形容詞", "ja": "泥だらけの"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "中英語期に低地ドイツ語系の mudde「泥、ぬかるみ」から入ったとされる語。",
+      "trivia": "drag someone's name through the mud(人の評判を貶める)は mud を使った比喩表現。",
+      "explanation": "泥。",
+      "example_ja": "彼のブーツはすっかり泥まみれだった。",
+      "example_ja_src": "His boots were completely covered in mud."
+    }
+  },
+  {
+    "english": "hill",
+    "detail": {
+      "pronunciation": "/hɪl/",
+      "pos": "名詞",
+      "meanings": ["丘"],
+      "examples": [
+        {"en": "There's a great view from the top of that hill.", "ja": "あの丘の頂上からの眺めは素晴らしい。"},
+        {"en": "We rolled down the grassy hill as kids.", "ja": "子どもの頃、私たちは草の生えた丘を転がり降りた。"}
+      ],
+      "derivatives": [{"word": "hilly", "pos": "形容詞", "ja": "丘の多い"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 hyll に由来するゲルマン語系の語。",
+      "trivia": "mountain(山)よりも低くなだらかな地形を指し、over the hill(峠を越えた、盛りを過ぎた)という比喩表現もある。",
+      "explanation": "丘。mountain より低くなだらかな地形。",
+      "example_ja": "あの丘の頂上からの眺めは素晴らしい。",
+      "example_ja_src": "There's a great view from the top of that hill."
+    }
+  },
+  {
+    "english": "stone",
+    "detail": {
+      "pronunciation": "/stoʊn/",
+      "pos": "名詞",
+      "meanings": ["石"],
+      "examples": [
+        {"en": "He skipped a flat stone across the lake.", "ja": "彼は平たい石を湖の水面で跳ねさせた。"},
+        {"en": "The old bridge was built entirely of stone.", "ja": "その古い橋はすべて石で造られていた。"}
+      ],
+      "derivatives": [{"word": "stony", "pos": "形容詞", "ja": "石だらけの"}],
+      "synonyms": [{"word": "rock", "note": "岩、石。"}],
+      "antonyms": [],
+      "origin": "古英語 stan に由来するゲルマン語系の語。",
+      "trivia": "leave no stone unturned(あらゆる手を尽くす)は stone を使った有名な慣用句。",
+      "explanation": "石。rock よりやや小さめの石を指すことが多い。",
+      "example_ja": "彼は平たい石を湖の水面で跳ねさせた。",
+      "example_ja_src": "He skipped a flat stone across the lake."
+    }
+  },
+  {
+    "english": "pepper",
+    "detail": {
+      "pronunciation": "/ˈpepər/",
+      "pos": "名詞",
+      "meanings": ["こしょう", "(唐辛子)ピーマン、パプリカ"],
+      "examples": [
+        {"en": "Add a little salt and pepper to taste.", "ja": "お好みで塩とこしょうを少々加えてください。"},
+        {"en": "She grows bell peppers in her garden.", "ja": "彼女は庭でピーマンを育てている。"}
+      ],
+      "derivatives": [{"word": "peppery", "pos": "形容詞", "ja": "こしょうの効いた、辛味の強い"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語 piper に由来し、さらにサンスクリット語 pippali にさかのぼるとされる。",
+      "trivia": "salt and pepper(塩こしょう)は英語で最も定番の調味料の組み合わせとして必ず一緒に挙げられる。",
+      "explanation": "こしょう。ピーマンなど唐辛子の仲間を指すこともある。",
+      "example_ja": "お好みで塩とこしょうを少々加えてください。",
+      "example_ja_src": "Add a little salt and pepper to taste."
+    }
+  },
+  {
+    "english": "sauce",
+    "detail": {
+      "pronunciation": "/sɔːs/",
+      "pos": "名詞",
+      "meanings": ["ソース、たれ"],
+      "examples": [
+        {"en": "This pasta comes with a rich tomato sauce.", "ja": "このパスタには濃厚なトマトソースがかかっている。"},
+        {"en": "Could you pass me the soy sauce?", "ja": "しょうゆを取ってもらえますか。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古フランス語 sauce に由来し、ラテン語 salsa(「塩味の」)にさかのぼる。",
+      "trivia": "salad、salt、sauceはすべて同じラテン語 sal「塩」を語源とする仲間の単語群。",
+      "explanation": "ソース、たれ。",
+      "example_ja": "このパスタには濃厚なトマトソースがかかっている。",
+      "example_ja_src": "This pasta comes with a rich tomato sauce."
+    }
+  },
+  {
+    "english": "flavor",
+    "detail": {
+      "pronunciation": "/ˈfleɪvər/",
+      "pos": "名詞",
+      "meanings": ["味、風味"],
+      "examples": [
+        {"en": "This ice cream comes in ten different flavors.", "ja": "このアイスクリームは10種類の味がある。"},
+        {"en": "The soup has a rich, spicy flavor.", "ja": "そのスープは濃厚でスパイシーな風味がする。"}
+      ],
+      "derivatives": [{"word": "flavorful", "pos": "形容詞", "ja": "風味豊かな"}],
+      "synonyms": [{"word": "taste", "note": "味。"}],
+      "antonyms": [],
+      "origin": "古フランス語 flaor/flavor に由来し、ラテン語 flatus(「息、香り」)と関連があるとされる。",
+      "trivia": "アメリカ英語では flavor、イギリス英語では flavour と綴りが異なる代表的な単語の一つ。",
+      "explanation": "味、風味。米 flavor / 英 flavour の綴り違いがある。",
+      "example_ja": "このアイスクリームは10種類の味がある。",
+      "example_ja_src": "This ice cream comes in ten different flavors."
+    }
+  },
+  {
+    "english": "meal",
+    "detail": {
+      "pronunciation": "/miːl/",
+      "pos": "名詞",
+      "meanings": ["食事"],
+      "examples": [
+        {"en": "This is the best meal I've had in weeks.", "ja": "これは私が何週間かぶりに食べた一番おいしい食事だ。"},
+        {"en": "They shared a quiet meal together at home.", "ja": "彼らは家で静かに食事を共にした。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 mæl に由来し、元々は「(食事をとる)時、機会」を意味した語で、後に「食事」そのものを指すようになった。",
+      "trivia": "meal はもともと「時間・回数」を意味しており、oatmeal(オートミール)の meal(挽き割り)とは異なる語源の同形語。",
+      "explanation": "食事。breakfast/lunch/dinnerを総称する語。",
+      "example_ja": "これは私が何週間かぶりに食べた一番おいしい食事だ。",
+      "example_ja_src": "This is the best meal I've had in weeks."
+    }
+  },
+  {
+    "english": "bowl",
+    "detail": {
+      "pronunciation": "/boʊl/",
+      "pos": "名詞",
+      "meanings": ["ボウル、鉢"],
+      "examples": [
+        {"en": "She mixed the flour and eggs in a large bowl.", "ja": "彼女は大きなボウルの中で小麦粉と卵を混ぜた。"},
+        {"en": "He had a bowl of cereal for breakfast.", "ja": "彼は朝食にシリアルを1杯食べた。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 bolla「丸い容器」に由来するゲルマン語系の語。",
+      "trivia": "アメリカンフットボールの大きな試合を Super Bowl と呼ぶのは、優勝チームに丸いトロフィーを贈ったことに由来するとされる。",
+      "explanation": "ボウル、鉢。",
+      "example_ja": "彼女は大きなボウルの中で小麦粉と卵を混ぜた。",
+      "example_ja_src": "She mixed the flour and eggs in a large bowl."
+    }
+  },
+  {
+    "english": "plate",
+    "detail": {
+      "pronunciation": "/pleɪt/",
+      "pos": "名詞",
+      "meanings": ["皿", "(車の)ナンバープレート"],
+      "examples": [
+        {"en": "He put a slice of cake on each plate.", "ja": "彼はそれぞれの皿にケーキを一切れずつ乗せた。"},
+        {"en": "Please write your license plate number here.", "ja": "ここにナンバープレートの番号を書いてください。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古フランス語 plate(「平らな板」、ギリシャ語 platys「平らな」から)に由来する。",
+      "trivia": "have a lot on one's plate(やることがたくさんある)は plate を使った比喩表現。",
+      "explanation": "皿。「(車の)ナンバープレート」の意味でも使う。",
+      "example_ja": "彼はそれぞれの皿にケーキを一切れずつ乗せた。",
+      "example_ja_src": "He put a slice of cake on each plate."
+    }
+  },
+  {
+    "english": "blanket",
+    "detail": {
+      "pronunciation": "/ˈblæŋkɪt/",
+      "pos": "名詞・動詞",
+      "meanings": ["毛布", "(動詞)覆う"],
+      "examples": [
+        {"en": "She pulled the blanket up to keep warm.", "ja": "彼女は暖かくするために毛布を引き上げた。"},
+        {"en": "Snow blanketed the entire town overnight.", "ja": "一晩で雪が町全体を覆った。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古フランス語 blanquette(blanc「白い」から)に由来し、元々は白い羊毛の布を指したとされる。",
+      "trivia": "動詞としては「(雪などが)一面を覆う」の意味でもよく使われる。",
+      "explanation": "毛布。動詞では「一面を覆う」の意味。",
+      "example_ja": "彼女は暖かくするために毛布を引き上げた。",
+      "example_ja_src": "She pulled the blanket up to keep warm."
+    }
+  },
+  {
+    "english": "bottle",
+    "detail": {
+      "pronunciation": "/ˈbɑːtl/",
+      "pos": "名詞",
+      "meanings": ["瓶、ボトル"],
+      "examples": [
+        {"en": "He filled the bottle with cold water.", "ja": "彼は瓶に冷たい水を入れた。"},
+        {"en": "Could you recycle these empty bottles?", "ja": "この空き瓶をリサイクルに出してもらえますか。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古フランス語 bouteille(俗ラテン語 buttis「たる」から)に由来する。",
+      "trivia": "hit the bottle(酒に溺れる)のように、bottle は比喩的にアルコールを指すこともある。",
+      "explanation": "瓶、ボトル。",
+      "example_ja": "彼は瓶に冷たい水を入れた。",
+      "example_ja_src": "He filled the bottle with cold water."
+    }
+  },
+  {
+    "english": "curtain",
+    "detail": {
+      "pronunciation": "/ˈkɜːrtən/",
+      "pos": "名詞",
+      "meanings": ["カーテン", "(舞台の)幕"],
+      "examples": [
+        {"en": "She opened the curtains to let the sunlight in.", "ja": "彼女は日光を入れるためカーテンを開けた。"},
+        {"en": "The curtain rose and the play began.", "ja": "幕が上がり、劇が始まった。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古フランス語 cortine(後期ラテン語 cortina から)に由来する。",
+      "trivia": "劇場の「幕」の意味から、behind the curtain(舞台裏で、水面下で)という比喩表現も生まれた。",
+      "explanation": "カーテン。劇場の「幕」の意味でも使う。",
+      "example_ja": "彼女は日光を入れるためカーテンを開けた。",
+      "example_ja_src": "She opened the curtains to let the sunlight in."
+    }
+  },
+  {
+    "english": "drawer",
+    "detail": {
+      "pronunciation": "/drɔːr/",
+      "pos": "名詞",
+      "meanings": ["引き出し"],
+      "examples": [
+        {"en": "He keeps his socks in the top drawer.", "ja": "彼は靴下を一番上の引き出しにしまっている。"},
+        {"en": "She searched every drawer looking for the key.", "ja": "彼女は鍵を探して全ての引き出しを調べた。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "動詞 draw(引く)に -er を付けた語で、文字通り「引き出すもの」を意味する。",
+      "trivia": "drawer(引き出し)と drawer(絵を描く人)は綴りが同じだが、後者の発音は /ˈdrɔːər/ と少し異なる。",
+      "explanation": "引き出し。動詞 draw(引く)から。",
+      "example_ja": "彼は靴下を一番上の引き出しにしまっている。",
+      "example_ja_src": "He keeps his socks in the top drawer."
+    }
+  },
+  {
+    "english": "sibling",
+    "detail": {
+      "pronunciation": "/ˈsɪblɪŋ/",
+      "pos": "名詞",
+      "meanings": ["きょうだい(兄弟姉妹の総称)"],
+      "examples": [
+        {"en": "She is the only one without any siblings.", "ja": "彼女だけがきょうだいがいない。"},
+        {"en": "Sibling rivalry is common in large families.", "ja": "大家族ではきょうだい間の張り合いはよくあることだ。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 sibb(「血縁、親族」)+ -ling に由来し、20世紀に入って性別を問わない「きょうだい」を表す語として広まった。",
+      "trivia": "brother/sisterのように性別を分けない便利な語として、公的な書類などで好んで使われる。",
+      "explanation": "きょうだい。brother/sisterを性別を問わずまとめて指す語。",
+      "example_ja": "彼女だけがきょうだいがいない。",
+      "example_ja_src": "She is the only one without any siblings."
+    }
+  },
+  {
+    "english": "stranger",
+    "detail": {
+      "pronunciation": "/ˈstreɪndʒər/",
+      "pos": "名詞",
+      "meanings": ["見知らぬ人、よそ者"],
+      "examples": [
+        {"en": "A stranger asked me for directions to the station.", "ja": "見知らぬ人が私に駅までの道を尋ねた。"},
+        {"en": "Don't talk to strangers, her mother always said.", "ja": "見知らぬ人と話してはいけないと、彼女の母はいつも言っていた。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [{"word": "friend", "note": "友人。"}],
+      "origin": "古フランス語 estrangier(ラテン語 extraneus「外部の、よその」から)に由来する。",
+      "trivia": "truth is stranger than fiction(事実は小説より奇なり)は stranger(strangeの比較級)を使った有名な言い回し。",
+      "explanation": "見知らぬ人。",
+      "example_ja": "見知らぬ人が私に駅までの道を尋ねた。",
+      "example_ja_src": "A stranger asked me for directions to the station."
+    }
+  },
+  {
+    "english": "couple",
+    "detail": {
+      "pronunciation": "/ˈkʌpəl/",
+      "pos": "名詞",
+      "meanings": ["夫婦、カップル", "(a couple of)2、3の"],
+      "examples": [
+        {"en": "A young couple was walking hand in hand along the beach.", "ja": "若いカップルが浜辺を手をつないで歩いていた。"},
+        {"en": "I'll be back in a couple of minutes.", "ja": "2、3分で戻ります。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古フランス語 cople(ラテン語 copula「結びつけるもの、絆」から)に由来する。",
+      "trivia": "a couple of〜(2、3の〜)は、必ずしも正確に「2つ」を意味せず「少数の」を表す口語表現として使われる。",
+      "explanation": "夫婦、カップル。a couple ofで「2、3の」の意味にもなる。",
+      "example_ja": "若いカップルが浜辺を手をつないで歩いていた。",
+      "example_ja_src": "A young couple was walking hand in hand along the beach."
+    }
+  },
+  {
+    "english": "grandparent",
+    "detail": {
+      "pronunciation": "/ˈɡrænperənt/",
+      "pos": "名詞",
+      "meanings": ["祖父母"],
+      "examples": [
+        {"en": "My grandparents live in a small town by the sea.", "ja": "私の祖父母は海沿いの小さな町に住んでいる。"},
+        {"en": "She was raised mostly by her grandparents.", "ja": "彼女は主に祖父母に育てられた。"}
+      ],
+      "derivatives": [{"word": "grandchild", "pos": "名詞", "ja": "孫"}],
+      "synonyms": [],
+      "antonyms": [{"word": "grandchild", "note": "孫。"}],
+      "origin": "フランス語由来の接頭辞 grand-(「偉大な」)を parent に付けた語で、「一世代上の親」を意味する。",
+      "trivia": "grand- は grandmother/grandfather/grandchildなど、世代を一つ超える家族関係を表す接頭辞として広く使われる。",
+      "explanation": "祖父母。grandmother(祖母)とgrandfather(祖父)を合わせた総称。",
+      "example_ja": "私の祖父母は海沿いの小さな町に住んでいる。",
+      "example_ja_src": "My grandparents live in a small town by the sea."
+    }
+  },
+  {
+    "english": "promise",
+    "detail": {
+      "pronunciation": "/ˈprɑːmɪs/",
+      "pos": "動詞・名詞",
+      "meanings": ["約束する", "(名詞)約束"],
+      "examples": [
+        {"en": "He promised to call her as soon as he arrived.", "ja": "彼は着いたらすぐに彼女に電話すると約束した。"},
+        {"en": "She kept her promise and finished the report on time.", "ja": "彼女は約束を守り、期限内に報告書を仕上げた。"}
+      ],
+      "derivatives": [{"word": "promising", "pos": "形容詞", "ja": "有望な"}],
+      "synonyms": [{"word": "vow", "note": "誓う(より強い決意を表す)。"}],
+      "antonyms": [],
+      "origin": "ラテン語 promittere(pro-「前もって」+ mittere「送る」)に由来し、「先に言葉を送っておく」ことから「約束する」の意味になった。",
+      "trivia": "keep a promise(約束を守る)、break a promise(約束を破る)のように、promise は動詞とセットになる表現が非常に多い。",
+      "explanation": "約束する。名詞では「約束」。",
+      "example_ja": "彼は着いたらすぐに彼女に電話すると約束した。",
+      "example_ja_src": "He promised to call her as soon as he arrived."
+    }
+  },
+  {
+    "english": "protect",
+    "detail": {
+      "pronunciation": "/prəˈtekt/",
+      "pos": "動詞",
+      "meanings": ["守る、保護する"],
+      "examples": [
+        {"en": "Wearing a helmet helps protect your head.", "ja": "ヘルメットをかぶることは頭を守るのに役立つ。"},
+        {"en": "Parents naturally want to protect their children.", "ja": "親は本能的に子どもを守りたいと思うものだ。"}
+      ],
+      "derivatives": [{"word": "protection", "pos": "名詞", "ja": "保護"}, {"word": "protective", "pos": "形容詞", "ja": "保護的な"}],
+      "synonyms": [{"word": "defend", "note": "防御する。"}],
+      "antonyms": [{"word": "attack", "note": "攻撃する。"}],
+      "origin": "ラテン語 protegere(pro-「前で」+ tegere「覆う」)に由来し、「前を覆って守る」ことを意味する。",
+      "trivia": "protect と tegereを語源とする語には roof(屋根)に近い意味を持つ tegument(被膜)などもある。",
+      "explanation": "守る、保護する。",
+      "example_ja": "ヘルメットをかぶることは頭を守るのに役立つ。",
+      "example_ja_src": "Wearing a helmet helps protect your head."
+    }
+  },
+  {
+    "english": "escape",
+    "detail": {
+      "pronunciation": "/ɪˈskeɪp/",
+      "pos": "動詞・名詞",
+      "meanings": ["逃げる、逃れる", "(名詞)逃亡、脱出"],
+      "examples": [
+        {"en": "The prisoner tried to escape but was quickly caught.", "ja": "その囚人は逃げようとしたがすぐに捕まった。"},
+        {"en": "They had a narrow escape from the burning building.", "ja": "彼らは燃える建物から間一髪で脱出した。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "flee", "note": "逃げる(より緊急性が高い)。"}],
+      "antonyms": [],
+      "origin": "古フランス語 eschaper(俗ラテン語 excappare「マントを脱いで逃げる」、ex-「外へ」+ cappa「マント」から)に由来する。",
+      "trivia": "escapeの語源には「追手にマントだけ残して逃げる」という具体的なイメージがあるとされる。",
+      "explanation": "逃げる。名詞では「逃亡、脱出」。",
+      "example_ja": "その囚人は逃げようとしたがすぐに捕まった。",
+      "example_ja_src": "The prisoner tried to escape but was quickly caught."
+    }
+  },
+  {
+    "english": "search",
+    "detail": {
+      "pronunciation": "/sɜːrtʃ/",
+      "pos": "動詞・名詞",
+      "meanings": ["探す、捜索する", "(名詞)捜索"],
+      "examples": [
+        {"en": "They searched the whole house for the missing keys.", "ja": "彼らはなくした鍵を探して家中を捜した。"},
+        {"en": "She did a quick search online for the address.", "ja": "彼女はその住所をインターネットでさっと検索した。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "look for", "note": "〜を探す。"}],
+      "antonyms": [],
+      "origin": "古フランス語 cerchier(ラテン語 circare「円を描いて回る」、circus「円」から)に由来する。",
+      "trivia": "search engine(検索エンジン)のように、現在ではインターネットの「検索」の意味でも中心的な語になっている。",
+      "explanation": "探す、捜索する。「(インターネットで)検索する」の意味でも使う。",
+      "example_ja": "彼らはなくした鍵を探して家中を捜した。",
+      "example_ja_src": "They searched the whole house for the missing keys."
+    }
+  },
+  {
+    "english": "rescue",
+    "detail": {
+      "pronunciation": "/ˈreskjuː/",
+      "pos": "動詞・名詞",
+      "meanings": ["救助する", "(名詞)救助"],
+      "examples": [
+        {"en": "Firefighters rescued the cat from the tall tree.", "ja": "消防士たちが高い木から猫を救助した。"},
+        {"en": "The rescue took nearly three hours to complete.", "ja": "その救助活動は完了までほぼ3時間かかった。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "save", "note": "救う。"}],
+      "antonyms": [],
+      "origin": "古フランス語 rescourre(re-「再び」+ escourre「振り払う」、ラテン語 excutere から)に由来する。",
+      "trivia": "rescue dog(保護犬)のように、動物の保護に関する語としても頻繁に使われる。",
+      "explanation": "救助する。名詞では「救助」。",
+      "example_ja": "消防士たちが高い木から猫を救助した。",
+      "example_ja_src": "Firefighters rescued the cat from the tall tree."
+    }
+  },
+  {
+    "english": "defend",
+    "detail": {
+      "pronunciation": "/dɪˈfend/",
+      "pos": "動詞",
+      "meanings": ["守る、防御する", "(意見などを)擁護する"],
+      "examples": [
+        {"en": "The team defended their lead until the very end.", "ja": "チームは最後までリードを守り抜いた。"},
+        {"en": "She defended her decision in front of the whole class.", "ja": "彼女はクラス全員の前で自分の決断を擁護した。"}
+      ],
+      "derivatives": [{"word": "defense", "pos": "名詞", "ja": "防御"}, {"word": "defensive", "pos": "形容詞", "ja": "防御的な"}],
+      "synonyms": [{"word": "protect", "note": "守る。"}],
+      "antonyms": [{"word": "attack", "note": "攻撃する。"}],
+      "origin": "ラテン語 defendere(de-「離れて」+ fendere「打つ」)に由来し、「打って(敵を)遠ざける」ことを意味する。",
+      "trivia": "スポーツで defense(守備)、法廷で the defense(被告側)のように、分野によって意味の広がりがある。",
+      "explanation": "守る、防御する。意見を「擁護する」の意味でも使う。",
+      "example_ja": "チームは最後までリードを守り抜いた。",
+      "example_ja_src": "The team defended their lead until the very end."
+    }
+  },
+  {
+    "english": "attack",
+    "detail": {
+      "pronunciation": "/əˈtæk/",
+      "pos": "動詞・名詞",
+      "meanings": ["攻撃する", "(名詞)攻撃"],
+      "examples": [
+        {"en": "The soldiers were ordered to attack at dawn.", "ja": "兵士たちは夜明けに攻撃するよう命じられた。"},
+        {"en": "He suffered a heart attack last year.", "ja": "彼は昨年、心臓発作を起こした。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [{"word": "defend", "note": "守る、防御する。"}],
+      "origin": "イタリア語 attaccare(「くっつける、攻撃を仕掛ける」)に由来し、フランス語を経て英語に入った。",
+      "trivia": "heart attack(心臓発作)のように、病気の急な発症を表す場合にも attack が使われる。",
+      "explanation": "攻撃する。「(病気の)発作」の意味でも使う。",
+      "example_ja": "兵士たちは夜明けに攻撃するよう命じられた。",
+      "example_ja_src": "The soldiers were ordered to attack at dawn."
+    }
+  },
+  {
+    "english": "invent",
+    "detail": {
+      "pronunciation": "/ɪnˈvent/",
+      "pos": "動詞",
+      "meanings": ["発明する", "(話などを)でっち上げる"],
+      "examples": [
+        {"en": "Who invented the telephone?", "ja": "誰が電話を発明したのですか。"},
+        {"en": "He invented an excuse for being late again.", "ja": "彼はまた遅刻した言い訳をでっち上げた。"}
+      ],
+      "derivatives": [{"word": "invention", "pos": "名詞", "ja": "発明"}, {"word": "inventor", "pos": "名詞", "ja": "発明者"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語 invenire(in-「中へ」+ venire「来る」)に由来し、元々は「出会う、見つける」を意味した。",
+      "trivia": "invent はもともと「見つける」に近い意味で、そこから「(新しく)作り出す」の意味へ発展した。",
+      "explanation": "発明する。話を「でっち上げる」の意味でも使う。",
+      "example_ja": "誰が電話を発明したのですか。",
+      "example_ja_src": "Who invented the telephone?"
+    }
+  },
+  {
+    "english": "repair",
+    "detail": {
+      "pronunciation": "/rɪˈper/",
+      "pos": "動詞・名詞",
+      "meanings": ["修理する", "(名詞)修理"],
+      "examples": [
+        {"en": "It took the mechanic two hours to repair the car.", "ja": "整備士がその車を修理するのに2時間かかった。"},
+        {"en": "The bridge is currently under repair.", "ja": "その橋は現在修理中だ。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "fix", "note": "直す(よりくだけた語)。"}],
+      "antonyms": [{"word": "damage", "note": "損傷させる。"}],
+      "origin": "ラテン語 reparare(re-「再び」+ parare「準備する、整える」)に由来する。",
+      "trivia": "under repair(修理中)という表現は、道路工事や機械の掲示でよく見かける定型句。",
+      "explanation": "修理する。fixよりやや形式的な語。",
+      "example_ja": "整備士がその車を修理するのに2時間かかった。",
+      "example_ja_src": "It took the mechanic two hours to repair the car."
+    }
+  },
+  {
+    "english": "forgive",
+    "detail": {
+      "pronunciation": "/fərˈɡɪv/",
+      "pos": "動詞",
+      "meanings": ["許す"],
+      "examples": [
+        {"en": "She finally forgave her brother for the argument.", "ja": "彼女はついにその口論のことで兄を許した。"},
+        {"en": "Please forgive me for being late.", "ja": "遅れたことをどうか許してください。"}
+      ],
+      "derivatives": [{"word": "forgiveness", "pos": "名詞", "ja": "許し"}],
+      "synonyms": [],
+      "antonyms": [{"word": "blame", "note": "責める。"}],
+      "origin": "古英語 forgiefan(for-「完全に」+ giefan「与える」)に由来し、「(相手の過ちを)完全に手放す」ことを意味する。",
+      "trivia": "forgive and forget(許して忘れる)は forgive を使ったよく知られた表現。",
+      "explanation": "許す。",
+      "example_ja": "彼女はついにその口論のことで兄を許した。",
+      "example_ja_src": "She finally forgave her brother for the argument."
+    }
+  },
+  {
+    "english": "praise",
+    "detail": {
+      "pronunciation": "/preɪz/",
+      "pos": "動詞・名詞",
+      "meanings": ["褒める", "(名詞)称賛"],
+      "examples": [
+        {"en": "The teacher praised the students for their hard work.", "ja": "先生は生徒たちの努力を褒めた。"},
+        {"en": "The new restaurant has received a lot of praise.", "ja": "その新しいレストランは多くの称賛を受けている。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "compliment", "note": "褒め言葉を言う。"}],
+      "antonyms": [{"word": "criticize", "note": "批判する。"}],
+      "origin": "古フランス語 preisier(ラテン語 pretiare「価値を認める」、pretium「価値」から)に由来する。",
+      "trivia": "priceという語も同じラテン語 pretium「価値」を語源に持つ仲間の単語。",
+      "explanation": "褒める。名詞では「称賛」。",
+      "example_ja": "先生は生徒たちの努力を褒めた。",
+      "example_ja_src": "The teacher praised the students for their hard work."
+    }
+  },
+  {
+    "english": "warn",
+    "detail": {
+      "pronunciation": "/wɔːrn/",
+      "pos": "動詞",
+      "meanings": ["警告する、注意する"],
+      "examples": [
+        {"en": "The sign warns drivers about the sharp curve ahead.", "ja": "その標識は前方の急カーブについて運転手に警告している。"},
+        {"en": "She warned him not to be late again.", "ja": "彼女は彼にもう遅刻しないよう注意した。"}
+      ],
+      "derivatives": [{"word": "warning", "pos": "名詞", "ja": "警告"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古英語 warnian に由来するゲルマン語系の語。",
+      "trivia": "warning label(警告表示)のように、製品の注意書きなどで日常的に目にする語。",
+      "explanation": "警告する、注意する。",
+      "example_ja": "その標識は前方の急カーブについて運転手に警告している。",
+      "example_ja_src": "The sign warns drivers about the sharp curve ahead."
+    }
+  },
+  {
+    "english": "greet",
+    "detail": {
+      "pronunciation": "/ɡriːt/",
+      "pos": "動詞",
+      "meanings": ["あいさつする、迎える"],
+      "examples": [
+        {"en": "She greeted every guest with a warm smile.", "ja": "彼女は温かい笑顔で客一人一人にあいさつした。"},
+        {"en": "He greeted us at the door and took our coats.", "ja": "彼はドアで私たちを迎え、コートを預かってくれた。"}
+      ],
+      "derivatives": [{"word": "greeting", "pos": "名詞", "ja": "あいさつ"}],
+      "synonyms": [{"word": "welcome", "note": "歓迎する。"}],
+      "antonyms": [],
+      "origin": "古英語 gretan「近づく、話しかける」に由来するゲルマン語系の語。",
+      "trivia": "greeting card(グリーティングカード)のように、あいさつを形にした物を表す複合語もある。",
+      "explanation": "あいさつする、迎える。",
+      "example_ja": "彼女は温かい笑顔で客一人一人にあいさつした。",
+      "example_ja_src": "She greeted every guest with a warm smile."
+    }
+  },
+  {
+    "english": "welcome",
+    "detail": {
+      "pronunciation": "/ˈwelkəm/",
+      "pos": "動詞・形容詞・名詞",
+      "meanings": ["歓迎する", "(形容詞)歓迎される", "(間投詞)ようこそ"],
+      "examples": [
+        {"en": "They welcomed us warmly into their home.", "ja": "彼らは私たちを温かく自宅に迎え入れてくれた。"},
+        {"en": "You're welcome to join us anytime.", "ja": "いつでもご一緒に参加していただけますよ。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "greet", "note": "あいさつする、迎える。"}],
+      "antonyms": [],
+      "origin": "古英語 wilcuma(wil-「望ましい」+ cuma「来る人」)に由来し、「望ましい客」を意味した。",
+      "trivia": "You're welcome.(どういたしまして)は、感謝された時の返答として非常に頻出する定型表現。",
+      "explanation": "歓迎する。You're welcome.(どういたしまして)の決まり文句でも使う。",
+      "example_ja": "彼らは私たちを温かく自宅に迎え入れてくれた。",
+      "example_ja_src": "They welcomed us warmly into their home."
+    }
+  },
+  {
+    "english": "celebrate",
+    "detail": {
+      "pronunciation": "/ˈselɪbreɪt/",
+      "pos": "動詞",
+      "meanings": ["祝う"],
+      "examples": [
+        {"en": "We celebrated her birthday with a big cake.", "ja": "私たちは大きなケーキで彼女の誕生日を祝った。"},
+        {"en": "The whole town celebrates the festival every summer.", "ja": "その町全体が毎夏そのお祭りを祝う。"}
+      ],
+      "derivatives": [{"word": "celebration", "pos": "名詞", "ja": "祝賀"}, {"word": "celebrity", "pos": "名詞", "ja": "有名人"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語 celebrare(celeber「にぎやかな、有名な」から)に由来する。",
+      "trivia": "celebrity(有名人)も同じ語根から派生し、「多くの人に知られ、祝われる存在」というイメージでつながっている。",
+      "explanation": "祝う。",
+      "example_ja": "私たちは大きなケーキで彼女の誕生日を祝った。",
+      "example_ja_src": "We celebrated her birthday with a big cake."
+    }
+  },
+  {
+    "english": "argue",
+    "detail": {
+      "pronunciation": "/ˈɑːrɡjuː/",
+      "pos": "動詞",
+      "meanings": ["議論する、口論する", "主張する"],
+      "examples": [
+        {"en": "The two brothers argued about who would drive.", "ja": "2人の兄弟は誰が運転するかで言い争った。"},
+        {"en": "She argued that the plan needed more time.", "ja": "彼女はその計画にはもっと時間が必要だと主張した。"}
+      ],
+      "derivatives": [{"word": "argument", "pos": "名詞", "ja": "議論、口論"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語 argutare(arguere「明らかにする」から)に由来する。",
+      "trivia": "argueは「口論する」だけでなく、「(理由を示して)主張する」という中立的な意味でも非常によく使われる。",
+      "explanation": "議論する、口論する。理由を示して「主張する」の意味でも使う。",
+      "example_ja": "2人の兄弟は誰が運転するかで言い争った。",
+      "example_ja_src": "The two brothers argued about who would drive."
+    }
+  },
+  {
+    "english": "blame",
+    "detail": {
+      "pronunciation": "/bleɪm/",
+      "pos": "動詞・名詞",
+      "meanings": ["責める、非難する", "(名詞)責任"],
+      "examples": [
+        {"en": "Don't blame yourself for what happened.", "ja": "起きたことについて自分を責めないで。"},
+        {"en": "He took the blame for the whole team's mistake.", "ja": "彼はチーム全体のミスの責任を引き受けた。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [{"word": "praise", "note": "褒める。"}, {"word": "forgive", "note": "許す。"}],
+      "origin": "古フランス語 blasmer(ラテン語 blasphemare「冒涜する」から)に由来する。",
+      "trivia": "blasphemy(冒涜)と blame は同じラテン語 blasphemare を語源とする、意外なつながりを持つ単語。",
+      "explanation": "責める、非難する。名詞では「責任、非難」。",
+      "example_ja": "起きたことについて自分を責めないで。",
+      "example_ja_src": "Don't blame yourself for what happened."
+    }
+  },
+  {
+    "english": "chase",
+    "detail": {
+      "pronunciation": "/tʃeɪs/",
+      "pos": "動詞・名詞",
+      "meanings": ["追いかける", "(名詞)追跡"],
+      "examples": [
+        {"en": "The dog chased the ball across the yard.", "ja": "その犬は庭を横切ってボールを追いかけた。"},
+        {"en": "The movie ends with an exciting car chase.", "ja": "その映画はスリリングなカーチェイスで終わる。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "pursue", "note": "追求する(より形式的)。"}],
+      "antonyms": [],
+      "origin": "古フランス語 chacier(俗ラテン語 captiare「捕らえようとする」から)に由来し、catch と同じ語源を持つ。",
+      "trivia": "catch と chase は同じラテン語の語根から枝分かれした語で、「捕らえようとする」という共通のイメージを持つ。",
+      "explanation": "追いかける。名詞では「追跡」。",
+      "example_ja": "その犬は庭を横切ってボールを追いかけた。",
+      "example_ja_src": "The dog chased the ball across the yard."
+    }
+  },
+  {
+    "english": "jealous",
+    "detail": {
+      "pronunciation": "/ˈdʒeləs/",
+      "pos": "形容詞",
+      "meanings": ["嫉妬した、やきもちを焼いた"],
+      "examples": [
+        {"en": "He felt a little jealous of his friend's new car.", "ja": "彼は友人の新しい車に少し嫉妬を感じた。"},
+        {"en": "She was jealous when her sister got all the attention.", "ja": "妹が注目を独り占めした時、彼女は嫉妬した。"}
+      ],
+      "derivatives": [{"word": "jealousy", "pos": "名詞", "ja": "嫉妬"}],
+      "synonyms": [{"word": "envious", "note": "うらやましく思う。"}],
+      "antonyms": [],
+      "origin": "古フランス語 jalous(後期ラテン語 zelosus「熱心な」、ギリシャ語 zelos「熱情」から)に由来する。",
+      "trivia": "zeal(熱意)も同じギリシャ語 zelos を語源とし、jealousとは意外なつながりを持つ。",
+      "explanation": "嫉妬した、やきもちを焼いた。",
+      "example_ja": "彼は友人の新しい車に少し嫉妬を感じた。",
+      "example_ja_src": "He felt a little jealous of his friend's new car."
+    }
+  },
+  {
+    "english": "curious",
+    "detail": {
+      "pronunciation": "/ˈkjʊriəs/",
+      "pos": "形容詞",
+      "meanings": ["好奇心の強い", "奇妙な、珍しい"],
+      "examples": [
+        {"en": "The curious child kept asking why the sky is blue.", "ja": "その好奇心旺盛な子は、なぜ空が青いのかと何度も尋ねた。"},
+        {"en": "It's curious that no one noticed the mistake sooner.", "ja": "誰ももっと早くその間違いに気づかなかったとは奇妙だ。"}
+      ],
+      "derivatives": [{"word": "curiosity", "pos": "名詞", "ja": "好奇心"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語 curiosus(cura「気にかけること、心配」から)に由来する。",
+      "trivia": "curator(学芸員)や cure(治療する)も同じラテン語 cura「気にかけること」を語源に持つ仲間の単語。",
+      "explanation": "好奇心の強い。「奇妙な」の意味でも使う。",
+      "example_ja": "その好奇心旺盛な子は、なぜ空が青いのかと何度も尋ねた。",
+      "example_ja_src": "The curious child kept asking why the sky is blue."
+    }
+  },
+  {
+    "english": "impatient",
+    "detail": {
+      "pronunciation": "/ɪmˈpeɪʃənt/",
+      "pos": "形容詞",
+      "meanings": ["我慢できない、いらいらした"],
+      "examples": [
+        {"en": "She grew impatient waiting in the long line.", "ja": "彼女は長い列で待つうちにいらいらしてきた。"},
+        {"en": "He was impatient to hear the test results.", "ja": "彼はテストの結果を早く聞きたくてたまらなかった。"}
+      ],
+      "derivatives": [{"word": "impatience", "pos": "名詞", "ja": "我慢できないこと"}],
+      "synonyms": [],
+      "antonyms": [{"word": "patient", "note": "我慢強い。"}],
+      "origin": "ラテン語 impatiens(in-「否定」+ patiens「耐える」)に由来する。",
+      "trivia": "接頭辞 im-(in-の変化形)は、patient(我慢強い)の前に付くことで意味を反転させる典型例。",
+      "explanation": "我慢できない。反対語は patient。",
+      "example_ja": "彼女は長い列で待つうちにいらいらしてきた。",
+      "example_ja_src": "She grew impatient waiting in the long line."
+    }
+  },
+  {
+    "english": "ashamed",
+    "detail": {
+      "pronunciation": "/əˈʃeɪmd/",
+      "pos": "形容詞",
+      "meanings": ["恥ずかしく思って、恥じて"],
+      "examples": [
+        {"en": "He felt ashamed of how he had treated his friend.", "ja": "彼は友人への態度を恥ずかしく思った。"},
+        {"en": "There's nothing to be ashamed of; everyone makes mistakes.", "ja": "恥じることは何もない、誰でも間違いはするものだ。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [{"word": "proud", "note": "誇りに思って。"}],
+      "origin": "古英語 ofsceamod(shame「恥」の過去分詞形)に由来する。",
+      "trivia": "ashamed は人の内面的な感情を表し、shameful(恥ずべき、行為自体を評する語)とは使い分けが必要な点で学習者につまずきやすい。",
+      "explanation": "恥ずかしく思って。物事を評する shameful との違いに注意。",
+      "example_ja": "彼は友人への態度を恥ずかしく思った。",
+      "example_ja_src": "He felt ashamed of how he had treated his friend."
+    }
+  },
+  {
+    "english": "lonely",
+    "detail": {
+      "pronunciation": "/ˈloʊnli/",
+      "pos": "形容詞",
+      "meanings": ["孤独な、寂しい"],
+      "examples": [
+        {"en": "He felt lonely after moving to a new city.", "ja": "彼は新しい街に引っ越した後、孤独を感じた。"},
+        {"en": "It can be lonely living far from your family.", "ja": "家族から離れて暮らすのは寂しいことがある。"}
+      ],
+      "derivatives": [{"word": "loneliness", "pos": "名詞", "ja": "孤独"}],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "lone(「一人の」、aloneの短縮形)+ -ly に由来する。",
+      "trivia": "loneも aloneも元々 all one(全くの一人)という表現から生まれた語とされる。",
+      "explanation": "孤独な、寂しい。",
+      "example_ja": "彼は新しい街に引っ越した後、孤独を感じた。",
+      "example_ja_src": "He felt lonely after moving to a new city."
+    }
+  },
+  {
+    "english": "relaxed",
+    "detail": {
+      "pronunciation": "/rɪˈlækst/",
+      "pos": "形容詞",
+      "meanings": ["リラックスした、くつろいだ"],
+      "examples": [
+        {"en": "She looked completely relaxed on vacation.", "ja": "彼女は休暇中、すっかりくつろいだ様子だった。"},
+        {"en": "The atmosphere at the small cafe was very relaxed.", "ja": "その小さなカフェの雰囲気はとても落ち着いていた。"}
+      ],
+      "derivatives": [{"word": "relax", "pos": "動詞", "ja": "くつろぐ、緩める"}],
+      "synonyms": [{"word": "calm", "note": "落ち着いた。"}],
+      "antonyms": [{"word": "nervous", "note": "緊張した。"}],
+      "origin": "ラテン語 relaxare(re-「再び」+ laxare「緩める」)に由来する。",
+      "trivia": "laxative(下剤)も同じラテン語 laxare「緩める」を語源に持つ、意外なつながりのある語。",
+      "explanation": "リラックスした、くつろいだ。動詞 relax(くつろぐ)の過去分詞形。",
+      "example_ja": "彼女は休暇中、すっかりくつろいだ様子だった。",
+      "example_ja_src": "She looked completely relaxed on vacation."
+    }
+  },
+  {
+    "english": "brave",
+    "detail": {
+      "pronunciation": "/breɪv/",
+      "pos": "形容詞",
+      "meanings": ["勇敢な"],
+      "examples": [
+        {"en": "It was brave of her to speak up in front of everyone.", "ja": "みんなの前で発言するとは彼女は勇敢だった。"},
+        {"en": "The firefighters were praised for their brave actions.", "ja": "消防士たちはその勇敢な行動を称賛された。"}
+      ],
+      "derivatives": [{"word": "bravery", "pos": "名詞", "ja": "勇敢さ"}],
+      "synonyms": [{"word": "courageous", "note": "勇気のある(より形式的)。"}],
+      "antonyms": [{"word": "shy", "note": "内気な。"}],
+      "origin": "イタリア語 bravo(「勇敢な、腕の立つ」)に由来し、フランス語を経て英語に入った。",
+      "trivia": "演奏や演技を称える掛け声 Bravo!(ブラボー)は、この brave と同じ語源を持つ。",
+      "explanation": "勇敢な。掛け声 Bravo! と同語源。",
+      "example_ja": "みんなの前で発言するとは彼女は勇敢だった。",
+      "example_ja_src": "It was brave of her to speak up in front of everyone."
+    }
+  },
+  {
+    "english": "shy",
+    "detail": {
+      "pronunciation": "/ʃaɪ/",
+      "pos": "形容詞",
+      "meanings": ["内気な、恥ずかしがりの"],
+      "examples": [
+        {"en": "He was too shy to introduce himself to the new students.", "ja": "彼はあまりに内気で新しい生徒たちに自己紹介できなかった。"},
+        {"en": "She's shy around people she doesn't know well.", "ja": "彼女はよく知らない人の前では内気になる。"}
+      ],
+      "derivatives": [{"word": "shyness", "pos": "名詞", "ja": "内気さ"}],
+      "synonyms": [],
+      "antonyms": [{"word": "brave", "note": "勇敢な。"}, {"word": "confident", "note": "自信のある。"}],
+      "origin": "古英語 sceoh「臆病な、驚きやすい」に由来するゲルマン語系の語。",
+      "trivia": "馬などの動物が「臆病で驚きやすい」ことを表す古い意味が、人の性格を表す現代の意味に発展した。",
+      "explanation": "内気な、恥ずかしがりの。",
+      "example_ja": "彼はあまりに内気で新しい生徒たちに自己紹介できなかった。",
+      "example_ja_src": "He was too shy to introduce himself to the new students."
+    }
+  },
+  {
+    "english": "honest",
+    "detail": {
+      "pronunciation": "/ˈɑːnɪst/",
+      "pos": "形容詞",
+      "meanings": ["正直な"],
+      "examples": [
+        {"en": "Please be honest with me about how you feel.", "ja": "あなたの気持ちについて、私に正直でいてください。"},
+        {"en": "He gave an honest answer, even though it was difficult.", "ja": "彼は難しい状況でも正直な答えをした。"}
+      ],
+      "derivatives": [{"word": "honesty", "pos": "名詞", "ja": "正直さ"}, {"word": "honestly", "pos": "副詞", "ja": "正直に言うと"}],
+      "synonyms": [],
+      "antonyms": [{"word": "dishonest", "note": "不正直な。"}],
+      "origin": "ラテン語 honestus(honor「名誉」から)に由来し、古フランス語を経て英語に入った。",
+      "trivia": "先頭の h は発音されず、an honest man のように前に an を付ける代表的な単語。",
+      "explanation": "正直な。先頭のhを発音しないためan honestとなる。",
+      "example_ja": "あなたの気持ちについて、私に正直でいてください。",
+      "example_ja_src": "Please be honest with me about how you feel."
+    }
+  },
+  {
+    "english": "cruel",
+    "detail": {
+      "pronunciation": "/ˈkruːəl/",
+      "pos": "形容詞",
+      "meanings": ["残酷な、無情な"],
+      "examples": [
+        {"en": "It would be cruel to leave the dog outside in this weather.", "ja": "この天気で犬を外に置いておくのは残酷だろう。"},
+        {"en": "History remembers him as a cruel ruler.", "ja": "歴史は彼を残酷な支配者として記憶している。"}
+      ],
+      "derivatives": [{"word": "cruelty", "pos": "名詞", "ja": "残酷さ"}],
+      "synonyms": [],
+      "antonyms": [{"word": "kind", "note": "親切な。"}],
+      "origin": "ラテン語 crudelis(crudus「生の、未加工の」から)に由来する。",
+      "trivia": "crude(粗野な、原油の)も同じラテン語 crudus を語源に持つ仲間の単語。",
+      "explanation": "残酷な、無情な。反対語は kind。",
+      "example_ja": "この天気で犬を外に置いておくのは残酷だろう。",
+      "example_ja_src": "It would be cruel to leave the dog outside in this weather."
+    }
+  },
+  {
+    "english": "furthermore",
+    "detail": {
+      "pronunciation": "/ˈfɜːrðərmɔːr/",
+      "pos": "副詞",
+      "meanings": ["さらに、その上"],
+      "examples": [
+        {"en": "The plan is expensive; furthermore, it will take years to complete.", "ja": "その計画は費用がかかる上、完成には何年もかかるだろう。"},
+        {"en": "The report was late, and furthermore, it contained several errors.", "ja": "その報告書は遅れた上に、いくつもの誤りを含んでいた。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "moreover", "note": "さらに(同義語)。"}],
+      "antonyms": [],
+      "origin": "further(「さらに」)+ more に由来する。",
+      "trivia": "moreover とほぼ同じ意味で、文語的・論理的な文章で追加の情報を導入する際によく使われる。",
+      "explanation": "さらに、その上。文語的に情報を追加する接続副詞。",
+      "example_ja": "その計画は費用がかかる上、完成には何年もかかるだろう。",
+      "example_ja_src": "The plan is expensive; furthermore, it will take years to complete."
+    }
+  },
+  {
+    "english": "besides",
+    "detail": {
+      "pronunciation": "/bɪˈsaɪdz/",
+      "pos": "前置詞・副詞",
+      "meanings": ["〜に加えて、〜のほかに", "(副詞)その上"],
+      "examples": [
+        {"en": "Besides English, she speaks French and Spanish.", "ja": "英語に加えて、彼女はフランス語とスペイン語も話す。"},
+        {"en": "I don't want to go; besides, I have too much work to do.", "ja": "行きたくない、その上やることが多すぎる。"}
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "by(〜のそばに)+ side(側)+ s に由来し、元々は「そばに」を意味した。",
+      "trivia": "beside(前置詞、「〜のそばに」)とbesides(「〜に加えて」)はよく混同されるので綴りの違いに注意が必要。",
+      "explanation": "〜に加えて。beside(そばに)との綴りの違いに注意。",
+      "example_ja": "英語に加えて、彼女はフランス語とスペイン語も話す。",
+      "example_ja_src": "Besides English, she speaks French and Spanish."
+    }
+  },
+  {
+    "english": "particularly",
+    "detail": {
+      "pronunciation": "/pərˈtɪkjələrli/",
+      "pos": "副詞",
+      "meanings": ["特に、とりわけ"],
+      "examples": [
+        {"en": "It's particularly cold this week.", "ja": "今週は特に寒い。"},
+        {"en": "I like all the songs, particularly the last one.", "ja": "私はどの曲も好きだが、特に最後の曲が好きだ。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "especially", "note": "特に(同義語)。"}],
+      "antonyms": [],
+      "origin": "particular(「特定の、個々の」、ラテン語 particula「小部分」から)+ -ly に由来する。",
+      "trivia": "particle(粒子)も同じラテン語 particula「小さな部分」を語源に持つ仲間の単語。",
+      "explanation": "特に、とりわけ。",
+      "example_ja": "今週は特に寒い。",
+      "example_ja_src": "It's particularly cold this week."
+    }
+  },
+  {
+    "english": "currently",
+    "detail": {
+      "pronunciation": "/ˈkɜːrəntli/",
+      "pos": "副詞",
+      "meanings": ["現在、目下"],
+      "examples": [
+        {"en": "She is currently working on a new project.", "ja": "彼女は現在、新しいプロジェクトに取り組んでいる。"},
+        {"en": "The building is currently closed for renovation.", "ja": "その建物は現在、改装のため閉鎖されている。"}
+      ],
+      "derivatives": [{"word": "current", "pos": "形容詞・名詞", "ja": "現在の、流れ"}],
+      "synonyms": [{"word": "presently", "note": "現在(やや形式的)。"}],
+      "antonyms": [],
+      "origin": "current(「現在の」、ラテン語 currere「走る」から)+ -ly に由来する。",
+      "trivia": "current(電流・海流)も同じ「流れ」のイメージから来ており、currentlyは「今まさに流れている時点で」というニュアンスを持つ。",
+      "explanation": "現在、目下。ちょうど今起きていることを表す。",
+      "example_ja": "彼女は現在、新しいプロジェクトに取り組んでいる。",
+      "example_ja_src": "She is currently working on a new project."
+    }
+  },
+  {
+    "english": "previously",
+    "detail": {
+      "pronunciation": "/ˈpriːviəsli/",
+      "pos": "副詞",
+      "meanings": ["以前に、それまでは"],
+      "examples": [
+        {"en": "She had previously worked as a nurse for ten years.", "ja": "彼女は以前、10年間看護師として働いていた。"},
+        {"en": "This building was previously used as a warehouse.", "ja": "この建物は以前、倉庫として使われていた。"}
+      ],
+      "derivatives": [{"word": "previous", "pos": "形容詞", "ja": "以前の"}],
+      "synonyms": [],
+      "antonyms": [{"word": "currently", "note": "現在。"}],
+      "origin": "previous(「以前の」、ラテン語 praevius「先に進む」、prae-「前に」+ via「道」から)+ -ly に由来する。",
+      "trivia": "previous(以前の)は、道(via)を「先に」進んでいたというイメージから来ているとされる。",
+      "explanation": "以前に、それまでは。過去のある時点を指す。",
+      "example_ja": "彼女は以前、10年間看護師として働いていた。",
+      "example_ja_src": "She had previously worked as a nurse for ten years."
+    }
+  },
+  {
+    "english": "occasionally",
+    "detail": {
+      "pronunciation": "/əˈkeɪʒənəli/",
+      "pos": "副詞",
+      "meanings": ["時々、たまに"],
+      "examples": [
+        {"en": "We occasionally go out for dinner on weekdays.", "ja": "私たちは平日にたまに夕食に出かける。"},
+        {"en": "He occasionally forgets to lock the door.", "ja": "彼はたまにドアの鍵をかけ忘れる。"}
+      ],
+      "derivatives": [{"word": "occasion", "pos": "名詞", "ja": "機会、行事"}, {"word": "occasional", "pos": "形容詞", "ja": "時々の"}],
+      "synonyms": [{"word": "sometimes", "note": "時々(より一般的な語)。"}],
+      "antonyms": [{"word": "constantly", "note": "絶えず。"}],
+      "origin": "occasion(「機会」、ラテン語 occasio「(たまたま起こる)機会」から)+ -al + -ly に由来する。",
+      "trivia": "頻度を表す副詞の中では usually > often > sometimes > occasionally > rarely という順で頻度が低くなる目安として教えられることが多い。",
+      "explanation": "時々、たまに。頻度を表す副詞の中では比較的頻度が低い。",
+      "example_ja": "私たちは平日にたまに夕食に出かける。",
+      "example_ja_src": "We occasionally go out for dinner on weekdays."
+    }
+  },
+  {
+    "english": "thus",
+    "detail": {
+      "pronunciation": "/ðʌs/",
+      "pos": "副詞",
+      "meanings": ["このように、従って"],
+      "examples": [
+        {"en": "The bridge was closed, and thus we had to take a longer route.", "ja": "橋が閉鎖されていたので、私たちはより長い道を通らなければならなかった。"},
+        {"en": "The plan saves both time and money, thus benefiting everyone.", "ja": "その計画は時間と費用の両方を節約するので、皆にとって有益だ。"}
+      ],
+      "derivatives": [],
+      "synonyms": [{"word": "therefore", "note": "従って(同義語)。"}],
+      "antonyms": [],
+      "origin": "古英語 þus に由来するゲルマン語系の語。",
+      "trivia": "therefore よりもやや硬く、論文やフォーマルな文章で結論を導く際によく使われる。",
+      "explanation": "このように、従って。therefore よりやや文語的。",
+      "example_ja": "橋が閉鎖されていたので、私たちはより長い道を通らなければならなかった。",
+      "example_ja_src": "The bridge was closed, and thus we had to take a longer route."
+    }
+  }
+]

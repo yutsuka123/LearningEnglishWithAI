@@ -1,0 +1,526 @@
+[
+  {
+    "english": "Could you send us the visit itinerary at least a week in advance?",
+    "detail": {
+      "nuance": "ビジネスの訪問調整で使う定型的な依頼表現。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "'itinerary'は旅程・日程表を指すやや硬い語で、観光の旅程にも出張の訪問スケジュールにも使える。"
+    }
+  },
+  {
+    "english": "We'd like to confirm the schedule for the plant tour on Tuesday.",
+    "detail": {
+      "nuance": "すでに決まっている予定を再確認する、事務連絡的なフレーズ。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Who will be our main point of contact during the site visit?",
+    "detail": {
+      "nuance": "'point of contact'はビジネス英語の定番表現で、窓口・連絡担当者を指す。",
+      "similar_expressions": [
+        {
+          "en": "Who should we reach out to if we have any questions on-site?",
+          "ja": "現地で質問がある場合、誰に連絡すればよいですか。",
+          "diff": "より口語的でカジュアルな尋ね方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Is there a dress code we should be aware of before the visit?",
+    "detail": {
+      "nuance": "工場では作業着やスーツNGなど服装規定がある場合があるため、訪問前に確認しておく実務的な質問。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Before we go onto the shop floor, we'll walk you through the safety briefing.",
+    "detail": {
+      "nuance": "'shop floor'は工場の作業現場そのものを指す表現で、日本語の「現場」に近い。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "'walk you through'を直訳して「一緒に歩く」と誤解しないこと。ここでは「順を追って説明する」という意味の慣用表現。",
+      "trivia": "",
+      "explanation": "'walk (someone) through (something)'は手順や資料を一つずつ順番に説明・案内するという意味の頻出イディオム。"
+    }
+  },
+  {
+    "english": "Safety glasses and earplugs are required in this area.",
+    "detail": {
+      "nuance": "工場・研究所などで頻出する、PPE(個人用保護具)着用義務を伝える定型文。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "In case of an emergency, please follow the yellow evacuation route painted on the floor.",
+    "detail": {
+      "nuance": "来訪者向けの安全説明で使われる典型的な一文。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Photography is not permitted in this section of the plant.",
+    "detail": {
+      "nuance": "技術情報保護のため、工場見学では撮影禁止エリアが設けられることが多い。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Could you ask him what's causing the delay on this line?",
+    "detail": {
+      "nuance": "通訳を介して相手に質問してもらう際の定番の切り出し方。",
+      "similar_expressions": [
+        {
+          "en": "Could you ask him directly what's causing the delay?",
+          "ja": "遅れの原因について、彼に直接尋ねていただけますか。",
+          "diff": "通訳を介さず「本人に直接」聞いてほしいというニュアンスを強める言い方。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Would it be possible to speak with the line supervisor directly?",
+    "detail": {
+      "nuance": "通訳経由ではなく担当者本人と直接話したい場合の丁寧な依頼表現。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "通訳の面目をつぶさないよう、'Would it be possible'のような婉曲な言い回しで切り出すのが無難。",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Sorry, could you say that more slowly? I want to make sure the interpreter catches every detail.",
+    "detail": {
+      "nuance": "通訳がいる場面で、話す側のペースを落としてもらうための配慮ある依頼。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Is something getting lost in translation? Let me try rephrasing that.",
+    "detail": {
+      "nuance": "'lost in translation'は「翻訳の過程でニュアンスが失われること」を表す非常に有名なイディオム。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "同名の映画『ロスト・イン・トランスレーション』(2003年)でも知られるように、単なる誤訳だけでなく文化的なニュアンスのズレ全般を指して使われる表現。",
+      "explanation": "ここでは通訳を介したやり取りで、意図が正確に伝わっているか確認する目的で使われている。"
+    }
+  },
+  {
+    "english": "We're ready to power on the equipment for the first time — is everyone clear of the machine?",
+    "detail": {
+      "nuance": "'clear of'は「〜から離れている、〜に接触していない」という意味の安全確認表現。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "'clear'を「明確」という意味だけで覚えていると、'clear of the machine'の意味を取り違えやすい。ここでは「機械から安全な距離をとっている」という意味。",
+      "trivia": "",
+      "explanation": "設備の初回通電(初回電源投入)の直前、周囲の安全を確認する定型的な掛け声。"
+    }
+  },
+  {
+    "english": "The vendor engineer will be on-site to support the commissioning process.",
+    "detail": {
+      "nuance": "'commissioning'は新設備を実際に稼働させ、性能を確認するまでの一連の試運転プロセスを指す製造業の専門用語。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "日本語の「試運転」「立ち上げ」に相当し、単なる「点検」よりも広い、据付から本稼働までの工程全体を指すことが多い。"
+    }
+  },
+  {
+    "english": "Once the acceptance test passes, we'll sign off on the handover documents.",
+    "detail": {
+      "nuance": "'sign off on'は「正式に承認・署名する」という意味の頻出イディオム。",
+      "similar_expressions": [
+        {
+          "en": "Once the acceptance test passes, we'll approve the handover documents.",
+          "ja": "受入試験に合格したら、引き渡し書類を承認します。",
+          "diff": "'sign off on'よりも一般的でやや硬い言い方。契約書などフォーマルな文脈でも使える。"
+        }
+      ],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Could you have the operators trained on this new line before we leave?",
+    "detail": {
+      "nuance": "'have someone trained'は使役表現で、「(自分ではなく)誰かに教育を受けさせる」という意味。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "How long have you been working at this plant?",
+    "detail": {
+      "nuance": "現地スタッフとの雑談でよく使われる、無難で失礼のない質問。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "This is my first time visiting your country — do you have any recommendations for local food?",
+    "detail": {
+      "nuance": "出張・訪問時の定番の雑談導入フレーズ。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Thank you for taking the time to show us around today.",
+    "detail": {
+      "nuance": "案内してくれた相手への感謝を伝える、フォーマルな場面向けの定型表現。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "We really appreciate the hospitality during our stay.",
+    "detail": {
+      "nuance": "訪問先の歓待に対する感謝を伝える、ビジネスメールや別れ際の挨拶でも使える表現。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Welcome to our booth — would you like a quick demo of our product?",
+    "detail": {
+      "nuance": "展示会ブースで来場者に声をかける際の定番の切り出し方。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Here's my business card — please feel free to reach out with any questions.",
+    "detail": {
+      "nuance": "名刺交換の場面で使う定型表現。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "欧米では名刺交換に日本ほど厳密な作法(両手で渡す等)はないが、展示会など国際的な場では丁寧に扱うのが無難。",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "What industry are you in, if you don't mind me asking?",
+    "detail": {
+      "nuance": "'if you don't mind me asking'は、やや踏み込んだ質問をする前に添えるクッション言葉。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "初対面の相手に業種などプライベートに踏み込みうる質問をする際、失礼に響かないよう和らげる働きをする。"
+    }
+  },
+  {
+    "english": "We'll follow up with more detailed materials after the show.",
+    "detail": {
+      "nuance": "展示会後のフォローアップを約束する、ビジネスの定型表現。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Thank you for stopping by — it was great talking with you.",
+    "detail": {
+      "nuance": "'stop by'は「(ついでに/短時間)立ち寄る」という意味で、ブース来場者への感謝を伝える際の定番表現。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Hi, I'm here for the certification course — where do I check in?",
+    "detail": {
+      "nuance": "研修・イベント会場に到着した際の受付での定型的な切り出し方。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Could you tell me which room the training starts in?",
+    "detail": {
+      "nuance": "会場内で迷った際の実務的な質問。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Is there a Wi-Fi password we can use during the course?",
+    "detail": {
+      "nuance": "研修参加者がよく尋ねる、非常に実用的な質問。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Sorry, could you repeat that last part?",
+    "detail": {
+      "nuance": "講師の説明を聞き逃したときに使う、最も基本的な聞き返しフレーズ。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Would you mind slowing down a little? I want to take notes.",
+    "detail": {
+      "nuance": "'Would you mind -ing?'は依頼を丁寧にする定番の構文。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "'Would you mind slowing down?'に'Yes'と答えると本来は「(遅くするのは)気にする→遅くしない」という意味になるため、返答が'Sure'や'Not at all'かを聞き分ける必要がある。",
+      "trivia": "",
+      "explanation": "'mind'は「気にする」という意味なので、質問の形は否定的だが、依頼としては前向きな内容(遅くしてほしい)である点に注意。"
+    }
+  },
+  {
+    "english": "Could you give us an example to make that clearer?",
+    "detail": {
+      "nuance": "抽象的な説明の後に具体例を求める、研修・授業でよく使うフレーズ。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "I'm sorry, I didn't quite follow that — could you explain it a different way?",
+    "detail": {
+      "nuance": "'follow'はここでは「話についていく、理解する」という意味。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "日本語の「ついていく」から'follow'を「後をついて歩く」という意味だけで覚えていると、この用法にすぐ結びつかないことがある。",
+      "trivia": "",
+      "explanation": "説明の内容を理解できなかったときに使う、婉曲で角の立たない聞き返し方。"
+    }
+  },
+  {
+    "english": "Let's split into groups of four for this exercise.",
+    "detail": {
+      "nuance": "グループワークを始める際の講師・ファシリテーターの定番の指示。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Who would like to be the group's spokesperson for the report-back?",
+    "detail": {
+      "nuance": "'report-back'はグループワーク後にクラス全体へ結果を共有するセッションを指す。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "We're running a bit behind — can we get five more minutes for the group discussion?",
+    "detail": {
+      "nuance": "'running behind'は「予定より遅れている」という意味の頻出イディオム。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": "スケジュールの遅れを婉曲に伝えつつ、時間の延長を依頼する定型的な言い回し。"
+    }
+  },
+  {
+    "english": "Let's compare answers before we present them to the whole class.",
+    "detail": {
+      "nuance": "グループ内で発表前にすり合わせをする際の定型フレーズ。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "How is the final assessment structured — is it written, practical, or both?",
+    "detail": {
+      "nuance": "研修・講習の最終評価の形式を確認する実務的な質問。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "What score do we need to pass the certification exam?",
+    "detail": {
+      "nuance": "合格に必要な点数(合格基準)を尋ねる、資格講習でよく使われる質問。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Is there a retake option if we don't pass on the first attempt?",
+    "detail": {
+      "nuance": "'retake'は試験の再受験を意味する。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Could I get a certificate of completion once I finish the course?",
+    "detail": {
+      "nuance": "'certificate of completion'は「修了証明書」を指す定型表現。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "How long does it usually take to receive the official transcript?",
+    "detail": {
+      "nuance": "'transcript'はここでは成績証明書(公式記録)を指す。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "'transcript'は「(会話や講演の)書き起こし」という意味でもよく使われる語のため、文脈で意味が変わる点に注意。",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Will the certificate be issued in both English and Japanese?",
+    "detail": {
+      "nuance": "国際資格・研修修了証が英語のみで発行されるケースもあるため、日本語版の有無を確認する実務的な質問。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Mind if I join you for coffee during the break?",
+    "detail": {
+      "nuance": "'Mind if I...?'は許可を求める際のカジュアルな口語表現。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "'Would you mind if I...?'同様、'Yes'と答えると本来は「気にする→やめてほしい」という意味になるが、実際の会話では'Sure, go ahead.'のように答えるのが一般的。",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Where are you all traveling from for this course?",
+    "detail": {
+      "nuance": "休憩中の参加者同士の雑談でよく使われる、無難な導入質問。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "It's nice to meet other people in the same field — could we exchange contact information?",
+    "detail": {
+      "nuance": "研修・カンファレンスでのネットワーキングにおける定番のクロージングフレーズ。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  },
+  {
+    "english": "Are you planning to attend the follow-up session next year as well?",
+    "detail": {
+      "nuance": "継続的なつながりを意識した、研修終盤や休憩中の会話フレーズ。",
+      "similar_expressions": [],
+      "background": "",
+      "caution": "",
+      "trivia": "",
+      "explanation": ""
+    }
+  }
+]

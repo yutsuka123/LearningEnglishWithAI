@@ -1,0 +1,4712 @@
+[
+  {
+    "english": "Taiping Rebellion",
+    "detail": {
+      "pronunciation": "/taɪˈpɪŋ rɪˈbɛljən/",
+      "pos": "名詞",
+      "meanings": [
+        "太平天国の乱",
+        "洪秀全が率いたキリスト教的理念を掲げる反清朝の大反乱"
+      ],
+      "examples": [
+        {
+          "en": "The Taiping Rebellion devastated much of southern China before Qing forces finally crushed it in 1864.",
+          "ja": "太平天国の乱は中国南部の広範囲を荒廃させたが、1864年に清朝軍によってついに鎮圧された。"
+        },
+        {
+          "en": "Hong Xiuquan, the leader of the Taiping Rebellion, declared himself the younger brother of Jesus Christ.",
+          "ja": "太平天国の乱の指導者であった洪秀全は、自らをイエス・キリストの弟であると宣言した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Taiping Civil War",
+          "note": "同じ内乱を指す別称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "指導者の洪秀全が「太平天国」という理想の王国の樹立を掲げたことに由来する名称。",
+      "trivia": "反乱による死者数は推定で2000万人前後ともいわれるが、記録が乏しく諸説あり、正確な数は分かっていない。19世紀の内戦としては世界的に見ても最大級の犠牲者を出したとされる。",
+      "explanation": "19世紀半ば(1850年代〜60年代)に洪秀全がキリスト教的な信仰を掲げて清朝に対して起こした大規模な反乱で、江南地方を中心に長期化し、犠牲者数は推定で数千万人規模にのぼるとされる、近代中国最大級の内乱。",
+      "example_ja": "太平天国の乱は中国南部の広範囲を荒廃させたが、1864年に清朝軍によってついに鎮圧された。",
+      "example_ja_src": "The Taiping Rebellion devastated much of southern China before Qing forces finally crushed it in 1864."
+    }
+  },
+  {
+    "english": "Great Leap Forward",
+    "detail": {
+      "pronunciation": "/ɡreɪt liːp ˈfɔːrwərd/",
+      "pos": "名詞",
+      "meanings": [
+        "大躍進政策",
+        "毛沢東による急進的な農業集団化・工業化政策とそれが招いた大飢饉"
+      ],
+      "examples": [
+        {
+          "en": "The Great Leap Forward aimed to rapidly transform China into an industrial power but instead led to widespread famine.",
+          "ja": "大躍進政策は中国を急速に工業国へと変貌させることを目指したが、結果として広範囲にわたる飢饉を招いた。"
+        },
+        {
+          "en": "Local officials often exaggerated grain production figures during the Great Leap Forward out of fear of punishment.",
+          "ja": "大躍進政策の期間中、地方の役人は処罰を恐れて穀物生産量の数字をしばしば誇張して報告した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「大躍進」という語は、短期間のうちに農業国から工業国へ一気に飛躍するという毛沢東の目標を表すスローガンとして掲げられた。",
+      "trivia": "この政策に伴う飢饉による死者数については、推定で1500万人〜4500万人など諸説あり、正確な数字は今も研究者の間で議論が続いている。",
+      "explanation": "1958年から毛沢東の指導のもとで進められた、農業の急速な集団化と工業生産の飛躍的拡大を目指した経済政策で、非現実的な生産目標や誤った農業政策などが原因となって深刻な飢饉を招き、推定で数千万人規模の死者を出したとされる。",
+      "example_ja": "大躍進政策は中国を急速に工業国へと変貌させることを目指したが、結果として広範囲にわたる飢饉を招いた。",
+      "example_ja_src": "The Great Leap Forward aimed to rapidly transform China into an industrial power but instead led to widespread famine."
+    }
+  },
+  {
+    "english": "Second Opium War",
+    "detail": {
+      "pronunciation": "/ˈsɛkənd ˈoʊpiəm wɔːr/",
+      "pos": "名詞",
+      "meanings": [
+        "第二次アヘン戦争",
+        "アロー戦争"
+      ],
+      "examples": [
+        {
+          "en": "The Second Opium War ended with the Qing government agreeing to open more ports and allow foreign embassies in Beijing.",
+          "ja": "第二次アヘン戦争は、清朝政府がさらなる開港と北京への外国公使駐在を認めることで終結した。"
+        },
+        {
+          "en": "British and French troops even occupied and burned the Old Summer Palace during the Second Opium War.",
+          "ja": "第二次アヘン戦争では、英仏両軍が円明園(旧夏宮)を占拠し焼き払うという事態も起きた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Arrow War",
+          "note": "発端となったアロー号事件にちなむ別称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "清朝の官憲が英国船籍を主張する「アロー号」を臨検・拿捕した事件が開戦の口実とされたことに由来する。",
+      "trivia": "この戦争の結果結ばれた天津条約・北京条約により、キリスト教布教の自由やアヘン貿易の合法化などが認められ、清朝の半植民地化がさらに進んだとされる。",
+      "explanation": "1856年から1860年にかけて、イギリス・フランス連合軍が清朝と戦った戦争で、アロー号事件をきっかけに始まり、清朝はさらなる開港や外国公使の北京駐在などを認める北京条約の締結を強いられた。",
+      "example_ja": "第二次アヘン戦争は、清朝政府がさらなる開港と北京への外国公使駐在を認めることで終結した。",
+      "example_ja_src": "The Second Opium War ended with the Qing government agreeing to open more ports and allow foreign embassies in Beijing."
+    }
+  },
+  {
+    "english": "Long March",
+    "detail": {
+      "pronunciation": "/lɔːŋ mɑːrtʃ/",
+      "pos": "名詞",
+      "meanings": [
+        "長征",
+        "中国共産党紅軍による中国南部から北西部への大規模な戦略的撤退"
+      ],
+      "examples": [
+        {
+          "en": "During the Long March, the Communist forces trekked thousands of miles across difficult terrain to escape Nationalist troops.",
+          "ja": "長征の間、共産党軍は国民党軍から逃れるため、険しい地形を数千キロにわたって踏破した。"
+        },
+        {
+          "en": "Only a fraction of the soldiers who began the Long March survived to reach the base in Shaanxi.",
+          "ja": "長征を開始した兵士のうち、陝西省の拠点にたどり着けたのはごく一部にすぎなかった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "紅軍が踏破した行程の距離と困難さの大きさから、後に「長征」という呼び名が定着した。",
+      "trivia": "この移動を通じて毛沢東は党内での指導的地位を固めたとされ、長征は後の中国共産党の歴史において重要な神話的出来事として語り継がれている。",
+      "explanation": "1934年から1936年にかけて、国民党軍の包囲攻撃を逃れるため、毛沢東率いる中国共産党の紅軍が中国南部から北西部の陝西省まで、約1年をかけて踏破した長距離の戦略的撤退・移動のこと。",
+      "example_ja": "長征の間、共産党軍は国民党軍から逃れるため、険しい地形を数千キロにわたって踏破した。",
+      "example_ja_src": "During the Long March, the Communist forces trekked thousands of miles across difficult terrain to escape Nationalist troops."
+    }
+  },
+  {
+    "english": "Xinhai Revolution",
+    "detail": {
+      "pronunciation": "/ʃɪnˈhaɪ ˌrɛvəˈluːʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "辛亥革命",
+        "清朝を倒し中華民国樹立につながった1911年の革命"
+      ],
+      "examples": [
+        {
+          "en": "The Xinhai Revolution overthrew the Qing dynasty and led to the establishment of the Republic of China.",
+          "ja": "辛亥革命は清朝を打倒し、中華民国の成立へとつながった。"
+        },
+        {
+          "en": "Sun Yat-sen is widely regarded as a founding father of the Republic of China that emerged from the Xinhai Revolution.",
+          "ja": "孫文は、辛亥革命によって誕生した中華民国の建国の父として広く知られている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Revolution of 1911",
+          "note": "西暦を用いた別称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「辛亥」は干支による1911年の年の呼び名で、この革命が起きた年に由来する。",
+      "trivia": "この革命によって、紀元前から続いていた中国の皇帝支配は終わりを告げ、アジアで最初の共和政体が誕生したとされる。",
+      "explanation": "1911年から1912年にかけて起こった革命で、清朝を打倒して2000年以上続いた中国の帝政を終わらせ、アジア初の共和国である中華民国の成立につながった。",
+      "example_ja": "辛亥革命は清朝を打倒し、中華民国の成立へとつながった。",
+      "example_ja_src": "The Xinhai Revolution overthrew the Qing dynasty and led to the establishment of the Republic of China."
+    }
+  },
+  {
+    "english": "Hundred Days' Reform",
+    "detail": {
+      "pronunciation": "/ˈhʌndrəd deɪz rɪˈfɔːrm/",
+      "pos": "名詞",
+      "meanings": [
+        "戊戌の変法",
+        "1898年に光緒帝のもとで行われた短命の急進的近代化改革"
+      ],
+      "examples": [
+        {
+          "en": "The Hundred Days' Reform introduced sweeping modernization measures before conservative officials abruptly ended it.",
+          "ja": "戊戌の変法は幅広い近代化措置を導入したが、保守派の官僚によって突如として終わらせられた。"
+        },
+        {
+          "en": "The reformer Kang Youwei convinced the young emperor to launch the Hundred Days' Reform.",
+          "ja": "改革派の康有為は、若い皇帝を説得して戊戌の変法に着手させた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Wuxu Reform",
+          "note": "戊戌年(1898年)にちなむ中国語由来の呼び名。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "改革が実施されてから頓挫するまでの期間がおよそ100日間であったことから、この名で呼ばれる。",
+      "trivia": "この改革は西太后を中心とする保守派によるクーデターで中止され、光緒帝は事実上幽閉され、改革派の一部は処刑されたとされる。",
+      "explanation": "1898年に光緒帝が康有為らの提言を受けて実施した、政治・教育・軍事制度などの急進的な近代化改革運動で、わずか約100日間で保守派によるクーデター(戊戌の政変)によって挫折した。",
+      "example_ja": "戊戌の変法は幅広い近代化措置を導入したが、保守派の官僚によって突如として終わらせられた。",
+      "example_ja_src": "The Hundred Days' Reform introduced sweeping modernization measures before conservative officials abruptly ended it."
+    }
+  },
+  {
+    "english": "May Fourth Movement",
+    "detail": {
+      "pronunciation": "/meɪ fɔːrθ ˈmuːvmənt/",
+      "pos": "名詞",
+      "meanings": [
+        "五四運動",
+        "1919年に北京の学生の抗議から広がった反帝国主義・反封建の思想運動"
+      ],
+      "examples": [
+        {
+          "en": "The May Fourth Movement began as student protests in Beijing and grew into a broader cultural and political movement.",
+          "ja": "五四運動は北京での学生による抗議活動として始まり、やがてより広範な文化的・政治的運動へと発展した。"
+        },
+        {
+          "en": "The May Fourth Movement is often seen as a turning point that inspired a new generation of Chinese intellectuals.",
+          "ja": "五四運動は、中国の新しい世代の知識人たちを触発した転換点としてしばしば位置づけられる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1919年5月4日に北京で学生デモが起きたことから、この日付をとって名付けられた。",
+      "trivia": "この運動は、パリ講和会議で山東省の旧ドイツ権益が中国に返還されず日本に引き継がれると決まったことへの反発をきっかけに始まったとされる。",
+      "explanation": "1919年5月4日、パリ講和会議で山東半島の権益がドイツから日本へ引き継がれることに反発した北京の学生を中心に起こった抗議運動で、反帝国主義・反封建の思想運動として中国の近代化に大きな影響を与えた。",
+      "example_ja": "五四運動は北京での学生による抗議活動として始まり、やがてより広範な文化的・政治的運動へと発展した。",
+      "example_ja_src": "The May Fourth Movement began as student protests in Beijing and grew into a broader cultural and political movement."
+    }
+  },
+  {
+    "english": "Treaty of Nanking",
+    "detail": {
+      "pronunciation": "/ˈtriːti əv ˈnæŋkɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "南京条約",
+        "第一次アヘン戦争終結にあたり清朝がイギリスと結んだ不平等条約"
+      ],
+      "examples": [
+        {
+          "en": "Under the Treaty of Nanking, China ceded Hong Kong to Britain and opened five ports to foreign trade.",
+          "ja": "南京条約により、中国は香港をイギリスに割譲し、5つの港を外国貿易のために開いた。"
+        },
+        {
+          "en": "Historians often cite the Treaty of Nanking as the first of many unequal treaties imposed on Qing China.",
+          "ja": "歴史家はしばしば南京条約を、清朝の中国に課された数々の不平等条約の最初の一つとして挙げる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Treaty of Nanjing",
+          "note": "地名のローマ字表記の違いによる同一条約の呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "条約が締結された都市、南京(ナンキン)の名にちなむ。",
+      "trivia": "この条約は清朝側にほとんど交渉の余地がない状態で結ばれたため、後に「不平等条約」の代表例として位置づけられるようになった。",
+      "explanation": "1842年、第一次アヘン戦争の終結にあたってイギリスと清朝の間で結ばれた条約で、香港島の割譲、上海など5港の開港、多額の賠償金の支払いなどを清朝に義務づけた、近代中国最初の不平等条約とされる。",
+      "example_ja": "南京条約により、中国は香港をイギリスに割譲し、5つの港を外国貿易のために開いた。",
+      "example_ja_src": "Under the Treaty of Nanking, China ceded Hong Kong to Britain and opened five ports to foreign trade."
+    }
+  },
+  {
+    "english": "Zheng He's voyages",
+    "detail": {
+      "pronunciation": "/dʒʌŋ hɜː ˈvɔɪɪdʒɪz/",
+      "pos": "名詞",
+      "meanings": [
+        "鄭和の南海遠征",
+        "明代に鄭和が率いた東南アジア・インド洋方面への大艦隊の航海"
+      ],
+      "examples": [
+        {
+          "en": "Zheng He's voyages brought Chinese fleets as far as the coast of East Africa decades before the European Age of Exploration.",
+          "ja": "鄭和の航海は、ヨーロッパの大航海時代より数十年も前に、中国の艦隊を東アフリカ沿岸にまで到達させた。"
+        },
+        {
+          "en": "The fleet used during Zheng He's voyages included massive treasure ships far larger than contemporary European vessels.",
+          "ja": "鄭和の航海に使われた艦隊には、当時のヨーロッパの船よりはるかに大きな「宝船」と呼ばれる巨大船が含まれていた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Ming treasure voyages",
+          "note": "艦隊に用いられた大型船「宝船」にちなむ別称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "遠征を指揮した提督、鄭和の名にちなんで呼ばれる。",
+      "trivia": "鄭和の艦隊は最大で数百隻、乗員は2万人を超えたとされ、当時世界最大級の海洋遠征であったと考えられている。遠征は永楽帝の後継者の代になって財政負担を理由に打ち切られた。",
+      "explanation": "15世紀初頭、明の永楽帝の命を受けた宦官の武将・鄭和が率いた、大艦隊による東南アジアからインド洋、アフリカ東岸にまで及ぶ一連の大規模な航海のこと。",
+      "example_ja": "鄭和の航海は、ヨーロッパの大航海時代より数十年も前に、中国の艦隊を東アフリカ沿岸にまで到達させた。",
+      "example_ja_src": "Zheng He's voyages brought Chinese fleets as far as the coast of East Africa decades before the European Age of Exploration."
+    }
+  },
+  {
+    "english": "Battle of Yamen",
+    "detail": {
+      "pronunciation": "/bætl əv jɑːˈmɛn/",
+      "pos": "名詞",
+      "meanings": [
+        "崖山の戦い",
+        "モンゴル軍との海戦に南宋が敗れ宋王朝が滅亡した最終決戦"
+      ],
+      "examples": [
+        {
+          "en": "The Battle of Yamen marked the final defeat of the Song dynasty at the hands of the Mongol fleet.",
+          "ja": "崖山の戦いは、モンゴル艦隊によって宋王朝が最終的に敗北したことを示す出来事となった。"
+        },
+        {
+          "en": "According to tradition, a loyal minister carried the child emperor into the sea rather than surrender after the Battle of Yamen.",
+          "ja": "伝承によれば、崖山の戦いの後、忠臣の一人は降伏を拒み、幼い皇帝を抱いて海に身を投げたとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Battle of Yashan",
+          "note": "同じ地名の別のローマ字表記。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "戦いが行われた地名、崖山(現在の広東省沖)にちなんで名付けられた。",
+      "trivia": "この海戦での敗北により、南宋最後の幼い皇帝とともに多数の官僚・兵士が入水したと伝えられ、宋王朝約320年の歴史に幕が下ろされた。",
+      "explanation": "1279年、広東省沖の崖山で行われた、南宋の残存勢力とモンゴル帝国(元)の艦隊との最終決戦で、南宋側が壊滅し、これによって宋王朝は完全に滅亡した。",
+      "example_ja": "崖山の戦いは、モンゴル艦隊によって宋王朝が最終的に敗北したことを示す出来事となった。",
+      "example_ja_src": "The Battle of Yamen marked the final defeat of the Song dynasty at the hands of the Mongol fleet."
+    }
+  },
+  {
+    "english": "Manchu conquest of China",
+    "detail": {
+      "pronunciation": "/ˈmæntʃuː ˈkɒŋkwɛst əv ˈtʃaɪnə/",
+      "pos": "名詞",
+      "meanings": [
+        "満洲族による中国征服",
+        "清が明を滅ぼし中国全土を支配下に置いた一連の過程"
+      ],
+      "examples": [
+        {
+          "en": "The Manchu conquest of China culminated in the establishment of the Qing dynasty, which would rule until 1912.",
+          "ja": "満洲族による中国征服は、1912年まで続く清朝の樹立という形で頂点に達した。"
+        },
+        {
+          "en": "The Manchu conquest of China took several decades, as loyalist forces continued to resist in the south.",
+          "ja": "満洲族による中国征服は数十年を要し、南方では明への忠誠を誓う勢力がなおも抵抗を続けた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Qing conquest of the Ming",
+          "note": "征服の主体と対象を明示した別の言い方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "征服の主体となった満洲族の名にちなむ呼び方。",
+      "trivia": "明の内部で起きた反乱によって弱体化していたところに、山海関を越えて満洲族の軍が侵入したことが征服の大きなきっかけになったとされる。",
+      "explanation": "17世紀半ば、満洲族が建てた清が、内乱で弱体化した明を滅ぼし、南方の抵抗勢力も制圧して中国全土を支配下に置いていった、数十年にわたる一連の征服の過程。",
+      "example_ja": "満洲族による中国征服は、1912年まで続く清朝の樹立という形で頂点に達した。",
+      "example_ja_src": "The Manchu conquest of China culminated in the establishment of the Qing dynasty, which would rule until 1912."
+    }
+  },
+  {
+    "english": "Tang dynasty",
+    "detail": {
+      "pronunciation": "/tæŋ ˈdaɪnəsti/",
+      "pos": "名詞",
+      "meanings": [
+        "唐(王朝)",
+        "7〜10世紀に栄えた中国史上屈指の繁栄期とされる王朝"
+      ],
+      "examples": [
+        {
+          "en": "The Tang dynasty is often regarded as a golden age of Chinese poetry, art, and international trade.",
+          "ja": "唐は、中国の詩や芸術、国際交易における黄金時代の一つとしてしばしば評価される。"
+        },
+        {
+          "en": "Merchants from Central Asia and the Middle East traveled the Silk Road to trade in the Tang dynasty's capital.",
+          "ja": "中央アジアや中東からの商人たちは、シルクロードを通って唐の都で交易を行った。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "建国者である李淵(高祖)がかつて封じられていた「唐」の地名に由来する王朝名。",
+      "trivia": "唐の都・長安は最盛期に人口100万人規模に達したとされ、当時の世界でも屈指の規模を誇る国際都市であった。",
+      "explanation": "618年から907年まで中国を支配した王朝で、都の長安は当時世界最大級の国際都市として栄え、シルクロードを通じた交易や仏教文化、詩の隆盛などにより、中国史上最も繁栄した時代の一つとされる。",
+      "example_ja": "唐は、中国の詩や芸術、国際交易における黄金時代の一つとしてしばしば評価される。",
+      "example_ja_src": "The Tang dynasty is often regarded as a golden age of Chinese poetry, art, and international trade."
+    }
+  },
+  {
+    "english": "Song dynasty",
+    "detail": {
+      "pronunciation": "/sɒŋ ˈdaɪnəsti/",
+      "pos": "名詞",
+      "meanings": [
+        "宋(王朝)",
+        "科学技術と商業文化が発展した一方で北方の圧迫にも苦しんだ王朝"
+      ],
+      "examples": [
+        {
+          "en": "The Song dynasty saw remarkable advances in technology and commerce, even as it faced constant military pressure from northern rivals.",
+          "ja": "宋は北方の勢力から絶えず軍事的圧力を受けながらも、科学技術や商業の面で目覚ましい発展を遂げた。"
+        },
+        {
+          "en": "Printed books became far more widely available during the Song dynasty thanks to advances in movable-type printing.",
+          "ja": "活版印刷技術の発展により、宋の時代には印刷された書物がはるかに広く流通するようになった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "建国者の趙匡胤がかつて節度使として治めていた「宋州」の地名にちなむとされる。",
+      "trivia": "北方民族の圧迫により1127年に都を南へ移したため、それ以前を「北宋」、以後を「南宋」と区別して呼ぶことが多い。",
+      "explanation": "960年から1279年まで中国を支配した王朝で、火薬・羅針盤・活版印刷などの技術革新や科挙制度の整備、商業・都市文化の発展が進んだ一方、軍事的には北方民族の圧迫に苦しみ、南方への遷都を余儀なくされた。",
+      "example_ja": "宋は北方の勢力から絶えず軍事的圧力を受けながらも、科学技術や商業の面で目覚ましい発展を遂げた。",
+      "example_ja_src": "The Song dynasty saw remarkable advances in technology and commerce, even as it faced constant military pressure from northern rivals."
+    }
+  },
+  {
+    "english": "Yuan dynasty",
+    "detail": {
+      "pronunciation": "/juˈɑːn ˈdaɪnəsti/",
+      "pos": "名詞",
+      "meanings": [
+        "元(王朝)",
+        "フビライ・ハンが建てたモンゴル人による中国支配王朝"
+      ],
+      "examples": [
+        {
+          "en": "The Yuan dynasty was established by Kublai Khan and marked the first time all of China was ruled by a Mongol emperor.",
+          "ja": "元はフビライ・ハンによって建てられ、モンゴル人皇帝が中国全土を支配した最初の例となった。"
+        },
+        {
+          "en": "The Italian traveler Marco Polo is said to have served at the court of the Yuan dynasty.",
+          "ja": "イタリア人旅行者のマルコ・ポーロは、元の宮廷に仕えたと伝えられている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "『易経』の一節にちなみ「大元」と名付けられたとされる、中国の伝統的な王朝命名法に沿った国号。",
+      "trivia": "元はモンゴル帝国の一部として広大なユーラシア大陸の交易網とも結びついており、東西交流が活発化した時代としても知られる。",
+      "explanation": "1271年にモンゴル帝国のフビライ・ハンが中国に建てた王朝で、南宋を滅ぼして中国全土を統一した、モンゴル人による初めての中国支配王朝。",
+      "example_ja": "元はフビライ・ハンによって建てられ、モンゴル人皇帝が中国全土を支配した最初の例となった。",
+      "example_ja_src": "The Yuan dynasty was established by Kublai Khan and marked the first time all of China was ruled by a Mongol emperor."
+    }
+  },
+  {
+    "english": "Ming dynasty",
+    "detail": {
+      "pronunciation": "/mɪŋ ˈdaɪnəsti/",
+      "pos": "名詞",
+      "meanings": [
+        "明(王朝)",
+        "元を北方へ追いやり中国を再統一した漢民族の王朝"
+      ],
+      "examples": [
+        {
+          "en": "The Ming dynasty built much of the Great Wall as it stands today and constructed the Forbidden City in Beijing.",
+          "ja": "明は現在の姿に近い万里の長城の大部分を築き、北京に紫禁城を建設した。"
+        },
+        {
+          "en": "Overseas trade was tightly restricted for much of the Ming dynasty through an official maritime ban.",
+          "ja": "明の時代の多くの期間、公的な海禁政策によって海外貿易は厳しく制限されていた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "建国者の朱元璋が、自らが信奉した宗教結社の思想にちなみ「明」を国号に定めたとされる。",
+      "trivia": "明は最終的に、内部の農民反乱と満洲族(後の清)の侵入が重なる中で1644年に滅亡した。",
+      "explanation": "1368年から1644年まで中国を支配した王朝で、モンゴル人の元を北方へ追いやった漢民族による王朝であり、紫禁城の建設や鄭和の大航海、万里の長城の大規模な改修などで知られる。",
+      "example_ja": "明は現在の姿に近い万里の長城の大部分を築き、北京に紫禁城を建設した。",
+      "example_ja_src": "The Ming dynasty built much of the Great Wall as it stands today and constructed the Forbidden City in Beijing."
+    }
+  },
+  {
+    "english": "Grand Canal",
+    "detail": {
+      "pronunciation": "/ɡrænd kəˈnæl/",
+      "pos": "名詞",
+      "meanings": [
+        "大運河",
+        "南北中国を結ぶ世界最長級の人工水路"
+      ],
+      "examples": [
+        {
+          "en": "The Grand Canal allowed grain from the fertile south to be shipped efficiently to the capital in the north.",
+          "ja": "大運河のおかげで、豊かな南部で取れた穀物を北方の都へ効率よく輸送できるようになった。"
+        },
+        {
+          "en": "Constructing the Grand Canal required enormous amounts of forced labor during the Sui dynasty.",
+          "ja": "大運河の建設には、隋の時代に膨大な数の強制労働が動員されたとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "南北を結ぶ運河網の中でも規模が突出して大きいことから「大運河」と呼ばれる。",
+      "trivia": "大運河の建設には多大な労力と犠牲が伴い、隋が短命に終わった一因になったとも言われるが、後の王朝にも長く活用され続けた。",
+      "explanation": "中国の南北を結ぶために建設された、世界最長級の人工水路で、隋の時代に大規模に整備され、江南の豊かな穀物を北方の都へ輸送する大動脈として長く重要な役割を果たした。",
+      "example_ja": "大運河のおかげで、豊かな南部で取れた穀物を北方の都へ効率よく輸送できるようになった。",
+      "example_ja_src": "The Grand Canal allowed grain from the fertile south to be shipped efficiently to the capital in the north."
+    }
+  },
+  {
+    "english": "Warring States period",
+    "detail": {
+      "pronunciation": "/ˈwɔːrɪŋ steɪts ˈpɪəriəd/",
+      "pos": "名詞",
+      "meanings": [
+        "戦国時代",
+        "秦による統一以前、諸侯国が覇権を争った分裂・動乱の時代"
+      ],
+      "examples": [
+        {
+          "en": "The Warring States period ended when the state of Qin conquered its rivals and unified China in 221 BCE.",
+          "ja": "戦国時代は、紀元前221年に秦が他の諸国を征服して中国を統一したことで終わりを迎えた。"
+        },
+        {
+          "en": "Many influential Chinese philosophers, including Confucian and Legalist thinkers, were active during the Warring States period.",
+          "ja": "儒家や法家をはじめとする中国の多くの重要な思想家たちは、戦国時代に活動していた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "この時期、複数の国々が互いに絶えず戦争を繰り広げていたことにちなむ呼び名。",
+      "trivia": "戦国時代には鉄製の武器や騎馬戦術が広まり、各国が富国強兵のための制度改革を競い合ったことから、後の中国統一国家の基盤が形作られたとされる。",
+      "explanation": "紀元前5世紀頃から紀元前221年の秦による中国統一まで続いた、複数の有力諸侯国が覇権を争って絶え間なく戦争を繰り広げた分裂・動乱の時代。",
+      "example_ja": "戦国時代は、紀元前221年に秦が他の諸国を征服して中国を統一したことで終わりを迎えた。",
+      "example_ja_src": "The Warring States period ended when the state of Qin conquered its rivals and unified China in 221 BCE."
+    }
+  },
+  {
+    "english": "Self-Strengthening Movement",
+    "detail": {
+      "pronunciation": "/sɛlf ˈstrɛŋθənɪŋ ˈmuːvmənt/",
+      "pos": "名詞",
+      "meanings": [
+        "洋務運動",
+        "西洋の軍事・工業技術の導入によって清朝の国力回復を図った近代化運動"
+      ],
+      "examples": [
+        {
+          "en": "The Self-Strengthening Movement attempted to modernize China's military and industry while preserving traditional political institutions.",
+          "ja": "洋務運動は、伝統的な政治制度を維持したまま、中国の軍事や産業を近代化しようとする試みであった。"
+        },
+        {
+          "en": "Under the Self-Strengthening Movement, the Qing government built arsenals and shipyards modeled on Western technology.",
+          "ja": "洋務運動のもと、清朝政府は西洋の技術を手本とした兵器工廠や造船所を建設した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Yangwu Movement",
+          "note": "中国語の「洋務」に基づく呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「自らを強くする」という意味の中国語のスローガンに由来する呼び名。",
+      "trivia": "この運動は西洋の技術のみを取り入れ政治体制は変えないという方針を取ったため、根本的な改革には至らず、後の日清戦争での敗北によってその限界が露呈したとされる。",
+      "explanation": "19世紀後半、アヘン戦争などでの敗北を受け、清朝の官僚たちが西洋の軍事技術や工業技術を取り入れることで国力の立て直しを図った、一連の近代化運動。",
+      "example_ja": "洋務運動は、伝統的な政治制度を維持したまま、中国の軍事や産業を近代化しようとする試みであった。",
+      "example_ja_src": "The Self-Strengthening Movement attempted to modernize China's military and industry while preserving traditional political institutions."
+    }
+  },
+  {
+    "english": "Articles of Confederation",
+    "detail": {
+      "pronunciation": "/ˈɑːrtɪkəlz əv kənˌfɛdəˈreɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "連合規約",
+        "合衆国憲法以前の最初の統治文書"
+      ],
+      "examples": [
+        {
+          "en": "The Articles of Confederation left the central government too weak to tax or regulate trade effectively.",
+          "ja": "連合規約のもとでは中央政府があまりにも弱く、実効的に課税したり通商を規制したりすることができなかった。"
+        },
+        {
+          "en": "Under the Articles of Confederation, Congress could not force any state to pay its share of taxes.",
+          "ja": "連合規約のもとでは、連邦議会はどの州に対しても税の負担分を強制的に支払わせることができなかった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "United States Constitution",
+          "note": "連合規約の弱点を踏まえ、より強力な中央政府の権限を定めて1789年に発効した後継の統治文書。"
+        }
+      ],
+      "origin": "独立戦争中の1777年に大陸会議で起草され、1781年に13州すべての批准を得て正式に発効した。",
+      "trivia": "連合規約のもとでは連邦政府に課税権や通商規制権がなく、各州がほぼ独立国のように振る舞えたため、統治の行き詰まりを解消する目的で1787年の憲法制定会議が開かれた。",
+      "explanation": "1789年に合衆国憲法が発効するまでの間、独立を宣言した13州の連合体を統治するために用いられていた最初の統治文書で、中央政府の権限があまりに弱かったため、より強い権限を持つ合衆国憲法に置き換えられた。",
+      "example_ja": "連合規約のもとでは中央政府があまりにも弱く、実効的に課税したり通商を規制したりすることができなかった。",
+      "example_ja_src": "The Articles of Confederation left the central government too weak to tax or regulate trade effectively."
+    }
+  },
+  {
+    "english": "Bill of Rights",
+    "detail": {
+      "pronunciation": "/bɪl əv raɪts/",
+      "pos": "名詞",
+      "meanings": [
+        "権利章典",
+        "合衆国憲法修正第1条から第10条までの総称"
+      ],
+      "examples": [
+        {
+          "en": "The First Amendment, part of the Bill of Rights, protects freedom of speech and religion.",
+          "ja": "権利章典の一部である憲法修正第1条は、言論と信教の自由を保護している。"
+        },
+        {
+          "en": "Ratifying the Constitution became easier once states were promised a Bill of Rights protecting individual liberties.",
+          "ja": "個人の自由を守る権利章典が約束されたことで、各州による合衆国憲法の批准はより進めやすくなった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "憲法批准を巡る論争の中で、中央政府の権限強化を懸念する反連邦派を説得するため、個人の権利を明記する修正条項の追加が約束されたことに由来する。",
+      "trivia": "実際に提案された修正条項は12か条あったが、最初の2条は当時批准されず、残り10条が1791年に発効して現在のBill of Rightsとなった。",
+      "explanation": "1791年に批准された、合衆国憲法の最初の10か条の修正条項の総称。言論・信教の自由や適正手続きの保障など、国民の基本的な権利や自由を明文化したもの。",
+      "example_ja": "権利章典の一部である憲法修正第1条は、言論と信教の自由を保護している。",
+      "example_ja_src": "The First Amendment, part of the Bill of Rights, protects freedom of speech and religion."
+    }
+  },
+  {
+    "english": "Louisiana Purchase",
+    "detail": {
+      "pronunciation": "/luˌiːziˈænə ˈpɜːrtʃəs/",
+      "pos": "名詞",
+      "meanings": [
+        "ルイジアナ購入",
+        "1803年の対仏領土買収"
+      ],
+      "examples": [
+        {
+          "en": "The Louisiana Purchase roughly doubled the size of the young United States almost overnight.",
+          "ja": "ルイジアナ購入は、若きアメリカ合衆国の国土をほぼ一夜にして倍増させた。"
+        },
+        {
+          "en": "President Jefferson sent explorers to survey the vast new territory gained through the Louisiana Purchase.",
+          "ja": "ジェファーソン大統領は、ルイジアナ購入によって得た広大な新領土を調査するために探検隊を派遣した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "当時フランスを統治していたナポレオンが、財政難とハイチでの反乱を受けて北米の広大な植民地を手放す決断をしたことに由来する。",
+      "trivia": "購入された土地は現在のアメリカ中西部から南部にかけての十数州にまたがるとされ、1エーカーあたりの価格は非常に安価だったと伝えられている。",
+      "explanation": "1803年、アメリカ合衆国がフランスからミシシッピ川流域を中心とする広大な西部の領土を買い取った取引。これによって合衆国の国土はほぼ倍増したとされる。",
+      "example_ja": "ルイジアナ購入は、若きアメリカ合衆国の国土をほぼ一夜にして倍増させた。",
+      "example_ja_src": "The Louisiana Purchase roughly doubled the size of the young United States almost overnight."
+    }
+  },
+  {
+    "english": "Trail of Tears",
+    "detail": {
+      "pronunciation": "/treɪl əv tɪərz/",
+      "pos": "名詞",
+      "meanings": [
+        "涙の道",
+        "1830年代の先住民強制移住の道のり"
+      ],
+      "examples": [
+        {
+          "en": "Thousands of Cherokee people are believed to have died along the Trail of Tears from cold, disease, and exhaustion.",
+          "ja": "何千人ものチェロキーの人々が、寒さや病気、疲労により涙の道の途上で亡くなったと考えられている。"
+        },
+        {
+          "en": "Historians still study the Trail of Tears as one of the darkest chapters of federal Indian removal policy.",
+          "ja": "歴史家たちは、涙の道を連邦政府の先住民強制移住政策の中でも最も痛ましい出来事の一つとして今も研究している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1830年に成立したインディアン強制移住法に基づき、複数の先住民族が住み慣れた土地を追われて西へ移送されたことに由来する呼び名。",
+      "trivia": "実際に亡くなった人数については資料によって諸説あり正確には分かっていないが、寒さや病気、食料不足などにより移送中に多くの犠牲者が出たと考えられている。",
+      "explanation": "1830年代、連邦政府の強制移住政策によって、チェロキー族をはじめとする複数の先住民族が東部の故地から西方のインディアン準州へと移送された過酷な道のりを指す語。移動中の劣悪な環境により多くの死者が出たとされる。",
+      "example_ja": "何千人ものチェロキーの人々が、寒さや病気、疲労により涙の道の途上で亡くなったと考えられている。",
+      "example_ja_src": "Thousands of Cherokee people are believed to have died along the Trail of Tears from cold, disease, and exhaustion."
+    }
+  },
+  {
+    "english": "American Civil War",
+    "detail": {
+      "pronunciation": "/əˈmɛrɪkən ˈsɪvəl wɔːr/",
+      "pos": "名詞",
+      "meanings": [
+        "南北戦争",
+        "1861年から1865年の北部対南部の内戦"
+      ],
+      "examples": [
+        {
+          "en": "Slavery was the central issue that divided the North and South in the American Civil War.",
+          "ja": "南北戦争において、奴隷制は北部と南部を分断する中心的な争点だった。"
+        },
+        {
+          "en": "More American soldiers are estimated to have died in the American Civil War than in any other conflict in the country's history.",
+          "ja": "南北戦争では、アメリカ史上のどの戦争よりも多くの兵士が亡くなったと推定されている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "War Between the States",
+          "note": "特に南部で用いられてきた、南北戦争を指す別の呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "奴隷制の拡大の是非を巡る北部と南部の長年の対立が、リンカンの大統領当選をきっかけに南部諸州の連邦離脱(secession)へとつながり、開戦に至った。",
+      "trivia": "犠牲者数については資料によって推計が異なるが、この戦争はアメリカ史上最も多くの死者を出した戦争の一つとされる。",
+      "explanation": "1861年から1865年にかけて、奴隷制の存続や州権を巡る対立から、アメリカ合衆国北部と、連邦から離脱した南部諸州(南部連合)との間で戦われた内戦。",
+      "example_ja": "南北戦争において、奴隷制は北部と南部を分断する中心的な争点だった。",
+      "example_ja_src": "Slavery was the central issue that divided the North and South in the American Civil War."
+    }
+  },
+  {
+    "english": "Mexican-American War",
+    "detail": {
+      "pronunciation": "/mɛkˈsɪkən əˈmɛrɪkən wɔːr/",
+      "pos": "名詞",
+      "meanings": [
+        "米墨戦争",
+        "1846〜48年の米国とメキシコの戦争"
+      ],
+      "examples": [
+        {
+          "en": "The United States gained a huge stretch of territory in the Southwest after winning the Mexican-American War.",
+          "ja": "アメリカ合衆国は米墨戦争に勝利した後、南西部の広大な領土を獲得した。"
+        },
+        {
+          "en": "The treaty that ended the Mexican-American War forced Mexico to cede a vast portion of its northern territory.",
+          "ja": "米墨戦争を終結させた条約により、メキシコは北部の広大な領土を譲渡することを余儀なくされた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1845年のテキサス併合をきっかけに国境線を巡る対立が激化し、翌1846年に両国間で戦闘が始まったことに由来する。",
+      "trivia": "戦争を終結させたグアダルーペ・イダルゴ条約により、メキシコは国土の広い部分を失い、アメリカは西海岸まで領土を広げる足がかりを得たとされる。",
+      "explanation": "1846年から1848年にかけて、テキサス併合や国境を巡る対立からアメリカ合衆国とメキシコの間で戦われた戦争。この戦争の結果、メキシコは現在のカリフォルニアやニューメキシコなどを含む広大な領土をアメリカに割譲した。",
+      "example_ja": "アメリカ合衆国は米墨戦争に勝利した後、南西部の広大な領土を獲得した。",
+      "example_ja_src": "The United States gained a huge stretch of territory in the Southwest after winning the Mexican-American War."
+    }
+  },
+  {
+    "english": "Missouri Compromise",
+    "detail": {
+      "pronunciation": "/mɪˈzʊəri ˈkɒmprəmaɪz/",
+      "pos": "名詞",
+      "meanings": [
+        "ミズーリ妥協",
+        "1820年の奴隷州・自由州均衡案"
+      ],
+      "examples": [
+        {
+          "en": "The Missouri Compromise tried to balance the number of slave states and free states admitted to the Union.",
+          "ja": "ミズーリ妥協は、連邦に加盟する奴隷州と自由州の数の均衡を保とうとするものだった。"
+        },
+        {
+          "en": "Many historians see the Missouri Compromise as only a temporary truce in the growing dispute over slavery.",
+          "ja": "多くの歴史家は、ミズーリ妥協を奴隷制を巡る対立の高まりに対する一時的な休戦にすぎなかったと見なしている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ミズーリが奴隷州として連邦加盟を申請したことをきっかけに、奴隷州と自由州の数の均衡が崩れることを懸念した北部と南部の対立から生まれた妥協案。",
+      "trivia": "この妥協案は、後の1854年のカンザス・ネブラスカ法によって事実上覆されることになり、奴隷制を巡る南北対立をさらに深刻化させたとされる。",
+      "explanation": "1820年、奴隷州と自由州の数の均衡を保つため、ミズーリ州を奴隷州として、メインを自由州として連邦に加盟させるとともに、それより北の新たな准州では奴隷制を禁止すると定めた連邦議会の妥協案。",
+      "example_ja": "ミズーリ妥協は、連邦に加盟する奴隷州と自由州の数の均衡を保とうとするものだった。",
+      "example_ja_src": "The Missouri Compromise tried to balance the number of slave states and free states admitted to the Union."
+    }
+  },
+  {
+    "english": "Compromise of 1850",
+    "detail": {
+      "pronunciation": "/ˈkɒmprəmaɪz əv eɪtiːn ˈfɪfti/",
+      "pos": "名詞",
+      "meanings": [
+        "1850年の妥協",
+        "米墨戦争後の領土問題を巡る一連の妥協法案"
+      ],
+      "examples": [
+        {
+          "en": "The Compromise of 1850 admitted California as a free state while toughening the law on returning escaped slaves.",
+          "ja": "1850年の妥協は、カリフォルニアを自由州として加盟させる一方で、逃亡奴隷を連れ戻す法律を強化した。"
+        },
+        {
+          "en": "Abolitionists were outraged by the strengthened fugitive slave law included in the Compromise of 1850.",
+          "ja": "奴隷制廃止論者たちは、1850年の妥協に盛り込まれた逃亡奴隷法の強化に激しく憤った。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "米墨戦争でメキシコから獲得した広大な領土をどう扱うかを巡り、北部と南部の対立が激化したことを受けて、上院議員ヘンリー・クレイらが主導してまとめた一連の法案に由来する。",
+      "trivia": "この妥協案に含まれた逃亡奴隷法の強化は北部の反発を招き、結果として南北の対立をかえって深めたとする見方もある。",
+      "explanation": "米墨戦争後に獲得した領土での奴隷制の扱いを巡る北部と南部の対立を一時的に鎮めるため、カリフォルニアを自由州として連邦に加盟させる一方で逃亡奴隷法を強化するなど、複数の法案を組み合わせて成立させた連邦議会の妥協案。",
+      "example_ja": "1850年の妥協は、カリフォルニアを自由州として加盟させる一方で、逃亡奴隷を連れ戻す法律を強化した。",
+      "example_ja_src": "The Compromise of 1850 admitted California as a free state while toughening the law on returning escaped slaves."
+    }
+  },
+  {
+    "english": "Gettysburg Address",
+    "detail": {
+      "pronunciation": "/ˈɡɛtiːzbɜːrɡ əˈdrɛs/",
+      "pos": "名詞",
+      "meanings": [
+        "ゲティスバーグ演説",
+        "1863年のリンカンによる追悼演説"
+      ],
+      "examples": [
+        {
+          "en": "In the Gettysburg Address, Lincoln famously described a government of the people, by the people, and for the people.",
+          "ja": "ゲティスバーグ演説の中で、リンカンは人民の、人民による、人民のための政治を有名な言葉で描いた。"
+        },
+        {
+          "en": "Despite lasting only about two minutes, the Gettysburg Address is remembered as one of the greatest speeches in American history.",
+          "ja": "わずか2分ほどの短い演説だったにもかかわらず、ゲティスバーグ演説はアメリカ史上最も偉大な演説の一つとして今も記憶されている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1863年7月に激しい戦闘が行われたゲティスバーグの戦いの後、同年11月に戦没者墓地を献納する式典でリンカンが行った短い演説に由来する。",
+      "trivia": "演説自体は非常に短かったが、その場にいた聴衆の多くは演説がすぐに終わったことに驚いたとも伝えられており、後に歴史に残る名演説として広く評価されるようになった。",
+      "explanation": "南北戦争中の1863年、ゲティスバーグの戦いの戦没者墓地の献納式でリンカン大統領が行った演説。短いながらも民主主義の理念を格調高く語ったことで知られる。",
+      "example_ja": "ゲティスバーグ演説の中で、リンカンは人民の、人民による、人民のための政治を有名な言葉で描いた。",
+      "example_ja_src": "In the Gettysburg Address, Lincoln famously described a government of the people, by the people, and for the people."
+    }
+  },
+  {
+    "english": "Gilded Age",
+    "detail": {
+      "pronunciation": "/ˈɡɪldɪd eɪdʒ/",
+      "pos": "名詞",
+      "meanings": [
+        "金メッキ時代",
+        "南北戦争後の急速な工業化の時代"
+      ],
+      "examples": [
+        {
+          "en": "Industrialists amassed enormous fortunes during the Gilded Age, even as many factory workers lived in poverty.",
+          "ja": "金メッキ時代には、多くの工場労働者が貧困の中で暮らす一方で、実業家たちは莫大な富を築いた。"
+        },
+        {
+          "en": "Political corruption and extreme inequality between rich and poor were common themes of the Gilded Age.",
+          "ja": "政治腐敗や貧富の間の極端な格差は、金メッキ時代によく見られたテーマだった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "作家マーク・トウェインらが1873年に発表した小説のタイトルに由来し、表面は金メッキのように輝いて見えても中身は必ずしも良質ではないという皮肉が込められている。",
+      "trivia": "この時代には鉄鋼・石油・鉄道などの産業で巨大企業が台頭し、カーネギーやロックフェラーのような大富豪が生まれた一方、労働者の待遇改善を求めるストライキも頻発した。",
+      "explanation": "南北戦争後の1870年代から1900年頃にかけて、急速な工業化とともに一部の実業家が巨万の富を築く一方、労働環境の悪化や政治の腐敗も目立った、アメリカの経済発展の時代を指す語。表面の華やかさの裏に問題を隠しているという皮肉を込めて名付けられた。",
+      "example_ja": "金メッキ時代には、多くの工場労働者が貧困の中で暮らす一方で、実業家たちは莫大な富を築いた。",
+      "example_ja_src": "Industrialists amassed enormous fortunes during the Gilded Age, even as many factory workers lived in poverty."
+    }
+  },
+  {
+    "english": "Progressive Era",
+    "detail": {
+      "pronunciation": "/prəˈɡrɛsɪv ˈɪərə/",
+      "pos": "名詞",
+      "meanings": [
+        "革新主義時代",
+        "1890年代〜1920年頃の社会改革運動の時代"
+      ],
+      "examples": [
+        {
+          "en": "Reformers of the Progressive Era pushed for laws to break up monopolies and improve factory safety.",
+          "ja": "革新主義時代の改革者たちは、独占企業を解体し工場の安全性を高める法律の制定を推し進めた。"
+        },
+        {
+          "en": "Women's suffrage gained significant momentum during the Progressive Era, eventually leading to the 19th Amendment.",
+          "ja": "女性参政権運動は革新主義時代に大きな勢いを得て、最終的には合衆国憲法修正第19条につながった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "金ぴか時代(Gilded Age)がもたらした社会の歪みを是正しようとする気運の高まりを受けて、1890年代以降に広がった一連の改革運動を指す呼び名として定着した。",
+      "trivia": "この時代には食品や医薬品の安全規制、独占禁止法の強化、女性参政権運動など、現在の制度の基礎となった様々な改革が進んだ。",
+      "explanation": "1890年代から1920年頃にかけて、都市化や産業化がもたらした労働環境の悪化・独占企業の弊害・政治腐敗などの社会問題を是正しようと、様々な改革運動が展開されたアメリカの時代。",
+      "example_ja": "革新主義時代の改革者たちは、独占企業を解体し工場の安全性を高める法律の制定を推し進めた。",
+      "example_ja_src": "Reformers of the Progressive Era pushed for laws to break up monopolies and improve factory safety."
+    }
+  },
+  {
+    "english": "Great Depression",
+    "detail": {
+      "pronunciation": "/ɡreɪt dɪˈprɛʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "世界大恐慌",
+        "1929年の株価暴落に端を発する大不況"
+      ],
+      "examples": [
+        {
+          "en": "Millions of Americans lost their jobs during the Great Depression that followed the 1929 stock market crash.",
+          "ja": "1929年の株価暴落に続く世界大恐慌の中で、何百万人ものアメリカ人が職を失った。"
+        },
+        {
+          "en": "The New Deal programs were created in response to the widespread suffering caused by the Great Depression.",
+          "ja": "ニューディール政策は、世界大恐慌がもたらした広範な困窮への対応として生み出された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1929年10月の「暗黒の木曜日」に始まった株式市場の暴落が銀行の連鎖破綻や消費の急減を引き起こし、世界的な不況へと発展したことに由来する。",
+      "trivia": "最も深刻だった時期にはアメリカの労働者の4人に1人近くが失業していたと推計されており、この不況からの本格的な回復には第二次世界大戦期の軍需生産の拡大が大きく寄与したとされる。",
+      "explanation": "1929年の株式市場大暴落をきっかけに始まり、1930年代を通じて世界中に広がった、アメリカ史上最も深刻とされる経済不況。多数の失業者や銀行の破綻を生んだ。",
+      "example_ja": "1929年の株価暴落に続く世界大恐慌の中で、何百万人ものアメリカ人が職を失った。",
+      "example_ja_src": "Millions of Americans lost their jobs during the Great Depression that followed the 1929 stock market crash."
+    }
+  },
+  {
+    "english": "Civil Rights Movement",
+    "detail": {
+      "pronunciation": "/ˈsɪvəl raɪts ˈmuːvmənt/",
+      "pos": "名詞",
+      "meanings": [
+        "公民権運動",
+        "1950〜60年代の人種差別撤廃を求める社会運動"
+      ],
+      "examples": [
+        {
+          "en": "The Civil Rights Movement used marches, boycotts, and legal challenges to fight racial segregation.",
+          "ja": "公民権運動は、行進やボイコット、法廷闘争を通じて人種隔離と闘った。"
+        },
+        {
+          "en": "Leaders of the Civil Rights Movement organized nonviolent protests to demand equal treatment under the law.",
+          "ja": "公民権運動の指導者たちは、法の下での平等な扱いを求めて非暴力の抗議運動を組織した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ジム・クロウ法などによる人種隔離が南部を中心に長く続いていたことへの反発から、1950年代半ば以降に組織的な抗議運動として広がった。",
+      "trivia": "バス・ボイコット運動や座り込み(シットイン)、ワシントン大行進など様々な形で展開され、後に公民権法(1964年)や投票権法(1965年)といった連邦法の成立につながった。",
+      "explanation": "1950年代から1960年代にかけて、人種による差別や隔離の撤廃、法の下の平等な権利の獲得を目指してアフリカ系アメリカ人を中心に展開された社会運動。",
+      "example_ja": "公民権運動は、行進やボイコット、法廷闘争を通じて人種隔離と闘った。",
+      "example_ja_src": "The Civil Rights Movement used marches, boycotts, and legal challenges to fight racial segregation."
+    }
+  },
+  {
+    "english": "Voting Rights Act",
+    "detail": {
+      "pronunciation": "/ˈvoʊtɪŋ raɪts ækt/",
+      "pos": "名詞",
+      "meanings": [
+        "投票権法",
+        "1965年制定の人種差別的投票制限を禁じる連邦法"
+      ],
+      "examples": [
+        {
+          "en": "The Voting Rights Act of 1965 outlawed literacy tests that had long been used to keep Black voters from the polls.",
+          "ja": "1965年の投票権法は、黒人有権者を投票所から遠ざけるために長く使われてきた識字テストを禁止した。"
+        },
+        {
+          "en": "Federal officials gained new authority to oversee elections in areas covered by the Voting Rights Act.",
+          "ja": "連邦当局は、投票権法の対象地域における選挙を監督する新たな権限を得た。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "セルマからモンゴメリーへの行進をはじめとする公民権運動の高まりを受けて、ジョンソン大統領のもとで1965年に成立した連邦法に由来する。",
+      "trivia": "この法律により、識字テストなど人種差別的に運用されてきた投票資格審査の手段が禁止され、南部の一部地域では選挙制度の変更について事前に連邦の承認を得ることが義務付けられた。",
+      "explanation": "1965年に制定された連邦法。人種を理由に投票を妨げてきた識字テストなどの手段を禁止し、特に南部諸州における投票権の実質的な保障を強化した。",
+      "example_ja": "1965年の投票権法は、黒人有権者を投票所から遠ざけるために長く使われてきた識字テストを禁止した。",
+      "example_ja_src": "The Voting Rights Act of 1965 outlawed literacy tests that had long been used to keep Black voters from the polls."
+    }
+  },
+  {
+    "english": "Cuban Missile Crisis",
+    "detail": {
+      "pronunciation": "/ˈkjuːbən ˈmɪsaɪl ˈkraɪsɪs/",
+      "pos": "名詞",
+      "meanings": [
+        "キューバ危機",
+        "1962年の米ソ核戦争危機"
+      ],
+      "examples": [
+        {
+          "en": "The Cuban Missile Crisis brought the United States and the Soviet Union to the brink of nuclear war.",
+          "ja": "キューバ危機は、アメリカとソ連を核戦争寸前まで追い込んだ。"
+        },
+        {
+          "en": "After tense negotiations, the Cuban Missile Crisis was resolved when the Soviet Union agreed to remove its missiles from Cuba.",
+          "ja": "緊迫した交渉の末、ソ連がキューバからミサイルを撤去することに合意し、キューバ危機は収束した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ソ連がアメリカ本土に届く核ミサイルをキューバに配備しようとしていることを偵察機が確認したことをきっかけに、1962年10月に危機が表面化した。",
+      "trivia": "ケネディ大統領はキューバ周辺の海上封鎖を選択して直接的な武力衝突を避け、水面下の交渉を経てソ連がミサイルを撤去する見返りにアメリカもトルコの自国ミサイルを撤去することで危機は収束したとされる。",
+      "explanation": "1962年、ソ連がキューバに核ミサイル基地を建設していることが発覚し、アメリカとソ連の間で核戦争寸前まで緊張が高まった冷戦期の危機。",
+      "example_ja": "キューバ危機は、アメリカとソ連を核戦争寸前まで追い込んだ。",
+      "example_ja_src": "The Cuban Missile Crisis brought the United States and the Soviet Union to the brink of nuclear war."
+    }
+  },
+  {
+    "english": "Vietnam War",
+    "detail": {
+      "pronunciation": "/viˈɛtnɑːm wɔːr/",
+      "pos": "名詞",
+      "meanings": [
+        "ベトナム戦争",
+        "冷戦期の北ベトナムと南ベトナムの戦争"
+      ],
+      "examples": [
+        {
+          "en": "The Vietnam War sparked massive antiwar protests across American college campuses.",
+          "ja": "ベトナム戦争は、アメリカ各地の大学キャンパスで大規模な反戦抗議を引き起こした。"
+        },
+        {
+          "en": "Television coverage of the Vietnam War brought the reality of combat into American living rooms for the first time.",
+          "ja": "ベトナム戦争のテレビ報道は、戦闘の現実を初めてアメリカの茶の間に届けた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "冷戦下のドミノ理論に基づき、共産主義の拡大を防ぐという名目でアメリカが南ベトナムへの軍事関与を段階的に深めていったことに由来する。",
+      "trivia": "長期化する戦争と多数の犠牲、徴兵制度への不満などから国内で反戦運動が広がり、最終的に1973年のパリ和平協定を経て1975年にアメリカ軍が撤退した後、南北ベトナムは統一された。",
+      "explanation": "1950年代半ばから1975年まで続いた、共産主義勢力の北ベトナムと、アメリカが支援した南ベトナムとの間の戦争。アメリカ国内で大規模な反戦運動を引き起こしたことでも知られる。",
+      "example_ja": "ベトナム戦争は、アメリカ各地の大学キャンパスで大規模な反戦抗議を引き起こした。",
+      "example_ja_src": "The Vietnam War sparked massive antiwar protests across American college campuses."
+    }
+  },
+  {
+    "english": "19th Amendment",
+    "detail": {
+      "pronunciation": "/ˌnaɪnˈtiːnθ əˈmɛndmənt/",
+      "pos": "名詞",
+      "meanings": [
+        "合衆国憲法修正第19条",
+        "女性参政権を認めた憲法修正条項"
+      ],
+      "examples": [
+        {
+          "en": "The 19th Amendment finally guaranteed American women the right to vote.",
+          "ja": "合衆国憲法修正第19条は、ついにアメリカの女性に投票する権利を保障した。"
+        },
+        {
+          "en": "Decades of activism by suffragists led up to the ratification of the 19th Amendment in 1920.",
+          "ja": "長年にわたる参政権運動家たちの活動が、1920年の合衆国憲法修正第19条の批准へとつながった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "19世紀半ばから続いた女性参政権運動(サフラジェット運動)の成果として、第一次世界大戦後の1920年に批准された。",
+      "trivia": "この修正条項の批准により、それまで多くの州で認められていなかった女性の投票権が全国的に保障されたが、実際には人種などを理由に投票を妨げられる女性も引き続き存在したとされる。",
+      "explanation": "1920年に批准された合衆国憲法修正第19条。性別を理由に投票権を否定することを禁じ、女性に参政権を認めた。",
+      "example_ja": "合衆国憲法修正第19条は、ついにアメリカの女性に投票する権利を保障した。",
+      "example_ja_src": "The 19th Amendment finally guaranteed American women the right to vote."
+    }
+  },
+  {
+    "english": "McCarthyism",
+    "detail": {
+      "pronunciation": "/məˈkɑːrθiɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "マッカーシズム",
+        "1950年代の反共産主義的な告発・弾圧の風潮"
+      ],
+      "examples": [
+        {
+          "en": "During McCarthyism, many people lost their jobs simply on suspicion of having communist sympathies.",
+          "ja": "マッカーシズムの時代には、共産主義に同情的だと疑われただけで多くの人が職を失った。"
+        },
+        {
+          "en": "Careers in Hollywood and government were ruined by unproven accusations during the era of McCarthyism.",
+          "ja": "マッカーシズムの時代には、根拠の乏しい告発によってハリウッドや政府関係者のキャリアが台無しにされた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Red Scare",
+          "note": "共産主義への恐怖や警戒が社会に広がった状況全般を指す、より広い呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "この風潮を主導した上院議員ジョセフ・マッカーシーの名にちなみ、根拠の乏しい告発や中傷によって個人を攻撃する手法一般を指す語としても使われるようになった。",
+      "trivia": "マッカーシー自身は後に、その告発の多くが十分な証拠を欠いていたとして上院から譴責決議を受け、政治的な影響力を失っていったとされる。",
+      "explanation": "1950年代前半、上院議員ジョセフ・マッカーシーを中心に、政府や社会の中に共産主義者が潜んでいると主張し、十分な証拠のないまま個人を告発・攻撃した政治的風潮。",
+      "example_ja": "マッカーシズムの時代には、共産主義に同情的だと疑われただけで多くの人が職を失った。",
+      "example_ja_src": "During McCarthyism, many people lost their jobs simply on suspicion of having communist sympathies."
+    }
+  },
+  {
+    "english": "French Revolution",
+    "detail": {
+      "pronunciation": "/frɛntʃ ˌrɛvəˈluːʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "フランス革命",
+        "1789年に始まった旧体制打倒の政治革命"
+      ],
+      "examples": [
+        {
+          "en": "The French Revolution overthrew the monarchy and introduced the radical idea that sovereignty belonged to the people, not the king.",
+          "ja": "フランス革命は君主制を打倒し、主権は国王ではなく国民に属するという急進的な考えをもたらした。"
+        },
+        {
+          "en": "Historians still debate exactly when the French Revolution ended, with dates ranging from 1794 to 1799 or even 1815.",
+          "ja": "フランス革命がいつ終わったかについては、1794年説から1799年説、あるいは1815年説まで、歴史家の間でも見解が分かれている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "revolutionary",
+          "pos": "形容詞/名詞",
+          "ja": "革命の、革命家"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Congress of Vienna",
+          "note": "革命後のヨーロッパの秩序を旧体制寄りに再編しようとした保守的な体制。"
+        }
+      ],
+      "origin": "1789年、財政危機と身分制議会(三部会)の対立をきっかけに始まり、バスティーユ牢獄襲撃(7月14日)が革命の象徴的な出来事とされる。",
+      "trivia": "「左翼」「右翼」という政治用語は、革命期の議会で急進派が議長席から見て左側に、王党派が右側に着席したことに由来するとされる。",
+      "explanation": "1789年に始まり、絶対王政やアンシャン・レジーム(旧体制)を打倒して、自由・平等・国民主権の理念を掲げた一連のフランスの政治革命。",
+      "example_ja": "フランス革命は君主制を打倒し、主権は国王ではなく国民に属するという急進的な考えをもたらした。",
+      "example_ja_src": "The French Revolution overthrew the monarchy and introduced the radical idea that sovereignty belonged to the people, not the king."
+    }
+  },
+  {
+    "english": "Reign of Terror",
+    "detail": {
+      "pronunciation": "/reɪn ʌv ˈtɛrər/",
+      "pos": "名詞",
+      "meanings": [
+        "恐怖政治",
+        "フランス革命期の粛清の時代"
+      ],
+      "examples": [
+        {
+          "en": "During the Reign of Terror, thousands of people suspected of opposing the revolution were sent to the guillotine.",
+          "ja": "恐怖政治の間、革命に反対していると疑われた人々が次々とギロチンに送られた。"
+        },
+        {
+          "en": "The Reign of Terror ended when Robespierre himself was arrested and executed in 1794.",
+          "ja": "恐怖政治は、ロベスピエール自身が1794年に逮捕され処刑されたことで終わりを迎えた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "the Terror",
+          "note": "英語では定冠詞付きでこの時期を指す略称としても使われる。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "フランス語の la Terreur(恐怖)に由来し、公安委員会が「徳と恐怖」を統治の柱に掲げたことから、そのまま英語にも取り入れられた。",
+      "trivia": "処刑された人数は諸説あり、正確な総数は今も歴史家の間で議論が続いている。",
+      "explanation": "フランス革命期の1793年から1794年にかけて、ロベスピエールらを中心とする革命政府が「反革命容疑者」とみなした人々を次々と処刑するなど、恐怖による統治を行った時期。",
+      "example_ja": "恐怖政治の間、革命に反対していると疑われた人々が次々とギロチンに送られた。",
+      "example_ja_src": "During the Reign of Terror, thousands of people suspected of opposing the revolution were sent to the guillotine."
+    }
+  },
+  {
+    "english": "Napoleonic Wars",
+    "detail": {
+      "pronunciation": "/nəˌpoʊliˈɒnɪk wɔːrz/",
+      "pos": "名詞",
+      "meanings": [
+        "ナポレオン戦争"
+      ],
+      "examples": [
+        {
+          "en": "The Napoleonic Wars reshaped the map of Europe and spread revolutionary ideas across the continent.",
+          "ja": "ナポレオン戦争はヨーロッパの地図を塗り替え、革命の理念を大陸中に広めた。"
+        },
+        {
+          "en": "Napoleon's disastrous invasion of Russia in 1812 marked a major turning point in the Napoleonic Wars.",
+          "ja": "1812年のナポレオンによるロシア遠征の失敗は、ナポレオン戦争における大きな転換点となった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "皇帝ナポレオン1世の名にちなみ、彼が主導した一連の戦争を総称してこう呼ぶ。",
+      "trivia": "この戦争は最終的に1815年、ワーテルローの戦いでナポレオンが敗れたことで終結した。",
+      "explanation": "1803年頃から1815年にかけて、フランス皇帝ナポレオン・ボナパルトの下でフランスとその同盟国が、イギリスやロシアなど諸国と繰り返し戦った一連の大規模な戦争。",
+      "example_ja": "ナポレオン戦争はヨーロッパの地図を塗り替え、革命の理念を大陸中に広めた。",
+      "example_ja_src": "The Napoleonic Wars reshaped the map of Europe and spread revolutionary ideas across the continent."
+    }
+  },
+  {
+    "english": "Congress of Vienna",
+    "detail": {
+      "pronunciation": "/ˈkɒŋɡrəs ʌv viˈɛnə/",
+      "pos": "名詞",
+      "meanings": [
+        "ウィーン会議"
+      ],
+      "examples": [
+        {
+          "en": "The Congress of Vienna redrew the map of Europe in an attempt to restore a balance of power after Napoleon's defeat.",
+          "ja": "ウィーン会議は、ナポレオン敗北後のヨーロッパにおいて勢力均衡を回復しようと、地図を描き直した。"
+        },
+        {
+          "en": "Under the guidance of Austrian statesman Metternich, the Congress of Vienna favored monarchies over revolutionary movements.",
+          "ja": "オーストリアの政治家メッテルニヒの主導の下、ウィーン会議は革命運動よりも君主制を重んじる方向で進められた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "French Revolution",
+          "note": "旧体制を打倒しようとした革命運動であり、それを回復しようとしたウィーン体制とは対照的。"
+        }
+      ],
+      "origin": "会議が開催された都市ウィーン(Vienna)の名を冠している。",
+      "trivia": "この会議によって成立した国際秩序は「ウィーン体制」と呼ばれ、以後数十年にわたりヨーロッパの外交の基盤となった。",
+      "explanation": "1814年から1815年にかけてオーストリアのウィーンで開かれた国際会議。ナポレオン戦争後のヨーロッパの国境や勢力均衡を再編し、保守的な旧体制の秩序を回復しようとした。",
+      "example_ja": "ウィーン会議は、ナポレオン敗北後のヨーロッパにおいて勢力均衡を回復しようと、地図を描き直した。",
+      "example_ja_src": "The Congress of Vienna redrew the map of Europe in an attempt to restore a balance of power after Napoleon's defeat."
+    }
+  },
+  {
+    "english": "Scramble for Africa",
+    "detail": {
+      "pronunciation": "/ˈskræmbl fɔːr ˈæfrɪkə/",
+      "pos": "名詞",
+      "meanings": [
+        "アフリカ分割",
+        "ヨーロッパ列強によるアフリカの急速な植民地化"
+      ],
+      "examples": [
+        {
+          "en": "During the Scramble for Africa, European powers divided almost the entire continent into colonies within just a few decades.",
+          "ja": "アフリカ分割の間、ヨーロッパ列強はわずか数十年でほぼ大陸全域を植民地に分割した。"
+        },
+        {
+          "en": "The 1884-85 Berlin Conference set out rules for the Scramble for Africa without inviting a single African representative.",
+          "ja": "1884〜85年のベルリン会議は、アフリカ人の代表を一人も招くことなく、アフリカ分割のルールを定めた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "decolonization",
+          "note": "20世紀半ば以降に植民地が独立していく、正反対の流れ。"
+        }
+      ],
+      "origin": "短期間に列強が先を争うように領土を奪い合った様子を「scramble(奪い合い)」と表現した呼び方。",
+      "trivia": "分割の境界線の多くは現地の民族や文化圏を無視して引かれ、その影響は今日の国境問題にもつながっているとされる。",
+      "explanation": "19世紀後半から20世紀初頭にかけて、ヨーロッパ列強がアフリカ大陸のほぼ全域を急速に植民地として分割・支配した動き。",
+      "example_ja": "アフリカ分割の間、ヨーロッパ列強はわずか数十年でほぼ大陸全域を植民地に分割した。",
+      "example_ja_src": "During the Scramble for Africa, European powers divided almost the entire continent into colonies within just a few decades."
+    }
+  },
+  {
+    "english": "trench warfare",
+    "detail": {
+      "pronunciation": "/trɛntʃ ˈwɔːrfɛr/",
+      "pos": "名詞",
+      "meanings": [
+        "塹壕戦"
+      ],
+      "examples": [
+        {
+          "en": "Trench warfare on the Western Front often reduced fighting to a bloody stalemate over just a few hundred meters of land.",
+          "ja": "西部戦線の塹壕戦では、わずか数百メートルの土地をめぐって血みどろの膠着状態に陥ることがしばしばあった。"
+        },
+        {
+          "en": "Machine guns and barbed wire made trench warfare especially deadly for soldiers advancing across open ground.",
+          "ja": "機関銃と鉄条網の存在は、開けた土地を前進する兵士にとって塹壕戦を特に危険なものにした。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "blitzkrieg",
+          "note": "塹壕にこもる持久戦とは対照的に、機甲部隊による電撃的な機動戦を指す。"
+        }
+      ],
+      "origin": "「塹壕(trench)」と「戦争(warfare)」を組み合わせた語で、第一次世界大戦を象徴する戦術として広く知られるようになった。",
+      "trivia": "第一次世界大戦の西部戦線では、前線がほとんど動かないまま数年にわたり塹壕戦が続いた区間もあったとされる。",
+      "explanation": "敵味方が地面に掘った塹壕にこもって対峙し、その間の狭い無人地帯(ノーマンズランド)を挟んで膠着した戦闘を続ける戦争の形態。第一次世界大戦の西部戦線で典型的に見られた。",
+      "example_ja": "西部戦線の塹壕戦では、わずか数百メートルの土地をめぐって血みどろの膠着状態に陥ることがしばしばあった。",
+      "example_ja_src": "Trench warfare on the Western Front often reduced fighting to a bloody stalemate over just a few hundred meters of land."
+    }
+  },
+  {
+    "english": "World War I",
+    "detail": {
+      "pronunciation": "/wɜːrld wɔːr wʌn/",
+      "pos": "名詞",
+      "meanings": [
+        "第一次世界大戦"
+      ],
+      "examples": [
+        {
+          "en": "World War I began in 1914 after the assassination of Archduke Franz Ferdinand triggered a chain of alliances across Europe.",
+          "ja": "第一次世界大戦は1914年、フランツ・フェルディナント大公暗殺事件がヨーロッパの同盟網を連鎖的に巻き込んだことをきっかけに始まった。"
+        },
+        {
+          "en": "World War I is estimated to have caused millions of military and civilian deaths, though precise figures are still debated.",
+          "ja": "第一次世界大戦では推定で数百万人規模の軍人・民間人が犠牲になったとされるが、正確な数字については今も議論がある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "the Great War",
+          "note": "当時から第二次世界大戦以前によく使われた呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "第二次世界大戦(World War II)と区別するため、後から「一次(I)」の呼称が付けられた。",
+      "trivia": "開戦当初は「これで戦争を終わらせる戦争(the war to end all wars)」とも呼ばれたが、その約20年後に第二次世界大戦が起こった。",
+      "explanation": "1914年から1918年にかけて、主にヨーロッパを舞台に同盟国側と協商国(連合国)側に分かれて戦われた、それまでにない規模の総力戦。",
+      "example_ja": "第一次世界大戦は1914年、フランツ・フェルディナント大公暗殺事件がヨーロッパの同盟網を連鎖的に巻き込んだことをきっかけに始まった。",
+      "example_ja_src": "World War I began in 1914 after the assassination of Archduke Franz Ferdinand triggered a chain of alliances across Europe."
+    }
+  },
+  {
+    "english": "Treaty of Versailles",
+    "detail": {
+      "pronunciation": "/ˈtriːti ʌv vɛərˈsaɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "ヴェルサイユ条約"
+      ],
+      "examples": [
+        {
+          "en": "The Treaty of Versailles imposed heavy reparations on Germany, which many historians see as a factor behind later resentment in the country.",
+          "ja": "ヴェルサイユ条約はドイツに重い賠償金を課し、多くの歴史家はこれがのちの同国内の不満の一因になったと見ている。"
+        },
+        {
+          "en": "The Treaty of Versailles also established the League of Nations as part of its broader postwar settlement.",
+          "ja": "ヴェルサイユ条約は、戦後処理の一環として国際連盟の設立も定めた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "調印が行われたフランス・パリ郊外の宮殿、ヴェルサイユ宮殿の名にちなむ。",
+      "trivia": "条約に盛り込まれた「戦争責任条項」でドイツの単独責任が明記されたことは、後年ドイツ国内で強い反発を招いたとされる。",
+      "explanation": "1919年、第一次世界大戦の戦後処理としてドイツと連合国の間で結ばれた講和条約。ドイツに巨額の賠償金や領土の割譲、軍備制限などの厳しい条件を課した。",
+      "example_ja": "ヴェルサイユ条約はドイツに重い賠償金を課し、多くの歴史家はこれがのちの同国内の不満の一因になったと見ている。",
+      "example_ja_src": "The Treaty of Versailles imposed heavy reparations on Germany, which many historians see as a factor behind later resentment in the country."
+    }
+  },
+  {
+    "english": "Bolshevik Revolution",
+    "detail": {
+      "pronunciation": "/ˈboʊlʃəvɪk ˌrɛvəˈluːʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "ボリシェヴィキ革命",
+        "ロシア十月革命"
+      ],
+      "examples": [
+        {
+          "en": "The Bolshevik Revolution of 1917 toppled Russia's provisional government and brought Lenin's Communist party to power.",
+          "ja": "1917年のボリシェヴィキ革命は、ロシアの臨時政府を打倒し、レーニン率いる共産党を政権の座に就けた。"
+        },
+        {
+          "en": "After the Bolshevik Revolution, Russia withdrew from World War I and eventually became the core of the Soviet Union.",
+          "ja": "ボリシェヴィキ革命の後、ロシアは第一次世界大戦から離脱し、やがてソビエト連邦の中核となった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "October Revolution",
+          "note": "当時のロシア暦(ユリウス暦)で10月に起きたことに由来する呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「多数派」を意味するロシア語 bolshinstvo に由来する「ボリシェヴィキ(多数派)」という党派名にちなむ。",
+      "trivia": "西欧で使われるグレゴリオ暦では11月の出来事にあたるため、「十月革命」という名称と実際の暦にずれが生じている。",
+      "explanation": "1917年、レーニン率いるボリシェヴィキ(のちの共産党)が臨時政府を打倒し、世界初の社会主義国家であるソビエト政権を樹立した革命。十月革命とも呼ばれる。",
+      "example_ja": "1917年のボリシェヴィキ革命は、ロシアの臨時政府を打倒し、レーニン率いる共産党を政権の座に就けた。",
+      "example_ja_src": "The Bolshevik Revolution of 1917 toppled Russia's provisional government and brought Lenin's Communist party to power."
+    }
+  },
+  {
+    "english": "League of Nations",
+    "detail": {
+      "pronunciation": "/liːɡ ʌv ˈneɪʃənz/",
+      "pos": "名詞",
+      "meanings": [
+        "国際連盟"
+      ],
+      "examples": [
+        {
+          "en": "The League of Nations was created after World War I to prevent future conflicts through diplomacy and collective security.",
+          "ja": "国際連盟は、外交と集団安全保障を通じて将来の紛争を防ぐことを目的に、第一次世界大戦後に設立された。"
+        },
+        {
+          "en": "The League of Nations struggled to enforce its decisions because major powers like the United States never joined.",
+          "ja": "国際連盟は、アメリカのような主要国が一度も加盟しなかったこともあり、決定事項を実効的に強制することに苦しんだ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "アメリカ大統領ウィルソンの「十四カ条の平和原則」で提唱された構想がもとになっている。",
+      "trivia": "第二次世界大戦の発生を防げなかったことなどから、その反省を踏まえて戦後に国際連合(UN)が新たに設立された。",
+      "explanation": "第一次世界大戦後の1920年に発足した、国際紛争を平和的に解決し戦争を防止することを目的とした史上初の世界的な国際機関。",
+      "example_ja": "国際連盟は、外交と集団安全保障を通じて将来の紛争を防ぐことを目的に、第一次世界大戦後に設立された。",
+      "example_ja_src": "The League of Nations was created after World War I to prevent future conflicts through diplomacy and collective security."
+    }
+  },
+  {
+    "english": "World War II",
+    "detail": {
+      "pronunciation": "/wɜːrld wɔːr tuː/",
+      "pos": "名詞",
+      "meanings": [
+        "第二次世界大戦"
+      ],
+      "examples": [
+        {
+          "en": "World War II began in Europe in 1939 when Germany invaded Poland, drawing Britain and France into the conflict.",
+          "ja": "第二次世界大戦は1939年、ドイツがポーランドに侵攻したことをきっかけにヨーロッパで始まり、イギリスとフランスを紛争に引き込んだ。"
+        },
+        {
+          "en": "World War II ended in 1945 and is estimated to have caused tens of millions of deaths worldwide, making it history's deadliest conflict.",
+          "ja": "第二次世界大戦は1945年に終結したが、世界全体で推定数千万人規模の死者を出したとされ、人類史上最も犠牲者の多い戦争とされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "第一次世界大戦(World War I)に続く2度目の世界大戦であることから、この名で呼ばれる。",
+      "trivia": "戦後の国際秩序を話し合ったヤルタ会談やポツダム会談など、戦争の終盤には戦後処理をめぐる連合国首脳の会談が相次いだ。",
+      "explanation": "1939年から1945年にかけて、枢軸国(ドイツ・イタリア・日本など)と連合国の間で世界規模で戦われた、人類史上最大の戦争。",
+      "example_ja": "第二次世界大戦は1939年、ドイツがポーランドに侵攻したことをきっかけにヨーロッパで始まり、イギリスとフランスを紛争に引き込んだ。",
+      "example_ja_src": "World War II began in Europe in 1939 when Germany invaded Poland, drawing Britain and France into the conflict."
+    }
+  },
+  {
+    "english": "Holocaust",
+    "detail": {
+      "pronunciation": "/ˈhɒləkɔːst/",
+      "pos": "名詞",
+      "meanings": [
+        "ホロコースト",
+        "ナチス・ドイツによるユダヤ人等の組織的大量虐殺"
+      ],
+      "examples": [
+        {
+          "en": "The Holocaust refers to the systematic murder of millions of Jews and other targeted groups by Nazi Germany during World War II.",
+          "ja": "ホロコーストとは、第二次世界大戦中にナチス・ドイツが数百万人のユダヤ人やその他の標的とされた人々を組織的に殺害した出来事を指す。"
+        },
+        {
+          "en": "Museums and memorials around the world preserve survivor testimonies so that the horrors of the Holocaust are not forgotten.",
+          "ja": "世界各地の博物館や記念施設は、ホロコーストの惨劇が忘れ去られないよう、生存者の証言を保存している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Shoah",
+          "note": "ヘブライ語に由来し、特にユダヤ人社会でこの出来事を指すのに使われる呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ギリシャ語で「焼き尽くす」を意味する holokauston に由来する語で、もとは宗教的な焼却の生贄を指した。",
+      "trivia": "正確な犠牲者数については資料の制約もあり研究者間で推定に幅があるが、ユダヤ人だけで推定600万人が犠牲になったとされることが多い。",
+      "explanation": "第二次世界大戦中、ナチス・ドイツがユダヤ人をはじめとする人々を組織的に迫害し、強制収容所などで大量に殺害した出来事。犠牲者はユダヤ人だけで推定600万人ともされる。",
+      "example_ja": "ホロコーストとは、第二次世界大戦中にナチス・ドイツが数百万人のユダヤ人やその他の標的とされた人々を組織的に殺害した出来事を指す。",
+      "example_ja_src": "The Holocaust refers to the systematic murder of millions of Jews and other targeted groups by Nazi Germany during World War II."
+    }
+  },
+  {
+    "english": "Yalta Conference",
+    "detail": {
+      "pronunciation": "/ˈjɔːltə ˈkɒnfərəns/",
+      "pos": "名詞",
+      "meanings": [
+        "ヤルタ会談"
+      ],
+      "examples": [
+        {
+          "en": "At the Yalta Conference, Roosevelt, Churchill, and Stalin discussed how postwar Europe would be divided among the Allied powers.",
+          "ja": "ヤルタ会談で、ローズヴェルト、チャーチル、スターリンは、戦後のヨーロッパを連合国の間でどのように分割するかを話し合った。"
+        },
+        {
+          "en": "Decisions made at the Yalta Conference later influenced the division of Europe during the early Cold War.",
+          "ja": "ヤルタ会談で下された決定は、後に冷戦初期のヨーロッパ分断のあり方にも影響を与えた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Potsdam Conference",
+          "note": "同じ大戦末期の会談だが、ヤルタ会談より後、ドイツ降伏後に開かれたもの。"
+        }
+      ],
+      "origin": "会談が開かれたソ連領クリミア半島の保養地ヤルタの地名にちなむ。",
+      "trivia": "この会談での合意の一部(特にポーランドなど東欧の扱い)は、後年その解釈をめぐって連合国間で意見の相違が生じたとされる。",
+      "explanation": "1945年2月、第二次世界大戦の終結が見え始めた時期に、アメリカ・イギリス・ソ連の首脳がソ連領クリミア半島のヤルタで開き、戦後のヨーロッパの秩序や国際連合の設立などを話し合った会談。",
+      "example_ja": "ヤルタ会談で、ローズヴェルト、チャーチル、スターリンは、戦後のヨーロッパを連合国の間でどのように分割するかを話し合った。",
+      "example_ja_src": "At the Yalta Conference, Roosevelt, Churchill, and Stalin discussed how postwar Europe would be divided among the Allied powers."
+    }
+  },
+  {
+    "english": "Potsdam Conference",
+    "detail": {
+      "pronunciation": "/ˈpɒtsdæm ˈkɒnfərəns/",
+      "pos": "名詞",
+      "meanings": [
+        "ポツダム会談"
+      ],
+      "examples": [
+        {
+          "en": "The Potsdam Conference addressed how defeated Germany would be occupied and administered by the Allied powers.",
+          "ja": "ポツダム会談では、敗戦したドイツを連合国がどのように占領・統治するかが話し合われた。"
+        },
+        {
+          "en": "During the Potsdam Conference, the Allied leaders issued a declaration demanding Japan's unconditional surrender.",
+          "ja": "ポツダム会談の期間中、連合国首脳は日本に対して無条件降伏を求める宣言を発表した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Yalta Conference",
+          "note": "同じ大戦末期の会談だが、こちらより前、ドイツ降伏前に開かれたもの。"
+        }
+      ],
+      "origin": "会談が開かれたベルリン郊外の都市ポツダムの地名にちなむ。",
+      "trivia": "会談の途中でアメリカの大統領がルーズベルトの死去に伴いトルーマンに代わっており、参加した首脳の顔ぶれがヤルタ会談時とは変化していた。",
+      "explanation": "1945年7月から8月、ドイツ降伏後の戦後処理を話し合うため、アメリカ・イギリス・ソ連の首脳がベルリン郊外のポツダムで開いた会談。日本への降伏要求(ポツダム宣言)もここで発表された。",
+      "example_ja": "ポツダム会談では、敗戦したドイツを連合国がどのように占領・統治するかが話し合われた。",
+      "example_ja_src": "The Potsdam Conference addressed how defeated Germany would be occupied and administered by the Allied powers."
+    }
+  },
+  {
+    "english": "Marshall Plan",
+    "detail": {
+      "pronunciation": "/ˈmɑːrʃəl plæn/",
+      "pos": "名詞",
+      "meanings": [
+        "マーシャル・プラン",
+        "アメリカによる西ヨーロッパ復興援助計画"
+      ],
+      "examples": [
+        {
+          "en": "The Marshall Plan provided billions of dollars in American aid to help rebuild the economies of war-torn Western Europe.",
+          "ja": "マーシャル・プランは、戦争で荒廃した西ヨーロッパの経済復興を助けるため、アメリカから数十億ドル規模の援助を提供した。"
+        },
+        {
+          "en": "Some historians argue the Marshall Plan also aimed to stop the spread of Soviet influence in Western Europe.",
+          "ja": "一部の歴史家は、マーシャル・プランには西ヨーロッパにおけるソ連の影響力拡大を食い止める狙いもあったと指摘している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "European Recovery Program",
+          "note": "マーシャル・プランの正式名称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "計画を提唱したアメリカの国務長官ジョージ・マーシャルの名にちなむ。",
+      "trivia": "マーシャル・プランへの参加はソ連や東欧諸国にも一応呼びかけられたが、ソ連側の反対により実際には西側諸国のみが参加した。",
+      "explanation": "第二次世界大戦後の1948年から、アメリカが戦争で疲弊した西ヨーロッパ諸国の経済復興を支援するために行った大規模な援助計画。冷戦下でソ連の影響力拡大を防ぐ狙いもあったとされる。",
+      "example_ja": "マーシャル・プランは、戦争で荒廃した西ヨーロッパの経済復興を助けるため、アメリカから数十億ドル規模の援助を提供した。",
+      "example_ja_src": "The Marshall Plan provided billions of dollars in American aid to help rebuild the economies of war-torn Western Europe."
+    }
+  },
+  {
+    "english": "Truman Doctrine",
+    "detail": {
+      "pronunciation": "/ˈtruːmən ˈdɒktrɪn/",
+      "pos": "名詞",
+      "meanings": [
+        "トルーマン・ドクトリン"
+      ],
+      "examples": [
+        {
+          "en": "The Truman Doctrine committed the United States to supporting countries threatened by the spread of communism.",
+          "ja": "トルーマン・ドクトリンは、共産主義の拡大に脅かされている国々を支援することをアメリカに義務付けるものだった。"
+        },
+        {
+          "en": "The Truman Doctrine was first applied to justify American aid to Greece and Turkey in the late 1940s.",
+          "ja": "トルーマン・ドクトリンは、1940年代末にギリシャとトルコへのアメリカの援助を正当化するために最初に適用された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "提唱者であるアメリカ大統領ハリー・トルーマンの名にちなむ。",
+      "trivia": "この方針は、以後長く続く「封じ込め(containment)」政策の出発点の一つとされる。",
+      "explanation": "1947年、アメリカ大統領トルーマンが表明した外交方針。共産主義の勢力拡大に対抗するため、脅威にさらされた自由主義諸国を軍事的・経済的に支援することを掲げた。",
+      "example_ja": "トルーマン・ドクトリンは、共産主義の拡大に脅かされている国々を支援することをアメリカに義務付けるものだった。",
+      "example_ja_src": "The Truman Doctrine committed the United States to supporting countries threatened by the spread of communism."
+    }
+  },
+  {
+    "english": "Berlin Wall",
+    "detail": {
+      "pronunciation": "/bɜːrˈlɪn wɔːl/",
+      "pos": "名詞",
+      "meanings": [
+        "ベルリンの壁"
+      ],
+      "examples": [
+        {
+          "en": "The Berlin Wall divided the city for nearly three decades before it finally fell in 1989.",
+          "ja": "ベルリンの壁は、1989年についに崩壊するまで、およそ30年近くにわたって街を分断していた。"
+        },
+        {
+          "en": "Crossing the Berlin Wall without permission was extremely dangerous, and many people died attempting to escape to the West.",
+          "ja": "許可なくベルリンの壁を越えることは非常に危険であり、西側への脱出を試みて命を落とした人も少なくなかったとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "壁が築かれた都市ベルリンの名にちなむ。",
+      "trivia": "壁の崩壊は東西冷戦終結の象徴的な出来事とされ、その翌年の1990年に東西ドイツは再統一された。",
+      "explanation": "1961年、東ドイツが東西ベルリンの境界に築いた壁。東側からの人々の流出を防ぐ目的があり、冷戦下でのヨーロッパ分断を象徴する存在となった。1989年に崩壊した。",
+      "example_ja": "ベルリンの壁は、1989年についに崩壊するまで、およそ30年近くにわたって街を分断していた。",
+      "example_ja_src": "The Berlin Wall divided the city for nearly three decades before it finally fell in 1989."
+    }
+  },
+  {
+    "english": "Warsaw Pact",
+    "detail": {
+      "pronunciation": "/ˈwɔːrsɔː pækt/",
+      "pos": "名詞",
+      "meanings": [
+        "ワルシャワ条約機構"
+      ],
+      "examples": [
+        {
+          "en": "The Warsaw Pact was formed as a Soviet-led military alliance to counterbalance NATO in Cold War Europe.",
+          "ja": "ワルシャワ条約機構は、冷戦下のヨーロッパにおいてNATOに対抗するため、ソ連主導の軍事同盟として結成された。"
+        },
+        {
+          "en": "The Warsaw Pact dissolved in 1991 as the Soviet Union itself was collapsing.",
+          "ja": "ワルシャワ条約機構は、ソ連自体が崩壊しつつあった1991年に解体された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "NATO",
+          "note": "西側諸国が結成した対抗的な軍事同盟。"
+        }
+      ],
+      "origin": "条約が調印されたポーランドの首都ワルシャワの地名にちなむ。",
+      "trivia": "ワルシャワ条約機構加盟国の多くは、1989年前後の東欧革命を経て、後にNATOやEUへの加盟を目指すようになった。",
+      "explanation": "1955年、ソ連と東欧の社会主義諸国が結成した軍事同盟。西側諸国の軍事同盟であるNATO(北大西洋条約機構)に対抗する目的で作られた。",
+      "example_ja": "ワルシャワ条約機構は、冷戦下のヨーロッパにおいてNATOに対抗するため、ソ連主導の軍事同盟として結成された。",
+      "example_ja_src": "The Warsaw Pact was formed as a Soviet-led military alliance to counterbalance NATO in Cold War Europe."
+    }
+  },
+  {
+    "english": "Space Race",
+    "detail": {
+      "pronunciation": "/speɪs reɪs/",
+      "pos": "名詞",
+      "meanings": [
+        "宇宙開発競争"
+      ],
+      "examples": [
+        {
+          "en": "The Space Race between the United States and the Soviet Union led to major milestones like the first satellite launch and the first Moon landing.",
+          "ja": "アメリカとソ連の宇宙開発競争は、初の人工衛星打ち上げや初の月面着陸といった大きな節目をもたらした。"
+        },
+        {
+          "en": "The Soviet Union took an early lead in the Space Race by launching Sputnik, the first artificial satellite, in 1957.",
+          "ja": "ソ連は1957年に世界初の人工衛星スプートニクを打ち上げ、宇宙開発競争で早い段階から先行した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「軍拡競争(arms race)」になぞらえて名付けられた表現とされる。",
+      "trivia": "アメリカは1969年のアポロ11号による有人月面着陸によって、この競争で優位に立ったとされることが多い。",
+      "explanation": "冷戦下でアメリカとソ連が国家の威信をかけて繰り広げた、人工衛星の打ち上げや有人宇宙飛行、月面着陸などをめぐる技術開発競争。",
+      "example_ja": "アメリカとソ連の宇宙開発競争は、初の人工衛星打ち上げや初の月面着陸といった大きな節目をもたらした。",
+      "example_ja_src": "The Space Race between the United States and the Soviet Union led to major milestones like the first satellite launch and the first Moon landing."
+    }
+  },
+  {
+    "english": "Tudor dynasty",
+    "detail": {
+      "pronunciation": "/ˈtjuːdər ˈdaɪnəsti/",
+      "pos": "名詞",
+      "meanings": [
+        "テューダー朝",
+        "1485年から1603年まで続いたイングランドの王朝"
+      ],
+      "examples": [
+        {
+          "en": "The Tudor dynasty began when Henry VII defeated Richard III at the Battle of Bosworth Field in 1485.",
+          "ja": "テューダー朝は、1485年にヘンリー7世がボズワースの戦いでリチャード3世を破ったことで始まった。"
+        },
+        {
+          "en": "Henry VIII and his daughter Elizabeth I were among the most famous rulers of the Tudor dynasty.",
+          "ja": "ヘンリー8世とその娘エリザベス1世は、テューダー朝の中でも特に有名な君主として知られる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "House of Tudor",
+          "note": "同じ王朝を指す別の呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "王朝の祖ヘンリー7世の父方の姓「テューダー(Tudor)」に由来する。テューダー家はウェールズ系の家系だったとされる。",
+      "trivia": "テューダー朝の間にイングランドではローマ・カトリックからの離脱を経て英国国教会が成立するなど、宗教面でも大きな転換が起きた。",
+      "explanation": "1485年のボズワースの戦いでの勝利を経てヘンリー7世が王位に就いてから、1603年にエリザベス1世が没するまで続いた、テューダー家によるイングランドの王朝。",
+      "example_ja": "テューダー朝は、1485年にヘンリー7世がボズワースの戦いでリチャード3世を破ったことで始まった。",
+      "example_ja_src": "The Tudor dynasty began when Henry VII defeated Richard III at the Battle of Bosworth Field in 1485."
+    }
+  },
+  {
+    "english": "Elizabethan era",
+    "detail": {
+      "pronunciation": "/ɪˌlɪzəˈbiːθən ˈɪərə/",
+      "pos": "名詞",
+      "meanings": [
+        "エリザベス朝時代",
+        "エリザベス1世治世下(1558〜1603年)のイングランドの時代"
+      ],
+      "examples": [
+        {
+          "en": "Many of Shakespeare's most famous plays were written during the Elizabethan era.",
+          "ja": "シェイクスピアの最も有名な戯曲の多くは、エリザベス朝時代に書かれた。"
+        },
+        {
+          "en": "The English defeat of the Spanish Armada in 1588 is often remembered as a defining moment of the Elizabethan era.",
+          "ja": "1588年にイングランドがスペイン無敵艦隊を撃退したことは、エリザベス朝時代を象徴する出来事としてしばしば語られる。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "Elizabethan",
+          "pos": "形容詞",
+          "ja": "エリザベス朝の、エリザベス1世時代の"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "在位した君主エリザベス1世(Elizabeth I)の名にちなむ。",
+      "trivia": "演劇の黄金期であると同時に、海外進出や海軍力の強化が進み、後の大英帝国の礎が築かれ始めた時期でもあるとされる。",
+      "explanation": "エリザベス1世が統治した1558年から1603年までの時代を指す語で、シェイクスピアの演劇作品やスペイン無敵艦隊の撃退など、文化と国力の両面でイングランドが大きく発展した時期として知られる。",
+      "example_ja": "シェイクスピアの最も有名な戯曲の多くは、エリザベス朝時代に書かれた。",
+      "example_ja_src": "Many of Shakespeare's most famous plays were written during the Elizabethan era."
+    }
+  },
+  {
+    "english": "Petition of Right",
+    "detail": {
+      "pronunciation": "/pəˈtɪʃən əv raɪt/",
+      "pos": "名詞",
+      "meanings": [
+        "権利の請願",
+        "1628年に議会がチャールズ1世に提出した、国王の権限を制限する文書"
+      ],
+      "examples": [
+        {
+          "en": "Parliament drafted the Petition of Right to stop the king from imprisoning subjects without trial.",
+          "ja": "議会は、国王が裁判なしに臣民を投獄するのを止めさせるため、権利の請願を起草した。"
+        },
+        {
+          "en": "The Petition of Right insisted that no tax could be levied without the consent of Parliament.",
+          "ja": "権利の請願は、議会の同意なしにいかなる課税もできないと主張した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "議会がチャールズ1世に対して従来の権利の確認を「請願(petition)」という形式で求めたことに由来する名称。",
+      "trivia": "起草には法律家・政治家であったエドワード・クックが深く関わったとされ、その理念は後のアメリカ独立期の政治思想にも影響を与えたとされる。",
+      "explanation": "1628年に議会がチャールズ1世に提出し、国王の同意なしに課税したり、法に基づかずに人を逮捕・投獄したりすることを禁じるよう求めた文書で、後のイギリス憲政史における重要な先例となった。",
+      "example_ja": "議会は、国王が裁判なしに臣民を投獄するのを止めさせるため、権利の請願を起草した。",
+      "example_ja_src": "Parliament drafted the Petition of Right to stop the king from imprisoning subjects without trial."
+    }
+  },
+  {
+    "english": "English Civil War",
+    "detail": {
+      "pronunciation": "/ˈɪŋglɪʃ ˈsɪvəl wɔːr/",
+      "pos": "名詞",
+      "meanings": [
+        "イングランド内戦",
+        "王党派と議会派の間で戦われた17世紀の内戦"
+      ],
+      "examples": [
+        {
+          "en": "The English Civil War ended with the execution of King Charles I and the establishment of a republic.",
+          "ja": "イングランド内戦は、国王チャールズ1世の処刑と共和政の樹立という結末を迎えた。"
+        },
+        {
+          "en": "Oliver Cromwell rose to prominence as a military leader during the English Civil War.",
+          "ja": "オリバー・クロムウェルは、イングランド内戦の中で軍事指導者として頭角を現した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Wars of the Three Kingdoms",
+          "note": "イングランドだけでなくスコットランド・アイルランドも含めた、より広い視点からの呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「内戦(civil war)」に国名を冠した呼び方で、同時期に他国で起きた内戦と区別するために用いられる。",
+      "trivia": "戦争の結果、国王チャールズ1世は1649年に処刑され、イングランドは一時的に共和政(コモンウェルス)となった。",
+      "explanation": "17世紀のイングランドで、国王チャールズ1世を支持する王党派と、議会の権限強化を求める議会派との間で戦われた一連の内戦(1642年頃〜1651年頃)。最終的に国王が処刑され、一時的に共和政が樹立された。",
+      "example_ja": "イングランド内戦は、国王チャールズ1世の処刑と共和政の樹立という結末を迎えた。",
+      "example_ja_src": "The English Civil War ended with the execution of King Charles I and the establishment of a republic."
+    }
+  },
+  {
+    "english": "Restoration of 1660",
+    "detail": {
+      "pronunciation": "/ˌrɛstəˈreɪʃən əv ˈsɪkstiːn ˈsɪksti/",
+      "pos": "名詞",
+      "meanings": [
+        "1660年の王政復古",
+        "共和政の後にチャールズ2世が王位に復帰した出来事"
+      ],
+      "examples": [
+        {
+          "en": "The Restoration of 1660 brought Charles II back to the throne after years of republican rule.",
+          "ja": "1660年の王政復古により、長年の共和政の後にチャールズ2世が王位に復帰した。"
+        },
+        {
+          "en": "Theatres, which had been closed under Puritan rule, reopened soon after the Restoration of 1660.",
+          "ja": "ピューリタンの統治下で閉鎖されていた劇場は、1660年の王政復古の後まもなく再開された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "English Restoration",
+          "note": "同じ出来事を指す別の呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "一度失われた王政が「復旧(restoration)」した、という意味合いから付けられた呼び方。",
+      "trivia": "クロムウェルの死後、後継体制が安定しなかったことなどを背景に、議会がチャールズ2世を招く形で実現したとされる。",
+      "explanation": "共和政の崩壊後、1660年にチャールズ2世が亡命先から呼び戻されてイングランド国王に復位し、王政が再び樹立された出来事。",
+      "example_ja": "1660年の王政復古により、長年の共和政の後にチャールズ2世が王位に復帰した。",
+      "example_ja_src": "The Restoration of 1660 brought Charles II back to the throne after years of republican rule."
+    }
+  },
+  {
+    "english": "English Bill of Rights",
+    "detail": {
+      "pronunciation": "/ˈɪŋglɪʃ bɪl əv raɪts/",
+      "pos": "名詞",
+      "meanings": [
+        "権利章典",
+        "1689年に制定された、国王の権限を制限する法"
+      ],
+      "examples": [
+        {
+          "en": "The English Bill of Rights of 1689 limited royal power and strengthened the authority of Parliament.",
+          "ja": "1689年の権利章典は、国王の権限を制限し、議会の権威を強化した。"
+        },
+        {
+          "en": "Under the English Bill of Rights, the monarch could no longer suspend laws without Parliament's consent.",
+          "ja": "権利章典のもとでは、国王は議会の同意なしに法律の効力を停止することができなくなった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "名誉革命(1688年)の翌年、新たに即位したウィリアム3世とメアリー2世が議会の提示した条件を受け入れる形で成立した。",
+      "trivia": "この文書は後のアメリカ合衆国憲法の権利章典(修正第1条〜第10条)にも影響を与えたとされる。",
+      "explanation": "1689年に議会が制定した法で、国王の権限を制限し、議会の同意なき課税や平時の常備軍維持を禁じるとともに、議会での言論の自由などを保障した、イングランドの立憲君主制の基礎となった文書。",
+      "example_ja": "1689年の権利章典は、国王の権限を制限し、議会の権威を強化した。",
+      "example_ja_src": "The English Bill of Rights of 1689 limited royal power and strengthened the authority of Parliament."
+    }
+  },
+  {
+    "english": "Acts of Union 1707",
+    "detail": {
+      "pronunciation": "/ækts əv ˈjuːnjən ˈsɛvəntiːn oʊ ˈsɛvən/",
+      "pos": "名詞",
+      "meanings": [
+        "1707年合同法",
+        "イングランドとスコットランドを統合した一連の法律"
+      ],
+      "examples": [
+        {
+          "en": "The Acts of Union 1707 merged the kingdoms of England and Scotland into a single Kingdom of Great Britain.",
+          "ja": "1707年合同法により、イングランド王国とスコットランド王国は統合され、単一のグレートブリテン王国となった。"
+        },
+        {
+          "en": "After the Acts of Union 1707, England and Scotland shared a single parliament in Westminster.",
+          "ja": "1707年合同法の後、イングランドとスコットランドはウェストミンスターの単一の議会を共有することになった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "同一内容の法律がイングランド議会とスコットランド議会の双方で可決されたことから、複数形の\"Acts\"が使われる。",
+      "trivia": "両国はそれ以前の1603年から同君連合(同一の国王を戴く別々の王国)の状態にあったが、この法律によって単一の主権国家となった。",
+      "explanation": "1707年にイングランド議会とスコットランド議会がそれぞれ可決し、両王国を統合してグレートブリテン王国を成立させた一連の法律。",
+      "example_ja": "1707年合同法により、イングランド王国とスコットランド王国は統合され、単一のグレートブリテン王国となった。",
+      "example_ja_src": "The Acts of Union 1707 merged the kingdoms of England and Scotland into a single Kingdom of Great Britain."
+    }
+  },
+  {
+    "english": "British Empire",
+    "detail": {
+      "pronunciation": "/ˈbrɪtɪʃ ˈɛmpaɪər/",
+      "pos": "名詞",
+      "meanings": [
+        "大英帝国",
+        "イギリスが世界各地に築いた植民地帝国"
+      ],
+      "examples": [
+        {
+          "en": "At its height, the British Empire was often described as the empire on which the sun never set.",
+          "ja": "最盛期の大英帝国は、しばしば「太陽の沈まぬ帝国」と称された。"
+        },
+        {
+          "en": "The British Empire once included colonies and territories on almost every continent.",
+          "ja": "大英帝国はかつて、ほぼすべての大陸に植民地や領土を有していた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「帝国(empire)」は単一の君主のもとに複数の地域・民族を統治する広大な政治体を指す一般的な語で、それに「British」を冠した呼び方。",
+      "trivia": "第二次世界大戦後、多くの植民地が独立を果たしたことで帝国は解体に向かい、その多くは現在ゆるやかな連合体であるコモンウェルス(Commonwealth of Nations)に加盟している。",
+      "explanation": "16世紀末以降イングランド(後にイギリス)が世界各地に築いた植民地・自治領・保護領などから成る広大な勢力圏で、最盛期の20世紀初頭には地球上の陸地の4分の1近くを占めたとされる。",
+      "example_ja": "最盛期の大英帝国は、しばしば「太陽の沈まぬ帝国」と称された。",
+      "example_ja_src": "At its height, the British Empire was often described as the empire on which the sun never set."
+    }
+  },
+  {
+    "english": "enclosure movement",
+    "detail": {
+      "pronunciation": "/ɪnˈkloʊʒər ˈmuːvmənt/",
+      "pos": "名詞",
+      "meanings": [
+        "囲い込み運動",
+        "共有地を個人所有の農地に転換していった動き"
+      ],
+      "examples": [
+        {
+          "en": "The enclosure movement gradually turned open common fields into fenced private farmland.",
+          "ja": "囲い込み運動は、開放された共有耕地を柵で囲まれた個人所有の農地へと徐々に変えていった。"
+        },
+        {
+          "en": "Many small farmers lost access to common land as a result of the enclosure movement.",
+          "ja": "囲い込み運動の結果、多くの小農民が共有地を利用する権利を失ったとされる。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "enclose",
+          "pos": "動詞",
+          "ja": "(土地を)柵や生垣で囲う"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "土地を柵や生垣で「囲い込む(enclose)」行為そのものから付けられた呼び方。",
+      "trivia": "中世から断続的に見られたが、特に18世紀後半から19世紀にかけて議会の制定法(議会エンクロージャー)によって加速したとされる。",
+      "explanation": "中世以来共同で利用されてきた開放耕地や共有地を、地主が生垣や柵で区切って個人所有の農地へと転換していった、イギリスで長期間にわたり進行した動き。効率的な農業経営を可能にした一方で、多くの小農民が土地を追われる結果になったとされる。",
+      "example_ja": "囲い込み運動は、開放された共有耕地を柵で囲まれた個人所有の農地へと徐々に変えていった。",
+      "example_ja_src": "The enclosure movement gradually turned open common fields into fenced private farmland."
+    }
+  },
+  {
+    "english": "Corn Laws",
+    "detail": {
+      "pronunciation": "/kɔːrn lɔːz/",
+      "pos": "名詞",
+      "meanings": [
+        "穀物法",
+        "輸入穀物に高関税を課していた19世紀イギリスの法律"
+      ],
+      "examples": [
+        {
+          "en": "The Corn Laws kept grain prices high by restricting cheap imports, until they were repealed in 1846.",
+          "ja": "穀物法は安価な輸入を制限することで穀物価格を高く保っていたが、1846年に廃止された。"
+        },
+        {
+          "en": "The Anti-Corn Law League campaigned for years before Parliament finally repealed the Corn Laws.",
+          "ja": "反穀物法同盟は、議会が最終的に穀物法を廃止するまで、長年にわたり運動を続けた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "英語の\"corn\"は本来トウモロコシに限らず穀物全般を指す語で、当時の主要穀物である小麦などへの関税を定めた一連の法律をまとめてこう呼んだ。",
+      "trivia": "首相ロバート・ピールが自らの所属政党の反対を押し切って廃止を実現したことで知られ、この決断は保守党の分裂につながったとされる。",
+      "explanation": "19世紀前半のイギリスで、輸入穀物に高い関税を課すことで国内の地主・農業者を保護していた一連の法律。都市労働者のパン価格を押し上げるとして反対運動が起こり、1846年に廃止された。",
+      "example_ja": "穀物法は安価な輸入を制限することで穀物価格を高く保っていたが、1846年に廃止された。",
+      "example_ja_src": "The Corn Laws kept grain prices high by restricting cheap imports, until they were repealed in 1846."
+    }
+  },
+  {
+    "english": "Chartism",
+    "detail": {
+      "pronunciation": "/ˈtʃɑːrtɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "チャーティズム",
+        "人民憲章を掲げた19世紀イギリスの労働者階級による政治運動"
+      ],
+      "examples": [
+        {
+          "en": "Chartism called for universal male suffrage and other democratic reforms to the British Parliament.",
+          "ja": "チャーティズムは、成人男性普通選挙権をはじめとする議会の民主的改革を求めた。"
+        },
+        {
+          "en": "Supporters of Chartism collected millions of signatures on petitions demanding electoral reform.",
+          "ja": "チャーティズムの支持者たちは、選挙制度改革を求める請願に数百万人分の署名を集めたとされる。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "Chartist",
+          "pos": "名詞",
+          "ja": "チャーティズム運動の支持者"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "運動の要求をまとめた文書「人民憲章(People's Charter)」に由来する名称。",
+      "trivia": "掲げた要求の多くは当時実現しなかったが、成人男性普通選挙権など主要な内容はその後数十年をかけて段階的に実現していったとされる。",
+      "explanation": "1838年に発表された「人民憲章」を掲げ、成人男性普通選挙権や議員への歳費支給など議会改革を求めた、19世紀イギリスの労働者階級による政治運動。",
+      "example_ja": "チャーティズムは、成人男性普通選挙権をはじめとする議会の民主的改革を求めた。",
+      "example_ja_src": "Chartism called for universal male suffrage and other democratic reforms to the British Parliament."
+    }
+  },
+  {
+    "english": "Peterloo Massacre",
+    "detail": {
+      "pronunciation": "/ˌpiːtərˈluː ˈmæsəkər/",
+      "pos": "名詞",
+      "meanings": [
+        "ピータールーの虐殺",
+        "1819年にマンチェスターで起きた、騎兵隊による群衆への突入事件"
+      ],
+      "examples": [
+        {
+          "en": "The Peterloo Massacre shocked the public and helped fuel the movement for parliamentary reform.",
+          "ja": "ピータールーの虐殺は世間に衝撃を与え、議会改革を求める運動を後押しする一因となった。"
+        },
+        {
+          "en": "News of the Peterloo Massacre spread quickly and turned public opinion against the government's use of force.",
+          "ja": "ピータールーの虐殺のニュースは急速に広まり、世論を政府の武力行使に対して批判的な方向へと向かわせた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1815年のワーテルローの戦い(Battle of Waterloo)にちなみ、自国民に対する武力行使を皮肉って“Peterloo”という造語が広まったとされる。",
+      "trivia": "この事件を機に集会の自由を制限する法律(いわゆる六法)が制定される一方、長期的には選挙制度改革を求める世論を後押ししたとされる。",
+      "explanation": "1819年、選挙権拡大などを求めてマンチェスターのセント・ピーターズ・フィールドに集まっていた群衆に騎兵隊が突入し、推定で十数人が死亡、数百人が負傷したとされる事件。政府への批判が高まる契機となった。",
+      "example_ja": "ピータールーの虐殺は世間に衝撃を与え、議会改革を求める運動を後押しする一因となった。",
+      "example_ja_src": "The Peterloo Massacre shocked the public and helped fuel the movement for parliamentary reform."
+    }
+  },
+  {
+    "english": "Victorian era",
+    "detail": {
+      "pronunciation": "/vɪkˈtɔːriən ˈɪərə/",
+      "pos": "名詞",
+      "meanings": [
+        "ヴィクトリア朝時代",
+        "ヴィクトリア女王治世下(1837〜1901年)のイギリスの時代"
+      ],
+      "examples": [
+        {
+          "en": "Many grand railway stations and civic buildings in Britain were constructed during the Victorian era.",
+          "ja": "イギリスの壮麗な鉄道駅や公共建築の多くは、ヴィクトリア朝時代に建てられた。"
+        },
+        {
+          "en": "Strict manners and rigid social class distinctions are often associated with the Victorian era.",
+          "ja": "厳格な礼儀作法や硬直的な社会階級の区別は、しばしばヴィクトリア朝時代と結び付けて語られる。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "Victorian",
+          "pos": "形容詞",
+          "ja": "ヴィクトリア朝の、ヴィクトリア朝時代に特徴的な"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "在位した君主ヴィクトリア女王(Queen Victoria)の名にちなむ。",
+      "trivia": "鉄道網の拡大や1851年の万国博覧会の開催など、産業と技術が急速に発展した時代の象徴としても知られる。",
+      "explanation": "ヴィクトリア女王が在位した1837年から1901年までの時代を指す語で、産業や大英帝国の拡大が進む一方、厳格な社会規範や道徳観が特徴とされる。",
+      "example_ja": "イギリスの壮麗な鉄道駅や公共建築の多くは、ヴィクトリア朝時代に建てられた。",
+      "example_ja_src": "Many grand railway stations and civic buildings in Britain were constructed during the Victorian era."
+    }
+  },
+  {
+    "english": "suffragette",
+    "detail": {
+      "pronunciation": "/ˌsʌfrəˈdʒɛt/",
+      "pos": "名詞",
+      "meanings": [
+        "サフラジェット",
+        "女性参政権を求めて直接行動を行った女性運動家"
+      ],
+      "examples": [
+        {
+          "en": "The suffragette chained herself to the railings outside Parliament to demand women's right to vote.",
+          "ja": "そのサフラジェットは、女性の投票権を求めて議会の外の柵に自らの体を鎖でつないだ。"
+        },
+        {
+          "en": "Emmeline Pankhurst founded the WSPU and became one of the most famous suffragettes in British history.",
+          "ja": "エメリン・パンクハーストはWSPUを設立し、イギリス史上最も有名なサフラジェットの一人となった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "suffrage",
+          "pos": "名詞",
+          "ja": "参政権、選挙権"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "suffragist",
+          "note": "直接行動ではなく、合法的・穏健な手段によって女性参政権を求めた活動家を指す語。"
+        }
+      ],
+      "origin": "投票権を意味する\"suffrage\"に接尾辞を付けた語で、当初は新聞が運動をやや揶揄する意味合いで使い始めたとされるが、後に運動家自身も好んで用いるようになったとされる。",
+      "trivia": "1918年に一部の女性(30歳以上など条件付き)にまず選挙権が認められ、1928年になってようやく男性と同条件での普通選挙権が実現したとされる。",
+      "explanation": "20世紀初頭のイギリスで、女性参政権の獲得を目指し、デモ行進や投獄も辞さない直接行動を伴う活動を行った女性運動家。特に婦人社会政治連盟(WSPU)に参加した人々を指すことが多い。",
+      "example_ja": "そのサフラジェットは、女性の投票権を求めて議会の外の柵に自らの体を鎖でつないだ。",
+      "example_ja_src": "The suffragette chained herself to the railings outside Parliament to demand women's right to vote."
+    }
+  },
+  {
+    "english": "Battle of Britain",
+    "detail": {
+      "pronunciation": "/ˈbætəl əv ˈbrɪtən/",
+      "pos": "名詞",
+      "meanings": [
+        "バトル・オブ・ブリテン",
+        "1940年にイギリス空軍がドイツ空軍の航空攻撃を退けた戦い"
+      ],
+      "examples": [
+        {
+          "en": "The Royal Air Force won the Battle of Britain by preventing the Luftwaffe from gaining control of the skies.",
+          "ja": "イギリス空軍は、ドイツ空軍に制空権を握らせなかったことでバトル・オブ・ブリテンに勝利した。"
+        },
+        {
+          "en": "Winston Churchill praised the fighter pilots of the Battle of Britain in one of his most famous speeches.",
+          "ja": "ウィンストン・チャーチルは、最も有名な演説の一つの中でバトル・オブ・ブリテンの戦闘機パイロットたちを称賛した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「イギリス(本土)をめぐる戦い」という意味合いの名称で、ドイツ軍による上陸作戦の前提条件だった制空権争いを指す。",
+      "trivia": "チャーチルが議会で述べた「これほど多くの人が、これほど少数の人々に、これほど恩義を受けたことはかつてない」という言葉は、この戦いのパイロットたちを称えたものとして知られる。",
+      "explanation": "1940年、ドイツ空軍によるイギリス本土上陸作戦の前提となる制空権の獲得を狙った大規模な航空攻撃を、イギリス空軍が防ぎきった戦い。",
+      "example_ja": "イギリス空軍は、ドイツ空軍に制空権を握らせなかったことでバトル・オブ・ブリテンに勝利した。",
+      "example_ja_src": "The Royal Air Force won the Battle of Britain by preventing the Luftwaffe from gaining control of the skies."
+    }
+  },
+  {
+    "english": "the Blitz",
+    "detail": {
+      "pronunciation": "/ðə blɪts/",
+      "pos": "名詞",
+      "meanings": [
+        "ザ・ブリッツ",
+        "1940〜41年のドイツ軍によるイギリス諸都市への集中空爆"
+      ],
+      "examples": [
+        {
+          "en": "Thousands of Londoners sheltered in underground stations every night during the Blitz.",
+          "ja": "ザ・ブリッツの間、何千人ものロンドン市民が毎晩地下鉄の駅に避難した。"
+        },
+        {
+          "en": "Much of London's East End was heavily damaged during the Blitz.",
+          "ja": "ロンドンのイーストエンドの多くは、ザ・ブリッツの間に大きな被害を受けた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ドイツ語で「電撃」を意味する\"Blitzkrieg(電撃戦)\"を短縮した呼び方が、イギリスでの空爆を指す語として定着した。",
+      "trivia": "空襲を逃れるため、多くの子供たちが都市部から地方へ疎開(evacuation)させられたことでも知られる。",
+      "explanation": "第二次世界大戦中の1940年から1941年にかけて、ドイツ軍がロンドンをはじめとするイギリスの諸都市に対して行った集中的な夜間空爆。",
+      "example_ja": "ザ・ブリッツの間、何千人ものロンドン市民が毎晩地下鉄の駅に避難した。",
+      "example_ja_src": "Thousands of Londoners sheltered in underground stations every night during the Blitz."
+    }
+  },
+  {
+    "english": "Suez Crisis",
+    "detail": {
+      "pronunciation": "/ˈsuːɛz ˈkraɪsɪs/",
+      "pos": "名詞",
+      "meanings": [
+        "スエズ危機",
+        "1956年のスエズ運河国有化をめぐるイギリス・フランス・イスラエルの軍事介入事件"
+      ],
+      "examples": [
+        {
+          "en": "The Suez Crisis is often seen as marking the end of Britain's status as a leading world power.",
+          "ja": "スエズ危機は、イギリスが世界の主要国としての地位を失う転機となった出来事としてしばしば見なされる。"
+        },
+        {
+          "en": "Pressure from the United States forced Britain, France, and Israel to withdraw from Egypt during the Suez Crisis.",
+          "ja": "スエズ危機では、アメリカからの圧力により、イギリス・フランス・イスラエルはエジプトからの撤退を余儀なくされた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "紛争の舞台となったスエズ運河(Suez Canal)の名にちなむ。",
+      "trivia": "この危機の後、イギリスの首相アンソニー・イーデンは辞任に追い込まれ、以後のイギリス外交はアメリカとの協調をより重視する方向に転じたとされる。",
+      "explanation": "1956年、エジプトのナセル大統領がスエズ運河の国有化を宣言したことをきっかけに、イギリス・フランス・イスラエルがエジプトに軍事介入した事件。国際的な批判とアメリカの圧力により撤退に追い込まれ、イギリスの国際的な影響力の後退を象徴する出来事とされる。",
+      "example_ja": "スエズ危機は、イギリスが世界の主要国としての地位を失う転機となった出来事としてしばしば見なされる。",
+      "example_ja_src": "The Suez Crisis is often seen as marking the end of Britain's status as a leading world power."
+    }
+  },
+  {
+    "english": "Irish Home Rule",
+    "detail": {
+      "pronunciation": "/ˈaɪrɪʃ hoʊm ruːl/",
+      "pos": "名詞",
+      "meanings": [
+        "アイルランド自治運動",
+        "アイルランドに連合王国内での自治を求めた政治運動"
+      ],
+      "examples": [
+        {
+          "en": "Irish Home Rule became one of the most contentious political issues in British politics for decades.",
+          "ja": "アイルランド自治は、数十年にわたりイギリス政治で最も論争を呼んだ問題の一つとなった。"
+        },
+        {
+          "en": "William Gladstone introduced several bills in an attempt to grant Irish Home Rule.",
+          "ja": "ウィリアム・グラッドストンは、アイルランド自治の実現を目指して複数回にわたり法案を提出した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「自国のことは自国で治める(home rule)」という趣旨の表現に、対象地域名を冠した呼び方。",
+      "trivia": "1886年と1893年の自治法案はいずれも成立しなかったが、1914年には法律として成立したとされる一方、直後に第一次世界大戦が始まったことなどにより実施は延期されたとされる。",
+      "explanation": "19世紀後半から20世紀初頭にかけて、アイルランドに連合王国内での自治(独自の議会)を認めるよう求めた政治運動、およびそれをめぐる一連の立法上の動き。複数回にわたり法案が議会に提出されたが、その成立や施行の経緯は複雑であったとされる。",
+      "example_ja": "アイルランド自治は、数十年にわたりイギリス政治で最も論争を呼んだ問題の一つとなった。",
+      "example_ja_src": "Irish Home Rule became one of the most contentious political issues in British politics for decades."
+    }
+  },
+  {
+    "english": "Yamato period",
+    "detail": {
+      "pronunciation": "/jɑːˈmɑːtoʊ ˈpɪəriəd/",
+      "pos": "名詞",
+      "meanings": [
+        "大和時代",
+        "古墳時代を経て日本列島の統一が進んだとされる古代の時代区分"
+      ],
+      "examples": [
+        {
+          "en": "During the Yamato period, powerful clans in the Nara basin gradually extended their influence across much of the Japanese archipelago.",
+          "ja": "大和時代、奈良盆地の有力な氏族たちは、次第にその勢力を日本列島の広い範囲へと広げていった。"
+        },
+        {
+          "en": "Archaeologists have found large keyhole-shaped burial mounds, or kofun, built for rulers during the Yamato period.",
+          "ja": "考古学者たちは、大和時代の支配者のために築かれた前方後円墳と呼ばれる大型の古墳を数多く発見している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「大和」は、奈良盆地南東部の一地域名に由来し、後にヤマト政権が勢力を広げるにつれて日本列島全体を指す言葉としても使われるようになったとされる。",
+      "trivia": "この時代の支配者たちの墓とされる前方後円墳は全国に分布しており、中でも大阪府にある大仙陵古墳(仁徳天皇陵に比定)は世界最大級の墳墓の一つとされる。",
+      "explanation": "3世紀ごろから710年まで、奈良盆地を中心とする大和政権が日本列島の統一を進めたとされる時代区分。",
+      "example_ja": "大和時代、奈良盆地の有力な氏族たちは、次第にその勢力を日本列島の広い範囲へと広げていった。",
+      "example_ja_src": "During the Yamato period, powerful clans in the Nara basin gradually extended their influence across much of the Japanese archipelago."
+    }
+  },
+  {
+    "english": "Taika Reform",
+    "detail": {
+      "pronunciation": "/ˈtaɪkə rɪˈfɔːrm/",
+      "pos": "名詞",
+      "meanings": [
+        "大化の改新",
+        "645年以降に進められた、天皇中心の中央集権化を目指す政治改革"
+      ],
+      "examples": [
+        {
+          "en": "The Taika Reform aimed to strip powerful clans of their private landholdings and place all land under the emperor's direct control.",
+          "ja": "大化の改新は、有力氏族から私有地を取り上げ、すべての土地を天皇の直接の支配下に置くことを目指した。"
+        },
+        {
+          "en": "Historians often treat the Taika Reform of 645 as the starting point of Japan's ritsuryo legal and administrative system.",
+          "ja": "歴史家たちは、645年の大化の改新を、日本の律令制度の出発点としてしばしば位置づけている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「大化」は日本で最初に定められたとされる元号で、「大化の改新」という名称もこの元号に由来する。",
+      "trivia": "改新の詔に掲げられた理念がどこまで実際に短期間で実現したかについては、現在の歴史学でも議論が続いており、律令制度が実質的に整うまでには数十年を要したとされる。",
+      "explanation": "645年に中大兄皇子や中臣鎌足らが蘇我氏を打倒した後、唐の律令制度にならって天皇中心の中央集権国家を目指して進めたとされる一連の政治改革。",
+      "example_ja": "大化の改新は、有力氏族から私有地を取り上げ、すべての土地を天皇の直接の支配下に置くことを目指した。",
+      "example_ja_src": "The Taika Reform aimed to strip powerful clans of their private landholdings and place all land under the emperor's direct control."
+    }
+  },
+  {
+    "english": "Nara period",
+    "detail": {
+      "pronunciation": "/ˈnɑːrə ˈpɪəriəd/",
+      "pos": "名詞",
+      "meanings": [
+        "奈良時代",
+        "710年から794年まで、平城京を都とした時代"
+      ],
+      "examples": [
+        {
+          "en": "The great bronze Buddha statue at Todai-ji was cast during the Nara period as a symbol of Buddhist protection for the state.",
+          "ja": "東大寺の巨大な銅製の大仏は、国家を仏教の力で守護する象徴として、奈良時代に鋳造された。"
+        },
+        {
+          "en": "Two of Japan's oldest surviving chronicles, the Kojiki and the Nihon Shoki, were compiled during the Nara period.",
+          "ja": "日本に現存する最古級の歴史書である『古事記』と『日本書紀』は、奈良時代に編纂された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "都が置かれた平城京の名にちなんで「奈良時代」と呼ばれる。平城京は唐の都・長安を模して計画的に造営されたとされる。",
+      "trivia": "奈良時代には遣唐使が盛んに派遣され、中国大陸の制度や文物が積極的に取り入れられたことも、この時代の仏教文化や律令制度の発展を後押ししたとされる。",
+      "explanation": "710年に都が平城京(現在の奈良)に置かれてから794年まで続いたとされる時代。仏教文化が栄え、『古事記』『日本書紀』が編まれた。",
+      "example_ja": "東大寺の巨大な銅製の大仏は、国家を仏教の力で守護する象徴として、奈良時代に鋳造された。",
+      "example_ja_src": "The great bronze Buddha statue at Todai-ji was cast during the Nara period as a symbol of Buddhist protection for the state."
+    }
+  },
+  {
+    "english": "Heian period",
+    "detail": {
+      "pronunciation": "/heɪˈɑːn ˈpɪəriəd/",
+      "pos": "名詞",
+      "meanings": [
+        "平安時代",
+        "794年から1185年ごろまで、平安京を都とした貴族文化の時代"
+      ],
+      "examples": [
+        {
+          "en": "Lady Murasaki wrote The Tale of Genji during the Heian period, when court culture and refined aesthetics flourished in Kyoto.",
+          "ja": "紫式部が『源氏物語』を著したのは平安時代のことで、当時の京都では宮廷文化と洗練された美意識が花開いていた。"
+        },
+        {
+          "en": "The Fujiwara family dominated politics for much of the Heian period by marrying their daughters into the imperial family.",
+          "ja": "藤原氏は、自らの娘を皇室に嫁がせることによって、平安時代の大半にわたり政治の実権を握り続けた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "都が置かれた平安京(現在の京都)の名にちなむ。「平安」の語には、争いのない安らかな都であってほしいという願いが込められていたとされる。",
+      "trivia": "平安時代には仮名文字が発達し、紫式部や清少納言など女性の手による文学作品が数多く生み出された点も特徴とされる。",
+      "explanation": "794年に都が平安京(現在の京都)に移されてから1185年ごろまで続いたとされる時代。藤原氏による摂関政治のもと、貴族的な宮廷文化が花開いた。",
+      "example_ja": "紫式部が『源氏物語』を著したのは平安時代のことで、当時の京都では宮廷文化と洗練された美意識が花開いていた。",
+      "example_ja_src": "Lady Murasaki wrote The Tale of Genji during the Heian period, when court culture and refined aesthetics flourished in Kyoto."
+    }
+  },
+  {
+    "english": "Kamakura shogunate",
+    "detail": {
+      "pronunciation": "/kəˈmɑːkʊrə ˈʃoʊɡəneɪt/",
+      "pos": "名詞",
+      "meanings": [
+        "鎌倉幕府",
+        "源頼朝が開いたとされる、日本最初の武家政権"
+      ],
+      "examples": [
+        {
+          "en": "The Kamakura shogunate marked the beginning of nearly seven centuries of military rule by samurai in Japan.",
+          "ja": "鎌倉幕府の成立は、その後約700年にわたって続く武士による統治の始まりを示すものだった。"
+        },
+        {
+          "en": "The Kamakura shogunate appointed military governors called shugo to oversee each province on its behalf.",
+          "ja": "鎌倉幕府は、各国に守護と呼ばれる軍事的な統治者を任命し、地方の統治を委ねた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Kamakura bakufu",
+          "note": "「幕府」を用いた同じ政権の呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "本拠地とした相模国鎌倉(現在の神奈川県鎌倉市)の地名に由来する。三方を山に、一方を海に囲まれた地形が防衛上有利だったことも、この地が選ばれた理由の一つとされる。",
+      "trivia": "征夷大将軍への就任年をもって幕府成立とみなすか、実質的な支配体制が整った年をもってみなすかで見解が分かれ、成立年については1185年説・1192年説など複数の説があるとされる。",
+      "explanation": "1185年前後に源頼朝が鎌倉に開いたとされる、日本で最初の武家政権。地方に守護・地頭を置き、朝廷とは別に武士による統治機構を築いた。",
+      "example_ja": "鎌倉幕府の成立は、その後約700年にわたって続く武士による統治の始まりを示すものだった。",
+      "example_ja_src": "The Kamakura shogunate marked the beginning of nearly seven centuries of military rule by samurai in Japan."
+    }
+  },
+  {
+    "english": "Genpei War",
+    "detail": {
+      "pronunciation": "/ˈɡɛnpeɪ wɔːr/",
+      "pos": "名詞",
+      "meanings": [
+        "源平合戦(源平の争乱)",
+        "平氏と源氏という二大武士団による内乱"
+      ],
+      "examples": [
+        {
+          "en": "The Genpei War ended with a decisive naval battle at Dan-no-ura, where the Taira clan was finally defeated.",
+          "ja": "源平合戦は、壇ノ浦での決定的な海戦をもって終結し、平氏はついに敗れ去った。"
+        },
+        {
+          "en": "Stories about heroes and tragic figures from the Genpei War, such as Minamoto no Yoshitsune, remain popular in Japan today.",
+          "ja": "源義経のような、源平合戦に登場する英雄や悲劇の人物たちの物語は、今なお日本で人気を保ち続けている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Genpei disturbance",
+          "note": "同じ内乱を指す別の英語表現。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「源平」は、争った二つの武士団それぞれの氏の名、源氏(みなもと)と平氏(たいら)に由来する。",
+      "trivia": "この戦乱を題材にした軍記物語『平家物語』は、後世の日本文学や芸能に大きな影響を与え、琵琶法師によって語り継がれてきたとされる。",
+      "explanation": "1180年から1185年にかけて、平氏(平家)と源氏(源家)という二つの武士団の間で争われたとされる内乱。源氏の勝利により平氏は滅び、鎌倉幕府成立への道が開かれた。",
+      "example_ja": "源平合戦は、壇ノ浦での決定的な海戦をもって終結し、平氏はついに敗れ去った。",
+      "example_ja_src": "The Genpei War ended with a decisive naval battle at Dan-no-ura, where the Taira clan was finally defeated."
+    }
+  },
+  {
+    "english": "Mongol invasions of Japan",
+    "detail": {
+      "pronunciation": "/ˈmɒŋɡəl ɪnˈveɪʒənz əv dʒəˈpæn/",
+      "pos": "名詞",
+      "meanings": [
+        "元寇",
+        "13世紀に元(モンゴル帝国)が二度にわたり日本へ侵攻を試みたとされる出来事"
+      ],
+      "examples": [
+        {
+          "en": "During the Mongol invasions of Japan, samurai defenders on Kyushu built stone walls along the coast to block the enemy's landing.",
+          "ja": "元寇(モンゴルによる日本侵攻)の際、九州を守る武士たちは、敵の上陸を阻むために海岸沿いに石塁を築いた。"
+        },
+        {
+          "en": "Typhoons that struck the Mongol fleets are still remembered in Japan as the 'kamikaze,' or divine wind.",
+          "ja": "モンゴルの艦隊を襲った暴風雨は、今も日本で「神風」として語り継がれている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Genko",
+          "note": "日本語の「元寇」をローマ字表記した呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "日本語では「元寇」と呼ばれ、当時の中国大陸を支配していた元(モンゴル帝国)の来襲を意味する。",
+      "trivia": "二度目の襲来を撃退した要因については、御家人らの奮戦に加えて暴風雨の影響も指摘されるが、その規模や役割については研究者の間で見解が分かれているとされる。",
+      "explanation": "1274年と1281年の二度にわたり、元(モンゴル帝国)の軍勢が九州北部への上陸を試みたとされる出来事。御家人らの抵抗に加え、暴風雨(後に神風と呼ばれた)にも助けられて撃退されたとされる。",
+      "example_ja": "元寇(モンゴルによる日本侵攻)の際、九州を守る武士たちは、敵の上陸を阻むために海岸沿いに石塁を築いた。",
+      "example_ja_src": "During the Mongol invasions of Japan, samurai defenders on Kyushu built stone walls along the coast to block the enemy's landing."
+    }
+  },
+  {
+    "english": "Muromachi period",
+    "detail": {
+      "pronunciation": "/ˌmʊəroʊˈmɑːtʃi ˈpɪəriəd/",
+      "pos": "名詞",
+      "meanings": [
+        "室町時代",
+        "足利氏の政権のもとで続いた、1336年から1573年までの時代"
+      ],
+      "examples": [
+        {
+          "en": "Zen-influenced arts such as the tea ceremony and ink painting matured during the Muromachi period.",
+          "ja": "茶の湯や水墨画といった禅の影響を受けた芸術は、室町時代に成熟していった。"
+        },
+        {
+          "en": "The golden pavilion of Kinkaku-ji and the silver pavilion of Ginkaku-ji were both built by shoguns during the Muromachi period.",
+          "ja": "金閣寺と銀閣寺は、どちらも室町時代の将軍によって建てられたものである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "足利氏の幕府が京都の室町という地区に置かれたことに由来する時代区分の名称。",
+      "trivia": "この時代には各地で商業や手工業が発達する一方、応仁の乱以降は幕府の権威が弱まり、下剋上が広がる戦国時代へと移行していったとされる。",
+      "explanation": "1336年から1573年まで、京都の室町に本拠を置いた足利氏の政権のもとで続いたとされる時代。金閣寺・銀閣寺に代表される文化や、能・茶の湯などが発展した。",
+      "example_ja": "茶の湯や水墨画といった禅の影響を受けた芸術は、室町時代に成熟していった。",
+      "example_ja_src": "Zen-influenced arts such as the tea ceremony and ink painting matured during the Muromachi period."
+    }
+  },
+  {
+    "english": "Onin War",
+    "detail": {
+      "pronunciation": "/oʊˈniːn wɔːr/",
+      "pos": "名詞",
+      "meanings": [
+        "応仁の乱",
+        "1467年から1477年にかけて京都を中心に争われたとされる内乱"
+      ],
+      "examples": [
+        {
+          "en": "The Onin War left much of Kyoto in ashes and weakened the central authority of the shogunate for generations.",
+          "ja": "応仁の乱は京都の大半を焼け野原にし、その後何世代にもわたって幕府の中央としての権威を弱めることになった。"
+        },
+        {
+          "en": "Many historians see the Onin War as the event that plunged Japan into more than a century of civil conflict known as the Sengoku period.",
+          "ja": "多くの歴史家は、応仁の乱を、その後1世紀以上にわたって続く戦国時代という内乱の時代へと日本を突き落とした出来事とみなしている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "争乱が始まった年の元号「応仁」にちなんで名づけられた。",
+      "trivia": "将軍の後継争いに有力守護大名同士の対立が絡み合い、京都を舞台とした戦闘は10年以上続いたが、明確な勝敗がつかないまま争乱が収束していった点も特徴とされる。",
+      "explanation": "1467年から1477年にかけて、将軍家や有力守護大名の家督争いをめぐって京都を主戦場に繰り広げられたとされる内乱。都は焼け野原となり、以後の戦国時代の幕開けを招いたとされる。",
+      "example_ja": "応仁の乱は京都の大半を焼け野原にし、その後何世代にもわたって幕府の中央としての権威を弱めることになった。",
+      "example_ja_src": "The Onin War left much of Kyoto in ashes and weakened the central authority of the shogunate for generations."
+    }
+  },
+  {
+    "english": "Ashikaga shogunate",
+    "detail": {
+      "pronunciation": "/ˌæʃiˈkɑːɡə ˈʃoʊɡəneɪt/",
+      "pos": "名詞",
+      "meanings": [
+        "足利幕府(室町幕府)",
+        "足利尊氏が開いたとされる武家政権"
+      ],
+      "examples": [
+        {
+          "en": "The Ashikaga shogunate gradually lost control over powerful regional lords in the century following the Onin War.",
+          "ja": "足利幕府は、応仁の乱以降の1世紀の間に、有力な地方領主たちに対する統制を次第に失っていった。"
+        },
+        {
+          "en": "The Ashikaga shogunate took its alternate name, the Muromachi shogunate, from the district of Kyoto where it was based.",
+          "ja": "足利幕府は、その本拠を置いた京都の地区の名にちなみ、室町幕府という別名でも呼ばれる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Muromachi shogunate",
+          "note": "本拠地の地名(室町)にちなむ同じ政権の呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "開いた足利尊氏の姓に由来する。本拠を置いた京都の地区名から室町幕府とも呼ばれる。",
+      "trivia": "3代将軍足利義満の時代には南北朝の統一を実現し幕府の権威が最盛期を迎えたが、その後は次第に有力守護大名の力に押される形で統制力を弱めていったとされる。",
+      "explanation": "1336年に足利尊氏が開いたとされる、京都の室町を拠点としたことから室町幕府とも呼ばれる武家政権。15世紀後半以降は次第に統制力を失っていった。",
+      "example_ja": "足利幕府は、応仁の乱以降の1世紀の間に、有力な地方領主たちに対する統制を次第に失っていった。",
+      "example_ja_src": "The Ashikaga shogunate gradually lost control over powerful regional lords in the century following the Onin War."
+    }
+  },
+  {
+    "english": "Tokugawa Ieyasu",
+    "detail": {
+      "pronunciation": "/ˌtoʊkuːˈɡɑːwə ˌiːeɪˈjɑːsuː/",
+      "pos": "名詞",
+      "meanings": [
+        "徳川家康",
+        "江戸幕府を開いたとされる武将・初代将軍"
+      ],
+      "examples": [
+        {
+          "en": "Tokugawa Ieyasu unified the country after decades of civil war and established a shogunate that would rule Japan for over 260 years.",
+          "ja": "徳川家康は、数十年にわたる内乱の末に国を統一し、その後260年以上にわたって日本を治めることになる幕府を打ち立てた。"
+        },
+        {
+          "en": "Before rising to power, Tokugawa Ieyasu had endured years as a hostage and a subordinate ally of rival warlords.",
+          "ja": "権力を握る以前、徳川家康は人質として、また競合する武将たちの従属的な同盟者として、長い年月を耐え忍んでいた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「徳川」は家康自身が晩年に定めたとされる氏の名で、それ以前は松平の姓を名乗っていたとされる。",
+      "trivia": "家康は若い頃、今川氏のもとで長く人質生活を送るなど苦難の時期を経験しており、そうした経験がのちの慎重な統治姿勢につながったとする見方もある。",
+      "explanation": "1600年の関ヶ原の戦いで勝利を収め、1603年に征夷大将軍に任じられて江戸幕府を開いたとされる武将。以後260年余り続く徳川家による支配の基礎を築いた。",
+      "example_ja": "徳川家康は、数十年にわたる内乱の末に国を統一し、その後260年以上にわたって日本を治めることになる幕府を打ち立てた。",
+      "example_ja_src": "Tokugawa Ieyasu unified the country after decades of civil war and established a shogunate that would rule Japan for over 260 years."
+    }
+  },
+  {
+    "english": "Battle of Sekigahara",
+    "detail": {
+      "pronunciation": "/ˈbætl əv ˌsɛkiɡəˈhɑːrə/",
+      "pos": "名詞",
+      "meanings": [
+        "関ヶ原の戦い",
+        "1600年に行われたとされる、徳川氏による天下統一を決定づけた合戦"
+      ],
+      "examples": [
+        {
+          "en": "The Battle of Sekigahara is often called the battle that decided who would rule Japan for the next two and a half centuries.",
+          "ja": "関ヶ原の戦いは、その後およそ2世紀半にわたって誰が日本を治めるかを決した戦いだと、しばしば評される。"
+        },
+        {
+          "en": "Many daimyo had to choose which side to support before the Battle of Sekigahara, a decision that would shape their family's fortunes for generations.",
+          "ja": "多くの大名は、関ヶ原の戦いの前にどちらの陣営を支持するかを選ばねばならず、その決断はその後何代にもわたって一族の運命を左右することになった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "戦いが行われた美濃国の地名(現在の岐阜県関ケ原町)に由来する。",
+      "trivia": "戦の最中に西軍の一部武将が東軍に寝返ったことが勝敗を大きく左右したとされ、この裏切りは後世まで語り草となっている。",
+      "explanation": "1600年に美濃国(現在の岐阜県)で行われたとされる合戦。徳川家康率いる東軍が石田三成率いる西軍を破り、徳川氏による全国支配を決定づけた「天下分け目の戦い」とされる。",
+      "example_ja": "関ヶ原の戦いは、その後およそ2世紀半にわたって誰が日本を治めるかを決した戦いだと、しばしば評される。",
+      "example_ja_src": "The Battle of Sekigahara is often called the battle that decided who would rule Japan for the next two and a half centuries."
+    }
+  },
+  {
+    "english": "sankin-kotai",
+    "detail": {
+      "pronunciation": "/ˌsɑːŋkiːn koʊˈtaɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "参勤交代",
+        "大名に江戸と領国の往復居住を義務づけたとされる江戸幕府の制度"
+      ],
+      "examples": [
+        {
+          "en": "Under the sankin-kotai system, daimyo were required to spend alternate years in Edo, which placed a heavy financial burden on their domains.",
+          "ja": "参勤交代の制度のもとで、大名は隔年で江戸に滞在することを義務づけられ、それは領国にとって重い財政的負担となった。"
+        },
+        {
+          "en": "The sankin-kotai system also required daimyo to leave their wives and children behind in Edo, effectively as hostages of the shogunate.",
+          "ja": "参勤交代の制度は、大名に妻子を江戸に残すことも義務づけており、それは事実上、幕府に対する人質のような役割を果たしていた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "alternate attendance system",
+          "note": "制度の内容を英語で説明的に言い換えた表現。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「参勤」(領地から江戸に参上して勤めを果たすこと)と「交代」(江戸と領国を交互に行き来すること)を組み合わせた語とされる。",
+      "trivia": "制度の目的は大名の経済力を弱め反乱を防ぐことにあったとされる一方、参勤交代に伴う街道や宿場町の整備が、江戸時代の交通網や経済の発展を促す副次的な効果も生んだとされる。",
+      "explanation": "江戸幕府が諸大名に課したとされる制度で、大名は一定期間ごとに江戸と自らの領国を往復して滞在することを義務づけられた。妻子を人質のように江戸に住まわせることも含め、大名統制の手段とされた。",
+      "example_ja": "参勤交代の制度のもとで、大名は隔年で江戸に滞在することを義務づけられ、それは領国にとって重い財政的負担となった。",
+      "example_ja_src": "Under the sankin-kotai system, daimyo were required to spend alternate years in Edo, which placed a heavy financial burden on their domains."
+    }
+  },
+  {
+    "english": "sakoku",
+    "detail": {
+      "pronunciation": "/ˈsɑːkoʊkuː/",
+      "pos": "名詞",
+      "meanings": [
+        "鎖国",
+        "江戸幕府による対外交流の厳しい制限政策"
+      ],
+      "examples": [
+        {
+          "en": "Under sakoku, ordinary Japanese people were forbidden to travel abroad, and foreign trade was confined almost entirely to the port of Nagasaki.",
+          "ja": "鎖国のもとでは、一般の日本人が海外へ渡航することは禁じられ、外国との貿易もほぼ長崎の港に限られていた。"
+        },
+        {
+          "en": "Sakoku did not mean complete isolation, since limited trade with the Dutch and Chinese continued through the artificial island of Dejima.",
+          "ja": "鎖国は完全な孤立を意味したわけではなく、出島という人工の島を通じて、オランダや中国との限られた貿易は続けられていた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "national seclusion policy",
+          "note": "政策の内容を英語で説明的に言い換えた表現。"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "kaikoku",
+          "note": "鎖国から転じて対外的に開国したことを指す語。"
+        }
+      ],
+      "origin": "18世紀末にオランダ商館の医師ケンペルの著作が翻訳される際、訳者の志筑忠雄が「鎖国論」という題をつけたことから広まった語とされ、江戸時代の当時からこの言葉が使われていたわけではないとされる。",
+      "trivia": "対外交流が完全に断たれていたわけではなく、長崎の出島を通じたオランダ・中国との貿易のほか、対馬藩を介した朝鮮との交流など、限られた窓口は維持されていたとされる。",
+      "explanation": "江戸幕府がキリスト教の禁止や貿易統制を目的として、長崎の出島などごく限られた窓口を除き、外国との交流や渡航を厳しく制限したとされる対外政策。後の時代にこう呼ばれるようになった。",
+      "example_ja": "鎖国のもとでは、一般の日本人が海外へ渡航することは禁じられ、外国との貿易もほぼ長崎の港に限られていた。",
+      "example_ja_src": "Under sakoku, ordinary Japanese people were forbidden to travel abroad, and foreign trade was confined almost entirely to the port of Nagasaki."
+    }
+  },
+  {
+    "english": "Bakumatsu",
+    "detail": {
+      "pronunciation": "/ˌbɑːkuːˈmɑːtsuː/",
+      "pos": "名詞",
+      "meanings": [
+        "幕末",
+        "ペリー来航から明治維新に至るまでの、江戸時代末期"
+      ],
+      "examples": [
+        {
+          "en": "During the Bakumatsu era, political factions clashed violently over whether Japan should open to the West or expel foreigners by force.",
+          "ja": "幕末の時代には、日本が西洋に対して開国すべきか、それとも武力で外国人を排除すべきかをめぐって、政治勢力同士が激しく衝突した。"
+        },
+        {
+          "en": "The Bakumatsu period ended when the last shogun returned political power to the emperor in 1867.",
+          "ja": "幕末の時代は、1867年に最後の将軍が政権を天皇に返上したことで終わりを迎えた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「幕」(幕府)の「末」(末期)を意味する語で、江戸幕府の統治が終わりに近づいた時期を指す。",
+      "trivia": "この時期には尊王攘夷を掲げる勢力と幕府を支持する勢力が各地で衝突し、新選組や坂本龍馬といった人物の活動も、この幕末の混乱の中で語られることが多い。",
+      "explanation": "1853年のペリー来航前後から1868年の明治維新に至るまでの、江戸幕府の統治が揺らいだとされる江戸時代末期を指す言葉。",
+      "example_ja": "幕末の時代には、日本が西洋に対して開国すべきか、それとも武力で外国人を排除すべきかをめぐって、政治勢力同士が激しく衝突した。",
+      "example_ja_src": "During the Bakumatsu era, political factions clashed violently over whether Japan should open to the West or expel foreigners by force."
+    }
+  },
+  {
+    "english": "Black Ships",
+    "detail": {
+      "pronunciation": "/blæk ʃɪps/",
+      "pos": "名詞",
+      "meanings": [
+        "黒船",
+        "1853年に来航したとされるペリー率いるアメリカ艦隊の通称"
+      ],
+      "examples": [
+        {
+          "en": "The arrival of the Black Ships in 1853 shocked the shogunate and forced Japan to reconsider more than two centuries of seclusion.",
+          "ja": "1853年の黒船来航は幕府に衝撃を与え、日本は200年以上続けてきた鎖国政策の見直しを迫られることになった。"
+        },
+        {
+          "en": "Commodore Perry's Black Ships were named for their dark hulls and the black smoke pouring from their steam engines.",
+          "ja": "ペリー提督の黒船という呼び名は、その黒く塗られた船体と、蒸気機関から立ちのぼる黒い煙に由来する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "kurofune",
+          "note": "日本語の呼称をローマ字表記したもの。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "日本語の「黒船」を英語に直訳した呼び方。当時の日本人が見慣れない黒く塗装された大型の蒸気船に驚いたことに由来するとされる。",
+      "trivia": "ペリーは1853年に続き1854年にも来航しており、二度目の来航時に日米和親条約(神奈川条約)が結ばれたとされる。",
+      "explanation": "1853年、アメリカのペリー提督が率いて浦賀沖に来航したとされる艦隊を指す通称。船体を黒く塗った蒸気船を含んでいたことに由来し、日本に開国を迫るきっかけとなった。",
+      "example_ja": "1853年の黒船来航は幕府に衝撃を与え、日本は200年以上続けてきた鎖国政策の見直しを迫られることになった。",
+      "example_ja_src": "The arrival of the Black Ships in 1853 shocked the shogunate and forced Japan to reconsider more than two centuries of seclusion."
+    }
+  },
+  {
+    "english": "Treaty of Kanagawa",
+    "detail": {
+      "pronunciation": "/ˈtriːti əv ˌkænəˈɡɑːwə/",
+      "pos": "名詞",
+      "meanings": [
+        "神奈川条約(日米和親条約)",
+        "1854年に締結されたとされる、日本の開国を定めた条約"
+      ],
+      "examples": [
+        {
+          "en": "The Treaty of Kanagawa opened two Japanese ports to American ships and ended over two centuries of national seclusion.",
+          "ja": "神奈川条約は日本の二つの港をアメリカの船に開放し、200年以上続いた鎖国に終止符を打った。"
+        },
+        {
+          "en": "The Treaty of Kanagawa was signed in 1854 after Commodore Perry returned to Japan with a larger fleet than before.",
+          "ja": "神奈川条約は、ペリー提督が以前より大規模な艦隊を率いて日本に再び来航した後の1854年に締結された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Japan-US Treaty of Peace and Amity",
+          "note": "同じ条約を指す、より正式な英語名称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "条約が調印された地、武蔵国神奈川(現在の横浜市付近)の地名に由来する。日本語では「日米和親条約」とも呼ばれる。",
+      "trivia": "この条約では自由な貿易までは認められておらず、本格的な通商関係は1858年の日米修好通商条約を待つことになったとされる。",
+      "explanation": "1854年、再来航したペリーと江戸幕府との間で結ばれたとされる条約。下田と函館の開港を定め、長く続いた鎖国政策に事実上の終止符を打った。",
+      "example_ja": "神奈川条約は日本の二つの港をアメリカの船に開放し、200年以上続いた鎖国に終止符を打った。",
+      "example_ja_src": "The Treaty of Kanagawa opened two Japanese ports to American ships and ended over two centuries of national seclusion."
+    }
+  },
+  {
+    "english": "zaibatsu",
+    "detail": {
+      "pronunciation": "/zaɪˈbɑːtsuː/",
+      "pos": "名詞",
+      "meanings": [
+        "財閥",
+        "明治時代以降に形成されたとされる、特定一族が支配する大規模な企業集団"
+      ],
+      "examples": [
+        {
+          "en": "Zaibatsu conglomerates like Mitsui and Mitsubishi came to dominate banking, shipping, and heavy industry in modern Japan.",
+          "ja": "三井や三菱といった財閥は、近代日本において銀行業・海運業・重工業を支配するようになった。"
+        },
+        {
+          "en": "After the war, occupation authorities pursued policies aimed at breaking up the zaibatsu and loosening their grip on the economy.",
+          "ja": "戦後、占領当局は財閥を解体し、経済に対するその支配力を弱めることを目指す政策を進めた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「財」(財産・資本)と「閥」(閥族・グループ)を組み合わせた語で、特定の一族を中心とする巨大な企業集団を指す。",
+      "trivia": "太平洋戦争後、占領当局は経済の民主化を進める政策の一環として財閥解体を進めたが、その後も系列関係を軸とした企業グループの結びつきは一定の形で残ったとされる。",
+      "explanation": "明治時代以降に形成されたとされる、三井・三菱・住友などに代表される、特定の一族が出資・経営を独占する大規模な財閥企業集団。",
+      "example_ja": "三井や三菱といった財閥は、近代日本において銀行業・海運業・重工業を支配するようになった。",
+      "example_ja_src": "Zaibatsu conglomerates like Mitsui and Mitsubishi came to dominate banking, shipping, and heavy industry in modern Japan."
+    }
+  },
+  {
+    "english": "Babylon",
+    "detail": {
+      "pronunciation": "/ˈbæbɪlɒn/",
+      "pos": "名詞",
+      "meanings": [
+        "古代メソポタミアの都市バビロン",
+        "新バビロニア王国の首都"
+      ],
+      "examples": [
+        {
+          "en": "Babylon rose to become one of the most powerful cities in the ancient Near East under King Hammurabi.",
+          "ja": "バビロンは、ハンムラビ王の時代に古代オリエントで最も強力な都市の一つへと発展した。"
+        },
+        {
+          "en": "Centuries later, King Nebuchadnezzar II transformed Babylon into the grand capital of the Neo-Babylonian Empire.",
+          "ja": "その数世紀後、ネブカドネザル2世はバビロンを新バビロニア王国の壮大な首都へと作り変えた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "アッカド語で「神の門」を意味する語(バブ・イリ)に由来するとされる地名で、ギリシア語を経て英語のBabylonという形になった。",
+      "trivia": "「空中庭園」はバビロンにあったとされる古代の七不思議の一つだが、実在したかどうか、あるいは実際にはニネヴェにあったのではないかという説も含め、詳細は今も議論が続いている。",
+      "explanation": "現在のイラク中部、ユーフラテス川流域に位置した古代メソポタミアの都市で、ハンムラビ王の時代やのちの新バビロニア王国(ネブカドネザル2世の時代)に特に繁栄し、伝説的な空中庭園の伝承でも知られる。",
+      "example_ja": "バビロンは、ハンムラビ王の時代に古代オリエントで最も強力な都市の一つへと発展した。",
+      "example_ja_src": "Babylon rose to become one of the most powerful cities in the ancient Near East under King Hammurabi."
+    }
+  },
+  {
+    "english": "Akkadian Empire",
+    "detail": {
+      "pronunciation": "/əˈkeɪdiən ˈɛmpaɪər/",
+      "pos": "名詞",
+      "meanings": [
+        "アッカド帝国",
+        "史上最初期の広域帝国の一つ"
+      ],
+      "examples": [
+        {
+          "en": "The Akkadian Empire, founded by Sargon of Akkad, is often regarded as one of the world's first empires.",
+          "ja": "サルゴン(サルゴン王)によって築かれたアッカド帝国は、しばしば世界最初期の帝国の一つとみなされている。"
+        },
+        {
+          "en": "Under the Akkadian Empire, the Akkadian language spread widely across Mesopotamia alongside Sumerian.",
+          "ja": "アッカド帝国のもとで、アッカド語はシュメール語と並んでメソポタミア全域に広く普及した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "Akkadian",
+          "pos": "形容詞/名詞",
+          "ja": "アッカドの、アッカド語、アッカド人"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "帝国の中心都市とされる古代都市アッカド(Akkad、正確な所在地は未確定)の名に由来する。",
+      "trivia": "サルゴン王の即位や征服の経緯を伝える記録の多くは後代に書き写されたものであり、細部の史実性については研究者の間でも議論があるとされる。",
+      "explanation": "紀元前24世紀頃、サルゴン王がメソポタミアの複数の都市国家を征服して築いたとされる、史上最初期の広域帝国の一つ。アッカド語を公用語として広め、後のメソポタミア諸帝国のモデルとなったとされる。",
+      "example_ja": "サルゴン(サルゴン王)によって築かれたアッカド帝国は、しばしば世界最初期の帝国の一つとみなされている。",
+      "example_ja_src": "The Akkadian Empire, founded by Sargon of Akkad, is often regarded as one of the world's first empires."
+    }
+  },
+  {
+    "english": "Assyrian Empire",
+    "detail": {
+      "pronunciation": "/əˈsɪriən ˈɛmpaɪər/",
+      "pos": "名詞",
+      "meanings": [
+        "アッシリア帝国",
+        "古代メソポタミア北部を拠点とした軍事帝国"
+      ],
+      "examples": [
+        {
+          "en": "At its height, the Assyrian Empire controlled territory stretching from Mesopotamia to Egypt.",
+          "ja": "最盛期のアッシリア帝国は、メソポタミアからエジプトにまで及ぶ広大な領土を支配していた。"
+        },
+        {
+          "en": "The Assyrian Empire's capital of Nineveh housed a vast royal library filled with clay tablets.",
+          "ja": "アッシリア帝国の首都ニネヴェには、粘土板で埋め尽くされた大規模な王立図書館があった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "Assyrian",
+          "pos": "形容詞/名詞",
+          "ja": "アッシリアの、アッシリア人"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "帝国の中心地であった古代都市アッシュル(Assur)の名に由来するとされる。",
+      "trivia": "アッシュールバニパル王が築いたニネヴェの図書館から出土した粘土板群は、メソポタミア文学や神話を今日に伝える重要な資料となっている。",
+      "explanation": "古代メソポタミア北部を拠点に興り、特に紀元前8〜7世紀頃に強力な軍事力で中東の広い範囲を支配した帝国。高度に組織化された軍隊や行政制度、大規模な図書館(ニネヴェの王立図書館など)でも知られる。",
+      "example_ja": "最盛期のアッシリア帝国は、メソポタミアからエジプトにまで及ぶ広大な領土を支配していた。",
+      "example_ja_src": "At its height, the Assyrian Empire controlled territory stretching from Mesopotamia to Egypt."
+    }
+  },
+  {
+    "english": "Achaemenid Empire",
+    "detail": {
+      "pronunciation": "/əˈkiːmənɪd ˈɛmpaɪər/",
+      "pos": "名詞",
+      "meanings": [
+        "アケメネス朝ペルシア帝国",
+        "古代における最大級の帝国の一つ"
+      ],
+      "examples": [
+        {
+          "en": "The Achaemenid Empire stretched from the Indus Valley to parts of Greece at its greatest extent.",
+          "ja": "アケメネス朝ペルシア帝国は、最大版図の時にはインダス川流域からギリシアの一部にまで及んだ。"
+        },
+        {
+          "en": "Administration across the vast Achaemenid Empire was made possible by a network of royal roads and provincial governors.",
+          "ja": "広大なアケメネス朝ペルシア帝国の統治は、王の道と呼ばれる道路網と各州の総督によって支えられていた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "Achaemenid",
+          "pos": "形容詞/名詞",
+          "ja": "アケメネス朝の、アケメネス朝の人"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "Persian Empire",
+          "note": "より一般的な呼び方。ただしペルシアには後代のサーサーン朝など複数の帝国があるため、アケメネス朝を指す場合はAchaemenid Empireの方が厳密。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "王朝の伝説上の祖とされる人物アカイメネス(Achaemenes)の名に由来する。",
+      "trivia": "帝国内では多様な言語・宗教・慣習が容認されており、被征服民の文化に比較的寛容な統治方針を取ったことが、当時の記録から窺えるとされる。",
+      "explanation": "紀元前6世紀にキュロス2世が建国した、古代ペルシアを中心とする史上最大級の帝国の一つ。多様な民族・文化を包摂する広大な領土を、サトラップ(総督)による州制度や整備された道路網で統治したことで知られる。",
+      "example_ja": "アケメネス朝ペルシア帝国は、最大版図の時にはインダス川流域からギリシアの一部にまで及んだ。",
+      "example_ja_src": "The Achaemenid Empire stretched from the Indus Valley to parts of Greece at its greatest extent."
+    }
+  },
+  {
+    "english": "satrap",
+    "detail": {
+      "pronunciation": "/ˈseɪtræp/",
+      "pos": "名詞",
+      "meanings": [
+        "(古代ペルシアの)州総督",
+        "サトラップ"
+      ],
+      "examples": [
+        {
+          "en": "Each satrap governed a province of the Achaemenid Empire on behalf of the Persian king.",
+          "ja": "それぞれのサトラップは、ペルシア王に代わってアケメネス朝の一州を統治した。"
+        },
+        {
+          "en": "Some satraps grew powerful enough to challenge the central authority of the Persian king.",
+          "ja": "サトラップの中には力を強め、ペルシア王の中央権力に対抗するほどになった者もいた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "satrapy",
+          "pos": "名詞",
+          "ja": "サトラップが統治した州(サトラピー)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "governor",
+          "note": "より一般的な「総督・知事」を指す語。satrapは特に古代ペルシア帝国の制度を指す専門用語。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古代ペルシア語で「国の守護者」を意味する語に由来し、ギリシア語を経て英語に入った。",
+      "trivia": "サトラップ制度はのちにアレクサンドロス大王の後継者たちにも一部引き継がれ、ヘレニズム諸王国の統治にも影響を与えたとされる。",
+      "explanation": "古代ペルシアのアケメネス朝において、皇帝に代わって各州(サトラピー)を統治した総督のこと。徴税や治安維持など広い権限を任されていた。",
+      "example_ja": "それぞれのサトラップは、ペルシア王に代わってアケメネス朝の一州を統治した。",
+      "example_ja_src": "Each satrap governed a province of the Achaemenid Empire on behalf of the Persian king."
+    }
+  },
+  {
+    "english": "Cyrus the Great",
+    "detail": {
+      "pronunciation": "/ˈsaɪrəs ðə ɡreɪt/",
+      "pos": "名詞",
+      "meanings": [
+        "キュロス2世(大王)",
+        "アケメネス朝ペルシア帝国の建国者"
+      ],
+      "examples": [
+        {
+          "en": "Cyrus the Great is often remembered for allowing conquered peoples to keep their own customs and religions.",
+          "ja": "キュロス大王は、征服した諸民族に自分たちの慣習や宗教を保持することを認めたことで、しばしば記憶されている。"
+        },
+        {
+          "en": "Cyrus the Great expanded his empire by conquering the Median, Lydian, and Neo-Babylonian kingdoms.",
+          "ja": "キュロス大王はメディア、リュディア、新バビロニアの各王国を征服し、帝国を拡大した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Cyrus II",
+          "note": "歴史学でより形式的に使われる呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古代ペルシア語の人名クル(Kūruš)に由来し、ギリシア語・ラテン語を経て英語のCyrusという形になった。",
+      "trivia": "キュロス2世に帰されている「キュロス円筒」と呼ばれる粘土製の円筒碑文は、被征服民に対する寛容な統治方針を伝える史料として引用されることが多いが、その解釈や意義については研究者の間で様々な議論があるとされる。",
+      "explanation": "紀元前6世紀にアケメネス朝ペルシア帝国を建国した王。メディアやリュディア、新バビロニアを征服して大帝国を築き、比較的寛容な統治方針で知られる。",
+      "example_ja": "キュロス大王は、征服した諸民族に自分たちの慣習や宗教を保持することを認めたことで、しばしば記憶されている。",
+      "example_ja_src": "Cyrus the Great is often remembered for allowing conquered peoples to keep their own customs and religions."
+    }
+  },
+  {
+    "english": "Darius I",
+    "detail": {
+      "pronunciation": "/dəˈraɪəs ðə fɜːrst/",
+      "pos": "名詞",
+      "meanings": [
+        "ダレイオス1世",
+        "アケメネス朝ペルシアの王"
+      ],
+      "examples": [
+        {
+          "en": "Darius I reorganized the Achaemenid Empire into provinces, each governed by a satrap.",
+          "ja": "ダレイオス1世は、アケメネス朝ペルシア帝国をそれぞれサトラップが治める複数の州に再編した。"
+        },
+        {
+          "en": "Darius I's invasion of Greece ended in defeat at the Battle of Marathon.",
+          "ja": "ダレイオス1世によるギリシア遠征は、マラトンの戦いでの敗北に終わった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Darius the Great",
+          "note": "同一人物を指す別称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古代ペルシア語の人名ダーラヤワウ(Dārayavauš、「善を保つ者」の意とされる)に由来し、ギリシア語・ラテン語を経て英語形になった。",
+      "trivia": "ダレイオス1世の事績を刻んだベヒストゥン碑文は、古代ペルシア語・エラム語・アッカド語の三言語で書かれており、後世に楔形文字を解読する重要な手がかりの一つとなった。",
+      "explanation": "アケメネス朝ペルシアの王で、帝国の領土を最大に広げ、サトラップ制度や「王の道」と呼ばれる道路網の整備など統治機構を確立した人物とされる。ギリシアへの遠征(マラトンの戦いなど)でも知られる。",
+      "example_ja": "ダレイオス1世は、アケメネス朝ペルシア帝国をそれぞれサトラップが治める複数の州に再編した。",
+      "example_ja_src": "Darius I reorganized the Achaemenid Empire into provinces, each governed by a satrap."
+    }
+  },
+  {
+    "english": "Xerxes I",
+    "detail": {
+      "pronunciation": "/ˈzɜːrksiːz ðə fɜːrst/",
+      "pos": "名詞",
+      "meanings": [
+        "クセルクセス1世",
+        "アケメネス朝ペルシアの王"
+      ],
+      "examples": [
+        {
+          "en": "Xerxes I led a massive Persian invasion of Greece that included the famous battle at Thermopylae.",
+          "ja": "クセルクセス1世は、テルモピュライの戦いで知られる大規模なペルシアのギリシア侵攻を率いた。"
+        },
+        {
+          "en": "Despite his army's size, Xerxes I saw his fleet defeated at the Battle of Salamis.",
+          "ja": "軍の規模の大きさにもかかわらず、クセルクセス1世の艦隊はサラミスの海戦で敗北した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Xerxes the Great",
+          "note": "同一人物を指すこともある別称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古代ペルシア語の人名クシャヤールシャン(Xšayāršā、「英雄を統べる者」の意とされる)に由来し、ギリシア語Xerxesを経て英語に入った。",
+      "trivia": "テルモピュライの戦いでスパルタ王レオニダスらが率いた少数の兵が持ちこたえたという逸話は特に有名だが、参加兵力の具体的な人数については古代の記録間で大きく食い違っており、諸説あるとされる。",
+      "explanation": "アケメネス朝ペルシアの王で、父ダレイオス1世の跡を継ぎ、紀元前480年頃に大軍を率いてギリシアへ遠征した(第二次ペルシア戦争)ことで知られる。サラミスの海戦での敗北などが伝えられている。",
+      "example_ja": "クセルクセス1世は、テルモピュライの戦いで知られる大規模なペルシアのギリシア侵攻を率いた。",
+      "example_ja_src": "Xerxes I led a massive Persian invasion of Greece that included the famous battle at Thermopylae."
+    }
+  },
+  {
+    "english": "Sparta",
+    "detail": {
+      "pronunciation": "/ˈspɑːrtə/",
+      "pos": "名詞",
+      "meanings": [
+        "古代ギリシアの都市国家スパルタ",
+        "軍事に特化した都市国家"
+      ],
+      "examples": [
+        {
+          "en": "Sparta was famous throughout ancient Greece for the rigorous military training given to its citizens.",
+          "ja": "スパルタは、市民に課される厳格な軍事教育で古代ギリシア全域に知られていた。"
+        },
+        {
+          "en": "Sparta and Athens led opposing alliances during the long conflict known as the Peloponnesian War.",
+          "ja": "スパルタとアテナイは、ペロポネソス戦争と呼ばれる長い争いの中で対立する同盟をそれぞれ率いた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "Spartan",
+          "pos": "形容詞/名詞",
+          "ja": "スパルタの、スパルタ人、または転じて「質素で厳格な」の意"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Athens",
+          "note": "民主政と文化・学問で知られた、スパルタと並ぶ古代ギリシアの有力なポリス。しばしば対照的な存在として語られる。"
+        }
+      ],
+      "origin": "古代ギリシア語の地名スパルテー(Spartē)に由来する。",
+      "trivia": "スパルタでは男子が幼少期から共同生活の中で厳しい軍事教育(アゴーゲー)を受けたと伝えられており、その厳格さから英語のspartanという形容詞(「質素で厳しい」の意)が生まれた。",
+      "explanation": "古代ギリシアの有力なポリス(都市国家)の一つ。厳格な軍事教育制度と強力な陸軍で知られ、ペロポネソス戦争でアテナイと覇権を争った。",
+      "example_ja": "スパルタは、市民に課される厳格な軍事教育で古代ギリシア全域に知られていた。",
+      "example_ja_src": "Sparta was famous throughout ancient Greece for the rigorous military training given to its citizens."
+    }
+  },
+  {
+    "english": "Delian League",
+    "detail": {
+      "pronunciation": "/ˈdiːliən liːɡ/",
+      "pos": "名詞",
+      "meanings": [
+        "デロス同盟",
+        "アテナイを中心とする古代ギリシアの都市国家同盟"
+      ],
+      "examples": [
+        {
+          "en": "The Delian League was originally formed to protect Greek city-states from future Persian attacks.",
+          "ja": "デロス同盟は、もともとギリシアの諸都市国家を将来のペルシアの攻撃から守るために結成された。"
+        },
+        {
+          "en": "Over time, the Delian League's treasury and fleet came increasingly under the control of Athens.",
+          "ja": "時が経つにつれ、デロス同盟の共同金庫や艦隊は次第にアテナイの統制下に置かれるようになった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Athenian League",
+          "note": "同盟がアテナイ主導の性格を強めていったことを踏まえた別の呼び方として使われることもある。"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "Peloponnesian League",
+          "note": "スパルタを中心に結成された対抗的な同盟。"
+        }
+      ],
+      "origin": "同盟の共同金庫が置かれた聖地デロス島(Delos)の名にちなむ。",
+      "trivia": "紀元前454年頃、同盟の金庫がデロス島からアテナイへ移されたことは、同盟が対等な連合から事実上アテナイ主導の帝国的な体制へと変質していく大きな転機の一つとされる。",
+      "explanation": "紀元前5世紀、ペルシア戦争後にアテナイを中心として結成された古代ギリシアの都市国家同盟。当初は対ペルシア防衛のための同盟だったが、次第にアテナイ主導の事実上の帝国的性格を強めていったとされる。",
+      "example_ja": "デロス同盟は、もともとギリシアの諸都市国家を将来のペルシアの攻撃から守るために結成された。",
+      "example_ja_src": "The Delian League was originally formed to protect Greek city-states from future Persian attacks."
+    }
+  },
+  {
+    "english": "Trojan War",
+    "detail": {
+      "pronunciation": "/ˈtroʊdʒən wɔːr/",
+      "pos": "名詞",
+      "meanings": [
+        "トロイア戦争",
+        "ギリシアとトロイアの間の伝説的な戦争"
+      ],
+      "examples": [
+        {
+          "en": "According to legend, the Trojan War began after the Trojan prince Paris took Helen from Sparta.",
+          "ja": "伝承によれば、トロイア戦争はトロイアの王子パリスがスパルタからヘレネを連れ去ったことをきっかけに始まったとされる。"
+        },
+        {
+          "en": "The story of the Trojan War, including the trick of the wooden horse, was passed down through Homer's epic poems.",
+          "ja": "木馬の計略を含むトロイア戦争の物語は、ホメロスの叙事詩を通じて後世に伝えられた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "Trojan",
+          "pos": "形容詞/名詞",
+          "ja": "トロイアの、トロイア人"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "戦争の舞台とされる古代都市トロイア(Troy、トロヤ)の名にちなむ。",
+      "trivia": "1870年代にドイツの実業家シュリーマンがトルコ北西部の遺跡を発掘し、これがトロイアの実際の遺構である可能性が指摘されたが、伝承がどこまで史実を反映しているかについては今も議論が続いているとされる。",
+      "explanation": "古代ギリシアの伝承・叙事詩(ホメロスの『イーリアス』など)に語られる、ギリシア諸都市とトロイア(トロヤ)との間の戦争。史実性については学術的に議論があるが、トロイの木馬の逸話などで広く知られる。",
+      "example_ja": "伝承によれば、トロイア戦争はトロイアの王子パリスがスパルタからヘレネを連れ去ったことをきっかけに始まったとされる。",
+      "example_ja_src": "According to legend, the Trojan War began after the Trojan prince Paris took Helen from Sparta."
+    }
+  },
+  {
+    "english": "Minoan civilization",
+    "detail": {
+      "pronunciation": "/mɪˈnoʊən ˌsɪvəlɪˈzeɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "ミノア文明",
+        "クレタ島を中心に栄えた古代エーゲ文明"
+      ],
+      "examples": [
+        {
+          "en": "The Minoan civilization on Crete built the elaborate palace complex at Knossos.",
+          "ja": "クレタ島のミノア文明は、クノッソスにある壮麗な宮殿建築群を築いた。"
+        },
+        {
+          "en": "Much of what we know about the Minoan civilization comes from frescoes and pottery rather than written records.",
+          "ja": "ミノア文明について分かっていることの多くは、文字記録よりもフレスコ画や陶器から得られている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "Minoan",
+          "pos": "形容詞/名詞",
+          "ja": "ミノア文明の、ミノア文明の人"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Mycenaean civilization",
+          "note": "ほぼ同時代、ギリシア本土を中心に栄えた別系統の古代エーゲ文明。"
+        }
+      ],
+      "origin": "20世紀初頭にクノッソス宮殿を発掘した考古学者アーサー・エヴァンズが、伝説上のクレタ王ミノス(Minos)の名にちなんで名付けた。",
+      "trivia": "ミノア文明で使われた線文字A(Linear A)は、後のミケーネ文明の線文字B(Linear B)とは異なり、現在に至るまで完全には解読されていないとされる。",
+      "explanation": "紀元前3000年頃から前1100年頃にかけて、クレタ島を中心に栄えた古代エーゲ文明。クノッソス宮殿の壮麗な遺構などで知られ、ヨーロッパ最古級の高度な文明の一つとされる。",
+      "example_ja": "クレタ島のミノア文明は、クノッソスにある壮麗な宮殿建築群を築いた。",
+      "example_ja_src": "The Minoan civilization on Crete built the elaborate palace complex at Knossos."
+    }
+  },
+  {
+    "english": "Mycenaean civilization",
+    "detail": {
+      "pronunciation": "/ˌmaɪsɪˈniːən ˌsɪvəlɪˈzeɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "ミケーネ文明",
+        "ギリシア本土を中心に栄えた古代エーゲ文明"
+      ],
+      "examples": [
+        {
+          "en": "The Mycenaean civilization is often associated with the legendary heroes described in Homer's epics.",
+          "ja": "ミケーネ文明は、ホメロスの叙事詩に描かれた伝説的な英雄たちと結び付けられることが多い。"
+        },
+        {
+          "en": "Archaeologists have found massive stone fortifications at Mycenaean sites such as Mycenae and Tiryns.",
+          "ja": "考古学者たちは、ミケーネやティリンスなどミケーネ文明の遺跡で巨大な石造りの城壁を発見している。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "Mycenaean",
+          "pos": "形容詞/名詞",
+          "ja": "ミケーネ文明の、ミケーネ文明の人"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Minoan civilization",
+          "note": "ほぼ同時代、クレタ島を中心に栄えた別系統の古代エーゲ文明。"
+        }
+      ],
+      "origin": "文明を代表する遺跡の一つである古代都市ミケーネ(Mycenae)の名にちなむ。",
+      "trivia": "ミケーネ文明で使われた線文字B(Linear B)は、20世紀半ばにマイケル・ヴェントリスらによって初期のギリシア語を表す文字体系であることが解読され、大きな学術的成果となった。",
+      "explanation": "紀元前1600年頃から前1100年頃にかけて、ギリシア本土を中心に栄えた古代エーゲ文明。堅固な城塞王宮や線文字Bと呼ばれる文字体系を用いたことで知られ、後のホメロスの叙事詩の舞台とも関連づけられるとされる。",
+      "example_ja": "ミケーネ文明は、ホメロスの叙事詩に描かれた伝説的な英雄たちと結び付けられることが多い。",
+      "example_ja_src": "The Mycenaean civilization is often associated with the legendary heroes described in Homer's epics."
+    }
+  },
+  {
+    "english": "Rosetta Stone",
+    "detail": {
+      "pronunciation": "/roʊˈzɛtə stoʊn/",
+      "pos": "名詞",
+      "meanings": [
+        "ロゼッタストーン",
+        "ヒエログリフ解読の手がかりとなった古代の石碑"
+      ],
+      "examples": [
+        {
+          "en": "The Rosetta Stone provided scholars with the key to finally deciphering Egyptian hieroglyphics.",
+          "ja": "ロゼッタストーンは、学者たちにエジプトのヒエログリフをついに解読するための手がかりを与えた。"
+        },
+        {
+          "en": "French soldiers discovered the Rosetta Stone in 1799 while working near the Egyptian town of Rosetta.",
+          "ja": "ロゼッタストーンは1799年、エジプトのロゼッタという町の近くで作業していたフランス兵によって発見された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "石碑が発見された、ナイル川デルタ地帯にあるエジプトの町ロゼッタ(現ラシード)の名にちなむ。",
+      "trivia": "石碑に刻まれた三種の文字のうち、フランスの学者シャンポリオンがギリシア語の文章と比較する手法によって、1822年にヒエログリフの解読への大きな道筋をつけたと伝えられている。",
+      "explanation": "1799年にエジプトで発見された古代の石碑で、同じ内容が古代エジプトのヒエログリフ・民衆文字(デモティック)・古代ギリシア語の三種類の文字で刻まれている。この石碑が手がかりとなり、19世紀にヒエログリフの解読が達成された。",
+      "example_ja": "ロゼッタストーンは、学者たちにエジプトのヒエログリフをついに解読するための手がかりを与えた。",
+      "example_ja_src": "The Rosetta Stone provided scholars with the key to finally deciphering Egyptian hieroglyphics."
+    }
+  },
+  {
+    "english": "Great Sphinx of Giza",
+    "detail": {
+      "pronunciation": "/ɡreɪt sfɪŋks əv ˈɡiːzə/",
+      "pos": "名詞",
+      "meanings": [
+        "ギザの大スフィンクス",
+        "ライオンの体と人の顔を持つ巨大な石像"
+      ],
+      "examples": [
+        {
+          "en": "The Great Sphinx of Giza has stood near the pyramids for thousands of years, though its exact original purpose is still debated.",
+          "ja": "ギザの大スフィンクスは、正確な当初の目的については今も議論があるものの、数千年にわたってピラミッド群の近くに立ち続けている。"
+        },
+        {
+          "en": "Some scholars believe the face of the Great Sphinx of Giza was carved to resemble a specific pharaoh, though this remains uncertain.",
+          "ja": "一部の学者は、ギザの大スフィンクスの顔が特定のファラオに似せて彫られたと考えているが、これは確実には分かっていない。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ギリシア神話に登場する怪物スフィンクス(Sphinx)の名を、エジプトのこの巨像にも当てはめたことに由来するとされる。エジプト側の古代の呼び名は別に存在したとみられる。",
+      "trivia": "大スフィンクスの建造時期については、隣接するピラミッド群と同じ古王国時代とする説が有力とされるが、正確な年代や建造を命じた王については研究者の間で議論が続いている。",
+      "explanation": "エジプトのギザにある、ライオンの体と人間(とされる)の顔を持つ巨大な石灰岩の彫像。近くのピラミッド群と並び、古代エジプトを代表する記念建造物の一つとされ、正確な建造時期や目的については諸説ある。",
+      "example_ja": "ギザの大スフィンクスは、正確な当初の目的については今も議論があるものの、数千年にわたってピラミッド群の近くに立ち続けている。",
+      "example_ja_src": "The Great Sphinx of Giza has stood near the pyramids for thousands of years, though its exact original purpose is still debated."
+    }
+  },
+  {
+    "english": "Indus Valley Civilization",
+    "detail": {
+      "pronunciation": "/ˈɪndəs ˈvæli ˌsɪvəlɪˈzeɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "インダス文明",
+        "インダス川流域に栄えた古代文明"
+      ],
+      "examples": [
+        {
+          "en": "The Indus Valley Civilization built well-planned cities like Mohenjo-daro with advanced drainage systems.",
+          "ja": "インダス文明は、モヘンジョダロのような、高度な排水設備を備えた計画的な都市を築いた。"
+        },
+        {
+          "en": "Despite many discoveries, the script of the Indus Valley Civilization has not yet been conclusively deciphered.",
+          "ja": "数多くの発見があるにもかかわらず、インダス文明の文字はいまだ確実には解読されていない。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Harappan civilization",
+          "note": "代表的な遺跡ハラッパーの名にちなむ、ほぼ同じ文明を指す別の呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "文明が栄えた地域を流れるインダス川(Indus River)の名にちなむ。",
+      "trivia": "モヘンジョダロやハラッパーの遺跡からは統一的な規格の煉瓦や度量衡が見つかっており、広い地域にわたって高度に組織化された社会があったことをうかがわせるとされる。",
+      "explanation": "紀元前2600年頃から前1900年頃にかけて、インダス川流域(現在のパキスタンから北西インドにかけて)に栄えた古代文明。モヘンジョダロやハラッパーなど計画的な都市遺構で知られるが、その文字はいまだ完全には解読されていない。",
+      "example_ja": "インダス文明は、モヘンジョダロのような、高度な排水設備を備えた計画的な都市を築いた。",
+      "example_ja_src": "The Indus Valley Civilization built well-planned cities like Mohenjo-daro with advanced drainage systems."
+    }
+  },
+  {
+    "english": "Mauryan Empire",
+    "detail": {
+      "pronunciation": "/ˈmaʊriən ˈɛmpaɪər/",
+      "pos": "名詞",
+      "meanings": [
+        "マウリヤ朝",
+        "古代インド初の統一帝国"
+      ],
+      "examples": [
+        {
+          "en": "The Mauryan Empire unified much of the Indian subcontinent for the first time under a single ruler.",
+          "ja": "マウリヤ朝は、インド亜大陸の大部分を単一の統治者のもとで初めて統一した。"
+        },
+        {
+          "en": "The Mauryan Empire reached its greatest extent and influence during the reign of Emperor Ashoka.",
+          "ja": "マウリヤ朝は、アショーカ王の治世に最大の版図と影響力に達した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "Mauryan",
+          "pos": "形容詞",
+          "ja": "マウリヤ朝の"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "王朝の創始者チャンドラグプタが属したとされる氏族名マウリヤ(Maurya)に由来する。",
+      "trivia": "マウリヤ朝の統治体制については、当時の大臣カウティリヤが著したとされる政治指南書『アルタシャーストラ』に詳しい記述があると伝えられているが、成立時期や著者については学術的な議論もあるとされる。",
+      "explanation": "紀元前4世紀末にチャンドラグプタが建国した、古代インド史上初めて広大な領域を統一した帝国。孫にあたるアショーカ王の時代に最盛期を迎えたとされる。",
+      "example_ja": "マウリヤ朝は、インド亜大陸の大部分を単一の統治者のもとで初めて統一した。",
+      "example_ja_src": "The Mauryan Empire unified much of the Indian subcontinent for the first time under a single ruler."
+    }
+  },
+  {
+    "english": "Ashoka",
+    "detail": {
+      "pronunciation": "/əˈʃoʊkə/",
+      "pos": "名詞",
+      "meanings": [
+        "アショーカ王",
+        "マウリヤ朝の王"
+      ],
+      "examples": [
+        {
+          "en": "Ashoka is said to have converted to Buddhism after witnessing the devastation caused by his conquest of Kalinga.",
+          "ja": "アショーカ王は、カリンガ征服がもたらした惨禍を目の当たりにした後、仏教に帰依したと伝えられている。"
+        },
+        {
+          "en": "Ashoka had his edicts on morality and nonviolence carved onto pillars and rocks throughout his empire.",
+          "ja": "アショーカ王は、道徳や非暴力についての詔勅を、帝国各地の石柱や岩石に刻ませた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Ashoka the Great",
+          "note": "業績の大きさから使われることのある呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "サンスクリット語で「憂いのない」を意味する語に由来するとされる名。",
+      "trivia": "アショーカ王の詔勅を刻んだ石柱の一つに施されたライオン像は、後にインドの国章として採用されており、現在の姿にもその影響が残っているとされる。",
+      "explanation": "古代インドのマウリヤ朝の王で、即位当初は積極的な征服活動を行ったが、激しい戦争の惨禍を目にしたことをきっかけに仏教に深く帰依し、以後は非暴力や寛容を説く統治方針に転じたと伝えられる。",
+      "example_ja": "アショーカ王は、カリンガ征服がもたらした惨禍を目の当たりにした後、仏教に帰依したと伝えられている。",
+      "example_ja_src": "Ashoka is said to have converted to Buddhism after witnessing the devastation caused by his conquest of Kalinga."
+    }
+  },
+  {
+    "english": "Abbasid Caliphate",
+    "detail": {
+      "pronunciation": "/əˈbæsɪd ˈkælɪfeɪt/",
+      "pos": "名詞",
+      "meanings": [
+        "アッバース朝",
+        "バグダードを都としたイスラーム王朝"
+      ],
+      "examples": [
+        {
+          "en": "The Abbasid Caliphate moved its capital to Baghdad and presided over a golden age of science and scholarship.",
+          "ja": "アッバース朝は都をバグダードに移し、科学と学問の黄金時代を築いた。"
+        },
+        {
+          "en": "Baghdad became the intellectual capital of the Islamic world under the Abbasid Caliphate.",
+          "ja": "アッバース朝のもとで、バグダードはイスラーム世界の学問の中心地となった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Umayyad Caliphate",
+          "note": "アッバース朝より前にダマスカスを都として支配していた先代のイスラーム王朝。"
+        }
+      ],
+      "origin": "預言者ムハンマドの叔父の一人アッバースの子孫を名乗る一族がウマイヤ朝を打倒して建てた王朝であることから、この名がついた。",
+      "trivia": "アッバース朝時代のバグダードには「知恵の館」と呼ばれる学術機関が置かれ、ギリシャ語文献の翻訳や数学・天文学の研究が盛んに行われた。",
+      "explanation": "750年にウマイヤ朝を倒して成立し、バグダードを首都として学問・商業が大いに栄えた、イスラーム世界を代表する王朝(カリフ国)。1258年にモンゴル軍によって滅ぼされた。",
+      "example_ja": "アッバース朝は都をバグダードに移し、科学と学問の黄金時代を築いた。",
+      "example_ja_src": "The Abbasid Caliphate moved its capital to Baghdad and presided over a golden age of science and scholarship."
+    }
+  },
+  {
+    "english": "Umayyad Caliphate",
+    "detail": {
+      "pronunciation": "/uːˈmaɪæd ˈkælɪfeɪt/",
+      "pos": "名詞",
+      "meanings": [
+        "ウマイヤ朝",
+        "ダマスカスを都とした最初の世襲イスラーム王朝"
+      ],
+      "examples": [
+        {
+          "en": "At its height, the Umayyad Caliphate stretched from Spain to the borders of India.",
+          "ja": "最盛期のウマイヤ朝は、スペインからインドの国境にまで及ぶ広大な領域を支配した。"
+        },
+        {
+          "en": "After the Umayyad Caliphate fell in the east, a surviving prince established a new emirate in Córdoba.",
+          "ja": "ウマイヤ朝が東方で滅んだ後、生き残った一族の王子がコルドバに新たな首長国を建てた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Abbasid Caliphate",
+          "note": "ウマイヤ朝を倒してバグダードに都を置いた後継の王朝。"
+        }
+      ],
+      "origin": "初代カリフとなったムアーウィヤが属したウマイヤ家の名に由来する。",
+      "trivia": "750年にアッバース朝によって滅ぼされた際、一族の生き残りがイベリア半島に逃れ、後にコルドバを都とする独立した王朝を築いたとされる。",
+      "explanation": "661年から750年までダマスカスを首都とし、地中海沿岸から中央アジアにまで広がる大帝国を築いた、イスラーム史上初の世襲王朝。",
+      "example_ja": "最盛期のウマイヤ朝は、スペインからインドの国境にまで及ぶ広大な領域を支配した。",
+      "example_ja_src": "At its height, the Umayyad Caliphate stretched from Spain to the borders of India."
+    }
+  },
+  {
+    "english": "House of Wisdom",
+    "detail": {
+      "pronunciation": "/haʊs ʌv ˈwɪzdəm/",
+      "pos": "名詞",
+      "meanings": [
+        "知恵の館",
+        "バグダードの学術翻訳機関"
+      ],
+      "examples": [
+        {
+          "en": "Scholars at the House of Wisdom translated countless Greek manuscripts into Arabic.",
+          "ja": "知恵の館の学者たちは、数え切れないほどのギリシャ語文献をアラビア語に翻訳した。"
+        },
+        {
+          "en": "According to tradition, the House of Wisdom's library was largely destroyed when the Mongols sacked Baghdad in 1258.",
+          "ja": "伝承によれば、知恵の館の蔵書は1258年にモンゴル軍がバグダードを攻略した際に大部分が失われたとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Bayt al-Hikma",
+          "note": "アラビア語での元の呼び名。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "アラビア語で「バイト・アル=ヒクマ」と呼ばれ、9世紀のカリフ、アル=マアムーンの時代に特に整備されたとされる。",
+      "trivia": "1258年のモンゴル軍によるバグダード攻略の際に蔵書の多くが失われたと伝えられているが、被害の具体的な規模については諸説あり、後世の伝承による誇張も含まれるとされる。",
+      "explanation": "9世紀のバグダードでアッバース朝の保護のもと栄えた学術機関。ギリシャ・ペルシャ・インドなどの文献をアラビア語に翻訳し、数学・天文学・医学などの研究が行われた。",
+      "example_ja": "知恵の館の学者たちは、数え切れないほどのギリシャ語文献をアラビア語に翻訳した。",
+      "example_ja_src": "Scholars at the House of Wisdom translated countless Greek manuscripts into Arabic."
+    }
+  },
+  {
+    "english": "Al-Andalus",
+    "detail": {
+      "pronunciation": "/æl ˈændəlʊs/",
+      "pos": "名詞",
+      "meanings": [
+        "アル=アンダルス",
+        "イスラーム支配下のイベリア半島"
+      ],
+      "examples": [
+        {
+          "en": "Under Muslim rule, Al-Andalus became a center of learning where Muslim, Christian, and Jewish scholars worked side by side.",
+          "ja": "イスラーム勢力の支配下で、アル=アンダルスはムスリム・キリスト教徒・ユダヤ教徒の学者たちが共に学ぶ学問の中心地となった。"
+        },
+        {
+          "en": "The Great Mosque of Córdoba still stands as a reminder of Al-Andalus's architectural achievements.",
+          "ja": "コルドバの大モスクは、アル=アンダルスの建築的な業績を今に伝えている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "アラビア語で「アンダルスの地」を意味し、後世の地名「アンダルシア」の語源ともなったとされる。",
+      "trivia": "コルドバは最盛期、当時のヨーロッパで最大級の人口と図書館を誇る都市の一つだったとされる。",
+      "explanation": "711年のウマイヤ朝による征服から1492年のグラナダ陥落まで、イスラーム勢力が支配したイベリア半島の地域を指す呼び名。コルドバなどを中心に学問・文化が栄えた。",
+      "example_ja": "イスラーム勢力の支配下で、アル=アンダルスはムスリム・キリスト教徒・ユダヤ教徒の学者たちが共に学ぶ学問の中心地となった。",
+      "example_ja_src": "Under Muslim rule, Al-Andalus became a center of learning where Muslim, Christian, and Jewish scholars worked side by side."
+    }
+  },
+  {
+    "english": "madrasa",
+    "detail": {
+      "pronunciation": "/məˈdræsə/",
+      "pos": "名詞",
+      "meanings": [
+        "マドラサ",
+        "イスラームの神学校・高等教育機関"
+      ],
+      "examples": [
+        {
+          "en": "He studied Islamic law for years at a madrasa before becoming a judge.",
+          "ja": "彼は裁判官になる前、何年もマドラサでイスラーム法を学んだ。"
+        },
+        {
+          "en": "The Nizamiyya madrasas, founded in the 11th century, helped standardize Islamic legal education across the region.",
+          "ja": "11世紀に設立されたニザーミーヤ学院(マドラサ)は、この地域全体でイスラーム法学教育を体系化する助けとなった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "アラビア語で「学ぶ場所」を意味する語に由来する。",
+      "trivia": "セルジューク朝の宰相ニザーム・アル=ムルクが11世紀に各地に設立した「ニザーミーヤ学院」は、代表的な初期のマドラサとして知られる。",
+      "explanation": "イスラーム世界で発達した、主にイスラーム法学や神学を教える高等教育機関。11世紀にセルジューク朝の宰相が各地に設立したものが特によく知られる。",
+      "example_ja": "彼は裁判官になる前、何年もマドラサでイスラーム法を学んだ。",
+      "example_ja_src": "He studied Islamic law for years at a madrasa before becoming a judge."
+    }
+  },
+  {
+    "english": "Investiture Controversy",
+    "detail": {
+      "pronunciation": "/ɪnˈvɛstɪtʃər ˈkɑːntrəvɜːrsi/",
+      "pos": "名詞",
+      "meanings": [
+        "叙任権闘争",
+        "聖職者任命権をめぐる教皇と皇帝の対立"
+      ],
+      "examples": [
+        {
+          "en": "The Investiture Controversy pitted the pope against the emperor over who could appoint bishops.",
+          "ja": "叙任権闘争は、司教を任命する権利を誰が持つかをめぐって教皇と皇帝を対立させた。"
+        },
+        {
+          "en": "During the Investiture Controversy, Emperor Henry IV famously stood barefoot in the snow at Canossa to seek the pope's forgiveness.",
+          "ja": "叙任権闘争の最中、皇帝ハインリヒ4世が教皇の許しを請うためカノッサで裸足のまま雪の中に立ったという逸話はよく知られている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "invest",
+          "pos": "動詞",
+          "ja": "(聖職者を)叙任する、地位に就かせる"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語で「衣服を着せる」ことを意味する語に由来し、司教に権威の象徴である指輪や杖を授ける儀式(叙任)を誰が行うかが争点だったことから、この名がついた。",
+      "trivia": "この対立の中で、破門された皇帝ハインリヒ4世が教皇の許しを得るためにカノッサ城の前で数日間待ち続けたという「カノッサの屈辱」の逸話が特によく知られている。",
+      "explanation": "聖職者(特に司教)の任命権をめぐって、11世紀後半から12世紀前半にかけてローマ教皇と神聖ローマ皇帝の間で争われた政治的対立。1122年のヴォルムス協約で一応の決着がついた。",
+      "example_ja": "叙任権闘争は、司教を任命する権利を誰が持つかをめぐって教皇と皇帝を対立させた。",
+      "example_ja_src": "The Investiture Controversy pitted the pope against the emperor over who could appoint bishops."
+    }
+  },
+  {
+    "english": "East-West Schism",
+    "detail": {
+      "pronunciation": "/iːst wɛst ˈsɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "東西教会分裂",
+        "1054年のキリスト教会の東西分裂"
+      ],
+      "examples": [
+        {
+          "en": "The East-West Schism left a lasting divide between Catholic and Orthodox Christianity.",
+          "ja": "東西教会分裂は、カトリックと正教会の間に長く続く分断を残した。"
+        },
+        {
+          "en": "Attempts to heal the East-West Schism have continued on and off for nearly a thousand years.",
+          "ja": "東西教会分裂を修復しようとする試みは、その後千年近くにわたり断続的に続けられてきた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Great Schism of 1054",
+          "note": "同じ出来事を指す別名。ただし1378年の「西方教会大分裂」も Great Schism と呼ばれることがあるため、文脈に注意が必要。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "1054年、ローマ教皇レオ9世の使節とコンスタンティノープル総主教ミカエル・ケルラリオスが互いに相手を破門したことが直接のきっかけとされる。",
+      "trivia": "この相互破門は1965年になってようやく正式に解かれたが、教会組織そのものは今なおローマ・カトリックと東方正教会とに分かれたままである。",
+      "explanation": "1054年、教皇の使節とコンスタンティノープル総主教が互いを破門し合ったことをきっかけに、キリスト教会が西方のローマ・カトリック教会と東方の正教会に分裂した出来事。",
+      "example_ja": "東西教会分裂は、カトリックと正教会の間に長く続く分断を残した。",
+      "example_ja_src": "The East-West Schism left a lasting divide between Catholic and Orthodox Christianity."
+    }
+  },
+  {
+    "english": "Hanseatic League",
+    "detail": {
+      "pronunciation": "/ˌhænsiˈætɪk liːɡ/",
+      "pos": "名詞",
+      "meanings": [
+        "ハンザ同盟",
+        "北ヨーロッパの都市商業同盟"
+      ],
+      "examples": [
+        {
+          "en": "Merchants of the Hanseatic League controlled trade in furs, grain, and timber across the Baltic.",
+          "ja": "ハンザ同盟の商人たちは、バルト海一帯で毛皮・穀物・木材の交易を支配していた。"
+        },
+        {
+          "en": "Cities that joined the Hanseatic League gained shared trading privileges and mutual protection at sea.",
+          "ja": "ハンザ同盟に加わった都市は、共通の交易特権と海上での相互保護を得ることができた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ドイツ語で「仲間・組合」を意味する「ハンザ」に由来し、当初は個々の商人組合を指す語だった。",
+      "trivia": "最盛期には北ドイツからバルト海沿岸にかけて100を超える都市が加盟していたとされ、独自の法や度量衡、さらには軍事力まで備えていた。",
+      "explanation": "中世後期の北ヨーロッパで、リューベックを中心とする都市や商人の同業組合が結成した、バルト海・北海沿岸の交易を支配した都市同盟。",
+      "example_ja": "ハンザ同盟の商人たちは、バルト海一帯で毛皮・穀物・木材の交易を支配していた。",
+      "example_ja_src": "Merchants of the Hanseatic League controlled trade in furs, grain, and timber across the Baltic."
+    }
+  },
+  {
+    "english": "Holy Roman Empire",
+    "detail": {
+      "pronunciation": "/ˈhoʊli ˈroʊmən ˈɛmpaɪər/",
+      "pos": "名詞",
+      "meanings": [
+        "神聖ローマ帝国",
+        "中世〜近世の中央ヨーロッパの政治体"
+      ],
+      "examples": [
+        {
+          "en": "For centuries, the Holy Roman Empire remained a loose patchwork of German-speaking states rather than a unified nation.",
+          "ja": "神聖ローマ帝国は何世紀にもわたり、統一国家というよりドイツ語圏の諸邦の緩やかな寄せ集めのままだった。"
+        },
+        {
+          "en": "Voltaire famously quipped that the Holy Roman Empire was neither holy, nor Roman, nor an empire.",
+          "ja": "ヴォルテールは、神聖ローマ帝国は「神聖でも、ローマ的でも、帝国でもない」と皮肉ったことで知られている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "962年の皇帝オットー1世の戴冠を実質的な始まりとするが、「神聖ローマ帝国」という呼称そのものが定着したのはさらに後の時代とされる。",
+      "trivia": "18世紀の思想家ヴォルテールが「神聖でも、ローマ的でも、帝国でもない」と評したという逸話は、この政治体の実態が緩やかな領邦の集合体だったことを端的に表している。",
+      "explanation": "962年のオットー1世の戴冠を起源とし、主に中央ヨーロッパを支配した政治体で、1806年にナポレオンによって解体されるまで存続した。実態は多数の領邦の緩やかな連合体だった。",
+      "example_ja": "神聖ローマ帝国は何世紀にもわたり、統一国家というよりドイツ語圏の諸邦の緩やかな寄せ集めのままだった。",
+      "example_ja_src": "For centuries, the Holy Roman Empire remained a loose patchwork of German-speaking states rather than a unified nation."
+    }
+  },
+  {
+    "english": "Charlemagne",
+    "detail": {
+      "pronunciation": "/ˈʃɑːrləmeɪn/",
+      "pos": "名詞",
+      "meanings": [
+        "カール大帝(シャルルマーニュ)",
+        "フランク王国を統一し西の皇帝となった王"
+      ],
+      "examples": [
+        {
+          "en": "Charlemagne was crowned emperor by the pope on Christmas Day in the year 800.",
+          "ja": "カール大帝は西暦800年のクリスマスの日に、教皇によって皇帝の冠を授けられた。"
+        },
+        {
+          "en": "Charlemagne encouraged the revival of learning that historians now call the Carolingian Renaissance.",
+          "ja": "カール大帝は、後の歴史家が「カロリング・ルネサンス」と呼ぶ学芸の復興を奨励した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Charles the Great",
+          "note": "英語での別の呼び方。ラテン語の Carolus Magnus に対応する。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "フランス語で「カール大王」を意味する呼び名が英語に取り入れられたもので、ラテン語では「Carolus Magnus」と呼ばれた。",
+      "trivia": "800年のクリスマスに教皇レオ3世から皇帝の冠を授けられた出来事は、後の神聖ローマ帝国の理念的な出発点の一つともされる。",
+      "explanation": "8世紀後半から9世紀初頭にかけてフランク王国を治め、西暦800年にローマ教皇から皇帝の冠を授かった王。西ヨーロッパの大部分を統一し、学芸の復興を奨励したことでも知られる。",
+      "example_ja": "カール大帝は西暦800年のクリスマスの日に、教皇によって皇帝の冠を授けられた。",
+      "example_ja_src": "Charlemagne was crowned emperor by the pope on Christmas Day in the year 800."
+    }
+  },
+  {
+    "english": "Viking Age",
+    "detail": {
+      "pronunciation": "/ˈvaɪkɪŋ eɪdʒ/",
+      "pos": "名詞",
+      "meanings": [
+        "ヴァイキング時代",
+        "北欧勢力がヨーロッパ各地に進出した時代"
+      ],
+      "examples": [
+        {
+          "en": "Longships allowed Norse raiders to travel far beyond Scandinavia during the Viking Age.",
+          "ja": "ヴァイキング時代、竜骨船(ロングシップ)のおかげで北欧の襲撃者たちはスカンディナヴィアをはるかに超えて移動することができた。"
+        },
+        {
+          "en": "Norse settlers reached as far as Iceland, Greenland, and briefly North America during the Viking Age.",
+          "ja": "ヴァイキング時代には、北欧からの入植者がアイスランドやグリーンランド、さらに一時的には北アメリカにまで到達した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古ノルド語に由来するとされる「ヴァイキング」という語の正確な語源については諸説あり、確定していない。",
+      "trivia": "793年のリンディスファーン修道院襲撃が、この時代の始まりを象徴する出来事としてしばしば挙げられる。",
+      "explanation": "8世紀末から11世紀にかけて、スカンディナヴィア半島出身のヴァイキングがヨーロッパ各地への襲撃・交易・植民を活発に行った時代。",
+      "example_ja": "ヴァイキング時代、竜骨船(ロングシップ)のおかげで北欧の襲撃者たちはスカンディナヴィアをはるかに超えて移動することができた。",
+      "example_ja_src": "Longships allowed Norse raiders to travel far beyond Scandinavia during the Viking Age."
+    }
+  },
+  {
+    "english": "monasticism",
+    "detail": {
+      "pronunciation": "/məˈnæstɪsɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "修道制",
+        "共同体または個人で信仰生活を送る宗教的な生き方"
+      ],
+      "examples": [
+        {
+          "en": "European monasticism spread rapidly after the Rule of St. Benedict set out guidelines for communal religious life.",
+          "ja": "「聖ベネディクトの戒律」が共同生活の指針を定めて以降、ヨーロッパの修道制は急速に広まった。"
+        },
+        {
+          "en": "Medieval monasticism preserved many ancient texts by copying them in monastery scriptoria.",
+          "ja": "中世の修道制は、修道院の写字室で古代の文献を書き写すことで、その多くを後世に伝えた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "monastic",
+          "pos": "形容詞",
+          "ja": "修道院の、修道生活の"
+        },
+        {
+          "word": "monastery",
+          "pos": "名詞",
+          "ja": "修道院"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ギリシャ語で「一人で暮らす者」を意味する語に由来する。",
+      "trivia": "西方キリスト教世界では、6世紀に定められた「聖ベネディクトの戒律」が、その後の多くの修道会の生活規則の基礎となった。",
+      "explanation": "世俗を離れ、共同体または個人で祈りと労働を中心とする信仰生活を送る宗教的な生き方。中世ヨーロッパでは、規律ある共同生活の規則を定めた修道会を通じて広まった。",
+      "example_ja": "「聖ベネディクトの戒律」が共同生活の指針を定めて以降、ヨーロッパの修道制は急速に広まった。",
+      "example_ja_src": "European monasticism spread rapidly after the Rule of St. Benedict set out guidelines for communal religious life."
+    }
+  },
+  {
+    "english": "scholasticism",
+    "detail": {
+      "pronunciation": "/skəˈlæstɪsɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "スコラ学",
+        "中世ヨーロッパの神学と哲学を結び付けた学問"
+      ],
+      "examples": [
+        {
+          "en": "Thomas Aquinas is often regarded as the greatest philosopher of medieval scholasticism.",
+          "ja": "トマス・アクィナスは、中世スコラ学最大の哲学者と見なされることが多い。"
+        },
+        {
+          "en": "Scholasticism relied heavily on logical debate and careful commentary on earlier authoritative texts.",
+          "ja": "スコラ学は、論理的な討論と、先行する権威ある文献への綿密な注釈を重視した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "scholastic",
+          "pos": "形容詞",
+          "ja": "スコラ学の、学校教育の"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語で「学校」を意味する語に由来し、当時のヨーロッパで新たに生まれつつあった大学を中心に発展したことからこの名がついた。",
+      "trivia": "トマス・アクィナスの著作は、アリストテレス哲学とキリスト教神学を統合しようとしたスコラ学の到達点の一つとされる。",
+      "explanation": "中世ヨーロッパの大学を中心に発展した、キリスト教神学とアリストテレスなど古代ギリシャ哲学を体系的に結び付けようとする学問的な方法・思潮。",
+      "example_ja": "トマス・アクィナスは、中世スコラ学最大の哲学者と見なされることが多い。",
+      "example_ja_src": "Thomas Aquinas is often regarded as the greatest philosopher of medieval scholasticism."
+    }
+  },
+  {
+    "english": "Pax Mongolica",
+    "detail": {
+      "pronunciation": "/pæks mɒŋˈɡɒlɪkə/",
+      "pos": "名詞",
+      "meanings": [
+        "モンゴルの平和",
+        "モンゴル帝国支配下でユーラシアの交易が栄えた時期"
+      ],
+      "examples": [
+        {
+          "en": "Merchants and travelers moved more safely along the Silk Road during the Pax Mongolica.",
+          "ja": "「モンゴルの平和」の時期には、商人や旅行者はより安全にシルクロードを移動することができた。"
+        },
+        {
+          "en": "Marco Polo's travels to China were made possible partly by the relative safety of the Pax Mongolica.",
+          "ja": "マルコ・ポーロの中国への旅も、モンゴルの平和による比較的安全な状況があってこそ可能になったとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Mongol Peace",
+          "note": "同じ意味の英語での言い換え表現。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語で「モンゴルの平和」を意味し、古代ローマの安定期を指す「パクス・ロマーナ」にならって作られた呼び名とされる。",
+      "trivia": "この時期には東西を結ぶ交易路の安全性が高まり、マルコ・ポーロのような旅行者や商人が中国まで到達しやすくなったと言われる。",
+      "explanation": "13世紀から14世紀にかけて、モンゴル帝国の支配によってユーラシア大陸の広い範囲で治安が保たれ、東西の交易や文化交流が活発化した時期を指す呼び名。",
+      "example_ja": "「モンゴルの平和」の時期には、商人や旅行者はより安全にシルクロードを移動することができた。",
+      "example_ja_src": "Merchants and travelers moved more safely along the Silk Road during the Pax Mongolica."
+    }
+  },
+  {
+    "english": "Golden Horde",
+    "detail": {
+      "pronunciation": "/ˈɡoʊldən hɔːrd/",
+      "pos": "名詞",
+      "meanings": [
+        "キプチャク・ハン国(ジョチ・ウルス)",
+        "ロシア・中央アジアを支配したモンゴル系国家"
+      ],
+      "examples": [
+        {
+          "en": "The Golden Horde collected tribute from Russian princes for more than two centuries.",
+          "ja": "キプチャク・ハン国は、2世紀以上にわたってロシアの諸侯から貢納を取り立てた。"
+        },
+        {
+          "en": "The rulers of the Golden Horde eventually converted to Islam and adopted many Turkic customs.",
+          "ja": "キプチャク・ハン国の支配者たちは、やがてイスラームに改宗し、テュルク系の慣習を数多く取り入れていった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Kipchak Khanate",
+          "note": "同じ国家を指す別名。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「金の」という語が付いた由来については、ハンの黄金の天幕にちなむという説などがあるが、確定していない。",
+      "trivia": "13世紀から15世紀にかけて、ロシアの諸侯はキプチャク・ハン国に貢納を納める従属的な立場に置かれていたとされる。",
+      "explanation": "チンギス・ハンの孫バトゥが築いた、ロシアや中央アジアの広大な地域を支配したモンゴル系の国家。",
+      "example_ja": "キプチャク・ハン国は、2世紀以上にわたってロシアの諸侯から貢納を取り立てた。",
+      "example_ja_src": "The Golden Horde collected tribute from Russian princes for more than two centuries."
+    }
+  },
+  {
+    "english": "First Crusade",
+    "detail": {
+      "pronunciation": "/fɜːrst kruːˈseɪd/",
+      "pos": "名詞",
+      "meanings": [
+        "第1回十字軍",
+        "1096年から1099年にかけての最初の十字軍遠征"
+      ],
+      "examples": [
+        {
+          "en": "The First Crusade succeeded in capturing Jerusalem in 1099.",
+          "ja": "第1回十字軍は1099年、エルサレムの占領に成功した。"
+        },
+        {
+          "en": "Thousands of knights and pilgrims from across Western Europe joined the First Crusade.",
+          "ja": "西ヨーロッパ各地から数千人の騎士や巡礼者が第1回十字軍に加わった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1095年、教皇ウルバヌス2世がクレルモン公会議で行った演説がきっかけとなって組織された。",
+      "trivia": "1099年のエルサレム占領後、十字軍勢力はエルサレム王国をはじめとするいくつかの「十字軍国家」を東地中海沿岸に建てた。",
+      "explanation": "1095年の教皇ウルバヌス2世の呼びかけをきっかけに始まり、1099年にエルサレムを占領して終わった、最初の十字軍遠征。",
+      "example_ja": "第1回十字軍は1099年、エルサレムの占領に成功した。",
+      "example_ja_src": "The First Crusade succeeded in capturing Jerusalem in 1099."
+    }
+  },
+  {
+    "english": "Mali Empire",
+    "detail": {
+      "pronunciation": "/ˈmɑːli ˈɛmpaɪər/",
+      "pos": "名詞",
+      "meanings": [
+        "マリ帝国",
+        "西アフリカで栄えた王国"
+      ],
+      "examples": [
+        {
+          "en": "Timbuktu flourished as a center of trade and Islamic scholarship under the Mali Empire.",
+          "ja": "マリ帝国のもとで、トンブクトゥは交易とイスラーム学問の中心地として栄えた。"
+        },
+        {
+          "en": "Mansa Musa's generous spending of gold during his pilgrimage is said to have temporarily lowered its value in Egypt.",
+          "ja": "マンサ・ムーサが巡礼の際に金を気前よく使ったことで、一時的にエジプトでの金の価値が下がったとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "帝国の中核を担ったマリンケ(マンディンカ)人の言葉に由来するとされる名で呼ばれる。",
+      "trivia": "1324年頃のマンサ・ムーサのメッカ巡礼には大量の金と多くの随行者が伴われたと伝えられ、その豪華さは当時のアラビアやヨーロッパの記録にも記されているが、具体的な人数や金の量については誇張を含む可能性があり諸説ある。",
+      "explanation": "13世紀から17世紀にかけて西アフリカで栄えた王国。14世紀の王マンサ・ムーサが、豊富な金を伴ってメッカ巡礼を行ったことで特に知られる。",
+      "example_ja": "マリ帝国のもとで、トンブクトゥは交易とイスラーム学問の中心地として栄えた。",
+      "example_ja_src": "Timbuktu flourished as a center of trade and Islamic scholarship under the Mali Empire."
+    }
+  },
+  {
+    "english": "Timurid Empire",
+    "detail": {
+      "pronunciation": "/tɪˈmʊərɪd ˈɛmpaɪər/",
+      "pos": "名詞",
+      "meanings": [
+        "ティムール朝",
+        "ティムールが築いた中央アジアの帝国"
+      ],
+      "examples": [
+        {
+          "en": "Architecture and astronomy flourished under the Timurid Empire, especially in its capital, Samarkand.",
+          "ja": "ティムール朝のもとでは、特に首都サマルカンドを中心に建築と天文学が栄えた。"
+        },
+        {
+          "en": "Ulugh Beg, a grandson of Timur, built a major observatory that advanced astronomy under the Timurid Empire.",
+          "ja": "ティムールの孫であるウルグ・ベクは大規模な天文台を建設し、ティムール朝のもとで天文学を発展させた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "建国者ティムール(西欧では「タメルラン」とも呼ばれる)の名にちなむ。",
+      "trivia": "ティムールの孫ウルグ・ベクはサマルカンドに大規模な天文台を築き、当時としては極めて精度の高い星表を作成したことで知られる。",
+      "explanation": "14世紀後半にティムールが中央アジアに築いた帝国。首都サマルカンドを中心に、建築や学問など文化面でも大きな発展を遂げた。",
+      "example_ja": "ティムール朝のもとでは、特に首都サマルカンドを中心に建築と天文学が栄えた。",
+      "example_ja_src": "Architecture and astronomy flourished under the Timurid Empire, especially in its capital, Samarkand."
+    }
+  },
+  {
+    "english": "Twelve Tables",
+    "detail": {
+      "pronunciation": "/ˈtwɛlv ˈteɪbəlz/",
+      "pos": "名詞",
+      "meanings": [
+        "古代ローマ最古の成文法典",
+        "十二表法"
+      ],
+      "examples": [
+        {
+          "en": "The Twelve Tables were displayed publicly in the Forum so that even ordinary plebeians could know the laws that governed them.",
+          "ja": "十二表法は、一般の平民でさえ自分たちを統治する法律を知ることができるように、フォルムに公開して掲示された。"
+        },
+        {
+          "en": "Roman schoolchildren were traditionally said to memorize the Twelve Tables by heart.",
+          "ja": "ローマの子どもたちは伝統的に十二表法を暗記させられたと言われている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Law of the Twelve Tables",
+          "note": "同じ法典を指す別称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "平民(プレブス)が貴族による恣意的な法解釈に不満を持ち、法を成文化して公開するよう求めたことから、前451年に十人委員会(decemviri)が任命され作成された。",
+      "trivia": "原本の青銅板や木の板は現存せず、内容は後世の著作家による引用を通じてしか伝わっていない。規定の多くは家族法・相続・不法行為など私法的な内容が中心だったとされる。",
+      "explanation": "共和政ローマ初期(前451‑450年頃)に成文化された最古のローマ法典で、慣習法を平民にも分かるよう公開の場に刻んで示したことで知られる。",
+      "example_ja": "十二表法は、一般の平民でさえ自分たちを統治する法律を知ることができるように、フォルムに公開して掲示された。",
+      "example_ja_src": "The Twelve Tables were displayed publicly in the Forum so that even ordinary plebeians could know the laws that governed them."
+    }
+  },
+  {
+    "english": "decemviri",
+    "detail": {
+      "pronunciation": "/dɪˈsɛmvɪˌraɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "古代ローマの十人立法委員会",
+        "十二表法を起草した十人官"
+      ],
+      "examples": [
+        {
+          "en": "The decemviri were granted extraordinary power to draft a written code of law for Rome.",
+          "ja": "十人官(デケンウィリ)には、ローマのために成文の法典を起草するという特別な権限が与えられた。"
+        },
+        {
+          "en": "The second board of decemviri abused its power and had to be overthrown before normal republican government could resume.",
+          "ja": "二度目の十人官は権力を濫用したため、通常の共和政の統治が再開される前に打倒されねばならなかった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語で「十」を意味するdecemと「人々」を意味するviriに由来する。",
+      "trivia": "最初の十人官は概ね公正に職務を果たしたとされるが、翌年選ばれた二度目の十人官(特にアッピウス・クラウディウスが有名)は任期を過ぎても権力を手放そうとせず、市民の反発を招いて追放されたと伝えられる。",
+      "explanation": "前451年、慣習法を成文化した十二表法を起草するためにローマで臨時に任命された、十人からなる特別な立法委員会。",
+      "example_ja": "十人官(デケンウィリ)には、ローマのために成文の法典を起草するという特別な権限が与えられた。",
+      "example_ja_src": "The decemviri were granted extraordinary power to draft a written code of law for Rome."
+    }
+  },
+  {
+    "english": "Gracchi",
+    "detail": {
+      "pronunciation": "/ˈɡrækaɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "グラックス兄弟",
+        "土地改革を試みた護民官兄弟"
+      ],
+      "examples": [
+        {
+          "en": "The reforms proposed by the Gracchi aimed to redistribute public land to landless Roman citizens.",
+          "ja": "グラックス兄弟が提案した改革は、土地を持たないローマ市民に公有地を再分配することを目指していた。"
+        },
+        {
+          "en": "Many historians view the deaths of the Gracchi as an early sign of the violence that would eventually destabilize the Republic.",
+          "ja": "多くの歴史家は、グラックス兄弟の死を、後に共和政を不安定にしていく暴力の初期の兆候とみなしている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Gracchan reforms",
+          "note": "グラックス兄弟が主導した一連の土地・社会改革を指す語。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "センプロニウス氏族(gens Sempronia)に属したティベリウス・センプロニウス・グラックスとガイウス・センプロニウス・グラックスの家族名Gracchusの複数形。",
+      "trivia": "兄ティベリウスは前133年、弟ガイウスは前121年頃、いずれも護民官として改革を推し進めた際に、反対派との衝突の末に命を落としたとされるが、当時の混乱の詳細な経緯には諸説ある。",
+      "explanation": "前2世紀後半、貧しい市民への土地再分配を訴えて改革を試みたものの、いずれも政治的な暴力によって命を落としたとされる、護民官ティベリウスとその弟ガイウスの兄弟(グラックス兄弟)。",
+      "example_ja": "グラックス兄弟が提案した改革は、土地を持たないローマ市民に公有地を再分配することを目指していた。",
+      "example_ja_src": "The reforms proposed by the Gracchi aimed to redistribute public land to landless Roman citizens."
+    }
+  },
+  {
+    "english": "Social War",
+    "detail": {
+      "pronunciation": "/ˈsoʊʃəl wɔːr/",
+      "pos": "名詞",
+      "meanings": [
+        "同盟市戦争",
+        "イタリア同盟諸都市とローマの戦争"
+      ],
+      "examples": [
+        {
+          "en": "The Social War broke out when Rome's Italian allies took up arms to demand full Roman citizenship.",
+          "ja": "同盟市戦争は、ローマのイタリア人同盟諸都市が完全なローマ市民権を求めて武器を取ったことで勃発した。"
+        },
+        {
+          "en": "Although Rome won the Social War militarily, it soon granted citizenship to most of its former Italian allies anyway.",
+          "ja": "ローマは同盟市戦争に軍事的には勝利したものの、まもなくかつてのイタリア人同盟諸都市の大半に市民権を与えることになった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Italian War",
+          "note": "同じ戦争を指す別の呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語でイタリアの同盟諸都市を指す語socii(ソキイ)に由来し、「同盟者たちの戦争」を意味する。",
+      "trivia": "この戦争を経て制定されたLex JuliaやLex Plautia Papiriaなどの法により、ポー川以南のイタリア半島の自由民の多くが最終的にローマ市民権を獲得した。",
+      "explanation": "前91‑88年、ローマ市民権を求めるイタリア半島の同盟諸都市(ソキイ)がローマに対して起こした戦争で、最終的にイタリア人への市民権拡大につながった。",
+      "example_ja": "同盟市戦争は、ローマのイタリア人同盟諸都市が完全なローマ市民権を求めて武器を取ったことで勃発した。",
+      "example_ja_src": "The Social War broke out when Rome's Italian allies took up arms to demand full Roman citizenship."
+    }
+  },
+  {
+    "english": "Battle of Cannae",
+    "detail": {
+      "pronunciation": "/ˈbætl əv ˈkæniː/",
+      "pos": "名詞",
+      "meanings": [
+        "カンナエの戦い",
+        "ハンニバルがローマ軍を包囲殲滅したとされる戦い"
+      ],
+      "examples": [
+        {
+          "en": "At the Battle of Cannae, Hannibal used a double envelopment to surround and crush the much larger Roman army.",
+          "ja": "カンナエの戦いでハンニバルは、両翼包囲によって数で勝るローマ軍を包囲し、壊滅させたとされる。"
+        },
+        {
+          "en": "Military strategists still study the Battle of Cannae as a classic example of a successful double envelopment.",
+          "ja": "軍事戦略家は今なお、両翼包囲を成功させた典型例としてカンナエの戦いを研究している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Battle of Zama",
+          "note": "同じ第二次ポエニ戦争において、逆にローマがハンニバル率いるカルタゴ軍を破った戦い。"
+        }
+      ],
+      "origin": "戦場となった南イタリア・アプリア地方の町Cannaeの名に由来する。",
+      "trivia": "ローマ側の死傷者数については古代の史家(リウィウスなど)により数万人規模とされるが、正確な数字には諸説あり確定していない。ローマ史上最悪の敗北の一つとして長く語り継がれてきた。",
+      "explanation": "前216年、第二次ポエニ戦争でカルタゴの将軍ハンニバルが、包囲殲滅戦術によってローマ軍に壊滅的な敗北を与えたとされる戦い。",
+      "example_ja": "カンナエの戦いでハンニバルは、両翼包囲によって数で勝るローマ軍を包囲し、壊滅させたとされる。",
+      "example_ja_src": "At the Battle of Cannae, Hannibal used a double envelopment to surround and crush the much larger Roman army."
+    }
+  },
+  {
+    "english": "Battle of Zama",
+    "detail": {
+      "pronunciation": "/ˈbætl əv ˈzeɪmə/",
+      "pos": "名詞",
+      "meanings": [
+        "ザマの戦い",
+        "スキピオがハンニバルを破った戦い"
+      ],
+      "examples": [
+        {
+          "en": "The Battle of Zama ended the Second Punic War when Scipio Africanus defeated Hannibal's forces in North Africa.",
+          "ja": "ザマの戦いは、北アフリカでスキピオ・アフリカヌスがハンニバル軍を破ったことにより、第二次ポエニ戦争を終結させた。"
+        },
+        {
+          "en": "Scipio's victory at the Battle of Zama earned him the honorary title 'Africanus.'",
+          "ja": "ザマの戦いでの勝利により、スキピオは「アフリカヌス」という名誉の称号を得た。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Battle of Cannae",
+          "note": "同じ第二次ポエニ戦争において、逆にハンニバルがローマ軍を破った戦い。"
+        }
+      ],
+      "origin": "戦場となった北アフリカ(現在のチュニジア付近)の地名Zamaに由来する。",
+      "trivia": "この戦いの後カルタゴは事実上の従属国となり、地中海の覇権はローマへと大きく傾いたとされる。",
+      "explanation": "前202年、第二次ポエニ戦争の最終局面で、ローマの将軍スキピオ・アフリカヌスがハンニバル率いるカルタゴ軍を破り、戦争の帰趨を決定づけたとされる戦い。",
+      "example_ja": "ザマの戦いは、北アフリカでスキピオ・アフリカヌスがハンニバル軍を破ったことにより、第二次ポエニ戦争を終結させた。",
+      "example_ja_src": "The Battle of Zama ended the Second Punic War when Scipio Africanus defeated Hannibal's forces in North Africa."
+    }
+  },
+  {
+    "english": "Spartacus",
+    "detail": {
+      "pronunciation": "/ˈspɑːrtəkəs/",
+      "pos": "名詞",
+      "meanings": [
+        "第三次奴隷戦争を率いた剣闘士",
+        "スパルタクス"
+      ],
+      "examples": [
+        {
+          "en": "Spartacus led an army of escaped gladiators and enslaved people in a revolt that shook the Roman Republic.",
+          "ja": "スパルタクスは、逃亡した剣闘士や奴隷からなる軍勢を率い、共和政ローマを揺るがす反乱を起こした。"
+        },
+        {
+          "en": "The rebellion led by Spartacus was eventually crushed by an army under the command of Crassus.",
+          "ja": "スパルタクスが率いた反乱は、最終的にクラッススが指揮する軍によって鎮圧された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Third Servile War",
+          "note": "スパルタクスが率いた反乱そのものを指す歴史用語。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "トラキア地方出身とされる人物名で、詳しい出自についてはわずかな記録しか残っていない。",
+      "trivia": "反乱の最終的な戦闘でスパルタクスがどのように最期を迎えたかは古代の史料でも記述が分かれており、遺体も見つかっていないため詳細は明らかになっていない。",
+      "explanation": "前73‑71年に剣闘士や奴隷たちを率いて大規模な反乱(第三次奴隷戦争)を起こしたとされる、トラキア出身の剣闘士。",
+      "example_ja": "スパルタクスは、逃亡した剣闘士や奴隷からなる軍勢を率い、共和政ローマを揺るがす反乱を起こした。",
+      "example_ja_src": "Spartacus led an army of escaped gladiators and enslaved people in a revolt that shook the Roman Republic."
+    }
+  },
+  {
+    "english": "proscription",
+    "detail": {
+      "pronunciation": "/proʊˈskrɪpʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "政敵追放のための公開処刑リスト",
+        "私権剥奪の布告"
+      ],
+      "examples": [
+        {
+          "en": "During Sulla's proscription, the names of his political enemies were posted in public, stripping them of legal protection.",
+          "ja": "スッラによる私権剥奪の布告では、政敵の名前が公に張り出され、彼らは法の保護を失った。"
+        },
+        {
+          "en": "The Second Triumvirate also carried out a proscription that resulted in the deaths of many senators, including Cicero.",
+          "ja": "第二回三頭政治もまた私権剥奪の布告を行い、キケロを含む多くの元老院議員が命を落とすことになったとされる。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "proscribe",
+          "pos": "動詞",
+          "ja": "(人を)私権剥奪の対象として公示する、禁止する"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語proscribere(公に書き示す、告示する)に由来する。",
+      "trivia": "リストに載った者を殺害した者には報奨金が支払われ、逆にかくまった者は処罰の対象とされたため、多くの逃亡と密告が起きたと伝えられる。",
+      "explanation": "政敵などの氏名を公にリストとして公示し、法の保護を奪って財産の没収や殺害を合法とする、共和政末期のローマで行われた措置。",
+      "example_ja": "スッラによる私権剥奪の布告では、政敵の名前が公に張り出され、彼らは法の保護を失った。",
+      "example_ja_src": "During Sulla's proscription, the names of his political enemies were posted in public, stripping them of legal protection."
+    }
+  },
+  {
+    "english": "First Triumvirate",
+    "detail": {
+      "pronunciation": "/ˈfɜːrst traɪˈʌmvərət/",
+      "pos": "名詞",
+      "meanings": [
+        "第一回三頭政治",
+        "カエサル・ポンペイウス・クラッススの私的同盟"
+      ],
+      "examples": [
+        {
+          "en": "The First Triumvirate was an unofficial alliance among Julius Caesar, Pompey, and Crassus to dominate Roman politics.",
+          "ja": "第一回三頭政治は、ローマ政治を支配するためにユリウス・カエサル、ポンペイウス、クラッススの間で結ばれた非公式の同盟だった。"
+        },
+        {
+          "en": "Unlike the later Second Triumvirate, the First Triumvirate had no basis in Roman law.",
+          "ja": "後の第二回三頭政治とは異なり、第一回三頭政治にはローマ法上の根拠は何もなかった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Second Triumvirate",
+          "note": "後に法的な権限を与えられて成立した、正式な三頭政治。"
+        }
+      ],
+      "origin": "ラテン語tres viri(三人の者たち)に由来する語triumvirから。",
+      "trivia": "クラッススの戦死(前53年)とポンペイウスとカエサルの対立激化により、この同盟は長続きせず、最終的に内戦へとつながった。",
+      "explanation": "前60年、カエサル・ポンペイウス・クラッススの有力者3人が私的に結んだ、法的な裏付けのない非公式の権力分掌の同盟。",
+      "example_ja": "第一回三頭政治は、ローマ政治を支配するためにユリウス・カエサル、ポンペイウス、クラッススの間で結ばれた非公式の同盟だった。",
+      "example_ja_src": "The First Triumvirate was an unofficial alliance among Julius Caesar, Pompey, and Crassus to dominate Roman politics."
+    }
+  },
+  {
+    "english": "Second Triumvirate",
+    "detail": {
+      "pronunciation": "/ˈsɛkənd traɪˈʌmvərət/",
+      "pos": "名詞",
+      "meanings": [
+        "第二回三頭政治",
+        "法的権限を持つ三人の統治同盟"
+      ],
+      "examples": [
+        {
+          "en": "The Second Triumvirate legally granted Octavian, Antony, and Lepidus dictatorial powers to govern Rome.",
+          "ja": "第二回三頭政治は、オクタウィアヌス、アントニウス、レピドゥスにローマを統治する独裁的な権限を法的に与えるものだった。"
+        },
+        {
+          "en": "After Lepidus was pushed aside, the Second Triumvirate effectively became a power struggle between Octavian and Antony.",
+          "ja": "レピドゥスが実権を失った後、第二回三頭政治は事実上オクタウィアヌスとアントニウスの権力争いと化した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "First Triumvirate",
+          "note": "それ以前に結ばれていた、法的根拠を持たない私的な同盟。"
+        }
+      ],
+      "origin": "第一回三頭政治(triumvirate)にならって、正式な法的地位を与えられた第二の三頭政治として名付けられた。",
+      "trivia": "この三頭政治のもとで行われた私権剥奪の布告では、キケロを含む多くの政敵が命を落としたとされる。最終的にはオクタウィアヌスとアントニウスの対立からアクティウムの海戦に至った。",
+      "explanation": "前43年、オクタウィアヌス・アントニウス・レピドゥスの3人が、法律(レックス・ティティア)によって独裁的な権限を正式に与えられて結成した同盟。",
+      "example_ja": "第二回三頭政治は、オクタウィアヌス、アントニウス、レピドゥスにローマを統治する独裁的な権限を法的に与えるものだった。",
+      "example_ja_src": "The Second Triumvirate legally granted Octavian, Antony, and Lepidus dictatorial powers to govern Rome."
+    }
+  },
+  {
+    "english": "Battle of Actium",
+    "detail": {
+      "pronunciation": "/ˈbætl əv ˈæktiəm/",
+      "pos": "名詞",
+      "meanings": [
+        "アクティウムの海戦",
+        "オクタウィアヌスがアントニウス・クレオパトラ連合軍を破った海戦"
+      ],
+      "examples": [
+        {
+          "en": "Octavian's decisive naval victory at the Battle of Actium left him the sole ruler of the Roman world.",
+          "ja": "アクティウムの海戦でのオクタウィアヌスの決定的な勝利により、彼はローマ世界唯一の支配者となった。"
+        },
+        {
+          "en": "After their defeat at the Battle of Actium, Antony and Cleopatra fled to Egypt, where they later died.",
+          "ja": "アクティウムの海戦で敗れた後、アントニウスとクレオパトラはエジプトへ逃れ、その後そこで命を落とした。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "戦場となったギリシャ西岸の岬Actium(現在のアクティオン岬)の名に由来する。",
+      "trivia": "この勝利によってオクタウィアヌスは事実上ローマ世界唯一の実力者となり、前27年に元老院からアウグストゥスの称号を受けて事実上の帝政(元首政)が始まったとされる。",
+      "explanation": "前31年、オクタウィアヌスの艦隊がアントニウスとクレオパトラの連合艦隊を破った海戦で、内戦を終わらせ、後のアウグストゥスによる帝政開始への道を開いたとされる。",
+      "example_ja": "アクティウムの海戦でのオクタウィアヌスの決定的な勝利により、彼はローマ世界唯一の支配者となった。",
+      "example_ja_src": "Octavian's decisive naval victory at the Battle of Actium left him the sole ruler of the Roman world."
+    }
+  },
+  {
+    "english": "Pontifex Maximus",
+    "detail": {
+      "pronunciation": "/ˌpɒntɪfɛks ˈmæksɪməs/",
+      "pos": "名詞",
+      "meanings": [
+        "ローマ国家祭祀の最高神官",
+        "大神祇官"
+      ],
+      "examples": [
+        {
+          "en": "Julius Caesar was elected Pontifex Maximus years before he became the sole ruler of Rome.",
+          "ja": "ユリウス・カエサルは、ローマ唯一の支配者となる何年も前に大神祇官(ポンティフェクス・マクシムス)に選出されていた。"
+        },
+        {
+          "en": "Roman emperors continued to hold the title of Pontifex Maximus for centuries, long after they had become Christian rulers.",
+          "ja": "ローマ皇帝たちは、キリスト教徒の統治者となった後も何世紀にもわたって大神祇官の称号を保持し続けた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語で神官を意味するpontifexと、「最大の」を意味するmaximusから。pontifexの語源自体には「橋(pons)を架ける者」に由来するという説もある。",
+      "trivia": "この称号は後にカトリック教会に受け継がれ、現在でもローマ教皇の公式称号の一つとして「Pontifex Maximus」の語が用いられている。",
+      "explanation": "ローマの国家祭祀を統括する神官団(祭司団)の最高位で、共和政期は選挙で選ばれる名誉職だったが、アウグストゥス以降は歴代皇帝が慣例として兼任するようになった称号。",
+      "example_ja": "ユリウス・カエサルは、ローマ唯一の支配者となる何年も前に大神祇官(ポンティフェクス・マクシムス)に選出されていた。",
+      "example_ja_src": "Julius Caesar was elected Pontifex Maximus years before he became the sole ruler of Rome."
+    }
+  },
+  {
+    "english": "Vestal Virgins",
+    "detail": {
+      "pronunciation": "/ˈvɛstəl ˈvɜːrdʒɪnz/",
+      "pos": "名詞",
+      "meanings": [
+        "ウェスタ神殿の巫女",
+        "貞潔を誓った女神官"
+      ],
+      "examples": [
+        {
+          "en": "The Vestal Virgins were responsible for keeping the sacred fire in the Temple of Vesta burning at all times.",
+          "ja": "ウェスタの巫女たちは、ウェスタ神殿の聖なる炎を常に絶やさないようにする責任を負っていた。"
+        },
+        {
+          "en": "A Vestal Virgin who broke her vow of chastity faced severe punishment under Roman law.",
+          "ja": "貞潔の誓いを破ったウェスタの巫女は、ローマ法のもとで厳しい処罰を受けたとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "かまど・炉の女神Vesta(ウェスタ)の名に由来する。",
+      "trivia": "選ばれた巫女は通常30年間にわたり奉仕し、その間は法的な独立性や公の場での特別な席次など多くの特権を与えられた一方、誓いを破った場合には厳罰が科されたと伝えられるが、実際に処罰が下された頻度については史料により記述に差がある。",
+      "explanation": "かまどの女神ウェスタを祀る神殿で聖なる炎を絶やさぬよう守り続けた、貞潔の誓いを立てた少数の女性神官たち。",
+      "example_ja": "ウェスタの巫女たちは、ウェスタ神殿の聖なる炎を常に絶やさないようにする責任を負っていた。",
+      "example_ja_src": "The Vestal Virgins were responsible for keeping the sacred fire in the Temple of Vesta burning at all times."
+    }
+  },
+  {
+    "english": "Pantheon",
+    "detail": {
+      "pronunciation": "/ˈpænθiˌɒn/",
+      "pos": "名詞",
+      "meanings": [
+        "パンテオン(万神殿)",
+        "ハドリアヌス帝が再建したローマの神殿"
+      ],
+      "examples": [
+        {
+          "en": "The Pantheon's massive dome, with its open oculus at the center, has survived largely intact for nearly two thousand years.",
+          "ja": "中央に開口部(オクルス)を持つパンテオンの巨大なドームは、ほぼ2000年にわたってほぼ無傷のまま残ってきた。"
+        },
+        {
+          "en": "Because it was converted into a Christian church, the Pantheon avoided the fate of many other ancient Roman buildings.",
+          "ja": "パンテオンはキリスト教の教会に転用されたため、他の多くの古代ローマ建築がたどった運命を免れた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ギリシャ語のpan(すべての)とtheos(神々)に由来し、「すべての神々のための神殿」を意味する。",
+      "trivia": "ドームの直径と床から頂点までの高さがほぼ等しく設計されており、内部にちょうど球体が収まる比率になっていることでも知られる。",
+      "explanation": "元々アウグストゥスの腹心アグリッパによって建てられ、火災焼失後にハドリアヌス帝の時代に現在の姿へ再建された、巨大な無筋コンクリート製ドームを持つローマの神殿。",
+      "example_ja": "中央に開口部(オクルス)を持つパンテオンの巨大なドームは、ほぼ2000年にわたってほぼ無傷のまま残ってきた。",
+      "example_ja_src": "The Pantheon's massive dome, with its open oculus at the center, has survived largely intact for nearly two thousand years."
+    }
+  },
+  {
+    "english": "Diocletian",
+    "detail": {
+      "pronunciation": "/ˌdaɪəˈkliːʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "ディオクレティアヌス帝",
+        "テトラルキアを導入したローマ皇帝"
+      ],
+      "examples": [
+        {
+          "en": "Diocletian ended decades of instability by reorganizing the Roman Empire's administration and military.",
+          "ja": "ディオクレティアヌスは、ローマ帝国の行政と軍事を再編することで、何十年にもわたる不安定な状況を終わらせた。"
+        },
+        {
+          "en": "Unlike most Roman emperors, Diocletian voluntarily gave up his throne and retired to private life.",
+          "ja": "ほとんどのローマ皇帝とは異なり、ディオクレティアヌスは自ら退位し、私人としての生活に退いた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "元は平民出身とされ、即位前の名はディオクレスといい、皇帝となってから「ディオクレティアヌス」という名を名乗ったとされる。",
+      "trivia": "在位中にはキリスト教徒に対する大規模な迫害(大迫害)も行ったことで知られるが、退位後は宮殿の庭で野菜を育てる暮らしを送ったという逸話が伝わっている。",
+      "explanation": "3世紀後半の混乱期を収拾し、帝国を東西に分割統治する体制(テトラルキア)を導入するなど大規模な行政・軍事改革を行った、後に自ら退位した珍しい皇帝。",
+      "example_ja": "ディオクレティアヌスは、ローマ帝国の行政と軍事を再編することで、何十年にもわたる不安定な状況を終わらせた。",
+      "example_ja_src": "Diocletian ended decades of instability by reorganizing the Roman Empire's administration and military."
+    }
+  },
+  {
+    "english": "Tetrarchy",
+    "detail": {
+      "pronunciation": "/ˈtɛtrɑːrki/",
+      "pos": "名詞",
+      "meanings": [
+        "四分統治制",
+        "テトラルキア"
+      ],
+      "examples": [
+        {
+          "en": "Under the Tetrarchy, the Roman Empire was divided among four rulers to make it easier to govern and defend.",
+          "ja": "テトラルキアのもとでは、統治と防衛をしやすくするためにローマ帝国が4人の統治者によって分割統治された。"
+        },
+        {
+          "en": "The Tetrarchy eventually broke down into renewed civil wars among rivals for imperial power.",
+          "ja": "テトラルキアは、やがて帝位を争うライバルたちによる内戦の再燃という形で崩壊していった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ギリシャ語tetra(四)とarkhein(統治する)に由来する。",
+      "trivia": "この体制では2人の正帝(アウグストゥス)がそれぞれ2人の副帝(カエサル)を指名・後継者とすることで、円滑な権力継承を狙ったが、ディオクレティアヌスの退位後まもなく機能しなくなったとされる。",
+      "explanation": "ディオクレティアヌス帝が293年に導入した、広大な帝国を2人の正帝と2人の副帝の計4人で分担統治させる体制。",
+      "example_ja": "テトラルキアのもとでは、統治と防衛をしやすくするためにローマ帝国が4人の統治者によって分割統治された。",
+      "example_ja_src": "Under the Tetrarchy, the Roman Empire was divided among four rulers to make it easier to govern and defend."
+    }
+  },
+  {
+    "english": "Edict of Milan",
+    "detail": {
+      "pronunciation": "/ˈiːdɪkt əv mɪˈlæn/",
+      "pos": "名詞",
+      "meanings": [
+        "ミラノ勅令",
+        "信教の自由を認めた布告"
+      ],
+      "examples": [
+        {
+          "en": "The Edict of Milan granted Christians and followers of other religions the freedom to worship openly across the Roman Empire.",
+          "ja": "ミラノ勅令は、ローマ帝国全域でキリスト教徒や他の宗教の信者が公然と信仰する自由を認めるものだった。"
+        },
+        {
+          "en": "The Edict of Milan effectively ended the earlier waves of persecution that Christians had faced under previous emperors.",
+          "ja": "ミラノ勅令は、それ以前の皇帝たちのもとでキリスト教徒が経験してきた迫害の波を事実上終わらせた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "313年にコンスタンティヌスとリキニウスがミラノで会談し合意した布告であることから、この地名にちなんで名付けられた。",
+      "trivia": "この勅令によってキリスト教が国教になったわけではなく、あくまで信仰の自由と没収されていた教会財産の返還を認めるものだったが、後のキリスト教公認・国教化への大きな一歩とされる。",
+      "explanation": "313年、皇帝コンスタンティヌスとリキニウスが合意した、それまで迫害されていたキリスト教を含むあらゆる宗教信仰の自由をローマ帝国内で認める布告。",
+      "example_ja": "ミラノ勅令は、ローマ帝国全域でキリスト教徒や他の宗教の信者が公然と信仰する自由を認めるものだった。",
+      "example_ja_src": "The Edict of Milan granted Christians and followers of other religions the freedom to worship openly across the Roman Empire."
+    }
+  },
+  {
+    "english": "Visigoths",
+    "detail": {
+      "pronunciation": "/ˈvɪzɪˌɡɒθs/",
+      "pos": "名詞",
+      "meanings": [
+        "西ゴート族",
+        "410年にローマを略奪したゲルマン系部族"
+      ],
+      "examples": [
+        {
+          "en": "The Visigoths, led by King Alaric, captured and looted the city of Rome in 410 AD.",
+          "ja": "西ゴート族はアラリック王に率いられ、410年にローマ市を占領し略奪した。"
+        },
+        {
+          "en": "After sacking Rome, the Visigoths eventually settled and established a kingdom in what is now Spain.",
+          "ja": "ローマを略奪した後、西ゴート族は最終的に定住し、現在のスペインにあたる地域に王国を築いた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Vandals",
+          "note": "同じくローマを略奪した(455年)別のゲルマン系部族。"
+        }
+      ],
+      "origin": "ゴート人のうち西方に定住した集団を指す名称とされるが、語源には諸説ある。",
+      "trivia": "西ゴート族によるローマ占領は、外敵によってローマ市が陥落した約800年ぶりの出来事とされ、当時の人々に大きな衝撃を与えたと伝えられるが、被害の具体的な規模については史料ごとに記述の差がある。",
+      "explanation": "ゲルマン系のゴート人の一派で、410年に王アラリック1世のもとローマ市を占領・略奪したことで知られる部族。",
+      "example_ja": "西ゴート族はアラリック王に率いられ、410年にローマ市を占領し略奪した。",
+      "example_ja_src": "The Visigoths, led by King Alaric, captured and looted the city of Rome in 410 AD."
+    }
+  },
+  {
+    "english": "Vandals",
+    "detail": {
+      "pronunciation": "/ˈvændəlz/",
+      "pos": "名詞",
+      "meanings": [
+        "ヴァンダル族",
+        "455年にローマを略奪した部族"
+      ],
+      "examples": [
+        {
+          "en": "The Vandals sacked Rome in 455 AD, and their name later became the source of the English word 'vandalism.'",
+          "ja": "ヴァンダル族は455年にローマを略奪し、彼らの名は後に英単語「vandalism」の語源になったとされる。"
+        },
+        {
+          "en": "Modern historians point out that the destruction caused by the Vandals may have been less extreme than their notorious reputation suggests.",
+          "ja": "現代の歴史家たちは、ヴァンダル族がもたらした破壊は、その悪名高い評判ほど極端ではなかった可能性を指摘している。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "vandalism",
+          "pos": "名詞",
+          "ja": "(公共物などを)故意に破壊・損傷する行為"
+        },
+        {
+          "word": "vandal",
+          "pos": "名詞",
+          "ja": "物を故意に破壊する人"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Visigoths",
+          "note": "同じくローマを略奪した(410年)別のゲルマン系部族。"
+        }
+      ],
+      "origin": "ゲルマン系部族名Vandaliに由来し、18世紀末以降この部族による破壊行為のイメージから英語のvandalism(破壊行為)という語が作られたとされる。",
+      "trivia": "ヴァンダル族は北アフリカに強力な王国を築き、地中海の制海権も一時握ったが、後にビザンツ帝国(東ローマ帝国)によって滅ぼされた。",
+      "explanation": "ゲルマン系の部族の一つで、455年に王ガイセリックのもとローマ市を略奪したことから、その名が破壊行為を意味する英単語の語源になったとされる。",
+      "example_ja": "ヴァンダル族は455年にローマを略奪し、彼らの名は後に英単語「vandalism」の語源になったとされる。",
+      "example_ja_src": "The Vandals sacked Rome in 455 AD, and their name later became the source of the English word 'vandalism.'"
+    }
+  },
+  {
+    "english": "fall of the Western Roman Empire",
+    "detail": {
+      "pronunciation": "/fɔːl əv ðə ˈwɛstərn ˈroʊmən ˈɛmpaɪər/",
+      "pos": "名詞",
+      "meanings": [
+        "西ローマ帝国の滅亡",
+        "古代ローマの終焉とされる出来事"
+      ],
+      "examples": [
+        {
+          "en": "Historians traditionally date the fall of the Western Roman Empire to 476 AD, when Odoacer deposed the last emperor.",
+          "ja": "歴史家たちは伝統的に、オドアケルが最後の皇帝を退位させた476年を西ローマ帝国の滅亡とみなしている。"
+        },
+        {
+          "en": "Some historians argue that the fall of the Western Roman Empire was less a sudden collapse than a gradual transformation.",
+          "ja": "歴史家の中には、西ローマ帝国の滅亡は突然の崩壊というよりも、緩やかな変容だったと論じる者もいる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "帝国が東西に分割統治されるようになった後、西側の政権が消滅した出来事を指してこう呼ばれるようになった(東側は東ローマ帝国としてその後も存続した)。",
+      "trivia": "476年という年は象徴的な区切りとして広く使われるが、実際には帝国の権威はそれ以前から徐々に低下しており、「滅亡」というより長期的な変容の一過程だったと考える歴史家も多い。",
+      "explanation": "476年、ゲルマン人の将軍オドアケルが最後の西ローマ皇帝ロムルス・アウグストゥルスを退位させた出来事を伝統的な区切りとする、西ローマ帝国の終焉。",
+      "example_ja": "歴史家たちは伝統的に、オドアケルが最後の皇帝を退位させた476年を西ローマ帝国の滅亡とみなしている。",
+      "example_ja_src": "Historians traditionally date the fall of the Western Roman Empire to 476 AD, when Odoacer deposed the last emperor."
+    }
+  }
+]

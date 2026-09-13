@@ -1,0 +1,3383 @@
+[
+  {
+    "english": "Olympic Games",
+    "detail": {
+      "pronunciation": "/oʊˈlɪmpɪk ɡeɪmz/",
+      "pos": "名詞",
+      "meanings": [
+        "近代オリンピック競技大会",
+        "夏季・冬季それぞれ4年ごとに開催される国際総合スポーツ大会"
+      ],
+      "examples": [
+        {
+          "en": "Over 10,000 athletes from around the world compete in the Olympic Games every four years.",
+          "ja": "世界中から1万人を超える選手たちが、4年に一度開催されるオリンピック競技大会で競い合う。"
+        },
+        {
+          "en": "Paris hosted the Olympic Games for the third time in 2024.",
+          "ja": "パリは2024年に3度目となるオリンピック競技大会を開催した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "the Games",
+          "note": "オリンピック競技大会を指す口語的な略称"
+        }
+      ],
+      "antonyms": [],
+      "origin": "1896年にアテネで第1回近代オリンピックが開催されて以来、クーベルタンの提唱により続けられている。",
+      "trivia": "夏季と冬季は現在2年ずつずらして開催されており、同じ年に両方行われることはない。",
+      "explanation": "国際オリンピック委員会(IOC)が主催し、夏季・冬季それぞれ4年に一度開催される世界最大級の総合スポーツ競技大会。",
+      "example_ja": "世界中から1万人を超える選手たちが、4年に一度開催されるオリンピック競技大会で競い合う。",
+      "example_ja_src": "Over 10,000 athletes from around the world compete in the Olympic Games every four years."
+    }
+  },
+  {
+    "english": "Olympiad",
+    "detail": {
+      "pronunciation": "/oʊˈlɪmpiæd/",
+      "pos": "名詞",
+      "meanings": [
+        "オリンピアード(4年周期)",
+        "オリンピック大会そのものを指す公式的な呼び方でも使われる語"
+      ],
+      "examples": [
+        {
+          "en": "The 2020 Games, delayed by a year, were still officially called the Games of the XXXII Olympiad.",
+          "ja": "1年延期された2020年大会は、公式には第32回オリンピアード競技大会と呼ばれ続けた。"
+        },
+        {
+          "en": "Each Olympiad begins right after the closing ceremony of the previous Games.",
+          "ja": "それぞれのオリンピアードは、前回大会の閉会式の直後から始まる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古代ギリシャで暦を数えるのに用いられた4年周期の単位に由来する。",
+      "trivia": "延期された東京2020大会のように、開催年がずれても「オリンピアード」の番号は変わらない。",
+      "explanation": "オリンピック競技大会と次回大会までの4年間の周期そのものを指す語。古代ギリシャの暦の単位に由来する。",
+      "example_ja": "1年延期された2020年大会は、公式には第32回オリンピアード競技大会と呼ばれ続けた。",
+      "example_ja_src": "The 2020 Games, delayed by a year, were still officially called the Games of the XXXII Olympiad."
+    }
+  },
+  {
+    "english": "Olympic Village",
+    "detail": {
+      "pronunciation": "/oʊˈlɪmpɪk ˈvɪlɪdʒ/",
+      "pos": "名詞",
+      "meanings": [
+        "選手村",
+        "大会期間中に選手・役員が滞在する専用の宿泊施設"
+      ],
+      "examples": [
+        {
+          "en": "Athletes from rival countries often become friends while staying together in the Olympic Village.",
+          "ja": "ライバル国同士の選手も、選手村で共に生活するうちに友人になることが多い。"
+        },
+        {
+          "en": "The Olympic Village includes dining halls, gyms, and recreation areas for thousands of athletes.",
+          "ja": "選手村には、数千人の選手のための食堂やジム、娯楽施設が備えられている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "大会後は多くの場合、一般向けの住宅として再利用される。",
+      "trivia": "食堂は24時間営業で、各国の食文化に配慮した多様なメニューが提供されることで知られる。",
+      "explanation": "大会期間中、参加する選手や役員が滞在するために大会組織委員会が用意する専用の宿泊施設群。",
+      "example_ja": "ライバル国同士の選手も、選手村で共に生活するうちに友人になることが多い。",
+      "example_ja_src": "Athletes from rival countries often become friends while staying together in the Olympic Village."
+    }
+  },
+  {
+    "english": "torch relay",
+    "detail": {
+      "pronunciation": "/tɔːrtʃ rɪˈleɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "聖火リレー",
+        "聖火を開催地まで運ぶために行われるリレー行事"
+      ],
+      "examples": [
+        {
+          "en": "The torch relay traveled through hundreds of towns before reaching the opening ceremony.",
+          "ja": "聖火リレーは、開会式にたどり着くまでに何百もの町を巡った。"
+        },
+        {
+          "en": "Former Olympians are often invited to take part in the torch relay.",
+          "ja": "元オリンピック選手が聖火リレーに招かれて参加することも多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古代オリンピックの聖火にちなみ、1936年ベルリン大会で近代五輪として初めて実施された。",
+      "trivia": "海底や宇宙空間で聖火が運ばれた区間があるなど、演出上の工夫が凝らされることもある。",
+      "explanation": "開催地に聖火を運ぶため、多数のランナーが区間ごとにトーチを引き継ぎながら国内外を巡る行事。",
+      "example_ja": "聖火リレーは、開会式にたどり着くまでに何百もの町を巡った。",
+      "example_ja_src": "The torch relay traveled through hundreds of towns before reaching the opening ceremony."
+    }
+  },
+  {
+    "english": "torchbearer",
+    "detail": {
+      "pronunciation": "/ˈtɔːrtʃˌbɛərər/",
+      "pos": "名詞",
+      "meanings": [
+        "聖火ランナー",
+        "聖火リレーで炎を運ぶ一人ひとりの走者"
+      ],
+      "examples": [
+        {
+          "en": "She was chosen as a torchbearer to carry the flame through her hometown.",
+          "ja": "彼女は、自分の故郷で聖火を運ぶ聖火ランナーに選ばれた。"
+        },
+        {
+          "en": "Each torchbearer runs only a short distance before passing the flame to the next person.",
+          "ja": "それぞれの聖火ランナーは短い距離だけ走り、次の走者へ炎を引き継ぐ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "torch(たいまつ)+bear(運ぶ)から成る語で、比喩的に「理念を受け継ぐ人」の意味でも使われる。",
+      "trivia": "著名なスポーツ選手だけでなく、地域に貢献した一般市民が選ばれることも多い。",
+      "explanation": "聖火リレーにおいて、区間ごとに聖火を持って走る一人ひとりのランナー。",
+      "example_ja": "彼女は、自分の故郷で聖火を運ぶ聖火ランナーに選ばれた。",
+      "example_ja_src": "She was chosen as a torchbearer to carry the flame through her hometown."
+    }
+  },
+  {
+    "english": "cauldron",
+    "detail": {
+      "pronunciation": "/ˈkɔːldrən/",
+      "pos": "名詞",
+      "meanings": [
+        "聖火台",
+        "開会式で点火され大会中燃え続ける大型の炎の器"
+      ],
+      "examples": [
+        {
+          "en": "The final torchbearer lit the Olympic cauldron as fireworks lit up the night sky.",
+          "ja": "最後の聖火ランナーが聖火台に点火すると、夜空に花火が打ち上がった。"
+        },
+        {
+          "en": "The design of the Olympic cauldron is often kept secret until the opening ceremony.",
+          "ja": "聖火台のデザインは、開会式まで秘密にされることが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "元々は「大鍋」を意味する一般語で、そこから聖火を灯す大型の器を指すようになった。",
+      "trivia": "東京2020大会の聖火台は、太陽をモチーフにした花のような形をしていたことで話題になった。",
+      "explanation": "開会式で聖火が最終的に点火され、大会期間中燃え続ける大型の聖火台。",
+      "example_ja": "最後の聖火ランナーが聖火台に点火すると、夜空に花火が打ち上がった。",
+      "example_ja_src": "The final torchbearer lit the Olympic cauldron as fireworks lit up the night sky."
+    }
+  },
+  {
+    "english": "opening ceremony",
+    "detail": {
+      "pronunciation": "/ˈoʊpənɪŋ ˈsɛrəmoʊni/",
+      "pos": "名詞",
+      "meanings": [
+        "開会式",
+        "大会の開幕を祝う式典"
+      ],
+      "examples": [
+        {
+          "en": "Millions of viewers around the world watched the opening ceremony live on television.",
+          "ja": "世界中の何百万人もの視聴者が、開会式をテレビで生中継で見守った。"
+        },
+        {
+          "en": "The opening ceremony featured performances that celebrated the host country's culture.",
+          "ja": "開会式では、開催国の文化を称えるパフォーマンスが披露された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "closing ceremony",
+          "note": "大会の終わりを飾る閉会式"
+        }
+      ],
+      "origin": "古代オリンピックにも神々への奉納儀式としての開会の儀があったとされる。",
+      "trivia": "パリ2024大会の開会式は史上初めて競技場の外、セーヌ川沿いで行われたことで注目を集めた。",
+      "explanation": "各国選手団の入場行進や聖火点火などを含む、大会の開幕を祝う式典。",
+      "example_ja": "世界中の何百万人もの視聴者が、開会式をテレビで生中継で見守った。",
+      "example_ja_src": "Millions of viewers around the world watched the opening ceremony live on television."
+    }
+  },
+  {
+    "english": "closing ceremony",
+    "detail": {
+      "pronunciation": "/ˈkloʊzɪŋ ˈsɛrəmoʊni/",
+      "pos": "名詞",
+      "meanings": [
+        "閉会式",
+        "全競技終了後に行われる大会の締めくくりの式典"
+      ],
+      "examples": [
+        {
+          "en": "Flags were lowered and the Olympic flame was extinguished during the closing ceremony.",
+          "ja": "閉会式では、旗が下ろされ、聖火が消された。"
+        },
+        {
+          "en": "The closing ceremony traditionally includes a handover segment to the next host city.",
+          "ja": "閉会式には伝統的に、次回開催都市への引き継ぎのコーナーが含まれる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "opening ceremony",
+          "note": "大会の始まりを飾る開会式"
+        }
+      ],
+      "origin": "選手たちが国別に整列せず自由に入り混じって入場するのが開会式との大きな違いとされる。",
+      "trivia": "次回開催都市の紹介映像やパフォーマンスが行われる「8分間ショー」が恒例となっている。",
+      "explanation": "全競技の終了後に開催される、大会の締めくくりとして行われる式典。次回開催地への引き継ぎも行われる。",
+      "example_ja": "閉会式では、旗が下ろされ、聖火が消された。",
+      "example_ja_src": "Flags were lowered and the Olympic flame was extinguished during the closing ceremony."
+    }
+  },
+  {
+    "english": "parade of nations",
+    "detail": {
+      "pronunciation": "/pəˈreɪd əv ˈneɪʃənz/",
+      "pos": "名詞",
+      "meanings": [
+        "各国選手団の入場行進",
+        "開会式で自国の旗を先頭に会場を行進すること"
+      ],
+      "examples": [
+        {
+          "en": "Greece traditionally leads the parade of nations, and the host country's team enters last.",
+          "ja": "伝統的にギリシャが各国選手団の入場行進の先頭を歩き、開催国は最後に入場する。"
+        },
+        {
+          "en": "The parade of nations can take several hours when hundreds of countries take part.",
+          "ja": "何百もの国が参加する場合、各国選手団の入場行進には数時間かかることもある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ギリシャが常に先頭を歩くのは、近代オリンピックの発祥国であることに由来する。",
+      "trivia": "国名はアルファベット順(開催国の言語)に並ぶのが通例だが、開催国だけは最後に配置される。",
+      "explanation": "開会式で各国・地域の選手団が自国の旗を先頭に会場内を行進すること。",
+      "example_ja": "伝統的にギリシャが各国選手団の入場行進の先頭を歩き、開催国は最後に入場する。",
+      "example_ja_src": "Greece traditionally leads the parade of nations, and the host country's team enters last."
+    }
+  },
+  {
+    "english": "flag bearer",
+    "detail": {
+      "pronunciation": "/flæɡ ˈbɛərər/",
+      "pos": "名詞",
+      "meanings": [
+        "旗手",
+        "入場行進で自国の旗を掲げて選手団の先頭を歩く選手"
+      ],
+      "examples": [
+        {
+          "en": "The veteran swimmer was honored to be chosen as the flag bearer for her country.",
+          "ja": "そのベテラン水泳選手は、自国の旗手に選ばれたことを光栄に思った。"
+        },
+        {
+          "en": "Some countries now choose one male and one female flag bearer together.",
+          "ja": "近年は男女1人ずつを旗手として選ぶ国も増えている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "かつては前回大会のメダリストなど功労者が選ばれることが多かった。",
+      "trivia": "2020年東京大会から、男女それぞれ1名ずつの旗手を立てることがIOCに推奨されるようになった。",
+      "explanation": "開会式の入場行進などで、自国・地域の旗を掲げて選手団の先頭を歩く選手。",
+      "example_ja": "そのベテラン水泳選手は、自国の旗手に選ばれたことを光栄に思った。",
+      "example_ja_src": "The veteran swimmer was honored to be chosen as the flag bearer for her country."
+    }
+  },
+  {
+    "english": "mascot",
+    "detail": {
+      "pronunciation": "/ˈmæskɒt/",
+      "pos": "名詞",
+      "meanings": [
+        "マスコット",
+        "大会を象徴する架空のキャラクター"
+      ],
+      "examples": [
+        {
+          "en": "Children lined up to take photos with the Olympic mascot outside the stadium.",
+          "ja": "子どもたちは競技場の外でオリンピックのマスコットと写真を撮ろうと列を作った。"
+        },
+        {
+          "en": "Each host city creates its own original mascot for the Games.",
+          "ja": "開催都市はそれぞれ、大会独自のマスコットを制作する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1968年グルノーブル冬季大会で初めて公式マスコットが導入されたとされる。",
+      "trivia": "東京2020大会のマスコット「ミライトワ」は、全国の小学生からの応募をもとにデザインが選ばれた。",
+      "explanation": "大会を象徴するために作られた、その土地や文化にちなんだ架空のキャラクター。",
+      "example_ja": "子どもたちは競技場の外でオリンピックのマスコットと写真を撮ろうと列を作った。",
+      "example_ja_src": "Children lined up to take photos with the Olympic mascot outside the stadium."
+    }
+  },
+  {
+    "english": "medal table",
+    "detail": {
+      "pronunciation": "/ˈmɛdəl ˈteɪbəl/",
+      "pos": "名詞",
+      "meanings": [
+        "メダル獲得数一覧表",
+        "各国のメダル数を集計し順位付けした表"
+      ],
+      "examples": [
+        {
+          "en": "The host nation topped the medal table with the highest number of gold medals.",
+          "ja": "開催国は最多の金メダル数でメダル獲得数一覧表の首位に立った。"
+        },
+        {
+          "en": "IOC does not officially endorse ranking countries by the medal table.",
+          "ja": "IOCは、メダル獲得数一覧表による国別順位付けを公式には推奨していない。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "medal count",
+          "note": "ほぼ同義でメダル獲得数を集計したもの"
+        }
+      ],
+      "antonyms": [],
+      "origin": "多くのメディアは金メダル数を基準に順位付けするが、総メダル数で並べる国もある。",
+      "trivia": "IOCの公式見解では、大会は個人・チームの祭典であり国別の順位付けを目的としないとされる。",
+      "explanation": "各国・地域が獲得した金・銀・銅メダルの数を集計し、順位付けして示す一覧表。",
+      "example_ja": "開催国は最多の金メダル数でメダル獲得数一覧表の首位に立った。",
+      "example_ja_src": "The host nation topped the medal table with the highest number of gold medals."
+    }
+  },
+  {
+    "english": "medal ceremony",
+    "detail": {
+      "pronunciation": "/ˈmɛdəl ˈsɛrəmoʊni/",
+      "pos": "名詞",
+      "meanings": [
+        "表彰式",
+        "上位入賞者にメダルを授与する式典"
+      ],
+      "examples": [
+        {
+          "en": "Tears filled her eyes during the medal ceremony as her national anthem played.",
+          "ja": "国歌が流れる表彰式の間、彼女の目には涙があふれた。"
+        },
+        {
+          "en": "The medal ceremony is usually held right after the event, either at the venue or later that evening.",
+          "ja": "表彰式は通常、競技終了直後か、その日の夜にその会場で行われる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "上位3名(またはチーム)が表彰台に上がり、金・銀・銅メダルを授与されるのが通例。",
+      "trivia": "夜のメダルセレモニー専用の広場が設けられ、日中の競技会場とは別に行われることもある。",
+      "explanation": "競技終了後、上位入賞者にメダルを授与し、優勝国の国歌が演奏される式典。",
+      "example_ja": "国歌が流れる表彰式の間、彼女の目には涙があふれた。",
+      "example_ja_src": "Tears filled her eyes during the medal ceremony as her national anthem played."
+    }
+  },
+  {
+    "english": "gold medalist",
+    "detail": {
+      "pronunciation": "/ɡoʊld ˈmɛdəlɪst/",
+      "pos": "名詞",
+      "meanings": [
+        "金メダリスト",
+        "ある種目で優勝し金メダルを獲得した選手"
+      ],
+      "examples": [
+        {
+          "en": "The reigning gold medalist returned to defend her title at the next Games.",
+          "ja": "前回大会の金メダリストは、次の大会でタイトル防衛のために戻ってきた。"
+        },
+        {
+          "en": "Becoming a two-time gold medalist is a rare achievement in any sport.",
+          "ja": "どの競技においても、2度の金メダリストになることは稀な偉業である。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "silver medalist",
+          "note": "銀メダリスト"
+        },
+        {
+          "word": "bronze medalist",
+          "note": "銅メダリスト"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "medal(メダル)に「~を勝ち取った人」を表す-istが付いた語。",
+      "trivia": "1つの大会で複数種目の金メダリストになることを「多冠」と呼ぶことがある。",
+      "explanation": "ある種目で優勝し、金メダルを獲得した選手。",
+      "example_ja": "前回大会の金メダリストは、次の大会でタイトル防衛のために戻ってきた。",
+      "example_ja_src": "The reigning gold medalist returned to defend her title at the next Games."
+    }
+  },
+  {
+    "english": "world record",
+    "detail": {
+      "pronunciation": "/wɜːrld ˈrɛkərd/",
+      "pos": "名詞",
+      "meanings": [
+        "世界記録",
+        "特定の種目における人類史上最高の公式記録"
+      ],
+      "examples": [
+        {
+          "en": "She broke the world record by nearly a full second in the final.",
+          "ja": "彼女は決勝で、世界記録を1秒近く更新した。"
+        },
+        {
+          "en": "A world record must be verified under strict conditions to be officially recognized.",
+          "ja": "世界記録として公式に認められるには、厳格な条件下での検証が必要である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Olympic record",
+          "note": "オリンピック大会に限った最高記録"
+        }
+      ],
+      "antonyms": [],
+      "origin": "国際競技連盟(IFs)が公式に記録を認証する仕組みが、世界記録という概念を支えている。",
+      "trivia": "水泳や陸上競技のように用具や規則が変わりやすい種目では、世界記録が頻繁に更新される。",
+      "explanation": "特定の種目において、これまでに人類が達成した中で最も優れた公式記録。",
+      "example_ja": "彼女は決勝で、世界記録を1秒近く更新した。",
+      "example_ja_src": "She broke the world record by nearly a full second in the final."
+    }
+  },
+  {
+    "english": "host city",
+    "detail": {
+      "pronunciation": "/hoʊst ˈsɪti/",
+      "pos": "名詞",
+      "meanings": [
+        "開催都市",
+        "大会の開催地として正式に選ばれた都市"
+      ],
+      "examples": [
+        {
+          "en": "Paris was selected as the host city for the 2024 Summer Games.",
+          "ja": "パリは2024年夏季大会の開催都市に選ばれた。"
+        },
+        {
+          "en": "Being chosen as a host city brings both economic opportunity and financial risk.",
+          "ja": "開催都市に選ばれることは、経済的な好機とともに財政的なリスクももたらす。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "近年は招致費用や施設建設費の高騰から、立候補都市が減少する傾向にあるとされる。",
+      "trivia": "IOCは2019年の改革で、開催都市を複数年前に一括選定する従来方式を見直し、より柔軟な選定プロセスを導入した。",
+      "explanation": "大会の開催地として正式に選ばれた都市。",
+      "example_ja": "パリは2024年夏季大会の開催都市に選ばれた。",
+      "example_ja_src": "Paris was selected as the host city for the 2024 Summer Games."
+    }
+  },
+  {
+    "english": "host city contract",
+    "detail": {
+      "pronunciation": "/hoʊst ˈsɪti ˈkɒntrækt/",
+      "pos": "名詞",
+      "meanings": [
+        "開催都市契約",
+        "IOCと開催都市等が結ぶ大会運営に関する正式契約"
+      ],
+      "examples": [
+        {
+          "en": "The host city contract outlines the financial and organizational responsibilities of the local organizing committee.",
+          "ja": "開催都市契約は、大会組織委員会の財政的・運営的な責任範囲を定めている。"
+        },
+        {
+          "en": "A host city contract is signed by the IOC, the host city, and the relevant National Olympic Committee.",
+          "ja": "開催都市契約は、IOC・開催都市・関係する国内オリンピック委員会の三者によって締結される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "透明性向上のため、IOCは2018年から契約内容の要点を一般公開するようになった。",
+      "trivia": "近年の契約では、人権への配慮や環境への責任など、より広い条項が盛り込まれるようになったとされる。",
+      "explanation": "IOCと開催都市・開催国のオリンピック委員会などが締結する、大会開催に関する権利義務を定めた正式契約。",
+      "example_ja": "開催都市契約は、大会組織委員会の財政的・運営的な責任範囲を定めている。",
+      "example_ja_src": "The host city contract outlines the financial and organizational responsibilities of the local organizing committee."
+    }
+  },
+  {
+    "english": "International Olympic Committee",
+    "detail": {
+      "pronunciation": "/ˌɪntərˈnæʃənəl oʊˈlɪmpɪk kəˈmɪti/",
+      "pos": "名詞",
+      "meanings": [
+        "国際オリンピック委員会(IOC)",
+        "大会の開催地選定・運営統括を担う国際組織"
+      ],
+      "examples": [
+        {
+          "en": "The International Olympic Committee decides which sports will be added to future Games.",
+          "ja": "国際オリンピック委員会は、将来の大会にどの競技を追加するかを決定する。"
+        },
+        {
+          "en": "The International Olympic Committee was founded in 1894 by Pierre de Coubertin.",
+          "ja": "国際オリンピック委員会は、1894年にピエール・ド・クーベルタンによって設立された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "IOC",
+          "note": "国際オリンピック委員会の略称"
+        }
+      ],
+      "antonyms": [],
+      "origin": "フランス人教育者クーベルタンが古代オリンピックの精神を復興させようと提唱したことが設立のきっかけ。",
+      "trivia": "本部はスイスのローザンヌにあり、国際オリンピック委員会の委員は個人資格で選出される。",
+      "explanation": "オリンピック競技大会の開催地選定や運営統括を担う国際組織(略称IOC)。スイスのローザンヌに本部を置く。",
+      "example_ja": "国際オリンピック委員会は、将来の大会にどの競技を追加するかを決定する。",
+      "example_ja_src": "The International Olympic Committee decides which sports will be added to future Games."
+    }
+  },
+  {
+    "english": "International Paralympic Committee",
+    "detail": {
+      "pronunciation": "/ˌɪntərˈnæʃənəl ˌpærəˈlɪmpɪk kəˈmɪti/",
+      "pos": "名詞",
+      "meanings": [
+        "国際パラリンピック委員会(IPC)",
+        "パラリンピック大会の運営統括を担う国際組織"
+      ],
+      "examples": [
+        {
+          "en": "The International Paralympic Committee sets the classification rules used across all para sports.",
+          "ja": "国際パラリンピック委員会は、すべてのパラスポーツで用いられるクラス分けの規則を定めている。"
+        },
+        {
+          "en": "The International Paralympic Committee was established in 1989.",
+          "ja": "国際パラリンピック委員会は1989年に設立された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "IPC",
+          "note": "国際パラリンピック委員会の略称"
+        }
+      ],
+      "antonyms": [],
+      "origin": "1989年にドイツのデュッセルドルフで設立され、それ以前は複数の障がい者スポーツ組織が個別に大会を運営していた。",
+      "trivia": "本部はドイツのボンに置かれている。",
+      "explanation": "パラリンピック競技大会の運営統括を担う国際組織(略称IPC)。障がいのある選手のクラス分けなど競技規則の管理も行う。",
+      "example_ja": "国際パラリンピック委員会は、すべてのパラスポーツで用いられるクラス分けの規則を定めている。",
+      "example_ja_src": "The International Paralympic Committee sets the classification rules used across all para sports."
+    }
+  },
+  {
+    "english": "World Anti-Doping Agency",
+    "detail": {
+      "pronunciation": "/wɜːrld ˈænti ˈdoʊpɪŋ ˈeɪdʒənsi/",
+      "pos": "名詞",
+      "meanings": [
+        "世界アンチ・ドーピング機構(WADA)",
+        "ドーピング防止を世界的に統括する機関"
+      ],
+      "examples": [
+        {
+          "en": "Athletes are tested under rules established by the World Anti-Doping Agency.",
+          "ja": "選手は世界アンチ・ドーピング機構が定めた規則のもとで検査を受ける。"
+        },
+        {
+          "en": "The World Anti-Doping Agency publishes an updated list of prohibited substances every year.",
+          "ja": "世界アンチ・ドーピング機構は、禁止物質リストを毎年更新して公表している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "WADA",
+          "note": "世界アンチ・ドーピング機構の略称"
+        }
+      ],
+      "antonyms": [],
+      "origin": "1998年の大規模なドーピング事件をきっかけに、1999年に設立された。",
+      "trivia": "本部はカナダのモントリオールにある。",
+      "explanation": "スポーツにおけるドーピングの防止・取り締まりを世界的に統括する機関(略称WADA)。禁止物質リストの策定などを行う。",
+      "example_ja": "選手は世界アンチ・ドーピング機構が定めた規則のもとで検査を受ける。",
+      "example_ja_src": "Athletes are tested under rules established by the World Anti-Doping Agency."
+    }
+  },
+  {
+    "english": "doping control",
+    "detail": {
+      "pronunciation": "/ˈdoʊpɪŋ kənˈtroʊl/",
+      "pos": "名詞",
+      "meanings": [
+        "ドーピング検査",
+        "選手の尿や血液を検査する一連の手続き"
+      ],
+      "examples": [
+        {
+          "en": "Every medalist must undergo doping control immediately after the competition.",
+          "ja": "すべてのメダリストは、競技終了直後にドーピング検査を受けなければならない。"
+        },
+        {
+          "en": "Doping control officers can request a sample from an athlete at any time, even outside competition.",
+          "ja": "ドーピング検査担当官は、競技会以外の時でも、いつでも選手にサンプル提出を求めることができる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "国際的な検査基準はWADAが定める「世界アンチ・ドーピング規程」に基づいている。",
+      "trivia": "競技会外でも実施される抜き打ち検査があり、選手は日頃の居場所情報を提出する義務を負うとされる。",
+      "explanation": "禁止薬物の使用を防ぐため、大会前後に選手の尿や血液を検査する一連の手続き。",
+      "example_ja": "すべてのメダリストは、競技終了直後にドーピング検査を受けなければならない。",
+      "example_ja_src": "Every medalist must undergo doping control immediately after the competition."
+    }
+  },
+  {
+    "english": "anti-doping",
+    "detail": {
+      "pronunciation": "/ˈænti ˈdoʊpɪŋ/",
+      "pos": "形容詞",
+      "meanings": [
+        "ドーピング防止の",
+        "禁止薬物の使用防止・摘発に関わる"
+      ],
+      "examples": [
+        {
+          "en": "The organization runs an extensive anti-doping education program for young athletes.",
+          "ja": "その団体は、若い選手向けに広範なドーピング防止教育プログラムを実施している。"
+        },
+        {
+          "en": "Strict anti-doping rules apply to every athlete competing at the Games.",
+          "ja": "大会に出場するすべての選手に、厳格なドーピング防止規則が適用される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "pro-doping",
+          "note": "実際にはほぼ使われない対義的な語"
+        }
+      ],
+      "origin": "anti-(反対する)+doping(ドーピング)から成る語。",
+      "trivia": "うっかり摂取した市販薬に禁止物質が含まれ、意図せず違反となる「うっかりドーピング」も問題視されている。",
+      "explanation": "禁止薬物の使用を防止・摘発することに関わる、あるいはそれを目的とする。",
+      "example_ja": "その団体は、若い選手向けに広範なドーピング防止教育プログラムを実施している。",
+      "example_ja_src": "The organization runs an extensive anti-doping education program for young athletes."
+    }
+  },
+  {
+    "english": "Olympic Charter",
+    "detail": {
+      "pronunciation": "/oʊˈlɪmpɪk ˈtʃɑːrtər/",
+      "pos": "名詞",
+      "meanings": [
+        "オリンピック憲章",
+        "オリンピック運動の基本原則・規則を定めた基本文書"
+      ],
+      "examples": [
+        {
+          "en": "According to the Olympic Charter, no political demonstration is permitted at Olympic sites.",
+          "ja": "オリンピック憲章によれば、オリンピックの会場では政治的な示威行為は認められていない。"
+        },
+        {
+          "en": "The Olympic Charter defines the roles of the IOC, the International Federations, and the National Olympic Committees.",
+          "ja": "オリンピック憲章は、IOC・国際競技連盟・各国オリンピック委員会それぞれの役割を定めている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1908年に初めて成文化され、以後も時代に応じて改訂が重ねられてきた。",
+      "trivia": "冒頭の「オリンピズムの根本原則」には、スポーツを通じた人間の調和ある発展という理念が記されている。",
+      "explanation": "オリンピック運動の基本原則・IOCやNOCの役割・大会運営規則などを定めた基本文書。",
+      "example_ja": "オリンピック憲章によれば、オリンピックの会場では政治的な示威行為は認められていない。",
+      "example_ja_src": "According to the Olympic Charter, no political demonstration is permitted at Olympic sites."
+    }
+  },
+  {
+    "english": "Olympic Truce",
+    "detail": {
+      "pronunciation": "/oʊˈlɪmpɪk truːs/",
+      "pos": "名詞",
+      "meanings": [
+        "オリンピック休戦",
+        "大会期間中の戦争・紛争停止を呼びかける理念"
+      ],
+      "examples": [
+        {
+          "en": "The United Nations calls for an Olympic Truce before every edition of the Games.",
+          "ja": "国連は、大会の開催ごとにオリンピック休戦を呼びかけている。"
+        },
+        {
+          "en": "The ancient Olympic Truce allowed athletes and spectators to travel safely to Olympia.",
+          "ja": "古代のオリンピック休戦により、選手や観客は安全にオリンピアへ旅することができた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "ekecheiria",
+          "note": "古代ギリシャ語での呼称。休戦を意味する"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古代ギリシャの都市国家間で結ばれていた「エケケイリア」という休戦の慣習に由来する。",
+      "trivia": "1993年以降、国連総会は大会の度にオリンピック休戦決議を採択しているが、法的拘束力はないとされる。",
+      "explanation": "古代ギリシャの慣習(エケケイリア)に由来し、大会期間中は戦争や紛争を一時停止するよう国連決議で呼びかけられる休戦の理念。",
+      "example_ja": "国連は、大会の開催ごとにオリンピック休戦を呼びかけている。",
+      "example_ja_src": "The United Nations calls for an Olympic Truce before every edition of the Games."
+    }
+  },
+  {
+    "english": "Olympic motto",
+    "detail": {
+      "pronunciation": "/oʊˈlɪmpɪk ˈmɒtoʊ/",
+      "pos": "名詞",
+      "meanings": [
+        "オリンピック・モットー",
+        "大会の理念を表す標語"
+      ],
+      "examples": [
+        {
+          "en": "The Olympic motto encourages athletes to constantly strive to improve themselves.",
+          "ja": "オリンピック・モットーは、選手たちに絶えず自己を高めるよう促すものである。"
+        },
+        {
+          "en": "In Latin, the Olympic motto reads Citius, Altius, Fortius.",
+          "ja": "オリンピック・モットーはラテン語で「Citius, Altius, Fortius(より速く、より高く、より強く)」と表される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語の標語自体は19世紀の聖職者アンリ・ディドンの言葉をクーベルタンが採用したものとされる。",
+      "trivia": "2021年、東京2020大会を機に「Communiter(ともに)」という言葉が加えられ、127年ぶりに改訂された。",
+      "explanation": "「より速く、より高く、より強く」に、2021年から「ともに(Together)」が加えられた、大会の理念を表す標語。",
+      "example_ja": "オリンピック・モットーは、選手たちに絶えず自己を高めるよう促すものである。",
+      "example_ja_src": "The Olympic motto encourages athletes to constantly strive to improve themselves."
+    }
+  },
+  {
+    "english": "Olympism",
+    "detail": {
+      "pronunciation": "/oʊˈlɪmpɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "オリンピズム",
+        "スポーツを通じて平和と人間の尊厳を目指す理念"
+      ],
+      "examples": [
+        {
+          "en": "Olympism is built on the idea that sport can promote peace and mutual understanding.",
+          "ja": "オリンピズムは、スポーツが平和と相互理解を促進しうるという考えに基づいている。"
+        },
+        {
+          "en": "Schools around the world teach the values of Olympism, such as respect and friendship.",
+          "ja": "世界各地の学校で、敬意や友情といったオリンピズムの価値観が教えられている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "クーベルタンが提唱した、スポーツと文化・教育を融合させる哲学に由来する。",
+      "trivia": "オリンピック憲章の冒頭にある「オリンピズムの根本原則」で、その理念が明文化されている。",
+      "explanation": "スポーツを文化や教育と結びつけ、平和で人間の尊厳を尊重する社会の実現を目指す、オリンピック運動全体の理念。",
+      "example_ja": "オリンピズムは、スポーツが平和と相互理解を促進しうるという考えに基づいている。",
+      "example_ja_src": "Olympism is built on the idea that sport can promote peace and mutual understanding."
+    }
+  },
+  {
+    "english": "athlete's oath",
+    "detail": {
+      "pronunciation": "/ˈæθliːts oʊθ/",
+      "pos": "名詞",
+      "meanings": [
+        "選手宣誓",
+        "開会式で選手代表が読み上げる誓いの言葉"
+      ],
+      "examples": [
+        {
+          "en": "A veteran athlete recited the athlete's oath on behalf of every competitor at the Games.",
+          "ja": "あるベテラン選手が、大会に出場するすべての選手を代表して選手宣誓を行った。"
+        },
+        {
+          "en": "The athlete's oath commits every competitor to respect the rules and compete without doping.",
+          "ja": "選手宣誓により、すべての選手はルールを尊重し、ドーピングをせずに競技することを誓う。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1920年アントワープ大会で初めて導入されたとされる、開会式の伝統的な儀式の一つ。",
+      "trivia": "選手宣誓と並んで、審判代表による「審判の宣誓」やコーチ代表による宣誓も行われる。",
+      "explanation": "開会式で選手代表が読み上げる、フェアプレー精神とルール遵守を誓う宣誓。",
+      "example_ja": "あるベテラン選手が、大会に出場するすべての選手を代表して選手宣誓を行った。",
+      "example_ja_src": "A veteran athlete recited the athlete's oath on behalf of every competitor at the Games."
+    }
+  },
+  {
+    "english": "mixed-gender event",
+    "detail": {
+      "pronunciation": "/mɪkst ˈdʒɛndər ɪˈvɛnt/",
+      "pos": "名詞",
+      "meanings": [
+        "男女混合種目",
+        "男女が同じチーム・種目で共に競う形式の種目"
+      ],
+      "examples": [
+        {
+          "en": "The mixed-gender relay pairs two male and two female runners on the same team.",
+          "ja": "男女混合リレーでは、男子2人と女子2人が同じチームを組んで走る。"
+        },
+        {
+          "en": "The number of mixed-gender events has grown significantly since the Tokyo 2020 Games.",
+          "ja": "東京2020大会以降、男女混合種目の数は大きく増加している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "mixed team event",
+          "note": "ほぼ同義。男女混合で行うチーム種目"
+        }
+      ],
+      "antonyms": [],
+      "origin": "男女平等の推進というオリンピック憲章の理念を反映し、近年急速に増えている種目形態。",
+      "trivia": "陸上の男女混合4x400mリレーや卓球混合ダブルスなどが代表例とされる。",
+      "explanation": "男女の選手が同じチームを組んだり、同じ種目で共に競い合ったりする形式の種目。",
+      "example_ja": "男女混合リレーでは、男子2人と女子2人が同じチームを組んで走る。",
+      "example_ja_src": "The mixed-gender relay pairs two male and two female runners on the same team."
+    }
+  },
+  {
+    "english": "Refugee Olympic Team",
+    "detail": {
+      "pronunciation": "/ˈrɛfjuːdʒiː oʊˈlɪmpɪk tiːm/",
+      "pos": "名詞",
+      "meanings": [
+        "難民選手団",
+        "特定の国を代表できない難民選手のための特別チーム"
+      ],
+      "examples": [
+        {
+          "en": "A member of the Refugee Olympic Team carried the Olympic flag into the stadium.",
+          "ja": "難民選手団の一員が、オリンピック旗を掲げて競技場に入場した。"
+        },
+        {
+          "en": "The Refugee Olympic Team was created to give displaced athletes a chance to compete on the world stage.",
+          "ja": "難民選手団は、故郷を追われた選手たちに世界の舞台で競う機会を与えるために創設された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "2015年の欧州難民危機を受け、IOCが2016年リオ大会に初めて編成した。",
+      "trivia": "選手たちはIOC旗の下で入場し、国旗の代わりにオリンピック旗を掲げて競技する。",
+      "explanation": "特定の国を代表できない難民選手のために2016年リオ大会から編成されている、IOC旗の下で競技する特別チーム。",
+      "example_ja": "難民選手団の一員が、オリンピック旗を掲げて競技場に入場した。",
+      "example_ja_src": "A member of the Refugee Olympic Team carried the Olympic flag into the stadium."
+    }
+  },
+  {
+    "english": "chef de mission",
+    "detail": {
+      "pronunciation": "/ʃɛf də mɪˈsjɒ̃/",
+      "pos": "名詞",
+      "meanings": [
+        "団長",
+        "各国選手団を統括する代表責任者"
+      ],
+      "examples": [
+        {
+          "en": "The chef de mission met with officials to resolve a scheduling conflict for the team.",
+          "ja": "団長は、チームのスケジュールの調整をめぐって役員たちと話し合った。"
+        },
+        {
+          "en": "As chef de mission, she was responsible for the well-being of every athlete on the team.",
+          "ja": "団長として、彼女はチームの全選手の健康と生活面に責任を負っていた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "フランス語で「使節団の長」を意味する語がそのまま国際的な用語として定着した。",
+      "trivia": "選手団の規律や生活面だけでなく、開催国との交渉役も担う重要なポジションとされる。",
+      "explanation": "各国・地域の選手団を統括し、大会期間中の運営や生活面を取り仕切る代表責任者。",
+      "example_ja": "団長は、チームのスケジュールの調整をめぐって役員たちと話し合った。",
+      "example_ja_src": "The chef de mission met with officials to resolve a scheduling conflict for the team."
+    }
+  },
+  {
+    "english": "qualifying round",
+    "detail": {
+      "pronunciation": "/ˈkwɒlɪfaɪɪŋ raʊnd/",
+      "pos": "名詞",
+      "meanings": [
+        "予選",
+        "本戦に進む選手を絞り込むために行われるラウンド"
+      ],
+      "examples": [
+        {
+          "en": "She barely advanced past the qualifying round before winning gold in the final.",
+          "ja": "彼女はかろうじて予選を通過し、決勝で金メダルを獲得した。"
+        },
+        {
+          "en": "Some sports use qualifying rounds held months before the Games to determine who competes.",
+          "ja": "競技によっては、大会の数か月前に予選を行って出場者を決めるものもある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "final",
+          "note": "決勝"
+        }
+      ],
+      "origin": "qualify(資格を得る)から派生した語。",
+      "trivia": "陸上競技や水泳などでは、予選のタイムによって決勝進出者だけでなくレーンの割り当ても決まることがある。",
+      "explanation": "本戦や決勝に進む選手・チームを絞り込むために行われる予選の試合や種目。",
+      "example_ja": "彼女はかろうじて予選を通過し、決勝で金メダルを獲得した。",
+      "example_ja_src": "She barely advanced past the qualifying round before winning gold in the final."
+    }
+  },
+  {
+    "english": "repechage",
+    "detail": {
+      "pronunciation": "/ˈrɛpəʃɑːʒ/",
+      "pos": "名詞",
+      "meanings": [
+        "敗者復活戦",
+        "予選や序盤で敗れた選手に再挑戦の機会を与える方式"
+      ],
+      "examples": [
+        {
+          "en": "He lost his first match but earned a bronze medal after winning through the repechage.",
+          "ja": "彼は最初の試合で敗れたが、敗者復活戦を勝ち上がって銅メダルを獲得した。"
+        },
+        {
+          "en": "Wrestling and judo both use a repechage system to determine the bronze medalists.",
+          "ja": "レスリングと柔道はどちらも、銅メダリストを決めるために敗者復活戦の方式を用いている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "フランス語で「再び釣り上げる」を意味する言葉に由来する。",
+      "trivia": "ボート競技では敗者復活戦という言葉が最初に使われ始めたとされ、その後レスリングや柔道にも採用が広がった。",
+      "explanation": "予選や序盤の試合で敗れた選手に、決勝進出の可能性を残すために設けられる敗者復活戦。",
+      "example_ja": "彼は最初の試合で敗れたが、敗者復活戦を勝ち上がって銅メダルを獲得した。",
+      "example_ja_src": "He lost his first match but earned a bronze medal after winning through the repechage."
+    }
+  },
+  {
+    "english": "Olympic rings",
+    "detail": {
+      "pronunciation": "/oʊˈlɪmpɪk rɪŋz/",
+      "pos": "名詞",
+      "meanings": [
+        "五輪マーク",
+        "五大陸の団結を象徴する五つの輪から成る公式シンボル"
+      ],
+      "examples": [
+        {
+          "en": "The five interlocking Olympic rings appeared on banners throughout the city.",
+          "ja": "5つの輪が組み合わさったオリンピックのシンボルマークが、街中の旗に描かれていた。"
+        },
+        {
+          "en": "Pierre de Coubertin designed the Olympic rings in 1913.",
+          "ja": "ピエール・ド・クーベルタンは1913年に五輪マークをデザインした。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1913年にクーベルタンによって考案され、1920年アントワープ大会の旗に初めて用いられた。",
+      "trivia": "5色は当時のすべての参加国の国旗に、少なくとも1色は含まれるように選ばれたとされる。",
+      "explanation": "五大陸の団結を象徴する、青・黄・黒・緑・赤の五つの輪から成るオリンピックの公式シンボル。",
+      "example_ja": "5つの輪が組み合わさったオリンピックのシンボルマークが、街中の旗に描かれていた。",
+      "example_ja_src": "The five interlocking Olympic rings appeared on banners throughout the city."
+    }
+  },
+  {
+    "english": "Olympic flame",
+    "detail": {
+      "pronunciation": "/oʊˈlɪmpɪk fleɪm/",
+      "pos": "名詞",
+      "meanings": [
+        "聖火",
+        "採火されて聖火リレーを経て聖火台に灯される炎"
+      ],
+      "examples": [
+        {
+          "en": "The Olympic flame burned continuously in the cauldron until the closing ceremony.",
+          "ja": "聖火は、閉会式まで聖火台で燃え続けた。"
+        },
+        {
+          "en": "The Olympic flame is lit months in advance at the ancient site of Olympia in Greece.",
+          "ja": "聖火は、大会の数か月前にギリシャのオリンピア遺跡で採火される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "torch relay",
+          "note": "聖火を開催地まで運ぶリレー行事"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古代オリンピックで祭壇の火が絶やされず燃え続けていたことに由来するとされる。",
+      "trivia": "太陽光を凹面鏡で集めて点火する伝統的な採火の儀式が、現在も毎回行われている。",
+      "explanation": "採火式でギリシャのオリンピアから採火され、聖火リレーを経て開会式の聖火台に灯される炎。",
+      "example_ja": "聖火は、閉会式まで聖火台で燃え続けた。",
+      "example_ja_src": "The Olympic flame burned continuously in the cauldron until the closing ceremony."
+    }
+  },
+  {
+    "english": "national anthem",
+    "detail": {
+      "pronunciation": "/ˈnæʃənəl ˈænθəm/",
+      "pos": "名詞",
+      "meanings": [
+        "国歌",
+        "表彰式で優勝国を称えるために演奏される歌"
+      ],
+      "examples": [
+        {
+          "en": "The stadium fell silent as the national anthem of the gold medalist's country played.",
+          "ja": "金メダリストの国の国歌が流れる間、競技場は静まり返った。"
+        },
+        {
+          "en": "Athletes are often taught to place their hand over their heart during the national anthem.",
+          "ja": "選手たちは国歌が流れる間、胸に手を当てるよう教えられることが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "anthem自体はギリシャ語で「交唱」を意味する語に由来し、元は宗教的な賛歌を指した。",
+      "trivia": "表彰式で流れる国歌は、通常30秒程度に短縮された編集版が使われることが多いとされる。",
+      "explanation": "表彰式で優勝した選手・チームの国を称えるために演奏される、その国の国歌。",
+      "example_ja": "金メダリストの国の国歌が流れる間、競技場は静まり返った。",
+      "example_ja_src": "The stadium fell silent as the national anthem of the gold medalist's country played."
+    }
+  },
+  {
+    "english": "Paralympic Games",
+    "detail": {
+      "pronunciation": "/ˌpærəˈlɪmpɪk ɡeɪmz/",
+      "pos": "名詞",
+      "meanings": [
+        "パラリンピック競技大会",
+        "障がいのある選手が参加する国際総合競技大会"
+      ],
+      "examples": [
+        {
+          "en": "The Paralympic Games take place in the same host city just weeks after the Olympics.",
+          "ja": "パラリンピック競技大会は、オリンピックの数週間後に同じ開催都市で行われる。"
+        },
+        {
+          "en": "The Paralympic Games have grown from a small gathering of veterans to one of the world's largest sporting events.",
+          "ja": "パラリンピック競技大会は、退役軍人たちの小さな集まりから世界最大級のスポーツイベントの一つへと成長した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1948年、ロンドン五輪と同時期に負傷した退役軍人のためのアーチェリー大会が開かれたことがルーツとされる。",
+      "trivia": "1988年ソウル大会から、オリンピックと同一都市・同一施設での開催が定着した。",
+      "explanation": "身体・視覚・知的障がいのある選手が参加する、オリンピックと同じ都市で直後に開催される国際総合競技大会。",
+      "example_ja": "パラリンピック競技大会は、オリンピックの数週間後に同じ開催都市で行われる。",
+      "example_ja_src": "The Paralympic Games take place in the same host city just weeks after the Olympics."
+    }
+  },
+  {
+    "english": "Paralympic motto",
+    "detail": {
+      "pronunciation": "/ˌpærəˈlɪmpɪk ˈmɒtoʊ/",
+      "pos": "名詞",
+      "meanings": [
+        "パラリンピック・モットー",
+        "「Spirit in Motion」というパラリンピックの標語"
+      ],
+      "examples": [
+        {
+          "en": "The Paralympic motto, Spirit in Motion, reflects the determination of every competing athlete.",
+          "ja": "パラリンピック・モットー「Spirit in Motion」は、出場するすべての選手の決意を映し出している。"
+        },
+        {
+          "en": "The Paralympic motto was adopted in 2004 to replace an earlier version.",
+          "ja": "パラリンピック・モットーは、それ以前の標語に代わるものとして2004年に採用された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "2003年にIPCによって制定され、2004年アテネ大会から使用されている。",
+      "trivia": "「心が動けば、体はついてくる」という考え方を表す標語だとされる。",
+      "explanation": "「Spirit in Motion(スピリット・イン・モーション)」という、2004年アテネ大会から採用されているパラリンピックの標語。",
+      "example_ja": "パラリンピック・モットー「Spirit in Motion」は、出場するすべての選手の決意を映し出している。",
+      "example_ja_src": "The Paralympic motto, Spirit in Motion, reflects the determination of every competing athlete."
+    }
+  },
+  {
+    "english": "Agitos",
+    "detail": {
+      "pronunciation": "/ˈædʒɪtoʊs/",
+      "pos": "名詞",
+      "meanings": [
+        "アギトス",
+        "パラリンピックの公式シンボルである三本の曲線"
+      ],
+      "examples": [
+        {
+          "en": "The three Agitos swirl around a central point, symbolizing athletes in motion.",
+          "ja": "3つのアギトスは中心点の周りに渦を巻くように配置され、動く選手たちを象徴している。"
+        },
+        {
+          "en": "The Agitos replaced an earlier Paralympic symbol that used five stylized figures.",
+          "ja": "アギトスは、それ以前の5つの人型を用いたパラリンピックのシンボルに取って代わった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語で「私は動く」を意味する動詞に由来する。",
+      "trivia": "赤・青・緑という色は、世界の国旗で最も多く使われている色から選ばれたとされる。",
+      "explanation": "赤・青・緑の三本の曲線から成るパラリンピックの公式シンボル。ラテン語で「私は動く」を意味し、標語Spirit in Motionを象徴する。",
+      "example_ja": "3つのアギトスは中心点の周りに渦を巻くように配置され、動く選手たちを象徴している。",
+      "example_ja_src": "The three Agitos swirl around a central point, symbolizing athletes in motion."
+    }
+  },
+  {
+    "english": "sport class",
+    "detail": {
+      "pronunciation": "/spɔːrt klæs/",
+      "pos": "名詞",
+      "meanings": [
+        "スポーツクラス",
+        "障がいの種類・程度に応じて選手を分ける区分"
+      ],
+      "examples": [
+        {
+          "en": "Athletes are grouped into a sport class so that competitors have a similar level of impairment.",
+          "ja": "選手たちは、同程度の障がいを持つ者同士が競えるようスポーツクラスに分けられる。"
+        },
+        {
+          "en": "An athlete's sport class can change over time if their level of impairment changes.",
+          "ja": "選手のスポーツクラスは、障がいの程度が変化すれば見直されることがある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "classification code",
+          "note": "スポーツクラスを表す記号・数字の組み合わせ"
+        }
+      ],
+      "antonyms": [],
+      "origin": "パラリンピックが公平な競争を実現するために発展させてきた独自の仕組み。",
+      "trivia": "同じ競技でも、種目によって異なるスポーツクラスの選手が同時に出場することもある。",
+      "explanation": "障がいの種類や程度に応じて選手を公平に競わせるために設けられる、種目ごとの区分。",
+      "example_ja": "選手たちは、同程度の障がいを持つ者同士が競えるようスポーツクラスに分けられる。",
+      "example_ja_src": "Athletes are grouped into a sport class so that competitors have a similar level of impairment."
+    }
+  },
+  {
+    "english": "classification code",
+    "detail": {
+      "pronunciation": "/ˌklæsɪfɪˈkeɪʃən koʊd/",
+      "pos": "名詞",
+      "meanings": [
+        "クラス分けコード",
+        "選手の障がいの種類・程度を示す記号と数字の組み合わせ"
+      ],
+      "examples": [
+        {
+          "en": "Her classification code, T11, indicates that she competes as a totally blind athlete in track events.",
+          "ja": "彼女のクラス分けコードT11は、トラック種目で全盲のクラスとして出場していることを示している。"
+        },
+        {
+          "en": "Swimming classification codes range from S1 to S10 for physical impairments.",
+          "ja": "水泳のクラス分けコードは、身体障がいの場合S1からS10まで区分されているとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "T(track、トラック)やS(swimming、水泳)など種目の頭文字と、障がいの程度を示す数字の組み合わせで構成される。",
+      "trivia": "数字が小さいほど障がいの程度が重いとされることが多いが、コード体系は競技ごとに異なる。",
+      "explanation": "選手の障がいの種類・程度を示す、種目記号と数字を組み合わせたパラスポーツ独自の識別コード。数字が小さいほど障がいの程度が重いとされることが多い。",
+      "example_ja": "彼女のクラス分けコードT11は、トラック種目で全盲のクラスとして出場していることを示している。",
+      "example_ja_src": "Her classification code, T11, indicates that she competes as a totally blind athlete in track events."
+    }
+  },
+  {
+    "english": "boccia",
+    "detail": {
+      "pronunciation": "/ˈbɒtʃə/",
+      "pos": "名詞",
+      "meanings": [
+        "ボッチャ",
+        "目標球にどれだけ近づけて投げるかを競う球技"
+      ],
+      "examples": [
+        {
+          "en": "Boccia requires incredible precision as players roll or throw balls toward a target ball.",
+          "ja": "ボッチャでは、目標球に向けて球を転がしたり投げたりする際に驚くほどの精密さが求められる。"
+        },
+        {
+          "en": "Some boccia athletes use a ramp and a head pointer to release the ball.",
+          "ja": "ボッチャの選手の中には、ランプ(勾配具)とヘッドポインターを使って球を放す人もいる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "イタリア語で「ボール」を意味する語に由来し、ヨーロッパの伝統的な球技をもとに考案された。",
+      "trivia": "重度の脳性まひなど四肢を自由に動かせない選手のために作られ、パラリンピック独自の競技として発展してきた。",
+      "explanation": "重度の脳性まひなど四肢に重い障がいのある選手を中心に行われる、目標球にどれだけ近づけて球を投げるかを競う球技。",
+      "example_ja": "ボッチャでは、目標球に向けて球を転がしたり投げたりする際に驚くほどの精密さが求められる。",
+      "example_ja_src": "Boccia requires incredible precision as players roll or throw balls toward a target ball."
+    }
+  },
+  {
+    "english": "goalball",
+    "detail": {
+      "pronunciation": "/ˈɡoʊlbɔːl/",
+      "pos": "名詞",
+      "meanings": [
+        "ゴールボール",
+        "鈴の入ったボールの音を頼りに得点を競う視覚障がい者スポーツ"
+      ],
+      "examples": [
+        {
+          "en": "Goalball players wear blindfolds and listen carefully for the bell inside the ball.",
+          "ja": "ゴールボールの選手はアイシェード(目隠し)を着け、ボールの中の鈴の音に耳を澄ませる。"
+        },
+        {
+          "en": "Silence in the arena is essential during goalball matches so players can hear the ball.",
+          "ja": "ゴールボールの試合中は、選手がボールの音を聞き取れるよう会場の静寂が不可欠とされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1946年、視覚障がいを負った退役軍人のリハビリのために考案された競技とされる。",
+      "trivia": "見え方の差による不公平をなくすため、視覚に障がいのない選手を含め全員がアイシェードを着用する。",
+      "explanation": "視覚障がいのある選手が、鈴の入ったボールの音を頼りに相手ゴールへ転がし入れる、視覚障がい者スポーツ独自の球技。",
+      "example_ja": "ゴールボールの選手はアイシェード(目隠し)を着け、ボールの中の鈴の音に耳を澄ませる。",
+      "example_ja_src": "Goalball players wear blindfolds and listen carefully for the bell inside the ball."
+    }
+  },
+  {
+    "english": "sitting volleyball",
+    "detail": {
+      "pronunciation": "/ˈsɪtɪŋ ˌvɒlɪˈbɔːl/",
+      "pos": "名詞",
+      "meanings": [
+        "シッティングバレーボール",
+        "座った姿勢で行うバレーボール"
+      ],
+      "examples": [
+        {
+          "en": "Sitting volleyball is played on a smaller court with a lower net than standard volleyball.",
+          "ja": "シッティングバレーボールは、通常のバレーボールより小さいコートと低いネットで行われる。"
+        },
+        {
+          "en": "Players in sitting volleyball must keep at least part of their body touching the floor at all times.",
+          "ja": "シッティングバレーボールの選手は、常に体の一部を床につけていなければならない。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "第二次世界大戦後、負傷した兵士のリハビリスポーツとして考案されたとされる。",
+      "trivia": "臀部が浮いた状態でボールに触れると反則となるルールがある。",
+      "explanation": "床に臀部をつけた姿勢で行う、立位で行うバレーボールを障がいのある選手向けに改良した競技。",
+      "example_ja": "シッティングバレーボールは、通常のバレーボールより小さいコートと低いネットで行われる。",
+      "example_ja_src": "Sitting volleyball is played on a smaller court with a lower net than standard volleyball."
+    }
+  },
+  {
+    "english": "wheelchair basketball",
+    "detail": {
+      "pronunciation": "/ˈwiːltʃɛər ˈbæskɪtbɔːl/",
+      "pos": "名詞",
+      "meanings": [
+        "車いすバスケットボール",
+        "競技用車いすで行うバスケットボール"
+      ],
+      "examples": [
+        {
+          "en": "Wheelchair basketball players must master handling both the ball and their chair at the same time.",
+          "ja": "車いすバスケットボールの選手は、ボール操作と車いすの操作を同時にこなさなければならない。"
+        },
+        {
+          "en": "Wheelchair basketball uses a point system to balance teams according to each player's impairment.",
+          "ja": "車いすバスケットボールでは、選手の障がいの程度に応じてチームの均衡を図るポイント制が用いられる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "第二次世界大戦後、負傷兵のリハビリのためイギリスとアメリカでほぼ同時期に考案されたとされる。",
+      "trivia": "1960年ローマ大会で、初めてのパラリンピックの正式競技の一つとして採用された。",
+      "explanation": "競技用車いすに乗った選手が行う、通常のバスケットボールとほぼ同じルールで行われる競技。",
+      "example_ja": "車いすバスケットボールの選手は、ボール操作と車いすの操作を同時にこなさなければならない。",
+      "example_ja_src": "Wheelchair basketball players must master handling both the ball and their chair at the same time."
+    }
+  },
+  {
+    "english": "wheelchair rugby",
+    "detail": {
+      "pronunciation": "/ˈwiːltʃɛər ˈrʌɡbi/",
+      "pos": "名詞",
+      "meanings": [
+        "車いすラグビー",
+        "車いす同士がぶつかり合う激しい球技"
+      ],
+      "examples": [
+        {
+          "en": "Wheelchair rugby is known for its intense chair-to-chair collisions.",
+          "ja": "車いすラグビーは、車いす同士が激しくぶつかり合うことで知られている。"
+        },
+        {
+          "en": "Wheelchair rugby was originally developed in Canada under the name murderball.",
+          "ja": "車いすラグビーは元々カナダで「マーダーボール」という名称で考案された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1970年代にカナダで、四肢まひのある選手向けに考案された。",
+      "trivia": "選手同士の激しい接触が特徴で、頑丈に補強された専用の車いすが使われる。",
+      "explanation": "四肢に障がいのある選手が競技用車いすを激しくぶつけ合いながらボールを運ぶ、コンタクトの強い球技。",
+      "example_ja": "車いすラグビーは、車いす同士が激しくぶつかり合うことで知られている。",
+      "example_ja_src": "Wheelchair rugby is known for its intense chair-to-chair collisions."
+    }
+  },
+  {
+    "english": "wheelchair tennis",
+    "detail": {
+      "pronunciation": "/ˈwiːltʃɛər ˈtɛnɪs/",
+      "pos": "名詞",
+      "meanings": [
+        "車いすテニス",
+        "ボールの2バウンドが認められる車いすのテニス"
+      ],
+      "examples": [
+        {
+          "en": "In wheelchair tennis, a player is allowed to return the ball after it bounces twice.",
+          "ja": "車いすテニスでは、ボールが2回バウンドした後でも返球することが認められている。"
+        },
+        {
+          "en": "Wheelchair tennis has been part of the Paralympic program since the Seoul 1988 Games.",
+          "ja": "車いすテニスは、1988年ソウル大会からパラリンピックの正式競技となっている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1976年にアメリカで考案され、通常のテニスコートとルールをほぼそのまま用いる点が特徴。",
+      "trivia": "2バウンドまで認められる点を除けば、コートの広さやネットの高さなど通常のテニスとほぼ共通している。",
+      "explanation": "競技用車いすに乗って行うテニス。ボールが2バウンドするまでの返球が認められている点が通常のテニスと異なる。",
+      "example_ja": "車いすテニスでは、ボールが2回バウンドした後でも返球することが認められている。",
+      "example_ja_src": "In wheelchair tennis, a player is allowed to return the ball after it bounces twice."
+    }
+  },
+  {
+    "english": "wheelchair fencing",
+    "detail": {
+      "pronunciation": "/ˈwiːltʃɛər ˈfɛnsɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "車いすフェンシング",
+        "車いすを固定して行うフェンシング"
+      ],
+      "examples": [
+        {
+          "en": "In wheelchair fencing, both competitors' chairs are locked to a frame so only their upper bodies move.",
+          "ja": "車いすフェンシングでは、両選手の車いすが専用のフレームに固定され、上半身だけを動かして戦う。"
+        },
+        {
+          "en": "Because the chairs are fixed, wheelchair fencing demands extremely fast reactions at close range.",
+          "ja": "車いすが固定されているため、車いすフェンシングでは至近距離での極めて速い反応が求められる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "第二次世界大戦後のリハビリスポーツとして、イギリスの医師ルートヴィヒ・グットマンが提唱した競技の一つ。",
+      "trivia": "1960年ローマ大会から、パラリンピックの正式競技として実施されている。",
+      "explanation": "車いすを固定した状態で行うフェンシング。上半身の動きと剣さばきだけで攻防を競う。",
+      "example_ja": "車いすフェンシングでは、両選手の車いすが専用のフレームに固定され、上半身だけを動かして戦う。",
+      "example_ja_src": "In wheelchair fencing, both competitors' chairs are locked to a frame so only their upper bodies move."
+    }
+  },
+  {
+    "english": "wheelchair curling",
+    "detail": {
+      "pronunciation": "/ˈwiːltʃɛər ˈkɜːrlɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "車いすカーリング",
+        "車いすに座ったまま行うカーリング"
+      ],
+      "examples": [
+        {
+          "en": "Wheelchair curling does not allow sweeping, so precise delivery of the stone is essential.",
+          "ja": "車いすカーリングではスイープ(氷面をこする動作)が認められていないため、正確なストーンの送り出しが不可欠である。"
+        },
+        {
+          "en": "Wheelchair curling has been part of the Winter Paralympics since Turin 2006.",
+          "ja": "車いすカーリングは、2006年トリノ大会から冬季パラリンピックの正式競技となっている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "健常者のカーリングを、下肢に障がいのある選手向けに調整して考案された競技。",
+      "trivia": "男女混合チームで行われることも特徴の一つで、性別による有利不利を防ぐ工夫がされているとされる。",
+      "explanation": "ストーンを投げる際の助走や滑走を行わず、車いすに座ったまま専用の器具でストーンを送り出す形式のカーリング。",
+      "example_ja": "車いすカーリングではスイープ(氷面をこする動作)が認められていないため、正確なストーンの送り出しが不可欠である。",
+      "example_ja_src": "Wheelchair curling does not allow sweeping, so precise delivery of the stone is essential."
+    }
+  },
+  {
+    "english": "para ice hockey",
+    "detail": {
+      "pronunciation": "/ˈpærə aɪs ˈhɒki/",
+      "pos": "名詞",
+      "meanings": [
+        "パラアイスホッケー",
+        "そりに乗って行うアイスホッケー"
+      ],
+      "examples": [
+        {
+          "en": "Para ice hockey players propel themselves across the ice using two short sticks.",
+          "ja": "パラアイスホッケーの選手は、2本の短いスティックを使って氷上を進む。"
+        },
+        {
+          "en": "Para ice hockey is one of the fastest and most physical sports at the Winter Paralympics.",
+          "ja": "パラアイスホッケーは、冬季パラリンピックの中でも特にスピードと接触プレーの多い競技の一つである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "sledge hockey",
+          "note": "以前使われていた呼称。そりを意味するsledgeに由来"
+        }
+      ],
+      "antonyms": [],
+      "origin": "1960年代にスウェーデンで考案され、当初は「スレッジホッケー」と呼ばれていた。",
+      "trivia": "スティックの反対側には氷をかく歯が付いており、選手はこれで自分の乗るそりを推進させる。",
+      "explanation": "座ったまま滑走できる専用のそりに乗り、両手に持った短いスティックで氷上を進みながら行うアイスホッケー。",
+      "example_ja": "パラアイスホッケーの選手は、2本の短いスティックを使って氷上を進む。",
+      "example_ja_src": "Para ice hockey players propel themselves across the ice using two short sticks."
+    }
+  },
+  {
+    "english": "para-alpine skiing",
+    "detail": {
+      "pronunciation": "/ˈpærə ælˈpaɪn ˈskiːɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "パラアルペンスキー",
+        "障がいに応じた用具・クラスで滑走タイムを競うスキー"
+      ],
+      "examples": [
+        {
+          "en": "In para-alpine skiing, visually impaired competitors race down the course with a guide skiing just ahead of them.",
+          "ja": "パラアルペンスキーでは、視覚に障がいのある選手はガイドがすぐ前を滑って導きながらコースを滑り降りる。"
+        },
+        {
+          "en": "Para-alpine skiing includes sit-skiing events for athletes with lower-limb impairments.",
+          "ja": "パラアルペンスキーには、下肢に障がいのある選手のためのシットスキー種目もある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "第二次世界大戦で負傷した兵士たちが、片脚や義足でも滑れるよう工夫したことに端を発するとされる。",
+      "trivia": "視覚障がいクラスでは、選手とガイドが無線機で会話しながら滑走することもある。",
+      "explanation": "視覚・知的・肢体に障がいのある選手が、それぞれの障がいに応じた用具やクラスで滑走タイムを競うアルペンスキー競技。",
+      "example_ja": "パラアルペンスキーでは、視覚に障がいのある選手はガイドがすぐ前を滑って導きながらコースを滑り降りる。",
+      "example_ja_src": "In para-alpine skiing, visually impaired competitors race down the course with a guide skiing just ahead of them."
+    }
+  },
+  {
+    "english": "para-nordic skiing",
+    "detail": {
+      "pronunciation": "/ˈpærə ˈnɔːrdɪk ˈskiːɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "パラノルディックスキー",
+        "クロスカントリー・バイアスロンを含む障がい者向けノルディック種目"
+      ],
+      "examples": [
+        {
+          "en": "Para-nordic skiing includes both cross-country races and biathlon events adapted for athletes with disabilities.",
+          "ja": "パラノルディックスキーには、障がいのある選手向けに調整されたクロスカントリー種目とバイアスロン種目の両方が含まれる。"
+        },
+        {
+          "en": "Sit-skis used in para-nordic skiing are equipped with a single ski and a specialized seat.",
+          "ja": "パラノルディックスキーで使われるシットスキーには、1本のスキー板と専用の座席が備え付けられている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "北欧諸国で発展した障がい者スキーの伝統をもとに国際大会として整備された。",
+      "trivia": "視覚障がいクラスの選手は、射撃の際に音の高低でねらいを定める特殊なレーザーライフルを使う。",
+      "explanation": "クロスカントリースキーとバイアスロンを含む、障がいのある選手向けのノルディックスキー競技の総称。",
+      "example_ja": "パラノルディックスキーには、障がいのある選手向けに調整されたクロスカントリー種目とバイアスロン種目の両方が含まれる。",
+      "example_ja_src": "Para-nordic skiing includes both cross-country races and biathlon events adapted for athletes with disabilities."
+    }
+  },
+  {
+    "english": "para-snowboard",
+    "detail": {
+      "pronunciation": "/ˈpærə ˈsnoʊbɔːrd/",
+      "pos": "名詞",
+      "meanings": [
+        "パラスノーボード",
+        "義足・下肢障がいのある選手が出場する雪上競技"
+      ],
+      "examples": [
+        {
+          "en": "Para-snowboard athletes race head-to-head down a course full of jumps and turns.",
+          "ja": "パラスノーボードの選手は、ジャンプやターンが連続するコースを1対1で滑り降りて競う。"
+        },
+        {
+          "en": "Para-snowboard made its Winter Paralympic debut at the Sochi 2014 Games.",
+          "ja": "パラスノーボードは、2014年ソチ大会で冬季パラリンピックに初めて採用された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "健常者のスノーボードクロスなどをもとに、障がいのある選手向けにクラス分けを整えて発展した競技。",
+      "trivia": "義足を使用する選手や、立位・座位のクラスなど、複数のクラスに分かれて争われる。",
+      "explanation": "義足や下肢の障がいがある選手などが出場する、スノーボードクロスなどの種目から成るパラリンピックの雪上競技。",
+      "example_ja": "パラスノーボードの選手は、ジャンプやターンが連続するコースを1対1で滑り降りて競う。",
+      "example_ja_src": "Para-snowboard athletes race head-to-head down a course full of jumps and turns."
+    }
+  },
+  {
+    "english": "para-athletics",
+    "detail": {
+      "pronunciation": "/ˈpærə æθˈlɛtɪks/",
+      "pos": "名詞",
+      "meanings": [
+        "パラ陸上競技",
+        "陸上競技を障がいのある選手向けに調整した種目群"
+      ],
+      "examples": [
+        {
+          "en": "Para-athletics events range from wheelchair racing to seated throwing competitions.",
+          "ja": "パラ陸上競技には、車いす競走から座位での投てき競技まで幅広い種目がある。"
+        },
+        {
+          "en": "Para-athletics is the largest sport at the Summer Paralympics in terms of the number of events.",
+          "ja": "パラ陸上競技は、種目数の点で夏季パラリンピック最大の競技である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1948年のアーチェリー大会に続き、初期のパラリンピックから中心的な役割を担ってきた競技分野。",
+      "trivia": "義足のランナーが健常者の記録を上回ることもあり、用具の性能をめぐる議論を呼ぶこともある。",
+      "explanation": "陸上競技を障がいのある選手向けに調整した種目の総称。義足を使った走り幅跳びや、投てき種目用の固定椅子なども用いられる。",
+      "example_ja": "パラ陸上競技には、車いす競走から座位での投てき競技まで幅広い種目がある。",
+      "example_ja_src": "Para-athletics events range from wheelchair racing to seated throwing competitions."
+    }
+  },
+  {
+    "english": "para-swimming",
+    "detail": {
+      "pronunciation": "/ˈpærə ˈswɪmɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "パラ水泳",
+        "障がいの程度に応じたクラスで競う水泳競技"
+      ],
+      "examples": [
+        {
+          "en": "Because she cannot see the wall approaching, a coach taps her with a pole during para-swimming races.",
+          "ja": "彼女は壁が近づいてくるのが見えないため、パラ水泳のレース中はコーチが棒で合図を送る。"
+        },
+        {
+          "en": "Para-swimming rules allow some athletes to start the race in the water rather than diving from the blocks.",
+          "ja": "パラ水泳のルールでは、選手によってはスタート台から飛び込まず水中からスタートすることが認められている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1960年ローマ大会以来、パラリンピックの中核競技の一つとして実施されてきた。",
+      "trivia": "視覚障がいのある選手に壁の接近を知らせる合図係を「タッパー」と呼ぶ。",
+      "explanation": "視覚・知的・肢体に障がいのある選手が、それぞれの障がいの程度に応じたクラスで競う水泳競技。",
+      "example_ja": "彼女は壁が近づいてくるのが見えないため、パラ水泳のレース中はコーチが棒で合図を送る。",
+      "example_ja_src": "Because she cannot see the wall approaching, a coach taps her with a pole during para-swimming races."
+    }
+  },
+  {
+    "english": "para-cycling",
+    "detail": {
+      "pronunciation": "/ˈpærə ˈsaɪklɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "パラサイクリング",
+        "様々な専用機材を用いる障がい者向け自転車競技"
+      ],
+      "examples": [
+        {
+          "en": "Para-cycling includes events on standard bicycles, tricycles, and hand-powered cycles.",
+          "ja": "パラサイクリングには、通常の自転車・三輪車・手でこぐハンドサイクルによる種目が含まれる。"
+        },
+        {
+          "en": "Visually impaired athletes in para-cycling compete on a tandem bicycle with a sighted pilot.",
+          "ja": "パラサイクリングでは、視覚に障がいのある選手は晴眼者のパイロットと共にタンデム自転車で競技する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1980年代から国際大会が行われ、1984年大会からパラリンピックの正式競技となった。",
+      "trivia": "障がいの種類に応じて、自転車・三輪車・ハンドサイクル・タンデム自転車という4種類の機材が使い分けられる。",
+      "explanation": "手だけでこぐハンドサイクルやタンデム自転車など、様々な専用機材を用いて行われる障がい者向け自転車競技。",
+      "example_ja": "パラサイクリングには、通常の自転車・三輪車・手でこぐハンドサイクルによる種目が含まれる。",
+      "example_ja_src": "Para-cycling includes events on standard bicycles, tricycles, and hand-powered cycles."
+    }
+  },
+  {
+    "english": "para-equestrian",
+    "detail": {
+      "pronunciation": "/ˈpærə ɪˈkwɛstriən/",
+      "pos": "名詞",
+      "meanings": [
+        "パラ馬術",
+        "障がいのある選手が馬を操る馬場馬術競技"
+      ],
+      "examples": [
+        {
+          "en": "Para-equestrian riders are judged on the precision and grace of their horse's movements.",
+          "ja": "パラ馬術の選手は、馬の動きの正確さと優雅さによって採点される。"
+        },
+        {
+          "en": "Para-equestrian is one of the few Paralympic sports in which men and women compete directly against each other.",
+          "ja": "パラ馬術は、男女が直接対戦する数少ないパラリンピック競技の一つである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "馬という動物を介して障がいのある選手も健常者とほぼ同条件で競技できることから発展した競技。",
+      "trivia": "選手の障がいの程度に応じて5段階のクラスに分けられ、それぞれ異なる課題演技が課される。",
+      "explanation": "視覚・肢体などに障がいのある選手が馬を操って演技する馬場馬術競技。障がいの程度に応じたクラス分けが行われる。",
+      "example_ja": "パラ馬術の選手は、馬の動きの正確さと優雅さによって採点される。",
+      "example_ja_src": "Para-equestrian riders are judged on the precision and grace of their horse's movements."
+    }
+  },
+  {
+    "english": "para-table tennis",
+    "detail": {
+      "pronunciation": "/ˈpærə ˈteɪbəl ˈtɛnɪs/",
+      "pos": "名詞",
+      "meanings": [
+        "パラ卓球",
+        "座位・立位などのクラスに分かれて行う卓球"
+      ],
+      "examples": [
+        {
+          "en": "Para-table tennis includes both seated classes for wheelchair users and standing classes.",
+          "ja": "パラ卓球には、車いす使用者のための座位クラスと、立位クラスの両方がある。"
+        },
+        {
+          "en": "Para-table tennis has been part of the Paralympic program since the very first Games in 1960.",
+          "ja": "パラ卓球は、1960年の第1回大会からパラリンピックの正式競技となっている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1960年ローマ大会から実施されている、パラリンピック創設当初からの伝統的な競技の一つ。",
+      "trivia": "座位クラスの選手は、車いすが台にぶつかっても反則にならないなど独自のルールがある。",
+      "explanation": "座位や立位など、選手の障がいの種類・程度に応じたクラスに分かれて行う卓球競技。",
+      "example_ja": "パラ卓球には、車いす使用者のための座位クラスと、立位クラスの両方がある。",
+      "example_ja_src": "Para-table tennis includes both seated classes for wheelchair users and standing classes."
+    }
+  },
+  {
+    "english": "para-taekwondo",
+    "detail": {
+      "pronunciation": "/ˈpærə ˌtaɪkwɒnˈdoʊ/",
+      "pos": "名詞",
+      "meanings": [
+        "パラテコンドー",
+        "視覚・上肢障がいのある選手が行うテコンドー"
+      ],
+      "examples": [
+        {
+          "en": "Para-taekwondo made its Paralympic debut at the Tokyo 2020 Games.",
+          "ja": "パラテコンドーは、東京2020大会でパラリンピックに初めて採用された。"
+        },
+        {
+          "en": "In para-taekwondo, competitors score points mainly by kicking their opponent's body.",
+          "ja": "パラテコンドーでは、選手は主に相手の胴体を蹴ることで得点を挙げる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "健常者のテコンドーの組手(キョルギ)を、上肢に障がいのある選手向けに調整して確立された競技。",
+      "trivia": "顔面への攻撃が禁止されている点が、健常者のテコンドーとの大きな違いの一つとされる。",
+      "explanation": "視覚や上肢に障がいのある選手が出場する、キョルギ(組手)形式のテコンドー競技。",
+      "example_ja": "パラテコンドーは、東京2020大会でパラリンピックに初めて採用された。",
+      "example_ja_src": "Para-taekwondo made its Paralympic debut at the Tokyo 2020 Games."
+    }
+  },
+  {
+    "english": "para-triathlon",
+    "detail": {
+      "pronunciation": "/ˈpærə traɪˈæθlɒn/",
+      "pos": "名詞",
+      "meanings": [
+        "パラトライアスロン",
+        "水泳・自転車・長距離走を用具に応じて行う競技"
+      ],
+      "examples": [
+        {
+          "en": "In para-triathlon, some athletes switch from a handcycle to a racing wheelchair between the cycling and running legs.",
+          "ja": "パラトライアスロンでは、選手によっては自転車区間から走行区間への切り替え時にハンドサイクルから競技用車いすに乗り換える。"
+        },
+        {
+          "en": "Para-triathlon became a Paralympic sport for the first time at the Rio 2016 Games.",
+          "ja": "パラトライアスロンは、2016年リオ大会で初めてパラリンピックの正式競技となった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "健常者のトライアスロンと同様、3種目を連続して行う競技として発展した。",
+      "trivia": "義足のランナーや、視覚障がいのある選手を導くガイドランナーの存在も見どころの一つとされる。",
+      "explanation": "水泳・自転車・長距離走を組み合わせた競技を、義足や競技用車いすなど選手の障がいに応じた用具で行うパラトライアスロン。",
+      "example_ja": "パラトライアスロンでは、選手によっては自転車区間から走行区間への切り替え時にハンドサイクルから競技用車いすに乗り換える。",
+      "example_ja_src": "In para-triathlon, some athletes switch from a handcycle to a racing wheelchair between the cycling and running legs."
+    }
+  },
+  {
+    "english": "para-badminton",
+    "detail": {
+      "pronunciation": "/ˈpærə ˈbædmɪntən/",
+      "pos": "名詞",
+      "meanings": [
+        "パラバドミントン",
+        "障がいの種類・程度に応じたクラスで争うバドミントン"
+      ],
+      "examples": [
+        {
+          "en": "Para-badminton was added to the Paralympic program for the first time at Tokyo 2020.",
+          "ja": "パラバドミントンは、東京2020大会で初めてパラリンピックの正式競技として採用された。"
+        },
+        {
+          "en": "Para-badminton includes both standing classes and a wheelchair class.",
+          "ja": "パラバドミントンには、立位クラスと車いすクラスの両方がある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "健常者のバドミントンをもとに、障がいの部位や程度に応じた複数のクラスが整備されて発展した。",
+      "trivia": "パラリンピックでは比較的新しい競技で、東京2020大会が初出場となった。",
+      "explanation": "車いすクラスや立位クラスなど、障がいの種類・程度に応じたクラスで争われるバドミントン競技。",
+      "example_ja": "パラバドミントンは、東京2020大会で初めてパラリンピックの正式競技として採用された。",
+      "example_ja_src": "Para-badminton was added to the Paralympic program for the first time at Tokyo 2020."
+    }
+  },
+  {
+    "english": "para-canoe",
+    "detail": {
+      "pronunciation": "/ˈpærə kəˈnuː/",
+      "pos": "名詞",
+      "meanings": [
+        "パラカヌー",
+        "専用シートを使いタイムを競うカヌー・スプリント競技"
+      ],
+      "examples": [
+        {
+          "en": "Para-canoe athletes are strapped into a stabilized seat before racing down the sprint course.",
+          "ja": "パラカヌーの選手は、スプリントコースを漕ぎ進む前に安定用のシートに体を固定される。"
+        },
+        {
+          "en": "Para-canoe made its Paralympic debut at the Rio 2016 Games.",
+          "ja": "パラカヌーは、2016年リオ大会でパラリンピックに初めて採用された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "健常者のカヌー・スプリント競技をもとに、体幹保持が難しい選手向けの専用シートなどが開発されて確立された。",
+      "trivia": "義足や体幹機能の障がいなど幅広い障がいの選手が出場できるよう、複数のクラスに分かれている。",
+      "explanation": "下肢などに障がいのある選手が、専用のシートやパドルを使ってタイムを競うカヌー・スプリント競技。",
+      "example_ja": "パラカヌーの選手は、スプリントコースを漕ぎ進む前に安定用のシートに体を固定される。",
+      "example_ja_src": "Para-canoe athletes are strapped into a stabilized seat before racing down the sprint course."
+    }
+  },
+  {
+    "english": "para-archery",
+    "detail": {
+      "pronunciation": "/ˈpærə ˈɑːrtʃəri/",
+      "pos": "名詞",
+      "meanings": [
+        "パラアーチェリー",
+        "用具調整・クラス分けが行われるアーチェリー"
+      ],
+      "examples": [
+        {
+          "en": "Some para-archery competitors release the bowstring with their mouth or foot instead of their hand.",
+          "ja": "パラアーチェリーの選手の中には、手ではなく口や足で弓の弦を放す選手もいる。"
+        },
+        {
+          "en": "Para-archery was part of the very first Paralympic Games in 1960.",
+          "ja": "パラアーチェリーは、1960年の第1回パラリンピックから実施されている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1948年のリハビリ目的のアーチェリー大会がパラリンピック全体のルーツともされ、最も歴史のある競技の一つ。",
+      "trivia": "車いすを固定する台や、口で弦を引く独自の補助具など、選手ごとに工夫された用具が使われる。",
+      "explanation": "車いす使用者や上肢に障がいのある選手も出場できるよう、用具の調整やクラス分けが行われるアーチェリー競技。",
+      "example_ja": "パラアーチェリーの選手の中には、手ではなく口や足で弓の弦を放す選手もいる。",
+      "example_ja_src": "Some para-archery competitors release the bowstring with their mouth or foot instead of their hand."
+    }
+  },
+  {
+    "english": "guide runner",
+    "detail": {
+      "pronunciation": "/ɡaɪd ˈrʌnər/",
+      "pos": "名詞",
+      "meanings": [
+        "伴走者",
+        "視覚障がいのある選手とテザーでつながり並走するパートナー"
+      ],
+      "examples": [
+        {
+          "en": "The guide runner and the visually impaired sprinter crossed the finish line together, hand in hand.",
+          "ja": "伴走者と視覚に障がいのある短距離選手は、手をつないで一緒にゴールした。"
+        },
+        {
+          "en": "A guide runner must match the exact pace of the athlete they are running with.",
+          "ja": "伴走者は、共に走る選手のペースに正確に合わせなければならない。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "視覚障がいのある選手が安全かつ全力で走れるよう、伴走という役割が発展してきた。",
+      "trivia": "ルール上、伴走者は選手より先にゴールラインを越えてはならないとされている。",
+      "explanation": "視覚障がいのある陸上競技の選手と一本のテザー(ひも)でつながり、並走してコースを導くパートナー。",
+      "example_ja": "伴走者と視覚に障がいのある短距離選手は、手をつないで一緒にゴールした。",
+      "example_ja_src": "The guide runner and the visually impaired sprinter crossed the finish line together, hand in hand."
+    }
+  },
+  {
+    "english": "running blade",
+    "detail": {
+      "pronunciation": "/ˈrʌnɪŋ bleɪd/",
+      "pos": "名詞",
+      "meanings": [
+        "競技用義足(ランニングブレード)",
+        "板ばね状のカーボン製の義足"
+      ],
+      "examples": [
+        {
+          "en": "Her carbon-fiber running blade stores and releases energy with every stride.",
+          "ja": "彼女のカーボン製ランニングブレードは、一歩ごとにエネルギーを蓄えて放出する。"
+        },
+        {
+          "en": "Running blades are custom-fitted to each athlete's body and running style.",
+          "ja": "ランニングブレードは、それぞれの選手の体格や走り方に合わせて特注される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1980年代後半に開発された板ばね状の義足が、その後のパラ陸上競技の記録向上に大きく貢献したとされる。",
+      "trivia": "その性能の高さから、健常者の記録と比較する際に有利不利が議論されることもある。",
+      "explanation": "下肢を切断した選手が短距離走などで使用する、板ばね状のカーボン製義足。",
+      "example_ja": "彼女のカーボン製ランニングブレードは、一歩ごとにエネルギーを蓄えて放出する。",
+      "example_ja_src": "Her carbon-fiber running blade stores and releases energy with every stride."
+    }
+  },
+  {
+    "english": "handcycle",
+    "detail": {
+      "pronunciation": "/ˈhændsaɪkəl/",
+      "pos": "名詞",
+      "meanings": [
+        "ハンドサイクル",
+        "手でクランクを回して進む自転車"
+      ],
+      "examples": [
+        {
+          "en": "He leaned low over his handcycle to reduce wind resistance on the final climb.",
+          "ja": "彼は最後の上り坂で風の抵抗を減らすため、ハンドサイクルの上で低い姿勢をとった。"
+        },
+        {
+          "en": "A handcycle is often used by athletes with spinal cord injuries or lower-limb amputations.",
+          "ja": "ハンドサイクルは、脊髄損傷や下肢切断のある選手によく用いられる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "手でクランクを回す(hand+cycle)という構造そのものが名前の由来となっている。",
+      "trivia": "パラトライアスロンでは、選手が自転車区間だけハンドサイクルに乗り換えることもある。",
+      "explanation": "手でクランクを回して進む、下肢に障がいのある選手が使用する自転車。",
+      "example_ja": "彼は最後の上り坂で風の抵抗を減らすため、ハンドサイクルの上で低い姿勢をとった。",
+      "example_ja_src": "He leaned low over his handcycle to reduce wind resistance on the final climb."
+    }
+  },
+  {
+    "english": "tandem cycling",
+    "detail": {
+      "pronunciation": "/ˈtændəm ˈsaɪklɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "タンデム自転車競技",
+        "視覚障がい選手とパイロットが2人乗りで走る自転車競技"
+      ],
+      "examples": [
+        {
+          "en": "In tandem cycling, the visually impaired athlete and the sighted pilot must pedal in perfect sync.",
+          "ja": "タンデム自転車競技では、視覚に障がいのある選手と晴眼者のパイロットが完全に息を合わせてペダルをこがなければならない。"
+        },
+        {
+          "en": "The pilot in tandem cycling sits at the front of the bicycle and steers the course.",
+          "ja": "タンデム自転車競技のパイロットは自転車の前部に座り、コースの操縦を担う。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1本の車体に2人が前後に乗るtandem bicycle(タンデム自転車)を用いることから名付けられた。",
+      "trivia": "パイロット役は視覚に障がいのない選手や元自転車競技選手が務めることが多い。",
+      "explanation": "視覚障がいのある選手が後部座席に乗り、晴眼者のパイロットが前部座席で操縦・こぎながら二人で走る自転車競技。",
+      "example_ja": "タンデム自転車競技では、視覚に障がいのある選手と晴眼者のパイロットが完全に息を合わせてペダルをこがなければならない。",
+      "example_ja_src": "In tandem cycling, the visually impaired athlete and the sighted pilot must pedal in perfect sync."
+    }
+  },
+  {
+    "english": "racing wheelchair",
+    "detail": {
+      "pronunciation": "/ˈreɪsɪŋ ˈwiːltʃɛər/",
+      "pos": "名詞",
+      "meanings": [
+        "競技用車いす(レーシングチェア)",
+        "陸上競技用に設計された軽量な車いす"
+      ],
+      "examples": [
+        {
+          "en": "She switched from her everyday wheelchair to a racing wheelchair built specifically for speed.",
+          "ja": "彼女は普段使いの車いすから、スピードを追求して作られた競技用車いすに乗り換えた。"
+        },
+        {
+          "en": "A racing wheelchair typically has one small front wheel and two large rear wheels.",
+          "ja": "競技用車いすは通常、前方に小さな車輪が1つ、後方に大きな車輪が2つ付いている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "陸上競技のトラック・ロードレース向けに、日常用の車いすとは別に専用開発された。",
+      "trivia": "選手はうつ伏せに近い姿勢で乗り込み、傾斜したハンドリムを手で押して加速する。",
+      "explanation": "3つの車輪と長く傾斜したハンドリムを備えた、陸上競技のトラック種目やロードレース用に設計された軽量の競技用車いす。",
+      "example_ja": "彼女は普段使いの車いすから、スピードを追求して作られた競技用車いすに乗り換えた。",
+      "example_ja_src": "She switched from her everyday wheelchair to a racing wheelchair built specifically for speed."
+    }
+  },
+  {
+    "english": "throwing frame",
+    "detail": {
+      "pronunciation": "/ˈθroʊɪŋ freɪm/",
+      "pos": "名詞",
+      "meanings": [
+        "投てき台(スローイングフレーム)",
+        "体幹保持が難しい選手を固定する専用の椅子"
+      ],
+      "examples": [
+        {
+          "en": "The javelin thrower strapped himself into a throwing frame before his final attempt.",
+          "ja": "そのやり投げ選手は、最終試技の前に投てき台に体を固定した。"
+        },
+        {
+          "en": "A throwing frame allows athletes with limited trunk control to generate power safely while seated.",
+          "ja": "投てき台があれば、体幹の制御が難しい選手も座ったまま安全に力を発揮できる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "座位での投てき種目において、選手の安全と公平な競技環境を確保するために開発された専用の器具。",
+      "trivia": "選手ごとに高さや角度が調整され、大会前に厳密な検査を受けることが義務付けられているとされる。",
+      "explanation": "投てき種目で、体幹を保持できない選手が座ったまま安定して投げられるように固定する専用の椅子・フレーム。",
+      "example_ja": "そのやり投げ選手は、最終試技の前に投てき台に体を固定した。",
+      "example_ja_src": "The javelin thrower strapped himself into a throwing frame before his final attempt."
+    }
+  },
+  {
+    "english": "sport climbing",
+    "detail": {
+      "pronunciation": "/spɔːrt ˈklaɪmɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "スポーツクライミング",
+        "スピード・ボルダリング・リードを組み合わせたクライミング競技"
+      ],
+      "examples": [
+        {
+          "en": "Sport climbing made its Olympic debut at the Tokyo 2020 Games.",
+          "ja": "スポーツクライミングは、東京2020大会でオリンピックに初めて採用された。"
+        },
+        {
+          "en": "Sport climbing tests a very different set of skills in its speed event compared to its bouldering event.",
+          "ja": "スポーツクライミングでは、スピード種目とボルダリング種目とでまったく異なる能力が試される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1980年代にヨーロッパで競技化が進んだフリークライミングが起源とされる。",
+      "trivia": "東京2020大会ではスピード・ボルダリング・リードの3要素を合算する形式だったが、パリ2024大会からは種目構成が見直された。",
+      "explanation": "スピード・ボルダリング・リードという異なる要素を組み合わせて争う、2020年東京大会から正式種目となったクライミング競技。",
+      "example_ja": "スポーツクライミングは、東京2020大会でオリンピックに初めて採用された。",
+      "example_ja_src": "Sport climbing made its Olympic debut at the Tokyo 2020 Games."
+    }
+  },
+  {
+    "english": "artistic swimming",
+    "detail": {
+      "pronunciation": "/ɑːrˈtɪstɪk ˈswɪmɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "アーティスティックスイミング",
+        "音楽に合わせて水中で演技する採点競技"
+      ],
+      "examples": [
+        {
+          "en": "Artistic swimming combines strength, flexibility, and split-second timing underwater.",
+          "ja": "アーティスティックスイミングは、力強さと柔軟性、水中での寸分違わぬタイミングを兼ね備えた競技である。"
+        },
+        {
+          "en": "Artistic swimming was known as synchronized swimming until its name was officially changed.",
+          "ja": "アーティスティックスイミングは、正式に名称が変更されるまで「シンクロナイズドスイミング」と呼ばれていた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "synchronized swimming",
+          "note": "2017年に改称される前の旧名称"
+        }
+      ],
+      "antonyms": [],
+      "origin": "1984年ロサンゼルス大会からオリンピック種目となった。",
+      "trivia": "2017年、国際水泳連盟(当時のFINA)が芸術性をより強調する趣旨で名称を変更した。",
+      "explanation": "音楽に合わせて水中で演技を行う採点競技。2017年に国際水泳連盟が「シンクロナイズドスイミング」から名称を変更した。",
+      "example_ja": "アーティスティックスイミングは、力強さと柔軟性、水中での寸分違わぬタイミングを兼ね備えた競技である。",
+      "example_ja_src": "Artistic swimming combines strength, flexibility, and split-second timing underwater."
+    }
+  },
+  {
+    "english": "rhythmic gymnastics",
+    "detail": {
+      "pronunciation": "/rɪðˈmɪk dʒɪmˈnæstɪks/",
+      "pos": "名詞",
+      "meanings": [
+        "新体操",
+        "手具を用いて音楽に合わせて演技する採点制の体操競技"
+      ],
+      "examples": [
+        {
+          "en": "The rhythmic gymnastics routine incorporated a ribbon that seemed to float through the air.",
+          "ja": "その新体操の演技では、まるで宙に浮いているかのようなリボンの動きが取り入れられていた。"
+        },
+        {
+          "en": "Rhythmic gymnastics uses five types of apparatus: rope, hoop, ball, clubs, and ribbon.",
+          "ja": "新体操では、ロープ・フープ・ボール・クラブ・リボンという5種類の手具が用いられる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "旧ソ連を中心に体系化され、1984年ロサンゼルス大会からオリンピック種目となった。",
+      "trivia": "個人種目と、5人一組で行う団体種目の両方がある。",
+      "explanation": "リボンやボールなどの手具を用いて音楽に合わせた演技を行う、採点制の体操競技。",
+      "example_ja": "その新体操の演技では、まるで宙に浮いているかのようなリボンの動きが取り入れられていた。",
+      "example_ja_src": "The rhythmic gymnastics routine incorporated a ribbon that seemed to float through the air."
+    }
+  },
+  {
+    "english": "artistic gymnastics",
+    "detail": {
+      "pronunciation": "/ɑːrˈtɪstɪk dʒɪmˈnæstɪks/",
+      "pos": "名詞",
+      "meanings": [
+        "体操競技",
+        "跳馬・鉄棒などで技術と芸術性を競う体操競技"
+      ],
+      "examples": [
+        {
+          "en": "Artistic gymnastics events include the vault, uneven bars, balance beam, and floor exercise.",
+          "ja": "体操競技には、跳馬・段違い平行棒・平均台・床運動といった種目が含まれる。"
+        },
+        {
+          "en": "Artistic gymnastics has been part of every modern Olympic Games since 1896.",
+          "ja": "体操競技は、1896年の第1回近代オリンピック以来、すべての大会で実施されてきた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「体操」を意味するギリシャ語gymnastikeに由来し、近代オリンピック創設当初からの中心競技の一つ。",
+      "trivia": "男子は6種目、女子は4種目で構成されており、種目数が異なる点が特徴とされる。",
+      "explanation": "跳馬・鉄棒・平均台など複数の種目で演技の技術と芸術性を競う、いわゆる「体操競技」。",
+      "example_ja": "体操競技には、跳馬・段違い平行棒・平均台・床運動といった種目が含まれる。",
+      "example_ja_src": "Artistic gymnastics events include the vault, uneven bars, balance beam, and floor exercise."
+    }
+  },
+  {
+    "english": "trampoline",
+    "detail": {
+      "pronunciation": "/ˈtræmpəliːn/",
+      "pos": "名詞",
+      "meanings": [
+        "トランポリン競技",
+        "跳躍しながら宙返りなどを連続して行う体操競技"
+      ],
+      "examples": [
+        {
+          "en": "The trampoline gymnast performed a series of twisting somersaults high above the frame.",
+          "ja": "そのトランポリン選手は、フレームのはるか上空で連続してひねりを加えた宙返りを披露した。"
+        },
+        {
+          "en": "Trampoline routines consist of ten consecutive skills performed without pausing.",
+          "ja": "トランポリンの演技は、休みなく連続して行う10種類の技で構成される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1930年代のアメリカで、サーカスの安全ネットから着想を得て考案されたとされる。",
+      "trivia": "選手が到達する高さは8メートルを超えることもあり、体操競技の中でも特に跳躍力が試される種目である。",
+      "explanation": "跳躍しながら宙返りなどの技を連続して行い、高さと技の難度・完成度を採点する体操競技。",
+      "example_ja": "そのトランポリン選手は、フレームのはるか上空で連続してひねりを加えた宙返りを披露した。",
+      "example_ja_src": "The trampoline gymnast performed a series of twisting somersaults high above the frame."
+    }
+  },
+  {
+    "english": "3x3 basketball",
+    "detail": {
+      "pronunciation": "/ˈθriː baɪ ˈθriː bəˈskɪtbɔːl/",
+      "pos": "名詞",
+      "meanings": [
+        "3x3バスケットボール",
+        "3人対3人で行う短時間・小コートのバスケットボール"
+      ],
+      "examples": [
+        {
+          "en": "3x3 basketball games are fast-paced and typically last only ten minutes.",
+          "ja": "3x3バスケットボールの試合は展開が速く、通常わずか10分ほどで終わる。"
+        },
+        {
+          "en": "3x3 basketball uses a single hoop instead of the two hoops used in traditional basketball.",
+          "ja": "3x3バスケットボールでは、通常のバスケットボールの2つのゴールと異なり、1つのゴールだけを使う。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "路上で行われるストリートバスケットボール文化から生まれた形式が国際競技として整備された。",
+      "trivia": "東京2020大会から正式種目となり、通常のバスケットボールより攻守の切り替えが速いことで人気を集めている。",
+      "explanation": "3人対3人で行う、通常より小さいコートと短い試合時間で争われるバスケットボール競技。2020年東京大会から正式種目。",
+      "example_ja": "3x3バスケットボールの試合は展開が速く、通常わずか10分ほどで終わる。",
+      "example_ja_src": "3x3 basketball games are fast-paced and typically last only ten minutes."
+    }
+  },
+  {
+    "english": "breaking",
+    "detail": {
+      "pronunciation": "/ˈbreɪkɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "ブレイキン(ブレイクダンス)",
+        "ヒップホップ文化由来のダンス競技"
+      ],
+      "examples": [
+        {
+          "en": "Breaking made its first appearance on the Olympic program at the Paris 2024 Games.",
+          "ja": "ブレイキンは、パリ2024大会でオリンピックの実施競技として初めて登場した。"
+        },
+        {
+          "en": "In breaking, competitors called b-boys and b-girls face off in one-on-one battles.",
+          "ja": "ブレイキンでは、Bボーイ・Bガールと呼ばれる選手たちが1対1のバトル形式で対決する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "breakdancing",
+          "note": "より一般的な呼び方。競技名としてはbreakingが公式名称とされる"
+        }
+      ],
+      "antonyms": [],
+      "origin": "1970年代のニューヨーク・ブロンクスのヒップホップ文化の中で生まれたダンススタイル。",
+      "trivia": "2028年ロサンゼルス大会の実施競技にはブレイキンは含まれていないとされ、パリ2024限りの採用となる見込みである。",
+      "explanation": "ヒップホップ文化から生まれたダンス(ブレイクダンス)を競技化したもので、2024年パリ大会で新種目として初めて採用された。",
+      "example_ja": "ブレイキンは、パリ2024大会でオリンピックの実施競技として初めて登場した。",
+      "example_ja_src": "Breaking made its first appearance on the Olympic program at the Paris 2024 Games."
+    }
+  },
+  {
+    "english": "modern pentathlon",
+    "detail": {
+      "pronunciation": "/ˈmɒdərn pɛnˈtæθlɒn/",
+      "pos": "名詞",
+      "meanings": [
+        "近代五種",
+        "フェンシング・水泳・馬術・レーザーランから成る複合競技"
+      ],
+      "examples": [
+        {
+          "en": "Modern pentathlon was created to test the skills a 19th-century cavalry officer might need.",
+          "ja": "近代五種は、19世紀の騎兵将校に求められたであろう技能を試すために考案された。"
+        },
+        {
+          "en": "Modern pentathlon combines fencing, swimming, and laser-run, a combined event of shooting and running.",
+          "ja": "近代五種は、フェンシング・水泳と、射撃と走行を組み合わせたレーザーランから構成される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "クーベルタン自身が発案し、1912年ストックホルム大会からオリンピック種目となった。",
+      "trivia": "馬術種目は動物福祉への懸念を受けて見直しが進められ、2028年ロサンゼルス大会からはオブスタクル(障害物レース)種目に置き換えられるとされる。",
+      "explanation": "フェンシング・水泳・馬術・射撃と走行を組み合わせたレーザーランの5種目を1日で行う複合競技。",
+      "example_ja": "近代五種は、19世紀の騎兵将校に求められたであろう技能を試すために考案された。",
+      "example_ja_src": "Modern pentathlon was created to test the skills a 19th-century cavalry officer might need."
+    }
+  },
+  {
+    "english": "canoe slalom",
+    "detail": {
+      "pronunciation": "/kəˈnuː ˈslɑːləm/",
+      "pos": "名詞",
+      "meanings": [
+        "カヌースラローム",
+        "急流のゲートを通過してタイムを競うカヌー競技"
+      ],
+      "examples": [
+        {
+          "en": "The paddler navigated a dozen gates on the whitewater course during the canoe slalom final.",
+          "ja": "その選手は、カヌースラロームの決勝で急流コースの十数個のゲートを巧みに通過した。"
+        },
+        {
+          "en": "Canoe slalom competitors are penalized with extra seconds for touching a gate.",
+          "ja": "カヌースラロームの選手は、ゲートに触れると加算タイムのペナルティを科される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "自然の急流を模した人工コースの整備が進んだことで、国際競技として発展した。",
+      "trivia": "1972年ミュンヘン大会で初めてオリンピック種目となり、その後一時中断を経て1992年バルセロナ大会から常設種目に戻った。",
+      "explanation": "流れの速い人工の急流コースに設置されたゲートを、決められた順序で通過しながらタイムを競うカヌー競技。",
+      "example_ja": "その選手は、カヌースラロームの決勝で急流コースの十数個のゲートを巧みに通過した。",
+      "example_ja_src": "The paddler navigated a dozen gates on the whitewater course during the canoe slalom final."
+    }
+  },
+  {
+    "english": "canoe sprint",
+    "detail": {
+      "pronunciation": "/kəˈnuː sprɪnt/",
+      "pos": "名詞",
+      "meanings": [
+        "カヌースプリント",
+        "静水の直線コースでタイムを競うカヌー競技"
+      ],
+      "examples": [
+        {
+          "en": "Canoe sprint races are held on a calm, straight course over set distances such as 200 or 500 meters.",
+          "ja": "カヌースプリントのレースは、200メートルや500メートルなど決まった距離の、穏やかな直線コースで行われる。"
+        },
+        {
+          "en": "Canoe sprint includes both canoe events, paddled with a single-bladed paddle, and kayak events.",
+          "ja": "カヌースプリントには、片方だけに水かきの付いたパドルで漕ぐカナディアン種目と、カヤック種目の両方がある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1936年ベルリン大会からオリンピックの正式種目となっている、カヌー競技の中でも歴史の長い種目。",
+      "trivia": "カナディアン(C)は片膝立ちの姿勢で片方だけに水かきの付いたパドルを使い、カヤック(K)は座った姿勢で両方に水かきの付いたパドルを使う点が異なる。",
+      "explanation": "静水の直線コースで着順やタイムを競う、カヌーとカヤックによる競漕競技。",
+      "example_ja": "カヌースプリントのレースは、200メートルや500メートルなど決まった距離の、穏やかな直線コースで行われる。",
+      "example_ja_src": "Canoe sprint races are held on a calm, straight course over set distances such as 200 or 500 meters."
+    }
+  },
+  {
+    "english": "synchronized diving",
+    "detail": {
+      "pronunciation": "/ˈsɪŋkrənaɪzd ˈdaɪvɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "シンクロナイズド飛び込み",
+        "2人が同時に演技する飛び込み競技"
+      ],
+      "examples": [
+        {
+          "en": "The pair's synchronized diving routine impressed the judges with its perfect timing.",
+          "ja": "そのペアのシンクロナイズド飛び込みの演技は、完璧なタイミングで審判たちを感心させた。"
+        },
+        {
+          "en": "Synchronized diving is judged on both the individual technique and how closely the two divers match each other.",
+          "ja": "シンクロナイズド飛び込みでは、個々の技術に加え、2人の動きがどれだけ揃っているかも採点される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "個人の飛び込み競技に、2人の同調性という新たな採点要素を加えて発展した種目。",
+      "trivia": "2000年シドニー大会からオリンピックの正式種目として実施されている。",
+      "explanation": "2人の選手が同じ演技をタイミングを揃えて行い、技の完成度と同調性を採点する飛び込み競技。",
+      "example_ja": "そのペアのシンクロナイズド飛び込みの演技は、完璧なタイミングで審判たちを感心させた。",
+      "example_ja_src": "The pair's synchronized diving routine impressed the judges with its perfect timing."
+    }
+  },
+  {
+    "english": "beach volleyball",
+    "detail": {
+      "pronunciation": "/biːtʃ ˈvɒlɪbɔːl/",
+      "pos": "名詞",
+      "meanings": [
+        "ビーチバレーボール",
+        "砂浜のコートで2人1組で行うバレーボール"
+      ],
+      "examples": [
+        {
+          "en": "Beach volleyball is played barefoot on sand courts, usually two against two.",
+          "ja": "ビーチバレーボールは、通常2人対2人で、砂のコートを裸足でプレーする。"
+        },
+        {
+          "en": "Beach volleyball became a full Olympic sport at the Atlanta 1996 Games.",
+          "ja": "ビーチバレーボールは、1996年アトランタ大会で正式なオリンピック種目となった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1920年代のアメリカ西海岸のビーチで、レクリエーションとして親しまれ始めたのが起源とされる。",
+      "trivia": "屋外の砂浜コートで行われるため、風や日差しといった天候条件も勝敗に影響するとされる。",
+      "explanation": "屋外の砂浜コートで2人1組のチーム同士が行うバレーボール競技。",
+      "example_ja": "ビーチバレーボールは、通常2人対2人で、砂のコートを裸足でプレーする。",
+      "example_ja_src": "Beach volleyball is played barefoot on sand courts, usually two against two."
+    }
+  },
+  {
+    "english": "judo",
+    "detail": {
+      "pronunciation": "/ˈdʒuːdoʊ/",
+      "pos": "名詞",
+      "meanings": [
+        "柔道",
+        "相手を投げたり抑え込んだりして技の効果を競う格闘技"
+      ],
+      "examples": [
+        {
+          "en": "Judo has been part of the Olympic program for men since 1964 and for women since 1988.",
+          "ja": "柔道は、男子は1964年から、女子は1988年からオリンピックの正式種目となっている。"
+        },
+        {
+          "en": "Judo scoring is based on the quality of throws, pins, and submission techniques.",
+          "ja": "柔道の採点は、投げ技・固め技・関節技などの技の質に基づいて行われる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "19世紀末、嘉納治五郎が古流柔術をもとに創始した日本発祥の武道。",
+      "trivia": "1964年東京大会で、日本発祥の武道として初めてオリンピック競技に採用された。",
+      "explanation": "相手を投げたり抑え込んだりして技の効果を競う、日本発祥の格闘技・オリンピック競技。",
+      "example_ja": "柔道は、男子は1964年から、女子は1988年からオリンピックの正式種目となっている。",
+      "example_ja_src": "Judo has been part of the Olympic program for men since 1964 and for women since 1988."
+    }
+  },
+  {
+    "english": "karate",
+    "detail": {
+      "pronunciation": "/kəˈrɑːti/",
+      "pos": "名詞",
+      "meanings": [
+        "空手",
+        "組手と形から成る沖縄・日本発祥の武道"
+      ],
+      "examples": [
+        {
+          "en": "Karate appeared on the Olympic program only once so far, at the Tokyo 2020 Games.",
+          "ja": "空手はこれまでのところ、東京2020大会で一度だけオリンピックの実施競技となった。"
+        },
+        {
+          "en": "Karate is divided into kumite, a sparring event, and kata, a event based on prescribed forms.",
+          "ja": "空手は、組手と呼ばれる対戦形式の種目と、決められた型の完成度を競う形の種目に分かれる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "沖縄の伝統的な武術が本土に伝わり、20世紀に「空手」として体系化されたとされる。",
+      "trivia": "開催国日本の提案により東京2020大会でのみ実施され、パリ2024・ロサンゼルス2028のいずれの実施競技にも含まれていない。",
+      "explanation": "突き・蹴りの正確さや威力を競う組手と、一連の型の技術を競う形から成る、沖縄・日本発祥の武道。",
+      "example_ja": "空手はこれまでのところ、東京2020大会で一度だけオリンピックの実施競技となった。",
+      "example_ja_src": "Karate appeared on the Olympic program only once so far, at the Tokyo 2020 Games."
+    }
+  },
+  {
+    "english": "taekwondo",
+    "detail": {
+      "pronunciation": "/ˌtaɪkwɒnˈdoʊ/",
+      "pos": "名詞",
+      "meanings": [
+        "テコンドー",
+        "足技を中心とする韓国発祥の格闘技"
+      ],
+      "examples": [
+        {
+          "en": "Taekwondo scoring focuses heavily on kicks landed to the body and head.",
+          "ja": "テコンドーの採点は、胴体や頭部への蹴りに大きな比重が置かれる。"
+        },
+        {
+          "en": "Taekwondo has been a full Olympic sport since the Sydney 2000 Games.",
+          "ja": "テコンドーは、2000年シドニー大会から正式なオリンピック種目となっている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "20世紀に韓国で複数の伝統武術を統合して体系化された格闘技。",
+      "trivia": "電子式のプロテクターが導入されており、一定以上の威力の蹴りが当たると自動的に得点が記録される。",
+      "explanation": "主に足技を使った打撃を得点源とする、韓国発祥の格闘技・オリンピック競技。",
+      "example_ja": "テコンドーの採点は、胴体や頭部への蹴りに大きな比重が置かれる。",
+      "example_ja_src": "Taekwondo scoring focuses heavily on kicks landed to the body and head."
+    }
+  },
+  {
+    "english": "wrestling",
+    "detail": {
+      "pronunciation": "/ˈrɛslɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "レスリング",
+        "相手を組み倒し抑え込んで得点を競う格闘技"
+      ],
+      "examples": [
+        {
+          "en": "Wrestling has been part of the modern Olympics since the first Games in 1896.",
+          "ja": "レスリングは、1896年の第1回近代オリンピック以来、実施され続けている競技である。"
+        },
+        {
+          "en": "Wrestling includes both the freestyle and Greco-Roman disciplines for men, and freestyle for women.",
+          "ja": "レスリングには、男子のフリースタイルとグレコローマン、女子のフリースタイルという形式がある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古代オリンピックでも中心的な競技の一つであったとされる、人類最古のスポーツの一つ。",
+      "trivia": "女子フリースタイルレスリングは2004年アテネ大会からオリンピック種目となった。",
+      "explanation": "相手を組み倒したり抑え込んだりして得点を競う、フリースタイルとグレコローマンの2形式があるオリンピック格闘技。",
+      "example_ja": "レスリングは、1896年の第1回近代オリンピック以来、実施され続けている競技である。",
+      "example_ja_src": "Wrestling has been part of the modern Olympics since the first Games in 1896."
+    }
+  },
+  {
+    "english": "Greco-Roman wrestling",
+    "detail": {
+      "pronunciation": "/ˌɡrɛkoʊ ˈroʊmən ˈrɛslɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "グレコローマンスタイルレスリング",
+        "上半身の力だけで戦う形式のレスリング"
+      ],
+      "examples": [
+        {
+          "en": "Greco-Roman wrestling forbids holding an opponent below the waist.",
+          "ja": "グレコローマンスタイルのレスリングでは、相手の腰から下をつかむことが禁止されている。"
+        },
+        {
+          "en": "Greco-Roman wrestling relies entirely on upper-body strength and technique.",
+          "ja": "グレコローマンスタイルのレスリングは、上半身の力と技術のみに頼る競技である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "名称に反して古代ギリシャ・ローマの競技を直接復元したものではなく、19世紀のヨーロッパで体系化されたとされる。",
+      "trivia": "脚を使った技や下半身への攻撃が一切認められないため、フリースタイルとは戦い方が大きく異なる。",
+      "explanation": "腰から下への攻撃や足を使った技を禁止し、上半身の力だけで相手を投げたり抑え込んだりする形式のレスリング。",
+      "example_ja": "グレコローマンスタイルのレスリングでは、相手の腰から下をつかむことが禁止されている。",
+      "example_ja_src": "Greco-Roman wrestling forbids holding an opponent below the waist."
+    }
+  },
+  {
+    "english": "fencing",
+    "detail": {
+      "pronunciation": "/ˈfɛnsɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "フェンシング",
+        "剣で相手の有効面を突く・切ることを競う競技"
+      ],
+      "examples": [
+        {
+          "en": "Fencing bouts are scored electronically the instant a valid touch is registered.",
+          "ja": "フェンシングの試合は、有効な突きや切りが記録された瞬間に電子的に採点される。"
+        },
+        {
+          "en": "Fencing includes three weapons: foil, epee, and saber, each with different rules for valid hits.",
+          "ja": "フェンシングには、フルーレ・エペ・サーブルという3つの種目があり、それぞれ有効打突の判定基準が異なる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "中世ヨーロッパの決闘用剣術がスポーツ化され、1896年の第1回近代オリンピックから実施されている。",
+      "trivia": "電気審判機の導入により、目視では判定が難しい一瞬の突きも正確に採点できるようになった。",
+      "explanation": "フルーレ・エペ・サーブルの3種目があり、剣で相手の有効面を突いたり切ったりして得点を競う競技。",
+      "example_ja": "フェンシングの試合は、有効な突きや切りが記録された瞬間に電子的に採点される。",
+      "example_ja_src": "Fencing bouts are scored electronically the instant a valid touch is registered."
+    }
+  },
+  {
+    "english": "shooting",
+    "detail": {
+      "pronunciation": "/ˈʃuːtɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "射撃競技",
+        "銃で標的の中心への命中精度を競う競技"
+      ],
+      "examples": [
+        {
+          "en": "Olympic shooting events include both pistol and rifle competitions at various distances.",
+          "ja": "オリンピックの射撃競技には、様々な距離で行われるピストルとライフルの種目がある。"
+        },
+        {
+          "en": "Shooting competitors must control their breathing and heart rate to keep the gun perfectly still.",
+          "ja": "射撃競技の選手は、銃を完全に静止させるために呼吸や心拍をコントロールしなければならない。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1896年の第1回近代オリンピックから実施されている、伝統ある競技の一つ。",
+      "trivia": "近年はレーザーやセンサーを使った電子的な標的判定が広く導入されている。",
+      "explanation": "ピストルやライフル、散弾銃を用いて標的の中心にどれだけ近く命中させられるかを競う射撃競技。",
+      "example_ja": "オリンピックの射撃競技には、様々な距離で行われるピストルとライフルの種目がある。",
+      "example_ja_src": "Olympic shooting events include both pistol and rifle competitions at various distances."
+    }
+  },
+  {
+    "english": "weightlifting",
+    "detail": {
+      "pronunciation": "/ˈweɪtlɪftɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "ウエイトリフティング",
+        "スナッチとクリーン&ジャークで重量を競う競技"
+      ],
+      "examples": [
+        {
+          "en": "Weightlifting competitors get three attempts each in the snatch and the clean and jerk.",
+          "ja": "ウエイトリフティングの選手は、スナッチとクリーン&ジャークそれぞれで3回ずつの試技が与えられる。"
+        },
+        {
+          "en": "Weightlifting competitions are organized into weight categories to ensure fair competition.",
+          "ja": "ウエイトリフティングの試合は、公平な競争のため階級別に分けて行われる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1896年の第1回近代オリンピックから実施されている競技の一つ。",
+      "trivia": "スナッチは一気に頭上まで持ち上げる種目、クリーン&ジャークは一度肩の高さで止めてから頭上に持ち上げる種目である。",
+      "explanation": "スナッチとクリーン&ジャークの2種目でどれだけ重いバーベルを頭上に持ち上げられるかを競う競技。",
+      "example_ja": "ウエイトリフティングの選手は、スナッチとクリーン&ジャークそれぞれで3回ずつの試技が与えられる。",
+      "example_ja_src": "Weightlifting competitors get three attempts each in the snatch and the clean and jerk."
+    }
+  },
+  {
+    "english": "rowing",
+    "detail": {
+      "pronunciation": "/ˈroʊɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "ボート競技",
+        "オールを漕いでタイムを競う競技"
+      ],
+      "examples": [
+        {
+          "en": "Rowing crews must move in perfect unison to keep the boat gliding smoothly.",
+          "ja": "ボート競技のクルーは、艇が滑らかに進むよう完全に息を合わせて漕がなければならない。"
+        },
+        {
+          "en": "Rowing events range from single sculls, rowed by one person, to eights, rowed by a crew of eight.",
+          "ja": "ボート競技には、1人で漕ぐシングルスカルから8人で漕ぐエイトまで様々な種目がある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "19世紀のイギリスの大学対抗レースから発展し、1900年パリ大会からオリンピック種目となった。",
+      "trivia": "選手は進行方向とは逆を向いて座り、艇の後方を見ながら漕ぐという珍しい姿勢が特徴とされる。",
+      "explanation": "1人から8人までの漕手がボートに乗り、オールを漕いでタイムを競う競技。",
+      "example_ja": "ボート競技のクルーは、艇が滑らかに進むよう完全に息を合わせて漕がなければならない。",
+      "example_ja_src": "Rowing crews must move in perfect unison to keep the boat gliding smoothly."
+    }
+  },
+  {
+    "english": "sailing",
+    "detail": {
+      "pronunciation": "/ˈseɪlɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "セーリング",
+        "風を利用してヨットで速さを競う競技"
+      ],
+      "examples": [
+        {
+          "en": "Sailing competitors must constantly read the wind and adjust their course.",
+          "ja": "セーリングの選手は、常に風を読み取りながらコースを調整し続けなければならない。"
+        },
+        {
+          "en": "Sailing includes several boat classes, each with different hull designs and sail sizes.",
+          "ja": "セーリングには複数の艇種があり、それぞれ船体の形状や帆の大きさが異なる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "yachting",
+          "note": "かつて用いられていた呼び方。現在はsailingが公式名称"
+        }
+      ],
+      "antonyms": [],
+      "origin": "1900年パリ大会からオリンピック種目として実施されている、歴史あるマリンスポーツ。",
+      "trivia": "以前は「ヨット競技」と呼ばれていたが、現在は国際大会・オリンピックともに「セーリング」という呼称が公式に用いられている。",
+      "explanation": "風を利用してヨットを操り、決められたコースを最も早く周回することを競う競技。",
+      "example_ja": "セーリングの選手は、常に風を読み取りながらコースを調整し続けなければならない。",
+      "example_ja_src": "Sailing competitors must constantly read the wind and adjust their course."
+    }
+  },
+  {
+    "english": "field hockey",
+    "detail": {
+      "pronunciation": "/fiːld ˈhɒki/",
+      "pos": "名詞",
+      "meanings": [
+        "フィールドホッケー",
+        "曲がったスティックでボールを操る球技"
+      ],
+      "examples": [
+        {
+          "en": "Field hockey is played on artificial turf with a small, hard ball.",
+          "ja": "フィールドホッケーは、人工芝の上で小さく硬いボールを使ってプレーされる。"
+        },
+        {
+          "en": "Field hockey is one of the most popular team sports in South Asia and Europe.",
+          "ja": "フィールドホッケーは、南アジアやヨーロッパで特に人気の高い団体球技の一つである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "19世紀のイギリスで近代的なルールが整備され、1908年ロンドン大会からオリンピック種目となった。",
+      "trivia": "オフサイドのルールが1990年代に撤廃されるなど、他の球技と異なる独自のルール変更を重ねてきた。",
+      "explanation": "曲がったスティックでボールを操り、相手ゴールに入れて得点を競う球技。",
+      "example_ja": "フィールドホッケーは、人工芝の上で小さく硬いボールを使ってプレーされる。",
+      "example_ja_src": "Field hockey is played on artificial turf with a small, hard ball."
+    }
+  },
+  {
+    "english": "decathlon",
+    "detail": {
+      "pronunciation": "/dɪˈkæθlɒn/",
+      "pos": "名詞",
+      "meanings": [
+        "十種競技",
+        "2日間で10種目を行う男子の陸上複合競技"
+      ],
+      "examples": [
+        {
+          "en": "The decathlon is often called the ultimate test of an athlete's all-around ability.",
+          "ja": "十種競技は、選手の総合的な能力を試す究極の種目としてしばしば称される。"
+        },
+        {
+          "en": "The decathlon champion is traditionally regarded as the world's greatest all-around athlete.",
+          "ja": "十種競技の優勝者は伝統的に「世界最高のオールラウンドアスリート」とみなされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古代五種競技(ペンタスロン)を拡張する形で19世紀末から20世紀初頭にかけて考案された。",
+      "trivia": "10種目の記録はそれぞれ得点表に基づいて点数化され、合計点で順位が決まる。",
+      "explanation": "2日間で10種目の陸上競技を行い、それぞれの記録を得点に換算して合計点で競う男子の複合競技。",
+      "example_ja": "十種競技は、選手の総合的な能力を試す究極の種目としてしばしば称される。",
+      "example_ja_src": "The decathlon is often called the ultimate test of an athlete's all-around ability."
+    }
+  },
+  {
+    "english": "heptathlon",
+    "detail": {
+      "pronunciation": "/hɛpˈtæθlɒn/",
+      "pos": "名詞",
+      "meanings": [
+        "七種競技",
+        "2日間で7種目を行う女子の陸上複合競技"
+      ],
+      "examples": [
+        {
+          "en": "She set a personal best in the long jump on her way to winning the heptathlon.",
+          "ja": "彼女は七種競技を制する過程で、走り幅跳びの自己ベストを更新した。"
+        },
+        {
+          "en": "The heptathlon combines sprinting, jumping, and throwing events over two days.",
+          "ja": "七種競技は、2日間にわたって短距離走・跳躍・投てきの種目を組み合わせて行われる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "女子選手向けの複合種目として、1984年ロサンゼルス大会から現行の七種競技の形式が採用された。",
+      "trivia": "十種競技と同様、各種目の記録は得点表に基づいて数値化され、合計点で競われる。",
+      "explanation": "2日間で7種目の陸上競技を行い、それぞれの記録を得点に換算して合計点で競う女子の複合競技。",
+      "example_ja": "彼女は七種競技を制する過程で、走り幅跳びの自己ベストを更新した。",
+      "example_ja_src": "She set a personal best in the long jump on her way to winning the heptathlon."
+    }
+  },
+  {
+    "english": "archery",
+    "detail": {
+      "pronunciation": "/ˈɑːrtʃəri/",
+      "pos": "名詞",
+      "meanings": [
+        "アーチェリー",
+        "的への命中精度を競う弓術競技"
+      ],
+      "examples": [
+        {
+          "en": "Archery competitors must control their breathing to keep the bow perfectly steady.",
+          "ja": "アーチェリーの選手は、弓を完全に安定させるため呼吸をコントロールしなければならない。"
+        },
+        {
+          "en": "Archery events include both individual and team competitions using a recurve bow.",
+          "ja": "アーチェリーには、リカーブボウを用いた個人戦と団体戦がある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古代から狩猟や戦争の道具として使われてきた弓が、近代になって競技化された。",
+      "trivia": "オリンピックで使用されるのはリカーブボウのみで、より高性能なコンパウンドボウは現在のところ採用されていない。",
+      "explanation": "一定の距離から的を狙って矢を放ち、命中した位置の得点を競う競技。",
+      "example_ja": "アーチェリーの選手は、弓を完全に安定させるため呼吸をコントロールしなければならない。",
+      "example_ja_src": "Archery competitors must control their breathing to keep the bow perfectly steady."
+    }
+  },
+  {
+    "english": "boxing",
+    "detail": {
+      "pronunciation": "/ˈbɒksɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "ボクシング",
+        "拳を交え有効打・ノックアウトで勝敗を決める格闘技"
+      ],
+      "examples": [
+        {
+          "en": "Olympic boxing matches are shorter than professional bouts, usually lasting three rounds.",
+          "ja": "オリンピックのボクシングの試合は、プロの試合より短く、通常3ラウンドで行われる。"
+        },
+        {
+          "en": "Boxing has been part of the Olympic program since 1904, with a brief exception in 1912.",
+          "ja": "ボクシングは、1912年を除いて1904年からオリンピックの正式種目となっている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古代オリンピックにも拳闘の種目があったとされ、近代でも初期から実施されてきた伝統的な格闘技。",
+      "trivia": "採点方式は長年見直しが重ねられており、近年は10点法に基づく採点が採用されている。",
+      "explanation": "リング上で相手と拳を交え、有効打の数やノックアウトによって勝敗を決める格闘競技。",
+      "example_ja": "オリンピックのボクシングの試合は、プロの試合より短く、通常3ラウンドで行われる。",
+      "example_ja_src": "Olympic boxing matches are shorter than professional bouts, usually lasting three rounds."
+    }
+  },
+  {
+    "english": "baseball",
+    "detail": {
+      "pronunciation": "/ˈbeɪsbɔːl/",
+      "pos": "名詞",
+      "meanings": [
+        "野球",
+        "打撃・投球・守備を行う9人制の球技"
+      ],
+      "examples": [
+        {
+          "en": "Baseball returned to the Olympics at Tokyo 2020 after a 12-year absence.",
+          "ja": "野球は12年ぶりに、東京2020大会でオリンピックに復帰した。"
+        },
+        {
+          "en": "Baseball is expected to return to the Olympic program again at the Los Angeles 2028 Games.",
+          "ja": "野球は、2028年ロサンゼルス大会で再びオリンピックの実施競技に戻る見込みとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "19世紀のアメリカで確立され、その後世界各地に広まった球技。",
+      "trivia": "北京2008大会を最後に一度姿を消したが、開催国の提案により実施可否が決まる「追加種目」の制度を利用して東京2020大会で復活した。",
+      "explanation": "9人制のチームで打撃・投球・守備を行う球技。2020年東京大会で復帰したが2024年パリ大会では実施されず、2028年ロサンゼルス大会で再び正式種目となる予定とされる。",
+      "example_ja": "野球は12年ぶりに、東京2020大会でオリンピックに復帰した。",
+      "example_ja_src": "Baseball returned to the Olympics at Tokyo 2020 after a 12-year absence."
+    }
+  },
+  {
+    "english": "softball",
+    "detail": {
+      "pronunciation": "/ˈsɒftbɔːl/",
+      "pos": "名詞",
+      "meanings": [
+        "ソフトボール",
+        "野球に似た下手投げの球技"
+      ],
+      "examples": [
+        {
+          "en": "Softball, like baseball, was dropped from the Paris 2024 program but is expected to return for Los Angeles 2028.",
+          "ja": "ソフトボールは野球と同様、パリ2024大会の実施競技から外れたが、2028年ロサンゼルス大会での復帰が見込まれている。"
+        },
+        {
+          "en": "Softball uses a larger ball and an underhand pitching motion, unlike baseball.",
+          "ja": "ソフトボールは野球と異なり、より大きなボールを使い、下手投げで投球する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "19世紀末のアメリカで、屋内でも行える野球の一種として考案されたとされる。",
+      "trivia": "女子ソフトボールは2020年東京大会で野球と共に復帰したが、パリ2024大会では両競技とも実施されなかった。",
+      "explanation": "野球と似たルールで、より大きなボールを下手投げで投げる球技。近年はオリンピックで野球と同時に実施・除外が繰り返されている。",
+      "example_ja": "ソフトボールは野球と同様、パリ2024大会の実施競技から外れたが、2028年ロサンゼルス大会での復帰が見込まれている。",
+      "example_ja_src": "Softball, like baseball, was dropped from the Paris 2024 program but is expected to return for Los Angeles 2028."
+    }
+  },
+  {
+    "english": "diving",
+    "detail": {
+      "pronunciation": "/ˈdaɪvɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "飛び込み",
+        "空中での技の難度・完成度を採点する競技"
+      ],
+      "examples": [
+        {
+          "en": "Diving judges score both the difficulty of the dive and the cleanness of the entry into the water.",
+          "ja": "飛び込みでは、技の難度と入水の美しさの両方が採点対象となる。"
+        },
+        {
+          "en": "Diving events are held from both the springboard and the platform, at different heights.",
+          "ja": "飛び込みには、異なる高さの飛び板(スプリングボード)と高飛び込み台(プラットフォーム)を使う種目がある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1904年セントルイス大会からオリンピックの正式種目となっている。",
+      "trivia": "選手は入水の瞬間に水しぶきを最小限に抑える「ノースプラッシュ」を目指して技術を磨くとされる。",
+      "explanation": "飛び込み台や飛び板から飛び込み、空中での技の難度と完成度を採点する競技。",
+      "example_ja": "飛び込みでは、技の難度と入水の美しさの両方が採点対象となる。",
+      "example_ja_src": "Diving judges score both the difficulty of the dive and the cleanness of the entry into the water."
+    }
+  },
+  {
+    "english": "cycling",
+    "detail": {
+      "pronunciation": "/ˈsaɪklɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "自転車競技",
+        "トラック・ロードなど複数種目に分かれる自転車競技"
+      ],
+      "examples": [
+        {
+          "en": "Olympic cycling is divided into track, road, mountain bike, and BMX disciplines.",
+          "ja": "オリンピックの自転車競技は、トラック・ロード・マウンテンバイク・BMXという種目に分かれている。"
+        },
+        {
+          "en": "Cycling has been part of the Olympic program since the very first modern Games in 1896.",
+          "ja": "自転車競技は、1896年の第1回近代オリンピック以来実施され続けている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "19世紀後半のヨーロッパで自転車が普及したことを背景に、初期のオリンピックから実施されてきた競技。",
+      "trivia": "近年はBMXフリースタイルやマウンテンバイクなど、より新しい種目が追加され続けている。",
+      "explanation": "トラック・ロード・マウンテンバイク・BMXなど、複数の種目に分かれる自転車競技の総称。",
+      "example_ja": "オリンピックの自転車競技は、トラック・ロード・マウンテンバイク・BMXという種目に分かれている。",
+      "example_ja_src": "Olympic cycling is divided into track, road, mountain bike, and BMX disciplines."
+    }
+  },
+  {
+    "english": "ice hockey",
+    "detail": {
+      "pronunciation": "/aɪs ˈhɒki/",
+      "pos": "名詞",
+      "meanings": [
+        "アイスホッケー",
+        "スケートで滑りながらパックを操る球技"
+      ],
+      "examples": [
+        {
+          "en": "Ice hockey games at the Winter Olympics are played on a rink slightly larger than the NHL standard.",
+          "ja": "冬季オリンピックのアイスホッケーは、NHL標準よりやや広いリンクで行われる。"
+        },
+        {
+          "en": "Ice hockey has been part of the Winter Olympics since the very first edition in 1924.",
+          "ja": "アイスホッケーは、1924年の第1回冬季オリンピック以来実施され続けている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "19世紀のカナダで発展した競技で、冬季オリンピック創設当初からの中心競技の一つ。",
+      "trivia": "選手交代が自由に行われる点や、激しい体当たり(ボディチェック)が認められる点が大きな特徴とされる。",
+      "explanation": "6人制のチームがスケートで滑りながらパックをスティックで操り、相手ゴールに入れて得点を競う競技。",
+      "example_ja": "冬季オリンピックのアイスホッケーは、NHL標準よりやや広いリンクで行われる。",
+      "example_ja_src": "Ice hockey games at the Winter Olympics are played on a rink slightly larger than the NHL standard."
+    }
+  },
+  {
+    "english": "curling",
+    "detail": {
+      "pronunciation": "/ˈkɜːrlɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "カーリング",
+        "ストーンを的に近づけることを競う氷上競技"
+      ],
+      "examples": [
+        {
+          "en": "Teammates sweep the ice furiously to guide the curling stone toward the target.",
+          "ja": "チームメイトは、カーリングのストーンを目標に導くため氷面を懸命にスイープする。"
+        },
+        {
+          "en": "Curling requires both physical precision and careful strategic planning.",
+          "ja": "カーリングには、正確な身体操作と綿密な戦略の両方が求められる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "16世紀のスコットランドで、凍った池の上で石を滑らせて遊んだことが起源とされる。",
+      "trivia": "2018年平昌大会からは、男女ペアで行うミックスダブルスも正式種目として加わった。",
+      "explanation": "氷上でストーンを滑らせて的の中心に近づけることを競い、ブラシで氷面をこすって軌道を調整する競技。",
+      "example_ja": "チームメイトは、カーリングのストーンを目標に導くため氷面を懸命にスイープする。",
+      "example_ja_src": "Teammates sweep the ice furiously to guide the curling stone toward the target."
+    }
+  },
+  {
+    "english": "mixed doubles curling",
+    "detail": {
+      "pronunciation": "/mɪkst ˈdʌbəlz ˈkɜːrlɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "ミックスダブルスカーリング",
+        "男女1人ずつで行うカーリング"
+      ],
+      "examples": [
+        {
+          "en": "Mixed doubles curling was added to the Winter Olympic program at PyeongChang 2018.",
+          "ja": "ミックスダブルスカーリングは、2018年平昌大会で冬季オリンピックの正式種目として加わった。"
+        },
+        {
+          "en": "Mixed doubles curling uses fewer stones per end than traditional four-player curling.",
+          "ja": "ミックスダブルスカーリングは、通常の4人制カーリングよりも1エンドあたりのストーン数が少ない。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "通常のカーリングを、より短時間で観戦しやすい形式にするために考案された種目とされる。",
+      "trivia": "各エンドの最初のストーンがあらかじめ配置された状態から始まる独自のルールがある。",
+      "explanation": "男女1人ずつの2人1組で行う、通常のカーリングより少ない石数で行われる種目。2018年平昌大会から正式種目となった。",
+      "example_ja": "ミックスダブルスカーリングは、2018年平昌大会で冬季オリンピックの正式種目として加わった。",
+      "example_ja_src": "Mixed doubles curling was added to the Winter Olympic program at PyeongChang 2018."
+    }
+  },
+  {
+    "english": "nordic combined",
+    "detail": {
+      "pronunciation": "/ˈnɔːrdɪk kəmˈbaɪnd/",
+      "pos": "名詞",
+      "meanings": [
+        "ノルディック複合",
+        "ジャンプとクロスカントリーを組み合わせた複合競技"
+      ],
+      "examples": [
+        {
+          "en": "In Nordic combined, the ski jump results determine each skier's starting time gap in the cross-country race.",
+          "ja": "ノルディック複合では、ジャンプの結果によってクロスカントリーレースのスタート時間差が決まる。"
+        },
+        {
+          "en": "Nordic combined has been part of the Winter Olympics since the very first Games in 1924.",
+          "ja": "ノルディック複合は、1924年の第1回冬季オリンピック以来実施され続けている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "スキージャンプとクロスカントリースキーという2つのノルディックスキー種目を組み合わせて生まれた競技。",
+      "trivia": "現在のところ女子種目は冬季オリンピックの正式競技になっておらず、男子のみで実施されている。",
+      "explanation": "ジャンプの飛距離と得点をクロスカントリースキーのタイムに反映させて総合順位を決める複合競技。",
+      "example_ja": "ノルディック複合では、ジャンプの結果によってクロスカントリーレースのスタート時間差が決まる。",
+      "example_ja_src": "In Nordic combined, the ski jump results determine each skier's starting time gap in the cross-country race."
+    }
+  },
+  {
+    "english": "ski jumping",
+    "detail": {
+      "pronunciation": "/skiː ˈdʒʌmpɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "スキージャンプ",
+        "飛距離と姿勢を採点するウィンタースポーツ"
+      ],
+      "examples": [
+        {
+          "en": "Ski jumping combines the thrill of flight with the precision of a landing judged for style.",
+          "ja": "スキージャンプは、飛行するスリルと、着地の姿勢が採点されるという緻密さを兼ね備えた競技である。"
+        },
+        {
+          "en": "Ski jumping scores are based on both the distance traveled and the style of the jump.",
+          "ja": "スキージャンプの得点は、飛距離と跳躍の姿勢の両方に基づいて決まる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "19世紀のノルウェーで発展した、冬季オリンピック創設当初からの伝統競技の一つ。",
+      "trivia": "女子スキージャンプは、2014年ソチ大会になって初めてオリンピックの正式種目として採用された。",
+      "explanation": "助走路を滑り降りた勢いで空中に飛び出し、その飛距離と姿勢の美しさを採点するウィンタースポーツ。",
+      "example_ja": "スキージャンプは、飛行するスリルと、着地の姿勢が採点されるという緻密さを兼ね備えた競技である。",
+      "example_ja_src": "Ski jumping combines the thrill of flight with the precision of a landing judged for style."
+    }
+  },
+  {
+    "english": "short track speed skating",
+    "detail": {
+      "pronunciation": "/ʃɔːrt træk spiːd ˈskeɪtɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "ショートトラックスピードスケート",
+        "狭いリンクで着順を競うスピードスケート"
+      ],
+      "examples": [
+        {
+          "en": "Short track speed skating is notorious for dramatic crashes as skaters jostle for position on the tight turns.",
+          "ja": "ショートトラックスピードスケートは、カーブでの激しい位置取り争いによる劇的な転倒がよく起こることで知られている。"
+        },
+        {
+          "en": "Short track speed skating races are decided by finishing position rather than by time.",
+          "ja": "ショートトラックスピードスケートの順位は、タイムではなく着順によって決まる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "通常のスピードスケートよりも小さいリンクで行われることから「ショートトラック」と呼ばれる。",
+      "trivia": "1992年アルベールビル大会からオリンピックの正式種目として実施されている。",
+      "explanation": "狭い楕円形のリンクで複数の選手が同時に滑走し、着順を競う接触の多いスピードスケート競技。",
+      "example_ja": "ショートトラックスピードスケートは、カーブでの激しい位置取り争いによる劇的な転倒がよく起こることで知られている。",
+      "example_ja_src": "Short track speed skating is notorious for dramatic crashes as skaters jostle for position on the tight turns."
+    }
+  },
+  {
+    "english": "moguls",
+    "detail": {
+      "pronunciation": "/ˈmɒɡəlz/",
+      "pos": "名詞",
+      "meanings": [
+        "モーグル",
+        "こぶ状の斜面を滑りジャンプを採点するフリースタイルスキー種目"
+      ],
+      "examples": [
+        {
+          "en": "The skier launched into a twisting jump halfway down the moguls course.",
+          "ja": "その選手は、モーグルコースの中間地点でひねりを加えたジャンプに飛び出した。"
+        },
+        {
+          "en": "Moguls scoring combines turns, two required jumps, and overall speed down the course.",
+          "ja": "モーグルの採点は、ターンの技術・必須の2回のジャンプ・コース全体の速さを組み合わせて決まる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「こぶ」を意味する語moguleに由来し、意図的にこぶ状に整備された斜面を滑ることからその名がついた。",
+      "trivia": "1992年アルベールビル大会からオリンピックの正式種目として実施されている。",
+      "explanation": "こぶ状に整備された急斜面を滑り降りながら、ターンの技術と2回のジャンプの完成度を採点するフリースタイルスキー種目。",
+      "example_ja": "その選手は、モーグルコースの中間地点でひねりを加えたジャンプに飛び出した。",
+      "example_ja_src": "The skier launched into a twisting jump halfway down the moguls course."
+    }
+  },
+  {
+    "english": "aerials",
+    "detail": {
+      "pronunciation": "/ˈɛəriəlz/",
+      "pos": "名詞",
+      "meanings": [
+        "エアリアル",
+        "ジャンプの高さ・技の難度を採点するフリースタイルスキー種目"
+      ],
+      "examples": [
+        {
+          "en": "Aerials competitors can flip and twist several times before landing on the steep slope below.",
+          "ja": "エアリアルの選手は、下の急斜面に着地するまでに何度も宙返りやひねりを加えることができる。"
+        },
+        {
+          "en": "Aerials scores are based on takeoff, height and distance, form in the air, and landing.",
+          "ja": "エアリアルの採点は、踏み切り・高さと飛距離・空中姿勢・着地に基づいて決まる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "体操競技の要素をスキーに取り入れる形で発展したフリースタイルスキー種目。",
+      "trivia": "1994年リレハンメル大会からオリンピックの正式種目として実施されている。",
+      "explanation": "ジャンプ台から高く飛び上がり、宙返りやひねりを組み合わせた技の難度と着地を採点するフリースタイルスキー種目。",
+      "example_ja": "エアリアルの選手は、下の急斜面に着地するまでに何度も宙返りやひねりを加えることができる。",
+      "example_ja_src": "Aerials competitors can flip and twist several times before landing on the steep slope below."
+    }
+  },
+  {
+    "english": "slopestyle",
+    "detail": {
+      "pronunciation": "/ˈsloʊpstaɪl/",
+      "pos": "名詞",
+      "meanings": [
+        "スロープスタイル",
+        "障害物を滑り技を採点するスキー・スノーボード種目"
+      ],
+      "examples": [
+        {
+          "en": "Slopestyle riders link tricks over a series of rails and jumps down the course.",
+          "ja": "スロープスタイルの選手は、コースに連続するレールやジャンプの上で技をつなげていく。"
+        },
+        {
+          "en": "Slopestyle is judged on the difficulty, variety, and execution of the tricks performed.",
+          "ja": "スロープスタイルは、繰り出す技の難度・多様性・完成度によって採点される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "スケートボードやBMXのストリートスタイルの文化を、雪上競技に取り入れる形で発展した種目。",
+      "trivia": "スキーとスノーボードの両方にスロープスタイル種目があり、2014年ソチ大会から正式種目となった。",
+      "explanation": "ジャンプやレールなどの障害物が連続するコースを滑り降り、技の難度や独創性を採点するスキー・スノーボード種目。",
+      "example_ja": "スロープスタイルの選手は、コースに連続するレールやジャンプの上で技をつなげていく。",
+      "example_ja_src": "Slopestyle riders link tricks over a series of rails and jumps down the course."
+    }
+  },
+  {
+    "english": "big air",
+    "detail": {
+      "pronunciation": "/bɪɡ ɛər/",
+      "pos": "名詞",
+      "meanings": [
+        "ビッグエア",
+        "単独の巨大ジャンプ台で技を採点するスキー・スノーボード種目"
+      ],
+      "examples": [
+        {
+          "en": "The snowboarder landed a difficult triple flip to win the big air final.",
+          "ja": "そのスノーボード選手は、難易度の高いトリプル回転の着地を決めてビッグエア決勝を制した。"
+        },
+        {
+          "en": "Big air features a single massive jump rather than a full course of obstacles.",
+          "ja": "ビッグエアは、障害物が連続するコース全体ではなく、単独の巨大なジャンプ台を使う種目である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1回の跳躍の高さと技の難度に特化させたスタイル競技として発展した。",
+      "trivia": "スノーボードのビッグエアは2018年平昌大会から、スキーのビッグエアは2022年北京大会から正式種目となった。",
+      "explanation": "巨大な単独のジャンプ台から飛び出し、1回の跳躍の高さと技の完成度を採点するスキー・スノーボード種目。",
+      "example_ja": "そのスノーボード選手は、難易度の高いトリプル回転の着地を決めてビッグエア決勝を制した。",
+      "example_ja_src": "The snowboarder landed a difficult triple flip to win the big air final."
+    }
+  },
+  {
+    "english": "snowboard cross",
+    "detail": {
+      "pronunciation": "/ˈsnoʊbɔːrd krɒs/",
+      "pos": "名詞",
+      "meanings": [
+        "スノーボードクロス",
+        "複数選手が同時に滑り着順を競うスノーボード種目"
+      ],
+      "examples": [
+        {
+          "en": "Snowboard cross riders often collide as they battle for position through the course's banked turns.",
+          "ja": "スノーボードクロスの選手たちは、コースのバンクを曲がる際に位置取りを争ってよく接触する。"
+        },
+        {
+          "en": "Snowboard cross combines elements of ski racing with obstacles like jumps and banked turns.",
+          "ja": "スノーボードクロスは、スキーレースの要素とジャンプやバンクといった障害物を組み合わせた種目である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "モトクロスのような接触の多いレース形式を、スノーボードに取り入れて生まれた種目。",
+      "trivia": "2006年トリノ大会からオリンピックの正式種目となっている。",
+      "explanation": "複数の選手が同時にコースを滑り降り、障害物をよけながら着順を競うスノーボード種目。",
+      "example_ja": "スノーボードクロスの選手たちは、コースのバンクを曲がる際に位置取りを争ってよく接触する。",
+      "example_ja_src": "Snowboard cross riders often collide as they battle for position through the course's banked turns."
+    }
+  },
+  {
+    "english": "ski cross",
+    "detail": {
+      "pronunciation": "/skiː krɒs/",
+      "pos": "名詞",
+      "meanings": [
+        "スキークロス",
+        "複数選手が同時に滑り着順を競うフリースタイルスキー種目"
+      ],
+      "examples": [
+        {
+          "en": "Ski cross combines the speed of alpine skiing with the head-to-head racing of motocross.",
+          "ja": "スキークロスは、アルペンスキーのスピードとモトクロスのような1対1のレース展開を組み合わせた種目である。"
+        },
+        {
+          "en": "Ski cross events typically feature four skiers racing down the same course simultaneously.",
+          "ja": "スキークロスの種目では通常、4人の選手が同時に同じコースを滑り降りる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "スノーボードクロスの人気を受けて、スキーにも同様の形式を取り入れる形で発展した種目。",
+      "trivia": "2010年バンクーバー大会からオリンピックの正式種目となっている。",
+      "explanation": "複数の選手が同時にコースを滑り降り、ジャンプやバンクを越えながら着順を競うフリースタイルスキー種目。",
+      "example_ja": "スキークロスは、アルペンスキーのスピードとモトクロスのような1対1のレース展開を組み合わせた種目である。",
+      "example_ja_src": "Ski cross combines the speed of alpine skiing with the head-to-head racing of motocross."
+    }
+  },
+  {
+    "english": "monobob",
+    "detail": {
+      "pronunciation": "/ˈmɒnoʊbɒb/",
+      "pos": "名詞",
+      "meanings": [
+        "モノボブ",
+        "1人乗りで行う女子ボブスレー種目"
+      ],
+      "examples": [
+        {
+          "en": "Monobob made its Olympic debut as a women's event at the Beijing 2022 Games.",
+          "ja": "モノボブは、2022年北京大会で女子種目としてオリンピックに初めて採用された。"
+        },
+        {
+          "en": "In monobob, a single athlete must both push the sled and steer it alone.",
+          "ja": "モノボブでは、1人の選手がそりの押し出しと操縦の両方を単独でこなさなければならない。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「単一の」を意味するmono-と、bobsleigh(ボブスレー)を組み合わせた語。",
+      "trivia": "従来の2人乗り・4人乗りボブスレーと異なり、1人ですべての操作を担う点が最大の特徴とされる。",
+      "explanation": "1人乗りで行うボブスレー種目で、2022年北京大会から女子種目として正式に採用された。",
+      "example_ja": "モノボブは、2022年北京大会で女子種目としてオリンピックに初めて採用された。",
+      "example_ja_src": "Monobob made its Olympic debut as a women's event at the Beijing 2022 Games."
+    }
+  },
+  {
+    "english": "ski mountaineering",
+    "detail": {
+      "pronunciation": "/skiː ˌmaʊntɪˈnɪərɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "スキーマウンテニアリング(山岳スキー競技)",
+        "登行と滑走を繰り返しタイムを競う競技"
+      ],
+      "examples": [
+        {
+          "en": "Ski mountaineering requires athletes to switch quickly between climbing gear and downhill skis.",
+          "ja": "スキーマウンテニアリングでは、選手は登行用の装備と滑降用のスキーを素早く切り替える必要がある。"
+        },
+        {
+          "en": "Ski mountaineering, often called skimo, has long been popular in the Alps before becoming an Olympic sport.",
+          "ja": "スキーマウンテニアリング(通称スキモ)は、オリンピック種目となる以前からアルプス地方で長く親しまれてきた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "skimo",
+          "note": "ski mountaineeringの通称・略称"
+        }
+      ],
+      "antonyms": [],
+      "origin": "アルプス地方の登山家たちが山岳地帯を効率よく移動するために発展させた技術が競技化されたとされる。",
+      "trivia": "2026年ミラノ・コルティナ大会から冬季オリンピックの新種目として採用されたとされ、実施されれば同大会最大の注目種目の一つになるとみられる。",
+      "explanation": "山岳地帯を登り(クライミングスキンを貼った板で登行し)、滑り降りることを繰り返してタイムを競う競技。2026年ミラノ・コルティナ大会から冬季オリンピックの新種目として採用されたとされる。",
+      "example_ja": "スキーマウンテニアリングでは、選手は登行用の装備と滑降用のスキーを素早く切り替える必要がある。",
+      "example_ja_src": "Ski mountaineering requires athletes to switch quickly between climbing gear and downhill skis."
+    }
+  }
+]

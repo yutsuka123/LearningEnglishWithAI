@@ -677,8 +677,11 @@ TTS_STYLES = {
         "You are a clear, friendly English teacher reading for a learner. "
         "Speak in natural, standard English with calm, even intonation and a "
         "steady, slightly slower pace. Pronounce every word clearly and "
-        "distinctly. Do not rush, do not add emotion, drama, whispering, or "
-        "any accent."
+        "distinctly, but keep short function words in their natural "
+        "unstressed spoken form — for example, say the article 'a' as a "
+        "quick schwa sound (like the 'a' in 'about'), never as the isolated "
+        "letter name 'ay'. Do not rush, do not add emotion, drama, "
+        "whispering, or any accent."
     ),
     "native": (
         "Speak in natural, native English at a normal conversational pace "

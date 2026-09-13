@@ -1,0 +1,4145 @@
+[
+  {
+    "english": "Man'yōshū",
+    "detail": {
+      "pos": "固有名詞",
+      "meanings": [
+        "万葉集(現存最古の日本の和歌集)"
+      ],
+      "examples": [
+        {
+          "en": "The Man'yōshū is the oldest surviving anthology of Japanese poetry, containing poems by emperors and anonymous commoners alike.",
+          "ja": "万葉集は現存する日本最古の和歌集で、天皇から名もなき庶民まで様々な身分の人々による歌を収めている。"
+        },
+        {
+          "en": "Scholars still debate exactly when and by whom the Man'yōshū was finally compiled.",
+          "ja": "万葉集が最終的にいつ、誰の手によって編纂されたのかについては、今も研究者の間で議論が続いている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「万葉」は「万の言の葉」、すなわち数多くの言葉や歌を意味するという説がある(異説もある)。",
+      "trivia": "令和という元号は、この万葉集に収められた梅花の歌の序文にある一節に由来するとされる。",
+      "explanation": "特定の一人の編者ではなく大伴家持らが編纂に深く関わったとされるが、成立の経緯や最終的な完成時期には今も不明な点が多い。",
+      "example_ja": "万葉集は現存する日本最古の和歌集で、天皇から名もなき庶民まで様々な身分の人々による歌を収めている。",
+      "example_ja_src": "The Man'yōshū is the oldest surviving anthology of Japanese poetry, containing poems by emperors and anonymous commoners alike."
+    }
+  },
+  {
+    "english": "Kokin Wakashū",
+    "detail": {
+      "pos": "固有名詞",
+      "meanings": [
+        "古今和歌集(最初の勅撰和歌集)"
+      ],
+      "examples": [
+        {
+          "en": "The Kokin Wakashū, the first imperially commissioned anthology of waka, set the standard for elegant courtly poetry for centuries.",
+          "ja": "最初の勅撰和歌集である古今和歌集は、優雅な宮廷風の和歌の規範を何世紀にもわたって作り上げた。"
+        },
+        {
+          "en": "Unlike the more rustic Man'yōshū, the Kokin Wakashū favors refined wordplay and courtly restraint.",
+          "ja": "素朴な万葉集とは異なり、古今和歌集は洗練された言葉遊びと宮廷らしい抑制の効いた表現を好む。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "紀貫之ら4人の撰者により編まれたとされ、書名は「昔と今の和歌集」を意味するという説がある。",
+      "trivia": "仮名文字で書かれた序文(仮名序)は、日本最初期の本格的な文学理論・批評文としても知られる。",
+      "explanation": "以後の勅撰和歌集(『新古今和歌集』など)の先例となり、四季や恋といった部立ての構成方法も後世に大きな影響を与えたとされる。",
+      "example_ja": "最初の勅撰和歌集である古今和歌集は、優雅な宮廷風の和歌の規範を何世紀にもわたって作り上げた。",
+      "example_ja_src": "The Kokin Wakashū, the first imperially commissioned anthology of waka, set the standard for elegant courtly poetry for centuries."
+    }
+  },
+  {
+    "english": "haikai",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "俳諧(連歌から派生した滑稽味のある詩形)"
+      ],
+      "examples": [
+        {
+          "en": "Haikai poetry grew out of the more formal renga tradition by embracing humor and colloquial language.",
+          "ja": "俳諧は、より形式的な連歌の伝統から、ユーモアや口語表現を取り入れることで発展した詩の様式である。"
+        },
+        {
+          "en": "Bashō is credited with elevating haikai from mere comic wordplay into a serious literary art.",
+          "ja": "芭蕉は、単なる滑稽な言葉遊びに過ぎなかった俳諧を、本格的な文学芸術へと高めたとされる。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "haikai no renga",
+          "pos": "名詞",
+          "ja": "俳諧連歌。俳諧の形式で詠まれる連歌。"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「俳諧」はもともと「こっけい・戯れ」を意味する漢語に由来するとされる。",
+      "trivia": "俳句という語は、俳諧の発句(最初の句)を独立させたものに、明治期の正岡子規が名付けたとされる。",
+      "explanation": "連歌が持つ格式張った制約を離れ、日常語や滑稽味を取り入れたことで庶民にも広まり、後に発句が独立して俳句となる基盤を作った。",
+      "example_ja": "俳諧は、より形式的な連歌の伝統から、ユーモアや口語表現を取り入れることで発展した詩の様式である。",
+      "example_ja_src": "Haikai poetry grew out of the more formal renga tradition by embracing humor and colloquial language."
+    }
+  },
+  {
+    "english": "haibun",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "俳文(俳句を交えた散文の紀行・随筆形式)"
+      ],
+      "examples": [
+        {
+          "en": "Bashō's travel diaries are the most famous examples of haibun, blending prose narrative with haiku.",
+          "ja": "芭蕉の紀行文は、散文の語りと俳句を組み合わせた俳文の最も有名な例である。"
+        },
+        {
+          "en": "In haibun, the prose sets a scene that the accompanying haiku then distills into a single vivid image.",
+          "ja": "俳文では、散文が情景を描き出し、それに添えられた俳句がその情景を一つの鮮やかなイメージに凝縮する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "haikai prose",
+          "note": "俳文とほぼ同義で使われる英語表現。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「俳」(俳諧)と「文」(散文)を組み合わせた語とされる。",
+      "trivia": "芭蕉の『奥の細道』は俳文の最高傑作の一つとされ、後世の多くの紀行文学に影響を与えた。",
+      "explanation": "単なる旅行記ではなく、簡潔な散文の合間に俳句を挟み込むことで、出来事とその背後にある感興を同時に伝える点に特徴がある。",
+      "example_ja": "芭蕉の紀行文は、散文の語りと俳句を組み合わせた俳文の最も有名な例である。",
+      "example_ja_src": "Bashō's travel diaries are the most famous examples of haibun, blending prose narrative with haiku."
+    }
+  },
+  {
+    "english": "Oku no Hosomichi",
+    "detail": {
+      "pos": "固有名詞",
+      "meanings": [
+        "おくのほそ道(松尾芭蕉の紀行俳文集)"
+      ],
+      "examples": [
+        {
+          "en": "Oku no Hosomichi records Bashō's journey through northern Japan in a series of prose passages punctuated by haiku.",
+          "ja": "『おくのほそ道』は、俳句を随所に挟んだ散文によって、芭蕉の日本北部への旅を記録している。"
+        },
+        {
+          "en": "Many places visited in Oku no Hosomichi later became popular literary pilgrimage sites.",
+          "ja": "『おくのほそ道』で訪れた土地の多くは、後に文学ファンの巡礼地として人気を集めるようになった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "英語では慣例的に The Narrow Road to the Deep North(または to Oku)と訳されることが多い。",
+      "trivia": "旅の実際の行程と作中の記述には創作的な脚色が加えられているという指摘があり、単純な旅行記録ではないとされる。",
+      "explanation": "芭蕉が弟子の河合曾良を伴い、約150日かけて東北・北陸地方を巡った旅の記録で、俳文の代表作として国語教科書などでも広く扱われる。",
+      "example_ja": "『おくのほそ道』は、俳句を随所に挟んだ散文によって、芭蕉の日本北部への旅を記録している。",
+      "example_ja_src": "Oku no Hosomichi records Bashō's journey through northern Japan in a series of prose passages punctuated by haiku."
+    }
+  },
+  {
+    "english": "senryu",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "川柳(季語を必要としない滑稽・風刺の短詩)"
+      ],
+      "examples": [
+        {
+          "en": "Unlike haiku, senryu do not require a seasonal word and often poke fun at human folly.",
+          "ja": "俳句とは異なり、川柳には季語が必要なく、しばしば人間の愚かしさをこっけいに描く。"
+        },
+        {
+          "en": "Modern senryu contests regularly attract entries commenting wryly on office life and family relationships.",
+          "ja": "現代の川柳コンテストには、職場や家族関係を皮肉交じりに詠んだ作品が数多く寄せられる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "haiku",
+          "note": "季語を必要とし、自然の情趣を詠むことが多い点で川柳と対比される。"
+        }
+      ],
+      "origin": "江戸中期の点者(選者)柄井川柳(からいせんりゅう)の名にちなむとされる。",
+      "trivia": "『誹風柳多留』は柄井川柳が選者を務めた句を集めた代表的な川柳集として知られる。",
+      "explanation": "俳句と形式は共通するが、自然の美よりも人情の機微や世相への皮肉を軽妙に詠む点に特色があるとされる。",
+      "example_ja": "俳句とは異なり、川柳には季語が必要なく、しばしば人間の愚かしさをこっけいに描く。",
+      "example_ja_src": "Unlike haiku, senryu do not require a seasonal word and often poke fun at human folly."
+    }
+  },
+  {
+    "english": "kyōka",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "狂歌(和歌の形式によるこっけい・風刺の歌)"
+      ],
+      "examples": [
+        {
+          "en": "Kyōka poets delighted in puns and absurd exaggeration while keeping the traditional waka form intact.",
+          "ja": "狂歌の詠み手たちは、伝統的な和歌の形式を保ちながら、駄洒落や突飛な誇張表現を好んで用いた。"
+        },
+        {
+          "en": "Kyōka flourished in the Edo period as an outlet for satire that formal waka could not accommodate.",
+          "ja": "狂歌は江戸時代に、格式ある和歌では表現しきれない風刺のはけ口として盛んになった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "waka",
+          "note": "格式や情趣を重んじる正統な和歌に対し、狂歌は滑稽さや風刺を主眼とする。"
+        }
+      ],
+      "origin": "正統な「和歌」に対し、それを戯れて詠む「狂った歌」を意味するとされる。",
+      "trivia": "江戸後期には大田南畝(蜀山人)ら著名な狂歌師が現れ、狂歌は一つの文化的流行にまでなったとされる。",
+      "explanation": "形式は和歌と同一だが、内容は社会風刺や下世話な話題、言葉遊びに重きを置く点で、雅な和歌とは対照的な位置づけにある。",
+      "example_ja": "狂歌の詠み手たちは、伝統的な和歌の形式を保ちながら、駄洒落や突飛な誇張表現を好んで用いた。",
+      "example_ja_src": "Kyōka poets delighted in puns and absurd exaggeration while keeping the traditional waka form intact."
+    }
+  },
+  {
+    "english": "Heike Monogatari",
+    "detail": {
+      "pos": "固有名詞",
+      "meanings": [
+        "平家物語(平氏の興亡を描いた軍記物語)"
+      ],
+      "examples": [
+        {
+          "en": "The Heike Monogatari opens with a famous passage on the impermanence of all worldly glory.",
+          "ja": "『平家物語』は、この世の栄華のはかなさを説く有名な一節から始まる。"
+        },
+        {
+          "en": "Blind biwa-playing minstrels helped spread the Heike Monogatari orally long before it was widely read as a text.",
+          "ja": "目の不自由な琵琶法師たちが、まだ広く文字で読まれるようになる前から『平家物語』を口頭で語り広めた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "13世紀頃までに現在の形にまとまったとされるが、成立の詳しい経緯や作者については諸説あり定かではない。",
+      "trivia": "冒頭の「祇園精舎の鐘の声、諸行無常の響きあり」は、日本文学で最もよく知られる書き出しの一つとされる。",
+      "explanation": "源平合戦を舞台に、驕れる者も久しからずという仏教的な無常観を通奏低音としながら、多くの人物の悲劇を描いた軍記物語の代表作である。",
+      "example_ja": "『平家物語』は、この世の栄華のはかなさを説く有名な一節から始まる。",
+      "example_ja_src": "The Heike Monogatari opens with a famous passage on the impermanence of all worldly glory."
+    }
+  },
+  {
+    "english": "otogi-zōshi",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "御伽草子(室町時代の絵入り短編物語群)"
+      ],
+      "examples": [
+        {
+          "en": "Otogi-zōshi tales, often illustrated, were written for a wider and less aristocratic audience than earlier court literature.",
+          "ja": "御伽草子の物語はしばしば挿絵を伴い、それ以前の宮廷文学よりも幅広く、貴族に限らない読者に向けて書かれた。"
+        },
+        {
+          "en": "The story of Issun-bōshi is one of the best-known otogi-zōshi still retold to children today.",
+          "ja": "一寸法師の物語は、今日でも子どもたちに語り継がれている、最もよく知られた御伽草子の一つである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "江戸時代に「御伽文庫」としてまとめて出版されたことから、後にこの総称が定着したとされる。",
+      "trivia": "『浦島太郎』や『一寸法師』など、現代まで昔話として親しまれる作品の多くが御伽草子を起源とする。",
+      "explanation": "貴族社会を主な読者としていたそれまでの物語文学と異なり、庶民層にも広く読まれることを想定した平易な内容と教訓性を特徴とする。",
+      "example_ja": "御伽草子の物語はしばしば挿絵を伴い、それ以前の宮廷文学よりも幅広く、貴族に限らない読者に向けて書かれた。",
+      "example_ja_src": "Otogi-zōshi tales, often illustrated, were written for a wider and less aristocratic audience than earlier court literature."
+    }
+  },
+  {
+    "english": "gunki monogatari",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "軍記物語(合戦や争乱を描く物語文学のジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "Gunki monogatari such as the Heike Monogatari combine historical battle accounts with reflections on fate and impermanence.",
+          "ja": "『平家物語』のような軍記物語は、実際の合戦の記録と、運命や無常についての省察とを組み合わせている。"
+        },
+        {
+          "en": "The genre of gunki monogatari flourished as warrior culture came to dominate medieval Japanese society.",
+          "ja": "軍記物語というジャンルは、武士の文化が中世日本社会を支配するようになるにつれて栄えた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「軍記」(合戦の記録)と「物語」を組み合わせた呼び方とされる。",
+      "trivia": "『平家物語』のほか、『太平記』も代表的な軍記物語として知られる。",
+      "explanation": "史実に取材しながらも、語り物として脚色や仏教的な無常観が加えられている点で、純粋な歴史記録とは区別される。",
+      "example_ja": "『平家物語』のような軍記物語は、実際の合戦の記録と、運命や無常についての省察とを組み合わせている。",
+      "example_ja_src": "Gunki monogatari such as the Heike Monogatari combine historical battle accounts with reflections on fate and impermanence."
+    }
+  },
+  {
+    "english": "nikki bungaku",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "日記文学(私的な日々の記録をつづる文学ジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "Nikki bungaku gave Heian-era women writers a literary form in which to record their private thoughts and experiences.",
+          "ja": "日記文学というジャンルは、平安時代の女性の書き手たちに、私的な思いや経験を記録する文学の形式を与えた。"
+        },
+        {
+          "en": "Unlike a mere factual record, works of nikki bungaku often blend diary entries with poetry and reflection.",
+          "ja": "単なる事実の記録とは異なり、日記文学の作品にはしばしば日々の記述と和歌や省察が織り交ぜられている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「日記」と「文学」を組み合わせた学術用語で、後世の研究者によって整理された分類概念とされる。",
+      "trivia": "紀貫之の『土佐日記』は男性が女性の立場を装って仮名文で書いたとされ、日記文学の先駆けとして知られる。",
+      "explanation": "単なる備忘録ではなく、和歌を交えながら心情を表現する文学作品として書かれた点に特徴があり、『蜻蛉日記』など女性による内省的な作品も多い。",
+      "example_ja": "日記文学というジャンルは、平安時代の女性の書き手たちに、私的な思いや経験を記録する文学の形式を与えた。",
+      "example_ja_src": "Nikki bungaku gave Heian-era women writers a literary form in which to record their private thoughts and experiences."
+    }
+  },
+  {
+    "english": "Tosa Nikki",
+    "detail": {
+      "pos": "固有名詞",
+      "meanings": [
+        "土佐日記(紀貫之による仮名文の紀行日記)"
+      ],
+      "examples": [
+        {
+          "en": "The Tosa Nikki is often cited as the first major work of nikki bungaku written in kana rather than classical Chinese.",
+          "ja": "『土佐日記』は、漢文ではなく仮名で書かれた日記文学の最初期の重要な作品としてしばしば挙げられる。"
+        },
+        {
+          "en": "Ki no Tsurayuki adopted a female persona in the Tosa Nikki, since kana writing was then associated mainly with women.",
+          "ja": "紀貫之は『土佐日記』の中で女性を装ったが、それは当時、仮名文が主に女性のものとされていたためである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "935年頃の成立とされる、紀貫之が土佐国司の任を終えて帰京する旅を描いた作品。",
+      "trivia": "「男もすなる日記といふものを、女もしてみむとてするなり」という有名な書き出しで、女性の立場を装って始まる。",
+      "explanation": "当時、正式な文章とされていた漢文ではなく仮名文を用いたことで、後の女流日記文学(『蜻蛉日記』など)の道を開いたとされる。",
+      "example_ja": "『土佐日記』は、漢文ではなく仮名で書かれた日記文学の最初期の重要な作品としてしばしば挙げられる。",
+      "example_ja_src": "The Tosa Nikki is often cited as the first major work of nikki bungaku written in kana rather than classical Chinese."
+    }
+  },
+  {
+    "english": "Makura no Sōshi",
+    "detail": {
+      "pos": "固有名詞",
+      "meanings": [
+        "枕草子(清少納言による平安時代の随筆)"
+      ],
+      "examples": [
+        {
+          "en": "Makura no Sōshi is celebrated for its witty lists and vivid observations of court life, rather than a continuous narrative.",
+          "ja": "『枕草子』は、一続きの物語としてではなく、機知に富んだ列挙形式の文章や宮廷生活の鮮やかな観察によって高く評価されている。"
+        },
+        {
+          "en": "Sei Shōnagon's Makura no Sōshi is often paired with The Tale of Genji as a pinnacle of Heian court literature.",
+          "ja": "清少納言の『枕草子』は、平安宮廷文学の頂点の一つとして『源氏物語』としばしば並び称される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "書名の由来には諸説あり、「枕元に置く覚え書き」を意味するという説などがあるが定説はない。",
+      "trivia": "「春はあけぼの」で始まる冒頭部分は、日本文学の中でも特に広く知られる一節である。",
+      "explanation": "物語のような一貫した筋立てを持たず、季節の情趣や宮廷での出来事、好き嫌いの列挙などを鋭い感性で綴った随筆文学の代表作とされる。",
+      "example_ja": "『枕草子』は、一続きの物語としてではなく、機知に富んだ列挙形式の文章や宮廷生活の鮮やかな観察によって高く評価されている。",
+      "example_ja_src": "Makura no Sōshi is celebrated for its witty lists and vivid observations of court life, rather than a continuous narrative."
+    }
+  },
+  {
+    "english": "Konjaku Monogatarishū",
+    "detail": {
+      "pos": "固有名詞",
+      "meanings": [
+        "今昔物語集(平安後期の説話集)"
+      ],
+      "examples": [
+        {
+          "en": "Every tale in the Konjaku Monogatarishū begins with the same formula, roughly translated as 'Now it is the past...'",
+          "ja": "『今昔物語集』の各説話は、すべて「今は昔」という同じ書き出しの決まり文句で始まる。"
+        },
+        {
+          "en": "The Konjaku Monogatarishū preserves over a thousand tales ranging from Buddhist parables to earthy comic anecdotes.",
+          "ja": "『今昔物語集』には、仏教的な教訓話から俗っぽい滑稽譚まで、千を超える説話が収められている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "各話の冒頭句「今は昔」に由来してこの書名が付けられたとされる。",
+      "trivia": "芥川龍之介は『今昔物語集』の説話を元に「羅生門」や「藪の中」などの短編小説を書いたことで知られる。",
+      "explanation": "仏教説話・世俗説話を問わず幅広い題材を収録しており、後世の作家に素材を提供する説話文学の宝庫として重要視されている。",
+      "example_ja": "『今昔物語集』の各説話は、すべて「今は昔」という同じ書き出しの決まり文句で始まる。",
+      "example_ja_src": "Every tale in the Konjaku Monogatarishū begins with the same formula, roughly translated as 'Now it is the past...'"
+    }
+  },
+  {
+    "english": "setsuwa",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "説話(教訓・因果応報などを伝える短い逸話文学)"
+      ],
+      "examples": [
+        {
+          "en": "Setsuwa collections mix Buddhist moral lessons with earthy, sometimes humorous anecdotes about ordinary people.",
+          "ja": "説話集には、仏教的な教訓話と、庶民についてのこっけいな逸話とが入り混じって収められていることが多い。"
+        },
+        {
+          "en": "The Konjaku Monogatarishū is the best-known example of a large-scale setsuwa anthology.",
+          "ja": "『今昔物語集』は、大規模な説話集の代表例として最もよく知られている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「説き話す」に由来する語で、口頭で語られた逸話が文字に記録されたものを指すとされる。",
+      "trivia": "説話は仏教の布教のための例え話として発達した側面もあり、寺院関係者によって数多く編纂された。",
+      "explanation": "単なる創作物語とは異なり、実際にあったとされる出来事や教訓を伝える意図を持つ短編の逸話という性格が強い。",
+      "example_ja": "説話集には、仏教的な教訓話と、庶民についてのこっけいな逸話とが入り混じって収められていることが多い。",
+      "example_ja_src": "Setsuwa collections mix Buddhist moral lessons with earthy, sometimes humorous anecdotes about ordinary people."
+    }
+  },
+  {
+    "english": "kibyōshi",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "黄表紙(江戸中期以降の大人向け風刺絵入り本)"
+      ],
+      "examples": [
+        {
+          "en": "Kibyōshi combined witty illustrations with satirical text aimed at a sophisticated adult readership in Edo.",
+          "ja": "黄表紙は、機知に富んだ挿絵と、江戸の洗練された大人の読者に向けた風刺的な文章を組み合わせたものである。"
+        },
+        {
+          "en": "The playful, self-aware humor of kibyōshi is sometimes compared to early graphic satire in the West.",
+          "ja": "黄表紙のふざけた自己言及的なユーモアは、西洋の初期の風刺画になぞらえられることもある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "akahon",
+          "note": "子ども向けの昔話などを扱った、より単純な内容の赤い表紙の草双紙。"
+        }
+      ],
+      "origin": "表紙が黄色みを帯びた紙で作られたことから、この名で呼ばれるようになったとされる。",
+      "trivia": "恋川春町の『金々先生栄花夢』は、大人向けの風刺を扱った最初期の黄表紙として知られる。",
+      "explanation": "それ以前の子ども向け草双紙とは異なり、洒落や時事風刺を盛り込んだ大人向けの娯楽読み物として江戸の町人文化の中で流行した。",
+      "example_ja": "黄表紙は、機知に富んだ挿絵と、江戸の洗練された大人の読者に向けた風刺的な文章を組み合わせたものである。",
+      "example_ja_src": "Kibyōshi combined witty illustrations with satirical text aimed at a sophisticated adult readership in Edo."
+    }
+  },
+  {
+    "english": "sharebon",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "洒落本(遊里の会話・作法を描いた戯作文学)"
+      ],
+      "examples": [
+        {
+          "en": "Sharebon focused on witty dialogue set in the pleasure quarters, prizing sophistication and stylish nonchalance.",
+          "ja": "洒落本は、遊里を舞台にした機知に富んだ会話に重きを置き、洗練さと粋な振る舞いを尊んだ。"
+        },
+        {
+          "en": "Because sharebon often depicted the licensed pleasure quarters so vividly, some titles drew censorship from the shogunate.",
+          "ja": "洒落本はしばしば遊郭の様子を生々しく描いたため、幕府の検閲を受けた作品もあった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「洒落」(気の利いた言葉遊びや粋な振る舞い)を主題とすることに由来する呼称とされる。",
+      "trivia": "山東京伝は洒落本の代表的な作者として知られるが、風紀を乱すとして幕府に処罰されたこともあったとされる。",
+      "explanation": "物語性よりも会話の妙や登場人物の「通」ぶりを描くことに重点が置かれ、後の人情本などにも影響を与えたとされる。",
+      "example_ja": "洒落本は、遊里を舞台にした機知に富んだ会話に重きを置き、洗練さと粋な振る舞いを尊んだ。",
+      "example_ja_src": "Sharebon focused on witty dialogue set in the pleasure quarters, prizing sophistication and stylish nonchalance."
+    }
+  },
+  {
+    "english": "yomihon",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "読本(筋立てを重視した江戸後期の長編読み物)"
+      ],
+      "examples": [
+        {
+          "en": "Yomihon placed more weight on elaborate plotting and moral themes than on the illustrations that filled other Edo-period genres.",
+          "ja": "読本は、他の江戸時代のジャンルを彩っていた挿絵よりも、凝った筋立てや教訓的な主題に重きを置いた。"
+        },
+        {
+          "en": "Takizawa Bakin's sprawling Nansō Satomi Hakkenden is considered a towering achievement of the yomihon genre.",
+          "ja": "滝沢馬琴の大作『南総里見八犬伝』は、読本というジャンルの傑作の一つとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "kibyōshi",
+          "note": "文章より挿絵を主体とし、風刺やこっけいに重きを置く点で読本と対比される。"
+        }
+      ],
+      "origin": "「見る」草双紙に対し、「読む」ことに重きを置く本という意味で名付けられたとされる。",
+      "trivia": "上田秋成の『雨月物語』は怪異譚を集めた初期読本の傑作として知られる。",
+      "explanation": "中国の白話小説の影響も受けながら、勧善懲悪や因果応報といった教訓性を伴う複雑な筋立てを特徴とする、江戸後期の長編小説ジャンルである。",
+      "example_ja": "読本は、他の江戸時代のジャンルを彩っていた挿絵よりも、凝った筋立てや教訓的な主題に重きを置いた。",
+      "example_ja_src": "Yomihon placed more weight on elaborate plotting and moral themes than on the illustrations that filled other Edo-period genres."
+    }
+  },
+  {
+    "english": "ningyō jōruri",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "人形浄瑠璃(語り物と人形劇を組み合わせた日本の伝統芸能)"
+      ],
+      "examples": [
+        {
+          "en": "Ningyō jōruri combines chanted narration, shamisen music, and elaborately operated puppets to tell dramatic stories.",
+          "ja": "人形浄瑠璃は、語られる浄瑠璃、三味線の音楽、そして精巧に操られる人形とを組み合わせて劇的な物語を語る。"
+        },
+        {
+          "en": "Chikamatsu Monzaemon's plays written for ningyō jōruri are still considered classics of Japanese theatrical literature.",
+          "ja": "近松門左衛門が人形浄瑠璃のために書いた作品は、今なお日本の演劇文学の古典とされている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "bunraku",
+          "note": "明治以降に定着した、人形浄瑠璃を指す現在の一般的な呼称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "語り物である「浄瑠璃」に「人形」による上演が結びついたことから、この名称が使われるようになったとされる。",
+      "trivia": "近松門左衛門による『曾根崎心中』は、当時の実際の心中事件を題材にした人形浄瑠璃の代表作として知られる。",
+      "explanation": "単なる人形劇ではなく、太夫の語りによって心理描写や情景描写までもが表現される、高度な脚本文学と一体化した舞台芸術である。",
+      "example_ja": "人形浄瑠璃は、語られる浄瑠璃、三味線の音楽、そして精巧に操られる人形とを組み合わせて劇的な物語を語る。",
+      "example_ja_src": "Ningyō jōruri combines chanted narration, shamisen music, and elaborately operated puppets to tell dramatic stories."
+    }
+  },
+  {
+    "english": "shishōsetsu",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "私小説(作者自身の体験を描く近代日本の小説ジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "In shishōsetsu, the narrator's experiences are often assumed to closely mirror the author's own private life.",
+          "ja": "私小説では、語り手の経験が作者自身の私生活とほぼ重なるものとしてしばしば読まれる。"
+        },
+        {
+          "en": "Critics have long debated whether shishōsetsu should be read as fiction or as thinly disguised autobiography.",
+          "ja": "私小説を虚構として読むべきか、それとも薄く脚色された自伝として読むべきかについては、批評家の間で長く議論が続いてきた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "I-novel",
+          "note": "英語圏の研究で私小説を指す際によく使われる訳語。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "自然主義文学の影響下で大正期に確立したとされるジャンル名称。",
+      "trivia": "田山花袋の『蒲団』は、私小説の先駆けとしてしばしば位置づけられる作品である。",
+      "explanation": "西洋の自然主義や告白文学の影響を受けつつ、作者自身の恥や苦悩を赤裸々に描くことを美徳とする、日本近代文学に独特の潮流とされる。",
+      "example_ja": "私小説では、語り手の経験が作者自身の私生活とほぼ重なるものとしてしばしば読まれる。",
+      "example_ja_src": "In shishōsetsu, the narrator's experiences are often assumed to closely mirror the author's own private life."
+    }
+  },
+  {
+    "english": "Japanese naturalism",
+    "detail": {
+      "pronunciation": "/ˌdʒæpəˈniːz ˈnætʃrəlɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "日本の自然主義文学(ありのままの現実を描く明治末期の文学潮流)"
+      ],
+      "examples": [
+        {
+          "en": "Japanese naturalism drew inspiration from European naturalism but developed its own emphasis on unflinching self-exposure.",
+          "ja": "日本の自然主義文学はヨーロッパの自然主義から着想を得ながらも、包み隠さぬ自己暴露を重んじる独自の傾向を発展させた。"
+        },
+        {
+          "en": "Tayama Katai's Futon is often cited as a landmark work that helped define Japanese naturalism.",
+          "ja": "田山花袋の『蒲団』は、日本の自然主義文学を特徴づけた画期的な作品としてしばしば挙げられる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Romanticism (Japanese)",
+          "note": "理想化された感情や美を重んじる点で、ありのままを描く自然主義と対比される。"
+        }
+      ],
+      "origin": "ゾラらフランス自然主義の理論を参照しつつ、日本独自に展開されたとされる。",
+      "trivia": "島崎藤村の『破戒』も自然主義文学の代表作の一つに数えられることが多い。",
+      "explanation": "ヨーロッパの自然主義が社会構造や遺伝・環境の影響を科学的に分析しようとしたのに対し、日本の自然主義はしだいに作者自身の内面告白(私小説)へと傾斜していったとされる。",
+      "example_ja": "日本の自然主義文学はヨーロッパの自然主義から着想を得ながらも、包み隠さぬ自己暴露を重んじる独自の傾向を発展させた。",
+      "example_ja_src": "Japanese naturalism drew inspiration from European naturalism but developed its own emphasis on unflinching self-exposure."
+    }
+  },
+  {
+    "english": "Japanese proletarian literature",
+    "detail": {
+      "pronunciation": "/ˌdʒæpəˈniːz ˌproʊlɪˈtɛəriən ˈlɪtərətʃər/",
+      "pos": "名詞",
+      "meanings": [
+        "日本のプロレタリア文学(労働者・農民の困窮を描いた社会主義的文学潮流)"
+      ],
+      "examples": [
+        {
+          "en": "Japanese proletarian literature sought to depict the harsh conditions of factory and farm workers under capitalism.",
+          "ja": "日本のプロレタリア文学は、資本主義のもとで働く工場労働者や農民の過酷な状況を描こうとした。"
+        },
+        {
+          "en": "Kobayashi Takiji's Kani Kōsen remains the best-known novel of the Japanese proletarian literature movement.",
+          "ja": "小林多喜二の『蟹工船』は、日本のプロレタリア文学運動を代表する小説として今も広く知られている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "マルクス主義の影響を受けた作家たちが結成した組織(日本プロレタリア作家同盟など)の活動から広まったとされる。",
+      "trivia": "小林多喜二は治安維持法下での活動により1933年に特高警察の取り調べ中に死去したとされ、この運動に対する弾圧を象徴する出来事として知られる。",
+      "explanation": "国家による厳しい弾圧を受けながらも、労働争議や貧困といった社会問題を正面から描いた点で、日本近代文学史上重要な潮流と位置づけられている。",
+      "example_ja": "日本のプロレタリア文学は、資本主義のもとで働く工場労働者や農民の過酷な状況を描こうとした。",
+      "example_ja_src": "Japanese proletarian literature sought to depict the harsh conditions of factory and farm workers under capitalism."
+    }
+  },
+  {
+    "english": "Four Great Classical Novels",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "四大名著(中国白話小説を代表する4つの長編小説の総称)"
+      ],
+      "examples": [
+        {
+          "en": "The Four Great Classical Novels are widely regarded as the pinnacle of pre-modern Chinese vernacular fiction.",
+          "ja": "四大名著は、近代以前の中国白話小説の頂点として広く評価されている。"
+        },
+        {
+          "en": "Each of the Four Great Classical Novels has spawned countless adaptations in opera, film, and television.",
+          "ja": "四大名著はそれぞれ、京劇や映画、テレビドラマなど数え切れないほどの翻案作品を生み出してきた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "20世紀に入って評論家や読者の間で定着した、比較的新しい分類・呼称とされる。",
+      "trivia": "かつては『金瓶梅』を加えて「四大奇書」と呼ぶ分類もあったが、内容の卑猥さから『紅楼夢』に差し替えられて現在の呼称が定着したという説がある。",
+      "explanation": "いずれも口語に近い文体(白話)で書かれ、長い年月をかけて講談や芝居の題材から徐々に練り上げられて現在の形になったとされる作品群である。",
+      "example_ja": "四大名著は、近代以前の中国白話小説の頂点として広く評価されている。",
+      "example_ja_src": "The Four Great Classical Novels are widely regarded as the pinnacle of pre-modern Chinese vernacular fiction."
+    }
+  },
+  {
+    "english": "Book of Songs",
+    "detail": {
+      "pos": "固有名詞",
+      "meanings": [
+        "詩経(現存最古とされる中国の詩集)"
+      ],
+      "examples": [
+        {
+          "en": "The Book of Songs preserves folk songs, courtly hymns, and sacrificial odes from the early Zhou dynasty.",
+          "ja": "詩経には、周王朝初期の民謡や宮廷の頌歌、祭祀の詩が収められている。"
+        },
+        {
+          "en": "Confucius is traditionally said to have edited the Book of Songs, though modern scholars question this attribution.",
+          "ja": "孔子が詩経を編纂したという伝承があるが、現代の研究者はこの説に疑問を呈している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "中国語での書名「詩経」は、後に儒教の経典として位置づけられたことに由来するとされる。",
+      "trivia": "収録された詩は「風」(民謡)・「雅」(宮廷の詩)・「頌」(祭祀の詩)の3種に分類されている。",
+      "explanation": "素朴な恋愛や労働の歌から祖先を祀る荘重な頌歌まで幅広い内容を含み、後世の中国詩の規範・典拠として長く尊重されてきたとされる。",
+      "example_ja": "詩経には、周王朝初期の民謡や宮廷の頌歌、祭祀の詩が収められている。",
+      "example_ja_src": "The Book of Songs preserves folk songs, courtly hymns, and sacrificial odes from the early Zhou dynasty."
+    }
+  },
+  {
+    "english": "ci",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "詞(曲調に合わせた長短句からなる中国の詩形)"
+      ],
+      "examples": [
+        {
+          "en": "Unlike the more regular lines of Tang poetry, ci verse follows the irregular rhythms of a specific pre-existing melody.",
+          "ja": "唐詩の整った句形とは異なり、詞はあらかじめ定められた曲の不規則なリズムに従う。"
+        },
+        {
+          "en": "Song dynasty poets such as Su Shi and Li Qingzhao are especially celebrated for their mastery of ci.",
+          "ja": "宋代の詩人である蘇軾や李清照は、特に詞の名手として高く評価されている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Tang poetry",
+          "note": "より均整のとれた句形を持つ唐代の詩を指し、曲に合わせた長短句の詞と対比される。"
+        }
+      ],
+      "origin": "もともと歌に合わせて歌われる歌詞として発展したことに由来するとされる。",
+      "trivia": "詞は当初、宴席や妓楼で歌われる俗な文芸とみなされていたが、宋代には士大夫階級にも広く受け入れられる高尚な文学形式に発展したとされる。",
+      "explanation": "各曲調(詞牌)ごとに句の長さや平仄(声調)の配置が細かく定められており、詩人はその決められた型の中で言葉を選んで作る点が特徴とされる。",
+      "example_ja": "唐詩の整った句形とは異なり、詞はあらかじめ定められた曲の不規則なリズムに従う。",
+      "example_ja_src": "Unlike the more regular lines of Tang poetry, ci verse follows the irregular rhythms of a specific pre-existing melody."
+    }
+  },
+  {
+    "english": "fu",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "賦(華麗な対句表現を用いる漢代を中心とした韻文形式)"
+      ],
+      "examples": [
+        {
+          "en": "A fu typically piles up ornate, parallel descriptions of a single subject, such as a capital city or an imperial hunt.",
+          "ja": "賦は通常、都や皇帝の狩猟といった一つの主題について、華麗な対句表現を積み重ねて描写する。"
+        },
+        {
+          "en": "The fu form flourished during the Han dynasty as a showcase for a writer's command of rare vocabulary.",
+          "ja": "賦という形式は漢代に栄え、書き手の豊富な語彙力を示す場としても機能した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「賦」はもともと「述べる・並べる」を意味する語であったとされる。",
+      "trivia": "司馬相如の「子虚賦」「上林賦」は、漢代の賦を代表する作品として知られる。",
+      "explanation": "詩のように厳格な韻律規則を持たない一方で、散文よりも修辞的で華麗な語彙を多用する点で、詩と散文の中間に位置づけられる文学形式とされる。",
+      "example_ja": "賦は通常、都や皇帝の狩猟といった一つの主題について、華麗な対句表現を積み重ねて描写する。",
+      "example_ja_src": "A fu typically piles up ornate, parallel descriptions of a single subject, such as a capital city or an imperial hunt."
+    }
+  },
+  {
+    "english": "yuefu",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "楽府(民間歌謡に由来する物語性のある中国の詩形)"
+      ],
+      "examples": [
+        {
+          "en": "Yuefu poems often narrate the hardships of soldiers, travelers, or abandoned wives in a direct, folk-song style.",
+          "ja": "楽府の詩はしばしば、兵士や旅人、見捨てられた妻の苦難を、素朴な民謡風の文体で直接的に語る。"
+        },
+        {
+          "en": "Later poets continued to compose new works in the yuefu style long after the original music bureau had ceased to exist.",
+          "ja": "元となった音楽官庁がなくなった後も、後世の詩人たちは楽府の様式にならって新たな作品を作り続けた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "漢の武帝が設置したとされる音楽官庁「楽府」が民謡を採集・記録したことに由来する名称。",
+      "trivia": "「木蘭詩」は、女性が男装して父の代わりに従軍する物語を描いた楽府の代表作として知られる。",
+      "explanation": "宮廷の雅楽とは異なり庶民の生活や感情を題材とすることが多く、後世には音楽から離れて一つの詩の様式・題名として受け継がれたとされる。",
+      "example_ja": "楽府の詩はしばしば、兵士や旅人、見捨てられた妻の苦難を、素朴な民謡風の文体で直接的に語る。",
+      "example_ja_src": "Yuefu poems often narrate the hardships of soldiers, travelers, or abandoned wives in a direct, folk-song style."
+    }
+  },
+  {
+    "english": "zaju",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "雑劇(元代に栄えた中国の伝統演劇形式)"
+      ],
+      "examples": [
+        {
+          "en": "Yuan dynasty zaju typically combined spoken dialogue with arias sung by a single lead performer.",
+          "ja": "元代の雑劇は通常、話し言葉によるせりふと、一人の主役俳優が歌う詠唱とを組み合わせていた。"
+        },
+        {
+          "en": "The Romance of the West Chamber is one of the most celebrated works of zaju drama.",
+          "ja": "『西廂記』は、雑劇の中でも最も名高い作品の一つとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「雑」(様々な要素を組み合わせた)「劇」(芝居)を意味する語とされる。",
+      "trivia": "元代は科挙が長く停止されていたため、多くの知識人が官職に就けず雑劇の脚本執筆に才能を注いだという説がある。",
+      "explanation": "宋代の演劇的要素を継承しつつ、決まった数の幕構成と一人の主唱者による歌唱を特徴とし、後の中国演劇に大きな影響を与えたとされる。",
+      "example_ja": "元代の雑劇は通常、話し言葉によるせりふと、一人の主役俳優が歌う詠唱とを組み合わせていた。",
+      "example_ja_src": "Yuan dynasty zaju typically combined spoken dialogue with arias sung by a single lead performer."
+    }
+  },
+  {
+    "english": "chuanqi",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "伝奇小説(唐代に発展した奇異な題材を扱う文言小説)"
+      ],
+      "examples": [
+        {
+          "en": "Tang chuanqi tales are more elaborately plotted than earlier zhiguai anecdotes, often centering on romance or supernatural encounters.",
+          "ja": "唐代の伝奇小説は、それ以前の志怪の逸話よりも筋立てが凝っており、しばしば恋愛や不思議な出会いを主題とする。"
+        },
+        {
+          "en": "Many later Chinese operas and novels drew their plots directly from Tang dynasty chuanqi tales.",
+          "ja": "後世の多くの中国の戯曲や小説は、唐代の伝奇小説から直接筋立てを取り入れている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "zhiguai",
+          "note": "より簡素で断片的な逸話を集めた六朝時代の様式で、洗練された伝奇小説の前段階とされる。"
+        }
+      ],
+      "origin": "「奇を伝える」ことを意味する語とされ、志怪の伝統を受け継ぎつつより文学的に発展させたものとされる。",
+      "trivia": "「鶯鶯伝」は後に『西廂記』の原型となった、唐代伝奇小説の代表作として知られる。",
+      "explanation": "単なる怪異の記録に留まらず、登場人物の心理や恋愛関係を掘り下げて描いた点で、中国小説史における重要な発展段階とされる。",
+      "example_ja": "唐代の伝奇小説は、それ以前の志怪の逸話よりも筋立てが凝っており、しばしば恋愛や不思議な出会いを主題とする。",
+      "example_ja_src": "Tang chuanqi tales are more elaborately plotted than earlier zhiguai anecdotes, often centering on romance or supernatural encounters."
+    }
+  },
+  {
+    "english": "zhiguai",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "志怪(幽霊・怪異についての短い逸話を集めた六朝時代の小説)"
+      ],
+      "examples": [
+        {
+          "en": "Zhiguai anecdotes typically record a brief, strange encounter with a ghost or spirit as though reporting a real event.",
+          "ja": "志怪の逸話は通常、幽霊や精霊との不思議な遭遇を、あたかも実際の出来事の報告であるかのように短く記す。"
+        },
+        {
+          "en": "The Soushen Ji is one of the earliest and most influential collections of zhiguai tales.",
+          "ja": "『捜神記』は、志怪の物語を集めた最も初期かつ影響力の大きい説話集の一つである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「怪を志す(記録する)」ことを意味する語に由来するとされる。",
+      "trivia": "清代の『聊斎志異』は、志怪の伝統を受け継ぎながらより洗練された文体で書かれた後世の代表作とされる。",
+      "explanation": "虚構としてではなく、実際に起きた不思議な出来事の記録という体裁を取る点に特徴があり、後の伝奇小説や志怪的な短編小説の源流とされる。",
+      "example_ja": "志怪の逸話は通常、幽霊や精霊との不思議な遭遇を、あたかも実際の出来事の報告であるかのように短く記す。",
+      "example_ja_src": "Zhiguai anecdotes typically record a brief, strange encounter with a ghost or spirit as though reporting a real event."
+    }
+  },
+  {
+    "english": "gong'an fiction",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "公案小説(清廉な裁判官が難事件を解決する中国の伝統的物語ジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "Gong'an fiction centers on an incorruptible magistrate who uses cunning and careful reasoning to solve baffling crimes.",
+          "ja": "公案小説は、清廉な地方官が巧みな知略と注意深い推理によって不可解な犯罪を解決する物語を主題とする。"
+        },
+        {
+          "en": "Judge Dee, based on a real Tang dynasty official, became one of the most enduring heroes of gong'an fiction.",
+          "ja": "実在した唐代の官吏をモデルとする狄仁傑(判事ディー)は、公案小説の中でも特に長く愛されてきた主人公の一人となった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「公案」はもともと役所で扱う訴訟事件を意味する語で、そこから裁判物語のジャンル名として定着したとされる。",
+      "trivia": "オランダの外交官ロバート・ファン・ヒューリックは、公案小説の伝統をもとに英語で「ディー判事」シリーズを著したことで知られる。",
+      "explanation": "西洋の推理小説と類似する点も指摘されるが、犯人当ての謎解きよりも、清廉な裁判官が持つ徳と知恵そのものを称える傾向が強いとされる。",
+      "example_ja": "公案小説は、清廉な地方官が巧みな知略と注意深い推理によって不可解な犯罪を解決する物語を主題とする。",
+      "example_ja_src": "Gong'an fiction centers on an incorruptible magistrate who uses cunning and careful reasoning to solve baffling crimes."
+    }
+  },
+  {
+    "english": "caizi jiaren",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "才子佳人(学識ある書生と美しい女性の恋愛を描く中国の物語類型)"
+      ],
+      "examples": [
+        {
+          "en": "Caizi jiaren stories typically follow a talented young scholar who falls in love with an equally gifted, beautiful woman.",
+          "ja": "才子佳人の物語は通常、才能豊かな若い書生が、同じく才知に恵まれた美しい女性に恋をする筋立てをたどる。"
+        },
+        {
+          "en": "Many caizi jiaren plots involve the couple being separated by family opposition before eventually being reunited.",
+          "ja": "才子佳人の筋立ての多くは、家族の反対によって二人が引き裂かれた後、最終的には結ばれるという展開をたどる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「才子」(才能ある男)と「佳人」(美しい女性)を組み合わせた語で、明清時代の通俗小説で広く用いられた類型名とされる。",
+      "trivia": "『紅楼夢』は才子佳人の類型を踏まえながらも、悲劇的な結末によってその型を打ち破った作品と評されることがある。",
+      "explanation": "典型的には試練を経て結ばれるという理想化された筋立てを持ち、後の恋愛小説や大衆演劇の定型として長く影響を与えたとされる。",
+      "example_ja": "才子佳人の物語は通常、才能豊かな若い書生が、同じく才知に恵まれた美しい女性に恋をする筋立てをたどる。",
+      "example_ja_src": "Caizi jiaren stories typically follow a talented young scholar who falls in love with an equally gifted, beautiful woman."
+    }
+  },
+  {
+    "english": "xiaoshuo",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "小説(もともと巷の雑説を指した、中国語で小説・フィクションを意味する語)"
+      ],
+      "examples": [
+        {
+          "en": "The term xiaoshuo originally referred to trivial street gossip, long before it came to mean 'fiction' in general.",
+          "ja": "小説という語はもともと、路上のたわいない噂話を指していたが、後に一般に「フィクション」を意味するようになった。"
+        },
+        {
+          "en": "Only in the late Qing and early Republican periods did xiaoshuo gain the literary prestige associated with the modern novel.",
+          "ja": "小説が近代小説にふさわしい文学的な威信を得たのは、清末から中華民国初期になってからのことである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "儒家の古典において、経書や史書に対して取るに足らない「小さな言説」を意味したことに由来するとされる。",
+      "trivia": "日本語の「小説」(novel)という訳語も、この中国古典に由来する語をそのまま借用したものとされる。",
+      "explanation": "長らく正統な文学(詩文)に比べて低く見られていたが、明清の白話小説の隆盛や近代の文学革命を経て、フィクション全般を指す中心的な用語に格上げされたとされる。",
+      "example_ja": "小説という語はもともと、路上のたわいない噂話を指していたが、後に一般に「フィクション」を意味するようになった。",
+      "example_ja_src": "The term xiaoshuo originally referred to trivial street gossip, long before it came to mean 'fiction' in general."
+    }
+  },
+  {
+    "english": "parallel prose",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "駢文(対句を多用する中国の伝統的な美文体)"
+      ],
+      "examples": [
+        {
+          "en": "Parallel prose relies heavily on paired phrases of matching length, tone, and grammatical structure.",
+          "ja": "駢文は、長さや声調、文法構造の対応する対句表現に大きく依拠している。"
+        },
+        {
+          "en": "Although prized for its ornate beauty, parallel prose was later criticized by reform-minded writers as overly artificial.",
+          "ja": "駢文はその華麗な美しさで珍重された一方、後には改革志向の文人からあまりに人工的だと批判されるようになった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "pianwen",
+          "note": "駢文の中国語のピンイン読みをそのまま用いた呼び方。"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "guwen",
+          "note": "対句の技巧よりも簡潔さと古代の理想的な文体への回帰を重んじる「古文」運動と対比される。"
+        }
+      ],
+      "origin": "「駢」は二頭立ての馬車を意味し、対になった句が並ぶ様子を馬車の対になった馬にたとえたとされる。",
+      "trivia": "唐宋八大家に代表される「古文」運動は、この駢文の技巧偏重に対する反発から起こったとされる。",
+      "explanation": "六朝時代に隆盛を極めたが、内容よりも技巧的な対句や典故の多用に傾いたため、後世にはしばしば形式主義的だと批判の対象にもなったとされる。",
+      "example_ja": "駢文は、長さや声調、文法構造の対応する対句表現に大きく依拠している。",
+      "example_ja_src": "Parallel prose relies heavily on paired phrases of matching length, tone, and grammatical structure."
+    }
+  },
+  {
+    "english": "New Culture Movement",
+    "detail": {
+      "pronunciation": "/nuː ˈkʌltʃər muːvmənt/",
+      "pos": "固有名詞",
+      "meanings": [
+        "新文化運動(白話文・西洋思想の導入を掲げた中国の近代化運動)"
+      ],
+      "examples": [
+        {
+          "en": "The New Culture Movement called for replacing classical literary Chinese with vernacular writing accessible to ordinary readers.",
+          "ja": "新文化運動は、一般の読者にも分かる口語文によって、古典的な文語文に取って代わることを求めた。"
+        },
+        {
+          "en": "Lu Xun's early short stories are often seen as emblematic of the New Culture Movement's critique of traditional society.",
+          "ja": "魯迅の初期の短編小説は、伝統社会を批判する新文化運動を象徴する作品としてしばしば見なされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1915年創刊の雑誌『新青年』を中心に展開されたとされる、知識人による思想・文学改革運動。",
+      "trivia": "1919年の五四運動は、しばしばこの新文化運動の延長線上にある政治的な高まりとして位置づけられる。",
+      "explanation": "文語文(文言)を廃して口語文(白話文)を文学の標準とすることを提唱した点で、中国の近代文学の出発点として位置づけられることが多い。",
+      "example_ja": "新文化運動は、一般の読者にも分かる口語文によって、古典的な文語文に取って代わることを求めた。",
+      "example_ja_src": "The New Culture Movement called for replacing classical literary Chinese with vernacular writing accessible to ordinary readers."
+    }
+  },
+  {
+    "english": "scar literature",
+    "detail": {
+      "pronunciation": "/skɑːr ˈlɪtərətʃər/",
+      "pos": "名詞",
+      "meanings": [
+        "傷痕文学(文化大革命の傷跡を描いた1970年代末以降の中国文学潮流)"
+      ],
+      "examples": [
+        {
+          "en": "Scar literature gave voice to the trauma and disillusionment many Chinese citizens experienced during the Cultural Revolution.",
+          "ja": "傷痕文学は、文化大革命の間に多くの中国国民が経験した心の傷や幻滅に声を与えるものであった。"
+        },
+        {
+          "en": "The publication of Liu Xinwu's short story 'The Class Counsellor' is often cited as an early landmark of scar literature.",
+          "ja": "劉心武の短編「担任教師」の発表は、傷痕文学の初期の画期的な作品としてしばしば挙げられる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "socialist realism",
+          "note": "体制を理想化して描くことを求める様式で、体制下の傷を率直に描く傷痕文学とは対照的とされる。"
+        }
+      ],
+      "origin": "盧新華の短編小説「傷痕」(1978年)の題名に由来するとされる呼称。",
+      "trivia": "この潮流は、文化大革命の暗部を公に語ることを一定程度容認した、当時の政治的雰囲気の変化を反映しているとされる。",
+      "explanation": "毛沢東時代の理想化された文学とは対照的に、下放された知識青年や迫害を受けた人々の苦難を率直に描いた点で、その後の中国現代文学の転換点とされる。",
+      "example_ja": "傷痕文学は、文化大革命の間に多くの中国国民が経験した心の傷や幻滅に声を与えるものであった。",
+      "example_ja_src": "Scar literature gave voice to the trauma and disillusionment many Chinese citizens experienced during the Cultural Revolution."
+    }
+  },
+  {
+    "english": "root-seeking literature",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "尋根文学(中国の土着文化・伝統への回帰を志向した1980年代の文学潮流)"
+      ],
+      "examples": [
+        {
+          "en": "Root-seeking literature turned to rural folklore and regional traditions in search of a distinctly Chinese cultural identity.",
+          "ja": "尋根文学は、中国独自の文化的アイデンティティを探し求めて、農村の民俗や地方の伝統へと目を向けた。"
+        },
+        {
+          "en": "Han Shaogong's essays and fiction are frequently cited as foundational texts of root-seeking literature.",
+          "ja": "韓少功の評論や小説は、尋根文学の基礎を築いた作品としてしばしば引用される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「根を尋ねる」という語義から、失われた文化的ルーツを探求する姿勢を表すとされる。",
+      "trivia": "莫言(2012年ノーベル文学賞受賞者)の初期作品も、しばしばこの尋根文学の潮流と関連づけて論じられる。",
+      "explanation": "改革開放による西洋化の急速な進展への反動として、少数民族の文化や辺境の民間伝承などに独自の題材を求めた点に特徴があるとされる。",
+      "example_ja": "尋根文学は、中国独自の文化的アイデンティティを探し求めて、農村の民俗や地方の伝統へと目を向けた。",
+      "example_ja_src": "Root-seeking literature turned to rural folklore and regional traditions in search of a distinctly Chinese cultural identity."
+    }
+  },
+  {
+    "english": "misty poetry",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "朦朧詩(暗示的で難解なイメージを特徴とする1970年代末以降の中国現代詩の潮流)"
+      ],
+      "examples": [
+        {
+          "en": "Misty poetry was criticized by some conservative critics for being deliberately obscure and emotionally opaque.",
+          "ja": "朦朧詩は、わざと分かりにくく感情的にも不透明であるとして、一部の保守的な批評家から批判された。"
+        },
+        {
+          "en": "Bei Dao is among the most internationally recognized poets associated with the misty poetry movement.",
+          "ja": "北島は、朦朧詩の潮流と結びつけられる詩人の中でも国際的に最もよく知られた一人である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "socialist realism",
+          "note": "明快な政治的メッセージを重んじる様式で、あいまいさを特徴とする朦朧詩と対比される。"
+        }
+      ],
+      "origin": "批評家がこの詩の難解さを「朦朧」(かすんで見えにくい)と評したことから定着した呼称とされる。",
+      "trivia": "この潮流の詩人たちは、文化大革命期に地下で回覧された同人誌『今天』を拠点に活動を始めたとされる。",
+      "explanation": "社会主義リアリズムの明快なスローガン調とは対照的に、個人の内面や象徴的なイメージを重視した点で、中国現代詩における重要な転換とされる。",
+      "example_ja": "朦朧詩は、わざと分かりにくく感情的にも不透明であるとして、一部の保守的な批評家から批判された。",
+      "example_ja_src": "Misty poetry was criticized by some conservative critics for being deliberately obscure and emotionally opaque."
+    }
+  },
+  {
+    "english": "Yan'an literature",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "延安文学(1940年代の中国共産党根拠地における文学)"
+      ],
+      "examples": [
+        {
+          "en": "Yan'an literature was expected to serve the political goals of the Communist Party and to be accessible to peasants and soldiers.",
+          "ja": "延安文学は、共産党の政治目標に奉仕し、農民や兵士にも分かりやすいものであることが求められた。"
+        },
+        {
+          "en": "Mao Zedong's talks on literature and art at the Yan'an Forum laid down the guiding principles for Yan'an literature.",
+          "ja": "毛沢東による延安文芸座談会での講話は、延安文学を導く指導原則を打ち出した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "中国共産党の根拠地であった延安の地名にちなむ呼称。",
+      "trivia": "この時期の方針は、後の社会主義リアリズムを中心とする中華人民共和国建国後の文芸政策の原型になったとされる。",
+      "explanation": "芸術の自律性よりも大衆への奉仕と政治教育を優先すべきだとする方針のもとで書かれ、以後数十年の中国文芸政策に大きな影響を及ぼしたとされる。",
+      "example_ja": "延安文学は、共産党の政治目標に奉仕し、農民や兵士にも分かりやすいものであることが求められた。",
+      "example_ja_src": "Yan'an literature was expected to serve the political goals of the Communist Party and to be accessible to peasants and soldiers."
+    }
+  },
+  {
+    "english": "reportage literature",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "報告文学(事実に基づき文学的技法で社会を描くノンフィクション文学)"
+      ],
+      "examples": [
+        {
+          "en": "Reportage literature blends factual reporting with the narrative techniques and emotional appeal of fiction.",
+          "ja": "報告文学は、事実に基づく報道と、フィクションのような物語技法や感情的な訴えかけとを組み合わせる。"
+        },
+        {
+          "en": "Reportage literature flourished in China both as wartime propaganda and later as a vehicle for social criticism.",
+          "ja": "報告文学は中国において、戦時中の宣伝として、また後には社会批判の手段としても栄えた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ソ連の「オーチェルク」(ルポルタージュ文学)の概念が中国に紹介され、独自に発展したものとされる。",
+      "trivia": "夏衍の『包身工』は、工場労働者の過酷な実態を描いた報告文学の代表作として知られる。",
+      "explanation": "純粋なジャーナリズムとフィクションの中間に位置し、実際の取材や記録に基づきながらも、読者の感情に訴える文学的な構成や描写を重視する点に特徴があるとされる。",
+      "example_ja": "報告文学は、事実に基づく報道と、フィクションのような物語技法や感情的な訴えかけとを組み合わせる。",
+      "example_ja_src": "Reportage literature blends factual reporting with the narrative techniques and emotional appeal of fiction."
+    }
+  },
+  {
+    "english": "Golden Age of Russian literature",
+    "detail": {
+      "pronunciation": "/ˈɡoʊldən eɪdʒ ʌv ˈrʌʃən ˈlɪtərətʃər/",
+      "pos": "名詞",
+      "meanings": [
+        "ロシア文学の黄金時代(19世紀のロシア文学の隆盛期)"
+      ],
+      "examples": [
+        {
+          "en": "The Golden Age of Russian literature is generally said to begin with Pushkin and culminate in the novels of Tolstoy and Dostoevsky.",
+          "ja": "ロシア文学の黄金時代は、一般にプーシキンに始まり、トルストイやドストエフスキーの小説で頂点に達したとされる。"
+        },
+        {
+          "en": "Poetry dominated the early Golden Age, while the novel became its dominant form by the century's later decades.",
+          "ja": "黄金時代の初期には詩が主流だったが、世紀後半になると小説がその中心的な形式となった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Silver Age of Russian literature",
+          "note": "黄金時代に続く19世紀末から20世紀初頭の、象徴主義など詩の再興期を指す。"
+        }
+      ],
+      "origin": "後世の文学史家が、この時代の文学的達成の高さをたたえて名付けた呼称とされる。",
+      "trivia": "プーシキンは今日でもしばしば「ロシア文学の父」あるいは黄金時代の始まりを告げた詩人と評される。",
+      "explanation": "この時代を通じてロシア文学は、それまでの西欧文学の模倣的な段階を脱し、独自の心理描写と社会批評を備えた世界文学の水準に達したと評価されている。",
+      "example_ja": "ロシア文学の黄金時代は、一般にプーシキンに始まり、トルストイやドストエフスキーの小説で頂点に達したとされる。",
+      "example_ja_src": "The Golden Age of Russian literature is generally said to begin with Pushkin and culminate in the novels of Tolstoy and Dostoevsky."
+    }
+  },
+  {
+    "english": "Westernizer",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "西欧派(西欧化による近代化を主張した19世紀ロシアの知識人)"
+      ],
+      "examples": [
+        {
+          "en": "Westernizers argued that Russia's future lay in adopting European institutions, science, and rational thought.",
+          "ja": "西欧派は、ロシアの将来はヨーロッパの制度や科学、合理的思考を取り入れることにあると主張した。"
+        },
+        {
+          "en": "Debates between Westernizers and Slavophiles shaped much of Russian intellectual and literary life in the 1840s.",
+          "ja": "西欧派とスラヴ派の論争は、1840年代のロシアの知的・文学的生活の多くを形作った。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Slavophile",
+          "note": "西欧化に反対し、ロシア独自の伝統や正教を重んじた対立陣営。"
+        }
+      ],
+      "origin": "ロシア語で「西欧主義者」を意味する語(zapadnik)の英訳とされる。",
+      "trivia": "批評家ヴィッサリオン・ベリンスキーは、代表的な西欧派の論客として知られる。",
+      "explanation": "スラヴ派との論争を通じて、ロシアが独自の道を歩むべきか西欧に倣うべきかという問いは、19世紀ロシア文学の重要な思想的背景となったとされる。",
+      "example_ja": "西欧派は、ロシアの将来はヨーロッパの制度や科学、合理的思考を取り入れることにあると主張した。",
+      "example_ja_src": "Westernizers argued that Russia's future lay in adopting European institutions, science, and rational thought."
+    }
+  },
+  {
+    "english": "yurodivy",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "佯狂者・聖愚者(奇矯な言動で真理を示すロシア正教の伝統的人物像)"
+      ],
+      "examples": [
+        {
+          "en": "The yurodivy figure speaks uncomfortable truths that no one else in the story dares to voice, hidden behind a mask of madness.",
+          "ja": "佯狂者(ユロージヴィ)という人物像は、狂気の仮面の裏に隠れて、物語の中で誰も口にしようとしない不都合な真実を語る。"
+        },
+        {
+          "en": "Dostoevsky drew on the tradition of the yurodivy in shaping several of his most memorable characters.",
+          "ja": "ドストエフスキーは、この佯狂者の伝統を踏まえて、彼の最も印象的な登場人物の何人かを形作った。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "holy fool",
+          "note": "英語で佯狂者を指す際に最もよく使われる訳語。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ロシア語で「愚かな者」を意味する語に由来し、キリストのために愚かさを装う聖性の伝統を指すとされる。",
+      "trivia": "ムソルグスキーの歌劇『ボリス・ゴドゥノフ』にも、皇帝に真実を突きつける佯狂者が登場することで知られる。",
+      "explanation": "社会的な地位や理性の外側に立つことで、かえって権力者に対しても恐れずに真実を語ることができるとされる、ロシア文化に特有の人物類型である。",
+      "example_ja": "佯狂者(ユロージヴィ)という人物像は、狂気の仮面の裏に隠れて、物語の中で誰も口にしようとしない不都合な真実を語る。",
+      "example_ja_src": "The yurodivy figure speaks uncomfortable truths that no one else in the story dares to voice, hidden behind a mask of madness."
+    }
+  },
+  {
+    "english": "skaz",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "スカース(語り手の口調・方言を模写する語りの技法)"
+      ],
+      "examples": [
+        {
+          "en": "In skaz narration, the story is filtered through the distinctive voice, dialect, and quirks of an uneducated narrator.",
+          "ja": "スカースの語りでは、物語は教養のない語り手特有の声や方言、癖を通して語られる。"
+        },
+        {
+          "en": "Nikolai Leskov is especially admired for his mastery of skaz, mimicking the rhythms of everyday spoken Russian.",
+          "ja": "ニコライ・レスコフは特に、日常のロシア語の話し言葉のリズムを模写するスカースの名手として賞賛されている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ロシア語で「語る」を意味する動詞に由来する、ロシア・フォルマリズムの理論家たちが定式化した用語とされる。",
+      "trivia": "この技法は、標準的で洗練された作者の語りとは対照的に、あえて不完全で口語的な語り口を演出する点に特徴がある。",
+      "explanation": "単に方言を再現するだけでなく、語り手の限られた視点や知識、思い込みを通して物語自体の信頼性を揺るがす効果を持つ技法として研究されている。",
+      "example_ja": "スカースの語りでは、物語は教養のない語り手特有の声や方言、癖を通して語られる。",
+      "example_ja_src": "In skaz narration, the story is filtered through the distinctive voice, dialect, and quirks of an uneducated narrator."
+    }
+  },
+  {
+    "english": "thick journal",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "厚い雑誌(小説・評論・時事論考を収める総合文芸雑誌)"
+      ],
+      "examples": [
+        {
+          "en": "Serialized in a thick journal, a single novel might reach readers across the entire Russian empire before appearing as a book.",
+          "ja": "分厚い文芸雑誌に連載されることで、一つの小説が単行本になる前に、ロシア帝国全土の読者に届くこともあった。"
+        },
+        {
+          "en": "Thick journals served as the main battleground for literary and political debate throughout 19th-century Russia.",
+          "ja": "分厚い文芸雑誌は、19世紀を通じてロシアにおける文学的・政治的論争の主な舞台となった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ロシア語で「толстый журнал」(厚い雑誌)と呼ばれたことに由来する英訳語とされる。",
+      "trivia": "『同時代人』や『祖国の記録』といった雑誌は、多くの大作家の作品を初めて世に送り出した場として知られる。",
+      "explanation": "単なる文芸誌にとどまらず、政治・思想論争の場としても機能し、検閲下のロシアにおいて知識人が公に意見を表明する数少ない手段の一つであったとされる。",
+      "example_ja": "分厚い文芸雑誌に連載されることで、一つの小説が単行本になる前に、ロシア帝国全土の読者に届くこともあった。",
+      "example_ja_src": "Serialized in a thick journal, a single novel might reach readers across the entire Russian empire before appearing as a book."
+    }
+  },
+  {
+    "english": "Sinyavsky-Daniel trial",
+    "detail": {
+      "pos": "固有名詞",
+      "meanings": [
+        "シニャフスキー・ダニエル裁判(1965〜66年の反体制作家に対するソ連の裁判)"
+      ],
+      "examples": [
+        {
+          "en": "The Sinyavsky-Daniel trial marked one of the first times Soviet writers were publicly tried specifically for the content of their fiction.",
+          "ja": "シニャフスキー・ダニエル裁判は、ソ連の作家が作品の内容そのものを理由に公然と裁判にかけられた、最初期の事例の一つとされる。"
+        },
+        {
+          "en": "International protests over the Sinyavsky-Daniel trial helped fuel the growth of the Soviet dissident movement.",
+          "ja": "シニャフスキー・ダニエル裁判をめぐる国際的な抗議は、ソ連の反体制運動の広がりを後押ししたとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "被告となった作家アンドレイ・シニャフスキーとユーリー・ダニエルの名にちなむ呼称。",
+      "trivia": "2人は西側でそれぞれ「アブラム・テルツ」「ニコライ・アルジャク」という偽名で作品を発表していたことが発覚し起訴されたとされる。",
+      "explanation": "この裁判をきっかけに、地下出版(サミズダート)や国外での秘密出版(タミズダート)を通じた検閲回避の動きがいっそう活発になったと評価されている。",
+      "example_ja": "シニャフスキー・ダニエル裁判は、ソ連の作家が作品の内容そのものを理由に公然と裁判にかけられた、最初期の事例の一つとされる。",
+      "example_ja_src": "The Sinyavsky-Daniel trial marked one of the first times Soviet writers were publicly tried specifically for the content of their fiction."
+    }
+  },
+  {
+    "english": "Russian Symbolism",
+    "detail": {
+      "pronunciation": "/ˈrʌʃən ˈsɪmbəlɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "ロシア象徴主義(暗示的なイメージによる真理の喚起を目指した詩の潮流)"
+      ],
+      "examples": [
+        {
+          "en": "Russian Symbolism sought to evoke mystical and spiritual truths through suggestive imagery rather than direct statement.",
+          "ja": "ロシア象徴主義は、直接的な言明ではなく暗示的なイメージを通して、神秘的・精神的な真理を喚起しようとした。"
+        },
+        {
+          "en": "Alexander Blok is often considered the most gifted poet to emerge from the Russian Symbolist movement.",
+          "ja": "アレクサンドル・ブロークは、ロシア象徴主義の潮流から現れた最も才能ある詩人としてしばしば評価される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Acmeism",
+          "note": "あいまいな象徴よりも明快で具体的な言葉を重んじる詩の潮流で、象徴主義への反動として起こった。"
+        }
+      ],
+      "origin": "フランス象徴主義の影響を受けつつ、ロシア独自の神秘主義的傾向を加えて発展したとされる。",
+      "trivia": "この潮流はしばしば「ロシア文学の銀の時代」と呼ばれる詩の隆盛期の中核をなしたとされる。",
+      "explanation": "日常の言葉では表現し尽くせない超越的な真理を、音楽性の高い言葉や象徴的なイメージを通して間接的に暗示しようとした点に特徴があるとされる。",
+      "example_ja": "ロシア象徴主義は、直接的な言明ではなく暗示的なイメージを通して、神秘的・精神的な真理を喚起しようとした。",
+      "example_ja_src": "Russian Symbolism sought to evoke mystical and spiritual truths through suggestive imagery rather than direct statement."
+    }
+  },
+  {
+    "english": "Acmeism",
+    "detail": {
+      "pronunciation": "/ˈækmiːɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "アクメイズム(明快で具体的な言葉を重んじる20世紀初頭ロシアの詩の潮流)"
+      ],
+      "examples": [
+        {
+          "en": "Acmeism rejected the mystical vagueness of Symbolism in favor of precise, concrete language.",
+          "ja": "アクメイズムは、象徴主義の神秘的なあいまいさを退け、正確で具体的な言葉遣いを重んじた。"
+        },
+        {
+          "en": "Anna Akhmatova and Osip Mandelstam are the two poets most closely identified with Acmeism.",
+          "ja": "アンナ・アフマートヴァとオシップ・マンデリシュタームは、アクメイズムと最も強く結び付けられる2人の詩人である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Russian Symbolism",
+          "note": "明快さよりも神秘的な暗示を重んじる潮流で、アクメイズムはこれへの反動として生まれた。"
+        }
+      ],
+      "origin": "ギリシャ語で「頂点・最高点」を意味する「アクメー」に由来する呼称とされる。",
+      "trivia": "彼らは「詩人ギルド」という自らの結社を組織し、明確な理論を掲げて活動したことで知られる。",
+      "explanation": "言葉を「事物そのものの名前」として明確に扱うことを主張し、象徴主義の神秘性に対して、彫刻のような明晰さと形式美を志向したとされる。",
+      "example_ja": "アクメイズムは、象徴主義の神秘的なあいまいさを退け、正確で具体的な言葉遣いを重んじた。",
+      "example_ja_src": "Acmeism rejected the mystical vagueness of Symbolism in favor of precise, concrete language."
+    }
+  },
+  {
+    "english": "Russian Futurism",
+    "detail": {
+      "pronunciation": "/ˈrʌʃən ˈfjuːtʃərɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "ロシア未来派(既存の言語・美意識の破壊を掲げた20世紀初頭の前衛芸術運動)"
+      ],
+      "examples": [
+        {
+          "en": "Russian Futurism called for throwing traditional poets 'overboard from the ship of modernity' in favor of radical new language.",
+          "ja": "ロシア未来派は、伝統的な詩人たちを「近代という船から放り出せ」と唱え、過激な新しい言語を求めた。"
+        },
+        {
+          "en": "Vladimir Mayakovsky became the most famous poet associated with Russian Futurism before and after the 1917 revolution.",
+          "ja": "ウラジーミル・マヤコフスキーは、1917年の革命の前後を通じてロシア未来派と結び付けられる最も有名な詩人となった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "イタリア未来派の影響を受けつつ、ロシア独自の言語実験(ザーウミなど)を伴って発展したとされる。",
+      "trivia": "彼らが発表した宣言文「社会的趣味への平手打ち」は、プーシキンら過去の巨匠を否定する挑発的な内容で知られる。",
+      "explanation": "意味を超えた音そのものを重視する「ザーウミ(超意味言語)」の実験や、活字の大胆な視覚的配置など、言語そのものを解体・再構築しようとする急進性を特徴とする。",
+      "example_ja": "ロシア未来派は、伝統的な詩人たちを「近代という船から放り出せ」と唱え、過激な新しい言語を求めた。",
+      "example_ja_src": "Russian Futurism called for throwing traditional poets 'overboard from the ship of modernity' in favor of radical new language."
+    }
+  },
+  {
+    "english": "OBERIU",
+    "detail": {
+      "pos": "固有名詞",
+      "meanings": [
+        "オベリウ(1920年代末レニングラードの前衛芸術家集団)"
+      ],
+      "examples": [
+        {
+          "en": "OBERIU embraced absurdist logic and deliberate nonsense at a time when Soviet culture increasingly demanded clarity and optimism.",
+          "ja": "オベリウは、ソ連文化がますます明快さと楽観主義を求めるようになった時代に、不条理な論理と意図的なナンセンスを追求した。"
+        },
+        {
+          "en": "Most members of OBERIU were arrested, and several died in the purges or in wartime exile.",
+          "ja": "オベリウのメンバーの大半は逮捕され、何人かは粛清や戦時中の流刑先で命を落とした。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "socialist realism",
+          "note": "明快で楽観的な理想を描くことを求めた公式様式で、不条理を追求したオベリウとは相容れなかった。"
+        }
+      ],
+      "origin": "ロシア語で「現実芸術連合」を意味する語句の頭文字による略称とされる。",
+      "trivia": "ダニイル・ハルムスはオベリウの中心人物として知られ、その不条理な短編小説は後にソ連崩壊後になって広く再評価された。",
+      "explanation": "西欧の不条理演劇に先駆けるとも評される作品群を残したが、当時のソ連当局からは理解不能かつ反体制的とみなされ、多くのメンバーが弾圧の犠牲となったとされる。",
+      "example_ja": "オベリウは、ソ連文化がますます明快さと楽観主義を求めるようになった時代に、不条理な論理と意図的なナンセンスを追求した。",
+      "example_ja_src": "OBERIU embraced absurdist logic and deliberate nonsense at a time when Soviet culture increasingly demanded clarity and optimism."
+    }
+  },
+  {
+    "english": "village prose",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "農村散文(失われゆく農村の伝統を描いたソ連の文学潮流)"
+      ],
+      "examples": [
+        {
+          "en": "Village prose mourned the disappearance of traditional rural life under Soviet urbanization and collectivization.",
+          "ja": "農村散文は、ソ連の都市化と集団化のもとで失われゆく伝統的な農村生活を哀惜の念を込めて描いた。"
+        },
+        {
+          "en": "Valentin Rasputin is among the writers most closely associated with the village prose movement.",
+          "ja": "ヴァレンチン・ラスプーチンは、農村散文の潮流と最も強く結び付けられる作家の一人である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "socialist realism",
+          "note": "集団化や工業化を進歩として理想化する傾向が強く、それを郷愁とともに問い直す農村散文と対比される。"
+        }
+      ],
+      "origin": "ロシア語で「деревенская проза」(農村の散文)と呼ばれたことに由来する英訳語とされる。",
+      "trivia": "この潮流は、公式には集団化の成果を称えるべき時代にありながら、その代償にも目を向けた点で異例とされる。",
+      "explanation": "表向きは体制の枠内にとどまりつつも、近代化がもたらした農村共同体の解体や伝統的価値観の喪失を静かに批判した点に特徴があるとされる。",
+      "example_ja": "農村散文は、ソ連の都市化と集団化のもとで失われゆく伝統的な農村生活を哀惜の念を込めて描いた。",
+      "example_ja_src": "Village prose mourned the disappearance of traditional rural life under Soviet urbanization and collectivization."
+    }
+  },
+  {
+    "english": "byliny",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ブィリーナ(ロシアの英雄叙事詩の口承伝統)"
+      ],
+      "examples": [
+        {
+          "en": "Byliny recount the heroic exploits of legendary warriors known as bogatyrs in a distinctive chanted verse form.",
+          "ja": "ブィリーナは、ボガトィーリと呼ばれる伝説的な戦士たちの武勇を、独特の朗誦形式の詩によって語り伝える。"
+        },
+        {
+          "en": "Byliny were traditionally passed down orally by professional singers rather than being written down by their original composers.",
+          "ja": "ブィリーナは伝統的に、最初の作者によって書き留められるのではなく、専門の語り手によって口頭で代々伝えられてきた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ロシア語で「あった(こと)」を意味する語に由来し、過去に実際にあったとされる出来事の語りを指すとされる。",
+      "trivia": "イリヤー・ムーロメツは、ブィリーナに登場する最も有名なボガトィーリの一人として知られる。",
+      "explanation": "キエフ大公国の時代を舞台にすることが多いが、実際に記録・研究が進んだのは19世紀以降であり、それまでは主に北部ロシアの農村で口頭伝承されていたとされる。",
+      "example_ja": "ブィリーナは、ボガトィーリと呼ばれる伝説的な戦士たちの武勇を、独特の朗誦形式の詩によって語り伝える。",
+      "example_ja_src": "Byliny recount the heroic exploits of legendary warriors known as bogatyrs in a distinctive chanted verse form."
+    }
+  },
+  {
+    "english": "chernukha",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "チェルヌーハ(社会の暗部を過度に描くソ連末期〜1990年代の文学・映画潮流)"
+      ],
+      "examples": [
+        {
+          "en": "Chernukha works depict poverty, violence, and despair with an almost relentless, unfiltered bleakness.",
+          "ja": "チェルヌーハの作品は、貧困や暴力、絶望をほとんど容赦なく、ありのままに描く。"
+        },
+        {
+          "en": "Critics have debated whether chernukha offers an honest reckoning with Soviet-era hardship or merely wallows in shock value.",
+          "ja": "チェルヌーハがソ連時代の苦難への誠実な向き合い方なのか、それとも単に衝撃を狙っているだけなのかについては、批評家の間で論争がある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "socialist realism",
+          "note": "体制の明るい理想像を描くことを求めた様式で、暗部を強調するチェルヌーハとは対極に位置する。"
+        }
+      ],
+      "origin": "ロシア語で「黒」を意味する「チョールヌィ」に由来する語とされる。",
+      "trivia": "グラスノスチ(情報公開政策)によって検閲が緩んだことが、この潮流が公に表現されるようになった背景にあるとされる。",
+      "explanation": "ペレストロイカ期に長らく公にできなかった社会の暗部が一気に噴出した現象とも評され、その過剰さゆえに賛否両論を呼んだ潮流とされる。",
+      "example_ja": "チェルヌーハの作品は、貧困や暴力、絶望をほとんど容赦なく、ありのままに描く。",
+      "example_ja_src": "Chernukha works depict poverty, violence, and despair with an almost relentless, unfiltered bleakness."
+    }
+  },
+  {
+    "english": "Thaw literature",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "雪どけ文学(スターリン死後の検閲緩和期のソ連文学)"
+      ],
+      "examples": [
+        {
+          "en": "Thaw literature was able to touch on subjects, such as the Stalinist purges, that had been unthinkable to publish only years before.",
+          "ja": "雪どけ文学は、ほんの数年前までは発表することすら考えられなかったスターリン時代の粛清のような主題にも触れられるようになった。"
+        },
+        {
+          "en": "Solzhenitsyn's One Day in the Life of Ivan Denisovich was published thanks to the relative openness of Thaw literature.",
+          "ja": "ソルジェニーツィンの『イワン・デニーソヴィチの一日』は、雪どけ文学という比較的自由な雰囲気のおかげで出版された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "イリヤ・エレンブルグの小説『雪どけ』の題名に由来する呼称とされる。",
+      "trivia": "この「雪どけ」の期間は、1964年にフルシチョフが失脚すると再び統制が強まり、事実上終わりを迎えたとされる。",
+      "explanation": "完全な表現の自由が認められたわけではないが、それまでのタブーに部分的に踏み込めるようになった点で、その後の反体制文学やサミズダートの土壌を用意したとされる。",
+      "example_ja": "雪どけ文学は、ほんの数年前までは発表することすら考えられなかったスターリン時代の粛清のような主題にも触れられるようになった。",
+      "example_ja_src": "Thaw literature was able to touch on subjects, such as the Stalinist purges, that had been unthinkable to publish only years before."
+    }
+  },
+  {
+    "english": "polyphonic novel",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ポリフォニー小説(登場人物の声が対等に響き合う小説形式、バフチンの概念)"
+      ],
+      "examples": [
+        {
+          "en": "In a polyphonic novel, no single character's worldview, including the narrator's, is granted final authority over the others.",
+          "ja": "ポリフォニー小説では、語り手を含め、どの登場人物の世界観も他に対して最終的な権威を与えられることはない。"
+        },
+        {
+          "en": "Mikhail Bakhtin developed the concept of the polyphonic novel specifically through his analysis of Dostoevsky's fiction.",
+          "ja": "ミハイル・バフチンは、まさにドストエフスキーの小説の分析を通して、このポリフォニー小説という概念を発展させた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "polyphony",
+          "pos": "名詞",
+          "ja": "複数の独立した声・視点が対等に共存すること。もとは音楽用語の多声音楽を指す。"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "monologic novel",
+          "note": "作者の単一の視点や価値観がすべての登場人物を統括する、対照的な小説のあり方を指す。"
+        }
+      ],
+      "origin": "ロシアの文芸理論家ミハイル・バフチンが1929年の著作でこの概念を提唱したとされる。",
+      "trivia": "バフチンはこの概念と関連して、公式の秩序が一時的に転倒される祝祭性を指す「カーニヴァレスク」という概念も提唱したことで知られる。",
+      "explanation": "作者が登場人物を自らの思想の代弁者として支配するのではなく、それぞれの人物に独立した意識と声を与えて対話させる小説のあり方を指すとされる。",
+      "example_ja": "ポリフォニー小説では、語り手を含め、どの登場人物の世界観も他に対して最終的な権威を与えられることはない。",
+      "example_ja_src": "In a polyphonic novel, no single character's worldview, including the narrator's, is granted final authority over the others."
+    }
+  },
+  {
+    "english": "Russian émigré literature",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ロシア亡命文学(革命後に国外へ逃れた作家によるロシア語文学)"
+      ],
+      "examples": [
+        {
+          "en": "Russian émigré literature preserved pre-revolutionary literary traditions among writers who had fled abroad after 1917.",
+          "ja": "ロシア亡命文学は、1917年以降に国外へ逃れた作家たちの間で、革命以前の文学的伝統を保ち続けた。"
+        },
+        {
+          "en": "Vladimir Nabokov began his career as a Russian émigré writer in Berlin before later switching to writing in English.",
+          "ja": "ウラジーミル・ナボコフは、後に英語で書くようになる前、ベルリンでロシア亡命作家としてキャリアを始めた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Soviet literature",
+          "note": "国内にとどまり、体制の枠組みの中で(あるいはそれに抗して)書かれた文学を指し、国外の亡命文学と対比される。"
+        }
+      ],
+      "origin": "ロシア語で亡命者を意味する「エミグラント」に由来する呼称とされる。",
+      "trivia": "作家イワン・ブーニンは、亡命ロシア人として初めてノーベル文学賞を受賞した人物として知られる(1933年)。",
+      "explanation": "ソ連国内の検閲を受けることなく、革命以前の文学的言語や美意識を維持し続けた一方、次第に故国の読者から切り離されていくという独自の困難を抱えていたとされる。",
+      "example_ja": "ロシア亡命文学は、1917年以降に国外へ逃れた作家たちの間で、革命以前の文学的伝統を保ち続けた。",
+      "example_ja_src": "Russian émigré literature preserved pre-revolutionary literary traditions among writers who had fled abroad after 1917."
+    }
+  },
+  {
+    "english": "Petersburg text",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ペテルブルクのテクスト(サンクトペテルブルクを巡る文学的イメージ群を指す研究概念)"
+      ],
+      "examples": [
+        {
+          "en": "Scholars use the term 'Petersburg text' to describe the recurring myths of madness, bureaucracy, and unreality attached to the city in Russian fiction.",
+          "ja": "研究者たちは「ペテルブルクのテクスト」という語を用いて、ロシア文学において都市に付随して繰り返し現れる狂気・官僚制・非現実性の神話を説明する。"
+        },
+        {
+          "en": "Gogol, Dostoevsky, and Bely are among the writers most often cited as central contributors to the Petersburg text.",
+          "ja": "ゴーゴリ、ドストエフスキー、ベールイは、このペテルブルクのテクストの中心的な担い手としてしばしば挙げられる作家たちである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Moscow text",
+          "note": "ペテルブルクとは対照的に、モスクワという都市に結び付けられた、より土着的で情緒的な文学的イメージ群を指す。"
+        }
+      ],
+      "origin": "ロシアの記号論学者ウラジーミル・トポロフらによって1980年代前後に定式化された学術概念とされる。",
+      "trivia": "ゴーゴリの短編「鼻」やドストエフスキーの『分身』など、都市そのものが登場人物の精神の混乱と分かちがたく結びついた作品がしばしば例として挙げられる。",
+      "explanation": "人工的に建設された「非ロシア的」な首都という都市の出自そのものが、幻想文学的な題材を生み出す土壌になったとする見方に基づく概念とされる。",
+      "example_ja": "研究者たちは「ペテルブルクのテクスト」という語を用いて、ロシア文学において都市に付随して繰り返し現れる狂気・官僚制・非現実性の神話を説明する。",
+      "example_ja_src": "Scholars use the term 'Petersburg text' to describe the recurring myths of madness, bureaucracy, and unreality attached to the city in Russian fiction."
+    }
+  },
+  {
+    "english": "Weltschmerz",
+    "detail": {
+      "pronunciation": "/ˈvɛltʃmɛrts/",
+      "pos": "名詞",
+      "meanings": [
+        "世界苦(理想と現実の落差から生じる深い倦怠・憂鬱)"
+      ],
+      "examples": [
+        {
+          "en": "The poet's letters are filled with a pervasive Weltschmerz, a weary sense that the world can never live up to his ideals.",
+          "ja": "その詩人の手紙には、世界が自分の理想に決して応えてくれないという疲れ切った感覚、すなわち根深いWeltschmerzが満ちている。"
+        },
+        {
+          "en": "Weltschmerz became a defining mood of much European Romantic literature in the early 19th century.",
+          "ja": "Weltschmerzは、19世紀初頭のヨーロッパ・ロマン主義文学の多くを特徴づける気分となった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "world-weariness",
+          "note": "Weltschmerzの意味に近い英語表現。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ドイツ語の「Welt(世界)」と「Schmerz(痛み)」を組み合わせた語で、作家ジャン・パウルが広めたとされる。",
+      "trivia": "バイロン卿の作品はしばしば、英語圏におけるWeltschmerzの代表的な体現例として挙げられる。",
+      "explanation": "単なる個人的な悲しみではなく、世界そのものの不完全さに対する形而上学的な失望感を指す点で、ロマン主義文学に特有の感情表現とされる。",
+      "example_ja": "その詩人の手紙には、世界が自分の理想に決して応えてくれないという疲れ切った感覚、すなわち根深いWeltschmerzが満ちている。",
+      "example_ja_src": "The poet's letters are filled with a pervasive Weltschmerz, a weary sense that the world can never live up to his ideals."
+    }
+  },
+  {
+    "english": "roman fleuve",
+    "detail": {
+      "pronunciation": "/roʊˌmɑːn ˈflɜːv/",
+      "pos": "名詞",
+      "meanings": [
+        "大河小説(複数巻にわたって人物・家族の生涯を描く小説形式)"
+      ],
+      "examples": [
+        {
+          "en": "A roman fleuve follows its characters across multiple linked novels, often spanning several generations of a family.",
+          "ja": "大河小説は、しばしば一家族の複数世代にわたって、連なる複数の小説を通して登場人物たちを描く。"
+        },
+        {
+          "en": "Marcel Proust's In Search of Lost Time is frequently cited as a landmark example of the roman fleuve.",
+          "ja": "マルセル・プルーストの『失われた時を求めて』は、大河小説の画期的な例としてしばしば引き合いに出される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "river novel",
+          "note": "roman fleuveの直訳に近い英語表現。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "フランス語で「川の小説」を意味し、川の流れのように長く続く物語であることにたとえたとされる。",
+      "trivia": "ロジェ・マルタン・デュ・ガールの『チボー家の人々』は、この形式の名称が定着するきっかけとなった作品の一つとされる。",
+      "explanation": "一冊の長編小説というよりも、独立して読める複数の巻が緩やかに連結し、全体として一つの長大な物語を形作る点に特徴があるとされる。",
+      "example_ja": "大河小説は、しばしば一家族の複数世代にわたって、連なる複数の小説を通して登場人物たちを描く。",
+      "example_ja_src": "A roman fleuve follows its characters across multiple linked novels, often spanning several generations of a family."
+    }
+  },
+  {
+    "english": "epistolary novel",
+    "detail": {
+      "pronunciation": "/ɪˈpɪstələri ˈnɒvəl/",
+      "pos": "名詞",
+      "meanings": [
+        "書簡体小説(手紙のやり取りの形式で進行する小説)"
+      ],
+      "examples": [
+        {
+          "en": "An epistolary novel unfolds entirely through the letters its characters exchange, without any conventional narrator.",
+          "ja": "書簡体小説は、従来の意味での語り手を介さず、登場人物同士が交わす手紙だけを通してすべてが展開する。"
+        },
+        {
+          "en": "Choderlos de Laclos's Dangerous Liaisons is one of the most celebrated epistolary novels in European literature.",
+          "ja": "ショデルロ・ド・ラクロの『危険な関係』は、ヨーロッパ文学における最も名高い書簡体小説の一つである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ギリシャ語で「手紙」を意味する「epistole」に由来する形容詞epistolaryから。",
+      "trivia": "18世紀のヨーロッパで特に流行し、読者はまるで本物の手紙を盗み見ているかのような臨場感を味わえたとされる。",
+      "explanation": "登場人物の視点が手紙の書き手によって切り替わるため、単一の語り手による小説よりも多角的な視点や誤解・すれ違いを描きやすい形式とされる。",
+      "example_ja": "書簡体小説は、従来の意味での語り手を介さず、登場人物同士が交わす手紙だけを通してすべてが展開する。",
+      "example_ja_src": "An epistolary novel unfolds entirely through the letters its characters exchange, without any conventional narrator."
+    }
+  },
+  {
+    "english": "French Symbolism",
+    "detail": {
+      "pronunciation": "/frɛntʃ ˈsɪmbəlɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "フランス象徴主義(暗示と音楽性を重んじる19世紀末フランスの詩運動)"
+      ],
+      "examples": [
+        {
+          "en": "French Symbolism favored suggestion and musicality over direct description, aiming to evoke rather than to state.",
+          "ja": "フランス象徴主義は、直接的な描写よりも暗示と音楽性を重んじ、明言するのではなく喚起することを目指した。"
+        },
+        {
+          "en": "Stéphane Mallarmé and Paul Verlaine are among the poets most closely associated with French Symbolism.",
+          "ja": "ステファヌ・マラルメとポール・ヴェルレーヌは、フランス象徴主義と最も強く結び付けられる詩人たちである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "naturalism",
+          "note": "客観的な観察と写実を重んじる文学潮流で、暗示や象徴を重んじる象徴主義と対比される。"
+        }
+      ],
+      "origin": "1886年にジャン・モレアスが発表した「象徴主義宣言」によって運動の名称が定着したとされる。",
+      "trivia": "この運動は絵画や音楽にも波及し、ロシアなど他国の象徴主義文学にも大きな影響を与えたとされる。",
+      "explanation": "事物そのものを説明するのではなく、それを想起させる象徴を提示することで読者の想像力に訴えようとした点に特徴があるとされる。",
+      "example_ja": "フランス象徴主義は、直接的な描写よりも暗示と音楽性を重んじ、明言するのではなく喚起することを目指した。",
+      "example_ja_src": "French Symbolism favored suggestion and musicality over direct description, aiming to evoke rather than to state."
+    }
+  },
+  {
+    "english": "Nordic noir",
+    "detail": {
+      "pronunciation": "/ˈnɔːrdɪk nwɑːr/",
+      "pos": "名詞",
+      "meanings": [
+        "北欧ノワール(北欧発祥の社会批評的犯罪小説ジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "Nordic noir novels typically pair a bleak Scandinavian setting with sharp criticism of social institutions.",
+          "ja": "北欧ノワールの小説は通常、陰鬱な北欧の舞台設定と、社会制度への鋭い批判とを組み合わせている。"
+        },
+        {
+          "en": "Stieg Larsson's Millennium trilogy helped bring international attention to Nordic noir in the 2000s.",
+          "ja": "スティーグ・ラーソンの『ミレニアム』三部作は、2000年代に北欧ノワールを国際的に注目させる一助となった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Scandinavian crime fiction",
+          "note": "北欧ノワールとほぼ同義で使われる呼称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "フランス語由来の「ノワール(黒い)」に、北欧(Nordic)を組み合わせた比較的新しい呼称とされる。",
+      "trivia": "ヘニング・マンケルの刑事ヴァランダー・シリーズは、この潮流を先駆けた作品の一つとしてしばしば挙げられる。",
+      "explanation": "単なる娯楽的な犯罪小説にとどまらず、福祉国家の理想と現実のずれや移民問題など、北欧社会そのものへの批評を伴うことが多いとされる。",
+      "example_ja": "北欧ノワールの小説は通常、陰鬱な北欧の舞台設定と、社会制度への鋭い批判とを組み合わせている。",
+      "example_ja_src": "Nordic noir novels typically pair a bleak Scandinavian setting with sharp criticism of social institutions."
+    }
+  },
+  {
+    "english": "commedia dell'arte",
+    "detail": {
+      "pronunciation": "/kəˌmiːdiə dɛlˈɑːrteɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "コンメディア・デラルテ(仮面をつけた定型人物による即興演劇、16世紀イタリア発祥)"
+      ],
+      "examples": [
+        {
+          "en": "Commedia dell'arte relied on stock masked characters and improvised dialogue rather than a fixed, written script.",
+          "ja": "コンメディア・デラルテは、固定された台本ではなく、定型の仮面をつけた登場人物と即興のせりふに頼っていた。"
+        },
+        {
+          "en": "The clever servant Arlecchino remains one of the most recognizable stock characters of commedia dell'arte.",
+          "ja": "狡猾な召使いアルレッキーノは、コンメディア・デラルテの中でも最もよく知られる定型人物の一人であり続けている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "イタリア語で「芸人の喜劇」を意味する語とされる。",
+      "trivia": "この様式に登場する道化的人物(ザンニ)は、後のパントマイムやピエロといった西洋の道化のイメージにも影響を与えたとされる。",
+      "explanation": "俳優たちは決まった性格類型(老人・恋人・召使いなど)の仮面と衣装を身につけ、大まかな筋書きだけを共有して細部を即興で演じた点に特徴があるとされる。",
+      "example_ja": "コンメディア・デラルテは、固定された台本ではなく、定型の仮面をつけた登場人物と即興のせりふに頼っていた。",
+      "example_ja_src": "Commedia dell'arte relied on stock masked characters and improvised dialogue rather than a fixed, written script."
+    }
+  },
+  {
+    "english": "decadent movement",
+    "detail": {
+      "pronunciation": "/ˈdɛkədənt muːvmənt/",
+      "pos": "名詞",
+      "meanings": [
+        "デカダン運動(退廃・人工美を称揚する19世紀末の文学・芸術運動)"
+      ],
+      "examples": [
+        {
+          "en": "The decadent movement celebrated artifice and sensory excess in defiance of conventional morality and belief in progress.",
+          "ja": "デカダン運動は、従来の道徳観や進歩への信念に反発し、人工性と感覚の過剰を称揚した。"
+        },
+        {
+          "en": "Joris-Karl Huysmans's novel Against Nature is often regarded as the quintessential text of the decadent movement.",
+          "ja": "ジョリス=カルル・ユイスマンスの小説『さかしま』は、デカダン運動を体現する典型的な作品としてしばしば見なされる。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "decadence",
+          "pos": "名詞",
+          "ja": "退廃、耽美的な爛熟の状態。"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "フランス語で「衰退」を意味する「décadence」に由来し、当初は批判的な意味合いで使われたとされる。",
+      "trivia": "オスカー・ワイルドは、英語圏においてこのデカダン運動を代表する作家としてしばしば挙げられる。",
+      "explanation": "社会の「堕落」を嘆く言葉として使われていた「デカダンス」を、当の作家たちが逆手に取って自らの美学として肯定的に掲げた点が特徴とされる。",
+      "example_ja": "デカダン運動は、従来の道徳観や進歩への信念に反発し、人工性と感覚の過剰を称揚した。",
+      "example_ja_src": "The decadent movement celebrated artifice and sensory excess in defiance of conventional morality and belief in progress."
+    }
+  },
+  {
+    "english": "existentialist literature",
+    "detail": {
+      "pronunciation": "/ˌɛɡzɪˈstɛnʃəlɪst ˈlɪtərətʃər/",
+      "pos": "名詞",
+      "meanings": [
+        "実存主義文学(自己の選択によって自己を作り上げる思想を扱う文学潮流)"
+      ],
+      "examples": [
+        {
+          "en": "Existentialist literature explores the anxiety and freedom that come from confronting a universe without inherent meaning.",
+          "ja": "実存主義文学は、本質的な意味を持たない世界と向き合うことから生じる不安と自由を探求する。"
+        },
+        {
+          "en": "Jean-Paul Sartre and Albert Camus are the two writers most often associated with existentialist literature.",
+          "ja": "ジャン=ポール・サルトルとアルベール・カミュは、実存主義文学と最も強く結び付けられる2人の作家である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「実存は本質に先立つ」というサルトルの言葉に代表される実存主義哲学に由来するとされる。",
+      "trivia": "カミュ自身は「実存主義者」と呼ばれることをしばしば拒んだが、その作品は今なおこの潮流の代表格とみなされている。",
+      "explanation": "第二次世界大戦後のヨーロッパにおける不条理感と人間の自由への問いを背景に、小説や戯曲を通して哲学的思索を展開した点に特徴があるとされる。",
+      "example_ja": "実存主義文学は、本質的な意味を持たない世界と向き合うことから生じる不安と自由を探求する。",
+      "example_ja_src": "Existentialist literature explores the anxiety and freedom that come from confronting a universe without inherent meaning."
+    }
+  },
+  {
+    "english": "fabliau",
+    "detail": {
+      "pronunciation": "/ˈfæbliˌoʊ/",
+      "pos": "名詞",
+      "meanings": [
+        "ファブリオー(滑稽で下世話な題材を扱う中世フランスの韻文短編物語)"
+      ],
+      "examples": [
+        {
+          "en": "A fabliau typically features a clever trickster who outwits a foolish husband, priest, or merchant for comic effect.",
+          "ja": "ファブリオーは通常、間抜けな夫や聖職者、商人を出し抜く狡猾な策士を主人公とし、こっけいな効果を狙う。"
+        },
+        {
+          "en": "Several of Chaucer's Canterbury Tales borrow the bawdy comic structure of the French fabliau.",
+          "ja": "チョーサーの『カンタベリー物語』のいくつかは、フランスのファブリオーの下世話でこっけいな構成を借用している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "courtly love",
+          "note": "高尚で理想化された恋愛を描く宮廷文学の理念で、下世話な題材を扱うファブリオーとは対照的とされる。"
+        }
+      ],
+      "origin": "古フランス語で「小さな物語」を意味する語に由来するとされる。",
+      "trivia": "ファブリオーはしばしば聖職者や貴族への風刺を含んでおり、当時の社会に対する庶民的な視点を伝える資料としても研究されている。",
+      "explanation": "宮廷風の理想化された恋愛物語(騎士道物語)とは対照的に、庶民的でこっけいな、時に下品な機知を楽しむ短編物語のジャンルとされる。",
+      "example_ja": "ファブリオーは通常、間抜けな夫や聖職者、商人を出し抜く狡猾な策士を主人公とし、こっけいな効果を狙う。",
+      "example_ja_src": "A fabliau typically features a clever trickster who outwits a foolish husband, priest, or merchant for comic effect."
+    }
+  },
+  {
+    "english": "chivalric romance",
+    "detail": {
+      "pronunciation": "/ʃɪˈvælrɪk roʊˈmæns/",
+      "pos": "名詞",
+      "meanings": [
+        "騎士道物語(騎士の武勇・恋愛を理想化して描く中世の物語ジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "Chivalric romance idealizes the knight as a paragon of courage, loyalty, and devoted love.",
+          "ja": "騎士道物語は、騎士を勇気と忠誠、献身的な愛の理想像として描く。"
+        },
+        {
+          "en": "Tales of King Arthur and his knights are among the most enduring examples of chivalric romance.",
+          "ja": "アーサー王とその騎士たちの物語は、騎士道物語の中でも特に今日まで語り継がれてきた例である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「chivalry」(騎士道)という語自体が、馬(cheval)にまたがる騎士の身分を意味するフランス語に由来するとされる。",
+      "trivia": "セルバンテスの『ドン・キホーテ』は、この騎士道物語の伝統を風刺する形で書かれた作品として知られる。",
+      "explanation": "史実というよりも理想化された規範を描くジャンルであり、後世にはその理想主義や非現実性がしばしば風刺やパロディの対象にもなったとされる。",
+      "example_ja": "騎士道物語は、騎士を勇気と忠誠、献身的な愛の理想像として描く。",
+      "example_ja_src": "Chivalric romance idealizes the knight as a paragon of courage, loyalty, and devoted love."
+    }
+  },
+  {
+    "english": "courtly love",
+    "detail": {
+      "pronunciation": "/ˈkɔːrtli lʌv/",
+      "pos": "名詞",
+      "meanings": [
+        "宮廷風恋愛(理想化された献身的な恋慕を描く中世ヨーロッパの恋愛観)"
+      ],
+      "examples": [
+        {
+          "en": "Courtly love idealizes a knight's devoted, often unconsummated passion for a noble lady of higher rank.",
+          "ja": "宮廷風恋愛は、身分の高い貴婦人への、しばしば成就することのない騎士の献身的な情熱を理想化して描く。"
+        },
+        {
+          "en": "The conventions of courtly love shaped much of medieval European poetry and romance for centuries.",
+          "ja": "宮廷風恋愛の慣習は、何世紀にもわたって中世ヨーロッパの詩や物語の多くを形作った。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "fin'amor",
+          "note": "南フランスのトルバドゥールの詩に由来する、宮廷風恋愛を指すオック語の呼称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "フランス語の「courtoisie(宮廷風の礼儀作法)」に由来する概念とされる。",
+      "trivia": "南フランスの吟遊詩人(トルバドゥール)たちの抒情詩が、この宮廷風恋愛の理念を広めたとされる。",
+      "explanation": "実際の結婚関係とは切り離された、精神的かつ様式化された崇拝としての恋愛を理想とする点で、後世のロマンチックな恋愛観の源流の一つとされる。",
+      "example_ja": "宮廷風恋愛は、身分の高い貴婦人への、しばしば成就することのない騎士の献身的な情熱を理想化して描く。",
+      "example_ja_src": "Courtly love idealizes a knight's devoted, often unconsummated passion for a noble lady of higher rank."
+    }
+  },
+  {
+    "english": "roman noir",
+    "detail": {
+      "pronunciation": "/roʊˌmɑːn nwɑːr/",
+      "pos": "名詞",
+      "meanings": [
+        "ロマン・ノワール(暗い雰囲気の犯罪・ゴシック小説、フランス発祥)"
+      ],
+      "examples": [
+        {
+          "en": "A roman noir plunges its characters into a morally ambiguous world of crime, violence, and shadowy urban settings.",
+          "ja": "ロマン・ノワールは、登場人物を犯罪と暴力、影の多い都市を舞台にした道徳的にあいまいな世界へと引きずり込む。"
+        },
+        {
+          "en": "The term roman noir originally described 18th-century Gothic tales before later being applied to hardboiled crime fiction.",
+          "ja": "ロマン・ノワールという語はもともと18世紀のゴシック小説を指していたが、後にハードボイルドな犯罪小説にも用いられるようになった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "フランス語で「黒い小説」を意味する語とされる。",
+      "trivia": "この語は後にフランス映画の「フィルム・ノワール」という呼称の由来にもなったとされる。",
+      "explanation": "当初は英国ゴシック小説のフランス語訳を指す呼称であったが、20世紀にはアメリカのハードボイルド犯罪小説を指す語としても広く使われるようになったとされる。",
+      "example_ja": "ロマン・ノワールは、登場人物を犯罪と暴力、影の多い都市を舞台にした道徳的にあいまいな世界へと引きずり込む。",
+      "example_ja_src": "A roman noir plunges its characters into a morally ambiguous world of crime, violence, and shadowy urban settings."
+    }
+  },
+  {
+    "english": "Künstlerroman",
+    "detail": {
+      "pronunciation": "/ˈkʏnstlɐˌroːmaːn/",
+      "pos": "名詞",
+      "meanings": [
+        "künstlerroman(芸術家としての自己形成を描く教養小説の一種)"
+      ],
+      "examples": [
+        {
+          "en": "A Künstlerroman traces its protagonist's growth not merely as a person, but specifically as an emerging artist.",
+          "ja": "künstlerromanは、主人公の成長を単なる人間としてだけでなく、まさに芽生えつつある芸術家として描き出す。"
+        },
+        {
+          "en": "James Joyce's A Portrait of the Artist as a Young Man is a celebrated example of the Künstlerroman.",
+          "ja": "ジェイムズ・ジョイスの『若い芸術家の肖像』は、künstlerromanの名高い一例である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "artist's novel",
+          "note": "künstlerromanに相当する英語の説明的な言い換え。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ドイツ語で「芸術家(Künstler)」と「小説(Roman)」を組み合わせた語とされる。",
+      "trivia": "トーマス・マンの『トニオ・クレーガー』も、この形式の代表作としてしばしば挙げられる。",
+      "explanation": "教養小説(Bildungsroman)の一種でありながら、主人公の成長が特に芸術的な使命の自覚や創作活動と結びついている点に特徴があるとされる。",
+      "example_ja": "künstlerromanは、主人公の成長を単なる人間としてだけでなく、まさに芽生えつつある芸術家として描き出す。",
+      "example_ja_src": "A Künstlerroman traces its protagonist's growth not merely as a person, but specifically as an emerging artist."
+    }
+  },
+  {
+    "english": "littérature engagée",
+    "detail": {
+      "pronunciation": "/ˌlɪteɪˌrɑːtjuːr ɒ̃ɡaʒeɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "アンガージュマン文学(社会的・政治的関与を重んじる文学理念)"
+      ],
+      "examples": [
+        {
+          "en": "Littérature engagée holds that writers cannot remain neutral bystanders to the political struggles of their time.",
+          "ja": "アンガージュマン文学は、作家は自らの時代の政治的な闘争に対して中立な傍観者ではいられないという立場を取る。"
+        },
+        {
+          "en": "Jean-Paul Sartre's essays laid out much of the theoretical basis for littérature engagée.",
+          "ja": "ジャン=ポール・サルトルの評論は、このアンガージュマン文学の理論的な基盤の多くを打ち立てた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "committed literature",
+          "note": "littérature engagéeの英訳としてよく使われる表現。"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "art for art's sake",
+          "note": "社会的な効用よりも芸術それ自体の美を重んじる立場で、社会参加を重んじるアンガージュマン文学とは対照的とされる。"
+        }
+      ],
+      "origin": "フランス語で「関与した・拘束された」を意味する形容詞engagéに由来するとされる。",
+      "trivia": "サルトル自身が主宰した雑誌『レ・タン・モデルヌ』は、この理念を体現する場としてしばしば言及される。",
+      "explanation": "作家は自らの言葉が社会に影響を及ぼす力を持つことを自覚し、その責任から逃れるべきではないとする考え方に基づく文学理念とされる。",
+      "example_ja": "アンガージュマン文学は、作家は自らの時代の政治的な闘争に対して中立な傍観者ではいられないという立場を取る。",
+      "example_ja_src": "Littérature engagée holds that writers cannot remain neutral bystanders to the political struggles of their time."
+    }
+  },
+  {
+    "english": "verismo",
+    "detail": {
+      "pronunciation": "/vɛˈriːzmoʊ/",
+      "pos": "名詞",
+      "meanings": [
+        "ヴェリズモ(庶民の日常を写実的に描く19世紀末イタリアの文学・オペラ運動)"
+      ],
+      "examples": [
+        {
+          "en": "Verismo writers turned away from Romantic idealization to portray the harsh, everyday lives of ordinary people.",
+          "ja": "ヴェリズモの作家たちは、ロマン主義的な理想化から離れ、庶民の過酷な日常生活をありのままに描いた。"
+        },
+        {
+          "en": "Giovanni Verga's short stories are considered foundational texts of the verismo movement.",
+          "ja": "ジョヴァンニ・ヴェルガの短編小説群は、ヴェリズモ運動の基礎をなす作品とみなされている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "イタリア語で「真実」を意味する「vero」に由来する語とされる。",
+      "trivia": "この運動はオペラにも波及し、マスカーニの『カヴァレリア・ルスティカーナ』などが代表的な「ヴェリズモ・オペラ」として知られる。",
+      "explanation": "フランス自然主義の影響を受けつつ、特にイタリア南部の農民や漁民の生活を、感傷を排した客観的な筆致で描いた点に特徴があるとされる。",
+      "example_ja": "ヴェリズモの作家たちは、ロマン主義的な理想化から離れ、庶民の過酷な日常生活をありのままに描いた。",
+      "example_ja_src": "Verismo writers turned away from Romantic idealization to portray the harsh, everyday lives of ordinary people."
+    }
+  },
+  {
+    "english": "Kunstmärchen",
+    "detail": {
+      "pronunciation": "/ˈkʏnstˌmɛːɐ̯çən/",
+      "pos": "名詞",
+      "meanings": [
+        "künstmärchen(作家による創作的なおとぎ話、ドイツ発祥)"
+      ],
+      "examples": [
+        {
+          "en": "Unlike a folk tale passed down anonymously, a Kunstmärchen is a fairy tale consciously composed by a single identifiable author.",
+          "ja": "作者不明のまま伝えられる昔話とは異なり、künstmärchenは特定の一人の作者によって意識的に創作されたおとぎ話である。"
+        },
+        {
+          "en": "E.T.A. Hoffmann's stories are often cited as masterpieces of the German Kunstmärchen tradition.",
+          "ja": "E.T.A.ホフマンの作品は、ドイツのkünstmärchenの伝統を代表する傑作としてしばしば挙げられる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "literary fairy tale",
+          "note": "künstmärchenに相当する英語の説明的な言い換え。"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "volksmärchen",
+          "note": "特定の作者を持たず口承で伝わる民間伝承の昔話を指し、künstmärchenと対比される。"
+        }
+      ],
+      "origin": "ドイツ語で「芸術(Kunst)」と「おとぎ話(Märchen)」を組み合わせた語とされる。",
+      "trivia": "ドイツ・ロマン主義の作家たちは、この形式を通じて超自然的なものと日常の心理描写を融合させることを好んだとされる。",
+      "explanation": "民間伝承の型式を借りながらも、作者独自の思想や心理描写、時に不気味さを込めて再構築した創作おとぎ話である点に特徴があるとされる。",
+      "example_ja": "作者不明のまま伝えられる昔話とは異なり、künstmärchenは特定の一人の作者によって意識的に創作されたおとぎ話である。",
+      "example_ja_src": "Unlike a folk tale passed down anonymously, a Kunstmärchen is a fairy tale consciously composed by a single identifiable author."
+    }
+  },
+  {
+    "english": "Schauerroman",
+    "detail": {
+      "pronunciation": "/ˈʃaʊɐˌroːmaːn/",
+      "pos": "名詞",
+      "meanings": [
+        "シャウアーロマン(幽霊・恐怖を主題とするドイツ発祥のゴシック小説)"
+      ],
+      "examples": [
+        {
+          "en": "The Schauerroman traded in ghosts, secret societies, and supernatural terror much like its English Gothic counterparts.",
+          "ja": "シャウアーロマンは、英国のゴシック小説と同じように、幽霊や秘密結社、超自然的な恐怖を題材とした。"
+        },
+        {
+          "en": "Schauerroman novels heavily influenced the English Gothic fiction of the same period through frequent translations.",
+          "ja": "シャウアーロマンの小説は、頻繁な翻訳を通じて同時代の英国ゴシック小説にも大きな影響を与えた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "German Gothic novel",
+          "note": "シャウアーロマンを指す英語での説明的な呼び方。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ドイツ語で「身震い・恐怖(Schauer)」と「小説(Roman)」を組み合わせた語とされる。",
+      "trivia": "この様式は当時の英国でも人気を博し、多くの作品が英訳されて英国ゴシック小説の発展にも影響したとされる。",
+      "explanation": "英国のゴシック小説とほぼ同時期に、互いに影響を与え合いながら発展したドイツ独自の恐怖小説の系譜とされる。",
+      "example_ja": "シャウアーロマンは、英国のゴシック小説と同じように、幽霊や秘密結社、超自然的な恐怖を題材とした。",
+      "example_ja_src": "The Schauerroman traded in ghosts, secret societies, and supernatural terror much like its English Gothic counterparts."
+    }
+  },
+  {
+    "english": "feuilleton",
+    "detail": {
+      "pronunciation": "/ˈfɔɪətɒn/",
+      "pos": "名詞",
+      "meanings": [
+        "フイユトン(新聞の文芸欄、またはそこに掲載される連載小説・評論)"
+      ],
+      "examples": [
+        {
+          "en": "Many 19th-century European novels were first serialized in the feuilleton section of a daily newspaper.",
+          "ja": "19世紀ヨーロッパの多くの小説は、まず日刊新聞のフイユトン欄に連載される形で発表された。"
+        },
+        {
+          "en": "The feuilleton allowed readers to follow a gripping story installment by installment, day after day.",
+          "ja": "フイユトンによって、読者は手に汗握る物語を日々の連載として少しずつ追うことができた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "フランス語で「小さな紙片」を意味する語に由来し、当初は新聞に折り込まれた付録を指したとされる。",
+      "trivia": "バルザックやデュマの多くの長編小説は、このフイユトンでの連載という形態を前提に書かれたとされる。",
+      "explanation": "連載形式であったため、読者を飽きさせない引きの強い展開や、各回の末尾に山場を置く構成が発達する一因になったとされる。",
+      "example_ja": "19世紀ヨーロッパの多くの小説は、まず日刊新聞のフイユトン欄に連載される形で発表された。",
+      "example_ja_src": "Many 19th-century European novels were first serialized in the feuilleton section of a daily newspaper."
+    }
+  },
+  {
+    "english": "flâneur",
+    "detail": {
+      "pronunciation": "/flɑːˈnɜːr/",
+      "pos": "名詞",
+      "meanings": [
+        "フラヌール(目的なく都市をぶらつき観察する都市生活者の人物像)"
+      ],
+      "examples": [
+        {
+          "en": "The flâneur wanders the city streets with no particular destination, quietly observing the crowd from a detached distance.",
+          "ja": "フラヌールは特に目的地を持たず都市の街路をさまよい歩き、距離を置いた立場から静かに群衆を観察する。"
+        },
+        {
+          "en": "Walter Benjamin drew heavily on Baudelaire's writings to develop his own theory of the flâneur.",
+          "ja": "ヴァルター・ベンヤミンは、ボードレールの著作を大いに参考にしながら、独自のフラヌール論を発展させた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "flânerie",
+          "pos": "名詞",
+          "ja": "目的を持たずぶらぶらと街を歩き回る行為そのもの。"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "フランス語で「ぶらつく者」を意味する語で、詩人ボードレールの評論を通じて文学用語として広まったとされる。",
+      "trivia": "ヴァルター・ベンヤミンは、このフラヌールを19世紀パリの近代性を分析する鍵となる人物像として理論化したことで知られる。",
+      "explanation": "単なる散歩者ではなく、匿名の群衆の中に紛れながらも冷静な観察者・批評家であり続ける、近代都市に特有の人物像とされる。",
+      "example_ja": "フラヌールは特に目的地を持たず都市の街路をさまよい歩き、距離を置いた立場から静かに群衆を観察する。",
+      "example_ja_src": "The flâneur wanders the city streets with no particular destination, quietly observing the crowd from a detached distance."
+    }
+  },
+  {
+    "english": "Biedermeier",
+    "detail": {
+      "pronunciation": "/ˈbiːdərmaɪər/",
+      "pos": "名詞",
+      "meanings": [
+        "ビーダーマイヤー(家庭的な市民生活を好んだ19世紀前半のドイツ語圏の様式)"
+      ],
+      "examples": [
+        {
+          "en": "Biedermeier literature favored modest domestic scenes and quiet contentment over grand political or revolutionary themes.",
+          "ja": "ビーダーマイヤーの文学は、壮大な政治的・革命的な主題よりも、つつましい家庭の情景と静かな満足感を好んだ。"
+        },
+        {
+          "en": "The Biedermeier period coincided with an era of strict political censorship across the German-speaking states.",
+          "ja": "ビーダーマイヤーの時代は、ドイツ語圏諸邦における厳しい政治的検閲の時代と重なっていた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "当時の風刺雑誌に登場した、平凡で小市民的な架空の人物「ビーダーマイヤー氏」の名に由来するとされる。",
+      "trivia": "この語は当初、皮肉を込めた呼び方であったが、後に様式そのものを指す中立的な名称として定着したとされる。",
+      "explanation": "ウィーン体制下の厳しい検閲により政治や社会批評を公然と描くことが難しかったため、内面の平穏や家庭生活へと題材が向かった時代様式とされる。",
+      "example_ja": "ビーダーマイヤーの文学は、壮大な政治的・革命的な主題よりも、つつましい家庭の情景と静かな満足感を好んだ。",
+      "example_ja_src": "Biedermeier literature favored modest domestic scenes and quiet contentment over grand political or revolutionary themes."
+    }
+  },
+  {
+    "english": "Poet Laureate",
+    "detail": {
+      "pronunciation": "/ˈpoʊət ˈlɔːriət/",
+      "pos": "名詞",
+      "meanings": [
+        "桂冠詩人(国家的行事のために詩を作る英国君主任命の詩人)"
+      ],
+      "examples": [
+        {
+          "en": "As Poet Laureate, she was expected to write verse marking major royal and national occasions.",
+          "ja": "桂冠詩人として、彼女は王室や国家の重要な行事を記念する詩を書くことが期待された。"
+        },
+        {
+          "en": "The role of Poet Laureate in the United Kingdom is now typically held for a fixed ten-year term.",
+          "ja": "英国における桂冠詩人という役職は、現在では通常10年の任期で務められる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "古代ギリシャ・ローマで栄誉ある詩人に月桂冠を授けた慣習に由来するとされる。",
+      "trivia": "ジョン・ドライデンは1668年に、この称号を公式に授けられた最初期の桂冠詩人の一人として知られる。",
+      "explanation": "かつては終身制であったが、現在の英国では特定の期間を務める名誉職として運用されており、必ずしも王室を無批判に称賛する詩ばかりを求められるわけではないとされる。",
+      "example_ja": "桂冠詩人として、彼女は王室や国家の重要な行事を記念する詩を書くことが期待された。",
+      "example_ja_src": "As Poet Laureate, she was expected to write verse marking major royal and national occasions."
+    }
+  },
+  {
+    "english": "Golden Age of Detective Fiction",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "推理小説の黄金時代(1920〜30年代英国推理小説の隆盛期)"
+      ],
+      "examples": [
+        {
+          "en": "The Golden Age of Detective Fiction prized fair-play puzzles in which readers had a genuine chance to solve the crime themselves.",
+          "ja": "推理小説の黄金時代は、読者自身に犯人を解き明かす本物のチャンスを与える、フェアプレーの謎解きを重んじた。"
+        },
+        {
+          "en": "Agatha Christie is widely regarded as the most successful and prolific writer of the Golden Age of Detective Fiction.",
+          "ja": "アガサ・クリスティーは、推理小説の黄金時代において最も成功し多作な作家として広く評価されている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "この時代の推理小説が到達した完成度の高さを、後世の評論家が称えて名付けたとされる呼称。",
+      "trivia": "この時代には、読者に手がかりを隠さず提示すべきだとする「フェアプレー」の原則が特に重視されたとされる。",
+      "explanation": "単なる猟奇的な犯罪の描写よりも、論理的な推理によって読者自身が真相にたどり着けるよう手がかりを公平に配置する、パズルとしての完成度が重んじられた時代とされる。",
+      "example_ja": "推理小説の黄金時代は、読者自身に犯人を解き明かす本物のチャンスを与える、フェアプレーの謎解きを重んじた。",
+      "example_ja_src": "The Golden Age of Detective Fiction prized fair-play puzzles in which readers had a genuine chance to solve the crime themselves."
+    }
+  },
+  {
+    "english": "Detection Club",
+    "detail": {
+      "pos": "固有名詞",
+      "meanings": [
+        "ディテクション・クラブ(1930年設立の英国推理作家の親睦団体)"
+      ],
+      "examples": [
+        {
+          "en": "Members of the Detection Club swore an oath to give their fictional detectives no supernatural aid in solving crimes.",
+          "ja": "ディテクション・クラブの会員たちは、作中の探偵に超自然的な助けを一切与えないという誓いを立てた。"
+        },
+        {
+          "en": "Agatha Christie and Dorothy L. Sayers were both founding members of the Detection Club.",
+          "ja": "アガサ・クリスティーとドロシー・L・セイヤーズは、共にディテクション・クラブの創設メンバーであった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "推理小説の黄金時代を代表する作家たちによって、公正な謎解きの規範を守るために設立されたとされる。",
+      "trivia": "G.K.チェスタトンは、このクラブの初代会長を務めたことで知られる。",
+      "explanation": "会員たちが共同で一章ずつ書き継ぐリレー小説を発表するなど、単なる社交団体を超えて推理小説というジャンルの規範作りにも寄与したとされる。",
+      "example_ja": "ディテクション・クラブの会員たちは、作中の探偵に超自然的な助けを一切与えないという誓いを立てた。",
+      "example_ja_src": "Members of the Detection Club swore an oath to give their fictional detectives no supernatural aid in solving crimes."
+    }
+  },
+  {
+    "english": "locked-room mystery",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "密室ミステリー(密室での犯罪の謎を論理的に解く推理小説のサブジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "In a locked-room mystery, the detective must explain how a crime was committed inside a room sealed from the outside.",
+          "ja": "密室ミステリーでは、探偵は外部から密閉された部屋の中でどのように犯罪が行われたのかを説明しなければならない。"
+        },
+        {
+          "en": "Solving a locked-room mystery typically hinges on some overlooked mechanical trick or hidden passage.",
+          "ja": "密室ミステリーの解決は通常、見落とされていた仕掛けや隠された抜け道にかかっている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "物理的に「鍵のかかった部屋」という設定そのものから付けられた呼称。",
+      "trivia": "エドガー・アラン・ポーの「モルグ街の殺人」は、この密室ミステリーというサブジャンルの元祖の一つとしてしばしば挙げられる。",
+      "explanation": "不可能に思える状況をいかに論理的に説明するかという知的なパズルとしての性格が強く、推理小説の中でも特にトリックの精巧さが問われるジャンルとされる。",
+      "example_ja": "密室ミステリーでは、探偵は外部から密閉された部屋の中でどのように犯罪が行われたのかを説明しなければならない。",
+      "example_ja_src": "In a locked-room mystery, the detective must explain how a crime was committed inside a room sealed from the outside."
+    }
+  },
+  {
+    "english": "Newgate novel",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ニューゲート小説(実在の犯罪者を題材にした1830年代英国の小説ジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "The Newgate novel drew its plots from the lives of real criminals, sometimes portraying them with unsettling sympathy.",
+          "ja": "ニューゲート小説は、実在の犯罪者の生涯から筋立てを得て、時に不穏なほどの同情を込めて彼らを描いた。"
+        },
+        {
+          "en": "Critics accused Newgate novels of glamorizing crime at a time of widespread anxiety about urban lawlessness.",
+          "ja": "批評家たちは、都市の無法状態への不安が広がっていた時代に、ニューゲート小説が犯罪を美化していると非難した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "当時の犯罪者の記録集『ニューゲート・カレンダー』、および同名のロンドンの監獄にちなむ呼称とされる。",
+      "trivia": "ウィリアム・ハリソン・エインズワースの『ジャック・シェパード』は、この論争を巻き起こした代表的なニューゲート小説として知られる。",
+      "explanation": "犯罪者を単純な悪役としてではなく、時に魅力的な主人公として描いたことから、社会の風紀を乱すとして当時大きな論争を呼んだジャンルとされる。",
+      "example_ja": "ニューゲート小説は、実在の犯罪者の生涯から筋立てを得て、時に不穏なほどの同情を込めて彼らを描いた。",
+      "example_ja_src": "The Newgate novel drew its plots from the lives of real criminals, sometimes portraying them with unsettling sympathy."
+    }
+  },
+  {
+    "english": "silver fork novel",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "シルバーフォーク小説(上流社会の作法・流行を描く1820〜40年代英国の小説ジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "Silver fork novels catered to readers curious about the minute details of upper-class manners and fashionable society.",
+          "ja": "シルバーフォーク小説は、上流階級の作法や流行社会の細部に興味を持つ読者の好奇心に応えるものであった。"
+        },
+        {
+          "en": "The genre took its name from a reviewer's mocking remark about a character's excessive concern with using the correct silver fork.",
+          "ja": "このジャンルの名称は、正しい銀のフォークを使うことにこだわりすぎる登場人物を揶揄した、ある書評家の言葉に由来するとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "fashionable novel",
+          "note": "シルバーフォーク小説とほぼ同義で使われることのある呼称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "批評家ウィリアム・ハズリットによる皮肉な評言に由来する呼称とされる。",
+      "trivia": "このジャンルは、上流階級の暮らしぶりを垣間見たいという新興中産階級の読者の欲求に支えられて人気を博したとされる。",
+      "explanation": "物語性よりも上流社会の作法や物腰、社交上の細かな決まり事の描写そのものが読みどころとされた、風俗小説の一種とされる。",
+      "example_ja": "シルバーフォーク小説は、上流階級の作法や流行社会の細部に興味を持つ読者の好奇心に応えるものであった。",
+      "example_ja_src": "Silver fork novels catered to readers curious about the minute details of upper-class manners and fashionable society."
+    }
+  },
+  {
+    "english": "triple-decker novel",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "三巻本小説(19世紀英国で一般的だった小説の分冊出版形式)"
+      ],
+      "examples": [
+        {
+          "en": "Publishers favored the triple-decker novel partly because circulating libraries would pay to lend out all three volumes separately.",
+          "ja": "出版社が三巻本を好んだ一因は、貸本文庫が3巻それぞれを別々に貸し出すことで収益を得られたためであった。"
+        },
+        {
+          "en": "Many Victorian novels were padded out to fit the conventional length of a triple-decker novel.",
+          "ja": "ヴィクトリア朝の小説の多くは、三巻本という慣例的な長さに合わせて水増しされていたとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1冊の物語を「3つの階(デッキ)」に分けて刊行することにたとえた呼称とされる。",
+      "trivia": "貸本業者ミューディーズ・ライブラリーの経営方針が、この三巻本形式を長らく維持させた要因の一つとされる。",
+      "explanation": "1890年代に貸本文庫がこの形式への支援を打ち切ったことで急速に廃れ、以後の小説はより自由な長さで出版されるようになったとされる。",
+      "example_ja": "出版社が三巻本を好んだ一因は、貸本文庫が3巻それぞれを別々に貸し出すことで収益を得られたためであった。",
+      "example_ja_src": "Publishers favored the triple-decker novel partly because circulating libraries would pay to lend out all three volumes separately."
+    }
+  },
+  {
+    "english": "nonsense literature",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ナンセンス文学(言葉遊びと不条理な想像力を楽しむ文学ジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "Nonsense literature delights in wordplay and absurd logic for their own sake, rather than for any deeper hidden meaning.",
+          "ja": "ナンセンス文学は、何か深い隠された意味のためではなく、言葉遊びや不条理な論理そのものを楽しむ。"
+        },
+        {
+          "en": "Lewis Carroll and Edward Lear are widely considered the two great masters of English nonsense literature.",
+          "ja": "ルイス・キャロルとエドワード・リアは、英国のナンセンス文学における二大巨匠として広く見なされている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「意味をなさない」ことを意味する「ナンセンス」という語をそのままジャンル名に用いたとされる。",
+      "trivia": "エドワード・リアの五行詩(リメリック)は、ナンセンス文学を代表する詩形の一つとして知られる。",
+      "explanation": "子ども向けの単純な戯れ言に見えて、実は言語や論理の規則そのものを巧みに操る高度な言葉遊びとして評価されることも多いジャンルとされる。",
+      "example_ja": "ナンセンス文学は、何か深い隠された意味のためではなく、言葉遊びや不条理な論理そのものを楽しむ。",
+      "example_ja_src": "Nonsense literature delights in wordplay and absurd logic for their own sake, rather than for any deeper hidden meaning."
+    }
+  },
+  {
+    "english": "school story",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "スクール・ストーリー(全寮制学校を舞台にした児童・青少年文学のジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "The school story typically follows a pupil's friendships, rivalries, and moral growth within a boarding school setting.",
+          "ja": "スクール・ストーリーは通常、全寮制学校を舞台にした生徒の友情や対立、道徳的な成長を描く。"
+        },
+        {
+          "en": "Thomas Hughes's Tom Brown's School Days is often credited with establishing the conventions of the school story.",
+          "ja": "トマス・ヒューズの『トム・ブラウンの学校生活』は、スクール・ストーリーの慣例を確立した作品としてしばしば評価される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "舞台となる「学校」をそのままジャンル名に用いた呼称。",
+      "trivia": "ハリー・ポッター・シリーズも、魔法学校という設定を通じてこのスクール・ストーリーの伝統を踏まえた作品と評されることがある。",
+      "explanation": "規律や友情、いじめへの対処といった学校生活特有の主題を通じて、若い読者に道徳的な教訓を伝えることを意図したジャンルとされる。",
+      "example_ja": "スクール・ストーリーは通常、全寮制学校を舞台にした生徒の友情や対立、道徳的な成長を描く。",
+      "example_ja_src": "The school story typically follows a pupil's friendships, rivalries, and moral growth within a boarding school setting."
+    }
+  },
+  {
+    "english": "golden age of children's literature",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "児童文学の黄金時代(19世紀後半〜20世紀初頭の英国児童文学の隆盛期)"
+      ],
+      "examples": [
+        {
+          "en": "The golden age of children's literature saw a shift away from heavily moralistic tales toward stories written purely to delight young readers.",
+          "ja": "児童文学の黄金時代には、道徳色の強い教訓話から、若い読者を純粋に楽しませるために書かれた物語への転換が見られた。"
+        },
+        {
+          "en": "Alice's Adventures in Wonderland is often cited as marking the beginning of the golden age of children's literature.",
+          "ja": "『不思議の国のアリス』は、児童文学の黄金時代の始まりを告げた作品としてしばしば挙げられる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "この時代に児童文学が達成した質と多様性の高さを、後世の評論家が称えて名付けた呼称とされる。",
+      "trivia": "この時代には、『ピーターパン』や『たのしい川べ』など、今日でも読み継がれる作品が数多く生まれたとされる。",
+      "explanation": "それ以前の児童文学がしばしば宗教的・道徳的な教訓を前面に押し出していたのに対し、この時代には空想や冒険そのものを楽しむ作品が広く受け入れられるようになったとされる。",
+      "example_ja": "児童文学の黄金時代には、道徳色の強い教訓話から、若い読者を純粋に楽しませるために書かれた物語への転換が見られた。",
+      "example_ja_src": "The golden age of children's literature saw a shift away from heavily moralistic tales toward stories written purely to delight young readers."
+    }
+  },
+  {
+    "english": "Windrush generation",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ウィンドラッシュ世代(1948年以降に英国へ移住したカリブ海諸国出身者)"
+      ],
+      "examples": [
+        {
+          "en": "Writers of the Windrush generation brought Caribbean voices, rhythms, and experiences into British literature for the first time.",
+          "ja": "ウィンドラッシュ世代の作家たちは、それまでにない形で英国文学にカリブ海の声やリズム、経験を持ち込んだ。"
+        },
+        {
+          "en": "The Windrush generation faced significant racism and hardship even as they helped rebuild postwar Britain.",
+          "ja": "ウィンドラッシュ世代は、戦後英国の復興を支えながらも、深刻な人種差別と苦難に直面した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1948年に最初の移民団を乗せて英国に到着した客船「エンパイア・ウィンドラッシュ号」の名にちなむ呼称。",
+      "trivia": "サム・セルヴォンの小説『孤独な放浪者たち』は、この世代の経験を描いた代表作としてしばしば挙げられる。",
+      "explanation": "この世代とその文学は、大英帝国の植民地支配の歴史と、戦後英国の多民族化という現実とを直接結びつける存在として位置づけられている。",
+      "example_ja": "ウィンドラッシュ世代の作家たちは、それまでにない形で英国文学にカリブ海の声やリズム、経験を持ち込んだ。",
+      "example_ja_src": "Writers of the Windrush generation brought Caribbean voices, rhythms, and experiences into British literature for the first time."
+    }
+  },
+  {
+    "english": "Commonwealth literature",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "コモンウェルス文学(旧大英帝国諸国出身の作家による英語文学の総称)"
+      ],
+      "examples": [
+        {
+          "en": "Commonwealth literature brought perspectives from India, Africa, and the Caribbean into the wider world of English-language writing.",
+          "ja": "コモンウェルス文学は、インドやアフリカ、カリブ海諸国からの視点を、より広い英語文学の世界へともたらした。"
+        },
+        {
+          "en": "Some scholars now prefer the term postcolonial literature over Commonwealth literature, viewing the latter as too closely tied to Britain's imperial framework.",
+          "ja": "一部の研究者は、コモンウェルス文学という語が大英帝国の枠組みに寄りすぎているとして、ポストコロニアル文学という呼称をより好むようになっている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "英連邦(Commonwealth of Nations)に加盟する諸国の文学という意味で名付けられた呼称とされる。",
+      "trivia": "チヌア・アチェベやV.S.ナイポールといった作家は、いずれもコモンウェルス文学を代表する作家としてしばしば紹介される。",
+      "explanation": "旧植民地の作家たちが英語という宗主国の言語を用いながら、独自の文化的アイデンティティを表現しようとした点に特徴があるとされ、後のポストコロニアル文学の議論の土台となった。",
+      "example_ja": "コモンウェルス文学は、インドやアフリカ、カリブ海諸国からの視点を、より広い英語文学の世界へともたらした。",
+      "example_ja_src": "Commonwealth literature brought perspectives from India, Africa, and the Caribbean into the wider world of English-language writing."
+    }
+  },
+  {
+    "english": "Vorticism",
+    "detail": {
+      "pronunciation": "/ˈvɔːrtɪsɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "ヴォーティシズム(機械文明のエネルギーを表現した20世紀初頭英国の前衛芸術運動)"
+      ],
+      "examples": [
+        {
+          "en": "Vorticism sought to capture the dynamic energy of the machine age through fragmented, angular forms in both art and poetry.",
+          "ja": "ヴォーティシズムは、絵画と詩の両方において、断片化された鋭角的な形式を通して機械時代の力強いエネルギーを捉えようとした。"
+        },
+        {
+          "en": "Wyndham Lewis founded Vorticism and edited its short-lived but influential magazine, Blast.",
+          "ja": "ウィンダム・ルイスはヴォーティシズムを創始し、短命ながらも影響力のあった機関誌『ブラスト』を編集した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「渦(vortex)」という語に由来し、あらゆるエネルギーが一点に凝縮される様をイメージしたとされる。",
+      "trivia": "詩人エズラ・パウンドもこの運動に深く関わり、機関誌『ブラスト』にヴォーティシズムの理論的な文章を寄せたことで知られる。",
+      "explanation": "イタリア未来派の影響を受けつつも、単なる速度の礼賛ではなく、力が一点に凝縮される「渦」のイメージを重視した点で独自性を持つ運動とされる。",
+      "example_ja": "ヴォーティシズムは、絵画と詩の両方において、断片化された鋭角的な形式を通して機械時代の力強いエネルギーを捉えようとした。",
+      "example_ja_src": "Vorticism sought to capture the dynamic energy of the machine age through fragmented, angular forms in both art and poetry."
+    }
+  },
+  {
+    "english": "little magazine",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "小規模文芸雑誌(実験的作品の発表を重視する少部数の前衛的文芸誌)"
+      ],
+      "examples": [
+        {
+          "en": "Many now-canonical modernist writers first found an audience through a little magazine rather than a mainstream publisher.",
+          "ja": "今日では古典とされる多くのモダニズム作家は、主流の出版社よりも先に、小規模な文芸雑誌を通して読者を見つけた。"
+        },
+        {
+          "en": "Little magazines typically operated on shoestring budgets and often folded after only a few issues.",
+          "ja": "小規模文芸雑誌は通常、限られた予算で運営されており、数号だけで廃刊になることも少なくなかった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "発行部数や規模が「小さい(little)」ことに由来する呼称とされる。",
+      "trivia": "エズラ・パウンドやT.S.エリオットの初期作品の多くは、こうした小規模文芸雑誌を通じて最初に世に出たとされる。",
+      "explanation": "商業出版社が敬遠しがちな実験的・前衛的な作品の発表の場を提供した点で、20世紀モダニズム文学の発展を陰で支えた存在とされる。",
+      "example_ja": "今日では古典とされる多くのモダニズム作家は、主流の出版社よりも先に、小規模な文芸雑誌を通して読者を見つけた。",
+      "example_ja_src": "Many now-canonical modernist writers first found an audience through a little magazine rather than a mainstream publisher."
+    }
+  },
+  {
+    "english": "in-yer-face theatre",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "イン・ヤー・フェイス演劇(暴力・タブーを露骨に描く1990年代英国演劇の潮流)"
+      ],
+      "examples": [
+        {
+          "en": "In-yer-face theatre confronted audiences directly with graphic violence and taboo subject matter, refusing to look away.",
+          "ja": "イン・ヤー・フェイス演劇は、生々しい暴力やタブーとされる題材を観客に真正面から突きつけ、目をそらすことを許さなかった。"
+        },
+        {
+          "en": "Sarah Kane's play Blasted is frequently cited as a defining, deeply controversial work of in-yer-face theatre.",
+          "ja": "サラ・ケインの戯曲『ブラスティッド』は、イン・ヤー・フェイス演劇を代表する、極めて論争的な作品としてしばしば挙げられる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「お前の顔に(in your face)」、すなわち観客の目の前に直接突きつけるという意味の口語表現に由来するとされる。",
+      "trivia": "この潮流の作品はしばしば上演時に激しい賛否両論を巻き起こし、途中退席する観客もいたと伝えられる。",
+      "explanation": "観客を心地よい距離から傍観させるのではなく、暴力や苦痛を生々しく体感させることで、社会の暴力性そのものを直視させようとした演劇の潮流とされる。",
+      "example_ja": "イン・ヤー・フェイス演劇は、生々しい暴力やタブーとされる題材を観客に真正面から突きつけ、目をそらすことを許さなかった。",
+      "example_ja_src": "In-yer-face theatre confronted audiences directly with graphic violence and taboo subject matter, refusing to look away."
+    }
+  },
+  {
+    "english": "state-of-the-nation play",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "国情劇(現代の社会・国家の状況を総括的に描く演劇ジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "A state-of-the-nation play attempts to take stock of the pressing social and political issues facing the country as a whole.",
+          "ja": "国情劇は、国全体が直面している差し迫った社会的・政治的な問題を総括しようとする。"
+        },
+        {
+          "en": "David Hare has written several notable state-of-the-nation plays examining British institutions such as the railways and the church.",
+          "ja": "デイヴィッド・ヘアは、鉄道や教会といった英国の諸制度を検証する、いくつもの著名な国情劇を書いている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "政治の世界で使われる「国情(state of the nation)」という表現を演劇のジャンル名に転用したものとされる。",
+      "trivia": "この種の作品はしばしば、特定の制度や事件を舞台に、幅広い登場人物を通して社会全体を俯瞰しようとする構成を取るとされる。",
+      "explanation": "個人的なドラマにとどまらず、その背後にある制度的・構造的な問題を浮き彫りにしようとする、社会批評的な色合いの強い演劇ジャンルとされる。",
+      "example_ja": "国情劇は、国全体が直面している差し迫った社会的・政治的な問題を総括しようとする。",
+      "example_ja_src": "A state-of-the-nation play attempts to take stock of the pressing social and political issues facing the country as a whole."
+    }
+  },
+  {
+    "english": "regional novel",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "地方小説(特定地域の風景・方言・共同体を描く小説ジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "A regional novel roots its story firmly in the landscape, dialect, and community life of a particular part of the country.",
+          "ja": "地方小説は、その国の特定の地域の風景や方言、共同体の暮らしにしっかりと根ざして物語を描く。"
+        },
+        {
+          "en": "Thomas Hardy's Wessex novels are among the best-known examples of the English regional novel.",
+          "ja": "トマス・ハーディのウェセックスを舞台にした小説群は、英国の地方小説の中でも最もよく知られた例である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "舞台となる「地方・地域(region)」をそのままジャンル名に用いた呼称。",
+      "trivia": "ハーディは実在の地名を架空の「ウェセックス」という地方名に置き換え、一貫した架空の地誌を作品世界に与えたことで知られる。",
+      "explanation": "都市を中心とする主流の文学に対し、特定の地方の風土や方言、共同体特有の価値観を丹念に描き込む点に特徴があるとされる。",
+      "example_ja": "地方小説は、その国の特定の地域の風景や方言、共同体の暮らしにしっかりと根ざして物語を描く。",
+      "example_ja_src": "A regional novel roots its story firmly in the landscape, dialect, and community life of a particular part of the country."
+    }
+  },
+  {
+    "english": "American Gothic",
+    "detail": {
+      "pronunciation": "/əˈmɛrɪkən ˈɡɒθɪk/",
+      "pos": "名詞",
+      "meanings": [
+        "アメリカン・ゴシック(米国の風土・歴史に根ざしたゴシック小説の潮流)"
+      ],
+      "examples": [
+        {
+          "en": "American Gothic fiction transplants the genre's haunted castles and family curses into the American landscape and its own troubled history.",
+          "ja": "アメリカン・ゴシックの小説は、幽霊屋敷や一族の呪いといったこのジャンルの要素を、アメリカの風土と自国の重い歴史の中に移し替える。"
+        },
+        {
+          "en": "Edgar Allan Poe and Nathaniel Hawthorne are frequently cited as founding figures of American Gothic.",
+          "ja": "エドガー・アラン・ポーとナサニエル・ホーソーンは、アメリカン・ゴシックの創始者としてしばしば挙げられる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "英国ゴシック小説の伝統を、米国独自の風土と歴史(清教徒主義や奴隷制の遺産など)に適応させたものとされる。",
+      "trivia": "この呼称は、グラント・ウッドの同名の絵画によっても広く知られているが、絵画と文学ジャンルとしての用法は本来別のものである。",
+      "explanation": "古城の代わりに広大な荒野や旧家の屋敷を、貴族の罪の代わりに植民地時代の罪や奴隷制の記憶を題材とすることが多い、米国独自のゴシック文学の系譜とされる。",
+      "example_ja": "アメリカン・ゴシックの小説は、幽霊屋敷や一族の呪いといったこのジャンルの要素を、アメリカの風土と自国の重い歴史の中に移し替える。",
+      "example_ja_src": "American Gothic fiction transplants the genre's haunted castles and family curses into the American landscape and its own troubled history."
+    }
+  },
+  {
+    "english": "Lost Generation",
+    "detail": {
+      "pronunciation": "/lɒst dʒɛnəˈreɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "ロスト・ジェネレーション(第一次大戦後の幻滅を共有した1920年代米国の作家群)"
+      ],
+      "examples": [
+        {
+          "en": "Writers of the Lost Generation shared a profound disillusionment with the ideals that had led to the First World War.",
+          "ja": "ロスト・ジェネレーションの作家たちは、第一次世界大戦を引き起こした理想への深い幻滅を共有していた。"
+        },
+        {
+          "en": "Ernest Hemingway and F. Scott Fitzgerald are the two novelists most closely identified with the Lost Generation.",
+          "ja": "アーネスト・ヘミングウェイとF・スコット・フィッツジェラルドは、ロスト・ジェネレーションと最も強く結び付けられる2人の小説家である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "作家ガートルード・スタインがヘミングウェイに語ったとされる言葉に由来し、後に『日はまた昇る』の題辞に引用されたことで広まったとされる。",
+      "trivia": "この世代の多くの作家はパリに移り住み、いわゆる「在外米国人(エクスパトリエイト)」として創作活動を行ったことで知られる。",
+      "explanation": "戦争の大義への信頼を失いながらも、その空虚さや浮遊感を新しい簡潔で乾いた文体によって表現した点で、米国近代文学の重要な転換点とされる。",
+      "example_ja": "ロスト・ジェネレーションの作家たちは、第一次世界大戦を引き起こした理想への深い幻滅を共有していた。",
+      "example_ja_src": "Writers of the Lost Generation shared a profound disillusionment with the ideals that had led to the First World War."
+    }
+  },
+  {
+    "english": "American Renaissance",
+    "detail": {
+      "pronunciation": "/əˈmɛrɪkən ˈrɛnəsɑːns/",
+      "pos": "名詞",
+      "meanings": [
+        "アメリカン・ルネサンス(1850年前後の米国文学の開花期)"
+      ],
+      "examples": [
+        {
+          "en": "The American Renaissance produced masterworks such as Moby-Dick and Leaves of Grass within just a few remarkable years.",
+          "ja": "アメリカン・ルネサンスは、『白鯨』や『草の葉』といった傑作を、ほんの数年という驚くべき短期間のうちに生み出した。"
+        },
+        {
+          "en": "Critic F.O. Matthiessen popularized the term American Renaissance in his influential 1941 study of the period.",
+          "ja": "批評家F・O・マシーセンは、1941年に発表したこの時代についての影響力ある研究を通じて、アメリカン・ルネサンスという呼称を広めた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "批評家F.O.マシーセンの著書『American Renaissance』(1941年)によって広く知られるようになった呼称とされる。",
+      "trivia": "ハーレム・ルネサンスとは全く異なる時代・作家群を指すため、名称の類似から混同しないよう注意が必要とされる。",
+      "explanation": "独立から70年余りを経て、米国文学が単なる英国文学の模倣を脱し、独自の思想と文体を確立した画期的な時期として位置づけられている。",
+      "example_ja": "アメリカン・ルネサンスは、『白鯨』や『草の葉』といった傑作を、ほんの数年という驚くべき短期間のうちに生み出した。",
+      "example_ja_src": "The American Renaissance produced masterworks such as Moby-Dick and Leaves of Grass within just a few remarkable years."
+    }
+  },
+  {
+    "english": "Fireside Poets",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ファイヤーサイド・ポエッツ(19世紀米国で家庭向けに親しまれた詩人群)"
+      ],
+      "examples": [
+        {
+          "en": "The Fireside Poets wrote accessible, rhythmic verse meant to be read aloud to the whole family gathered around the hearth.",
+          "ja": "ファイヤーサイド・ポエッツは、暖炉のそばに集まった家族全員に声に出して読み聞かせるための、親しみやすくリズミカルな詩を書いた。"
+        },
+        {
+          "en": "Henry Wadsworth Longfellow was by far the most popular and widely memorized of the Fireside Poets.",
+          "ja": "ヘンリー・ワズワース・ロングフェローは、ファイヤーサイド・ポエッツの中でも群を抜いて人気が高く、暗唱もされた詩人であった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "Schoolroom Poets",
+          "note": "教科書に採用され学校で暗唱されたことに着目した、ほぼ同義の別称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "家庭の暖炉(fireside)のそばで家族に読み聞かせるのにふさわしい詩であったことに由来する呼称とされる。",
+      "trivia": "この一群の詩人の作品は、20世紀に入ると次第に感傷的・保守的であるとして批評家からの評価を下げていったとされる。",
+      "explanation": "難解な実験性よりも、分かりやすい韻律と道徳的な教訓性を重視した点で、当時の学校教育や家庭生活に広く浸透した詩人群とされる。",
+      "example_ja": "ファイヤーサイド・ポエッツは、暖炉のそばに集まった家族全員に声に出して読み聞かせるための、親しみやすくリズミカルな詩を書いた。",
+      "example_ja_src": "The Fireside Poets wrote accessible, rhythmic verse meant to be read aloud to the whole family gathered around the hearth."
+    }
+  },
+  {
+    "english": "American naturalism",
+    "detail": {
+      "pronunciation": "/əˈmɛrɪkən ˈnætʃrəlɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "米国の自然主義文学(遺伝・環境による運命の決定を描く文学潮流)"
+      ],
+      "examples": [
+        {
+          "en": "American naturalism portrays characters whose fates are largely determined by heredity, environment, and social class rather than free will.",
+          "ja": "アメリカの自然主義文学は、自由意志よりも遺伝や環境、社会階級によってほとんど運命が決まってしまう登場人物たちを描く。"
+        },
+        {
+          "en": "Theodore Dreiser's Sister Carrie is often regarded as a landmark novel of American naturalism.",
+          "ja": "セオドア・ドライサーの『シスター・キャリー』は、アメリカの自然主義文学を代表する画期的な小説としてしばしば評価される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "American Renaissance",
+          "note": "個人の精神的な理想や超越性を重んじる傾向が強く、決定論的な自然主義とは対照的とされる。"
+        }
+      ],
+      "origin": "フランスの作家エミール・ゾラが提唱した自然主義の理論を、米国の作家たちが独自に取り入れたものとされる。",
+      "trivia": "スティーヴン・クレインの『街の女マギー』は、都市の貧困を容赦なく描いた初期の代表作として知られる。",
+      "explanation": "リアリズムをさらに徹底し、登場人物を科学的な観察対象のように扱い、社会的・生物学的な力に翻弄される様をほとんど悲観的なまでに描いた点に特徴があるとされる。",
+      "example_ja": "アメリカの自然主義文学は、自由意志よりも遺伝や環境、社会階級によってほとんど運命が決まってしまう登場人物たちを描く。",
+      "example_ja_src": "American naturalism portrays characters whose fates are largely determined by heredity, environment, and social class rather than free will."
+    }
+  },
+  {
+    "english": "muckraking",
+    "detail": {
+      "pronunciation": "/ˈmʌkreɪkɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "マックレイキング(社会の不正を暴く調査報道・文学の手法)"
+      ],
+      "examples": [
+        {
+          "en": "Muckraking journalists exposed unsanitary conditions in the meatpacking industry through painstaking, on-the-ground investigation.",
+          "ja": "マックレイキングを行うジャーナリストたちは、地道な現場取材を通じて食肉加工業界の不衛生な実態を暴いた。"
+        },
+        {
+          "en": "Upton Sinclair's novel The Jungle grew out of the same investigative impulse that drove much muckraking journalism.",
+          "ja": "アプトン・シンクレアの小説『ジャングル』は、多くのマックレイキング的な調査報道と同じ告発の衝動から生まれたものであった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "muckraker",
+          "pos": "名詞",
+          "ja": "社会の不正・腐敗を暴く調査報道を行うジャーナリスト。"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "セオドア・ルーズベルト大統領が、こうした報道を「熊手で泥をかき回す(muckrake)者」になぞらえて批判的に呼んだことに由来するとされる。",
+      "trivia": "アイダ・ターベルによるスタンダード・オイル社の独占的商慣行を暴いた調査報道は、この手法を代表する成果としてしばしば挙げられる。",
+      "explanation": "皮肉を込めて名付けられた呼称であったが、後にはむしろ社会正義に資する調査報道を指す肯定的な語として定着したとされる。",
+      "example_ja": "マックレイキングを行うジャーナリストたちは、地道な現場取材を通じて食肉加工業界の不衛生な実態を暴いた。",
+      "example_ja_src": "Muckraking journalists exposed unsanitary conditions in the meatpacking industry through painstaking, on-the-ground investigation."
+    }
+  },
+  {
+    "english": "slave narrative",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "奴隷体験記(元奴隷が自らの体験を語る米国文学の自伝的ジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "Slave narratives gave firsthand testimony to the brutality of slavery, often to advance the abolitionist cause.",
+          "ja": "奴隷体験記は、しばしば奴隷制廃止運動を後押しする目的で、奴隷制の残虐さを直接的な証言として伝えた。"
+        },
+        {
+          "en": "Frederick Douglass's Narrative of the Life of Frederick Douglass remains the most widely read slave narrative.",
+          "ja": "フレデリック・ダグラスの『フレデリック・ダグラスの生涯の物語』は、今なお最も広く読まれている奴隷体験記である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "奴隷制のもとに置かれた人々自身による体験の語り(narrative)であることに由来する呼称。",
+      "trivia": "ハリエット・ジェイコブズの『ある奴隷少女に起こった出来事』は、女性奴隷の視点から書かれた重要な奴隷体験記として知られる。",
+      "explanation": "単なる個人の回想録にとどまらず、奴隷制という制度そのものの不正義を告発する政治的な意図を強く持った文学ジャンルとされる。",
+      "example_ja": "奴隷体験記は、しばしば奴隷制廃止運動を後押しする目的で、奴隷制の残虐さを直接的な証言として伝えた。",
+      "example_ja_src": "Slave narratives gave firsthand testimony to the brutality of slavery, often to advance the abolitionist cause."
+    }
+  },
+  {
+    "english": "captivity narrative",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "捕囚体験記(先住民に捕らえられた入植者の体験を描く植民地期米国の物語ジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "A captivity narrative typically frames the ordeal of being taken captive by Native Americans as a test of the settler's religious faith.",
+          "ja": "捕囚体験記は通常、先住民に捕らえられるという試練を、入植者自身の信仰が試される出来事として枠づける。"
+        },
+        {
+          "en": "Mary Rowlandson's account of her captivity is considered the founding text of the American captivity narrative.",
+          "ja": "メアリー・ローランドソンによる自らの捕囚体験の記録は、米国の捕囚体験記というジャンルの源流となる作品とされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "先住民などに「捕らわれる(captivity)」という体験の記録であることに由来する呼称。",
+      "trivia": "このジャンルは非常に人気を博し、当時のベストセラー的な出版物の先駆けとしても研究されている。",
+      "explanation": "今日の視点からは先住民に対する偏見を含む記述も多いとされるが、当時の入植者社会の世界観や恐怖を伝える貴重な資料として文学史上重要視されている。",
+      "example_ja": "捕囚体験記は通常、先住民に捕らえられるという試練を、入植者自身の信仰が試される出来事として枠づける。",
+      "example_ja_src": "A captivity narrative typically frames the ordeal of being taken captive by Native Americans as a test of the settler's religious faith."
+    }
+  },
+  {
+    "english": "tall tale",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "トールテール(大げさな誇張を真顔で語る米国の民間伝承的物語様式)"
+      ],
+      "examples": [
+        {
+          "en": "A tall tale piles up wildly exaggerated details while the narrator insists, with a straight face, that every word is true.",
+          "ja": "トールテールでは、語り手がすべてが真実だと真顔で言い張りながら、途方もなく誇張された細部が積み重ねられていく。"
+        },
+        {
+          "en": "Stories of Paul Bunyan and his giant blue ox are classic examples of the American tall tale.",
+          "ja": "ポール・バニヤンと巨大な青い牛の物語は、米国のトールテールを代表する古典的な例である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「高い、途方もない(tall)」話という口語表現に由来する呼称とされる。",
+      "trivia": "マーク・トウェインは、こうしたトールテールの語り口を洗練させ、文学作品に取り入れた作家としても知られる。",
+      "explanation": "開拓時代の辺境地域の口承文化に起源を持つとされ、誇張そのものを楽しむユーモアの様式として米国文学に受け継がれてきたとされる。",
+      "example_ja": "トールテールでは、語り手がすべてが真実だと真顔で言い張りながら、途方もなく誇張された細部が積み重ねられていく。",
+      "example_ja_src": "A tall tale piles up wildly exaggerated details while the narrator insists, with a straight face, that every word is true."
+    }
+  },
+  {
+    "english": "hardboiled fiction",
+    "detail": {
+      "pronunciation": "/ˈhɑːrdbɔɪld ˈfɪkʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "ハードボイルド小説(簡潔な文体とタフな探偵を特徴とする米国犯罪小説)"
+      ],
+      "examples": [
+        {
+          "en": "Hardboiled fiction favors terse, cynical prose and a tough detective navigating a morally compromised world.",
+          "ja": "ハードボイルド小説は、皮肉の効いた簡潔な文体と、道徳的に危うい世界を渡り歩くタフな探偵を好んで描く。"
+        },
+        {
+          "en": "Dashiell Hammett and Raymond Chandler are widely regarded as the founding masters of hardboiled fiction.",
+          "ja": "ダシール・ハメットとレイモンド・チャンドラーは、ハードボイルド小説を確立した巨匠として広く評価されている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Golden Age of Detective Fiction",
+          "note": "上品なパズル的謎解きを重んじる英国流の推理小説で、荒々しい現実を描くハードボイルド小説と対比される。"
+        }
+      ],
+      "origin": "「固ゆで卵」のように感情を表に出さず無感動な様子を意味する俗語「hardboiled」に由来するとされる。",
+      "trivia": "この様式は雑誌『ブラック・マスク』への短編投稿を通じて発展したとされる。",
+      "explanation": "上流階級の邸宅を舞台にした英国流の上品な推理小説とは対照的に、米国の都市の裏社会や暴力、汚職を舞台にした点に特徴があるとされる。",
+      "example_ja": "ハードボイルド小説は、皮肉の効いた簡潔な文体と、道徳的に危うい世界を渡り歩くタフな探偵を好んで描く。",
+      "example_ja_src": "Hardboiled fiction favors terse, cynical prose and a tough detective navigating a morally compromised world."
+    }
+  },
+  {
+    "english": "New Journalism",
+    "detail": {
+      "pronunciation": "/nuː ˈdʒɜːrnəlɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "ニュージャーナリズム(小説的技法を用いた1960〜70年代米国のノンフィクション潮流)"
+      ],
+      "examples": [
+        {
+          "en": "New Journalism borrowed novelistic techniques such as scene-setting and interior monologue while still reporting factual events.",
+          "ja": "ニュージャーナリズムは、事実の出来事を報じながらも、情景描写や内面独白といった小説的な技法を取り入れた。"
+        },
+        {
+          "en": "Truman Capote's In Cold Blood is often cited as a pioneering work of New Journalism.",
+          "ja": "トルーマン・カポーティの『冷血』は、ニュージャーナリズムの先駆的な作品としてしばしば引き合いに出される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "トム・ウルフが1973年の著作でこの潮流を理論化し、広く知られる呼称となったとされる。",
+      "trivia": "ハンター・S・トンプソンの「ゴンゾー・ジャーナリズム」も、このニュージャーナリズムからさらに発展した過激な一分派とされる。",
+      "explanation": "客観性を装う従来の報道スタイルとは異なり、記者自身の主観や文体を前面に出しながら事実を伝えようとした点に特徴があるとされる。",
+      "example_ja": "ニュージャーナリズムは、事実の出来事を報じながらも、情景描写や内面独白といった小説的な技法を取り入れた。",
+      "example_ja_src": "New Journalism borrowed novelistic techniques such as scene-setting and interior monologue while still reporting factual events."
+    }
+  },
+  {
+    "english": "confessional poetry",
+    "detail": {
+      "pronunciation": "/kənˈfɛʃənəl ˈpoʊətri/",
+      "pos": "名詞",
+      "meanings": [
+        "告白詩(私的な苦悩・体験を赤裸々に語る詩の潮流)"
+      ],
+      "examples": [
+        {
+          "en": "Confessional poetry lays bare intensely private experiences, such as mental illness and family trauma, with unusual candor.",
+          "ja": "告白詩は、精神疾患や家族間のトラウマといった極めて私的な体験を、異例なほど率直にさらけ出す。"
+        },
+        {
+          "en": "Sylvia Plath and Anne Sexton are among the poets most closely associated with confessional poetry.",
+          "ja": "シルヴィア・プラスとアン・セクストンは、告白詩と最も強く結び付けられる詩人たちである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ロバート・ロウエルの詩集『人生研究』への書評で使われた「告白的(confessional)」という評言に由来するとされる。",
+      "trivia": "この潮流の詩人の多くは、私生活での深刻な苦悩を作品に反映させており、自死に至った詩人も複数いたことで知られる。",
+      "explanation": "それまでの詩が個人的な感情を客観的な形式や象徴を通して間接的に表現していたのに対し、告白詩は自我や苦悩を直接的な一人称で語る点で大きな転換をもたらしたとされる。",
+      "example_ja": "告白詩は、精神疾患や家族間のトラウマといった極めて私的な体験を、異例なほど率直にさらけ出す。",
+      "example_ja_src": "Confessional poetry lays bare intensely private experiences, such as mental illness and family trauma, with unusual candor."
+    }
+  },
+  {
+    "english": "Black Arts Movement",
+    "detail": {
+      "pos": "固有名詞",
+      "meanings": [
+        "ブラック・アーツ運動(1960〜70年代のアフリカ系米国人による文化運動)"
+      ],
+      "examples": [
+        {
+          "en": "The Black Arts Movement called for a distinctly Black aesthetic that spoke directly to and for Black communities.",
+          "ja": "ブラック・アーツ運動は、黒人コミュニティに直接語りかけ、その代弁者となるような、明確に黒人的な美学を求めた。"
+        },
+        {
+          "en": "Poet and playwright Amiri Baraka is widely regarded as a founding figure of the Black Arts Movement.",
+          "ja": "詩人・劇作家のアミリ・バラカは、ブラック・アーツ運動の創始者的な存在として広く見なされている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "公民権運動、特にブラックパワー運動と密接に結びついて展開されたとされる文化運動。",
+      "trivia": "この運動はしばしば、1920年代のハーレム・ルネサンスに続く、アフリカ系米国人文学における第二の大きな高揚期と位置づけられる。",
+      "explanation": "白人中心の美的基準からの独立を掲げ、黒人コミュニティ自身のための芸術・文学を作り出すことを目指した、政治性の強い文化運動とされる。",
+      "example_ja": "ブラック・アーツ運動は、黒人コミュニティに直接語りかけ、その代弁者となるような、明確に黒人的な美学を求めた。",
+      "example_ja_src": "The Black Arts Movement called for a distinctly Black aesthetic that spoke directly to and for Black communities."
+    }
+  },
+  {
+    "english": "Chicano literature",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "チカーノ文学(メキシコ系米国人の文化的アイデンティティを描く米国文学)"
+      ],
+      "examples": [
+        {
+          "en": "Chicano literature often explores the tension of living between Mexican heritage and mainstream American culture.",
+          "ja": "チカーノ文学はしばしば、メキシコの文化的遺産と米国主流文化との間で生きることの緊張感を探求する。"
+        },
+        {
+          "en": "Sandra Cisneros's The House on Mango Street is one of the most widely taught works of Chicano literature.",
+          "ja": "サンドラ・シスネロスの『マンゴー通り、ときどきさよなら』は、チカーノ文学の中でも最も広く教材に使われている作品の一つである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "メキシコ系米国人を指す「チカーノ/チカーナ」という自称に由来する呼称とされる。",
+      "trivia": "この語はもともと蔑称としても使われていたが、1960年代の公民権運動の中で当事者自身によって肯定的に取り戻されたとされる。",
+      "explanation": "英語とスペイン語を交ぜた表現(コードスイッチング)を用いる作品も多く、二つの文化にまたがるアイデンティティそのものを文体で体現している点が特徴とされる。",
+      "example_ja": "チカーノ文学はしばしば、メキシコの文化的遺産と米国主流文化との間で生きることの緊張感を探求する。",
+      "example_ja_src": "Chicano literature often explores the tension of living between Mexican heritage and mainstream American culture."
+    }
+  },
+  {
+    "english": "Native American Renaissance",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ネイティブ・アメリカン・ルネサンス(1960年代末以降の先住民文学の隆盛)"
+      ],
+      "examples": [
+        {
+          "en": "The Native American Renaissance brought unprecedented critical and popular attention to fiction and poetry by Native American writers.",
+          "ja": "ネイティブ・アメリカン・ルネサンスは、ネイティブ・アメリカンの作家による小説や詩に、それまでにない批評的・大衆的な注目をもたらした。"
+        },
+        {
+          "en": "N. Scott Momaday's novel House Made of Dawn, which won the Pulitzer Prize in 1969, is often credited with launching the Native American Renaissance.",
+          "ja": "1969年にピュリツァー賞を受賞したN・スコット・モマデイの小説『夜明けへの家』は、しばしばネイティブ・アメリカン・ルネサンスの幕開けとなった作品とされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "批評家ケネス・リンカーンが1983年の著作でこの潮流を指してこの呼称を用い、広まったとされる。",
+      "trivia": "この潮流には、リーズリー・マーモン・シルコウやルイーズ・アードリックといった作家も含まれる。",
+      "explanation": "口承伝統や部族固有の世界観と、近代小説の形式とを融合させることで、それまで周縁化されてきた先住民の視点を米国文学の中心に位置づけ直した潮流とされる。",
+      "example_ja": "ネイティブ・アメリカン・ルネサンスは、ネイティブ・アメリカンの作家による小説や詩に、それまでにない批評的・大衆的な注目をもたらした。",
+      "example_ja_src": "The Native American Renaissance brought unprecedented critical and popular attention to fiction and poetry by Native American writers."
+    }
+  },
+  {
+    "english": "metafiction",
+    "detail": {
+      "pronunciation": "/ˌmɛtəˈfɪkʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "メタフィクション(虚構性そのものを主題として意識化する小説様式)"
+      ],
+      "examples": [
+        {
+          "en": "Metafiction constantly reminds the reader that they are reading a constructed story, sometimes through a narrator who comments on the writing process itself.",
+          "ja": "メタフィクションは、時に執筆の過程そのものについて論評する語り手を通して、読者に自分が構築された物語を読んでいるのだと絶えず意識させる。"
+        },
+        {
+          "en": "Kurt Vonnegut's Slaughterhouse-Five includes moments of metafiction in which the author openly acknowledges his own presence in the narrative.",
+          "ja": "カート・ヴォネガットの『スローターハウス5』には、作者自身が物語の中に自らの存在を公然と認めるメタフィクション的な瞬間が含まれている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "self-reflexive fiction",
+          "note": "メタフィクションを説明的に言い換えた表現。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "「〜を超えた」を意味する接頭辞メタ(meta)とフィクションを組み合わせた語とされる。",
+      "trivia": "ジョン・バースの評論「窮乏の文学」は、メタフィクションの理論的な出発点の一つとしてしばしば引用される。",
+      "explanation": "物語への没入を意図的に妨げることで、フィクションを作ること自体の不可能性や、現実と虚構の境界そのものを問い直そうとする実験的な手法とされる。",
+      "example_ja": "メタフィクションは、時に執筆の過程そのものについて論評する語り手を通して、読者に自分が構築された物語を読んでいるのだと絶えず意識させる。",
+      "example_ja_src": "Metafiction constantly reminds the reader that they are reading a constructed story, sometimes through a narrator who comments on the writing process itself."
+    }
+  },
+  {
+    "english": "American postmodernism",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "米国のポストモダニズム(20世紀後半の実験的な小説潮流)"
+      ],
+      "examples": [
+        {
+          "en": "American postmodernism delights in blending high and low culture, historical fact and outright invention, often with a playful irony.",
+          "ja": "アメリカのポストモダニズムは、高尚な文化と低俗な文化、歴史的事実と全くの虚構をしばしば戯れるような皮肉とともに混ぜ合わせることを好む。"
+        },
+        {
+          "en": "Thomas Pynchon's sprawling, digression-filled novels are frequently cited as central texts of American postmodernism.",
+          "ja": "トマス・ピンチョンの、脱線に満ちた大部の小説群は、アメリカのポストモダニズムを代表するテクストとしてしばしば引き合いに出される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "American naturalism",
+          "note": "客観的な現実の観察と因果関係を重んじる潮流で、真実の相対性を強調するポストモダニズムとは対照的とされる。"
+        }
+      ],
+      "origin": "建築や哲学における「ポストモダン」という概念が、文学批評にも取り入れられて広まったとされる。",
+      "trivia": "ドン・デリーロやカート・ヴォネガットも、この潮流を代表する作家としてしばしば挙げられる。",
+      "explanation": "単一の権威ある物語や絶対的な真実の存在そのものを疑い、複数の断片的な視点や自己言及的な仕掛けを通して現実の不確かさを表現しようとした潮流とされる。",
+      "example_ja": "アメリカのポストモダニズムは、高尚な文化と低俗な文化、歴史的事実と全くの虚構をしばしば戯れるような皮肉とともに混ぜ合わせることを好む。",
+      "example_ja_src": "American postmodernism delights in blending high and low culture, historical fact and outright invention, often with a playful irony."
+    }
+  },
+  {
+    "english": "campus novel",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "キャンパス小説(大学を舞台に人間関係を風刺的に描く小説ジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "A campus novel typically satirizes the petty rivalries and intellectual vanity of professors and students within a university setting.",
+          "ja": "キャンパス小説は通常、大学というキャンパスを舞台に、教授や学生同士のささいな対立や知的な虚栄心を風刺的に描く。"
+        },
+        {
+          "en": "Academic politics and office intrigue provide much of the comic material in the typical campus novel.",
+          "ja": "アカデミアの政治的駆け引きや職場内の陰謀は、典型的なキャンパス小説における喜劇的な題材の多くを提供する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "academic novel",
+          "note": "キャンパス小説とほぼ同義で使われる別称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "舞台となる大学の「キャンパス」をそのままジャンル名に用いた呼称。",
+      "trivia": "この語自体は英国発祥ともされるが、米国でも大学制度の拡大とともにこのジャンルの作品が数多く書かれるようになったとされる。",
+      "explanation": "高度な知性を誇る学術界の内部にこそ、俗物根性や権力争いが存在するという皮肉を描き出す点に、このジャンルの持ち味があるとされる。",
+      "example_ja": "キャンパス小説は通常、大学というキャンパスを舞台に、教授や学生同士のささいな対立や知的な虚栄心を風刺的に描く。",
+      "example_ja_src": "A campus novel typically satirizes the petty rivalries and intellectual vanity of professors and students within a university setting."
+    }
+  },
+  {
+    "english": "dirty realism",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ダーティ・リアリズム(装飾を排し労働者階級の日常を描く1980年代米国小説の潮流)"
+      ],
+      "examples": [
+        {
+          "en": "Dirty realism strips away ornamentation to depict the bleak, unglamorous daily lives of working-class characters.",
+          "ja": "ダーティ・リアリズムは装飾をそぎ落とし、労働者階級の登場人物たちの、輝きのない荒涼とした日常生活を描く。"
+        },
+        {
+          "en": "The term dirty realism was coined by a British literary magazine to describe a cluster of American short-story writers.",
+          "ja": "ダーティ・リアリズムという呼称は、あるアメリカの短編作家たちの一群を表すために、英国の文芸雑誌によって作られたとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "literary minimalism",
+          "note": "簡潔な文体を重んじる点でダーティ・リアリズムと重なるが、より広く米国文学全体の傾向を指すこともある呼称。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "英国の文芸雑誌『グランタ』の1983年の特集号で、編集者ビル・ビュフォードがこの呼称を用いたとされる。",
+      "trivia": "レイモンド・カーヴァーは、このダーティ・リアリズムを代表する作家として最も頻繁に名前が挙がる。",
+      "explanation": "感傷や説明を排し、簡潔な描写と会話だけで登場人物の絶望や孤独を浮かび上がらせる点に、この潮流の特色があるとされる。",
+      "example_ja": "ダーティ・リアリズムは装飾をそぎ落とし、労働者階級の登場人物たちの、輝きのない荒涼とした日常生活を描く。",
+      "example_ja_src": "Dirty realism strips away ornamentation to depict the bleak, unglamorous daily lives of working-class characters."
+    }
+  },
+  {
+    "english": "literary minimalism",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "文学的ミニマリズム(簡潔な文体で行間に意味を暗示する小説潮流)"
+      ],
+      "examples": [
+        {
+          "en": "Literary minimalism relies on sparse, unadorned sentences, trusting readers to infer emotion from what is left unsaid.",
+          "ja": "文学的ミニマリズムは、飾り気のない簡潔な文に頼り、語られずに残された部分から読者自身が感情を読み取ることを期待する。"
+        },
+        {
+          "en": "Critics sometimes debate where dirty realism ends and literary minimalism begins, since the two labels overlap considerably.",
+          "ja": "ダーティ・リアリズムとミニマリズムの境界線がどこにあるのかについては、この二つの呼称がかなり重なり合うことから、批評家の間で議論になることがある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "maximalism",
+          "note": "長大で饒舌、脱線を多く含む文体を重んじる潮流で、簡潔さを旨とするミニマリズムと対照的とされる。"
+        }
+      ],
+      "origin": "美術・音楽における「ミニマリズム」の概念を、簡潔な文体を特徴とする小説にも適用したものとされる。",
+      "trivia": "編集者ゴードン・リッシュは、レイモンド・カーヴァーの原稿を大幅に切り詰めたことで知られ、この潮流の文体形成に大きく関わったとされる。",
+      "explanation": "何を書くかと同じくらい、何を書かずに省略するかを重視する文体上の美学であり、感情を直接説明せず読者の推測に委ねる点が特徴とされる。",
+      "example_ja": "文学的ミニマリズムは、飾り気のない簡潔な文に頼り、語られずに残された部分から読者自身が感情を読み取ることを期待する。",
+      "example_ja_src": "Literary minimalism relies on sparse, unadorned sentences, trusting readers to infer emotion from what is left unsaid."
+    }
+  },
+  {
+    "english": "Southern Renaissance",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "南部ルネサンス(1920〜50年代米国南部文学の隆盛期)"
+      ],
+      "examples": [
+        {
+          "en": "The Southern Renaissance produced a wave of ambitious fiction grappling with the region's history of defeat and racial injustice.",
+          "ja": "南部ルネサンスは、地域の敗北の歴史と人種的な不正義に向き合う、意欲的な小説の一大潮流を生み出した。"
+        },
+        {
+          "en": "William Faulkner is the writer most closely identified with the Southern Renaissance in American literature.",
+          "ja": "ウィリアム・フォークナーは、米国文学における南部ルネサンスと最も強く結び付けられる作家である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "南北戦争後の停滞を経て南部文学が新たな高まりを見せたことから、この呼称が定着したとされる。",
+      "trivia": "この潮流には、フォークナーのほか、ユードラ・ウェルティやロバート・ペン・ウォーレンといった作家も含まれるとされる。",
+      "explanation": "不気味さを強調するサザン・ゴシックとは重なりつつも異なる概念で、より広く南部の歴史・共同体・人種関係と向き合った文学全体の開花期を指すとされる。",
+      "example_ja": "南部ルネサンスは、地域の敗北の歴史と人種的な不正義に向き合う、意欲的な小説の一大潮流を生み出した。",
+      "example_ja_src": "The Southern Renaissance produced a wave of ambitious fiction grappling with the region's history of defeat and racial injustice."
+    }
+  },
+  {
+    "english": "American proletarian literature",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "米国のプロレタリア文学(大恐慌下の労働者の苦闘を描いた1930年代の文学潮流)"
+      ],
+      "examples": [
+        {
+          "en": "American proletarian literature depicted the struggles of factory workers, farmers, and the unemployed during the Great Depression.",
+          "ja": "アメリカのプロレタリア文学は、大恐慌下の工場労働者や農民、失業者たちの苦闘を描いた。"
+        },
+        {
+          "en": "John Steinbeck's The Grapes of Wrath is often discussed alongside, though not strictly part of, American proletarian literature.",
+          "ja": "ジョン・スタインベックの『怒りの葡萄』は、厳密にはこの潮流に属さないとされることもあるが、アメリカのプロレタリア文学としばしば並べて論じられる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "マルクス主義の影響を受けた作家たちが結成した「米国作家同盟」などの活動を背景に広まったとされる呼称。",
+      "trivia": "この潮流は世界恐慌という経済的背景と密接に結びついており、恐慌からの回復とともに次第に下火になっていったとされる。",
+      "explanation": "日本やロシアのプロレタリア文学と同様に労働者階級の視点を重視するが、米国では特定の政治組織による統制が比較的緩やかであったとされる点で違いがある。",
+      "example_ja": "アメリカのプロレタリア文学は、大恐慌下の工場労働者や農民、失業者たちの苦闘を描いた。",
+      "example_ja_src": "American proletarian literature depicted the struggles of factory workers, farmers, and the unemployed during the Great Depression."
+    }
+  },
+  {
+    "english": "boom latinoamericano",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ブーム(ラテンアメリカ文学が国際的評価を獲得した1960〜70年代の高揚期)"
+      ],
+      "examples": [
+        {
+          "en": "The boom latinoamericano brought Latin American fiction unprecedented international attention in translation.",
+          "ja": "ブーム・ラティノアメリカーノは、ラテンアメリカの小説にそれまでにない翻訳を通じた国際的な注目をもたらした。"
+        },
+        {
+          "en": "Gabriel García Márquez's One Hundred Years of Solitude is often seen as the signature novel of the boom latinoamericano.",
+          "ja": "ガブリエル・ガルシア=マルケスの『百年の孤独』は、ブーム・ラティノアメリカーノを象徴する小説としてしばしば見なされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "スペイン語で「爆発的な流行」を意味する「boom」がそのまま定着した呼称とされる。",
+      "trivia": "ガルシア=マルケスのほか、フリオ・コルタサルやマリオ・バルガス・リョサもこの潮流の代表的な作家とされる。",
+      "explanation": "魔術的リアリズムをはじめとする実験的な技法と、ラテンアメリカ独自の歴史・政治状況を融合させた作品群が、世界文学に大きな衝撃を与えた時期とされる。",
+      "example_ja": "ブーム・ラティノアメリカーノは、ラテンアメリカの小説にそれまでにない翻訳を通じた国際的な注目をもたらした。",
+      "example_ja_src": "The boom latinoamericano brought Latin American fiction unprecedented international attention in translation."
+    }
+  },
+  {
+    "english": "indigenismo",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "インディヘニスモ(先住民の文化・権利を主題とするラテンアメリカの文学・思想潮流)"
+      ],
+      "examples": [
+        {
+          "en": "Indigenismo sought to give voice and dignity to indigenous peoples long marginalized since the colonial era.",
+          "ja": "インディヘニスモは、植民地時代以来長く周縁化されてきた先住民に、声と尊厳を与えようとした。"
+        },
+        {
+          "en": "José María Arguedas is often cited as a key figure whose work bridged indigenismo and later, more nuanced portrayals of indigenous life.",
+          "ja": "ホセ・マリア・アルゲダスは、インディヘニスモと、その後のより繊細な先住民像の描写とをつなぐ重要な作家としてしばしば挙げられる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "スペイン語で「先住民(indígena)」を主題とすることに由来する呼称。",
+      "trivia": "この潮流には、実際には先住民自身ではなく、都市の知識人が外部の視点から先住民を代弁して描いているという批判も後になされたとされる。",
+      "explanation": "当初は先住民への同情や擁護の立場から書かれることが多かったが、後の世代にはより内部の視点に近づこうとする作品も現れたとされる。",
+      "example_ja": "インディヘニスモは、植民地時代以来長く周縁化されてきた先住民に、声と尊厳を与えようとした。",
+      "example_ja_src": "Indigenismo sought to give voice and dignity to indigenous peoples long marginalized since the colonial era."
+    }
+  },
+  {
+    "english": "dictator novel",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "独裁者小説(独裁者を通して政治的抑圧を描くラテンアメリカの小説ジャンル)"
+      ],
+      "examples": [
+        {
+          "en": "The dictator novel uses the figure of an all-powerful strongman to explore themes of political repression and corruption.",
+          "ja": "独裁者小説は、絶対的な権力を握る強権者という人物像を通して、政治的抑圧と腐敗という主題を探求する。"
+        },
+        {
+          "en": "Augusto Roa Bastos's I, the Supreme is considered one of the foundational works of the Latin American dictator novel.",
+          "ja": "アウグスト・ロア・バストスの『至高の我』は、ラテンアメリカの独裁者小説を代表する基礎的な作品の一つとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "novela del dictador",
+          "note": "独裁者小説を指すスペイン語の原語表現。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "スペイン語で「独裁者の小説(novela del dictador)」と呼ばれたことに由来するとされる。",
+      "trivia": "ガルシア=マルケスの『族長の秋』も、この独裁者小説の代表作の一つとしてしばしば挙げられる。",
+      "explanation": "実在の特定の独裁者をそのまま描くのではなく、しばしば複数の実在の人物像を合成した架空の独裁者を通して、権力そのものの本質を寓意的に描く点に特徴があるとされる。",
+      "example_ja": "独裁者小説は、絶対的な権力を握る強権者という人物像を通して、政治的抑圧と腐敗という主題を探求する。",
+      "example_ja_src": "The dictator novel uses the figure of an all-powerful strongman to explore themes of political repression and corruption."
+    }
+  },
+  {
+    "english": "crónica",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "クロニカ(ジャーナリズムと文学を融合させたラテンアメリカの短編ノンフィクション)"
+      ],
+      "examples": [
+        {
+          "en": "A crónica blends journalistic observation with literary style to capture a fleeting slice of everyday urban life.",
+          "ja": "クロニカは、都市の日常生活のはかない一場面をとらえるために、ジャーナリズム的な観察と文学的な文体とを組み合わせる。"
+        },
+        {
+          "en": "Gabriel García Márquez worked as a journalist writing crónicas long before he became known as a novelist.",
+          "ja": "ガブリエル・ガルシア=マルケスは、小説家として知られるようになるずっと前、クロニカを書くジャーナリストとして働いていた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "スペイン語で「年代記」を意味する語に由来し、植民地時代の記録文学の伝統にもさかのぼるとされる。",
+      "trivia": "メキシコの作家カルロス・モンシバイスは、現代のクロニカというジャンルを洗練させた代表的な書き手として知られる。",
+      "explanation": "厳密な客観報道とも純粋な創作物語とも異なり、書き手自身の視点や文体を強く反映させながら現実の出来事を描く、独自の中間的なジャンルとされる。",
+      "example_ja": "クロニカは、都市の日常生活のはかない一場面をとらえるために、ジャーナリズム的な観察と文学的な文体とを組み合わせる。",
+      "example_ja_src": "A crónica blends journalistic observation with literary style to capture a fleeting slice of everyday urban life."
+    }
+  },
+  {
+    "english": "lo real maravilloso",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "驚異の現実(ラテンアメリカ固有の驚異を描く文学概念、カルペンティエル提唱)"
+      ],
+      "examples": [
+        {
+          "en": "Alejo Carpentier argued that lo real maravilloso already existed in Latin America's own history and landscape, without needing to be invented.",
+          "ja": "アレホ・カルペンティエルは、ロ・レアル・マラビリョーソはラテンアメリカ自身の歴史や風土の中にすでに存在しており、新たに作り出す必要はないと論じた。"
+        },
+        {
+          "en": "Some scholars distinguish lo real maravilloso from the closely related but more universally applicable concept of magical realism.",
+          "ja": "一部の研究者は、ロ・レアル・マラビリョーソを、より普遍的に適用されるマジックリアリズムという近縁の概念とは区別して論じる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "marvelous real",
+          "note": "lo real maravillosoの英訳としてよく使われる表現。"
+        }
+      ],
+      "antonyms": [],
+      "origin": "カルペンティエルが1949年の小説『この世の王国』の序文で提唱した概念とされる。",
+      "trivia": "カルペンティエルは、ヨーロッパのシュルレアリスムが人工的に驚異を作り出そうとしたのに対し、ラテンアメリカにはそれが現実として既に存在すると主張したとされる。",
+      "explanation": "後に広く使われるようになった「マジックリアリズム」という語としばしば混同されるが、カルペンティエル自身はラテンアメリカという特定の土地の歴史的現実に根ざした概念として提唱したとされる。",
+      "example_ja": "アレホ・カルペンティエルは、ロ・レアル・マラビリョーソはラテンアメリカ自身の歴史や風土の中にすでに存在しており、新たに作り出す必要はないと論じた。",
+      "example_ja_src": "Alejo Carpentier argued that lo real maravilloso already existed in Latin America's own history and landscape, without needing to be invented."
+    }
+  },
+  {
+    "english": "corrido",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "コリード(実際の事件や英雄を語り伝えるメキシコの物語性の強い民謡バラード)"
+      ],
+      "examples": [
+        {
+          "en": "A corrido narrates real or legendary events, such as a revolutionary battle or a folk hero's exploits, set to traditional melody.",
+          "ja": "コリードは、革命の戦いや民衆的英雄の武勇伝といった実際または伝説的な出来事を、伝統的な旋律に乗せて語る。"
+        },
+        {
+          "en": "Corridos about the Mexican Revolution remain widely performed and studied as a form of folk historical memory.",
+          "ja": "メキシコ革命を題材にしたコリードは、民衆的な歴史の記憶の一形式として、今なお広く演奏され研究されている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "スペイン語で「走る、流れる」を意味する動詞correrに由来するとされる。",
+      "trivia": "現代では麻薬密売組織を題材にした「ナルココリード」という物議を醸す一分野も生まれているとされる。",
+      "explanation": "文字の読み書きができない層にも、歴史的な出来事や地域の英雄伝説を伝える口承的なメディアとして、メキシコの民衆文化の中で重要な役割を果たしてきたとされる。",
+      "example_ja": "コリードは、革命の戦いや民衆的英雄の武勇伝といった実際または伝説的な出来事を、伝統的な旋律に乗せて語る。",
+      "example_ja_src": "A corrido narrates real or legendary events, such as a revolutionary battle or a folk hero's exploits, set to traditional melody."
+    }
+  },
+  {
+    "english": "Créolité",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "クレオリテ(カリブ海の混淆的アイデンティティを唱える文学運動)"
+      ],
+      "examples": [
+        {
+          "en": "Créolité celebrates the mixed, hybrid cultural identity of the Caribbean rather than looking back to a single ancestral homeland.",
+          "ja": "クレオリテは、単一の祖先の故郷を振り返るのではなく、カリブ海の混淆的なハイブリッドの文化的アイデンティティを称揚する。"
+        },
+        {
+          "en": "Writers Patrick Chamoiseau and Raphaël Confiant helped articulate the ideas behind Créolité in their influential manifesto.",
+          "ja": "作家のパトリック・シャモワゾーとラファエル・コンフィアンは、その影響力ある宣言文の中でクレオリテの理念を明確に打ち出した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "Négritude",
+          "note": "アフリカへの一体感を重視する先行世代の理念で、混淆性を重んじるクレオリテはこれとの違いを強調して展開されたとされる。"
+        }
+      ],
+      "origin": "1989年の宣言文『クレオリテ礼賛』によってこの理念が広く知られるようになったとされる。",
+      "trivia": "この運動は、先行するネグリチュード運動がアフリカへの帰属を重視しすぎているとして、その乗り越えを図る形で展開されたとされる。",
+      "explanation": "単一のルーツに還元されない、複数の文化が交わることで生まれる独自性そのものを積極的に肯定しようとする、カリブ海文学における理念とされる。",
+      "example_ja": "クレオリテは、単一の祖先の故郷を振り返るのではなく、カリブ海の混淆的なハイブリッドの文化的アイデンティティを称揚する。",
+      "example_ja_src": "Créolité celebrates the mixed, hybrid cultural identity of the Caribbean rather than looking back to a single ancestral homeland."
+    }
+  },
+  {
+    "english": "dastan",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ダースターン(英雄譚を語るペルシャ語・ウルドゥー語圏の伝統的物語形式)"
+      ],
+      "examples": [
+        {
+          "en": "A dastan weaves together heroic battles, romance, and magical adventure into one long, elaborately embellished story.",
+          "ja": "ダースターンは、英雄的な戦い、恋愛、魔法的な冒険を、一つの長く技巧的に飾られた物語へと織り上げる。"
+        },
+        {
+          "en": "The Dastan-e Amir Hamza is among the most celebrated examples of this narrative tradition in Persian and Urdu.",
+          "ja": "『アミール・ハムザ物語』は、ペルシャ語・ウルドゥー語圏におけるこの物語伝統を代表する作品の一つとされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ペルシャ語で「物語」を意味する語に由来するとされる。",
+      "trivia": "口承の語り部(ダースターンゴー)による即興的な語りの伝統が、後に大部の文字作品としてまとめられていったとされる。",
+      "explanation": "単一の起源に定まらず、語り手ごとに細部を膨らませながら世代を超えて語り継がれてきた、南アジア・中東の物語文化を代表する形式とされる。",
+      "example_ja": "ダースターンは、英雄的な戦い、恋愛、魔法的な冒険を、一つの長く技巧的に飾られた物語へと織り上げる。",
+      "example_ja_src": "A dastan weaves together heroic battles, romance, and magical adventure into one long, elaborately embellished story."
+    }
+  },
+  {
+    "english": "qasida",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "カスィーダ(君主への頌歌として詠まれるアラビア語・ペルシャ語圏の伝統的頌詩)"
+      ],
+      "examples": [
+        {
+          "en": "A qasida maintains a single rhyme throughout dozens of lines, often building toward praise of a ruler or patron.",
+          "ja": "カスィーダは、数十行にわたって単一の脚韻を保ち続け、しばしば君主や庇護者への賛美へと展開していく。"
+        },
+        {
+          "en": "The qasida tradition predates Islam and later spread from Arabic into Persian, Urdu, and other literatures.",
+          "ja": "カスィーダの伝統はイスラム以前にさかのぼり、後にアラビア語からペルシャ語やウルドゥー語などの文学にも広まった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "ghazal",
+          "note": "より短く恋愛や離別を主題とする詩形で、頌歌としての性格が強いカスィーダとは主題が異なるとされる。"
+        }
+      ],
+      "origin": "アラビア語で「意図・目的」を意味する語に由来するとされる。",
+      "trivia": "イスラム以前のアラビアの詩人イムルウル・カイスの作品は、この形式の古典として今も引用されるとされる。",
+      "explanation": "定型の脚韻・韻律を守りながら、しばしば旅の情景描写から始まり、最終的に頌歌としての本題へと至る、独特の構成を持つ詩形とされる。",
+      "example_ja": "カスィーダは、数十行にわたって単一の脚韻を保ち続け、しばしば君主や庇護者への賛美へと展開していく。",
+      "example_ja_src": "A qasida maintains a single rhyme throughout dozens of lines, often building toward praise of a ruler or patron."
+    }
+  },
+  {
+    "english": "maqama",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "マカーマ(韻を踏んだ散文で語られるアラビア文学の連作物語様式)"
+      ],
+      "examples": [
+        {
+          "en": "A maqama recounts the adventures of a clever, roguish wanderer through short, self-contained episodes in ornate rhymed prose.",
+          "ja": "マカーマは、機知に富む放浪者の冒険を、華麗な韻文散文による短く独立した挿話の連続として物語る。"
+        },
+        {
+          "en": "Al-Hariri's Maqamat is considered one of the most virtuosic examples of this Arabic literary form.",
+          "ja": "ハリーリーの『マカーマート』は、このアラビア文学の様式の中でも特に技巧の粋を極めた例とされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "アラビア語で「集い、座」を意味する語に由来し、そこで語られる話という意味合いを持つとされる。",
+      "trivia": "この様式は言葉遊びや修辞的な技巧の見せ場としての性格が強く、後世の後継者を挑発する形で連作が書き継がれたとされる。",
+      "explanation": "筋立ての面白さそのものよりも、脚韻を踏んだ華麗な文体をいかに巧みに操るかという言語的な技巧の披露に主眼が置かれた文学様式とされる。",
+      "example_ja": "マカーマは、機知に富む放浪者の冒険を、華麗な韻文散文による短く独立した挿話の連続として物語る。",
+      "example_ja_src": "A maqama recounts the adventures of a clever, roguish wanderer through short, self-contained episodes in ornate rhymed prose."
+    }
+  },
+  {
+    "english": "adab",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "アダブ(教養・美的洗練・道徳を兼ね備える古典アラビア語圏の人文的散文の伝統)"
+      ],
+      "examples": [
+        {
+          "en": "Classical adab literature aimed to entertain, educate, and refine the reader's manners all at once.",
+          "ja": "古典的なアダブ文学は、読者を楽しませ、教養を与え、その振る舞いを洗練させることを同時に目指した。"
+        },
+        {
+          "en": "Al-Jahiz's essays are frequently cited as masterpieces of the adab tradition, ranging playfully across countless topics.",
+          "ja": "ジャーヒズの随筆は、無数の話題を軽妙に渡り歩く、アダブの伝統を代表する傑作としてしばしば挙げられる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "アラビア語で「礼儀作法・教養」を意味する語が、そうした教養を体現する文学そのものを指すようになったとされる。",
+      "trivia": "現代アラビア語では、この語はより一般的に「文学」全般を指す語としても使われている。",
+      "explanation": "宗教的な知識とは別に、洗練された人間としてふさわしい幅広い教養と機知を身につけるための読み物として発展した、古典アラビア文化に特有の文学理念とされる。",
+      "example_ja": "古典的なアダブ文学は、読者を楽しませ、教養を与え、その振る舞いを洗練させることを同時に目指した。",
+      "example_ja_src": "Classical adab literature aimed to entertain, educate, and refine the reader's manners all at once."
+    }
+  },
+  {
+    "english": "Nahda",
+    "detail": {
+      "pos": "固有名詞",
+      "meanings": [
+        "ナフダ(19世紀半ば以降のアラビア文化・文学の復興運動)"
+      ],
+      "examples": [
+        {
+          "en": "The Nahda brought a wave of new newspapers, novels, and translations that modernized Arabic literary culture.",
+          "ja": "ナフダは、アラビア語の文学文化を近代化させる、新聞・小説・翻訳の波をもたらした。"
+        },
+        {
+          "en": "Writers of the Nahda grappled with how to reconcile classical Arabic literary heritage with new Western literary forms like the novel.",
+          "ja": "ナフダの作家たちは、古典アラビア文学の遺産と、小説のような西洋の新しい文学形式とをどう調和させるかという課題に取り組んだ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "アラビア語で「目覚め・復興」を意味する語とされる。",
+      "trivia": "この時期にはエジプトやレバノンを中心に多くの新聞・雑誌が創刊され、アラビア語小説という新しい形式が本格的に定着したとされる。",
+      "explanation": "オスマン帝国支配下での停滞からの脱却を目指し、西洋の思想や文学形式を取り入れつつも、アラビア語という言語の古典的な豊かさを再評価しようとした運動とされる。",
+      "example_ja": "ナフダは、アラビア語の文学文化を近代化させる、新聞・小説・翻訳の波をもたらした。",
+      "example_ja_src": "The Nahda brought a wave of new newspapers, novels, and translations that modernized Arabic literary culture."
+    }
+  },
+  {
+    "english": "rubaiyat",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ルバーイヤート(独立した四行詩を集めたペルシャ語の詩集形式)"
+      ],
+      "examples": [
+        {
+          "en": "A rubaiyat collects independent four-line verses that often meditate on mortality, wine, and the fleeting pleasures of life.",
+          "ja": "ルバーイヤートは、しばしば死すべき運命や酒、はかない人生の快楽について瞑想する、独立した四行詩を集めたものである。"
+        },
+        {
+          "en": "Edward FitzGerald's English translation of the Rubaiyat of Omar Khayyam introduced this Persian poetic form to a huge Western readership.",
+          "ja": "エドワード・フィッツジェラルドによる『オマル・ハイヤームのルバーイヤート』の英訳は、このペルシャの詩形を膨大な西洋の読者に紹介した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "rubai",
+          "pos": "名詞",
+          "ja": "ルバーイヤートを構成する個々の四行詩そのもの。"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "アラビア語で「4」を意味する語に由来し、四行から成る詩(ルバーイー)の複数形とされる。",
+      "trivia": "フィッツジェラルドの翻訳は、原詩に忠実な逐語訳というより、彼自身による自由な翻案に近いという指摘もある。",
+      "explanation": "各詩は独立して味わえる短い箴言的な内容を持ちながら、全体としては人生のはかなさという共通のテーマのもとに緩やかにまとめられている点に特徴があるとされる。",
+      "example_ja": "ルバーイヤートは、しばしば死すべき運命や酒、はかない人生の快楽について瞑想する、独立した四行詩を集めたものである。",
+      "example_ja_src": "A rubaiyat collects independent four-line verses that often meditate on mortality, wine, and the fleeting pleasures of life."
+    }
+  },
+  {
+    "english": "bhakti poetry",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "バクティ詩(神への個人的な献身を歌う中世インドの信愛詩の伝統)"
+      ],
+      "examples": [
+        {
+          "en": "Bhakti poetry expresses passionate, personal devotion to a chosen deity, often bypassing formal ritual and caste distinctions.",
+          "ja": "バクティ詩は、儀式や身分の別を飛び越え、選んだ神への情熱的で個人的な献身を表現する。"
+        },
+        {
+          "en": "The poet-saint Mirabai is among the most beloved voices of the bhakti poetry tradition.",
+          "ja": "詩人にして聖者であったミーラーバーイーは、バクティ詩の伝統の中でも特に愛されてきた声の一人である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "サンスクリット語で「献身・帰依」を意味する「バクティ」に由来するとされる。",
+      "trivia": "このバクティ運動は、地方の様々な言語で詩が詠まれたことにより、それぞれの地域語の文学的発展にも大きく寄与したとされる。",
+      "explanation": "サンスクリット語の権威的な宗教文献ではなく、地方語を用いて庶民にも分かる形で神への愛を表現した点で、インド文学史上重要な民衆的潮流とされる。",
+      "example_ja": "バクティ詩は、儀式や身分の別を飛び越え、選んだ神への情熱的で個人的な献身を表現する。",
+      "example_ja_src": "Bhakti poetry expresses passionate, personal devotion to a chosen deity, often bypassing formal ritual and caste distinctions."
+    }
+  },
+  {
+    "english": "kavya",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "カーヴィヤ(修辞技巧を凝らす古典サンスクリット文学の様式)"
+      ],
+      "examples": [
+        {
+          "en": "Kavya poetry prizes intricate wordplay, elaborate metaphor, and technical virtuosity over plain narrative clarity.",
+          "ja": "カーヴィヤの詩は、平明な物語の分かりやすさよりも、複雑な言葉遊びや凝った比喩、技巧的な妙技を尊ぶ。"
+        },
+        {
+          "en": "Kalidasa's works are traditionally regarded as the supreme achievement of classical Sanskrit kavya.",
+          "ja": "カーリダーサの作品群は、伝統的に古典サンスクリット・カーヴィヤの最高到達点とみなされている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "サンスクリット語で「詩人の作品」を意味する語に由来するとされる。",
+      "trivia": "カーヴィヤの理論は、感情の美的な受容を論じる「ラサ」の理論と密接に結びついて発展したとされる。",
+      "explanation": "単に物語を伝える手段としてではなく、言語そのものの美しさと技巧を極限まで追求する芸術として発展した、サンスクリット文学の高度に様式化された伝統とされる。",
+      "example_ja": "カーヴィヤの詩は、平明な物語の分かりやすさよりも、複雑な言葉遊びや凝った比喩、技巧的な妙技を尊ぶ。",
+      "example_ja_src": "Kavya poetry prizes intricate wordplay, elaborate metaphor, and technical virtuosity over plain narrative clarity."
+    }
+  },
+  {
+    "english": "rasa theory",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ラサ理論(作品が呼び起こす美的感情を体系化する古典インドの美学理論)"
+      ],
+      "examples": [
+        {
+          "en": "Rasa theory analyzes the distinct aesthetic emotions, such as love or heroism, that a work of literature or drama is meant to evoke in its audience.",
+          "ja": "ラサ理論は、恋愛や勇壮さといった、文学や演劇作品が観客の中に呼び起こすことを意図する、それぞれ異なる美的感情を分析する。"
+        },
+        {
+          "en": "The ancient treatise Natyashastra is the foundational text most closely associated with the development of rasa theory.",
+          "ja": "古代の理論書『ナーティヤシャーストラ』は、このラサ理論の発展と最も密接に結び付けられる基礎的な文献である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "サンスクリット語で「味・情趣」を意味する「ラサ」に由来する概念とされる。",
+      "trivia": "伝統的には恋愛・滑稽・悲哀・忿怒・勇壮・恐怖・嫌悪・驚異という8つ(後に平安を加え9つ)のラサが分類されているとされる。",
+      "explanation": "単なる感情そのものではなく、芸術作品を通して観客が味わう、日常の感情から距離を置いた洗練された美的経験を指す概念だとされる。",
+      "example_ja": "ラサ理論は、恋愛や勇壮さといった、文学や演劇作品が観客の中に呼び起こすことを意図する、それぞれ異なる美的感情を分析する。",
+      "example_ja_src": "Rasa theory analyzes the distinct aesthetic emotions, such as love or heroism, that a work of literature or drama is meant to evoke in its audience."
+    }
+  },
+  {
+    "english": "nazm",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ナズム(一貫した主題を持つウルドゥー語・ペルシャ語の詩形)"
+      ],
+      "examples": [
+        {
+          "en": "Unlike the self-contained couplets of a ghazal, a nazm develops a single, unified theme from beginning to end.",
+          "ja": "ガザルの各対句が独立しているのとは異なり、ナズムは初めから終わりまで一貫した一つの主題を展開していく。"
+        },
+        {
+          "en": "Modern Urdu poets increasingly turned to nazm to address social and political themes more directly than the ghazal traditionally allowed.",
+          "ja": "近代のウルドゥー語の詩人たちは、ガザルの伝統では扱いにくかった社会的・政治的な主題により直接的に向き合うため、次第にナズムを用いるようになった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "ghazal",
+          "note": "各対句が独立した意味を持ちうる詩形で、一貫した主題を展開するナズムと対比される。"
+        }
+      ],
+      "origin": "アラビア語で「秩序・配列」を意味する語に由来するとされる。",
+      "trivia": "詩人ムハンマド・イクバールは、社会的・哲学的な主題を扱うナズムの発展に大きく寄与したとされる。",
+      "explanation": "伝統的な恋愛主題に限定されがちなガザルに対し、政治・社会批評・叙事的な主題まで幅広く扱えるより自由な形式として、近代以降特に発展したとされる。",
+      "example_ja": "ガザルの各対句が独立しているのとは異なり、ナズムは初めから終わりまで一貫した一つの主題を展開していく。",
+      "example_ja_src": "Unlike the self-contained couplets of a ghazal, a nazm develops a single, unified theme from beginning to end."
+    }
+  },
+  {
+    "english": "Progressive Writers' Movement",
+    "detail": {
+      "pos": "固有名詞",
+      "meanings": [
+        "進歩的作家運動(社会変革を志向した1930年代以降の南アジアの文学運動)"
+      ],
+      "examples": [
+        {
+          "en": "The Progressive Writers' Movement urged writers across the Indian subcontinent to confront poverty, feudal oppression, and social injustice directly.",
+          "ja": "進歩的作家運動は、インド亜大陸全域の作家たちに、貧困や封建的な抑圧、社会的不正義に正面から向き合うよう促した。"
+        },
+        {
+          "en": "Urdu writer Premchand's presidential address helped set the tone for the Progressive Writers' Movement at its founding conference.",
+          "ja": "ウルドゥー語作家プレームチャンドによる会長講演は、この進歩的作家運動の創立会議において、その基調を方向づける一助となった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1936年にラクナウで開催された第一回大会をもって正式に発足したとされる文学運動。",
+      "trivia": "この運動には、ウルドゥー語だけでなくヒンディー語やベンガル語など、複数の言語圏の作家が参加していたとされる。",
+      "explanation": "独立以前のインドにおいて、文学を単なる娯楽ではなく社会変革のための積極的な手段とみなす立場から、多くの作家に影響を与えた運動とされる。",
+      "example_ja": "進歩的作家運動は、インド亜大陸全域の作家たちに、貧困や封建的な抑圧、社会的不正義に正面から向き合うよう促した。",
+      "example_ja_src": "The Progressive Writers' Movement urged writers across the Indian subcontinent to confront poverty, feudal oppression, and social injustice directly."
+    }
+  },
+  {
+    "english": "Négritude",
+    "detail": {
+      "pos": "固有名詞",
+      "meanings": [
+        "ネグリチュード(アフリカ系文化・誇りを肯定する20世紀前半のフランス語圏の思想・文学運動)"
+      ],
+      "examples": [
+        {
+          "en": "Négritude asserted pride in Black African culture and identity in defiance of colonial denigration.",
+          "ja": "ネグリチュードは、植民地主義による貶めに抗して、黒人アフリカの文化とアイデンティティへの誇りを主張した。"
+        },
+        {
+          "en": "Aimé Césaire, Léopold Sédar Senghor, and Léon Damas are considered the three founding figures of Négritude.",
+          "ja": "エメ・セゼール、レオポール・セダール・サンゴール、レオン・ダマは、ネグリチュードの3人の創始者とみなされている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "フランス語で「黒人であること」を意味する語をそのまま運動の名称に用いたとされる。",
+      "trivia": "サンゴールは後にセネガルの初代大統領となり、詩人と政治家という二つの顔を持ったことで知られる。",
+      "explanation": "植民地支配のもとで劣ったものとされてきたアフリカの文化的価値を逆転させ、積極的な誇りの源泉として再定義しようとした点に特徴があるとされる。",
+      "example_ja": "ネグリチュードは、植民地主義による貶めに抗して、黒人アフリカの文化とアイデンティティへの誇りを主張した。",
+      "example_ja_src": "Négritude asserted pride in Black African culture and identity in defiance of colonial denigration."
+    }
+  },
+  {
+    "english": "orature",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "オラチュア(口頭による語り・芸能の伝統を文学として捉える概念)"
+      ],
+      "examples": [
+        {
+          "en": "The term orature was coined to recognize spoken and performed traditions as literature in their own right, not merely as a precursor to writing.",
+          "ja": "オラチュアという語は、口頭による語りや芸能の伝統を、文字文学の前段階としてではなく、それ自体独立した文学として認めるために作られたとされる。"
+        },
+        {
+          "en": "Praise poetry and the storytelling of griots are often studied as central examples of African orature.",
+          "ja": "讃美詩やグリオによる語りは、しばしばアフリカのオラチュアを代表する例として研究されている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ウガンダの学者ピオ・ジリムが、「口頭の(oral)」と「文学(literature)」を組み合わせて作った造語とされる。",
+      "trivia": "この語は、文字を持たない社会の言語芸術を「文学」の枠組みから排除しないための概念的な工夫として提唱されたとされる。",
+      "explanation": "西洋中心の「文学」概念が文字による記録を前提としがちであることへの批判から生まれ、口頭伝承そのものを正当な芸術形式として位置づけ直そうとする概念とされる。",
+      "example_ja": "オラチュアという語は、口頭による語りや芸能の伝統を、文字文学の前段階としてではなく、それ自体独立した文学として認めるために作られたとされる。",
+      "example_ja_src": "The term orature was coined to recognize spoken and performed traditions as literature in their own right, not merely as a precursor to writing."
+    }
+  },
+  {
+    "english": "praise poetry",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "讃美詩(首長・英雄の功績を称えるアフリカ南部の口承詩の伝統)"
+      ],
+      "examples": [
+        {
+          "en": "Praise poetry recounts the deeds and lineage of chiefs and ancestors using highly stylized, often exaggerated language.",
+          "ja": "讃美詩は、高度に様式化され、しばしば誇張された言葉を用いて、首長や祖先の功績と系譜を語り伝える。"
+        },
+        {
+          "en": "Zulu izibongo are among the best-documented traditions of southern African praise poetry.",
+          "ja": "ズールーの「イジボンゴ」は、南部アフリカの讃美詩の伝統の中でも特によく記録されているものの一つである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "対象となる人物や祖先を「称える(praise)」ことを主眼とすることに由来する呼称。",
+      "trivia": "こうした讃美詩の専門の語り手は、しばしば特定の首長一族に代々仕える世襲的な役割を担っていたとされる。",
+      "explanation": "単なる賛辞にとどまらず、系譜や歴史的な出来事の記録・伝承という機能も兼ね備えた、アフリカの口承文学における重要な様式とされる。",
+      "example_ja": "讃美詩は、高度に様式化され、しばしば誇張された言葉を用いて、首長や祖先の功績と系譜を語り伝える。",
+      "example_ja_src": "Praise poetry recounts the deeds and lineage of chiefs and ancestors using highly stylized, often exaggerated language."
+    }
+  },
+  {
+    "english": "Onitsha market literature",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "オニチャ市場文学(1950〜60年代ナイジェリアの大衆向け小冊子出版文化)"
+      ],
+      "examples": [
+        {
+          "en": "Onitsha market literature consisted of cheaply printed pamphlets sold in the marketplace, covering everything from romance to practical moral advice.",
+          "ja": "オニチャ市場文学は、恋愛から実用的な処世訓まであらゆる話題を扱う、市場で売られる安価な印刷小冊子から成っていた。"
+        },
+        {
+          "en": "Scholars value Onitsha market literature as a vivid record of popular tastes and anxieties in late colonial and early independence Nigeria.",
+          "ja": "研究者たちは、オニチャ市場文学を、植民地末期から独立初期のナイジェリアにおける大衆の嗜好と不安を伝える生き生きとした記録として重視している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ナイジェリア南東部の商業都市オニチャの市場で、これらの小冊子が主に売られていたことに由来する呼称。",
+      "trivia": "この出版文化は、ナイジェリアの内戦(ビアフラ戦争)の勃発とともに急速に衰退したとされる。",
+      "explanation": "正規の出版社を介さない安価な自主出版として、都市に流入した若い読者層の恋愛観や成功への願望を率直に反映した、独自の大衆文学現象とされる。",
+      "example_ja": "オニチャ市場文学は、恋愛から実用的な処世訓まであらゆる話題を扱う、市場で売られる安価な印刷小冊子から成っていた。",
+      "example_ja_src": "Onitsha market literature consisted of cheaply printed pamphlets sold in the marketplace, covering everything from romance to practical moral advice."
+    }
+  },
+  {
+    "english": "pantun",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "パントゥン(対句形式の伝統的なマレー語の詩形)"
+      ],
+      "examples": [
+        {
+          "en": "A pantun typically pairs an opening image drawn from nature with a second line that reveals its deeper meaning through wordplay or rhyme.",
+          "ja": "パントゥンは通常、自然から取られた冒頭のイメージと、言葉遊びや脚韻を通してその奥にある意味を明かす後半の一節とを組み合わせる。"
+        },
+        {
+          "en": "Pantun verses are often improvised and exchanged playfully between speakers in traditional Malay social gatherings.",
+          "ja": "パントゥンの詩節は、伝統的なマレーの社交の場で、話し手同士によって即興的に戯れながら詠み交わされることが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "マレー語圏に古くから伝わる口承の詩形とされ、その正確な起源は定かではない。",
+      "trivia": "2020年にはユネスコの無形文化遺産に、マレーシアとインドネシアの共同申請によって登録されたとされる。",
+      "explanation": "単独で読まれるよりも、婚礼などの儀礼の場で複数の話し手が即興で詠み合う対話的な性格が強い詩形とされる。",
+      "example_ja": "パントゥンは通常、自然から取られた冒頭のイメージと、言葉遊びや脚韻を通してその奥にある意味を明かす後半の一節とを組み合わせる。",
+      "example_ja_src": "A pantun typically pairs an opening image drawn from nature with a second line that reveals its deeper meaning through wordplay or rhyme."
+    }
+  },
+  {
+    "english": "wayang",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ワヤン(インドネシア・マレーシアの伝統的な影絵・人形劇)"
+      ],
+      "examples": [
+        {
+          "en": "Wayang performances often adapt episodes from the Ramayana and Mahabharata to reflect local Javanese values and humor.",
+          "ja": "ワヤンの上演は、しばしばラーマーヤナやマハーバーラタの一場面を翻案し、地域独自のジャワの価値観やユーモアを反映させる。"
+        },
+        {
+          "en": "A single wayang kulit shadow-puppet performance can last through an entire night, accompanied by a gamelan orchestra.",
+          "ja": "ワヤン・クリ(影絵人形劇)の一回の上演は、ガムラン楽団の伴奏とともに一晩中続くこともある。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "wayang kulit",
+          "pos": "名詞",
+          "ja": "水牛の革で作られた人形を用いる、ワヤンの中でも特に代表的な影絵芝居の様式。"
+        }
+      ],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ジャワ語で「影・幻影」を意味する語に由来するとされる。",
+      "trivia": "操り手(ダラン)は、一人であらゆる登場人物の声を演じ分けながら、物語の進行と道徳的な解説も兼ねるとされる。",
+      "explanation": "単なる娯楽ではなく、ジャワの宮廷文化や地域社会の倫理観・世界観を伝える媒体として、インドの叙事詩を独自に翻案し続けてきた点に特徴があるとされる。",
+      "example_ja": "ワヤンの上演は、しばしばラーマーヤナやマハーバーラタの一場面を翻案し、地域独自のジャワの価値観やユーモアを反映させる。",
+      "example_ja_src": "Wayang performances often adapt episodes from the Ramayana and Mahabharata to reflect local Javanese values and humor."
+    }
+  },
+  {
+    "english": "hikayat",
+    "detail": {
+      "pos": "名詞",
+      "meanings": [
+        "ヒカヤット(王家の年代記・英雄譚を扱うマレー語の伝統的散文物語)"
+      ],
+      "examples": [
+        {
+          "en": "A hikayat might recount the genealogy of a royal court, the exploits of a legendary hero, or an episode from Islamic history.",
+          "ja": "ヒカヤットは、王家の系譜や伝説的英雄の武勇伝、あるいはイスラム史の一場面を語ることもある。"
+        },
+        {
+          "en": "The Hikayat Hang Tuah is among the most celebrated works of traditional Malay hikayat literature.",
+          "ja": "『ハン・トゥア物語』は、伝統的なマレーのヒカヤット文学の中でも特に名高い作品の一つである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "アラビア語で「物語る」を意味する語に由来し、マレー語に取り入れられたとされる。",
+      "trivia": "多くのヒカヤットは、史実と伝説、宗教的な逸話が渾然一体となった内容を持つことで知られる。",
+      "explanation": "厳密な史実の記録というよりも、王権の正統性を物語として権威づけたり、道徳的な教訓を伝えたりする機能を兼ね備えた文学ジャンルとされる。",
+      "example_ja": "ヒカヤットは、王家の系譜や伝説的英雄の武勇伝、あるいはイスラム史の一場面を語ることもある。",
+      "example_ja_src": "A hikayat might recount the genealogy of a royal court, the exploits of a legendary hero, or an episode from Islamic history."
+    }
+  }
+]

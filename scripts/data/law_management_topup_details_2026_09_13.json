@@ -1,0 +1,3325 @@
+[
+  {
+    "english": "strict scrutiny",
+    "detail": {
+      "pronunciation": "/strɪkt ˈskruːtəni/",
+      "pos": "名詞",
+      "meanings": [
+        "厳格審査基準(違憲審査の最も厳しい基準)",
+        "人種等の疑わしい分類や基本的権利の制約に適用される審査"
+      ],
+      "examples": [
+        {
+          "en": "The court applied strict scrutiny because the law classified people by race.",
+          "ja": "その法律は人種によって人々を分類していたため、裁判所は厳格審査基準を適用した。"
+        },
+        {
+          "en": "Under strict scrutiny, the government must show a compelling interest and narrowly tailored means.",
+          "ja": "厳格審査基準の下では、政府はやむにやまれぬ利益と、目的達成のために必要最小限に絞り込まれた手段の存在を示さなければならない。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "heightened scrutiny",
+          "note": "より一般的に「厳格化された審査」を指す語。文脈により strict scrutiny とほぼ同義で使われることもある"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "rational basis review",
+          "note": "最も緩やかな違憲審査基準。合理的根拠があれば足りる"
+        }
+      ],
+      "origin": "米国憲法判例の中で20世紀半ば以降に発展した審査基準の枠組みの一つ。特に人種に基づく分類を審査する中で「疑わしい分類」への高い警戒として確立された。",
+      "trivia": "厳格審査は「理論上は厳格、適用上は致命的」と評されるほど、実際にこの基準が適用されると政府側がほぼ敗訴すると言われてきた。",
+      "explanation": "違憲審査基準の中で政府に最も重い立証責任を課す基準。人種による分類や表現の自由の内容規制などに用いられる。",
+      "example_ja": "その法律は人種によって人々を分類していたため、裁判所は厳格審査基準を適用した。",
+      "example_ja_src": "The court applied strict scrutiny because the law classified people by race."
+    }
+  },
+  {
+    "english": "substantive due process",
+    "detail": {
+      "pronunciation": "/səbˈstæntɪv ˈduː ˈprɑːsɛs/",
+      "pos": "名詞",
+      "meanings": [
+        "実体的デュープロセス",
+        "法律の内容自体の正当性を審査する適正手続き理論"
+      ],
+      "examples": [
+        {
+          "en": "The court struck down the law under the doctrine of substantive due process.",
+          "ja": "裁判所は実体的デュープロセスの法理に基づき、その法律を違憲と判断した。"
+        },
+        {
+          "en": "Substantive due process has been used to protect rights not explicitly listed in the Constitution.",
+          "ja": "実体的デュープロセスは、憲法に明示的には列挙されていない権利を保護するためにも用いられてきた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "procedural due process",
+          "note": "手続きの公正さのみを問う、対になる概念"
+        }
+      ],
+      "origin": "適正手続き条項の解釈として19世紀末〜20世紀に発展し、当初は経済規制への介入に、その後はプライバシー権など未列挙の権利保護に用いられるようになった。",
+      "trivia": "判例によって適用範囲が大きく変動してきた、米国憲法学で最も論争的な理論の一つとされる。",
+      "explanation": "手続きだけでなく法律の中身そのものの合理性を問う考え方。",
+      "example_ja": "裁判所は実体的デュープロセスの法理に基づき、その法律を違憲と判断した。",
+      "example_ja_src": "The court struck down the law under the doctrine of substantive due process."
+    }
+  },
+  {
+    "english": "equal protection clause",
+    "detail": {
+      "pronunciation": "/ˈiːkwəl prəˈtɛkʃən klɔːz/",
+      "pos": "名詞",
+      "meanings": [
+        "平等保護条項",
+        "米国憲法修正14条が定める、法の下の平等な取扱いを保障する条項"
+      ],
+      "examples": [
+        {
+          "en": "The law was challenged under the equal protection clause because it treated the two groups differently.",
+          "ja": "その法律は二つの集団を異なって扱っていたため、平等保護条項に基づいて争われた。"
+        },
+        {
+          "en": "The Supreme Court relied on the equal protection clause to strike down school segregation.",
+          "ja": "連邦最高裁は平等保護条項に基づいて学校の人種分離を違憲と判断した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "南北戦争後の1868年に批准された修正14条に盛り込まれ、当初は解放された奴隷の権利保護を主目的としていたが、その後あらゆる差別事案に適用される中心的条項へと発展した。",
+      "trivia": "Brown v. Board of Education (1954)など、米国の人種差別解消をめぐる歴史的判決の根拠として繰り返し用いられてきた。",
+      "explanation": "差別的な法律を審査する際の中心的な憲法上の根拠。",
+      "example_ja": "その法律は二つの集団を異なって扱っていたため、平等保護条項に基づいて争われた。",
+      "example_ja_src": "The law was challenged under the equal protection clause because it treated the two groups differently."
+    }
+  },
+  {
+    "english": "judicial activism",
+    "detail": {
+      "pronunciation": "/dʒuˈdɪʃəl ˈæktɪvɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "司法積極主義",
+        "裁判所が積極的に新たな法解釈・政策判断を行う姿勢"
+      ],
+      "examples": [
+        {
+          "en": "Critics accused the court of judicial activism when it overturned decades of precedent.",
+          "ja": "批評家たちは、裁判所が数十年来の先例を覆したことを司法積極主義だと非難した。"
+        },
+        {
+          "en": "Judicial activism is often criticized by those who prefer a more restrained role for the courts.",
+          "ja": "司法積極主義は、裁判所により抑制的な役割を望む人々からしばしば批判される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "judicial restraint",
+          "note": "裁判所が既存の法や先例を尊重し、政策判断を控える対照的な姿勢"
+        }
+      ],
+      "origin": "1947年に評論家Arthur Schlesinger Jr.が最高裁判事を分類する際に用いた表現がきっかけとされ、以後、裁判所の役割をめぐる論争で広く使われるようになった。",
+      "trivia": "何が行き過ぎた介入とみなすかは政治的立場によって評価が分かれやすく、しばしば批判的な意味合いで使われる。",
+      "explanation": "裁判所の役割の大きさをめぐる評価軸の一つ。",
+      "example_ja": "批評家たちは、裁判所が数十年来の先例を覆したことを司法積極主義だと非難した。",
+      "example_ja_src": "Critics accused the court of judicial activism when it overturned decades of precedent."
+    }
+  },
+  {
+    "english": "judicial restraint",
+    "detail": {
+      "pronunciation": "/dʒuˈdɪʃəl rɪˈstreɪnt/",
+      "pos": "名詞",
+      "meanings": [
+        "司法消極主義",
+        "裁判所が既存の法や先例を尊重し政策判断を控える姿勢"
+      ],
+      "examples": [
+        {
+          "en": "She believed in judicial restraint and rarely voted to overturn existing precedent.",
+          "ja": "彼女は司法消極主義を信条としており、既存の先例を覆す方向に投票することはめったになかった。"
+        },
+        {
+          "en": "Judicial restraint favors deferring to the elected branches of government whenever possible.",
+          "ja": "司法消極主義は、可能な限り選挙で選ばれた政府部門の判断に委ねることを重んじる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "judicial activism",
+          "note": "裁判所が積極的に新解釈を打ち出す対照的な姿勢"
+        }
+      ],
+      "origin": "三権分立の下で司法が民主的に選ばれていない機関であることを踏まえ、政策判断は立法・行政に委ねるべきだとする伝統的な司法哲学に由来する。",
+      "trivia": "judicial activismとセットで、裁判官の姿勢を評価する際の代表的な対立軸として頻繁に引用される。",
+      "explanation": "司法の謙抑性を重視する立場。",
+      "example_ja": "彼女は司法消極主義を信条としており、既存の先例を覆す方向に投票することはめったになかった。",
+      "example_ja_src": "She believed in judicial restraint and rarely voted to overturn existing precedent."
+    }
+  },
+  {
+    "english": "eminent domain",
+    "detail": {
+      "pronunciation": "/ˈɛmɪnənt doʊˈmeɪn/",
+      "pos": "名詞",
+      "meanings": [
+        "(国家による)土地収用権",
+        "公共目的のための私有財産の強制収用権"
+      ],
+      "examples": [
+        {
+          "en": "The city used eminent domain to acquire the land for the new highway.",
+          "ja": "市は新しい高速道路のための土地を収用権を用いて取得した。"
+        },
+        {
+          "en": "Eminent domain allows the government to take private property even if the owner refuses to sell.",
+          "ja": "収用権により、政府は所有者が売却を拒んでいても私有財産を取得することができる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "compulsory purchase",
+          "note": "英国など英連邦諸国で使われる同義の表現"
+        }
+      ],
+      "antonyms": [],
+      "origin": "国家が公共の必要のために私有財産を収用する権限は古くからの主権概念に由来し、米国では憲法修正5条の収用条項によって正当な補償の義務とともに明文化された。",
+      "trivia": "近年は道路や公共施設だけでなく再開発事業のための収用の是非も論争になっている。",
+      "explanation": "公共目的のための私有財産の強制収用権。",
+      "example_ja": "市は新しい高速道路のための土地を収用権を用いて取得した。",
+      "example_ja_src": "The city used eminent domain to acquire the land for the new highway."
+    }
+  },
+  {
+    "english": "takings clause",
+    "detail": {
+      "pronunciation": "/ˈteɪkɪŋz klɔːz/",
+      "pos": "名詞",
+      "meanings": [
+        "収用条項",
+        "私有財産の収用には正当な補償を要するとする米国憲法修正5条の条項"
+      ],
+      "examples": [
+        {
+          "en": "The landowner sued the city, arguing that the regulation violated the takings clause.",
+          "ja": "土地所有者は、その規制が収用条項に違反すると主張して市を提訴した。"
+        },
+        {
+          "en": "The takings clause requires just compensation whenever the government exercises eminent domain.",
+          "ja": "収用条項は、政府が収用権を行使する際には常に正当な補償を要求する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "権利章典の一部として1791年に採択された修正5条の末尾に置かれ、私有財産の保護と公共の必要とのバランスを図る条項として発展してきた。",
+      "trivia": "規制によって財産の価値が実質的に奪われる「規制的収用」に該当するかどうかは、今も判例で争われ続けている論点。",
+      "explanation": "私有財産の収用には正当な補償が必要という原則。",
+      "example_ja": "土地所有者は、その規制が収用条項に違反すると主張して市を提訴した。",
+      "example_ja_src": "The landowner sued the city, arguing that the regulation violated the takings clause."
+    }
+  },
+  {
+    "english": "originalism",
+    "detail": {
+      "pronunciation": "/əˈrɪdʒɪnəlɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "原意主義",
+        "憲法を制定当時の意味に沿って解釈すべきとする立場"
+      ],
+      "examples": [
+        {
+          "en": "As an originalist, the judge tried to interpret the amendment as it was understood in 1868.",
+          "ja": "原意主義者として、その裁判官は修正条項を1868年当時に理解されていた通りに解釈しようとした。"
+        },
+        {
+          "en": "Originalism holds that the meaning of the Constitution should not change over time.",
+          "ja": "原意主義は、憲法の意味は時代とともに変化するべきではないとする立場を取る。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "textualism",
+          "note": "制定時の意図よりも条文の文言そのものを重視する、近い立場の解釈手法"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "living constitutionalism",
+          "note": "社会の変化に応じて解釈を柔軟に発展させるべきだとする対照的な立場"
+        }
+      ],
+      "origin": "1970〜80年代の米国で、リベラルな司法積極主義への反動として保守派の法律家の間で理論化され、広まった解釈手法。",
+      "trivia": "現在の米国連邦最高裁でも、原意主義をどこまで採用するかは判事によって立場が分かれる中心的な論点になっている。",
+      "explanation": "制定当時の意味を重視する憲法解釈の立場。",
+      "example_ja": "原意主義者として、その裁判官は修正条項を1868年当時に理解されていた通りに解釈しようとした。",
+      "example_ja_src": "As an originalist, the judge tried to interpret the amendment as it was understood in 1868."
+    }
+  },
+  {
+    "english": "police power",
+    "detail": {
+      "pronunciation": "/pəˈliːs ˈpaʊər/",
+      "pos": "名詞",
+      "meanings": [
+        "(州が持つ)警察権・一般統治権",
+        "公共の安全・健康・福祉のための広範な規制権限"
+      ],
+      "examples": [
+        {
+          "en": "States use their police power to regulate everything from zoning to public health.",
+          "ja": "州はゾーニングから公衆衛生に至るまであらゆる事項を規制するために警察権を用いる。"
+        },
+        {
+          "en": "The state's police power allows it to enact laws protecting public safety and welfare.",
+          "ja": "州の警察権により、州は公共の安全と福祉を守る法律を制定することができる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "米国の連邦制の下で、連邦政府に明示的に委ねられていない統治権限は州に留保されるという修正10条の考え方から発展した概念。",
+      "trivia": "警察組織そのものではなく、条例やゾーニング規制、営業免許制度など、州政府が持つ広い規制権限全般を指す点に注意が必要。",
+      "explanation": "州政府が公共の福祉のために持つ広範な規制権限。",
+      "example_ja": "州はゾーニングから公衆衛生に至るまであらゆる事項を規制するために警察権を用いる。",
+      "example_ja_src": "States use their police power to regulate everything from zoning to public health."
+    }
+  },
+  {
+    "english": "rational basis review",
+    "detail": {
+      "pronunciation": "/ˈræʃənəl ˈbeɪsɪs rɪˈvjuː/",
+      "pos": "名詞",
+      "meanings": [
+        "合理性審査基準",
+        "違憲審査基準の中で最も緩やかな基準"
+      ],
+      "examples": [
+        {
+          "en": "Because no fundamental right was involved, the court applied only rational basis review.",
+          "ja": "基本的権利が関わっていなかったため、裁判所は合理性審査基準のみを適用した。"
+        },
+        {
+          "en": "Under rational basis review, a law is upheld as long as it is rationally related to a legitimate government interest.",
+          "ja": "合理性審査基準の下では、法律が正当な政府の利益と合理的に関連している限り合憲とされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "strict scrutiny",
+          "note": "最も厳格な審査基準"
+        }
+      ],
+      "origin": "20世紀に入り違憲審査基準が段階化される中で確立された、最も緩やかな水準の基準。多くの経済規制立法がこの基準の下で合憲とされてきた。",
+      "trivia": "この基準が適用されると、法律はほぼ常に合憲と判断されるため「合理性の推定」が働くとも言われる。",
+      "explanation": "最も緩やかな違憲審査基準。",
+      "example_ja": "基本的権利が関わっていなかったため、裁判所は合理性審査基準のみを適用した。",
+      "example_ja_src": "Because no fundamental right was involved, the court applied only rational basis review."
+    }
+  },
+  {
+    "english": "dormant commerce clause",
+    "detail": {
+      "pronunciation": "/ˈdɔːrmənt ˈkɒmɜːrs klɔːz/",
+      "pos": "名詞",
+      "meanings": [
+        "休眠通商条項",
+        "州による州際通商への不当な差別を禁じる判例理論"
+      ],
+      "examples": [
+        {
+          "en": "The state law was struck down under the dormant commerce clause for favoring in-state businesses.",
+          "ja": "その州法は、州内企業を優遇していたため休眠通商条項の下で違憲とされた。"
+        },
+        {
+          "en": "The dormant commerce clause prevents states from passing laws that discriminate against out-of-state commerce.",
+          "ja": "休眠通商条項は、州が州外の通商を差別する法律を制定することを妨げる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "negative commerce clause",
+          "note": "同じ理論を指す別名"
+        }
+      ],
+      "antonyms": [],
+      "origin": "憲法が連邦に付与した通商規制権限(通商条項)の「もう一つの側面」として、州際通商を妨げる州法を制限する目的で判例上発展してきた理論。",
+      "trivia": "憲法の条文には直接書かれていないにもかかわらず、判例の積み重ねによって確立された理論である点が特徴。",
+      "explanation": "州による州際通商への不当な差別を禁じる判例理論。",
+      "example_ja": "その州法は、州内企業を優遇していたため休眠通商条項の下で違憲とされた。",
+      "example_ja_src": "The state law was struck down under the dormant commerce clause for favoring in-state businesses."
+    }
+  },
+  {
+    "english": "act of state doctrine",
+    "detail": {
+      "pronunciation": "/ækt ʌv steɪt ˈdɒktrɪn/",
+      "pos": "名詞",
+      "meanings": [
+        "国家行為法理",
+        "外国の公的行為の有効性を審査しないとする裁判上の原則"
+      ],
+      "examples": [
+        {
+          "en": "The court dismissed the case under the act of state doctrine, refusing to judge the foreign government's official act.",
+          "ja": "裁判所は国家行為法理に基づき、外国政府の公的行為の是非を判断することを拒み、訴えを却下した。"
+        },
+        {
+          "en": "Under the act of state doctrine, domestic courts generally will not question the validity of a foreign government's official acts within its own territory.",
+          "ja": "国家行為法理の下では、国内の裁判所は原則として、外国政府が自国領域内で行った公的行為の有効性を問題にしない。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "主権国家の平等と相互の内政不干渉を尊重する国際礼譲の考え方から発展し、米国では19世紀の判例を通じて確立された。",
+      "trivia": "主権免除とよく混同されるが、act of state doctrineは訴訟そのものの可否ではなく、外国の公的行為の有効性を審査するかどうかに関わる点で異なる。",
+      "explanation": "外国の公的行為の有効性を審査しないとする裁判上の原則。",
+      "example_ja": "裁判所は国家行為法理に基づき、外国政府の公的行為の是非を判断することを拒み、訴えを却下した。",
+      "example_ja_src": "The court dismissed the case under the act of state doctrine, refusing to judge the foreign government's official act."
+    }
+  },
+  {
+    "english": "jus cogens",
+    "detail": {
+      "pronunciation": "/dʒʌs ˈkoʊdʒɛnz/",
+      "pos": "名詞",
+      "meanings": [
+        "強行規範",
+        "逸脱が許されない最上位の国際法規範"
+      ],
+      "examples": [
+        {
+          "en": "The prohibition of genocide is widely recognized as a norm of jus cogens.",
+          "ja": "ジェノサイドの禁止は、広く強行規範の一つとして認められている。"
+        },
+        {
+          "en": "Treaties that conflict with jus cogens norms are considered void under international law.",
+          "ja": "強行規範に反する条約は、国際法上無効とみなされる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "peremptory norm",
+          "note": "jus cogensの英語での言い換え表現"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語で「強行する法」を意味し、1969年のウィーン条約法条約第53条において、いかなる逸脱も許されない国際法の一般規範として明文化された。",
+      "trivia": "何がjus cogensに該当するかについて条約上の明確なリストはなく、国際的な合意や判例の蓄積によって徐々に確立されてきた。",
+      "explanation": "逸脱が許されない国際法上の最上位規範。",
+      "example_ja": "ジェノサイドの禁止は、広く強行規範の一つとして認められている。",
+      "example_ja_src": "The prohibition of genocide is widely recognized as a norm of jus cogens."
+    }
+  },
+  {
+    "english": "sovereign immunity",
+    "detail": {
+      "pronunciation": "/ˈsɒvrɪn ɪˈmjuːnɪti/",
+      "pos": "名詞",
+      "meanings": [
+        "主権免除",
+        "国家が他国の裁判権に服さないとする原則"
+      ],
+      "examples": [
+        {
+          "en": "The foreign government invoked sovereign immunity to avoid being sued in the local court.",
+          "ja": "その外国政府は、現地の裁判所で訴えられることを避けるために主権免除を主張した。"
+        },
+        {
+          "en": "Sovereign immunity generally shields a foreign state from being sued in the courts of another country.",
+          "ja": "主権免除は一般に、外国が他国の裁判所で訴えられることから外国を保護する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「国王は悪をなしえず」という英国のコモンロー上の考え方や、対等な主権国家は互いを裁く権限を持たないとする国際法上の原則に由来する。",
+      "trivia": "近年は商業活動を行う国家について免除の範囲を制限する「制限免除主義」が各国で広く採用されている。",
+      "explanation": "国家が他国の裁判権に服さないとする原則。",
+      "example_ja": "その外国政府は、現地の裁判所で訴えられることを避けるために主権免除を主張した。",
+      "example_ja_src": "The foreign government invoked sovereign immunity to avoid being sued in the local court."
+    }
+  },
+  {
+    "english": "pacta sunt servanda",
+    "detail": {
+      "pronunciation": "/ˈpæktə sʊnt sɜːrˈvændə/",
+      "pos": "名詞",
+      "meanings": [
+        "合意は守られなければならないという原則",
+        "条約の誠実な履行義務を定める国際法の基本原則"
+      ],
+      "examples": [
+        {
+          "en": "The tribunal reminded both states of the principle of pacta sunt servanda.",
+          "ja": "仲裁裁判所は両国に対し、合意は守られなければならないという原則を改めて指摘した。"
+        },
+        {
+          "en": "Pacta sunt servanda requires states to perform their treaty obligations in good faith.",
+          "ja": "この原則は、国家が条約上の義務を誠実に履行することを求める。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語で「合意は守られなければならない」を意味し、1969年のウィーン条約法条約第26条に明文化されている、条約法の最も基本的な原則。",
+      "trivia": "国内法における契約は守られるべきという考え方と並んで、国際法秩序が成り立つための土台となる原則とされる。",
+      "explanation": "条約は誠実に履行されなければならないという原則。",
+      "example_ja": "仲裁裁判所は両国に対し、合意は守られなければならないという原則を改めて指摘した。",
+      "example_ja_src": "The tribunal reminded both states of the principle of pacta sunt servanda."
+    }
+  },
+  {
+    "english": "most-favored-nation clause",
+    "detail": {
+      "pronunciation": "/moʊst ˈfeɪvərd ˈneɪʃən klɔːz/",
+      "pos": "名詞",
+      "meanings": [
+        "最恵国待遇条項",
+        "貿易上の有利な待遇を他の全締約国にも及ぼす原則"
+      ],
+      "examples": [
+        {
+          "en": "Under the most-favored-nation clause, any tariff cut given to one trading partner must be extended to all WTO members.",
+          "ja": "最恵国待遇条項の下では、ある貿易相手国に対する関税引き下げは、WTOの全加盟国にも適用されなければならない。"
+        },
+        {
+          "en": "The most-favored-nation clause ensures that trade concessions are not granted to just one country in isolation.",
+          "ja": "最恵国待遇条項は、貿易上の譲許が一国だけに孤立して与えられることがないようにする。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "二国間通商条約の伝統的な条項として発展し、現在はWTO協定の中核原則の一つとして、加盟国間の無差別待遇を支える柱になっている。",
+      "trivia": "「最恵国」待遇という名前だが、実際にはある一国だけを特別扱いするのではなく、加盟国すべてに同じ有利な条件を広げる無差別の原則である点に注意。",
+      "explanation": "貿易上の有利な待遇を他の全締約国にも及ぼす原則。",
+      "example_ja": "最恵国待遇条項の下では、ある貿易相手国に対する関税引き下げは、WTOの全加盟国にも適用されなければならない。",
+      "example_ja_src": "Under the most-favored-nation clause, any tariff cut given to one trading partner must be extended to all WTO members."
+    }
+  },
+  {
+    "english": "comity",
+    "detail": {
+      "pronunciation": "/ˈkɒmɪti/",
+      "pos": "名詞",
+      "meanings": [
+        "国際礼譲",
+        "他国の法や判断を尊重する礼譲としての慣行"
+      ],
+      "examples": [
+        {
+          "en": "Out of comity, the court recognized the judgment issued by the foreign tribunal.",
+          "ja": "礼譲の観点から、裁判所は外国の裁判所が下した判決を承認した。"
+        },
+        {
+          "en": "International comity encourages courts to respect the laws and judicial decisions of other nations.",
+          "ja": "国際礼譲は、裁判所が他国の法律や司法判断を尊重するよう促す。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "「国際礼譲」を意味するラテン語comitas(親切・丁重さ)に由来し、主権国家同士が互いの法制度を尊重し合う実務上の慣行として19世紀の判例で発展した。",
+      "trivia": "厳密な法的義務ではないため、国内の公序に反する場合などには礼譲に基づく承認が拒否されることもある。",
+      "explanation": "他国の法や判断を尊重する礼譲としての慣行。",
+      "example_ja": "礼譲の観点から、裁判所は外国の裁判所が下した判決を承認した。",
+      "example_ja_src": "Out of comity, the court recognized the judgment issued by the foreign tribunal."
+    }
+  },
+  {
+    "english": "universal jurisdiction",
+    "detail": {
+      "pronunciation": "/ˌjuːnɪˈvɜːrsəl ˌdʒʊərɪsˈdɪkʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "普遍的管轄権",
+        "重大犯罪について国籍・犯罪地を問わず訴追できるとする管轄権理論"
+      ],
+      "examples": [
+        {
+          "en": "The country invoked universal jurisdiction to prosecute the war crimes suspect, even though the crimes occurred abroad.",
+          "ja": "その国は、犯罪が海外で起きたものであったにもかかわらず、戦争犯罪容疑者を訴追するために普遍的管轄権を主張した。"
+        },
+        {
+          "en": "Universal jurisdiction allows a national court to try individuals for crimes against humanity regardless of where the crimes took place.",
+          "ja": "普遍的管轄権により、国内裁判所は犯罪がどこで行われたかにかかわらず、人道に対する罪で個人を裁くことができる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "海賊行為の取り締まりに関する伝統的な国際法の考え方が起源とされ、第二次世界大戦後、ジェノサイドや戦争犯罪など「人類全体に対する犯罪」に拡張されてきた。",
+      "trivia": "実際にこの管轄権を行使する国は限られており、政治的配慮から発動が控えられることも多い。",
+      "explanation": "重大犯罪について国籍・犯罪地を問わず訴追できるとする管轄権理論。",
+      "example_ja": "その国は、犯罪が海外で起きたものであったにもかかわらず、戦争犯罪容疑者を訴追するために普遍的管轄権を主張した。",
+      "example_ja_src": "The country invoked universal jurisdiction to prosecute the war crimes suspect, even though the crimes occurred abroad."
+    }
+  },
+  {
+    "english": "non-refoulement",
+    "detail": {
+      "pronunciation": "/nɒn rəˈfuːlmɒ̃/",
+      "pos": "名詞",
+      "meanings": [
+        "ノン・ルフールマン原則",
+        "迫害の危険がある国への送還を禁じる難民保護の原則"
+      ],
+      "examples": [
+        {
+          "en": "The principle of non-refoulement prevents states from returning refugees to a country where they would face persecution.",
+          "ja": "ノン・ルフールマン原則は、難民が迫害を受けるおそれのある国へ送還されることを防ぐ。"
+        },
+        {
+          "en": "Non-refoulement is considered one of the most fundamental protections under international refugee law.",
+          "ja": "ノン・ルフールマン原則は、国際難民法上最も基本的な保護の一つとされている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "フランス語で「送り返さないこと」を意味し、1951年の難民の地位に関する条約第33条に明文化された、難民保護の中心原則。",
+      "trivia": "多くの国際人権条約にも同様の趣旨の規定があり、条約上の難民に限らず拷問等禁止条約の下でも広く適用されるとされる。",
+      "explanation": "迫害の危険がある国への送還を禁じる難民保護の原則。",
+      "example_ja": "ノン・ルフールマン原則は、難民が迫害を受けるおそれのある国へ送還されることを防ぐ。",
+      "example_ja_src": "The principle of non-refoulement prevents states from returning refugees to a country where they would face persecution."
+    }
+  },
+  {
+    "english": "progressive taxation",
+    "detail": {
+      "pronunciation": "/prəˈɡrɛsɪv tækˈseɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "累進課税",
+        "所得が高いほど税率も高くなる課税方式"
+      ],
+      "examples": [
+        {
+          "en": "Under progressive taxation, high-income earners pay a larger percentage of their income in taxes than low-income earners.",
+          "ja": "累進課税の下では、高所得者は低所得者よりも所得に占める税の割合が大きくなる。"
+        },
+        {
+          "en": "Most developed countries use some form of progressive taxation for personal income tax.",
+          "ja": "多くの先進国は、個人所得税に何らかの形の累進課税を採用している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "regressive tax",
+          "note": "所得が低いほど実質的な負担率が高くなる、対照的な課税方式"
+        }
+      ],
+      "origin": "所得の多寡に応じて負担能力に見合った税を課すべきだとする応能負担原則の考え方に基づき、19〜20世紀にかけて各国の所得税制度に広く導入された。",
+      "trivia": "累進性の程度は税率区分(ブラケット)の設計によって大きく変わり、政治的な論争の的になりやすい。",
+      "explanation": "所得が高いほど税率も高くなる課税方式。",
+      "example_ja": "累進課税の下では、高所得者は低所得者よりも所得に占める税の割合が大きくなる。",
+      "example_ja_src": "Under progressive taxation, high-income earners pay a larger percentage of their income in taxes than low-income earners."
+    }
+  },
+  {
+    "english": "regressive tax",
+    "detail": {
+      "pronunciation": "/rɪˈɡrɛsɪv tæks/",
+      "pos": "名詞",
+      "meanings": [
+        "逆進的な税",
+        "低所得者ほど実質的な負担割合が重くなる税"
+      ],
+      "examples": [
+        {
+          "en": "Sales tax is often criticized as a regressive tax because it takes a larger share of income from the poor than from the rich.",
+          "ja": "消費税は、貧しい人からより大きな割合の所得を奪うとして、逆進的な税だとしばしば批判される。"
+        },
+        {
+          "en": "A regressive tax places a heavier relative burden on low-income households than on wealthy ones.",
+          "ja": "逆進的な税は、裕福な世帯よりも低所得の世帯に相対的に重い負担を課す。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "progressive taxation",
+          "note": "所得が高いほど税率も高くなる、対照的な課税方式"
+        }
+      ],
+      "origin": "税率自体が一律・定額であっても、所得に占める負担割合という観点から見ると低所得者ほど重くなるという実質的な逆進性を指摘する概念として、財政学の中で整理されてきた。",
+      "trivia": "消費税やたばこ税など、多くの間接税がこの性質を持つとされ、軽減税率などの緩和策が議論される理由の一つになっている。",
+      "explanation": "低所得者ほど実質的な負担割合が重くなる税の性質。",
+      "example_ja": "消費税は、貧しい人からより大きな割合の所得を奪うとして、逆進的な税だとしばしば批判される。",
+      "example_ja_src": "Sales tax is often criticized as a regressive tax because it takes a larger share of income from the poor than from the rich."
+    }
+  },
+  {
+    "english": "tax evasion",
+    "detail": {
+      "pronunciation": "/tæks ɪˈveɪʒən/",
+      "pos": "名詞",
+      "meanings": [
+        "脱税",
+        "違法な手段で納税を免れる行為"
+      ],
+      "examples": [
+        {
+          "en": "He was convicted of tax evasion after hiding millions of dollars in offshore accounts.",
+          "ja": "彼は数百万ドルをオフショア口座に隠していたことが発覚し、脱税で有罪判決を受けた。"
+        },
+        {
+          "en": "Tax evasion, unlike tax avoidance, involves illegal methods of reducing one's tax liability.",
+          "ja": "脱税は節税(税負担の合法的な軽減)とは異なり、違法な手段によって税負担を減らす行為を伴う。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "tax avoidance",
+          "note": "合法的な手段による節税"
+        }
+      ],
+      "origin": "課税当局に対する虚偽申告や所得の秘匿といった違法行為を指す言葉として、各国の税法・刑法の中で古くから犯罪類型の一つとされてきた。",
+      "trivia": "米国では著名な脱税事件(1930年代のアル・カポネの摘発など)を通じて、脱税が重大な連邦犯罪であることが広く知られるようになった。",
+      "explanation": "違法な手段で納税を免れる行為。",
+      "example_ja": "彼は数百万ドルをオフショア口座に隠していたことが発覚し、脱税で有罪判決を受けた。",
+      "example_ja_src": "He was convicted of tax evasion after hiding millions of dollars in offshore accounts."
+    }
+  },
+  {
+    "english": "tax avoidance",
+    "detail": {
+      "pronunciation": "/tæks əˈvɔɪdəns/",
+      "pos": "名詞",
+      "meanings": [
+        "節税",
+        "合法的な手段で税負担を軽減する行為"
+      ],
+      "examples": [
+        {
+          "en": "Using legal deductions and tax credits is a form of tax avoidance, not tax evasion.",
+          "ja": "合法的な控除や税額控除を利用することは、脱税ではなく節税の一種である。"
+        },
+        {
+          "en": "Tax avoidance strategies exploit loopholes in the tax code without breaking the law.",
+          "ja": "節税策は、法律を破ることなく税法の抜け穴を利用するものである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "tax evasion",
+          "note": "違法な脱税行為"
+        }
+      ],
+      "origin": "税法上認められた控除・特例・組織形態の選択などを組み合わせて税負担を合法的に軽減する行為として、租税法の分野で古くから区別されてきた概念。",
+      "trivia": "合法であっても税法の趣旨を逸脱した過度な租税回避スキームは、各国の税制で個別に否認規定が設けられることがある。",
+      "explanation": "合法的な手段で税負担を軽減する行為。",
+      "example_ja": "合法的な控除や税額控除を利用することは、脱税ではなく節税の一種である。",
+      "example_ja_src": "Using legal deductions and tax credits is a form of tax avoidance, not tax evasion."
+    }
+  },
+  {
+    "english": "tax haven",
+    "detail": {
+      "pronunciation": "/tæks ˈheɪvən/",
+      "pos": "名詞",
+      "meanings": [
+        "タックスヘイブン(租税回避地)",
+        "極めて低い税率を武器に外国資本を誘致する国・地域"
+      ],
+      "examples": [
+        {
+          "en": "The company moved its headquarters to a tax haven to reduce its corporate tax bill.",
+          "ja": "その企業は法人税の負担を減らすため、本社をタックスヘイブンに移転した。"
+        },
+        {
+          "en": "Wealthy individuals sometimes hide assets in tax havens to avoid paying taxes at home.",
+          "ja": "富裕な個人は、自国での納税を避けるためにタックスヘイブンに資産を隠すことがある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "offshore financial center",
+          "note": "より中立的な言い換え表現として使われることが多い"
+        }
+      ],
+      "antonyms": [],
+      "origin": "20世紀後半、グローバルな資本移動の自由化に伴い、低税率を売りに外国資本を誘致する国・地域が増えたことから広く使われるようになった呼称。",
+      "trivia": "OECDなどの国際機関は税源浸食と利益移転(BEPS)対策として、タックスヘイブンを利用した租税回避への国際的な規制強化を進めている。",
+      "explanation": "極めて低い税率を武器に外国資本を誘致する国・地域。",
+      "example_ja": "その企業は法人税の負担を減らすため、本社をタックスヘイブンに移転した。",
+      "example_ja_src": "The company moved its headquarters to a tax haven to reduce its corporate tax bill."
+    }
+  },
+  {
+    "english": "double taxation",
+    "detail": {
+      "pronunciation": "/ˈdʌbəl tækˈseɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "二重課税",
+        "同じ所得や財産に二重に税が課されること"
+      ],
+      "examples": [
+        {
+          "en": "Without a tax treaty, the company's profits could be subject to double taxation in both countries.",
+          "ja": "租税条約がなければ、その企業の利益は両国で二重に課税される可能性がある。"
+        },
+        {
+          "en": "Tax treaties are designed to prevent double taxation of income earned across borders.",
+          "ja": "租税条約は、国境を越えて得た所得への二重課税を防ぐために設計されている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "国際的な事業活動が拡大する中で、同じ所得に居住地国と源泉地国の双方から課税される問題が顕在化し、これを回避するための租税条約が20世紀初頭から各国間で整備されてきた。",
+      "trivia": "法人段階での法人税と株主段階での配当課税という「経済的二重課税」も、この概念の一種としてしばしば議論される。",
+      "explanation": "同じ所得や財産に二重に税が課されること。",
+      "example_ja": "租税条約がなければ、その企業の利益は両国で二重に課税される可能性がある。",
+      "example_ja_src": "Without a tax treaty, the company's profits could be subject to double taxation in both countries."
+    }
+  },
+  {
+    "english": "transfer pricing",
+    "detail": {
+      "pronunciation": "/ˈtrænsfɜːr ˈpraɪsɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "移転価格",
+        "関連会社間取引の価格設定とその税務上の審査"
+      ],
+      "examples": [
+        {
+          "en": "Tax authorities scrutinized the company's transfer pricing between its subsidiaries in different countries.",
+          "ja": "税務当局は、その企業の各国子会社間の移転価格を精査した。"
+        },
+        {
+          "en": "Transfer pricing rules require related companies to price their transactions as if they were unrelated parties.",
+          "ja": "移転価格ルールは、関連会社同士があたかも無関係の当事者であるかのように取引価格を設定することを求める。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "多国籍企業がグループ内取引の価格設定を通じて利益を低税率国へ移転する問題に対応するため、OECDを中心に独立企業原則に基づく国際的な移転価格税制の枠組みが整備されてきた。",
+      "trivia": "移転価格を巡る税務当局との見解の相違は、多国籍企業にとって最も紛争になりやすい国際税務上の論点の一つとされる。",
+      "explanation": "関連会社間取引の価格設定とその税務上の審査。",
+      "example_ja": "税務当局は、その企業の各国子会社間の移転価格を精査した。",
+      "example_ja_src": "Tax authorities scrutinized the company's transfer pricing between its subsidiaries in different countries."
+    }
+  },
+  {
+    "english": "wrongful termination",
+    "detail": {
+      "pronunciation": "/ˈrɔːŋfəl ˌtɜːrmɪˈneɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "不当解雇",
+        "違法・不当な理由による解雇"
+      ],
+      "examples": [
+        {
+          "en": "She filed a lawsuit for wrongful termination after being fired for reporting safety violations.",
+          "ja": "彼女は安全違反を報告したことを理由に解雇されたため、不当解雇で訴訟を起こした。"
+        },
+        {
+          "en": "Wrongful termination claims often arise when an employee is fired in violation of anti-discrimination laws.",
+          "ja": "不当解雇の訴えは、従業員が差別禁止法に違反して解雇された場合によく生じる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "unfair dismissal",
+          "note": "英国などで使われる、ほぼ同義の表現"
+        }
+      ],
+      "antonyms": [],
+      "origin": "随意雇用原則を採用する米国において、差別禁止法や公序に反する解雇を例外的に違法とする法理として判例上発展してきた。",
+      "trivia": "随意雇用の原則が強い米国でも、人種・性別などによる差別的解雇や内部告発への報復解雇は、この法理により違法とされる。",
+      "explanation": "違法・不当な理由による解雇。",
+      "example_ja": "彼女は安全違反を報告したことを理由に解雇されたため、不当解雇で訴訟を起こした。",
+      "example_ja_src": "She filed a lawsuit for wrongful termination after being fired for reporting safety violations."
+    }
+  },
+  {
+    "english": "at-will employment",
+    "detail": {
+      "pronunciation": "/æt wɪl ɪmˈplɔɪmənt/",
+      "pos": "名詞",
+      "meanings": [
+        "随意雇用",
+        "理由なく随時解雇・退職できるとする雇用原則"
+      ],
+      "examples": [
+        {
+          "en": "Because she was an at-will employee, the company could let her go without giving any reason.",
+          "ja": "彼女は随意雇用の従業員だったため、会社は理由を示すことなく彼女を解雇することができた。"
+        },
+        {
+          "en": "At-will employment means either the employer or the employee can end the relationship at any time, for almost any reason.",
+          "ja": "随意雇用とは、使用者・従業員のどちらの側からも、ほぼどんな理由でもいつでも雇用関係を終了できることを意味する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "19世紀後半の米国判例法に由来し、契約に別段の定めがない限り雇用は当事者双方がいつでも自由に終了できるという考え方として確立された。",
+      "trivia": "差別禁止法や公序に反する解雇など、随意雇用の原則にはいくつもの重要な例外が判例や制定法によって設けられている。",
+      "explanation": "理由なく随時解雇・退職できるとする雇用原則。",
+      "example_ja": "彼女は随意雇用の従業員だったため、会社は理由を示すことなく彼女を解雇することができた。",
+      "example_ja_src": "Because she was an at-will employee, the company could let her go without giving any reason."
+    }
+  },
+  {
+    "english": "collective bargaining",
+    "detail": {
+      "pronunciation": "/kəˈlɛktɪv ˈbɑːrɡənɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "団体交渉",
+        "労働組合を通じた使用者との集団的な交渉制度"
+      ],
+      "examples": [
+        {
+          "en": "The union entered collective bargaining with management to negotiate higher wages.",
+          "ja": "組合は賃上げを交渉するため、経営陣との団体交渉に入った。"
+        },
+        {
+          "en": "Collective bargaining allows workers to negotiate as a group rather than individually.",
+          "ja": "団体交渉により、労働者は個別にではなく集団として交渉することができる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "産業革命期に個々の労働者が使用者と対等に交渉することが困難だったことへの反省から、労働組合を通じた団体交渉権を保障する労働法制が各国で整備されてきた。",
+      "trivia": "国際労働機関(ILO)は団体交渉権を労働者の基本的な権利の一つと位置づけている。",
+      "explanation": "労働組合を通じた使用者との集団的な交渉制度。",
+      "example_ja": "組合は賃上げを交渉するため、経営陣との団体交渉に入った。",
+      "example_ja_src": "The union entered collective bargaining with management to negotiate higher wages."
+    }
+  },
+  {
+    "english": "non-compete clause",
+    "detail": {
+      "pronunciation": "/nɒn kəmˈpiːt klɔːz/",
+      "pos": "名詞",
+      "meanings": [
+        "競業避止条項",
+        "退職後の競合他社への就業などを制限する契約条項"
+      ],
+      "examples": [
+        {
+          "en": "His employment contract included a non-compete clause preventing him from working for a rival company for one year.",
+          "ja": "彼の雇用契約には、1年間は競合他社で働くことを禁じる競業避止条項が含まれていた。"
+        },
+        {
+          "en": "Courts in some jurisdictions refuse to enforce non-compete clauses that are overly broad or unreasonable.",
+          "ja": "一部の法域の裁判所は、過度に広範または不合理な競業避止条項の執行を拒否する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "restrictive covenant",
+          "note": "競業避止義務を含む、より広い範囲の制限条項全般を指す語"
+        }
+      ],
+      "antonyms": [],
+      "origin": "使用者が営業秘密や顧客基盤を保護する目的で契約に盛り込む条項として発展してきたが、労働者の職業選択の自由を過度に制約するとして、その有効性の範囲は国や州によって大きく異なる。",
+      "trivia": "米国カリフォルニア州など一部の州では、雇用契約における競業避止条項を原則として無効としている。",
+      "explanation": "退職後の競合他社への就業などを制限する契約条項。",
+      "example_ja": "彼の雇用契約には、1年間は競合他社で働くことを禁じる競業避止条項が含まれていた。",
+      "example_ja_src": "His employment contract included a non-compete clause preventing him from working for a rival company for one year."
+    }
+  },
+  {
+    "english": "whistleblower",
+    "detail": {
+      "pronunciation": "/ˈwɪsəlˌbloʊər/",
+      "pos": "名詞",
+      "meanings": [
+        "内部告発者",
+        "組織内部の不正を外部に通報する人"
+      ],
+      "examples": [
+        {
+          "en": "The whistleblower revealed that the company had been falsifying its safety inspection records.",
+          "ja": "その内部告発者は、会社が安全点検記録を偽造していたことを明らかにした。"
+        },
+        {
+          "en": "Whistleblower protection laws are meant to prevent employers from retaliating against employees who report wrongdoing.",
+          "ja": "内部告発者保護法は、不正を報告した従業員に使用者が報復することを防ぐためのものである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "不正を告発する人を指す比喩表現として20世紀に定着した語で、審判が反則を知らせるために笛を吹く様子に由来するとされる。",
+      "trivia": "米国では内部告発者が国に代わって不正請求を訴える「Qui Tam訴訟」制度があり、回収額の一部を報奨金として受け取れる仕組みもある。",
+      "explanation": "組織内部の不正を外部に通報する人。",
+      "example_ja": "その内部告発者は、会社が安全点検記録を偽造していたことを明らかにした。",
+      "example_ja_src": "The whistleblower revealed that the company had been falsifying its safety inspection records."
+    }
+  },
+  {
+    "english": "workers' compensation",
+    "detail": {
+      "pronunciation": "/ˈwɜːrkərz ˌkɒmpənˈseɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "労災補償(制度)",
+        "業務災害について無過失で補償を受けられる保険制度"
+      ],
+      "examples": [
+        {
+          "en": "After injuring his back at the factory, he filed a workers' compensation claim.",
+          "ja": "工場で腰を痛めた後、彼は労災補償の請求を行った。"
+        },
+        {
+          "en": "Workers' compensation provides benefits to injured employees regardless of who was at fault for the accident.",
+          "ja": "労災補償は、事故の過失が誰にあるかにかかわらず、負傷した従業員に給付を提供する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "20世紀初頭、労災事故をめぐる訴訟の負担を軽減し労働者に迅速な補償を確保する目的で、過失責任を問わない無過失補償制度として各国で導入された。",
+      "trivia": "この制度の対象となる場合、労働者は原則として使用者を相手に別途の損害賠償訴訟を提起できないという「排他的救済」の原則が伴うことが多い。",
+      "explanation": "業務災害について無過失で補償を受けられる保険制度。",
+      "example_ja": "工場で腰を痛めた後、彼は労災補償の請求を行った。",
+      "example_ja_src": "After injuring his back at the factory, he filed a workers' compensation claim."
+    }
+  },
+  {
+    "english": "right-to-work law",
+    "detail": {
+      "pronunciation": "/raɪt tuː wɜːrk lɔː/",
+      "pos": "名詞",
+      "meanings": [
+        "ライト・トゥ・ワーク法",
+        "組合加入・組合費支払いを雇用条件にできないとする州法"
+      ],
+      "examples": [
+        {
+          "en": "In right-to-work states, employees cannot be required to join a union or pay union dues as a condition of employment.",
+          "ja": "ライト・トゥ・ワーク法を採用する州では、従業員は雇用の条件として組合への加入や組合費の支払いを義務づけられない。"
+        },
+        {
+          "en": "Right-to-work laws are controversial, with unions arguing they weaken collective bargaining power.",
+          "ja": "ライト・トゥ・ワーク法は論争的であり、組合側はそれが団体交渉力を弱めると主張している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1947年の連邦タフト・ハートリー法が各州にこの種の法律を制定する権限を認めたことを受けて、以後多くの米国の州で導入されてきた。",
+      "trivia": "労働組合側は組合費を払わない従業員も交渉の恩恵を受けられるため、組合の資金基盤を弱める狙いがあると批判している。",
+      "explanation": "組合加入・組合費支払いを雇用条件にできないとする州法。",
+      "example_ja": "ライト・トゥ・ワーク法を採用する州では、従業員は雇用の条件として組合への加入や組合費の支払いを義務づけられない。",
+      "example_ja_src": "In right-to-work states, employees cannot be required to join a union or pay union dues as a condition of employment."
+    }
+  },
+  {
+    "english": "constructive dismissal",
+    "detail": {
+      "pronunciation": "/kənˈstrʌktɪv dɪsˈmɪsəl/",
+      "pos": "名詞",
+      "meanings": [
+        "みなし解雇",
+        "実質的に退職を強いられたとみなされる状況"
+      ],
+      "examples": [
+        {
+          "en": "She resigned and claimed constructive dismissal after her employer cut her salary in half without warning.",
+          "ja": "彼女は使用者が予告なく給与を半分に減らしたため、退職しみなし解雇を主張した。"
+        },
+        {
+          "en": "Constructive dismissal occurs when working conditions become so intolerable that a reasonable employee would feel forced to resign.",
+          "ja": "みなし解雇は、労働条件が耐え難いほど悪化し、合理的な従業員であれば退職せざるを得ないと感じるような場合に生じる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "英国など英米法系の労働法において、形式的な解雇通知がなくても実質的に使用者の行為が退職の原因となった場合を保護する法理として発展してきた。",
+      "trivia": "立証には、労働条件の悪化が客観的に見て重大な契約違反に当たることを示す必要があるとされる。",
+      "explanation": "実質的に退職を強いられたとみなされる状況。",
+      "example_ja": "彼女は使用者が予告なく給与を半分に減らしたため、退職しみなし解雇を主張した。",
+      "example_ja_src": "She resigned and claimed constructive dismissal after her employer cut her salary in half without warning."
+    }
+  },
+  {
+    "english": "duty of fair representation",
+    "detail": {
+      "pronunciation": "/ˈduːti ʌv fɛr ˌrɛprɪzɛnˈteɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "公正代表義務",
+        "組合が全組合員を公正に代表する法的義務"
+      ],
+      "examples": [
+        {
+          "en": "The union was sued for breaching its duty of fair representation when it refused to process a member's grievance.",
+          "ja": "組合は、組合員の苦情処理を拒否したことで公正代表義務違反として訴えられた。"
+        },
+        {
+          "en": "The duty of fair representation prohibits a union from acting arbitrarily, discriminatorily, or in bad faith toward the workers it represents.",
+          "ja": "公正代表義務は、組合が代表する労働者に対して恣意的、差別的、あるいは不誠実な対応をすることを禁じる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "米国の労働法において、団体交渉における労働組合の排他的交渉代表権に対応する義務として、20世紀半ばの判例を通じて確立された。",
+      "trivia": "組合が単に交渉で失敗しただけではこの義務違反にはならず、恣意的・差別的・不誠実な対応があった場合に限られるとされる。",
+      "explanation": "組合が全組合員を公正に代表する法的義務。",
+      "example_ja": "組合は、組合員の苦情処理を拒否したことで公正代表義務違反として訴えられた。",
+      "example_ja_src": "The union was sued for breaching its duty of fair representation when it refused to process a member's grievance."
+    }
+  },
+  {
+    "english": "chain of custody",
+    "detail": {
+      "pronunciation": "/tʃeɪn ʌv ˈkʌstədi/",
+      "pos": "名詞",
+      "meanings": [
+        "証拠保管の連鎖",
+        "証拠の保管・移転の記録による同一性の証明"
+      ],
+      "examples": [
+        {
+          "en": "The defense argued that a break in the chain of custody made the DNA evidence unreliable.",
+          "ja": "弁護側は、証拠保管の連鎖に断絶があったため、DNA証拠は信頼できないと主張した。"
+        },
+        {
+          "en": "Maintaining a proper chain of custody is essential to ensure that physical evidence has not been tampered with.",
+          "ja": "適切な証拠保管の連鎖を維持することは、物的証拠が改ざんされていないことを確保するために不可欠である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "科学捜査や刑事手続きの発展に伴い、証拠の同一性・完全性を裁判で立証するための手続き上の要件として20世紀に確立された概念。",
+      "trivia": "薬物鑑定やDNA鑑定など科学的証拠の重要性が高まるにつれて、この記録の厳格さが裁判の帰趨を左右することも増えている。",
+      "explanation": "証拠の保管・移転の記録による同一性の証明。",
+      "example_ja": "弁護側は、証拠保管の連鎖に断絶があったため、DNA証拠は信頼できないと主張した。",
+      "example_ja_src": "The defense argued that a break in the chain of custody made the DNA evidence unreliable."
+    }
+  },
+  {
+    "english": "spoliation",
+    "detail": {
+      "pronunciation": "/ˌspoʊliˈeɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "証拠隠滅・毀損",
+        "訴訟で必要な証拠を故意・過失により失わせる行為"
+      ],
+      "examples": [
+        {
+          "en": "The court sanctioned the company for spoliation after it deleted emails relevant to the lawsuit.",
+          "ja": "裁判所は、訴訟に関連するメールを削除したことについて、その企業を証拠隠滅として制裁した。"
+        },
+        {
+          "en": "Spoliation of evidence can lead a court to instruct the jury to presume the destroyed evidence was unfavorable to the party that destroyed it.",
+          "ja": "証拠の隠滅があった場合、裁判所は陪審に対し、破棄された証拠がそれを破棄した当事者に不利なものだったと推定するよう指示することがある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語spoliare「奪う・略奪する」に由来し、証拠保全義務に違反して証拠を失わせる行為を指す法律用語として英米法の証拠法・民事訴訟法の中で発展した。",
+      "trivia": "電子メールなど電子データの証拠隠滅が近年特に問題となりやすい。",
+      "explanation": "訴訟で必要な証拠を故意・過失により失わせる行為。",
+      "example_ja": "裁判所は、訴訟に関連するメールを削除したことについて、その企業を証拠隠滅として制裁した。",
+      "example_ja_src": "The court sanctioned the company for spoliation after it deleted emails relevant to the lawsuit."
+    }
+  },
+  {
+    "english": "privilege against self-incrimination",
+    "detail": {
+      "pronunciation": "/ˈprɪvəlɪdʒ əˈɡɛnst sɛlf ɪnˌkrɪmɪˈneɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "自己負罪拒否特権",
+        "自己に不利な供述を強要されない権利"
+      ],
+      "examples": [
+        {
+          "en": "He invoked his privilege against self-incrimination and refused to answer the prosecutor's questions.",
+          "ja": "彼は自己負罪拒否特権を主張し、検察官の質問に答えることを拒否した。"
+        },
+        {
+          "en": "The privilege against self-incrimination allows a defendant to remain silent rather than provide testimony that could be used against them.",
+          "ja": "自己負罪拒否特権により、被告人は自分に不利に使われかねない証言をするよりも黙秘することができる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "right to remain silent",
+          "note": "より口語的な言い換え。黙秘権"
+        }
+      ],
+      "antonyms": [],
+      "origin": "拷問による自白強要への反省から英国のコモンローの中で発展し、米国では権利章典の一部として1791年に修正5条に明文化された。",
+      "trivia": "この権利は刑事被告人だけでなく、証人が自分を不利にする証言を拒否する場合にも認められる。",
+      "explanation": "自己に不利な供述を強要されない権利。",
+      "example_ja": "彼は自己負罪拒否特権を主張し、検察官の質問に答えることを拒否した。",
+      "example_ja_src": "He invoked his privilege against self-incrimination and refused to answer the prosecutor's questions."
+    }
+  },
+  {
+    "english": "fruit of the poisonous tree",
+    "detail": {
+      "pronunciation": "/fruːt ʌv ðə ˈpɔɪzənəs triː/",
+      "pos": "名詞",
+      "meanings": [
+        "毒樹の果実の法理",
+        "違法収集証拠から派生した証拠も排除するという法理"
+      ],
+      "examples": [
+        {
+          "en": "Because the confession was obtained illegally, the evidence found as a result was excluded as fruit of the poisonous tree.",
+          "ja": "自白が違法に得られたものだったため、その結果発見された証拠も毒樹の果実として排除された。"
+        },
+        {
+          "en": "Under the fruit of the poisonous tree doctrine, evidence derived from an illegal search is also inadmissible.",
+          "ja": "毒樹の果実の法理の下では、違法な捜索から派生した証拠も証拠として採用できない。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "違法収集証拠排除法則をさらに派生証拠にまで及ぼす法理として、1920年の米国判例(Silverthorne Lumber Co. v. United States)などを通じて確立された。",
+      "trivia": "「毒樹の果実」という比喩的な名称は、1939年のNardone v. United States判決で用いられたことで広く定着したとされる。",
+      "explanation": "違法収集証拠から派生した証拠も排除するという法理。",
+      "example_ja": "自白が違法に得られたものだったため、その結果発見された証拠も毒樹の果実として排除された。",
+      "example_ja_src": "Because the confession was obtained illegally, the evidence found as a result was excluded as fruit of the poisonous tree."
+    }
+  },
+  {
+    "english": "probative value",
+    "detail": {
+      "pronunciation": "/ˈproʊbətɪv ˈvæljuː/",
+      "pos": "名詞",
+      "meanings": [
+        "証明力",
+        "証拠が事実の証明にどれだけ資するかという価値"
+      ],
+      "examples": [
+        {
+          "en": "The judge ruled that the photograph's probative value outweighed any potential prejudice to the jury.",
+          "ja": "裁判官は、その写真の証明力が陪審に与えうる不当な偏見を上回ると判断した。"
+        },
+        {
+          "en": "Evidence with little probative value may still be excluded if it risks unfairly prejudicing the jury.",
+          "ja": "証明力の乏しい証拠は、陪審に不当な偏見を与えるおそれがある場合、それでも排除されることがある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ラテン語probare「証明する」に由来し、証拠が争点の立証にどれだけ資するかを測る概念として、英米法の証拠法の中心的な考え方の一つになっている。",
+      "trivia": "裁判所はしばしば、証拠の証明力とそれがもたらす不当な偏見や混乱のリスクとを比較衡量して、証拠採用の可否を判断する。",
+      "explanation": "証拠が事実の証明にどれだけ資するかという価値。",
+      "example_ja": "裁判官は、その写真の証明力が陪審に与えうる不当な偏見を上回ると判断した。",
+      "example_ja_src": "The judge ruled that the photograph's probative value outweighed any potential prejudice to the jury."
+    }
+  },
+  {
+    "english": "best evidence rule",
+    "detail": {
+      "pronunciation": "/bɛst ˈɛvɪdəns ruːl/",
+      "pos": "名詞",
+      "meanings": [
+        "最良証拠の法則",
+        "文書の内容の証明には原本を要求するルール"
+      ],
+      "examples": [
+        {
+          "en": "Under the best evidence rule, the court required the original contract rather than a photocopy.",
+          "ja": "最良証拠の法則の下、裁判所はコピーではなく契約書の原本を要求した。"
+        },
+        {
+          "en": "The best evidence rule generally requires the original document when a party seeks to prove its contents.",
+          "ja": "最良証拠の法則は、当事者が文書の内容を証明しようとする場合、原則として原本を要求する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "文書の内容をめぐる争いで写しの改ざんや誤りのリスクを避けるため、英国のコモンローの中で18世紀ごろから発展してきた証拠法上のルール。",
+      "trivia": "現代では正確な複写技術の発達により、多くの国・州の証拠規則で原本と同等の写しも広く認められるよう緩和されている。",
+      "explanation": "文書の内容の証明には原本を要求するルール。",
+      "example_ja": "最良証拠の法則の下、裁判所はコピーではなく契約書の原本を要求した。",
+      "example_ja_src": "Under the best evidence rule, the court required the original contract rather than a photocopy."
+    }
+  },
+  {
+    "english": "judicial notice",
+    "detail": {
+      "pronunciation": "/dʒuˈdɪʃəl ˈnoʊtɪs/",
+      "pos": "名詞",
+      "meanings": [
+        "裁判上の顕著な事実の認定",
+        "明白な事実を立証なしに認定できる制度"
+      ],
+      "examples": [
+        {
+          "en": "The court took judicial notice of the fact that the accident occurred on a public holiday.",
+          "ja": "裁判所は、その事故が祝日に発生したという事実を顕著な事実として認定した。"
+        },
+        {
+          "en": "Judicial notice allows courts to accept well-known facts, such as historical dates, without requiring formal proof.",
+          "ja": "この制度により、裁判所は歴史上の日付など広く知られた事実を、正式な立証なしに認めることができる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "誰もが疑いなく認める事実についてまで逐一証拠調べを求めることは訴訟経済に反するとして、英米法の証拠法の中で発展してきた制度。",
+      "trivia": "地理的事実や暦の日付など「争いようのない事実」に限定され、争点となっている実質的な事実には通常用いられない。",
+      "explanation": "明白な事実を立証なしに認定できる制度。",
+      "example_ja": "裁判所は、その事故が祝日に発生したという事実を顕著な事実として認定した。",
+      "example_ja_src": "The court took judicial notice of the fact that the accident occurred on a public holiday."
+    }
+  },
+  {
+    "english": "character evidence",
+    "detail": {
+      "pronunciation": "/ˈkærəktər ˈɛvɪdəns/",
+      "pos": "名詞",
+      "meanings": [
+        "性格証拠",
+        "人格・行状から行動を推認させる、使用が制限された証拠"
+      ],
+      "examples": [
+        {
+          "en": "The prosecution was barred from introducing character evidence about the defendant's past conduct.",
+          "ja": "検察側は、被告人の過去の行状に関する性格証拠を提出することを禁じられた。"
+        },
+        {
+          "en": "Character evidence is generally inadmissible to prove that a person acted in accordance with that character on a particular occasion.",
+          "ja": "性格証拠は一般に、ある人物がその人格に沿って特定の機会に行動したことを証明するためには証拠として採用されない。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "人格に基づく偏見が事実認定を歪めるおそれがあるとして、英米法の証拠法においてその使用範囲を厳しく制限するルールが伝統的に発展してきた。",
+      "trivia": "被告人自身が自らの良い人格を証明する証拠を提出した場合には、例外的に検察側が反証として性格証拠を出せるようになることがある。",
+      "explanation": "人格・行状から行動を推認させる、使用が制限された証拠。",
+      "example_ja": "検察側は、被告人の過去の行状に関する性格証拠を提出することを禁じられた。",
+      "example_ja_src": "The prosecution was barred from introducing character evidence about the defendant's past conduct."
+    }
+  },
+  {
+    "english": "collateral estoppel",
+    "detail": {
+      "pronunciation": "/kəˈlætərəl ɛˈstɒpəl/",
+      "pos": "名詞",
+      "meanings": [
+        "争点効(争点排除効)",
+        "既に判断された争点を再び争うことを禁じる法理"
+      ],
+      "examples": [
+        {
+          "en": "Because the issue of negligence had already been decided in the first trial, collateral estoppel barred relitigating it in the second.",
+          "ja": "過失の争点は最初の裁判ですでに判断されていたため、争点効により二度目の裁判でそれを再び争うことはできなかった。"
+        },
+        {
+          "en": "Collateral estoppel prevents parties from relitigating an issue that was already actually litigated and decided in a prior case.",
+          "ja": "争点効は、当事者が前訴で実際に争われ判断された争点を再び蒸し返すことを防ぐ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "issue preclusion",
+          "note": "同じ法理を指す、より新しい言い換え表現"
+        }
+      ],
+      "antonyms": [],
+      "origin": "同一の争点について矛盾する判断が繰り返されることを防ぎ、訴訟経済と判決の安定性を確保するため、英米法の判決効理論の中で発展してきた。",
+      "trivia": "訴訟物全体の蒸し返しを禁じるres judicata(既判力)とは異なり、collateral estoppelは個々の争点の蒸し返しのみを禁じる点で区別される。",
+      "explanation": "既に判断された争点を再び争うことを禁じる法理。",
+      "example_ja": "過失の争点は最初の裁判ですでに判断されていたため、争点効により二度目の裁判でそれを再び争うことはできなかった。",
+      "example_ja_src": "Because the issue of negligence had already been decided in the first trial, collateral estoppel barred relitigating it in the second."
+    }
+  },
+  {
+    "english": "duty of care",
+    "detail": {
+      "pronunciation": "/ˈduːti ʌv kɛr/",
+      "pos": "名詞",
+      "meanings": [
+        "注意義務",
+        "他人に損害を与えないよう注意すべき義務"
+      ],
+      "examples": [
+        {
+          "en": "As a driver, he owed a duty of care to other people on the road.",
+          "ja": "運転者として、彼は道路上の他の人々に対して注意義務を負っていた。"
+        },
+        {
+          "en": "A negligence claim requires showing that the defendant owed a duty of care to the plaintiff.",
+          "ja": "過失に基づく訴えでは、被告が原告に対して注意義務を負っていたことを示す必要がある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1932年の英国判例Donoghue v. Stevenson(「隣人原則」)を通じて、過失責任の前提となる注意義務の存在とその範囲が体系的に確立された。",
+      "trivia": "誰に対してどこまでの注意義務を負うかという「隣人」の範囲は、その後も判例によって拡張・限定が繰り返されてきた。",
+      "explanation": "他人に損害を与えないよう注意すべき義務。",
+      "example_ja": "運転者として、彼は道路上の他の人々に対して注意義務を負っていた。",
+      "example_ja_src": "As a driver, he owed a duty of care to other people on the road."
+    }
+  },
+  {
+    "english": "proximate cause",
+    "detail": {
+      "pronunciation": "/ˈprɒksɪmət kɔːz/",
+      "pos": "名詞",
+      "meanings": [
+        "相当因果関係",
+        "法的責任を認めるのに十分な因果関係"
+      ],
+      "examples": [
+        {
+          "en": "The court found that the driver's negligence was not the proximate cause of the pedestrian's injury.",
+          "ja": "裁判所は、運転者の過失が歩行者の負傷の相当因果関係にあるとは認めなかった。"
+        },
+        {
+          "en": "Even if an act is a factual cause of harm, liability requires that it also be the proximate cause.",
+          "ja": "ある行為が損害の事実的な原因であったとしても、責任を負わせるにはそれが相当因果関係でもある必要がある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "legal cause",
+          "note": "ほぼ同義で使われる表現"
+        }
+      ],
+      "antonyms": [],
+      "origin": "事実的因果関係(but-for原因)だけでは責任の範囲が無限に広がってしまうことへの反省から、英米不法行為法の中で責任を合理的な範囲に限定する法理として発展した。",
+      "trivia": "予見可能性を基準とするか、直接性を基準とするかなど、近接的原因の判断枠組みは判例によって様々なアプローチが取られてきた。",
+      "explanation": "法的責任を認めるのに十分な因果関係。",
+      "example_ja": "裁判所は、運転者の過失が歩行者の負傷の相当因果関係にあるとは認めなかった。",
+      "example_ja_src": "The court found that the driver's negligence was not the proximate cause of the pedestrian's injury."
+    }
+  },
+  {
+    "english": "strict liability",
+    "detail": {
+      "pronunciation": "/strɪkt ˌlaɪəˈbɪlɪti/",
+      "pos": "名詞",
+      "meanings": [
+        "無過失責任",
+        "過失の有無を問わない無過失責任の原則"
+      ],
+      "examples": [
+        {
+          "en": "Manufacturers can be held strictly liable for injuries caused by defective products, even without proof of negligence.",
+          "ja": "製造業者は、過失の立証がなくても、欠陥製品によって生じた負傷について無過失責任を問われることがある。"
+        },
+        {
+          "en": "Strict liability is often applied to abnormally dangerous activities, such as using explosives.",
+          "ja": "無過失責任は、爆発物の使用など異常に危険な活動にしばしば適用される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "negligence",
+          "note": "過失の存在を要件とする、対照的な責任原則"
+        }
+      ],
+      "origin": "極めて危険な活動や製造物責任の分野で、被害者が加害者の過失を立証する負担を軽減する目的から、20世紀にかけて英米法の不法行為法に広く導入された。",
+      "trivia": "製造物責任法(PL法)は、多くの国で無過失責任の考え方を採用した代表例とされる。",
+      "explanation": "過失の有無を問わない無過失責任の原則。",
+      "example_ja": "製造業者は、過失の立証がなくても、欠陥製品によって生じた負傷について無過失責任を問われることがある。",
+      "example_ja_src": "Manufacturers can be held strictly liable for injuries caused by defective products, even without proof of negligence."
+    }
+  },
+  {
+    "english": "legal positivism",
+    "detail": {
+      "pronunciation": "/ˈliːɡəl ˈpɒzɪtɪvɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "法実証主義",
+        "法の効力を道徳から切り離して捉える法哲学の立場"
+      ],
+      "examples": [
+        {
+          "en": "Legal positivists argue that a law can be valid even if it is unjust, as long as it was properly enacted.",
+          "ja": "法実証主義者は、法律が正当な手続きで制定されている限り、たとえ不正義であっても有効でありうると主張する。"
+        },
+        {
+          "en": "Legal positivism separates the question of what the law is from the question of what the law ought to be.",
+          "ja": "法実証主義は、法が何であるかという問いと、法がどうあるべきかという問いを切り離して考える。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "natural law",
+          "note": "法は道徳的正しさに由来しなければならないとする対照的な立場"
+        }
+      ],
+      "origin": "19世紀の法学者John Austinや20世紀のH.L.A. Hartらによって体系化された法哲学上の立場で、法と道徳を概念的に区別することを重視する。",
+      "trivia": "ナチス政権下の悪法の効力をめぐる論争は、法実証主義と自然法論の対立を象徴する事例としてしばしば取り上げられる。",
+      "explanation": "法の効力を道徳から切り離して捉える法哲学の立場。",
+      "example_ja": "法実証主義者は、法律が正当な手続きで制定されている限り、たとえ不正義であっても有効でありうると主張する。",
+      "example_ja_src": "Legal positivists argue that a law can be valid even if it is unjust, as long as it was properly enacted."
+    }
+  },
+  {
+    "english": "legal realism",
+    "detail": {
+      "pronunciation": "/ˈliːɡəl ˈrɪəlɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "法現実主義",
+        "裁判官の実際の判断過程の現実に注目する法哲学の立場"
+      ],
+      "examples": [
+        {
+          "en": "Legal realists argued that judges' decisions are shaped as much by their personal views as by legal rules.",
+          "ja": "法現実主義者は、裁判官の判断は法規則だけでなく個人的な考え方によっても同じくらい形作られると主張した。"
+        },
+        {
+          "en": "Legal realism emphasizes studying how courts actually decide cases in practice, rather than how legal doctrine says they should.",
+          "ja": "法現実主義は、法理論がどうあるべきと説くかではなく、裁判所が実際にどのように事件を判断しているかを研究することを重視する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "legal formalism",
+          "note": "法の適用は論理的・機械的な三段論法で決まるとする対照的な立場"
+        }
+      ],
+      "origin": "1920〜30年代の米国において、Oliver Wendell Holmes Jr.らの影響を受けた法学者たちが、形式論理だけでは裁判の実態を説明できないとして展開した運動。",
+      "trivia": "この立場は後の批判法学や法と経済学など、20世紀後半の様々な法学理論に大きな影響を与えた。",
+      "explanation": "裁判官の実際の判断過程の現実に注目する法哲学の立場。",
+      "example_ja": "法現実主義者は、裁判官の判断は法規則だけでなく個人的な考え方によっても同じくらい形作られると主張した。",
+      "example_ja_src": "Legal realists argued that judges' decisions are shaped as much by their personal views as by legal rules."
+    }
+  },
+  {
+    "english": "social contract theory",
+    "detail": {
+      "pronunciation": "/ˈsoʊʃəl ˈkɒntrækt ˈθɪəri/",
+      "pos": "名詞",
+      "meanings": [
+        "社会契約論",
+        "統治への合意に国家・法の正当性の根拠を求める理論"
+      ],
+      "examples": [
+        {
+          "en": "According to social contract theory, government derives its legitimacy from the consent of the governed.",
+          "ja": "社会契約論によれば、政府の正当性は被治者の同意に由来する。"
+        },
+        {
+          "en": "Thinkers like Hobbes, Locke, and Rousseau each developed their own version of social contract theory.",
+          "ja": "ホッブズ、ロック、ルソーといった思想家たちは、それぞれ独自の社会契約論を展開した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "17〜18世紀のホッブズ・ロック・ルソーらの思想家によって発展させられ、近代国家や法の正統性の根拠を神権ではなく人々の合意に求める考え方として広まった。",
+      "trivia": "思想家ごとに自然状態の捉え方は大きく異なり、ホッブズは悲観的に、ロックはより楽観的に自然状態を描いたことで知られる。",
+      "explanation": "統治への合意に国家・法の正当性の根拠を求める理論。",
+      "example_ja": "社会契約論によれば、政府の正当性は被治者の同意に由来する。",
+      "example_ja_src": "According to social contract theory, government derives its legitimacy from the consent of the governed."
+    }
+  },
+  {
+    "english": "natural rights",
+    "detail": {
+      "pronunciation": "/ˈnætʃərəl raɪts/",
+      "pos": "名詞",
+      "meanings": [
+        "自然権",
+        "人間であることに基づき生来備わるとされる権利"
+      ],
+      "examples": [
+        {
+          "en": "The Declaration of Independence proclaims that all people are endowed with certain natural rights.",
+          "ja": "独立宣言は、すべての人が一定の自然権を与えられていると宣言している。"
+        },
+        {
+          "en": "Natural rights are considered to exist independently of any government or legal system.",
+          "ja": "自然権は、いかなる政府や法制度からも独立して存在するものと考えられている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "inalienable rights",
+          "note": "譲渡・剥奪できない権利という意味合いを強調する近い表現"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "legal positivism",
+          "note": "権利は法によって与えられるとする対照的な考え方"
+        }
+      ],
+      "origin": "自然法思想を背景に17〜18世紀の啓蒙思想家(特にジョン・ロック)によって理論化され、米国独立宣言やフランス人権宣言など近代の権利章典に大きな影響を与えた。",
+      "trivia": "自然権の内容は思想家によって異なり、ロックは生命・自由・財産を、後の思想では「幸福の追求」なども含まれるようになった。",
+      "explanation": "人間であることに基づき生来備わるとされる権利。",
+      "example_ja": "独立宣言は、すべての人が一定の自然権を与えられていると宣言している。",
+      "example_ja_src": "The Declaration of Independence proclaims that all people are endowed with certain natural rights."
+    }
+  },
+  {
+    "english": "critical legal studies",
+    "detail": {
+      "pronunciation": "/ˈkrɪtɪkəl ˈliːɡəl ˈstʌdiz/",
+      "pos": "名詞",
+      "meanings": [
+        "批判法学",
+        "法を権力関係の反映・正当化装置として批判的に捉える学派"
+      ],
+      "examples": [
+        {
+          "en": "Scholars of critical legal studies argue that legal doctrine often masks underlying power imbalances in society.",
+          "ja": "批判法学の学者たちは、法理論はしばしば社会に潜む権力の不均衡を覆い隠していると主張する。"
+        },
+        {
+          "en": "Critical legal studies challenges the idea that law is a neutral, apolitical system of rules.",
+          "ja": "批判法学は、法が中立的で非政治的な規則の体系であるという考え方に異議を唱える。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "legal formalism",
+          "note": "法は政治から独立した中立的な論理体系だとする、対照的な伝統的立場"
+        }
+      ],
+      "origin": "1970年代後半、法現実主義の流れを受けつつ、法学教育や法制度に潜む権力構造やイデオロギーを批判する学者たちによって米国の法科大学院を中心に展開された運動。",
+      "trivia": "この運動はフェミニズム法学や批判的人種理論など、後続する批判的な法学の潮流にも大きな影響を与えた。",
+      "explanation": "法を権力関係の反映・正当化装置として批判的に捉える学派。",
+      "example_ja": "批判法学の学者たちは、法理論はしばしば社会に潜む権力の不均衡を覆い隠していると主張する。",
+      "example_ja_src": "Scholars of critical legal studies argue that legal doctrine often masks underlying power imbalances in society."
+    }
+  },
+  {
+    "english": "institutional isomorphism",
+    "detail": {
+      "pronunciation": "/ˌɪnstɪˈtuːʃənəl ˌaɪsəˈmɔːrfɪzəm/",
+      "pos": "名詞",
+      "meanings": [
+        "制度的同型化",
+        "正当性を求めて組織形態が同質化していく現象"
+      ],
+      "examples": [
+        {
+          "en": "Institutional isomorphism explains why hospitals across the country tend to adopt very similar organizational structures.",
+          "ja": "制度的同型化は、全国の病院がなぜ非常によく似た組織構造を採用する傾向にあるのかを説明する。"
+        },
+        {
+          "en": "According to institutional isomorphism, organizations often mimic successful competitors to gain legitimacy, not just efficiency.",
+          "ja": "制度的同型化の考え方によれば、組織は効率性のためだけでなく正当性を得るために、成功している競合他社を模倣することが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1983年にPaul DiMaggioとWalter Powellが発表した論文で提唱された、新制度派組織論の中心概念。強制的・模倣的・規範的という3種類の同型化メカニズムが整理された。",
+      "trivia": "業界内で流行した経営手法が、その効果が十分に検証されないまま多くの企業に一斉に導入される現象を説明する理論としてもよく引用される。",
+      "explanation": "正当性を求めて組織形態が同質化していく現象を説明する理論。",
+      "example_ja": "制度的同型化は、全国の病院がなぜ非常によく似た組織構造を採用する傾向にあるのかを説明する。",
+      "example_ja_src": "Institutional isomorphism explains why hospitals across the country tend to adopt very similar organizational structures."
+    }
+  },
+  {
+    "english": "path dependence",
+    "detail": {
+      "pronunciation": "/pæθ dɪˈpɛndəns/",
+      "pos": "名詞",
+      "meanings": [
+        "経路依存性",
+        "過去の選択が後の進路を長期に拘束する現象"
+      ],
+      "examples": [
+        {
+          "en": "The company's outdated IT system persisted for decades due to path dependence, even as better alternatives emerged.",
+          "ja": "経路依存性のため、より優れた代替案が登場していたにもかかわらず、その会社の旧式のITシステムは何十年も使われ続けた。"
+        },
+        {
+          "en": "Path dependence suggests that early decisions can lock organizations into a particular trajectory that is hard to reverse.",
+          "ja": "経路依存性は、初期の意思決定が組織を後戻りの難しい特定の進路に固定してしまうことがあると示唆する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "経済学者Paul DavidやBrian Arthurらが、QWERTY配列キーボードの普及などを例に、初期の小さな選択が後の大きな帰結を左右する現象として理論化した概念。",
+      "trivia": "QWERTYキーボードの配列が、より効率的とされる代替配列(Dvorak配列など)に置き換わらなかった理由を説明する古典的な例として頻繁に引用される。",
+      "explanation": "過去の選択が後の進路を長期に拘束する現象。",
+      "example_ja": "経路依存性のため、より優れた代替案が登場していたにもかかわらず、その会社の旧式のITシステムは何十年も使われ続けた。",
+      "example_ja_src": "The company's outdated IT system persisted for decades due to path dependence, even as better alternatives emerged."
+    }
+  },
+  {
+    "english": "groupthink",
+    "detail": {
+      "pronunciation": "/ˈɡruːpθɪŋk/",
+      "pos": "名詞",
+      "meanings": [
+        "集団浅慮",
+        "集団の同調圧力により判断の質が低下する現象"
+      ],
+      "examples": [
+        {
+          "en": "Groupthink led the committee to approve a flawed plan without seriously considering the risks.",
+          "ja": "集団浅慮のため、委員会はリスクを真剣に検討することなく欠陥のある計画を承認してしまった。"
+        },
+        {
+          "en": "Groupthink is more likely to occur when a group is highly cohesive and isolated from outside opinions.",
+          "ja": "集団浅慮は、集団の結束が非常に強く、外部の意見から隔絶されている場合に起こりやすい。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "心理学者Irving Janisが1972年の著書で、ピッグス湾侵攻など米国の外交政策上の失敗事例を分析する中で提唱した概念。",
+      "trivia": "対策として、あえて反対意見を述べる役割(悪魔の代弁者)を会議に置くことが有効だとされる。",
+      "explanation": "集団の同調圧力により判断の質が低下する現象。",
+      "example_ja": "集団浅慮のため、委員会はリスクを真剣に検討することなく欠陥のある計画を承認してしまった。",
+      "example_ja_src": "Groupthink led the committee to approve a flawed plan without seriously considering the risks."
+    }
+  },
+  {
+    "english": "organizational silos",
+    "detail": {
+      "pronunciation": "/ˌɔːrɡənəˈzeɪʃənəl ˈsaɪloʊz/",
+      "pos": "名詞",
+      "meanings": [
+        "組織のサイロ化(縦割り)",
+        "部門間の連携が乏しく孤立した組織の状態"
+      ],
+      "examples": [
+        {
+          "en": "Organizational silos made it difficult for the marketing and engineering teams to coordinate on the new product.",
+          "ja": "組織のサイロ化により、マーケティングチームとエンジニアリングチームが新製品について連携するのが難しくなっていた。"
+        },
+        {
+          "en": "Breaking down organizational silos often requires changing incentive structures, not just adding new communication tools.",
+          "ja": "組織のサイロ化を解消するには、新しいコミュニケーションツールを導入するだけでなく、インセンティブ構造そのものを変える必要があることが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "silo mentality",
+          "note": "部門間の壁を作る組織文化・心理面を強調した表現"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "cross-functional collaboration",
+          "note": "部門を横断して協働する対照的な状態"
+        }
+      ],
+      "origin": "農業用の穀物貯蔵庫(サイロ)が互いに独立して並んでいる様子を比喩に用い、部門間の壁を表す表現として20世紀後半のビジネス用語として定着した。",
+      "trivia": "大企業の非効率の代表的な原因として頻繁に取り上げられ、部門横断チームの導入などが対策として提案されることが多い。",
+      "explanation": "部門間の連携が乏しく孤立した組織の状態。",
+      "example_ja": "組織のサイロ化により、マーケティングチームとエンジニアリングチームが新製品について連携するのが難しくなっていた。",
+      "example_ja_src": "Organizational silos made it difficult for the marketing and engineering teams to coordinate on the new product."
+    }
+  },
+  {
+    "english": "flat organization",
+    "detail": {
+      "pronunciation": "/flæt ˌɔːrɡənəˈzeɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "フラット組織",
+        "階層を減らした意思決定の速い組織構造"
+      ],
+      "examples": [
+        {
+          "en": "The startup adopted a flat organization with almost no middle management.",
+          "ja": "そのスタートアップは、中間管理職をほとんど置かないフラット組織を採用した。"
+        },
+        {
+          "en": "Flat organizations tend to give employees more autonomy but can make coordination harder as the company grows.",
+          "ja": "フラット組織は従業員により大きな裁量を与える傾向があるが、企業が成長するにつれて調整が難しくなることがある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "hierarchical organization",
+          "note": "多くの階層を持つ、対照的な組織構造"
+        }
+      ],
+      "origin": "情報技術の発達により中間管理職が担ってきた情報伝達の役割の重要性が薄れたことなどを背景に、20世紀後半から特にIT系企業を中心に広まった組織形態。",
+      "trivia": "階層をなくし全員が対等に意思決定に関わる「ホラクラシー」のような、より極端な形態も一部の企業で試みられている。",
+      "explanation": "階層を減らした意思決定の速い組織構造。",
+      "example_ja": "そのスタートアップは、中間管理職をほとんど置かないフラット組織を採用した。",
+      "example_ja_src": "The startup adopted a flat organization with almost no middle management."
+    }
+  },
+  {
+    "english": "divisional structure",
+    "detail": {
+      "pronunciation": "/dɪˈvɪʒənəl ˈstrʌktʃər/",
+      "pos": "名詞",
+      "meanings": [
+        "事業部制組織",
+        "製品・地域などの単位で分かれた事業部制の組織構造"
+      ],
+      "examples": [
+        {
+          "en": "The conglomerate reorganized into a divisional structure, with separate units for each product line.",
+          "ja": "その複合企業は、製品ラインごとに独立した部門を持つ事業部制組織へと再編された。"
+        },
+        {
+          "en": "A divisional structure allows each business unit to respond quickly to its own market, at the cost of some duplicated resources.",
+          "ja": "事業部制組織では、各事業部が自らの市場に素早く対応できる一方、資源の重複というコストが生じる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "functional structure",
+          "note": "職能ごとに部門を分ける対照的な組織構造"
+        }
+      ],
+      "origin": "1920年代に米国のゼネラルモーターズ(GM)がアルフレッド・スローンの下で複数のブランド事業部を設けたことが、代表的な導入事例として知られる。",
+      "trivia": "各事業部が独自に研究開発や営業機能を持つため、機能別組織に比べて部門間で機能が重複しやすいという課題がある。",
+      "explanation": "製品・地域などの単位で分かれた事業部制の組織構造。",
+      "example_ja": "その複合企業は、製品ラインごとに独立した部門を持つ事業部制組織へと再編された。",
+      "example_ja_src": "The conglomerate reorganized into a divisional structure, with separate units for each product line."
+    }
+  },
+  {
+    "english": "functional structure",
+    "detail": {
+      "pronunciation": "/ˈfʌŋkʃənəl ˈstrʌktʃər/",
+      "pos": "名詞",
+      "meanings": [
+        "職能別組織",
+        "職能ごとに部門を編成する伝統的な組織構造"
+      ],
+      "examples": [
+        {
+          "en": "In a functional structure, all the engineers report to the head of engineering, regardless of which product they work on.",
+          "ja": "職能別組織では、どの製品を担当しているかにかかわらず、すべてのエンジニアはエンジニアリング部門長に報告する。"
+        },
+        {
+          "en": "A functional structure promotes deep expertise within each department but can slow down cross-department projects.",
+          "ja": "職能別組織は各部門内での専門性の深化を促すが、部門をまたぐプロジェクトを遅らせることがある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "divisional structure",
+          "note": "製品・地域などの単位で分かれる対照的な組織構造"
+        }
+      ],
+      "origin": "分業の利益を最大化する目的で、専門化された職能ごとに組織を編成するという、20世紀初頭の科学的管理法の考え方とともに広く普及した伝統的な組織形態。",
+      "trivia": "規模が小さいうちは効率的だが、事業の多角化が進むと部門間の調整コストが増大しやすいとされる。",
+      "explanation": "職能ごとに部門を編成する伝統的な組織構造。",
+      "example_ja": "職能別組織では、どの製品を担当しているかにかかわらず、すべてのエンジニアはエンジニアリング部門長に報告する。",
+      "example_ja_src": "In a functional structure, all the engineers report to the head of engineering, regardless of which product they work on."
+    }
+  },
+  {
+    "english": "network organization",
+    "detail": {
+      "pronunciation": "/ˈnɛtwɜːrk ˌɔːrɡənəˈzeɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "ネットワーク型組織",
+        "独立した組織同士が緩やかに連携する組織形態"
+      ],
+      "examples": [
+        {
+          "en": "The fashion brand operates as a network organization, outsourcing manufacturing and logistics to independent partners.",
+          "ja": "そのファッションブランドはネットワーク型組織として運営されており、製造と物流を独立したパートナー企業に委託している。"
+        },
+        {
+          "en": "Network organizations rely heavily on trust and information sharing among independent partner firms.",
+          "ja": "ネットワーク型組織は、独立したパートナー企業間の信頼と情報共有に大きく依存している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "取引コスト理論の発展や情報通信技術の普及を背景に、企業が全ての機能を垂直統合するよりも、外部パートナーとのネットワークを活用する方が効率的になる場面が増えたことから注目されるようになった組織形態。",
+      "trivia": "サプライチェーン全体を緩やかなネットワークとして運営するアパレル業界などが典型例としてよく紹介される。",
+      "explanation": "独立した組織同士が緩やかに連携する組織形態。",
+      "example_ja": "そのファッションブランドはネットワーク型組織として運営されており、製造と物流を独立したパートナー企業に委託している。",
+      "example_ja_src": "The fashion brand operates as a network organization, outsourcing manufacturing and logistics to independent partners."
+    }
+  },
+  {
+    "english": "boundaryless organization",
+    "detail": {
+      "pronunciation": "/ˈbaʊndəriləs ˌɔːrɡənəˈzeɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "境界のない組織",
+        "組織内外の境界を取り払うことを目指す組織のあり方"
+      ],
+      "examples": [
+        {
+          "en": "GE's former CEO Jack Welch popularized the idea of the boundaryless organization to encourage collaboration across departments.",
+          "ja": "GEの元CEOジャック・ウェルチは、部門を超えた協働を促すため、境界のない組織という考え方を広めた。"
+        },
+        {
+          "en": "A boundaryless organization tries to remove barriers between functions, hierarchical levels, and even external partners.",
+          "ja": "境界のない組織は、職能間・階層間、さらには社外のパートナーとの間の壁までも取り除こうとする。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "organizational silos",
+          "note": "部門間の壁が強く連携が乏しい対照的な状態"
+        }
+      ],
+      "origin": "1990年代に米ゼネラル・エレクトリック(GE)のCEOジャック・ウェルチが提唱した経営理念として広まった概念。",
+      "trivia": "実際に境界を完全になくすことは難しく、多くの場合は「境界をより浸透しやすくする」という程度の実践にとどまるとも指摘される。",
+      "explanation": "組織内外の境界を取り払うことを目指す組織のあり方。",
+      "example_ja": "GEの元CEOジャック・ウェルチは、部門を超えた協働を促すため、境界のない組織という考え方を広めた。",
+      "example_ja_src": "GE's former CEO Jack Welch popularized the idea of the boundaryless organization to encourage collaboration across departments."
+    }
+  },
+  {
+    "english": "resource dependence theory",
+    "detail": {
+      "pronunciation": "/rɪˈsɔːrs dɪˈpɛndəns ˈθɪəri/",
+      "pos": "名詞",
+      "meanings": [
+        "資源依存理論",
+        "組織の行動を外部資源への依存関係から説明する理論"
+      ],
+      "examples": [
+        {
+          "en": "Resource dependence theory explains why companies form alliances with suppliers who control scarce raw materials.",
+          "ja": "資源依存理論は、企業がなぜ希少な原材料を握るサプライヤーと提携を結ぶのかを説明する。"
+        },
+        {
+          "en": "According to resource dependence theory, mergers are often a strategy to reduce dependence on an unpredictable external partner.",
+          "ja": "資源依存理論によれば、合併はしばしば予測不可能な外部パートナーへの依存を減らすための戦略である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1978年にJeffrey PfefferとGerald Salancikが著書『The External Control of Organizations』で体系化した組織理論。",
+      "trivia": "企業が重要な原材料の供給元を買収する「垂直統合」も、この理論では資源依存を減らすための戦略として説明される。",
+      "explanation": "組織の行動を外部資源への依存関係から説明する理論。",
+      "example_ja": "資源依存理論は、企業がなぜ希少な原材料を握るサプライヤーと提携を結ぶのかを説明する。",
+      "example_ja_src": "Resource dependence theory explains why companies form alliances with suppliers who control scarce raw materials."
+    }
+  },
+  {
+    "english": "Hawthorne effect",
+    "detail": {
+      "pronunciation": "/ˈhɔːθɔːrn ɪˈfɛkt/",
+      "pos": "名詞",
+      "meanings": [
+        "ホーソン効果",
+        "観察されているという意識自体が行動を変える現象"
+      ],
+      "examples": [
+        {
+          "en": "The researchers noticed a Hawthorne effect: productivity rose simply because workers knew they were being studied.",
+          "ja": "研究者たちはホーソン効果に気づいた。従業員が観察されていると知っているというだけで生産性が上がったのである。"
+        },
+        {
+          "en": "The Hawthorne effect makes it difficult to isolate the true impact of a workplace change from the effect of merely being observed.",
+          "ja": "ホーソン効果があるため、職場での変化そのものの真の効果と、単に観察されていることの効果とを切り分けるのが難しくなる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1920〜30年代に米国イリノイ州のウェスタン・エレクトリック社ホーソン工場で行われた一連の実験(ホーソン実験)の結果から見出された現象。",
+      "trivia": "当初は照明の明るさと生産性の関係を調べる実験だったが、照明を暗くしても生産性が上がるという意外な結果が観察されたことで有名になった。",
+      "explanation": "観察されているという意識自体が行動を変える現象。",
+      "example_ja": "研究者たちはホーソン効果に気づいた。従業員が観察されていると知っているというだけで生産性が上がったのである。",
+      "example_ja_src": "The researchers noticed a Hawthorne effect: productivity rose simply because workers knew they were being studied."
+    }
+  },
+  {
+    "english": "social loafing",
+    "detail": {
+      "pronunciation": "/ˈsoʊʃəl ˈloʊfɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "社会的手抜き",
+        "集団作業で個人の努力水準が下がる現象"
+      ],
+      "examples": [
+        {
+          "en": "Social loafing became a problem in the large team, where individual contributions were hard to track.",
+          "ja": "個人の貢献度を追跡しにくいその大人数のチームでは、社会的手抜きが問題になった。"
+        },
+        {
+          "en": "Social loafing tends to decrease when each team member's individual performance is clearly identifiable.",
+          "ja": "各チームメンバーの個人の成果が明確にわかるようになると、社会的手抜きは減少する傾向がある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1913年のフランスの農学者Max Ringelmannによる綱引き実験に端を発し、後に心理学者らによって「社会的手抜き」として体系的に研究された現象。",
+      "trivia": "個人の貢献を可視化する仕組みを導入したり、チームの規模を適切に保ったりすることが、この現象を緩和する対策として知られている。",
+      "explanation": "集団作業で個人の努力水準が下がる現象。",
+      "example_ja": "個人の貢献度を追跡しにくいその大人数のチームでは、社会的手抜きが問題になった。",
+      "example_ja_src": "Social loafing became a problem in the large team, where individual contributions were hard to track."
+    }
+  },
+  {
+    "english": "Theory X and Theory Y",
+    "detail": {
+      "pronunciation": "/ˈθɪəri ɛks ænd ˈθɪəri waɪ/",
+      "pos": "名詞",
+      "meanings": [
+        "X理論・Y理論",
+        "従業員観を対比させたマグレガーの二つの管理理論"
+      ],
+      "examples": [
+        {
+          "en": "Managers who follow Theory X tend to closely supervise employees, while Theory Y managers trust them with more autonomy.",
+          "ja": "X理論に従う管理者は従業員を厳しく監督する傾向があるのに対し、Y理論の管理者はより大きな裁量を与えて信頼する。"
+        },
+        {
+          "en": "McGregor argued that a manager's underlying assumptions—Theory X or Theory Y—shape how they treat employees.",
+          "ja": "マグレガーは、管理者が抱く根底の前提(X理論かY理論か)が、従業員への接し方を形作ると論じた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1960年に心理学者ダグラス・マグレガーが著書『企業の人間的側面』で提唱した、経営者が従業員に対して抱く二つの対照的な仮定のモデル。",
+      "trivia": "後にウィリアム・オオウチが日本的経営の要素を取り入れた「Z理論」を提唱し、この枠組みをさらに発展させた。",
+      "explanation": "従業員観を対比させたマグレガーの二つの管理理論。",
+      "example_ja": "X理論に従う管理者は従業員を厳しく監督する傾向があるのに対し、Y理論の管理者はより大きな裁量を与えて信頼する。",
+      "example_ja_src": "Managers who follow Theory X tend to closely supervise employees, while Theory Y managers trust them with more autonomy."
+    }
+  },
+  {
+    "english": "Theory Z",
+    "detail": {
+      "pronunciation": "/ˈθɪəri ziː/",
+      "pos": "名詞",
+      "meanings": [
+        "Z理論",
+        "日本的経営の要素を取り入れたオオウチの経営理論"
+      ],
+      "examples": [
+        {
+          "en": "Theory Z emphasizes long-term employment, consensus decision-making, and strong employee loyalty.",
+          "ja": "Z理論は、長期雇用、合意に基づく意思決定、そして従業員の強い忠誠心を重視する。"
+        },
+        {
+          "en": "Companies influenced by Theory Z often invest heavily in employee training and cross-functional job rotation.",
+          "ja": "Z理論の影響を受けた企業は、従業員研修や部門をまたぐジョブローテーションに多くの投資を行うことが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1981年に経営学者ウィリアム・オオウチが著書『セオリーZ』で、日本企業と米国企業の経営手法を比較する中から提唱した理論。",
+      "trivia": "マグレガーのX理論・Y理論に続く形で命名されたが、内容自体は独立した比較経営研究に基づいている。",
+      "explanation": "日本的経営の要素を取り入れたオオウチの経営理論。",
+      "example_ja": "Z理論は、長期雇用、合意に基づく意思決定、そして従業員の強い忠誠心を重視する。",
+      "example_ja_src": "Theory Z emphasizes long-term employment, consensus decision-making, and strong employee loyalty."
+    }
+  },
+  {
+    "english": "escalation of commitment",
+    "detail": {
+      "pronunciation": "/ˌɛskəˈleɪʃən ʌv kəˈmɪtmənt/",
+      "pos": "名詞",
+      "meanings": [
+        "コミットメントのエスカレーション",
+        "既投資を理由に失敗プロジェクトへの投資を拡大する現象"
+      ],
+      "examples": [
+        {
+          "en": "Escalation of commitment led the executives to keep funding the failing project long after the warning signs appeared.",
+          "ja": "コミットメントのエスカレーションのため、経営陣は警告サインが現れてからずいぶん経っても、失敗しつつあるプロジェクトへの資金提供を続けた。"
+        },
+        {
+          "en": "Escalation of commitment is closely related to the sunk cost fallacy in behavioral economics.",
+          "ja": "コミットメントのエスカレーションは、行動経済学におけるサンクコストの誤謬と密接に関連している。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "sunk cost fallacy",
+          "note": "経済学の文脈でほぼ同じ現象を指す近い概念"
+        }
+      ],
+      "antonyms": [],
+      "origin": "心理学者Barry Stawが1976年の研究で提唱した概念で、その後、失敗した投資プロジェクトの継続などの経営上の意思決定の失敗を説明する理論として広く使われるようになった。",
+      "trivia": "コンコルド超音速旅客機の開発が採算性への疑問がありながら継続された事例は「コンコルドの誤り」として、この現象の代表例に挙げられることが多い。",
+      "explanation": "既投資を理由に失敗プロジェクトへの投資を拡大する現象。",
+      "example_ja": "コミットメントのエスカレーションのため、経営陣は警告サインが現れてからずいぶん経っても、失敗しつつあるプロジェクトへの資金提供を続けた。",
+      "example_ja_src": "Escalation of commitment led the executives to keep funding the failing project long after the warning signs appeared."
+    }
+  },
+  {
+    "english": "organizational citizenship behavior",
+    "detail": {
+      "pronunciation": "/ˌɔːrɡənəˈzeɪʃənəl ˈsɪtɪzənʃɪp bɪˈheɪvjər/",
+      "pos": "名詞",
+      "meanings": [
+        "組織市民行動",
+        "職務外で組織に貢献する従業員の自発的行動"
+      ],
+      "examples": [
+        {
+          "en": "Helping a new colleague learn the ropes, without being asked, is a classic example of organizational citizenship behavior.",
+          "ja": "頼まれてもいないのに新しい同僚に仕事のコツを教えてあげることは、組織市民行動の典型的な例である。"
+        },
+        {
+          "en": "High levels of organizational citizenship behavior are often associated with strong employee morale and trust in leadership.",
+          "ja": "組織市民行動の水準が高いことは、従業員の高い士気や経営陣への信頼と関連していることが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1980年代に経営学者Dennis OrganとPhilip Podsakoffらによって体系的に研究され始めた、組織行動論における重要な概念。",
+      "trivia": "この行動は人事評価の対象にはなりにくいものの、組織全体の効率性やチームワークに大きく寄与するとされる。",
+      "explanation": "職務外で組織に貢献する従業員の自発的行動。",
+      "example_ja": "頼まれてもいないのに新しい同僚に仕事のコツを教えてあげることは、組織市民行動の典型的な例である。",
+      "example_ja_src": "Helping a new colleague learn the ropes, without being asked, is a classic example of organizational citizenship behavior."
+    }
+  },
+  {
+    "english": "psychological contract",
+    "detail": {
+      "pronunciation": "/ˌsaɪkəˈlɒdʒɪkəl ˈkɒntrækt/",
+      "pos": "名詞",
+      "meanings": [
+        "心理的契約",
+        "雇用関係にまつわる暗黙の相互期待"
+      ],
+      "examples": [
+        {
+          "en": "When the company cut bonuses without explanation, many employees felt their psychological contract had been violated.",
+          "ja": "会社が説明もなくボーナスを削減したとき、多くの従業員は自分たちの心理的契約が破られたと感じた。"
+        },
+        {
+          "en": "A psychological contract includes unwritten expectations, such as employees expecting fair treatment in exchange for loyalty.",
+          "ja": "心理的契約には、従業員が忠誠と引き換えに公正な扱いを期待するといった、文書化されていない期待も含まれる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1960年代にHarry Levinsonらが提唱し、1990年代にDenise Rousseauの研究によって組織行動論の中心的な概念として体系化された。",
+      "trivia": "この暗黙の約束が破られたと従業員が感じることは「心理的契約の違反」と呼ばれ、離職やモチベーション低下の大きな要因になるとされる。",
+      "explanation": "雇用関係にまつわる暗黙の相互期待。",
+      "example_ja": "会社が説明もなくボーナスを削減したとき、多くの従業員は自分たちの心理的契約が破られたと感じた。",
+      "example_ja_src": "When the company cut bonuses without explanation, many employees felt their psychological contract had been violated."
+    }
+  },
+  {
+    "english": "equity theory",
+    "detail": {
+      "pronunciation": "/ˈɛkwɪti ˈθɪəri/",
+      "pos": "名詞",
+      "meanings": [
+        "衡平理論",
+        "報酬と労力の比率の公平性からモチベーションを説明する理論"
+      ],
+      "examples": [
+        {
+          "en": "According to equity theory, an employee who feels underpaid relative to a coworker doing the same job may reduce their effort.",
+          "ja": "衡平理論によれば、同じ仕事をしている同僚より給料が低いと感じる従業員は、努力の水準を下げるかもしれない。"
+        },
+        {
+          "en": "Equity theory suggests that perceived fairness, not just absolute pay, drives employee motivation.",
+          "ja": "衡平理論は、絶対的な給与額だけでなく、公平性の認識が従業員のモチベーションを左右すると示唆する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1963年に心理学者J. Stacy Adamsが提唱した動機づけ理論で、社会的比較理論の考え方を職場のモチベーション研究に応用したもの。",
+      "trivia": "報酬が不公平だと感じた従業員は、実際の努力を減らすだけでなく、比較対象そのものを変えて心理的に納得しようとすることもあるとされる。",
+      "explanation": "報酬と労力の比率の公平性からモチベーションを説明する理論。",
+      "example_ja": "衡平理論によれば、同じ仕事をしている同僚より給料が低いと感じる従業員は、努力の水準を下げるかもしれない。",
+      "example_ja_src": "According to equity theory, an employee who feels underpaid relative to a coworker doing the same job may reduce their effort."
+    }
+  },
+  {
+    "english": "expectancy theory",
+    "detail": {
+      "pronunciation": "/ɪkˈspɛktənsi ˈθɪəri/",
+      "pos": "名詞",
+      "meanings": [
+        "期待理論",
+        "努力・成果・報酬への期待の掛け合わせで動機づけを説明する理論"
+      ],
+      "examples": [
+        {
+          "en": "Expectancy theory suggests that employees won't be motivated by a bonus they believe is nearly impossible to earn.",
+          "ja": "期待理論は、達成がほぼ不可能だと従業員が考えているボーナスでは、モチベーションが高まらないと示唆する。"
+        },
+        {
+          "en": "According to expectancy theory, motivation depends on the perceived link between effort, performance, and valued rewards.",
+          "ja": "期待理論によれば、モチベーションは努力・成果・価値ある報酬の間に認識されるつながりに左右される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1964年に心理学者Victor Vroomが著書『Work and Motivation』で提唱した、期待・道具性・誘意性の三要素からなる動機づけ理論。",
+      "trivia": "この理論は、単に高い報酬を用意するだけでなく、従業員が「努力すれば実際に達成できる」と信じられることの重要性を示唆する。",
+      "explanation": "努力・成果・報酬への期待の掛け合わせで動機づけを説明する理論。",
+      "example_ja": "期待理論は、達成がほぼ不可能だと従業員が考えているボーナスでは、モチベーションが高まらないと示唆する。",
+      "example_ja_src": "Expectancy theory suggests that employees won't be motivated by a bonus they believe is nearly impossible to earn."
+    }
+  },
+  {
+    "english": "goal-setting theory",
+    "detail": {
+      "pronunciation": "/ɡoʊl ˈsɛtɪŋ ˈθɪəri/",
+      "pos": "名詞",
+      "meanings": [
+        "目標設定理論",
+        "具体的で適度に困難な目標が意欲を高めるとする理論"
+      ],
+      "examples": [
+        {
+          "en": "Goal-setting theory suggests that telling someone to simply 'do your best' is less motivating than giving them a specific target.",
+          "ja": "目標設定理論は、単に「最善を尽くせ」と言うよりも具体的な目標を与える方がやる気を引き出すと示唆する。"
+        },
+        {
+          "en": "According to goal-setting theory, specific and challenging goals lead to higher performance than vague or easy ones.",
+          "ja": "目標設定理論によれば、具体的で挑戦しがいのある目標は、曖昧または簡単な目標よりも高い成果につながる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1968年に心理学者Edwin LockeとGary Lathamらによる一連の研究を通じて体系化された、産業組織心理学における代表的なモチベーション理論。",
+      "trivia": "目標達成のためのフィードバックと、目標に対する本人の納得感(コミットメント)が、効果を左右する重要な要素とされている。",
+      "explanation": "具体的で適度に困難な目標が意欲を高めるとする理論。",
+      "example_ja": "目標設定理論は、単に「最善を尽くせ」と言うよりも具体的な目標を与える方がやる気を引き出すと示唆する。",
+      "example_ja_src": "Goal-setting theory suggests that telling someone to simply 'do your best' is less motivating than giving them a specific target."
+    }
+  },
+  {
+    "english": "kanban",
+    "detail": {
+      "pronunciation": "/ˈkɑːnbɑːn/",
+      "pos": "名詞",
+      "meanings": [
+        "かんばん方式",
+        "必要なものを必要な時に引き取る仕組みを示すカード・手法"
+      ],
+      "examples": [
+        {
+          "en": "The team used a kanban board to visualize which tasks were in progress and which were waiting to be started.",
+          "ja": "チームはかんばんボードを使い、どのタスクが進行中で、どのタスクが着手を待っているかを可視化した。"
+        },
+        {
+          "en": "Kanban systems limit work in progress so that teams focus on finishing tasks before starting new ones.",
+          "ja": "かんばん方式は仕掛かり中の作業量を制限し、チームが新しいタスクを始める前に既存のタスクを終わらせることに集中させる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "トヨタ自動車で1940年代後半から発展したトヨタ生産方式の中核的な仕組みとして考案され、後にソフトウェア開発など幅広い分野のプロジェクト管理手法にも応用されるようになった。",
+      "trivia": "日本語の「看板」がそのまま英語の専門用語として定着した数少ない経営用語の一つ。",
+      "explanation": "必要なものを必要な時に引き取る仕組みを示すカード・手法。",
+      "example_ja": "チームはかんばんボードを使い、どのタスクが進行中で、どのタスクが着手を待っているかを可視化した。",
+      "example_ja_src": "The team used a kanban board to visualize which tasks were in progress and which were waiting to be started."
+    }
+  },
+  {
+    "english": "business process reengineering",
+    "detail": {
+      "pronunciation": "/ˈbɪznəs ˈprɑːsɛs ˌriːˌɛndʒɪˈnɪərɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "BPR(業務プロセス再設計)",
+        "業務プロセスを根本から再設計する経営手法"
+      ],
+      "examples": [
+        {
+          "en": "The company undertook business process reengineering, completely redesigning its order-to-delivery workflow.",
+          "ja": "その会社は業務プロセス再設計(BPR)に取り組み、受注から納品までの業務の流れを完全に見直した。"
+        },
+        {
+          "en": "Business process reengineering often involves eliminating steps entirely rather than just making them more efficient.",
+          "ja": "業務プロセス再設計は、工程を効率化するだけでなく、工程そのものを丸ごと廃止することを伴うことが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1990年にMichael HammerがHarvard Business Reviewに発表した論文をきっかけに広まり、翌1993年のHammerとJames Champyによる著書を通じて経営手法として体系化された。",
+      "trivia": "1990年代に大規模なリストラや人員削減を伴う形で導入されることも多く、その手法や成果をめぐって賛否両論を呼んだ。",
+      "explanation": "業務プロセスを根本から再設計する経営手法。",
+      "example_ja": "その会社は業務プロセス再設計(BPR)に取り組み、受注から納品までの業務の流れを完全に見直した。",
+      "example_ja_src": "The company undertook business process reengineering, completely redesigning its order-to-delivery workflow."
+    }
+  },
+  {
+    "english": "make-or-buy decision",
+    "detail": {
+      "pronunciation": "/meɪk ɔːr baɪ dɪˈsɪʒən/",
+      "pos": "名詞",
+      "meanings": [
+        "内製・外部調達の意思決定",
+        "内製するか外部調達するかを判断する意思決定"
+      ],
+      "examples": [
+        {
+          "en": "The make-or-buy decision came down to whether producing the component in-house would be cheaper than outsourcing it.",
+          "ja": "内製・外部調達の意思決定は、その部品を自社生産する方が外部委託より安く済むかどうかにかかっていた。"
+        },
+        {
+          "en": "A make-or-buy decision should weigh not just cost, but also quality control and the strategic importance of the component.",
+          "ja": "内製・外部調達の意思決定では、コストだけでなく品質管理やその部品の戦略的重要性も考慮すべきである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "取引コスト理論(取引を市場で行うか組織内部で行うかの選択を分析する経済学の理論)を経営の実務に応用する中で体系化された、生産管理の基本的な意思決定の枠組み。",
+      "trivia": "自社のコアコンピタンスに関わる部品は内製し、それ以外は外部調達するという判断がよく取られる典型的な考え方とされる。",
+      "explanation": "内製するか外部調達するかを判断する意思決定。",
+      "example_ja": "内製・外部調達の意思決定は、その部品を自社生産する方が外部委託より安く済むかどうかにかかっていた。",
+      "example_ja_src": "The make-or-buy decision came down to whether producing the component in-house would be cheaper than outsourcing it."
+    }
+  },
+  {
+    "english": "economies of scale",
+    "detail": {
+      "pronunciation": "/ɪˈkɒnəmiz ʌv skeɪl/",
+      "pos": "名詞",
+      "meanings": [
+        "規模の経済",
+        "規模拡大により平均費用が下がる現象"
+      ],
+      "examples": [
+        {
+          "en": "By building a much larger factory, the company achieved economies of scale and cut its per-unit production costs.",
+          "ja": "はるかに大きな工場を建設することで、その会社は規模の経済を実現し、製品一単位あたりの生産コストを削減した。"
+        },
+        {
+          "en": "Economies of scale often give large companies a cost advantage over smaller competitors.",
+          "ja": "規模の経済は、大企業に小規模な競合他社に対するコスト優位性をもたらすことが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "diseconomies of scale",
+          "note": "規模が拡大しすぎることで平均費用がかえって上昇する対照的な現象"
+        }
+      ],
+      "origin": "固定費用を多くの生産単位に分散できることや、大量購入による交渉力の向上などを背景に、古典的な生産・産業組織論の中で整理されてきた基本概念。",
+      "trivia": "工場の規模だけでなく、原材料の大量購入によるコスト削減や、専門化による効率向上など、規模の経済が生じる要因は複数ある。",
+      "explanation": "規模拡大により平均費用が下がる現象。",
+      "example_ja": "はるかに大きな工場を建設することで、その会社は規模の経済を実現し、製品一単位あたりの生産コストを削減した。",
+      "example_ja_src": "By building a much larger factory, the company achieved economies of scale and cut its per-unit production costs."
+    }
+  },
+  {
+    "english": "diseconomies of scale",
+    "detail": {
+      "pronunciation": "/ˌdɪsɪˈkɒnəmiz ʌv skeɪl/",
+      "pos": "名詞",
+      "meanings": [
+        "規模の不経済",
+        "規模が拡大しすぎて平均費用が上昇する現象"
+      ],
+      "examples": [
+        {
+          "en": "Beyond a certain size, the factory suffered from diseconomies of scale as coordination costs spiraled out of control.",
+          "ja": "一定の規模を超えると、その工場は調整コストが制御不能なほど膨らみ、規模の不経済に陥った。"
+        },
+        {
+          "en": "Diseconomies of scale can arise from communication breakdowns and bureaucratic delays in very large organizations.",
+          "ja": "規模の不経済は、非常に大きな組織における意思疎通の破綻や官僚的な遅延から生じることがある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "economies of scale",
+          "note": "規模拡大により平均費用が下がる、対照的な現象"
+        }
+      ],
+      "origin": "規模の経済が働く限界を超えた場合の反作用として、生産管理・産業組織論の中で整理されてきた概念で、組織の官僚制化などがその要因として挙げられる。",
+      "trivia": "企業が過度に肥大化した際に事業部を分割したり、あえて子会社化したりする経営判断は、この現象への対応策の一つとされる。",
+      "explanation": "規模が拡大しすぎて平均費用が上昇する現象。",
+      "example_ja": "一定の規模を超えると、その工場は調整コストが制御不能なほど膨らみ、規模の不経済に陥った。",
+      "example_ja_src": "Beyond a certain size, the factory suffered from diseconomies of scale as coordination costs spiraled out of control."
+    }
+  },
+  {
+    "english": "vendor-managed inventory",
+    "detail": {
+      "pronunciation": "/ˈvɛndər ˈmænɪdʒd ˈɪnvəntɔːri/",
+      "pos": "名詞",
+      "meanings": [
+        "VMI(ベンダー管理在庫)",
+        "供給業者が購入企業の在庫を管理する仕組み"
+      ],
+      "examples": [
+        {
+          "en": "Under vendor-managed inventory, the supplier monitors the retailer's stock levels and automatically replenishes them.",
+          "ja": "VMIの下では、供給業者が小売業者の在庫水準を監視し、自動的に補充を行う。"
+        },
+        {
+          "en": "Vendor-managed inventory can reduce stockouts by giving suppliers direct visibility into the buyer's inventory data.",
+          "ja": "VMIは、供給業者が購入企業の在庫データを直接把握できるようにすることで、欠品を減らすことができる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1980年代後半、米国の大手小売企業ウォルマートと日用品メーカーP&Gの協業を先駆けとして広まった、サプライチェーン管理の手法。",
+      "trivia": "購入企業と供給業者との間でリアルタイムの販売・在庫データを共有する情報システムの整備が、この仕組みの前提条件となる。",
+      "explanation": "供給業者が購入企業の在庫を管理する仕組み。",
+      "example_ja": "VMIの下では、供給業者が小売業者の在庫水準を監視し、自動的に補充を行う。",
+      "example_ja_src": "Under vendor-managed inventory, the supplier monitors the retailer's stock levels and automatically replenishes them."
+    }
+  },
+  {
+    "english": "enterprise resource planning",
+    "detail": {
+      "pronunciation": "/ˈɛntərpraɪz ˈrɪsɔːrs ˈplænɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "ERP(企業資源計画)",
+        "企業の業務データを統合管理するシステム"
+      ],
+      "examples": [
+        {
+          "en": "The company implemented an enterprise resource planning system to unify its finance, HR, and inventory data.",
+          "ja": "その会社は、財務・人事・在庫のデータを一元化するためにERPシステムを導入した。"
+        },
+        {
+          "en": "Enterprise resource planning systems help managers see real-time data across departments instead of relying on separate, disconnected systems.",
+          "ja": "ERPシステムは、バラバラで連携していないシステムに頼るのではなく、管理職が部門をまたいでリアルタイムのデータを把握できるようにする。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1960〜70年代の資材所要量計画(MRP)システムを起源とし、1990年代にガートナー社によって、企業全体の経営資源を統合的に管理するシステムを指す用語として名付けられた。",
+      "trivia": "SAPやOracleなど大手ソフトウェア企業のERP製品導入は、多くの場合、業務プロセス自体の見直しを伴う大規模プロジェクトになる。",
+      "explanation": "企業の業務データを統合管理するシステム。",
+      "example_ja": "その会社は、財務・人事・在庫のデータを一元化するためにERPシステムを導入した。",
+      "example_ja_src": "The company implemented an enterprise resource planning system to unify its finance, HR, and inventory data."
+    }
+  },
+  {
+    "english": "business continuity planning",
+    "detail": {
+      "pronunciation": "/ˈbɪznəs ˌkɒntɪˈnjuːɪti ˈplænɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "BCP(事業継続計画)",
+        "非常時にも事業を継続・復旧させるための計画"
+      ],
+      "examples": [
+        {
+          "en": "After the earthquake, the company's business continuity planning allowed it to resume operations within days.",
+          "ja": "地震の後、その会社は事業継続計画のおかげで数日以内に事業を再開することができた。"
+        },
+        {
+          "en": "Business continuity planning identifies critical functions and outlines how to keep them running during a crisis.",
+          "ja": "事業継続計画は、重要な機能を特定し、危機の際にそれらを維持する方法を示すものである。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1970年代のコンピューターシステムの災害復旧計画(ディザスタリカバリー)を起源とし、その後、自然災害やテロ、感染症など、より広範な危機への備えを含む経営概念として発展した。",
+      "trivia": "日本では2011年の東日本大震災を機に、多くの企業でBCP策定の取り組みが大きく加速した。",
+      "explanation": "非常時にも事業を継続・復旧させるための計画。",
+      "example_ja": "地震の後、その会社は事業継続計画のおかげで数日以内に事業を再開することができた。",
+      "example_ja_src": "After the earthquake, the company's business continuity planning allowed it to resume operations within days."
+    }
+  },
+  {
+    "english": "offshoring",
+    "detail": {
+      "pronunciation": "/ˈɔːfʃɔːrɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "オフショアリング",
+        "業務機能を海外の拠点へ移転させること"
+      ],
+      "examples": [
+        {
+          "en": "The manufacturer cut costs significantly by offshoring production to a factory overseas.",
+          "ja": "その製造業者は、生産を海外の工場に移すことで大幅にコストを削減した。"
+        },
+        {
+          "en": "Offshoring differs from outsourcing in that the work may still be done by the company's own employees, just in another country.",
+          "ja": "オフショアリングはアウトソーシングとは異なり、業務が別の国であっても自社の従業員によって行われる場合がある点が特徴である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "reshoring",
+          "note": "海外移転していた業務を自国に戻す、対照的な動き"
+        }
+      ],
+      "origin": "1980〜90年代のグローバル化の進展とともに、人件費や規制環境の差を背景に製造業やサービス業の海外移転が広がる中で定着した用語。",
+      "trivia": "自社拠点を海外に移す場合(オフショアリング)と、海外の外部業者に業務委託する場合(オフショア・アウトソーシング)は、厳密には区別されることがある。",
+      "explanation": "業務機能を海外の拠点へ移転させること。",
+      "example_ja": "その製造業者は、生産を海外の工場に移すことで大幅にコストを削減した。",
+      "example_ja_src": "The manufacturer cut costs significantly by offshoring production to a factory overseas."
+    }
+  },
+  {
+    "english": "business process outsourcing",
+    "detail": {
+      "pronunciation": "/ˈbɪznəs ˈprɑːsɛs ˈaʊtsɔːrsɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "BPO(業務プロセス外部委託)",
+        "業務プロセスをまとめて外部委託すること"
+      ],
+      "examples": [
+        {
+          "en": "The bank relies on business process outsourcing to handle its customer service call center.",
+          "ja": "その銀行は、顧客サービスのコールセンター業務をBPOに頼っている。"
+        },
+        {
+          "en": "Business process outsourcing allows companies to focus on their core competencies while a specialized vendor handles routine functions.",
+          "ja": "BPOにより、企業は専門業者に定型業務を任せながら、自社のコアコンピタンスに集中することができる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1990年代以降、情報通信技術の発達により地理的に離れた場所でも業務委託が容易になったことを背景に、コールセンターや経理業務などで急速に拡大した産業。",
+      "trivia": "インドやフィリピンは英語人材の豊富さとコストの低さから、世界的なBPO産業の一大拠点として発展してきた。",
+      "explanation": "業務プロセスをまとめて外部委託すること。",
+      "example_ja": "その銀行は、顧客サービスのコールセンター業務をBPOに頼っている。",
+      "example_ja_src": "The bank relies on business process outsourcing to handle its customer service call center."
+    }
+  },
+  {
+    "english": "demand forecasting",
+    "detail": {
+      "pronunciation": "/dɪˈmænd ˈfɔːrkæstɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "需要予測",
+        "将来の需要を予測すること"
+      ],
+      "examples": [
+        {
+          "en": "Accurate demand forecasting helped the retailer avoid both stockouts and excess inventory during the holiday season.",
+          "ja": "正確な需要予測のおかげで、その小売業者は休暇シーズン中の欠品と過剰在庫の両方を避けることができた。"
+        },
+        {
+          "en": "Demand forecasting has become more accurate thanks to machine learning models that analyze large amounts of sales data.",
+          "ja": "大量の販売データを分析する機械学習モデルのおかげで、需要予測はより正確になってきている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "生産計画や在庫管理を効率化する必要性から、統計的手法を用いた需要予測が20世紀を通じてオペレーションズ・マネジメントの基本手法として発展してきた。",
+      "trivia": "需要予測の精度が低いと、サプライチェーン全体で在庫の過不足が増幅されるブルウィップ効果を引き起こす一因になる。",
+      "explanation": "将来の需要を予測すること。",
+      "example_ja": "正確な需要予測のおかげで、その小売業者は休暇シーズン中の欠品と過剰在庫の両方を避けることができた。",
+      "example_ja_src": "Accurate demand forecasting helped the retailer avoid both stockouts and excess inventory during the holiday season."
+    }
+  },
+  {
+    "english": "supply chain management",
+    "detail": {
+      "pronunciation": "/səˈplaɪ tʃeɪn ˈmænɪdʒmənt/",
+      "pos": "名詞",
+      "meanings": [
+        "SCM(サプライチェーン管理)",
+        "サプライチェーン全体を計画・最適化する経営分野"
+      ],
+      "examples": [
+        {
+          "en": "Effective supply chain management ensured that the retailer's shelves stayed stocked despite a global shipping disruption.",
+          "ja": "効果的なサプライチェーン管理のおかげで、世界的な輸送の混乱にもかかわらず、その小売業者の棚は品切れにならなかった。"
+        },
+        {
+          "en": "Supply chain management involves coordinating suppliers, manufacturers, and distributors to deliver products efficiently.",
+          "ja": "サプライチェーン管理は、製品を効率的に届けるためにサプライヤー・製造業者・流通業者を調整することを含む。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1980年代以降、企業が自社内の効率化だけでなく、サプライヤーや物流業者を含めたサプライチェーン全体の最適化を重視するようになったことから発展した経営分野。",
+      "trivia": "近年は効率性だけでなく、災害やパンデミックなどに耐えうる「サプライチェーンの強靭性(レジリエンス)」も重要なテーマとして注目されている。",
+      "explanation": "サプライチェーン全体を計画・最適化する経営分野。",
+      "example_ja": "効果的なサプライチェーン管理のおかげで、世界的な輸送の混乱にもかかわらず、その小売業者の棚は品切れにならなかった。",
+      "example_ja_src": "Effective supply chain management ensured that the retailer's shelves stayed stocked despite a global shipping disruption."
+    }
+  },
+  {
+    "english": "brand loyalty",
+    "detail": {
+      "pronunciation": "/brænd ˈlɔɪəlti/",
+      "pos": "名詞",
+      "meanings": [
+        "ブランドロイヤルティ",
+        "特定ブランドを繰り返し選ぶ消費者の強い愛着"
+      ],
+      "examples": [
+        {
+          "en": "The company's strong brand loyalty meant customers kept buying its products even when competitors offered lower prices.",
+          "ja": "その会社の強いブランドロイヤルティのおかげで、競合他社がより低い価格を提示しても顧客は同社の製品を買い続けた。"
+        },
+        {
+          "en": "Building brand loyalty often requires consistent quality and a strong emotional connection with customers.",
+          "ja": "ブランドロイヤルティを築くには、一貫した品質と顧客との強い感情的なつながりが必要になることが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "反復購買行動やブランドへの心理的コミットメントを研究するマーケティング学の中で、消費者行動論の中心概念の一つとして体系化されてきた。",
+      "trivia": "ロイヤルティプログラム(ポイント制度など)は、この愛着を金銭的なインセンティブによってさらに強化しようとする施策の代表例。",
+      "explanation": "特定ブランドを繰り返し選ぶ消費者の強い愛着。",
+      "example_ja": "その会社の強いブランドロイヤルティのおかげで、競合他社がより低い価格を提示しても顧客は同社の製品を買い続けた。",
+      "example_ja_src": "The company's strong brand loyalty meant customers kept buying its products even when competitors offered lower prices."
+    }
+  },
+  {
+    "english": "customer acquisition cost",
+    "detail": {
+      "pronunciation": "/ˈkʌstəmər ˌækwɪˈzɪʃən kɔːst/",
+      "pos": "名詞",
+      "meanings": [
+        "CAC(顧客獲得コスト)",
+        "新規顧客一人を獲得するのにかかる費用"
+      ],
+      "examples": [
+        {
+          "en": "If the customer acquisition cost is higher than the profit from a typical customer, the business model isn't sustainable.",
+          "ja": "顧客獲得コストが典型的な顧客一人からの利益より高い場合、そのビジネスモデルは持続可能ではない。"
+        },
+        {
+          "en": "Startups closely track customer acquisition cost alongside customer lifetime value to judge whether their growth is profitable.",
+          "ja": "スタートアップは、成長が利益をもたらしているかを判断するため、顧客獲得コストを顧客生涯価値と併せて注意深く追跡する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "デジタル広告の普及によりマーケティング費用対効果を精密に測定できるようになったことを背景に、特にサブスクリプション型ビジネスの評価指標として重視されるようになった。",
+      "trivia": "投資家はしばしば、顧客獲得コストと顧客生涯価値の比率(LTV/CAC比)を、事業の健全性を測る重要な指標として重視する。",
+      "explanation": "新規顧客一人を獲得するのにかかる費用。",
+      "example_ja": "顧客獲得コストが典型的な顧客一人からの利益より高い場合、そのビジネスモデルは持続可能ではない。",
+      "example_ja_src": "If the customer acquisition cost is higher than the profit from a typical customer, the business model isn't sustainable."
+    }
+  },
+  {
+    "english": "net promoter score",
+    "detail": {
+      "pronunciation": "/nɛt prəˈmoʊtər skɔːr/",
+      "pos": "名詞",
+      "meanings": [
+        "NPS(ネットプロモータースコア)",
+        "顧客が推奨したいと思う度合いを測る指標"
+      ],
+      "examples": [
+        {
+          "en": "The company's net promoter score rose significantly after it improved its customer support response times.",
+          "ja": "顧客サポートの対応時間を改善した後、その会社のNPSは大きく上昇した。"
+        },
+        {
+          "en": "Net promoter score is calculated by subtracting the percentage of detractors from the percentage of promoters.",
+          "ja": "NPSは、推奨者の割合から批判者の割合を差し引いて算出される。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "2003年にFred Reichheldがハーバード・ビジネス・レビュー誌の論文で提唱した指標で、その後多くの企業が顧客満足度・ロイヤルティの標準的な測定方法として採用してきた。",
+      "trivia": "回答者は0〜10点で評価し、9〜10点をつけた「推奨者」の割合から0〜6点をつけた「批判者」の割合を差し引いてスコアを算出する。",
+      "explanation": "顧客が推奨したいと思う度合いを測る指標。",
+      "example_ja": "顧客サポートの対応時間を改善した後、その会社のNPSは大きく上昇した。",
+      "example_ja_src": "The company's net promoter score rose significantly after it improved its customer support response times."
+    }
+  },
+  {
+    "english": "churn rate",
+    "detail": {
+      "pronunciation": "/tʃɜːrn reɪt/",
+      "pos": "名詞",
+      "meanings": [
+        "解約率",
+        "一定期間に顧客が離脱する割合"
+      ],
+      "examples": [
+        {
+          "en": "The streaming service worked hard to lower its churn rate by improving its recommendation algorithm.",
+          "ja": "その動画配信サービスは、レコメンドアルゴリズムを改善することで解約率を下げようと努めた。"
+        },
+        {
+          "en": "A high churn rate can undermine even a business that is successfully acquiring new customers.",
+          "ja": "高い解約率は、新規顧客の獲得に成功している事業であっても損なうことがある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "retention rate",
+          "note": "顧客が離脱せず継続する割合を示す、対照的な指標"
+        }
+      ],
+      "origin": "契約更新型のビジネスモデルが普及するにつれて、新規顧客獲得と並んで既存顧客の維持がどれだけできているかを測る指標として重視されるようになった。",
+      "trivia": "多くのSaaS企業にとって、解約率をわずかに下げることが、新規顧客を大量に獲得するのと同じくらい収益に大きな影響を与えるとされる。",
+      "explanation": "一定期間に顧客が離脱する割合。",
+      "example_ja": "その動画配信サービスは、レコメンドアルゴリズムを改善することで解約率を下げようと努めた。",
+      "example_ja_src": "The streaming service worked hard to lower its churn rate by improving its recommendation algorithm."
+    }
+  },
+  {
+    "english": "product life cycle",
+    "detail": {
+      "pronunciation": "/ˈprɒdʌkt laɪf ˈsaɪkəl/",
+      "pos": "名詞",
+      "meanings": [
+        "製品ライフサイクル",
+        "製品の売上推移を段階的に示すモデル"
+      ],
+      "examples": [
+        {
+          "en": "As the product entered the maturity stage of its product life cycle, sales growth slowed and competition intensified.",
+          "ja": "製品ライフサイクルの成熟期に入るにつれ、売上の伸びは鈍化し競争が激化した。"
+        },
+        {
+          "en": "Marketing strategy typically shifts at each stage of the product life cycle, from building awareness to defending market share.",
+          "ja": "マーケティング戦略は通常、製品ライフサイクルの各段階で、認知度の構築からシェアの防衛へと変化していく。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1950年代にマーケティング学者たちによって体系化された、製品の売上と利益の推移を段階的に説明するモデルで、以後マーケティング戦略立案の基本的な枠組みとして定着した。",
+      "trivia": "全ての製品がこの通りの曲線をたどるわけではなく、流行を経て急速に消える「ファッド(一時的流行)」型の製品などの例外も存在する。",
+      "explanation": "製品の売上推移を段階的に示すモデル。",
+      "example_ja": "製品ライフサイクルの成熟期に入るにつれ、売上の伸びは鈍化し競争が激化した。",
+      "example_ja_src": "As the product entered the maturity stage of its product life cycle, sales growth slowed and competition intensified."
+    }
+  },
+  {
+    "english": "unique selling proposition",
+    "detail": {
+      "pronunciation": "/juˈniːk ˈsɛlɪŋ ˌprɒpəˈzɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "USP(独自の販売提案)",
+        "競合にはない独自の強み・訴求点"
+      ],
+      "examples": [
+        {
+          "en": "The company's unique selling proposition was its 24-hour customer support, something no competitor offered.",
+          "ja": "その会社のUSPは24時間の顧客サポートであり、競合他社は誰も提供していないものだった。"
+        },
+        {
+          "en": "A strong unique selling proposition clearly explains why customers should choose this product over every alternative.",
+          "ja": "強力なUSPは、なぜ顧客が他のすべての選択肢よりもこの製品を選ぶべきかを明確に説明する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1940〜50年代に米国の広告マンRosser Reevesが提唱した広告理論の概念で、単なる特徴ではなく競合にはない独自の便益を訴求すべきだとする考え方から生まれた。",
+      "trivia": "USPが曖昧な企業ほど価格競争に陥りやすいとされ、明確な差別化ポイントの言語化が重要だとされる。",
+      "explanation": "競合にはない独自の強み・訴求点。",
+      "example_ja": "その会社のUSPは24時間の顧客サポートであり、競合他社は誰も提供していないものだった。",
+      "example_ja_src": "The company's unique selling proposition was its 24-hour customer support, something no competitor offered."
+    }
+  },
+  {
+    "english": "value proposition",
+    "detail": {
+      "pronunciation": "/ˈvæljuː ˌprɒpəˈzɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "価値提案",
+        "顧客に提供する価値を簡潔に示したもの"
+      ],
+      "examples": [
+        {
+          "en": "The startup's value proposition was clear: save small businesses time by automating their bookkeeping.",
+          "ja": "そのスタートアップの価値提案は明確だった。中小企業の記帳を自動化することで時間を節約するというものだ。"
+        },
+        {
+          "en": "A compelling value proposition answers why a customer should buy this product instead of a competitor's or doing nothing at all.",
+          "ja": "説得力のある価値提案は、なぜ顧客が競合の製品や何もしないことではなく、この製品を買うべきかに答える。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1980〜90年代にコンサルティング業界や戦略論の中で発展した概念で、顧客視点から製品・サービスの価値を明確化するためのフレームワークとして広まった。",
+      "trivia": "近年はビジネスモデル設計の手法である「バリュー・プロポジション・キャンバス」などのツールを使って、体系的に整理されることが多い。",
+      "explanation": "顧客に提供する価値を簡潔に示したもの。",
+      "example_ja": "そのスタートアップの価値提案は明確だった。中小企業の記帳を自動化することで時間を節約するというものだ。",
+      "example_ja_src": "The startup's value proposition was clear: save small businesses time by automating their bookkeeping."
+    }
+  },
+  {
+    "english": "loss leader",
+    "detail": {
+      "pronunciation": "/lɔːs ˈliːdər/",
+      "pos": "名詞",
+      "meanings": [
+        "ロスリーダー(客寄せ商品)",
+        "客を集めるために安売りする商品"
+      ],
+      "examples": [
+        {
+          "en": "The supermarket sold milk as a loss leader, hoping shoppers would buy other, more profitable items while they were in the store.",
+          "ja": "そのスーパーは牛乳をロスリーダーとして販売し、買い物客が店内にいる間に他の利益率の高い商品も買ってくれることを期待した。"
+        },
+        {
+          "en": "Retailers often use popular items as a loss leader during the holiday season to drive overall store traffic.",
+          "ja": "小売業者は休暇シーズン中、店舗全体への集客を狙って人気商品をロスリーダーとして使うことが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "20世紀初頭の小売業において、特定商品を安売りすることで来店客数を増やす販売戦略として広まった、伝統的なマーケティング手法。",
+      "trivia": "ゲーム機本体を原価に近い価格で販売し、ソフトの販売で利益を得るビジネスモデルも、この考え方の応用例としてよく挙げられる。",
+      "explanation": "客を集めるために安売りする商品。",
+      "example_ja": "そのスーパーは牛乳をロスリーダーとして販売し、買い物客が店内にいる間に他の利益率の高い商品も買ってくれることを期待した。",
+      "example_ja_src": "The supermarket sold milk as a loss leader, hoping shoppers would buy other, more profitable items while they were in the store."
+    }
+  },
+  {
+    "english": "cross-selling",
+    "detail": {
+      "pronunciation": "/krɔːs ˈsɛlɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "クロスセリング",
+        "関連商品を併せて提案する販売手法"
+      ],
+      "examples": [
+        {
+          "en": "When customers bought a laptop, the store used cross-selling to also offer them a carrying case and extended warranty.",
+          "ja": "顧客がノートパソコンを購入した際、その店はクロスセリングを用いてキャリングケースと延長保証も併せて提案した。"
+        },
+        {
+          "en": "Cross-selling works best when the additional product genuinely complements what the customer is already buying.",
+          "ja": "クロスセリングは、追加の商品が顧客がすでに購入しようとしているものを真に補完している場合に最も効果的である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "顧客一人当たりの購入金額を増やす手法として、小売業や金融サービス業を中心に古くから実践されてきた販売戦略。",
+      "trivia": "ECサイトの「この商品を買った人はこちらも購入しています」という表示は、クロスセリングをアルゴリズムで自動化した代表例。",
+      "explanation": "関連商品を併せて提案する販売手法。",
+      "example_ja": "顧客がノートパソコンを購入した際、その店はクロスセリングを用いてキャリングケースと延長保証も併せて提案した。",
+      "example_ja_src": "When customers bought a laptop, the store used cross-selling to also offer them a carrying case and extended warranty."
+    }
+  },
+  {
+    "english": "upselling",
+    "detail": {
+      "pronunciation": "/ˈʌpˌsɛlɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "アップセリング",
+        "より上位・高額な商品を提案する販売手法"
+      ],
+      "examples": [
+        {
+          "en": "The salesperson tried upselling the customer from the basic model to the premium version with more features.",
+          "ja": "販売員は、顧客に基本モデルからより機能の多いプレミアム版へアップセリングしようとした。"
+        },
+        {
+          "en": "Upselling differs from cross-selling in that it promotes a higher-tier version of the same product, not a different product.",
+          "ja": "アップセリングはクロスセリングとは異なり、別の商品ではなく同じ商品のより上位のバージョンを勧める点に特徴がある。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "顧客単価の向上を狙う伝統的な販売手法として、小売・自動車販売・飲食業など幅広い業種で古くから使われてきた。",
+      "trivia": "ファストフード店で「サイズを大きくしますか」と尋ねられるのも、代表的なアップセリングの一例とされる。",
+      "explanation": "より上位・高額な商品を提案する販売手法。",
+      "example_ja": "販売員は、顧客に基本モデルからより機能の多いプレミアム版へアップセリングしようとした。",
+      "example_ja_src": "The salesperson tried upselling the customer from the basic model to the premium version with more features."
+    }
+  },
+  {
+    "english": "word-of-mouth marketing",
+    "detail": {
+      "pronunciation": "/wɜːrd əv maʊθ ˈmɑːrkɪtɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "口コミマーケティング",
+        "顧客の自発的な推薦を通じて評判を広げる手法"
+      ],
+      "examples": [
+        {
+          "en": "The small bakery grew entirely through word-of-mouth marketing, with no advertising budget at all.",
+          "ja": "その小さなパン屋は、広告予算を一切かけず口コミマーケティングだけで成長した。"
+        },
+        {
+          "en": "Word-of-mouth marketing is often considered more persuasive than advertising because it comes from a trusted source.",
+          "ja": "口コミマーケティングは、信頼できる相手から発せられるため、広告よりも説得力があるとしばしば考えられている。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "広告に頼らず、満足した顧客の自発的な推薦を通じて評判が広がる現象は古くから知られていたが、SNSの普及によりその効果を意図的に設計するマーケティング手法として体系化されるようになった。",
+      "trivia": "近年はSNS上での拡散を狙う「バイラルマーケティング」や「インフルエンサーマーケティング」も、口コミマーケティングの発展形として位置づけられる。",
+      "explanation": "顧客の自発的な推薦を通じて評判を広げる手法。",
+      "example_ja": "その小さなパン屋は、広告予算を一切かけず口コミマーケティングだけで成長した。",
+      "example_ja_src": "The small bakery grew entirely through word-of-mouth marketing, with no advertising budget at all."
+    }
+  },
+  {
+    "english": "viral marketing",
+    "detail": {
+      "pronunciation": "/ˈvaɪrəl ˈmɑːrkɪtɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "バイラルマーケティング",
+        "コンテンツが急速に拡散することを狙う手法"
+      ],
+      "examples": [
+        {
+          "en": "The quirky commercial became viral marketing gold, racking up millions of shares within days.",
+          "ja": "その風変わりなコマーシャルはバイラルマーケティングの成功例となり、数日で数百万件も共有された。"
+        },
+        {
+          "en": "Successful viral marketing campaigns often tap into humor or emotion to encourage people to share content with friends.",
+          "ja": "成功するバイラルマーケティングのキャンペーンは、人々が友人とコンテンツを共有したくなるよう、ユーモアや感情に訴えることが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1990年代後半、インターネットとEメールの普及に伴い、コンテンツが人から人へウイルスのように急速に伝播する現象を指す表現として広まった。",
+      "trivia": "SNS時代には、拡散されやすいコンテンツの設計そのものを専門とするマーケティング会社も登場している。",
+      "explanation": "コンテンツが急速に拡散することを狙う手法。",
+      "example_ja": "その風変わりなコマーシャルはバイラルマーケティングの成功例となり、数日で数百万件も共有された。",
+      "example_ja_src": "The quirky commercial became viral marketing gold, racking up millions of shares within days."
+    }
+  },
+  {
+    "english": "guerrilla marketing",
+    "detail": {
+      "pronunciation": "/ɡəˈrɪlə ˈmɑːrkɪtɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "ゲリラマーケティング",
+        "低予算で話題性を生む型破りなマーケティング手法"
+      ],
+      "examples": [
+        {
+          "en": "The startup used guerrilla marketing, chalking eye-catching messages on sidewalks instead of buying expensive ads.",
+          "ja": "そのスタートアップは、高価な広告を買う代わりに歩道に人目を引くメッセージをチョークで書くというゲリラマーケティングを行った。"
+        },
+        {
+          "en": "Guerrilla marketing relies on creativity and surprise rather than a large advertising budget.",
+          "ja": "ゲリラマーケティングは、多額の広告予算ではなく創造性と意外性に頼る。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1984年に広告代理店経営者Jay Conrad Levinsonが著書『Guerrilla Marketing』で提唱した概念で、大企業に対抗する中小企業向けの低予算戦略として広まった。",
+      "trivia": "「ゲリラ」という名前の通り、予期せぬ場所・タイミングで消費者に働きかける奇襲的な手法が特徴とされる。",
+      "explanation": "低予算で話題性を生む型破りなマーケティング手法。",
+      "example_ja": "そのスタートアップは、高価な広告を買う代わりに歩道に人目を引くメッセージをチョークで書くというゲリラマーケティングを行った。",
+      "example_ja_src": "The startup used guerrilla marketing, chalking eye-catching messages on sidewalks instead of buying expensive ads."
+    }
+  },
+  {
+    "english": "niche marketing",
+    "detail": {
+      "pronunciation": "/nɪʃ ˈmɑːrkɪtɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "ニッチマーケティング",
+        "狭く定義された顧客層に絞り込む戦略"
+      ],
+      "examples": [
+        {
+          "en": "Rather than competing with mass-market brands, the company pursued niche marketing aimed at vegan athletes.",
+          "ja": "その会社は大衆向けブランドと競争するのではなく、ヴィーガンのアスリートを狙ったニッチマーケティングを追求した。"
+        },
+        {
+          "en": "Niche marketing allows smaller companies to build strong loyalty within a narrowly defined customer segment.",
+          "ja": "ニッチマーケティングにより、小規模な企業でも狭く定義された顧客層の中で強いロイヤルティを築くことができる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "mass marketing",
+          "note": "市場全体を対象とする、対照的な戦略"
+        }
+      ],
+      "origin": "市場細分化(セグメンテーション)理論の発展とともに、大衆全体ではなく特定のニーズを持つ狭い顧客層に特化する戦略として、マーケティング論の中で体系化されてきた。",
+      "trivia": "インターネットの普及により、地理的に分散した少数の顧客層にも低コストで到達できるようになったことが、ニッチマーケティングの拡大を後押ししたとされる。",
+      "explanation": "狭く定義された顧客層に絞り込む戦略。",
+      "example_ja": "その会社は大衆向けブランドと競争するのではなく、ヴィーガンのアスリートを狙ったニッチマーケティングを追求した。",
+      "example_ja_src": "Rather than competing with mass-market brands, the company pursued niche marketing aimed at vegan athletes."
+    }
+  },
+  {
+    "english": "mass marketing",
+    "detail": {
+      "pronunciation": "/mæs ˈmɑːrkɪtɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "マスマーケティング",
+        "市場全体に一斉に働きかける戦略"
+      ],
+      "examples": [
+        {
+          "en": "Before the internet made targeted ads possible, most large brands relied on mass marketing through television commercials.",
+          "ja": "インターネットがターゲット広告を可能にする前は、ほとんどの大手ブランドはテレビコマーシャルによるマスマーケティングに頼っていた。"
+        },
+        {
+          "en": "Mass marketing can achieve wide reach, but it often fails to resonate as deeply as a message tailored to a specific audience.",
+          "ja": "マスマーケティングは広い到達範囲を実現できるが、特定の対象者向けに調整されたメッセージほど深く響かないことが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "niche marketing",
+          "note": "特定の狭い顧客層に絞り込む、対照的な戦略"
+        }
+      ],
+      "origin": "20世紀のテレビ・ラジオなどマスメディアの発達とともに、単一の広告で不特定多数に同じメッセージを届けることができるようになったことから広まった、伝統的なマーケティング手法。",
+      "trivia": "デジタル広告の登場により、近年は市場全体ではなく個々の消費者に向けた「ターゲット広告」への移行が進んでいる。",
+      "explanation": "市場全体に一斉に働きかける戦略。",
+      "example_ja": "インターネットがターゲット広告を可能にする前は、ほとんどの大手ブランドはテレビコマーシャルによるマスマーケティングに頼っていた。",
+      "example_ja_src": "Before the internet made targeted ads possible, most large brands relied on mass marketing through television commercials."
+    }
+  },
+  {
+    "english": "brand awareness",
+    "detail": {
+      "pronunciation": "/brænd əˈwɛrnəs/",
+      "pos": "名詞",
+      "meanings": [
+        "ブランド認知度",
+        "ブランドがどれだけ消費者に知られているかの度合い"
+      ],
+      "examples": [
+        {
+          "en": "The advertising campaign was designed to boost brand awareness among young consumers, even before driving any sales.",
+          "ja": "その広告キャンペーンは、売上に結びつく前の段階として、若い消費者の間でブランド認知度を高めるよう設計されていた。"
+        },
+        {
+          "en": "High brand awareness doesn't guarantee sales, but it's usually a necessary first step toward building customer loyalty.",
+          "ja": "高いブランド認知度は売上を保証するものではないが、顧客ロイヤルティを築くための必要な第一歩であることが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "ブランド・エクイティ(ブランド資産価値)を構成する基礎的な要素として、マーケティング学者David Aakerらの研究を通じて体系的に位置づけられてきた概念。",
+      "trivia": "「助成想起(ブランド名を見て思い出せるか)」と「純粋想起(何も見せずに自然に思い浮かぶか)」という、認知度を測る二つの異なる水準が区別される。",
+      "explanation": "ブランドがどれだけ消費者に知られているかの度合い。",
+      "example_ja": "その広告キャンペーンは、売上に結びつく前の段階として、若い消費者の間でブランド認知度を高めるよう設計されていた。",
+      "example_ja_src": "The advertising campaign was designed to boost brand awareness among young consumers, even before driving any sales."
+    }
+  },
+  {
+    "english": "customer retention",
+    "detail": {
+      "pronunciation": "/ˈkʌstəmər rɪˈtɛnʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "顧客維持",
+        "既存顧客に使い続けてもらうこと"
+      ],
+      "examples": [
+        {
+          "en": "The company invested in loyalty programs to improve customer retention rather than constantly chasing new customers.",
+          "ja": "その会社は、絶えず新規顧客を追い求めるのではなく、顧客維持を改善するためにロイヤルティプログラムに投資した。"
+        },
+        {
+          "en": "Improving customer retention is often more cost-effective than acquiring new customers from scratch.",
+          "ja": "顧客維持を改善する方が、新規顧客をゼロから獲得するよりも費用対効果が高いことが多い。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "churn",
+          "note": "顧客が離脱してしまうこと"
+        }
+      ],
+      "origin": "新規顧客の獲得コストが既存顧客の維持コストよりも高くつくことが多いという知見から、マーケティング戦略上、既存顧客の維持が重視されるようになった。",
+      "trivia": "顧客維持率をわずか数パーセント改善するだけで、企業の利益率が大きく向上するという研究結果がしばしば引用される。",
+      "explanation": "既存顧客に使い続けてもらうこと。",
+      "example_ja": "その会社は、絶えず新規顧客を追い求めるのではなく、顧客維持を改善するためにロイヤルティプログラムに投資した。",
+      "example_ja_src": "The company invested in loyalty programs to improve customer retention rather than constantly chasing new customers."
+    }
+  },
+  {
+    "english": "conversion rate",
+    "detail": {
+      "pronunciation": "/kənˈvɜːrʒən reɪt/",
+      "pos": "名詞",
+      "meanings": [
+        "転換率(コンバージョン率)",
+        "望む行動を取った訪問者の割合"
+      ],
+      "examples": [
+        {
+          "en": "Redesigning the checkout page increased the website's conversion rate by fifteen percent.",
+          "ja": "決済ページをデザインし直したことで、そのウェブサイトの転換率は15パーセント上昇した。"
+        },
+        {
+          "en": "A/B testing is often used to find which webpage design produces the highest conversion rate.",
+          "ja": "どのウェブページデザインが最も高い転換率を生むかを見つけるために、A/Bテストがよく用いられる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "デジタルマーケティングの発展に伴い、ウェブサイトや広告の効果を数値で厳密に測定する必要性から広く使われるようになった、オンラインマーケティングの基本指標。",
+      "trivia": "コンバージョン率を高めるための、ページデザインや文言の細かな違いを比較検証する「A/Bテスト」は、現在のデジタルマーケティングの標準的な手法になっている。",
+      "explanation": "望む行動を取った訪問者の割合。",
+      "example_ja": "決済ページをデザインし直したことで、そのウェブサイトの転換率は15パーセント上昇した。",
+      "example_ja_src": "Redesigning the checkout page increased the website's conversion rate by fifteen percent."
+    }
+  },
+  {
+    "english": "sales funnel",
+    "detail": {
+      "pronunciation": "/seɪlz ˈfʌnəl/",
+      "pos": "名詞",
+      "meanings": [
+        "セールスファネル",
+        "見込み客が購入に至るまでの段階を漏斗形で示すモデル"
+      ],
+      "examples": [
+        {
+          "en": "The marketing team mapped out the sales funnel, from initial awareness to the final purchase decision.",
+          "ja": "マーケティングチームは、最初の認知から最終的な購入決定に至るまでのセールスファネルを描き出した。"
+        },
+        {
+          "en": "At each stage of the sales funnel, fewer prospects remain, as some drop out before making a purchase.",
+          "ja": "セールスファネルの各段階を経るごとに、購入前に離脱する人がいるため見込み客の数は減っていく。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1898年に広告理論家Elias St. Elmo Lewisが提唱した「AIDA(注意・関心・欲求・行動)」モデルを起源とし、その後マーケティング・営業の分野で漏斗の形にたとえたモデルとして広く使われるようになった。",
+      "trivia": "各段階でどれだけの見込み客が次の段階に進むかを分析することは、マーケティング施策のどこに問題があるかを特定する手がかりになる。",
+      "explanation": "見込み客が購入に至るまでの段階を漏斗形で示すモデル。",
+      "example_ja": "マーケティングチームは、最初の認知から最終的な購入決定に至るまでのセールスファネルを描き出した。",
+      "example_ja_src": "The marketing team mapped out the sales funnel, from initial awareness to the final purchase decision."
+    }
+  },
+  {
+    "english": "market penetration",
+    "detail": {
+      "pronunciation": "/ˈmɑːrkɪt ˌpɛnɪˈtreɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "市場浸透戦略",
+        "既存市場でのシェア拡大を狙う成長戦略"
+      ],
+      "examples": [
+        {
+          "en": "The company pursued market penetration by lowering prices to win over customers from its competitors.",
+          "ja": "その会社は、競合他社から顧客を奪うために価格を下げるという市場浸透戦略を追求した。"
+        },
+        {
+          "en": "Market penetration focuses on selling more of the same product in the same market, rather than developing new products or markets.",
+          "ja": "市場浸透戦略は、新しい製品や市場を開発するのではなく、同じ市場で同じ製品をより多く売ることに焦点を当てる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [],
+      "origin": "1957年に経営学者イゴール・アンゾフが提唱した「アンゾフの成長マトリクス」において、既存製品×既存市場の組み合わせに対応する基本的な成長戦略として位置づけられた。",
+      "trivia": "価格引き下げや広告強化、販売チャネルの拡大などが、市場浸透戦略の代表的な具体策として挙げられる。",
+      "explanation": "既存市場でのシェア拡大を狙う成長戦略。",
+      "example_ja": "その会社は、競合他社から顧客を奪うために価格を下げるという市場浸透戦略を追求した。",
+      "example_ja_src": "The company pursued market penetration by lowering prices to win over customers from its competitors."
+    }
+  },
+  {
+    "english": "penetration pricing",
+    "detail": {
+      "pronunciation": "/ˌpɛnɪˈtreɪʃən ˈpraɪsɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "浸透価格戦略",
+        "低価格でシェアを獲得する新製品の価格戦略"
+      ],
+      "examples": [
+        {
+          "en": "The streaming service used penetration pricing, offering a very low introductory rate to quickly build a large subscriber base.",
+          "ja": "その動画配信サービスは浸透価格戦略を用い、非常に低い導入価格を提示して短期間に大きな加入者基盤を築いた。"
+        },
+        {
+          "en": "Penetration pricing works best when customers are highly price-sensitive and switching costs are low.",
+          "ja": "浸透価格戦略は、顧客が価格に非常に敏感で乗り換えコストが低い場合に最も効果的である。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "price skimming",
+          "note": "当初は高価格を設定し、徐々に値下げしていく対照的な価格戦略"
+        }
+      ],
+      "origin": "新規参入企業が短期間で市場シェアを獲得するための価格戦略として、マーケティング学の価格戦略論の中で体系化されてきた。",
+      "trivia": "低価格によって規模の経済や強いネットワーク効果が働く市場では、この戦略が特に有効とされる。",
+      "explanation": "低価格でシェアを獲得する新製品の価格戦略。",
+      "example_ja": "その動画配信サービスは浸透価格戦略を用い、非常に低い導入価格を提示して短期間に大きな加入者基盤を築いた。",
+      "example_ja_src": "The streaming service used penetration pricing, offering a very low introductory rate to quickly build a large subscriber base."
+    }
+  },
+  {
+    "english": "price skimming",
+    "detail": {
+      "pronunciation": "/praɪs ˈskɪmɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "上澄み価格戦略",
+        "高価格から始めて徐々に値下げする価格戦略"
+      ],
+      "examples": [
+        {
+          "en": "The electronics maker used price skimming, launching the new device at a premium price before gradually lowering it over time.",
+          "ja": "その電機メーカーは上澄み価格戦略を用い、新製品を高価格で発売した後、時間をかけて徐々に値下げしていった。"
+        },
+        {
+          "en": "Price skimming allows a company to recoup research and development costs quickly from early adopters.",
+          "ja": "上澄み価格戦略により、企業は初期採用者から研究開発費を早期に回収することができる。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "penetration pricing",
+          "note": "当初から低価格を設定する対照的な価格戦略"
+        }
+      ],
+      "origin": "新製品の独自性や新規性が高い場合に、価格に敏感でない初期採用者からまず利益を得るための戦略として、価格戦略論の中で体系化されてきた。",
+      "trivia": "新しいゲーム機やスマートフォンが発売直後に高値で売られ、時間の経過とともに値下げされていく現象は、この戦略の典型例とされる。",
+      "explanation": "高価格から始めて徐々に値下げする価格戦略。",
+      "example_ja": "その電機メーカーは上澄み価格戦略を用い、新製品を高価格で発売した後、時間をかけて徐々に値下げしていった。",
+      "example_ja_src": "The electronics maker used price skimming, launching the new device at a premium price before gradually lowering it over time."
+    }
+  },
+  {
+    "english": "relationship marketing",
+    "detail": {
+      "pronunciation": "/rɪˈleɪʃənʃɪp ˈmɑːrkɪtɪŋ/",
+      "pos": "名詞",
+      "meanings": [
+        "関係性マーケティング",
+        "顧客との長期的関係構築を重視するマーケティングの考え方"
+      ],
+      "examples": [
+        {
+          "en": "The company practiced relationship marketing, focusing on long-term customer engagement rather than one-time sales.",
+          "ja": "その会社は関係性マーケティングを実践し、一度きりの販売よりも長期的な顧客との関わりに重点を置いた。"
+        },
+        {
+          "en": "Relationship marketing emphasizes personalized communication and after-sales support to build lasting customer loyalty.",
+          "ja": "関係性マーケティングは、持続的な顧客ロイヤルティを築くために、個別化されたコミュニケーションとアフターサポートを重視する。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [],
+      "antonyms": [
+        {
+          "word": "transactional marketing",
+          "note": "個々の取引の獲得を重視する、対照的な伝統的マーケティングの考え方"
+        }
+      ],
+      "origin": "1980年代に経営学者Leonard Berryらによって提唱され、個々の取引よりも顧客との継続的な関係構築を重視するマーケティングパラダイムとして発展した。",
+      "trivia": "顧客関係管理(CRM)システムの普及は、関係性マーケティングを大規模に実践するための技術的基盤として大きな役割を果たした。",
+      "explanation": "顧客との長期的関係構築を重視するマーケティングの考え方。",
+      "example_ja": "その会社は関係性マーケティングを実践し、一度きりの販売よりも長期的な顧客との関わりに重点を置いた。",
+      "example_ja_src": "The company practiced relationship marketing, focusing on long-term customer engagement rather than one-time sales."
+    }
+  }
+]

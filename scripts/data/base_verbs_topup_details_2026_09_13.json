@@ -1,0 +1,310 @@
+[
+  {
+    "english": "take",
+    "detail": {
+      "pronunciation": "/teɪk/",
+      "pos": "動詞",
+      "meanings": [
+        "(物を)取る、手に取る",
+        "(写真を)撮る",
+        "(乗り物に)乗る",
+        "(薬を)服用する",
+        "(時間が)かかる",
+        "(人を)連れていく",
+        "(試験を)受ける",
+        "(責任を)引き受ける",
+        "(行動・立場を)取る",
+        "行われる、開催される(take place)"
+      ],
+      "examples": [
+        {
+          "en": "She took a book from the shelf and started reading.",
+          "ja": "彼女は棚から本を取り出して読み始めた。"
+        },
+        {
+          "en": "It takes about two hours to get to Osaka by train.",
+          "ja": "電車で大阪まで行くのに約2時間かかる。"
+        },
+        {
+          "en": "He takes this medicine twice a day after meals.",
+          "ja": "彼はこの薬を食後に1日2回服用している。"
+        },
+        {
+          "en": "She took the exam again and finally passed it.",
+          "ja": "彼女はもう一度その試験を受け、ついに合格した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "intake",
+          "pos": "名詞",
+          "ja": "摂取量・取り入れ口"
+        },
+        {
+          "word": "retake",
+          "pos": "動詞・名詞",
+          "ja": "再受験する・撮り直す(こと)"
+        },
+        {
+          "word": "takeaway",
+          "pos": "名詞",
+          "ja": "持ち帰り(料理)・(そこから得られる)教訓"
+        },
+        {
+          "word": "overtake",
+          "pos": "動詞",
+          "ja": "追い越す"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "grab",
+          "note": "より素早く・カジュアルに「つかむ」ニュアンス"
+        },
+        {
+          "word": "obtain",
+          "note": "フォーマルな文脈で「入手する」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "give",
+          "note": "「与える」という反対方向の動作"
+        }
+      ],
+      "origin": "古ノルド語 taka「つかむ、手に取る」に由来し、中英語期に本来の古英語動詞 niman に取って代わって定着した。",
+      "trivia": "take は英語の基本動詞の中でも特に多義的で、辞書によっては40以上の語義区分を持つとされる。前置詞・副詞と組み合わさると take off(離陸する・脱ぐ)、take on(引き受ける)、take up(始める)のようにさらに多くの句動詞を作る。",
+      "explanation": "この項目は take という動詞そのものが持つ中心的な語義を幅広くカバーするためのもの。take off / take on / take up / take after / take over のような前置詞・副詞と組み合わさる句動詞は意味が大きく変化するため、このアプリでは 句動詞(take) ドメインに別途まとめてある。まずはここで take 単体の基本的な使い方を押さえ、句動詞は別途学ぶとよい。",
+      "example_ja": "彼女は棚から本を取り出して読み始めた。",
+      "example_ja_src": "She took a book from the shelf and started reading."
+    }
+  },
+  {
+    "english": "get",
+    "detail": {
+      "pronunciation": "/ɡɛt/",
+      "pos": "動詞",
+      "meanings": [
+        "得る、手に入れる",
+        "着く、到着する",
+        "(ある状態に)なる",
+        "〜に…させる(使役)",
+        "(話・冗談を)理解する",
+        "(人と)仲良くやっていく",
+        "(病気・つらい経験から)立ち直る",
+        "受け取る",
+        "(乗り物を)つかまえる、間に合う"
+      ],
+      "examples": [
+        {
+          "en": "I need to get some milk from the store on my way home.",
+          "ja": "帰り道にお店で牛乳を買わないと。"
+        },
+        {
+          "en": "What time will we get to the airport?",
+          "ja": "何時に空港に着く予定ですか。"
+        },
+        {
+          "en": "She got really angry when she found out the truth.",
+          "ja": "真実を知って、彼女はひどく怒った。"
+        },
+        {
+          "en": "It took him a while to get the joke.",
+          "ja": "彼がその冗談を理解するのに少し時間がかかった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "getaway",
+          "pos": "名詞",
+          "ja": "逃走・(短い)小旅行"
+        },
+        {
+          "word": "get-together",
+          "pos": "名詞",
+          "ja": "気軽な集まり"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "obtain",
+          "note": "よりフォーマルな「入手する」"
+        },
+        {
+          "word": "receive",
+          "note": "「受け取る」の意味で使う場合の類義語"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "give",
+          "note": "「与える」"
+        },
+        {
+          "word": "lose",
+          "note": "「得る」の反対で「失う」"
+        }
+      ],
+      "origin": "古ノルド語 geta「得る、推測する」に由来し、中英語期に定着した。もともと対応する古英語の動詞もあったが、get はその後意味領域を大きく広げながら現代英語で最も多用される動詞の一つになった。",
+      "trivia": "get は口語で非常に多用され、get up(起きる)、get over(乗り越える)、get by(何とかやっていく)、get along(仲良くする)など、前置詞・副詞と結びついた句動詞も極めて多い。",
+      "explanation": "この項目は get という動詞そのものが持つ中心的な語義(得る・着く・〜になる・使役など)を幅広くカバーする。get over / get by / get away / get along のような前置詞・副詞と組み合わさる句動詞は、このアプリでは 句動詞(get) ドメインに別途まとめてあるので、そちらも参照してほしい(本項目の「立ち直る」の語義は get over の基本的な意味と重なるが、句動詞ドメイン側ではさらに幅広い用例を扱っている)。",
+      "example_ja": "帰り道にお店で牛乳を買わないと。",
+      "example_ja_src": "I need to get some milk from the store on my way home."
+    }
+  },
+  {
+    "english": "make",
+    "detail": {
+      "pronunciation": "/meɪk/",
+      "pos": "動詞",
+      "meanings": [
+        "作る、作り出す",
+        "〜に…させる(使役)",
+        "(お金を)稼ぐ",
+        "(決定を)下す",
+        "間に合う、うまくいく(make it)",
+        "間違いを犯す",
+        "意味をなす(make sense)",
+        "でっち上げる、作り話をする",
+        "仲直りする(make up)"
+      ],
+      "examples": [
+        {
+          "en": "She made a beautiful cake for her friend's birthday.",
+          "ja": "彼女は友達の誕生日にきれいなケーキを作った。"
+        },
+        {
+          "en": "His joke made everyone laugh.",
+          "ja": "彼の冗談でみんなが笑った。"
+        },
+        {
+          "en": "They finally made a decision about where to live.",
+          "ja": "彼らはようやくどこに住むか決断した。"
+        },
+        {
+          "en": "We made it to the station just before the last train left.",
+          "ja": "終電が出る直前に何とか駅に間に合った。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "maker",
+          "pos": "名詞",
+          "ja": "作る人・メーカー"
+        },
+        {
+          "word": "making",
+          "pos": "名詞",
+          "ja": "制作・形成過程"
+        },
+        {
+          "word": "makeshift",
+          "pos": "形容詞",
+          "ja": "間に合わせの"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "create",
+          "note": "ゼロから何かを生み出すニュアンスが強い"
+        },
+        {
+          "word": "produce",
+          "note": "工業的・大量生産のニュアンスを含む場合がある"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "destroy",
+          "note": "「作る」の反対で「壊す」"
+        }
+      ],
+      "origin": "古英語 macian に由来し、西ゲルマン語派に共通する語根を持つ(ドイツ語 machen と同根)。",
+      "trivia": "make は do と並んで「軽動詞(light verb)」として使われることが多く、make a decision、make an effort、make progress のように名詞と組み合わさって様々な行為を表す。同じく軽動詞の do との使い分け(make a mistake ○ / do a mistake ×など)は学習者が混同しやすいポイント。",
+      "explanation": "この項目は make という動詞そのものが持つ中心的な語義(作る・使役・稼ぐ・決定するなど)を幅広くカバーする。make up には「仲直りする」(本項目でも扱う対人関係の文脈)のほか「化粧をする」「作り話をする」などの意味もある。take/get と異なり make 専用の句動詞ドメインは本アプリには無いため、make に関する句動詞的な表現の一部は本項目内の語義としてまとめている。",
+      "example_ja": "彼女は友達の誕生日にきれいなケーキを作った。",
+      "example_ja_src": "She made a beautiful cake for her friend's birthday."
+    }
+  },
+  {
+    "english": "run",
+    "id": 15425,
+    "domain": "基礎語彙",
+    "detail": {
+      "pronunciation": "/rʌn/",
+      "pos": "動詞",
+      "meanings": [
+        "走る",
+        "(会社・組織を)経営する、運営する",
+        "(機械・エンジンなどを)動かす、作動する",
+        "(プログラム・ソフトウェアを)実行する",
+        "(選挙に)立候補する",
+        "遅れている",
+        "(物が)尽きる、切れる(run out of)",
+        "(性質・体質などが)家系に受け継がれている",
+        "(バス・電車などが)運行する",
+        "(川・液体が)流れる"
+      ],
+      "examples": [
+        {
+          "en": "He runs five kilometers every morning.",
+          "ja": "彼は毎朝5キロ走る。"
+        },
+        {
+          "en": "She has run the family bakery for over twenty years.",
+          "ja": "彼女は20年以上その家族経営のパン屋を切り盛りしている。"
+        },
+        {
+          "en": "This laptop can run several programs at the same time without slowing down.",
+          "ja": "このノートパソコンは複数のプログラムを同時に実行しても遅くならない。"
+        },
+        {
+          "en": "We're running low on coffee, so I'll buy some more today.",
+          "ja": "コーヒーが切れかけているから、今日もう少し買ってくる。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "runner",
+          "pos": "名詞",
+          "ja": "走者・ランナー"
+        },
+        {
+          "word": "running",
+          "pos": "形容詞・名詞",
+          "ja": "稼働中の・ランニング(運営)"
+        },
+        {
+          "word": "run-down",
+          "pos": "形容詞",
+          "ja": "くたびれた・老朽化した"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "jog",
+          "note": "ゆっくり走る、ジョギングする"
+        },
+        {
+          "word": "operate",
+          "note": "機械や事業を「動かす・運営する」の意味で使うときの類義語"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "walk",
+          "note": "歩く"
+        },
+        {
+          "word": "stop",
+          "note": "「動かし続ける」run に対して「止める」"
+        }
+      ],
+      "origin": "古英語 rinnan(自動詞)/iernan と、古ノルド語 renna(他動詞用法)が中英語期に混ざり合って一つの動詞体系にまとまった、ゲルマン語派に共通する語根を持つ語。",
+      "trivia": "run は英語の中でも辞書の定義数が非常に多い動詞として知られ、大規模な辞書では100を超える語義・用法区分がなされることもある。run a business(事業を経営する)のように「動かし続ける」というイメージから多くの意味に発展した。",
+      "explanation": "run という動詞の中心的な語義(物理的に走る・経営する・機械や乗り物を動かす・プログラムを実行する・選挙に立候補する・時間に遅れる・在庫が尽きる・体質が家系に受け継がれるなど)を幅広くカバーする。run out(使い果たす)や run into(偶然出会う)のように前置詞・副詞と組み合わさるとさらに意味が広がるが、take/get と異なり run 専用の句動詞ドメインは本アプリには無いため、そうした用法の一部は本項目内の語義としてまとめている。",
+      "example_ja": "彼は毎朝5キロ走る。",
+      "example_ja_src": "He runs five kilometers every morning."
+    }
+  }
+]

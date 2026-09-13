@@ -1,0 +1,71 @@
+[
+  {
+    "english": "fillet",
+    "id": 13097,
+    "domain": "アウトドア・レジャー",
+    "detail": {
+      "pronunciation": "/fɪˈleɪ/",
+      "pos": "動詞・名詞",
+      "meanings": [
+        "釣った魚をその場で捌く、骨を取り除いて切り身にする",
+        "（名詞）切り身"
+      ],
+      "examples": [
+        {
+          "en": "He filleted the fish right on the dock.",
+          "ja": "彼は桟橋の上でその場で魚を捌いた。"
+        },
+        {
+          "en": "Bring a sharp fillet knife if you plan to clean your catch at the campsite.",
+          "ja": "キャンプ場で釣った魚を捌くつもりなら、よく切れるフィレナイフを持っていこう。"
+        }
+      ],
+      "derivatives": [
+        {"word": "fillet knife", "pos": "名詞句", "ja": "魚を捌くための、薄く柔軟な刃を持つ専用ナイフ"}
+      ],
+      "synonyms": [
+        {"word": "clean (a fish)", "note": "「(釣った魚を)捌く・下処理する」という、釣り人がよく使うくだけた言い方"}
+      ],
+      "antonyms": [],
+      "origin": "古フランス語filet「小さな糸・帯」(ラテン語filum「糸」に由来)から、魚や肉を薄い帯状に切り分けることを指すようになった。",
+      "trivia": "釣りやキャンプでは、釣れたその場(桟橋・岸辺・キャンプ場)で手早くfilletして下処理し、そのまま焚き火やコンロで調理することが多く、屋外レジャーの一場面として定着した使い方になっている。",
+      "explanation": "料理の文脈での「魚を三枚におろす」と基本的には同じ動作を指すが、アウトドア・釣りの文脈では特に「釣れたその場で素早く下処理する」というニュアンスで使われることが多い。",
+      "example_ja": "彼は桟橋の上でその場で魚を捌いた。",
+      "example_ja_src": "He filleted the fish right on the dock."
+    }
+  },
+  {
+    "english": "carrying capacity",
+    "id": 12644,
+    "domain": "インバウンド",
+    "detail": {
+      "pronunciation": "/ˈkærɪɪŋ kəˈpæsəti/",
+      "pos": "名詞句",
+      "meanings": [
+        "(観光地の)受け入れ許容量、環境収容力"
+      ],
+      "examples": [
+        {
+          "en": "Researchers estimated the carrying capacity of the small island before the ferry company added more routes.",
+          "ja": "フェリー会社が便数を増やす前に、研究者たちはその小さな島の観光受け入れ許容量を試算した。"
+        },
+        {
+          "en": "Kyoto has introduced timed-entry tickets at some sites to manage tourist numbers within the area's carrying capacity.",
+          "ja": "京都では、地域の受け入れ許容量の範囲に観光客数を収めるため、一部の施設で時間指定入場券を導入した。"
+        }
+      ],
+      "derivatives": [
+        {"word": "overtourism", "pos": "名詞", "ja": "観光公害、受け入れ許容量を超えた過剰な観光客の集中"}
+      ],
+      "synonyms": [
+        {"word": "tourist capacity", "note": "観光地に限定してより直接的に言う場合の表現"}
+      ],
+      "antonyms": [],
+      "origin": "元々は生態学で「ある環境が持続的に支えられる個体群の上限」を表す語(下記trivia参照)だったが、観光業では人・交通・インフラが目的地に与える負荷の上限という意味に転用されている。",
+      "trivia": "生態学のcarrying capacity(個体群がロジスティック成長モデルで漸近する上限値K)という概念が、観光業では「その土地の交通・宿泊・環境が支えられる観光客数の上限」という比喩として転用され、近年のオーバーツーリズム対策(入場者数制限・時間指定入場等)の議論で頻繁に使われるようになった。",
+      "explanation": "インバウンド観光の文脈では、単なる収容人数ではなく、地域住民の生活や自然環境への負荷も含めた「持続可能に受け入れられる観光客数の上限」という意味で使われることが多い。",
+      "example_ja": "フェリー会社が便数を増やす前に、研究者たちはその小さな島の観光受け入れ許容量を試算した。",
+      "example_ja_src": "Researchers estimated the carrying capacity of the small island before the ferry company added more routes."
+    }
+  }
+]

@@ -1,0 +1,34 @@
+[
+  {
+    "english": "specification",
+    "id": 16041,
+    "domain": "知的財産（特許）",
+    "detail": {
+      "pronunciation": "/ˌspesɪfɪˈkeɪʃən/",
+      "pos": "名詞",
+      "meanings": [
+        "特許明細書(発明の内容を詳細に説明する、特許出願の中核文書)"
+      ],
+      "examples": [
+        {
+          "en": "The specification must describe the invention in enough detail for someone skilled in the art to reproduce it.",
+          "ja": "明細書は、その技術分野の専門家が再現できる程度に発明の内容を詳しく記載しなければならない。"
+        },
+        {
+          "en": "She amended the specification to clarify an ambiguous term before the examiner issued a rejection.",
+          "ja": "彼女は審査官が拒絶理由を出す前に、曖昧な用語を明確にするため明細書を補正した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {"word": "patent specification", "note": "より明示的に「特許」明細書だと分かる言い方"}
+      ],
+      "antonyms": [],
+      "origin": "ラテン語specificare「specific(特定)にする」に由来し、一般に「詳細な記述・仕様書」を意味する語が、特許制度でも発明の詳細記述を指す専門用語として定着した。",
+      "trivia": "同じ`specification`でもIT分野では単に「技術仕様書」を指すのに対し、特許分野では発明の open な公開と引き換えに独占権を与えるという特許制度の根幹(開示の代償としての権利付与)を支える、法的に厳密な要件を伴う文書を指す。",
+      "explanation": "特許出願は通常クレーム(請求項)と明細書(specification)から成り、明細書は発明の技術的内容を詳しく説明する部分で、クレームの解釈根拠にもなる。IT分野の「仕様書」とは異なり、記載内容の十分性(enablement要件)が特許の有効性そのものを左右する。",
+      "example_ja": "明細書は、その技術分野の専門家が再現できる程度に発明の内容を詳しく記載しなければならない。",
+      "example_ja_src": "The specification must describe the invention in enough detail for someone skilled in the art to reproduce it."
+    }
+  }
+]
