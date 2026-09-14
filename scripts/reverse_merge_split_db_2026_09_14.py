@@ -347,9 +347,18 @@ def main() -> int:
             conn.execute(
                 "DELETE FROM app_state WHERE key = ?", (FORWARD_MARKER_KEY,)
             )
+            # 2026-09-15 5回目Fableレビュー指摘(重大-1): 往復試験(分割→逆
+            # マージ→再分割→再逆マージ)の2周目では、1周目の統合ファイル
+            # 由来のREVERSE_MARKER_KEY行が再分割でcore.dbにコピーされ、
+            # それがこの2周目の_copy_all_tables()で出力へ先にコピー済みに
+            # なるため、単純なINSERTだと`UNIQUE constraint failed`で例外に
+            # なり2周目が必ず失敗していた(安全側の失敗=データ損失は無いが、
+            # 往復試験が成立しない)。移行スクリプト側のsqlite_sequence以外
+            # で既に使っているON CONFLICT DO UPDATEと同じ方式に統一する。
             conn.execute(
                 "INSERT INTO app_state (key, value) "
-                "VALUES (?, datetime('now'))",
+                "VALUES (?, datetime('now')) "
+                "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
                 (REVERSE_MARKER_KEY,),
             )
             conn.commit()
