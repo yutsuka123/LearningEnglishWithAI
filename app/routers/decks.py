@@ -145,19 +145,20 @@ def _select_word_ids(conn, p: DeckCreate) -> list[int]:
     include_banned = p.include_banned and current_user_allow_banned()
     if p.word_ids:
         ids = list(dict.fromkeys(p.word_ids))
-        if not include_banned:
-            # ID直指定でも禁止用語は除外する(2026-08-17セキュリティ修正・
-            # IDを知っていれば`include_banned`チェックを迂回して単語帳に
-            # 追加できてしまっていた)。
-            ph = ",".join("?" * len(ids))
-            allowed = {
-                r["id"] for r in conn.execute(
-                    f"SELECT id FROM words WHERE id IN ({ph}) "
-                    f"AND {banned_filter('words')}",
-                    ids,
-                ).fetchall()
-            }
-            ids = [i for i in ids if i in allowed]
+        ph = ",".join("?" * len(ids))
+        cond = "" if include_banned else f"AND {banned_filter('words')}"
+        # 実在チェックは include_banned の値によらず常に行う
+        # (2026-09-14 DB分割対応: words↔deck_wordsのFOREIGN KEYがATTACH間
+        # では効かなくなったため、以前はFK制約が黙って弾いてくれていた
+        # 「存在しないword_id」がinclude_banned=True経路では素通りして
+        # しまう穴があった。Fableレビュー指摘M3)。
+        allowed = {
+            r["id"] for r in conn.execute(
+                f"SELECT id FROM words WHERE id IN ({ph}) {cond}",
+                ids,
+            ).fetchall()
+        }
+        ids = [i for i in ids if i in allowed]
         return ids
     where, params = [], []
     if p.domains:

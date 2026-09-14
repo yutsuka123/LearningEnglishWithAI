@@ -98,16 +98,51 @@ echo "=== scheduled deploy start ($(date)) run_at=$RUN_AT ==="
 log_json start "run_at=$RUN_AT"
 
 # --- a. DBバックアップ（sqliteのbackup APIで安全にコピー）------------------
+# 2026-09-14 Fable指摘C4対応: 当初vocabulary.db固定だったため、DB分割後
+# (vocabulary.dbが無くcore.db/content.db/logs.dbのみになった状態)では
+# sqlite3.connect()が存在しないファイルを黙って新規作成し、その空ファイル
+# を「バックアップ成功」として記録してしまう欠陥があった。分割前
+# (vocabulary.dbのみ)・分割後(3ファイル)どちらの構成かを判定し、
+# 想定するファイルが存在しない場合は新規作成せず失敗扱いにする。
 STAMP="$(date +%Y%m%d_%H%M%S)"
 if docker exec -i "$CONTAINER" python - <<PY
+import os
 import sqlite3
-src = sqlite3.connect('/data/vocabulary.db')
-dst = sqlite3.connect('/data/backup_vocabulary_${STAMP}.db')
-src.backup(dst); dst.close(); src.close()
-print('backup ok')
+import sys
+
+
+def backup(src_path, dst_path):
+    if not os.path.exists(src_path):
+        print(f"missing: {src_path}")
+        return False
+    src = sqlite3.connect(f"file:{src_path}?mode=ro", uri=True)
+    dst = sqlite3.connect(dst_path)
+    src.backup(dst)
+    dst.close()
+    src.close()
+    print(f"backup ok: {src_path} -> {dst_path}")
+    return True
+
+
+legacy = "/data/vocabulary.db"
+split_files = {
+    "/data/core.db": "/data/backup_core_${STAMP}.db",
+    "/data/content.db": "/data/backup_content_${STAMP}.db",
+    "/data/logs.db": "/data/backup_logs_${STAMP}.db",
+}
+
+if os.path.exists(legacy):
+    ok = backup(legacy, "/data/backup_vocabulary_${STAMP}.db")
+elif all(os.path.exists(p) for p in split_files):
+    ok = all(backup(src, dst) for src, dst in split_files.items())
+else:
+    print("ERROR: vocabulary.dbもcore/content/logs.db一式も見つかりません")
+    ok = False
+
+sys.exit(0 if ok else 1)
 PY
 then
-  log_json backup "backup_vocabulary_${STAMP}.db"
+  log_json backup "ok (stamp=${STAMP})"
 else
   log_json warn "DBバックアップに失敗（デプロイは続行）"
 fi

@@ -7,6 +7,7 @@ the data directory defined in :mod:`app.config`.
 
 from __future__ import annotations
 
+import os
 import sqlite3
 from contextlib import contextmanager
 from datetime import date
@@ -1246,8 +1247,34 @@ def _check_no_duplicate_table_names(conn: sqlite3.Connection) -> None:
         )
 
 
+def _guard_against_premature_split_startup() -> None:
+    """2026-09-14 DB分割ガード(Fable指摘C3): 新スキーマ対応コードが
+    デプロイされたのに移行スクリプト(scripts/migrate_split_db_2026_09_14.py)
+    がまだ実行されていない場合、`get_connection()`が(sqlite3.connect()の
+    仕様により)黙って空のcore.db/content.db/logs.dbを新規作成してしまい、
+    ヘルスチェックはDBの中身を見ないため「全ユーザー・決済履歴が消えた
+    状態」がそのまま健全起動と判定されてしまう(9/13事故と同種の危険、
+    Fableレビューで指摘)。旧`vocabulary.db`が存在するのに新`core.db`が
+    無い組み合わせだけを検出し、明示的に`ALLOW_FRESH_DB=1`が設定されて
+    いない限り起動を拒否する(sqlite3.connect()を一切呼ぶ前に、ファイル
+    存在チェックだけで判定する必要がある点に注意)。"""
+    legacy_db = paths.data_dir / "vocabulary.db"
+    if legacy_db.exists() and not paths.db_file.exists():
+        if os.getenv("ALLOW_FRESH_DB") == "1":
+            return
+        raise RuntimeError(
+            f"起動を拒否しました: {legacy_db} は存在しますが "
+            f"{paths.db_file} がありません。DB分割の移行スクリプトが "
+            "まだ実行されていない可能性があります(移行スクリプトを先に"
+            "実行してください)。本当に新規環境として空DBから始めたい"
+            "場合のみ環境変数 ALLOW_FRESH_DB=1 を設定してください。"
+        )
+
+
 def init_db() -> None:
     """Create the schema and seed reference data. Safe to call repeatedly."""
+    paths.ensure()
+    _guard_against_premature_split_startup()
     with db() as conn:
         conn.executescript(SCHEMA)
         _check_no_duplicate_table_names(conn)
