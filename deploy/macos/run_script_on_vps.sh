@@ -1,8 +1,21 @@
 #!/usr/bin/env bash
-# 本番VPS上のeigo-appコンテナ内でscripts/配下のPythonスクリプトを実行する。
-# 【macOS/Linux用】コンテンツ反映(add_*.py・import_details.py等)は必ず
-# テーブル単位のSQLスクリプト経由で行い、DBファイルそのものを転送しない
-# というルール(CLAUDE.md参照)を、実行面から支援するラッパー。
+# 本番VPS上でscripts/配下のPythonスクリプトを実行する。【macOS/Linux用】
+# コンテンツ反映(add_*.py・import_details.py等)は必ずテーブル単位のSQL
+# スクリプト経由で行い、DBファイルそのものを転送しないというルール
+# (CLAUDE.md参照)を、実行面から支援するラッパー。
+#
+# 2026-09-14判明: Dockerfileはscripts/をイメージに焼き込む方式(bind mount
+# ではない)ため、稼働中のeigo-appコンテナへ`docker exec`しても、
+# sync_code.shで転送しただけの新しいスクリプトは見えない(イメージの
+# 再ビルドが必要)。かといって`docker compose up -d --build`は稼働中の
+# コンテナを再作成してしまい、予定外のダウンタイム=無告知デプロイに
+# なってしまう。
+# そこで、**イメージだけ再ビルド(`docker compose build`、稼働中コンテナは
+# 無停止・無変更)**した上で、**`docker compose run --rm`で使い捨ての別
+# コンテナ**を起動してスクリプトを実行する(同じ/data・.env.studyを見る
+# ので本番DBへの反映は正しく行われるが、稼働中コンテナは一切触らない)。
+# 実際のコード反映(稼働中コンテナの入れ替え)は、予告済みのメンテ枠で
+# scheduled_deploy.shが`up -d --build`することで初めて起こる。
 #
 # 前提: 事前に ./deploy/macos/sync_code.sh でコード(scripts/含む)を
 # 同期済みであること。
@@ -32,7 +45,15 @@ if [ "$#" -lt 1 ]; then
   exit 1
 fi
 
-CONTAINER="${CONTAINER:-eigo-app}"
-echo "実行: docker exec $CONTAINER python3 $*"
+COMPOSE_FILE="deploy/docker-compose.study.yml"
+SERVICE="${SERVICE:-eigo-app}"
+RUN_NAME="eigo-app-content-task"
+
+echo "1/2: イメージを再ビルド(稼働中コンテナは無停止・無変更)..."
 ssh -i "$VPS_SSH_KEY" "$VPS_HOST" \
-  "cd $VPS_APP_DIR && docker exec -i $CONTAINER python3 $*"
+  "cd $VPS_APP_DIR && docker compose -f $COMPOSE_FILE build"
+
+echo "2/2: 使い捨てコンテナでスクリプト実行: python3 $*"
+ssh -i "$VPS_SSH_KEY" "$VPS_HOST" \
+  "cd $VPS_APP_DIR && docker compose -f $COMPOSE_FILE run --rm \
+   --name $RUN_NAME $SERVICE python3 $*"

@@ -1,8 +1,20 @@
-# 本番VPS上のeigo-appコンテナ内でscripts/配下のPythonスクリプトを実行する。
-# 【Windows用】macOS/Linux版 deploy/macos/run_script_on_vps.sh のWindows移植。
+# 本番VPS上でscripts/配下のPythonスクリプトを実行する。【Windows用】
+# macOS/Linux版 deploy/macos/run_script_on_vps.sh のWindows移植。
 # コンテンツ反映(add_*.py・import_details.py等)は必ずテーブル単位のSQL
 # スクリプト経由で行い、DBファイルそのものを転送しないというルール
 # (CLAUDE.md参照)を、実行面から支援するラッパー。
+#
+# 2026-09-14判明: Dockerfileはscripts/をイメージに焼き込む方式(bind mount
+# ではない)ため、稼働中のeigo-appコンテナへ`docker exec`しても、コード
+# 同期しただけの新しいスクリプトは見えない(イメージの再ビルドが必要)。
+# かといって`docker compose up -d --build`は稼働中コンテナを再作成して
+# しまい、予定外のダウンタイム=無告知デプロイになる。そこで**イメージだけ
+# 再ビルド(`docker compose build`、稼働中コンテナは無停止・無変更)**した
+# 上で、**`docker compose run --rm`で使い捨ての別コンテナ**を起動して
+# スクリプトを実行する(同じ/data・.env.studyを見るので本番DBへの反映は
+# 正しく行われるが、稼働中コンテナは一切触らない)。実際のコード反映
+# (稼働中コンテナの入れ替え)は、予告済みのメンテ枠でscheduled_deploy.sh
+# が`up -d --build`することで初めて起こる。
 #
 # 前提: 事前に .\deploy\windows\sync_code.ps1 -Execute でコード
 # (scripts/含む)を同期済みであること。WSL経由でsshを呼ぶ点はsync_code.ps1
@@ -58,9 +70,19 @@ try {
     Remove-Item -LiteralPath $TmpKey -Force -ErrorAction SilentlyContinue
 }
 
+$ComposeFile = 'deploy/docker-compose.study.yml'
+$RunName = 'eigo-app-content-task'
 $remoteCmd = $ScriptArgs -join ' '
-Write-Host "実行: docker exec $Container python3 $remoteCmd"
-$sshCmd = "ssh -i $WslKey -o StrictHostKeyChecking=accept-new $VPS_HOST " +
-          "'cd $VPS_APP_DIR && docker exec -i $Container python3 $remoteCmd'"
-Invoke-Wsl $sshCmd
+
+Write-Host '1/2: イメージを再ビルド(稼働中コンテナは無停止・無変更)...'
+$buildCmd = "ssh -i $WslKey -o StrictHostKeyChecking=accept-new $VPS_HOST " +
+            "'cd $VPS_APP_DIR && docker compose -f $ComposeFile build'"
+Invoke-Wsl $buildCmd
+if ($LASTEXITCODE -ne 0) { Write-Error "イメージの再ビルドに失敗しました" }
+
+Write-Host "2/2: 使い捨てコンテナでスクリプト実行: python3 $remoteCmd"
+$runCmd = "ssh -i $WslKey -o StrictHostKeyChecking=accept-new $VPS_HOST " +
+          "'cd $VPS_APP_DIR && docker compose -f $ComposeFile run --rm " +
+          "--name $RunName $Container python3 $remoteCmd'"
+Invoke-Wsl $runCmd
 if ($LASTEXITCODE -ne 0) { Write-Error "リモート実行に失敗しました" }
