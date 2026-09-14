@@ -20,7 +20,13 @@ services:
     build:
       context: ..
       dockerfile: Dockerfile
-    image: eigo-app:latest
+    # 2026-09-14: EIGO_IMAGEで上書き可能にした。理由: コンテンツ反映用の
+    # run_script_on_vps.sh(docker compose build)が無条件に:latestを
+    # 上書きすると、DB分割cutoverスクリプト(migrate_and_cutover_db_split.sh)
+    # の「移行成功まで:latestは触らない」という安全前提が崩れる
+    # (Fable指摘C2)。run_script_on_vps.sh側はEIGO_IMAGE=eigo-app:content-task
+    # 等、:latest以外のタグを指定してbuild/runすること。
+    image: ${EIGO_IMAGE:-eigo-app:latest}
     container_name: eigo-app
     restart: unless-stopped
     # bind マウントした /data(host ubuntu=1000:1000 所有)に書き込むため、コンテナを
