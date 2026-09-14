@@ -183,6 +183,10 @@ print('ok')
 ")"
 if [ "$BACKUP_OUT" != "ok" ]; then
   log_json backup fatal "バックアップに失敗しました。旧コンテナを再起動します"
+  # 3回目レビュー指摘M-5: 他の復旧パス(移行失敗時・ヘルスチェック失敗時)
+  # と同様、":latestは触っていないはず"に頼らず明示的にprevへ再タグして
+  # から起動する。
+  docker tag "$PREV_IMAGE" "$IMAGE"
   docker compose -f "$COMPOSE_FILE" up -d
   exit 1
 fi
