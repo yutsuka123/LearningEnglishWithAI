@@ -18,8 +18,14 @@
 #   コミットされることは無いが、後片付け(新3ファイルの削除確認)が
 #   手動になる場合がある。
 #
-# ■ 安全設計のポイント(2026-09-14 Fableレビューで4件の重大指摘を受け
-#   全面的に修正済み)
+# ⚠️ このスクリプトの実行中は、scheduled_deploy.sh用の
+#   data/deploy_request.json を予約しないこと(下記手順0で自動チェック
+#   する)。cronがこの操作の途中で`docker compose up -d --build`を
+#   実行すると、まだ移行していないデータに対して分割対応コードで
+#   コンテナが再作成されてしまう(2回目Fableレビュー指摘M-2)。
+#
+# ■ 安全設計のポイント(2026-09-14 Fableレビュー2回・重大4件+高4件+中5件の
+#   指摘を全面的に反映済み)
 # - `:latest`タグは移行成功を確認するまで一切書き換えない。新イメージは
 #   別タグ(`eigo-app:split-candidate`)でビルドし、稼働中コンテナには
 #   何の影響も与えない。ロールバック用の`:prev`は`:latest`タグからでは
@@ -30,12 +36,20 @@
 #   (Fable指摘H1: 素の`docker run`だと権限不一致で失敗し得た)。
 # - 旧コンテナの停止後、実際に停止したことを`docker ps`で確認する
 #   (Fable指摘H4: 停止失敗を握りつぶすと稼働中に移行してしまう)。
+# - **件数サニティチェック用のPRE件数は、旧コンテナを完全に停止した後の
+#   静的な状態から取得する**(2回目レビュー指摘M-1: 以前は確認プロンプト・
+#   ビルド・バックアップを挟んだ数分前の「稼働中の」値を使っていたため、
+#   その間に実際にあった新規登録等が誤って「件数不一致」と判定され、
+#   届いたばかりのデータを持つ新環境を巻き戻してしまう恐れがあった)。
 # - 移行スクリプト自身が件数一致・FK整合性・重複名なし・金額合計一致等を
 #   検証し、1つでも失敗すれば新3ファイルを自動削除して非ゼロ終了する
 #   (scripts/migrate_split_db_2026_09_14.py参照)。既存の出力ファイルが
 #   あれば無条件に上書きせず拒否する(Fable指摘C1)。
-# - 移行が失敗した場合、`:latest`は触っていないため
-#   `docker compose up -d`だけで即座に旧構成のまま復旧する。
+# - 移行が失敗した場合、`:prev`(稼働中コンテナの元イメージ)へ明示的に
+#   再タグしてから`docker compose up -d`する(2回目レビュー指摘M-2:
+#   以前は「:latestは触っていないはず」という前提で無条件`up -d`
+#   していたが、外部要因(他の作業からの`docker compose build`等)で
+#   :latestが書き換わっていた場合に備え、明示的に安全な方へ寄せる)。
 # - 移行成功後に`:latest`を新イメージへ切替→起動→ヘルスチェック+
 #   件数サニティチェック(Fable指摘M4)。失敗時は`:prev`へ戻す。
 #
@@ -75,6 +89,20 @@ confirm() {
   [ "$ans" = "y" ] || [ "$ans" = "Y" ]
 }
 
+# 移行前スナップショットからusers/words件数を読む共通ヘルパ。候補
+# イメージの使い捨てコンテナ経由で読む(旧コンテナは既に停止済みの
+# 前提のため`docker exec`は使えない)。
+count_users_words() {
+  local db_path="$1"
+  EIGO_IMAGE="$CANDIDATE_IMAGE" docker compose -f "$COMPOSE_FILE" run --rm \
+    --no-deps -T --name eigo-app-count "$CONTAINER" python3 -c "
+import sqlite3
+c = sqlite3.connect('file:${db_path}?mode=ro', uri=True)
+print(c.execute('SELECT COUNT(*) FROM users').fetchone()[0])
+print(c.execute('SELECT COUNT(*) FROM words').fetchone()[0])
+"
+}
+
 cd "$APP_DIR"
 echo "=== DB分割 移行+切替スクリプト ==="
 echo "対象: $DATA_DIR/vocabulary.db → content.db/core.db/logs.db"
@@ -93,23 +121,15 @@ if [ -f "$DATA_DIR/core.db" ] || [ -f "$DATA_DIR/content.db" ] || \
   echo "  再実行してください(このスクリプトは既存ファイルを自動削除しません)。" >&2
   exit 1
 fi
+if [ -f "$DATA_DIR/deploy_request.json" ]; then
+  echo "エラー: $DATA_DIR/deploy_request.json が存在します" >&2
+  echo "  (scheduled_deploy.shの自動デプロイが予約されています)。" >&2
+  echo "  この操作の途中でcronによる自動デプロイが割り込むと危険なため、" >&2
+  echo "  予約を解除するか完了するまで待ってから再実行してください。" >&2
+  exit 1
+fi
 confirm "旧vocabulary.db($(du -h "$DATA_DIR/vocabulary.db" | cut -f1))を3分割へ移行します。よろしいですか?" \
   || { echo "中断しました。"; exit 1; }
-
-# 切替後の件数サニティチェック用に、移行前のusers/words件数を控えておく
-# (Fable指摘M4: ヘルスチェックはDBの中身を見ないため、別途実データで
-# 検証する)。
-PRE_USERS="$(docker exec -i "$CONTAINER" python3 -c "
-import sqlite3
-c = sqlite3.connect('/data/vocabulary.db')
-print(c.execute('SELECT COUNT(*) FROM users').fetchone()[0])
-")"
-PRE_WORDS="$(docker exec -i "$CONTAINER" python3 -c "
-import sqlite3
-c = sqlite3.connect('/data/vocabulary.db')
-print(c.execute('SELECT COUNT(*) FROM words').fetchone()[0])
-")"
-log_json pre_counts ok "users=$PRE_USERS words=$PRE_WORDS"
 
 # --- 1. ロールバック用に、稼働中コンテナが実際に使っているイメージIDを
 #        控える(:latestタグからではない。Fable指摘C2: :latestが他の
@@ -129,20 +149,10 @@ echo "--- 新イメージをビルド中(候補タグ、稼働中コンテナに
 EIGO_IMAGE="$CANDIDATE_IMAGE" docker compose -f "$COMPOSE_FILE" build
 log_json build ok "$CANDIDATE_IMAGE"
 
-# --- 3. デプロイ直前バックアップ(念のため、フェーズ0のスナップショットと別) -
-STAMP="$(date +%Y%m%d_%H%M%S)"
-docker exec -i "$CONTAINER" python3 -c "
-import sqlite3
-src = sqlite3.connect('/data/vocabulary.db')
-dst = sqlite3.connect('/data/vocabulary.predeploy-dbsplit-${STAMP}.db')
-src.backup(dst); dst.close(); src.close()
-"
-log_json backup ok "vocabulary.predeploy-dbsplit-${STAMP}.db"
-
 confirm "旧コンテナを停止して移行を実行します(ここからダウンタイム開始)。よろしいですか?" \
-  || { echo "中断しました(バックアップ・候補イメージはそのまま残します)。"; exit 1; }
+  || { echo "中断しました(候補イメージはそのまま残します)。"; exit 1; }
 
-# --- 4. 旧コンテナを停止(処理中リクエストに猶予・グレースフル) -------------
+# --- 3. 旧コンテナを停止(処理中リクエストに猶予・グレースフル) -------------
 echo "--- 旧コンテナを停止中(最大30秒の猶予) ---"
 docker compose -f "$COMPOSE_FILE" stop -t 30 "$CONTAINER" || true
 if container_running; then
@@ -155,6 +165,33 @@ if container_running; then
   exit 1
 fi
 log_json stop_old ok "graceful stop confirmed (timeout 30s)"
+
+# --- 4. デプロイ直前バックアップ + 件数サニティチェック用の基準値取得 ------
+# 2回目レビュー指摘M-1: 旧コンテナを完全に停止した「今」の静的な状態から
+# 取得する(確認プロンプト・ビルドを挟んだ数分前の値だと、その間の実際の
+# 新規登録等が「不一致」と誤判定され、届いたばかりのデータを持つ新環境を
+# 誤ってロールバックしてしまう恐れがあった)。旧コンテナは既に停止済みの
+# ため、候補イメージの使い捨てコンテナ経由で読む。
+STAMP="$(date +%Y%m%d_%H%M%S)"
+BACKUP_OUT="$(EIGO_IMAGE="$CANDIDATE_IMAGE" docker compose -f "$COMPOSE_FILE" \
+  run --rm --no-deps -T --name eigo-app-backup "$CONTAINER" python3 -c "
+import sqlite3
+src = sqlite3.connect('file:/data/vocabulary.db?mode=ro', uri=True)
+dst = sqlite3.connect('/data/vocabulary.predeploy-dbsplit-${STAMP}.db')
+src.backup(dst); dst.close(); src.close()
+print('ok')
+")"
+if [ "$BACKUP_OUT" != "ok" ]; then
+  log_json backup fatal "バックアップに失敗しました。旧コンテナを再起動します"
+  docker compose -f "$COMPOSE_FILE" up -d
+  exit 1
+fi
+log_json backup ok "vocabulary.predeploy-dbsplit-${STAMP}.db"
+
+PRE_COUNTS="$(count_users_words "/data/vocabulary.db")"
+PRE_USERS="$(echo "$PRE_COUNTS" | sed -n 1p)"
+PRE_WORDS="$(echo "$PRE_COUNTS" | sed -n 2p)"
+log_json pre_counts ok "users=$PRE_USERS words=$PRE_WORDS"
 
 # --- 5. 移行スクリプトを候補イメージの使い捨てコンテナで実行 ---------------
 # docker compose run(EIGO_IMAGE=候補タグ)で実行することで、本番サービス
@@ -169,10 +206,14 @@ then
   log_json migrate ok "検証OK"
 else
   log_json migrate error "移行スクリプトが失敗しました"
-  echo "--- 移行失敗。旧コンテナを再起動して復旧します ---"
+  echo "--- 移行失敗。旧イメージ・旧コンテナで復旧します ---"
   echo "  ※失敗時は移行スクリプトが新3ファイルを自動削除しますが、" >&2
   echo "    強制終了等の異常終了の場合は $DATA_DIR に残骸が残ることが" >&2
   echo "    あります。復旧後に確認してください。" >&2
+  # 2回目レビュー指摘M-2: ":latestは触っていないはず"という前提に頼らず、
+  # 明示的にprevへ再タグしてから起動する(他プロセスによる:latest書き換え
+  # に対する防御)。
+  docker tag "$PREV_IMAGE" "$IMAGE"
   docker compose -f "$COMPOSE_FILE" up -d
   for _ in $(seq 1 12); do sleep 5; health_ok && break; done
   if health_ok; then
@@ -199,10 +240,11 @@ done
 
 if [ "$OK" -eq 1 ]; then
   # ヘルスチェックはDBの中身を見ないため、実データの件数も突合する
-  # (Fable指摘M4)。
+  # (Fable指摘M4)。PREは手順4で旧コンテナ停止後の静的な状態から取得済み
+  # なので、ここでの比較は本来の移行が正しいかだけを見る(M-1対応)。
   POST_USERS="$(docker exec -i "$CONTAINER" python3 -c "
 import sqlite3
-c = sqlite3.connect('/data/core.db')
+c = sqlite3.connect('file:/data/core.db?mode=ro', uri=True)
 print(c.execute('SELECT COUNT(*) FROM users').fetchone()[0])
 " 2>/dev/null || echo "ERR")"
   POST_WORDS="$(docker exec -i "$CONTAINER" python3 -c "
@@ -232,6 +274,9 @@ if health_ok; then
   log_json rolled_back ok "旧イメージ+旧vocabulary.dbで復旧しました"
   echo "警告: 新3ファイル(core.db/content.db/logs.db)は残っています。原因調査後、" >&2
   echo "  問題なければ削除するか、再度このスクリプトを実行してください。" >&2
+  echo "警告: 停止後に届いた分の書き込みはこの新3ファイル側にしか無い" >&2
+  echo "  可能性があります(ロールバック=データ損失になり得る)。手動での" >&2
+  echo "  マージを検討してください。" >&2
   exit 1
 else
   log_json fatal fatal "ロールバックしても復旧しません。手動対応が必要です"

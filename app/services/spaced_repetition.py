@@ -299,6 +299,16 @@ def record_attempt(
         result = "correct" if correct else "wrong"
     if result not in _RESULTS:
         raise ValueError("result must be correct/vague/wrong")
+    # 2026-09-14 DB分割対応(Fable指摘L-1): words/phrasesはcontent.db、
+    # word_attempts/phrase_attempts等はcore.dbのため、ATTACH間の
+    # FOREIGN KEYが効かなくなり、存在しないitem_idを渡されても以前のように
+    # IntegrityErrorで弾かれず、無言で孤児行を作ってしまうようになった。
+    # ここで明示的に実在確認する(呼び出し元は既にValueErrorを7002エラーに
+    # 変換する仕組みを持つため、そこに乗せる)。
+    if not conn.execute(
+        f"SELECT 1 FROM {table} WHERE id = ?", (item_id,)
+    ).fetchone():
+        raise ValueError(f"{table} に id={item_id} が見つかりません")
 
     # 正答としてカウントするのは 'correct' のみ（うろ覚えは正答に含めない）。
     counting = 1 if result == "correct" else 0

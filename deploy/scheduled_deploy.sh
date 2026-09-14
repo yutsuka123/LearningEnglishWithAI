@@ -131,10 +131,18 @@ split_files = {
     "/data/logs.db": "/data/backup_logs_${STAMP}.db",
 }
 
-if os.path.exists(legacy):
-    ok = backup(legacy, "/data/backup_vocabulary_${STAMP}.db")
-elif all(os.path.exists(p) for p in split_files):
+# 2026-09-14 Fable指摘H-1(2回目レビュー)対応: 分割の切替スクリプトは
+# ロールバック用に旧vocabulary.dbを削除せず残す設計のため、切替完了後も
+# os.path.exists(legacy)はTrueのまま。分割済み(3ファイル揃っている)かを
+# 先に判定しないと、legacy判定が常に勝ってしまい、切替後は永遠に古い
+# (二度と変化しない)vocabulary.dbだけをバックアップし続け、実際に動いて
+# いるcore.db側が一度もバックアップされない欠陥だった(=安全網が無言で
+# 無効化される、C4で直したはずの問題の再発)。分割後は3ファイルの方を
+# 優先してバックアップする。
+if all(os.path.exists(p) for p in split_files):
     ok = all(backup(src, dst) for src, dst in split_files.items())
+elif os.path.exists(legacy):
+    ok = backup(legacy, "/data/backup_vocabulary_${STAMP}.db")
 else:
     print("ERROR: vocabulary.dbもcore/content/logs.db一式も見つかりません")
     ok = False

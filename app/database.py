@@ -1248,20 +1248,43 @@ def _check_no_duplicate_table_names(conn: sqlite3.Connection) -> None:
 
 
 def _guard_against_premature_split_startup() -> None:
-    """2026-09-14 DB分割ガード(Fable指摘C3): 新スキーマ対応コードが
-    デプロイされたのに移行スクリプト(scripts/migrate_split_db_2026_09_14.py)
-    がまだ実行されていない場合、`get_connection()`が(sqlite3.connect()の
-    仕様により)黙って空のcore.db/content.db/logs.dbを新規作成してしまい、
-    ヘルスチェックはDBの中身を見ないため「全ユーザー・決済履歴が消えた
-    状態」がそのまま健全起動と判定されてしまう(9/13事故と同種の危険、
-    Fableレビューで指摘)。旧`vocabulary.db`が存在するのに新`core.db`が
-    無い組み合わせだけを検出し、明示的に`ALLOW_FRESH_DB=1`が設定されて
-    いない限り起動を拒否する(sqlite3.connect()を一切呼ぶ前に、ファイル
-    存在チェックだけで判定する必要がある点に注意)。"""
+    """2026-09-14 DB分割ガード(Fable指摘C3、2回目レビューM-3で部分状態も
+    追加): 新スキーマ対応コードがデプロイされたのに移行スクリプト
+    (scripts/migrate_split_db_2026_09_14.py)がまだ実行されていない場合、
+    `get_connection()`が(sqlite3.connect()の仕様により)黙って空の
+    core.db/content.db/logs.dbを新規作成してしまい、ヘルスチェックは
+    DBの中身を見ないため「全ユーザー・決済履歴が消えた状態」がそのまま
+    健全起動と判定されてしまう(9/13事故と同種の危険)。
+    さらに、3ファイルの一部だけが存在する「中途半端な状態」(例:
+    core.dbはあるがcontent.db/logs.dbが無い)も同様に危険と判明した
+    (2回目Fableレビュー実機テスト: この状態で起動すると、無いcontent.db
+    に対して`_seed_words`が既定のシード単語(399語)を黙って新規作成し、
+    既存ユーザーの学習記録(user_word_progress等)が本来指していた語とは
+    別の語を指してしまう=進捗が入れ替わって見える)。したがって、
+    3ファイルは「揃って存在」か「1つも無い(真の新規環境)」のどちらか
+    以外は拒否する。旧`vocabulary.db`が存在するのに3ファイルが揃って
+    いない場合も同様に拒否する。いずれも明示的に`ALLOW_FRESH_DB=1`が
+    設定されていない限り拒否する(sqlite3.connect()を一切呼ぶ前に、
+    ファイル存在チェックだけで判定する必要がある点に注意)。"""
+    if os.getenv("ALLOW_FRESH_DB") == "1":
+        return
     legacy_db = paths.data_dir / "vocabulary.db"
-    if legacy_db.exists() and not paths.db_file.exists():
-        if os.getenv("ALLOW_FRESH_DB") == "1":
-            return
+    split_files = [paths.db_file, paths.content_db_file, paths.logs_db_file]
+    existing_split = [p for p in split_files if p.exists()]
+
+    if 0 < len(existing_split) < len(split_files):
+        missing = [p for p in split_files if not p.exists()]
+        raise RuntimeError(
+            "起動を拒否しました: DB分割の3ファイルの一部だけが存在します"
+            f"(存在: {existing_split} / 不在: {missing})。中途半端な状態"
+            "での起動は、無いファイル側が黙って空スキーマで新規作成され、"
+            "既存ユーザーの学習記録が別の語を指してしまう等の重大な不整合"
+            "を招きます。移行のやり直しか手動復旧が必要です。本当に新規"
+            "環境として始めたい場合のみ環境変数 ALLOW_FRESH_DB=1 を"
+            "設定してください。"
+        )
+
+    if legacy_db.exists() and not existing_split:
         raise RuntimeError(
             f"起動を拒否しました: {legacy_db} は存在しますが "
             f"{paths.db_file} がありません。DB分割の移行スクリプトが "

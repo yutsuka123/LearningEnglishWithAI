@@ -88,6 +88,7 @@ KNOWN_DROPPED_COLUMNS = {
 # 見ないため、別立てで検証する必要がある)。
 DEREFERENCED_COLUMNS = [
     ("word_attempts", "word_id", "words"),
+    ("phrase_attempts", "phrase_id", "phrases"),
     ("deck_words", "word_id", "words"),
     ("deck_phrases", "phrase_id", "phrases"),
     ("user_word_progress", "word_id", "words"),
@@ -406,6 +407,21 @@ def main() -> int:
 
     if not source.exists():
         print(f"移行元が見つかりません: {source}")
+        return 1
+
+    # --- ガード0: sourceが出力ファイル自身を指していないか
+    #     (2回目Fableレビュー指摘L-3: --source content.db等を誤指定すると、
+    #     baseline計算が想定外のテーブル欠如で例外になるまで気付けなかった) -
+    resolved_source = source.resolve()
+    output_paths = {
+        p.resolve() for p in
+        (paths.db_file, paths.content_db_file, paths.logs_db_file)
+    }
+    if resolved_source in output_paths:
+        print(
+            f"エラー: --source ({source}) が出力ファイル自身を指しています。"
+            "分割前の単一vocabulary.dbを指定してください。"
+        )
         return 1
 
     # --- ガード1: 出力ファイルが既に存在する場合は拒否(Fable指摘C1) -------
