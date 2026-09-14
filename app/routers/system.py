@@ -1923,29 +1923,12 @@ def admin_usage_analytics(
 # 目安表示にのみ使う。強制的な上限ではない）。
 _DISK_BUDGET_MB = 1024
 
-# DB内のテーブルを用途別にグルーピングして表示する（管理画面の
-# 「内容別使用量」用）。dbstat仮想テーブルが使えるSQLiteビルドでのみ
-# 内訳を出せる（無ければテーブル合計サイズのみ返す）。
-_TABLE_GROUPS = {
-    "shared_content": [
-        "words", "phrases", "materials", "categories", "listening_topics",
-        "audio_blobs", "word_domain_tags",
-    ],
-    "user_data": [
-        "users", "user_settings", "user_settings_backups",
-        "user_word_progress", "user_phrase_progress",
-        "user_material_progress", "user_listening_progress",
-        "user_category_progress",
-        "decks", "deck_words", "deck_progress",
-        "phrase_decks", "deck_phrases", "phrase_deck_progress",
-    ],
-    "logs_history": [
-        "usage_events", "ai_usage", "login_log", "balance_ledger",
-        "landing_visits", "conversation_log", "phrase_attempts",
-        "word_attempts", "study_sessions", "inquiries",
-        "charge_key_attempts", "base_order_actions",
-    ],
-}
+# 2026-09-14 DB分割前は、DB内のテーブルを用途別にグルーピングしてdbstat
+# 仮想テーブルで内訳を出していた(dbstatはATTACH先を見ないため分割後は
+# mainのテーブルしか見えなくなり、この分類自体も意味を失った)。分割後は
+# ファイルが既にcontent/core/logsに分かれているため、`admin_disk_usage`
+# はファイルサイズを直接見るだけで同じ目的(内容別の使用量把握)を
+# より単純かつ確実に果たせる(dbstat拡張の有無にも依存しない)。
 
 
 # コスト管理レポートの粗利率アラート閾値(2026-09-06新設)。0%未満=赤字
@@ -2164,30 +2147,24 @@ def admin_disk_usage():
     )
     backups_dir = paths.data_dir / "backups"
     backups_bytes = _dir_size_bytes(backups_dir)
-    db_file_bytes = (
-        paths.db_file.stat().st_size if paths.db_file.exists() else 0
-    )
 
-    group_mb: dict[str, float] = {}
-    dbstat_available = True
-    with db() as conn:
-        try:
-            sizes = dict(conn.execute(
-                "SELECT name, SUM(pgsize) FROM dbstat GROUP BY name"
-            ).fetchall())
-        except Exception:
-            dbstat_available = False
-            sizes = {}
-        if dbstat_available:
-            grouped_tables: set[str] = set()
-            for group, tables in _TABLE_GROUPS.items():
-                total = sum(sizes.get(t, 0) for t in tables)
-                group_mb[group] = round(total / 1024 / 1024, 2)
-                grouped_tables.update(tables)
-            other_bytes = sum(
-                v for k, v in sizes.items() if k not in grouped_tables
-            )
-            group_mb["other"] = round(other_bytes / 1024 / 1024, 2)
+    # 2026-09-14 DB分割後は、ファイルが既にcontent(語彙等)/core(users・
+    # 決済・単語帳・進捗等)/logs(アクセスログ等)に分かれているため、
+    # ファイルサイズを直接見るだけで内容別の使用量が分かる
+    # (dbstat仮想テーブル+テーブルグルーピングは不要になった)。
+    file_sizes = {
+        "content": paths.content_db_file,
+        "core": paths.db_file,
+        "logs": paths.logs_db_file,
+    }
+    group_mb = {
+        label: round(
+            (p.stat().st_size if p.exists() else 0) / 1024 / 1024, 2)
+        for label, p in file_sizes.items()
+    }
+    db_file_bytes = sum(
+        p.stat().st_size for p in file_sizes.values() if p.exists()
+    )
 
     app_log_mb = round(app_log_bytes / 1024 / 1024, 2)
     backups_mb = round(backups_bytes / 1024 / 1024, 2)
@@ -2201,7 +2178,7 @@ def admin_disk_usage():
         "tracked_total_mb": tracked_total_mb,
         "db_file_total_mb": db_total_mb,
         "db_breakdown_mb": group_mb,
-        "dbstat_available": dbstat_available,
+        "dbstat_available": True,
         "note": "Caddyのアクセスログは別コンテナ上にあるためここには含み"
                 "ません（件数等は「ログ」タブを参照）。DB本体(音声等の"
                 "共有コンテンツ含む)は予算の対象外の目安表示です。",

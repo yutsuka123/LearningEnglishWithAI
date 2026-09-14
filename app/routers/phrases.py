@@ -361,6 +361,16 @@ def delete_phrase(phrase_id: int):
                 "7004", "このフレーズには学習記録があるため削除できません。"
                 "一覧から除外したい場合は、シーンを「禁止」で始まる名前に"
                 "変更してください。")
+        # 2026-09-14 DB分割: phrasesはcontent.db、以下はcore.dbのため、
+        # SQLiteのFOREIGN KEYがATTACH間を跨げず自動カスケードされない
+        # (vocabulary.pyのdelete_wordと同じ理由)。明示的に道連れ削除する。
+        conn.execute(
+            "DELETE FROM phrase_attempts WHERE phrase_id = ?", (phrase_id,))
+        conn.execute(
+            "DELETE FROM deck_phrases WHERE phrase_id = ?", (phrase_id,))
+        conn.execute(
+            "DELETE FROM user_phrase_progress WHERE phrase_id = ?",
+            (phrase_id,))
         cur = conn.execute("DELETE FROM phrases WHERE id = ?", (phrase_id,))
         if cur.rowcount == 0:
             raise errors.http_error("7001", "フレーズが見つかりません")
