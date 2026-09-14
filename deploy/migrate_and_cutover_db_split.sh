@@ -173,28 +173,60 @@ log_json stop_old ok "graceful stop confirmed (timeout 30s)"
 # 誤ってロールバックしてしまう恐れがあった)。旧コンテナは既に停止済みの
 # ため、候補イメージの使い捨てコンテナ経由で読む。
 STAMP="$(date +%Y%m%d_%H%M%S)"
-BACKUP_OUT="$(EIGO_IMAGE="$CANDIDATE_IMAGE" docker compose -f "$COMPOSE_FILE" \
+# 2026-09-15 4回目Fableレビュー(試験仕様書v2レビュー中に確定)指摘の
+# 重大-1: `set -euo pipefail`下では `VAR="$(cmd)"` の代入文自体がcmdの
+# 非ゼロ終了で即座にスクリプトを終了させ、直後のif分岐(復旧処理)へは
+# 到達しない(bashの既知の挙動・実機再現済み)。`if ! VAR="$(cmd)"; then`
+# の形にすることで、失敗をset -eに奪われず自前の分岐で拾えるようにする。
+if ! BACKUP_OUT="$(EIGO_IMAGE="$CANDIDATE_IMAGE" docker compose -f "$COMPOSE_FILE" \
   run --rm --no-deps -T --name eigo-app-backup "$CONTAINER" python3 -c "
 import sqlite3
 src = sqlite3.connect('file:/data/vocabulary.db?mode=ro', uri=True)
 dst = sqlite3.connect('/data/vocabulary.predeploy-dbsplit-${STAMP}.db')
 src.backup(dst); dst.close(); src.close()
 print('ok')
-")"
-if [ "$BACKUP_OUT" != "ok" ]; then
+")" || [ "$BACKUP_OUT" != "ok" ]; then
   log_json backup fatal "バックアップに失敗しました。旧コンテナを再起動します"
   # 3回目レビュー指摘M-5: 他の復旧パス(移行失敗時・ヘルスチェック失敗時)
   # と同様、":latestは触っていないはず"に頼らず明示的にprevへ再タグして
-  # から起動する。
-  docker tag "$PREV_IMAGE" "$IMAGE"
+  # から起動する。ただしPREV_IMAGEが存在しない場合(手順1で取得失敗し
+  # confirmで続行した場合)はdocker tag自体がset -eで即死し、この復旧
+  # ブロックにすら入れなくなるため、存在確認してから行う(高-1対応)。
+  if docker image inspect "$PREV_IMAGE" >/dev/null 2>&1; then
+    docker tag "$PREV_IMAGE" "$IMAGE"
+  else
+    log_json backup fatal "$PREV_IMAGE が存在しないため再タグをスキップします(手動確認要)"
+  fi
   docker compose -f "$COMPOSE_FILE" up -d
   exit 1
 fi
 log_json backup ok "vocabulary.predeploy-dbsplit-${STAMP}.db"
 
-PRE_COUNTS="$(count_users_words "/data/vocabulary.db")"
+# 同じ理由(重大-1)で、件数取得の失敗も明示的に拾って復旧する
+# (旧実装はここに復旧処理自体が無く、失敗時は旧コンテナ停止のまま
+# 無人ダウンタイムになっていた)。
+if ! PRE_COUNTS="$(count_users_words "/data/vocabulary.db")"; then
+  log_json pre_counts fatal "件数取得に失敗しました。旧コンテナを再起動します"
+  if docker image inspect "$PREV_IMAGE" >/dev/null 2>&1; then
+    docker tag "$PREV_IMAGE" "$IMAGE"
+  else
+    log_json pre_counts fatal "$PREV_IMAGE が存在しないため再タグをスキップします(手動確認要)"
+  fi
+  docker compose -f "$COMPOSE_FILE" up -d
+  exit 1
+fi
 PRE_USERS="$(echo "$PRE_COUNTS" | sed -n 1p)"
 PRE_WORDS="$(echo "$PRE_COUNTS" | sed -n 2p)"
+if [ -z "$PRE_USERS" ] || [ -z "$PRE_WORDS" ]; then
+  log_json pre_counts fatal "件数の解析に失敗しました(出力形式不正)。旧コンテナを再起動します"
+  if docker image inspect "$PREV_IMAGE" >/dev/null 2>&1; then
+    docker tag "$PREV_IMAGE" "$IMAGE"
+  else
+    log_json pre_counts fatal "$PREV_IMAGE が存在しないため再タグをスキップします(手動確認要)"
+  fi
+  docker compose -f "$COMPOSE_FILE" up -d
+  exit 1
+fi
 log_json pre_counts ok "users=$PRE_USERS words=$PRE_WORDS"
 
 # --- 5. 移行スクリプトを候補イメージの使い捨てコンテナで実行 ---------------
@@ -216,8 +248,13 @@ else
   echo "    あります。復旧後に確認してください。" >&2
   # 2回目レビュー指摘M-2: ":latestは触っていないはず"という前提に頼らず、
   # 明示的にprevへ再タグしてから起動する(他プロセスによる:latest書き換え
-  # に対する防御)。
-  docker tag "$PREV_IMAGE" "$IMAGE"
+  # に対する防御)。PREV_IMAGE不在時はdocker tag自体がset -eで即死し復旧
+  # 不能になるため、存在確認してから行う(4回目レビュー指摘 高-1対応)。
+  if docker image inspect "$PREV_IMAGE" >/dev/null 2>&1; then
+    docker tag "$PREV_IMAGE" "$IMAGE"
+  else
+    log_json recover fatal "$PREV_IMAGE が存在しないため再タグをスキップします(手動確認要)"
+  fi
   docker compose -f "$COMPOSE_FILE" up -d
   for _ in $(seq 1 12); do sleep 5; health_ok && break; done
   if health_ok; then
@@ -271,7 +308,15 @@ fi
 
 # --- 8. ヘルスチェック失敗 or 件数不一致 → 旧イメージへロールバック ---------
 log_json error error "ヘルスチェック/件数検証に失敗したためロールバックします"
-docker tag "$PREV_IMAGE" "$IMAGE"
+# PREV_IMAGE不在時はdocker tag自体がset -eで即死し、docker compose up -d
+# すら試みられず完全停止のまま終わる恐れがあるため、存在確認してから行う
+# (4回目レビュー指摘 高-1対応)。不在でもup -dは試みる(現IMAGEでの
+# 再起動を最後の望みとする)。
+if docker image inspect "$PREV_IMAGE" >/dev/null 2>&1; then
+  docker tag "$PREV_IMAGE" "$IMAGE"
+else
+  log_json error fatal "$PREV_IMAGE が存在しないため再タグをスキップします(手動確認要)"
+fi
 docker compose -f "$COMPOSE_FILE" up -d
 sleep 10
 if health_ok; then
