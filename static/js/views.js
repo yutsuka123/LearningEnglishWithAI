@@ -1446,19 +1446,24 @@ function runFlashcards(stage, initialQueue, opts) {
 export async function flashcard(root) {
   // 3本とも互いに依存が無いため並列実行する(2026-09-07・以前は直列3回で
   // 表示までの待ち時間が積み上がっていた)。
-  const [facets, hideMasteredDefault, deckList] = await Promise.all([
+  const [facets, us, deckList] = await Promise.all([
     api.get(
       "/api/words/facets" + (showBanned() ? "?include_banned=true" : "")),
     // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定は
-    // オフ(=含む)として扱う。
+    // オフ(=含む)・既定フィルターなしとして扱う。
     api.get("/api/system/user-settings")
-      .catch(() => ({ settings: {} }))
-      .then((r) => !!r.settings?.hide_mastered),
+      .catch(() => ({ settings: {} })).then((r) => r.settings || {}),
     // 自分の単語帳から選んでフラッシュする(2026-08-18・ユーザー要望:「作った
     // 単語帳のフラッシュをやることが多い」)。未ログイン/単語帳0件では
     // セレクタ自体を出さない。
     api.get("/api/decks").catch(() => []),
   ]);
+  const hideMasteredDefault = !!us.hide_mastered;
+  // 設定の既定フィルター(B10)を英単語一覧と同じ意味でフラッシュにも適用
+  // (2026-09-14・TODO「既定フィルター拡張」対応)。
+  const dfw = us.default_word_filters || {};
+  const dfwActive = !!(dfw.category || dfw.level_min || dfw.level_max
+    || dfw.mastered);
   const domainGroups = facets.domain_groups || {};
   const deckOpts = ['<option value="">-- 単語帳を使わない(分野・レベルで選ぶ) --</option>']
     .concat(deckList.map((d) =>
@@ -1480,6 +1485,8 @@ export async function flashcard(root) {
       "単語カードを次々にめくって答え合わせする高速学習モードです。" +
       "分野・レベル・自分の単語帳から出題範囲を選べます。ログインすると" +
       "習熟度が記録され、覚えた語の出題を抑制できます。")}</h1>
+    ${dfwActive ? `<p class="muted">⚙️ 設定の既定フィルターを適用中です。
+      この画面でその場変更もできます。</p>` : ""}
     <div class="card" id="fcSetup">
       <p class="muted">単語帳をどんどんめくる高速学習。カードをタップで答え、
         スワイプ（または下のボタン）で採点します。</p>
@@ -1542,6 +1549,13 @@ export async function flashcard(root) {
   // 一覧画面と同じinitCheckDropdownを流用)。
   const selectedDomains = new Set(
     (localStorage.getItem("fc_dom") || "").split(",").filter(Boolean));
+  if (dfw.category) {
+    // 既定フィルターの大分類は、クイズAPIがcategoryを受け付けないため
+    // 配下の分野を全て選択した状態に展開する(前回の記憶より優先)。
+    selectedDomains.clear();
+    (domainGroups[dfw.category] || []).forEach((d) => selectedDomains.add(d));
+    setVal("#fcCategory", dfw.category);
+  }
   const fcDomainDropdown = initCheckDropdown(root, "fcDomainBtn",
     "fcDomainPanel", () => {
       const cat = root.querySelector("#fcCategory").value;
@@ -1560,14 +1574,16 @@ export async function flashcard(root) {
     fcDeckSel.value = savedDeck;
     if (fcDeckSel.value !== savedDeck) fcDeckSel.value = "";
   }
-  setVal("#fcLvMin", localStorage.getItem("fc_lvmin") || "");
-  setVal("#fcLvMax", localStorage.getItem("fc_lvmax") || "");
+  // 既定フィルターのレベル/覚えた状態も、localStorageの過去の選択より優先
+  // する(下記マスタード済み判定と同じ考え方)。
+  setVal("#fcLvMin", dfw.level_min || localStorage.getItem("fc_lvmin") || "");
+  setVal("#fcLvMax", dfw.level_max || localStorage.getItem("fc_lvmax") || "");
   // 「詳細設定」がONなら毎回「隠す」を既定にする(localStorageの過去の選択
   // より優先。localStorageには開始のたび""でも上書き保存されるため、単純に
   // 「未設定なら」という判定だと2回目以降は永遠に効かなくなってしまう)。
   // その場でドロップダウンを変えれば、そのセッション限定で一時的に閲覧可能。
-  setVal("#fcMastered", hideMasteredDefault
-    ? "hide" : (localStorage.getItem("fc_mastered") || ""));
+  setVal("#fcMastered", dfw.mastered || (hideMasteredDefault ? "hide" : "")
+    || (localStorage.getItem("fc_mastered") || ""));
   setVal("#fcSize", localStorage.getItem("fc_size") || "50");
   setVal("#fcSpeed", localStorage.getItem("fc_speed") || "std");
   setVal("#fcVoice", localStorage.getItem("fc_voice")
@@ -1629,20 +1645,25 @@ export async function flashcard(root) {
 export async function flashPhrase(root) {
   // 4本とも互いに依存が無いため並列実行する(2026-09-07・以前は末尾2本が
   // 直列だった)。
-  const [sceneFacets, levelFacets, hideMasteredDefault, deckList] =
+  const [sceneFacets, levelFacets, us, deckList] =
     await Promise.all([
       api.get(
         "/api/phrases/scenes" + (showBanned() ? "?include_banned=true" : "")),
       api.get("/api/phrases/facets"),
       // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定は
-      // オフ(=含む)として扱う。
+      // オフ(=含む)・既定フィルターなしとして扱う。
       api.get("/api/system/user-settings")
-        .catch(() => ({ settings: {} }))
-        .then((r) => !!r.settings?.hide_mastered),
+        .catch(() => ({ settings: {} })).then((r) => r.settings || {}),
       // 自分のフレーズ帳から選んでフラッシュする(2026-08-18・フラッシュ単語と
       // 同じ理由)。未ログイン/フレーズ帳0件ではセレクタ自体を出さない。
       api.get("/api/phrase-decks").catch(() => []),
     ]);
+  const hideMasteredDefault = !!us.hide_mastered;
+  // 設定の既定フィルター(B10)をフレーズ一覧と同じ意味でフラッシュフレーズ
+  // にも適用(2026-09-14・TODO「既定フィルター拡張」対応)。
+  const dfp = us.default_phrase_filters || {};
+  const dfpActive = !!(dfp.category || dfp.level_min || dfp.level_max
+    || dfp.mastered);
   const deckOpts = ['<option value="">-- フレーズ帳を使わない(シーン・レベルで選ぶ) --</option>']
     .concat(deckList.map((d) =>
       `<option value="${d.id}">${escapeHtml(d.name)}（${d.total}件）</option>`))
@@ -1663,6 +1684,8 @@ export async function flashPhrase(root) {
     <h1>🃏 フラッシュフレーズ ${infoIcon("help-flashphrase",
       "実用フレーズをカード形式で次々に答え合わせする高速学習モードです。" +
       "シーン・レベル・自分のフレーズ帳から出題範囲を選べます。")}</h1>
+    ${dfpActive ? `<p class="muted">⚙️ 設定の既定フィルターを適用中です。
+      この画面でその場変更もできます。</p>` : ""}
     <div class="card" id="fpSetup">
       <p class="muted">フレーズ帳をどんどんめくる高速学習。カードをタップで答え、
         スワイプ（または下のボタン）で採点します。</p>
@@ -1723,6 +1746,13 @@ export async function flashPhrase(root) {
   // シーン(複数選択可・大分類カスケード)。flashcard()の分野と同じ設計。
   const selectedScenes = new Set(
     (localStorage.getItem("fp_scene") || "").split(",").filter(Boolean));
+  if (dfp.category) {
+    // 既定フィルターの大分類は、クイズAPIがcategoryを受け付けないため
+    // 配下のシーンを全て選択した状態に展開する(前回の記憶より優先)。
+    selectedScenes.clear();
+    (sceneGroups[dfp.category] || []).forEach((s) => selectedScenes.add(s));
+    setVal("#fpCategory", dfp.category);
+  }
   const fpSceneDropdown = initCheckDropdown(root, "fpSceneBtn",
     "fpScenePanel", () => {
       const cat = root.querySelector("#fpCategory").value;
@@ -1741,11 +1771,13 @@ export async function flashPhrase(root) {
     fpDeckSel.value = savedDeck;
     if (fpDeckSel.value !== savedDeck) fpDeckSel.value = "";
   }
-  setVal("#fpLvMin", localStorage.getItem("fp_lvmin") || "");
-  setVal("#fpLvMax", localStorage.getItem("fp_lvmax") || "");
+  // 既定フィルターのレベル/覚えた状態も、localStorageの過去の選択より優先
+  // する(flashcard()と同じ考え方)。
+  setVal("#fpLvMin", dfp.level_min || localStorage.getItem("fp_lvmin") || "");
+  setVal("#fpLvMax", dfp.level_max || localStorage.getItem("fp_lvmax") || "");
   // 「詳細設定」がONなら毎回「隠す」を既定にする(理由はflashcard()と同じ)。
-  setVal("#fpMastered", hideMasteredDefault
-    ? "hide" : (localStorage.getItem("fp_mastered") || ""));
+  setVal("#fpMastered", dfp.mastered || (hideMasteredDefault ? "hide" : "")
+    || (localStorage.getItem("fp_mastered") || ""));
   setVal("#fpSize", localStorage.getItem("fp_size") || "50");
   setVal("#fpSpeed", localStorage.getItem("fp_speed") || "std");
   setVal("#fpVoice", localStorage.getItem("fp_voice")
@@ -5826,11 +5858,13 @@ export async function admin(root) {
       const pct = Math.min(
         100, Math.round(res.tracked_total_mb / res.budget_mb * 100));
       const g = res.db_breakdown_mb || {};
+      // 2026-09-14 DB分割後はファイルがそのままcontent/core/logsに
+      // 分かれているため、キーもそれに合わせている(旧shared_content/
+      // user_data/logs_history/otherから変更)。
       const groupLabel = {
-        shared_content: "共有コンテンツ(単語/フレーズ/音声等)",
-        user_data: "ユーザーデータ(設定/単語帳/進捗等)",
-        logs_history: "ログ・履歴(usage_events/ai_usage等)",
-        other: "その他",
+        content: "コンテンツ(単語/フレーズ/音声等)",
+        core: "コア(ユーザー/決済/単語帳/進捗等)",
+        logs: "ログ(アクセス/ai_usage等)",
       };
       wrap.innerHTML = `
         <p><b>${res.tracked_total_mb}MB</b> / ${res.budget_mb}MB

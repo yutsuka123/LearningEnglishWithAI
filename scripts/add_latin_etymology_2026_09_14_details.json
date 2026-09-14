@@ -1,0 +1,2147 @@
+[
+  {
+    "english": "salary",
+    "detail": {
+      "pronunciation": "/ˈsæləri/",
+      "pos": "名詞",
+      "meanings": [
+        "雇用主から従業員に定期的に支払われる給与、俸給"
+      ],
+      "examples": [
+        {
+          "en": "She negotiated a higher salary before accepting the job offer.",
+          "ja": "彼女はその仕事のオファーを受ける前に、より高い給与を交渉した。"
+        },
+        {
+          "en": "His salary increases every year based on his performance review.",
+          "ja": "彼の給与は、人事評価に基づいて毎年上がる。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "salaried",
+          "pos": "形容詞",
+          "ja": "給与制の、月給の"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "wage",
+          "note": "時給・日給など労働時間に応じた賃金を指すことが多く、salaryより不安定な支払いを連想させる"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のsalarium(手当、俸給)に由来するとされる。salariumはさらにsal(塩)に関連する語で、古代ローマの兵士に塩を購入するために支給された手当が語源だと伝統的に説明されている。塩は当時貴重な保存料・調味料であり、給料そのものを指す言葉が「塩代」に由来するという説は、現在でも多くの辞書で紹介される定番の語源トリビアである。",
+      "trivia": "英語には同じsal(塩)から生まれた単語が他にもある。sausage(ソーセージ)は「塩漬けにした」を意味するsalsusに由来し、salad(サラダ)も元々は塩で味付けした野菜を指すherba salataから来ている。「塩」は古代の食文化・経済の両方でそれほど重要な存在だった。",
+      "explanation": "ビジネスやTOEICの文脈では、雇用条件や求人情報を語る際に頻出する基本語。annual salary(年俸)、starting salary(初任給)、salary increase(昇給)のようにセットで使われることが多い。"
+    }
+  },
+  {
+    "english": "sausage",
+    "detail": {
+      "pronunciation": "/ˈsɔːsɪdʒ/",
+      "pos": "名詞",
+      "meanings": [
+        "刻んだ、または挽いた肉を香辛料で味付けし、腸などの皮に詰めた食品"
+      ],
+      "examples": [
+        {
+          "en": "The chef grilled sausages for the outdoor barbecue party.",
+          "ja": "シェフは屋外のバーベキューパーティーのためにソーセージを焼いた。"
+        },
+        {
+          "en": "This local butcher shop is famous for its homemade sausages.",
+          "ja": "この地元の精肉店は自家製ソーセージで有名だ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "wurst",
+          "note": "ドイツ風のソーセージを指す語として英語にも取り入れられている"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のsalsus(塩漬けにされた)に由来する。動詞sallere(塩漬けにする)の過去分詞形で、俗ラテン語のsalsicia(塩味を付けた食品)を経て、古フランス語を通じて英語に入った。もともと肉を長期保存するために塩漬けにした加工食品を指す言葉であり、「ソーセージ」という単語自体に「塩」の記憶が刻まれている。",
+      "trivia": "salary(給料)やsalad(サラダ)と同じくラテン語のsal(塩)を語源に持つ仲間の単語。冷蔵技術のなかった時代、肉を保存する手段としての塩漬けが、日常語彙にこれほど多くの痕跡を残しているのは興味深い。",
+      "explanation": "日常会話や料理・食文化の話題で頻出する基本的な食品名。TOEICのリスニングでもカフェやスーパーの場面などで登場することがある。"
+    }
+  },
+  {
+    "english": "envy",
+    "detail": {
+      "pronunciation": "/ˈenvi/",
+      "pos": "名詞",
+      "meanings": [
+        "他人の持つものや才能をうらやましく思う気持ち"
+      ],
+      "examples": [
+        {
+          "en": "She couldn't hide her envy when her colleague got the promotion instead of her.",
+          "ja": "同僚が自分の代わりに昇進したとき、彼女はうらやましさを隠せなかった。"
+        },
+        {
+          "en": "His new car was the envy of the entire neighborhood.",
+          "ja": "彼の新しい車は、近所中の羨望の的だった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "envious",
+          "pos": "形容詞",
+          "ja": "うらやましく思う、ねたんでいる"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "jealousy",
+          "note": "自分の持っているものを失う不安を伴う場合に使われることが多い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "admiration",
+          "note": "素直な称賛"
+        }
+      ],
+      "origin": "ラテン語のinvidia(ねたみ、悪意)に由来し、動詞invidere(悪意を持って見る)から派生している。in-(〜に対して)とvidere(見る)が組み合わさった語で、文字通りには「(邪悪な視線で)にらみつける」という意味だった。他人の幸運をにらみつけるように見つめる、という視覚的なイメージが、そのまま「うらやむ」という感情を表す語になった。",
+      "trivia": "同じvidere(見る)を語源に持つ単語には、visa(確認済みの書類)やprovide(先を見越して備える)、evident(はっきりと見える、明白な)などがある。「見る」という単純な動作が、感情から法律文書までさまざまな概念に枝分かれしている好例である。",
+      "explanation": "他人への羨望を表す基本的な名詞・動詞。be the envy of ~(〜の羨望の的である)という表現もよく使われる。"
+    }
+  },
+  {
+    "english": "visa",
+    "detail": {
+      "pronunciation": "/ˈviːzə/",
+      "pos": "名詞",
+      "meanings": [
+        "外国への入国・滞在を許可する公的な証明、査証"
+      ],
+      "examples": [
+        {
+          "en": "You need a visa to work legally in this country.",
+          "ja": "この国で合法的に働くには、ビザが必要だ。"
+        },
+        {
+          "en": "Her visa application was delayed due to a paperwork error.",
+          "ja": "彼女のビザ申請は、書類の不備のせいで遅れた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "permit",
+          "note": "より一般的な「許可証」を指す語で、渡航に限らず使われる"
+        }
+      ],
+      "antonyms": [],
+      "origin": "近代ラテン語のcharta visa(確認済みの書類)に由来する。videre(見る)の女性形過去分詞visaが名詞化した語で、文字通りには「(係官によって)見られ、確認された(書類)」という意味である。役人がパスポートなどの書類を実際に「見て」確認し、正式なものだと認めたしるしとして押される証明が、そのまま「ビザ」という単語になった。",
+      "trivia": "同じvidere(見る)から生まれた単語には、envy(悪意を持って見る)やprovide(先を見越して備える)などがある。ビザという事務的な単語の中にも、「見る」という古代からの基本動詞が静かに息づいている。",
+      "explanation": "海外渡航や就労に関する場面で頻出する基本語彙。TOEICの海外出張・移住関連の話題でもよく登場する。"
+    }
+  },
+  {
+    "english": "despise",
+    "detail": {
+      "pronunciation": "/dɪˈspaɪz/",
+      "pos": "動詞",
+      "meanings": [
+        "強い軽蔑の気持ちを持って見下すように嫌う"
+      ],
+      "examples": [
+        {
+          "en": "He despised dishonesty in any form, especially in business dealings.",
+          "ja": "彼は、特にビジネス上の取引における不正直さを、どんな形であれ軽蔑していた。"
+        },
+        {
+          "en": "She despised the way he took credit for other people's work.",
+          "ja": "彼女は、彼が他人の功績を自分のものにするやり方を軽蔑していた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "despicable",
+          "pos": "形容詞",
+          "ja": "卑劣な、軽蔑すべき"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "scorn",
+          "note": "より公然と、あからさまに軽蔑を示すというニュアンス"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "admire",
+          "note": "称賛する"
+        }
+      ],
+      "origin": "ラテン語のdespicere(見下ろす)に由来する。de-(下へ)とspecere(見る)が組み合わさった語で、文字通りには「上から下を見下ろす」という意味だった。物理的に「見下ろす」という姿勢が、そのまま「相手を格下だと見なして軽蔑する」という心理的な意味に転じている。",
+      "trivia": "同じspecere(見る)を語源とする単語には、respect(尊敬する、元は「もう一度見る、見直す」)やsuspect(疑う、元は「下からこっそり見る」)がある。despiseが「見下ろす」であるのに対し、respectは「もう一度きちんと見る」であり、この2つは正反対の態度を表す対の関係にある。",
+      "explanation": "強い嫌悪や軽蔑を表す、やや書き言葉的で感情の強い動詞。日常会話ではhateやdislikeがより一般的に使われる。"
+    }
+  },
+  {
+    "english": "insult",
+    "detail": {
+      "pronunciation": "/ɪnˈsʌlt/",
+      "pos": "動詞",
+      "meanings": [
+        "(人を)侮辱する、無礼な言動で傷つける"
+      ],
+      "examples": [
+        {
+          "en": "He didn't mean to insult his colleague, but his comment came across as rude.",
+          "ja": "彼は同僚を侮辱するつもりはなかったが、その発言は失礼に聞こえてしまった。"
+        },
+        {
+          "en": "The customer felt insulted by the way the clerk spoke to her.",
+          "ja": "その客は、店員の話し方に侮辱されたと感じた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "insulting",
+          "pos": "形容詞",
+          "ja": "侮辱的な"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "offend",
+          "note": "意図の有無を問わず、相手を不快にさせるという広い意味を持つ"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "compliment",
+          "note": "褒める"
+        }
+      ],
+      "origin": "ラテン語のinsultare(人に飛びかかる、踏みつける)に由来する。in-(〜の上に)とsalire(跳ぶ)が組み合わさった語で、文字通りには「人の上に飛び乗る」という非常に物理的な行為を意味していた。相手を組み伏せて見下すような乱暴な動作が、時代を経て「言葉で相手を傷つける」という意味に変化した。",
+      "trivia": "同じsalire(跳ぶ)を語源とする単語には、跳ねるように「際立つ」ことを表すsalient(顕著な)や、衝撃を受けても跳ね返るように元に戻ることを表すresilient(回復力のある)がある。「跳ぶ」という一つの動詞から、まったく違う意味を持つ複数の現代英単語が枝分かれしている。",
+      "explanation": "ビジネスシーンでも「意図せず相手を侮辱してしまう」という状況を説明する際によく使われる動詞。feel insulted(侮辱されたと感じる)の形も頻出。"
+    }
+  },
+  {
+    "english": "salient",
+    "detail": {
+      "pronunciation": "/ˈseɪliənt/",
+      "pos": "形容詞",
+      "meanings": [
+        "他と比べて際立って目立つ、顕著な"
+      ],
+      "examples": [
+        {
+          "en": "Let's focus on the most salient points of the report.",
+          "ja": "その報告書の中で最も重要な点に焦点を当てましょう。"
+        },
+        {
+          "en": "One salient feature of the new model is its extended battery life.",
+          "ja": "その新モデルの顕著な特徴の一つは、バッテリー駆動時間が延びたことだ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "salience",
+          "pos": "名詞",
+          "ja": "顕著性、際立つこと"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "prominent",
+          "note": "より視覚的・社会的に「目立つ」ことを強調する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "negligible",
+          "note": "無視できるほど小さい"
+        }
+      ],
+      "origin": "ラテン語のsalire(跳ぶ)の現在分詞saliensに由来する。もともとは紋章学で「跳躍する姿勢」を表す語として使われ、その後17世紀には軍事用語として「(防御線などが)外側に突き出た」という意味で使われるようになった。「跳び出している」という物理的なイメージが、そのまま「目立って際立っている」という抽象的な意味に転じている。",
+      "trivia": "「際立った点」を意味するsalient pointという表現は、もともとpunctum saliens(跳ねる点)というラテン語のフレーズに由来し、アリストテレスの時代から、発生初期の胚の中で最初に動き出して見える心臓の鼓動部分を指す言葉だった。生命が「跳ねる」ように動き出す最初の一点、というイメージが、後に「議論や状況の中で最も重要な急所」という意味に発展した。",
+      "explanation": "ビジネス文書やレポートで「重要な点、顕著な特徴」を述べる際に使われる、ややフォーマルな形容詞。salient point/featureの形で頻出する。"
+    }
+  },
+  {
+    "english": "translate",
+    "detail": {
+      "pronunciation": "/trænsˈleɪt/",
+      "pos": "動詞",
+      "meanings": [
+        "(言語を)翻訳する",
+        "(あるものを)別の形式に変換する、〜という結果につながる"
+      ],
+      "examples": [
+        {
+          "en": "This app can translate spoken English into Japanese instantly.",
+          "ja": "このアプリは、話された英語を瞬時に日本語に翻訳できる。"
+        },
+        {
+          "en": "The company's growth strategy did not translate into higher profits.",
+          "ja": "その会社の成長戦略は、利益の増加にはつながらなかった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "translation",
+          "pos": "名詞",
+          "ja": "翻訳"
+        },
+        {
+          "word": "translator",
+          "pos": "名詞",
+          "ja": "翻訳者"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "interpret",
+          "note": "主に話し言葉をその場で通訳することを指す"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のtransferre(運び越す、移す)に由来する。trans-(向こうへ)とferre(運ぶ)の変則的な過去分詞形latus(運ばれた)が組み合わさった語で、文字通りには「言葉をある言語から別の言語へ運び越す」という意味になる。物を別の場所へ物理的に運ぶことと、言葉を別の言語へ移し替えることが、同じ動詞のもとで表現されている。",
+      "trivia": "ferreの過去分詞形として使われるlatusは、本来まったく別の語根に由来する不規則な変化とされ、なぜferreの過去分詞にlatusが使われるようになったのか、語源学者の間でも完全には解明されていない。同じferreを語源に持つ単語には、transfer(移す)やsuffer(苦しみを下で耐え運ぶ)などがある。",
+      "explanation": "言語の翻訳という意味に加え、ビジネスの文脈でtranslate into ~(〜という結果につながる)という比喩的な意味でも非常によく使われる。"
+    }
+  },
+  {
+    "english": "suffer",
+    "detail": {
+      "pronunciation": "/ˈsʌfər/",
+      "pos": "動詞",
+      "meanings": [
+        "(苦痛や損害を)経験する、被る",
+        "耐え忍ぶ"
+      ],
+      "examples": [
+        {
+          "en": "Small businesses suffered greatly during the economic downturn.",
+          "ja": "景気後退の間、中小企業は大きな打撃を受けた。"
+        },
+        {
+          "en": "He suffered from severe back pain after the long flight.",
+          "ja": "彼はその長時間のフライトの後、ひどい腰の痛みに苦しんだ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "suffering",
+          "pos": "名詞",
+          "ja": "苦しみ"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "endure",
+          "note": "苦痛に「耐え抜く」という忍耐のニュアンスがより強い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "thrive",
+          "note": "繁栄する、うまくいく"
+        }
+      ],
+      "origin": "ラテン語のsufferre(下で耐え運ぶ)に由来する。sub-(下で)とferre(運ぶ、耐える)が組み合わさった語で、文字通りには「重荷を下から支えて運ぶ」という意味だった。重い荷物をじっと支え続けるイメージが、「苦痛や困難にじっと耐える」という意味に発展した。",
+      "trivia": "英語のsufferという単語の意味の発展は、キリストの受難(Passion)や殉教者たちの物語と深く結び付いてきたとされる。「耐え忍ぶこと」自体に精神的・宗教的な価値を見出す文化的背景が、この単語の意味の幅を広げてきた一因と考えられている。",
+      "explanation": "suffer from ~(〜に苦しむ)、suffer damage/losses(損害を被る)のように、体調や経済状況など幅広い文脈で使われる基本動詞。"
+    }
+  },
+  {
+    "english": "confer",
+    "detail": {
+      "pronunciation": "/kənˈfɜːr/",
+      "pos": "動詞",
+      "meanings": [
+        "(意見交換のために)協議する",
+        "(称号や権利を)正式に与える"
+      ],
+      "examples": [
+        {
+          "en": "The lawyers conferred with their client before entering the courtroom.",
+          "ja": "弁護士たちは、法廷に入る前に依頼人と協議した。"
+        },
+        {
+          "en": "The university conferred an honorary degree on the retiring professor.",
+          "ja": "その大学は、退職する教授に名誉学位を授与した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "conference",
+          "pos": "名詞",
+          "ja": "会議、協議"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "consult",
+          "note": "専門家や上位者に助言を求めるというニュアンスが強い"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のconferre(持ち寄る、比較する)に由来する。com-(共に)とferre(運ぶ)が組み合わさった語で、文字通りには「みんなで一緒に運び寄せる」という意味だった。それぞれが意見や情報を持ち寄って比較する、という行為から「協議する」という意味が生まれ、また何かを人にまとめて「授ける」という意味にも発展した。",
+      "trivia": "参考文献などでよく見かける略語cf.(〜と比較せよ)は、実はこのconferの初期の意味である「比較する」に由来している。現在ではこの「比較する」という意味自体はほとんど使われなくなったが、略語cf.の中にその名残がひっそりと生き続けている。",
+      "explanation": "confer with ~(〜と協議する)、confer a degree/title(学位・称号を授与する)のように、ビジネス・学術の両方でよく使われる語。"
+    }
+  },
+  {
+    "english": "advertise",
+    "detail": {
+      "pronunciation": "/ˈædvərtaɪz/",
+      "pos": "動詞",
+      "meanings": [
+        "(商品やサービスを)広く知らせる、宣伝する"
+      ],
+      "examples": [
+        {
+          "en": "The company plans to advertise its new smartphone on social media.",
+          "ja": "その会社は、新しいスマートフォンをSNSで宣伝する計画だ。"
+        },
+        {
+          "en": "Local shops often advertise seasonal discounts in the newspaper.",
+          "ja": "地元の店は、季節ごとの割引を新聞でよく宣伝する。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "advertisement",
+          "pos": "名詞",
+          "ja": "広告"
+        },
+        {
+          "word": "advertiser",
+          "pos": "名詞",
+          "ja": "広告主"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "promote",
+          "note": "広告に限らず、幅広い手段で認知や評判を高めることを表す"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のadvertere(〜の方へ向ける)に由来する。ad-(〜へ)とvertere(向ける、回す)が組み合わさった語で、文字通りには「注意をそちらへ向けさせる」という意味だった。英語に入った当初は「気づかせる、知らせる」という一般的な意味で使われており、現在のような「商品を宣伝する」という商業的な意味が定着したのは18世紀末になってからである。",
+      "trivia": "vertereを語源に持つ単語は非常に多く、universe(宇宙、すべてが一つに向いてまとまったもの)、controversy(論争、互いに逆方向を向くこと)、anniversary(記念日、毎年同じ日に巡ってくること)などがある。「向きを変える、回る」という一つの動詞が、驚くほど多様な現代英単語の祖先になっている。",
+      "explanation": "商業広告の文脈で最も頻繁に使われる動詞で、TOEICのビジネス・マーケティング関連の問題にも頻出する基本語彙。"
+    }
+  },
+  {
+    "english": "controversy",
+    "detail": {
+      "pronunciation": "/ˈkɑːntrəvɜːrsi/",
+      "pos": "名詞",
+      "meanings": [
+        "意見が鋭く対立する論争、物議"
+      ],
+      "examples": [
+        {
+          "en": "The new policy sparked controversy among employees and shareholders alike.",
+          "ja": "その新方針は、従業員と株主の双方の間で物議を醸した。"
+        },
+        {
+          "en": "The scandal generated a great deal of public controversy.",
+          "ja": "その不祥事は、世間で大きな論争を巻き起こした。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "controversial",
+          "pos": "形容詞",
+          "ja": "物議を醸す、論争の的となる"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "dispute",
+          "note": "より具体的な争点をめぐる対立を指すことが多い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "consensus",
+          "note": "合意、総意"
+        }
+      ],
+      "origin": "ラテン語のcontroversia(論争)に由来する。contra-(〜に対して)とversus(向けられた、versusはvertereの過去分詞)が組み合わさった語で、文字通りには「互いに逆方向を向くこと」を意味する。二つの意見が正反対の方向を向いて衝突している様子が、そのまま「論争」という意味になった。",
+      "trivia": "同じversus/vertereを語源とするcontroversyとadvertise(広告する、注意を向けさせる)は、一見まったく無関係に見えるが、どちらも「(注意や立場を)向ける」という共通のイメージから生まれた親戚の単語である。スポーツの対戦を表すversus(〜対〜)も同じ語源。",
+      "explanation": "ニュースやビジネスの文脈で「論争、物議」を表す基本的な名詞。spark controversy、generate controversyのような形でよく使われる。"
+    }
+  },
+  {
+    "english": "avert",
+    "detail": {
+      "pronunciation": "/əˈvɜːrt/",
+      "pos": "動詞",
+      "meanings": [
+        "(危険や事態を)未然に防ぐ",
+        "(目や顔を)そらす"
+      ],
+      "examples": [
+        {
+          "en": "Quick action by the crew helped avert a major accident.",
+          "ja": "乗務員の迅速な対応が、重大な事故を未然に防ぐ助けとなった。"
+        },
+        {
+          "en": "She averted her eyes, embarrassed by the awkward silence.",
+          "ja": "彼女は、気まずい沈黙に恥ずかしくなって目をそらした。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "prevent",
+          "note": "より一般的で幅広い場面に使える「防ぐ」を表す語"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "provoke",
+          "note": "引き起こす、誘発する"
+        }
+      ],
+      "origin": "ラテン語のavertere(そらす、遠ざける)に由来する。ab-(離れて)とvertere(向ける、回す)が組み合わさった語で、文字通りには「あるものから向きを変えてそらす」という意味だった。物理的に目や顔を「そらす」という意味と、危機や災難を「未然に防ぐ」という意味の両方が、この「向きを変えてそらす」という核心的なイメージから生まれている。",
+      "trivia": "同じvertere(向ける)を語源に持つ単語には、divert(それとは別の方向にそらす、気晴らしをする)がある。avertが「危険からそらす」という緊迫したニュアンスを持つのに対し、divertは「注意を別の方向に向けて楽しませる」という、より穏やかなニュアンスを持つ点が対照的である。",
+      "explanation": "avert a crisis(危機を回避する)、avert disaster(大惨事を防ぐ)のように、危機管理やニュースの文脈でよく使われる、ややフォーマルな動詞。"
+    }
+  },
+  {
+    "english": "divert",
+    "detail": {
+      "pronunciation": "/daɪˈvɜːrt/",
+      "pos": "動詞",
+      "meanings": [
+        "(進路や注意を)そらす、迂回させる"
+      ],
+      "examples": [
+        {
+          "en": "The airline had to divert the flight to a nearby airport due to bad weather.",
+          "ja": "その航空会社は、悪天候のため便を近くの空港に迂回させなければならなかった。"
+        },
+        {
+          "en": "The magician diverted the audience's attention with a quick joke.",
+          "ja": "その手品師は、素早いジョークで観客の注意をそらした。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "diversion",
+          "pos": "名詞",
+          "ja": "迂回、気晴らし"
+        },
+        {
+          "word": "diverse",
+          "pos": "形容詞",
+          "ja": "多様な"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "redirect",
+          "note": "より中立的に「向け直す」ことを表す"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のdivertere(別の方向へ向ける)に由来する。dis-(離れて、別々に)とvertere(向ける)が組み合わさった語で、文字通りには「本来の道筋から離れた方向に向ける」という意味だった。交通や資金の流れを「迂回させる」という意味と、人の注意を「そらして楽しませる」という意味の両方が、この「向きを変えさせる」という核心的なイメージから生まれている。",
+      "trivia": "diverseという形容詞も同じdivertereの仲間で、「様々な方向に分かれている」というイメージから「多様な」という意味が生まれた。一見無関係に見えるdivert(それる)とdiverse(多様な)が、実は同じ語源を共有する親戚同士である。",
+      "explanation": "交通機関の運行に関するニュースや、ビジネス文書でdivert funds/attention/traffic(資金・注意・交通を迂回させる)のような形でよく使われる動詞。"
+    }
+  },
+  {
+    "english": "occupy",
+    "detail": {
+      "pronunciation": "/ˈɑːkjupaɪ/",
+      "pos": "動詞",
+      "meanings": [
+        "(場所・時間・地位などを)占める",
+        "(軍隊が)占領する"
+      ],
+      "examples": [
+        {
+          "en": "The marketing department occupies the entire third floor of the building.",
+          "ja": "マーケティング部門は、そのビルの3階全体を占めている。"
+        },
+        {
+          "en": "Preparing for the presentation occupied most of her afternoon.",
+          "ja": "プレゼンの準備で、彼女の午後の大半が費やされた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "occupation",
+          "pos": "名詞",
+          "ja": "職業、占領"
+        },
+        {
+          "word": "occupant",
+          "pos": "名詞",
+          "ja": "占有者、居住者"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "inhabit",
+          "note": "より「住む、居住する」という意味に限定される"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "vacate",
+          "note": "明け渡す、立ち退く"
+        }
+      ],
+      "origin": "ラテン語のoccupare(つかみ取る、奪い取る)に由来する。ob-(〜に向かって)とcapere(つかむ)の強調形が組み合わさった語で、もともとは「力ずくで、しっかりとつかみ取る」という非常に強い動作を意味していた。この語が英語に入った当初の「占有する、場所や時間を占める」という意味は、この強い「つかみ取る」というニュアンスをかなり和らげたものである。",
+      "trivia": "16〜17世紀のイギリスでは、occupyという単語が性的な行為を婉曲的に表す隠語として広く使われるようになった時期があり、シェイクスピアの作品にもこの単語が「使うのがはばかられるほど下品になってしまった」と嘆く台詞が登場する。時代とともにこの用法は廃れ、現在ではごく普通のビジネス語として問題なく使われている。",
+      "explanation": "occupy a position(地位に就く)、occupy space/time(場所・時間を占める)のように、ビジネス・日常英語で幅広く使われる基本動詞。"
+    }
+  },
+  {
+    "english": "deceive",
+    "detail": {
+      "pronunciation": "/dɪˈsiːv/",
+      "pos": "動詞",
+      "meanings": [
+        "(人を)だます、欺く"
+      ],
+      "examples": [
+        {
+          "en": "The salesman deceived customers by hiding the product's defects.",
+          "ja": "その営業担当者は、製品の欠陥を隠して顧客をだました。"
+        },
+        {
+          "en": "She felt deceived when she learned the investment was a scam.",
+          "ja": "その投資が詐欺だと知り、彼女はだまされたと感じた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "deception",
+          "pos": "名詞",
+          "ja": "欺瞞"
+        },
+        {
+          "word": "deceptive",
+          "pos": "形容詞",
+          "ja": "人を欺くような、誤解を招く"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "mislead",
+          "note": "意図的かどうかを問わず、誤った方向に導くという広い意味を持つ"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "enlighten",
+          "note": "真実を明らかにする、啓発する"
+        }
+      ],
+      "origin": "ラテン語のdecipere(罠にかける、だます)に由来する。de-(離れて、または否定を強める接頭辞)とcapere(つかむ、捕らえる)が組み合わさった語で、文字通りには「罠で捕らえる」という意味だった。獲物を罠にかけて捕らえるという物理的なイメージが、そのまま「人をだまして罠にはめる」という比喩的な意味に転じた。",
+      "trivia": "同じcapere(つかむ)を語源とする単語は非常に多く、occupy(つかみ取る、占める)やsusceptible(下から受け止める、影響を受けやすい)などもその仲間である。「つかむ」という素朴な動作を表す動詞が、「だます」「占める」「影響を受ける」といった多様な抽象概念に発展しているのは興味深い。",
+      "explanation": "ビジネスや法律の文脈で「欺く、だます」という意味で使われる基本動詞。deceive someone into doing ~(人をだまして〜させる)の形も頻出する。"
+    }
+  },
+  {
+    "english": "susceptible",
+    "detail": {
+      "pronunciation": "/səˈseptəbl/",
+      "pos": "形容詞",
+      "meanings": [
+        "影響を受けやすい、感染しやすい"
+      ],
+      "examples": [
+        {
+          "en": "Elderly people are more susceptible to complications from the flu.",
+          "ja": "高齢者は、インフルエンザの合併症にかかりやすい。"
+        },
+        {
+          "en": "New employees can be especially susceptible to workplace stress.",
+          "ja": "新入社員は、職場のストレスに特に影響されやすいことがある。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "susceptibility",
+          "pos": "名詞",
+          "ja": "影響を受けやすいこと、感受性"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "vulnerable",
+          "note": "より広く「弱く傷つきやすい」ことを強調する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "immune",
+          "note": "影響を受けない、免疫のある"
+        }
+      ],
+      "origin": "後期ラテン語のsusceptibilis(受け入れられる)に由来し、動詞suscipere(下から受け止める、引き受ける)から派生している。sub-(下から)とcapere(つかむ)が組み合わさった語で、文字通りには「下から手を伸ばして受け止める」という意味だった。何かを受け止める姿勢が、「影響を受けやすい」という受動的な性質を表す意味に発展した。",
+      "trivia": "同じcapere(つかむ)を語源とする単語は非常に多く、occupy(つかみ取る)、deceive(罠でつかまえる)、accept(受け取る)などが仲間にあたる。susceptibleは、その中でも「積極的につかむ」のではなく「受け身でつかまれてしまう」というニュアンスを持つ点が特徴的である。",
+      "explanation": "医療・健康の文脈でsusceptible to illness(病気にかかりやすい)のように使われるほか、心理的な意味でsusceptible to pressure/stress(圧力・ストレスに弱い)のようにも使われる。"
+    }
+  },
+  {
+    "english": "prescribe",
+    "detail": {
+      "pronunciation": "/prɪˈskraɪb/",
+      "pos": "動詞",
+      "meanings": [
+        "(薬や治療法を)処方する",
+        "(規則などを)定める"
+      ],
+      "examples": [
+        {
+          "en": "The doctor prescribed antibiotics for her throat infection.",
+          "ja": "医師は、彼女の喉の感染症に対して抗生物質を処方した。"
+        },
+        {
+          "en": "Company policy prescribes strict procedures for handling customer complaints.",
+          "ja": "会社の方針は、顧客からの苦情対応について厳格な手順を定めている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "prescription",
+          "pos": "名詞",
+          "ja": "処方箋、処方"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "stipulate",
+          "note": "契約や規則の中で条件を明確に定めるというニュアンスが強い"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のpraescribere(前もって書く、あらかじめ定める)に由来する。prae-(前もって)とscribere(書く)が組み合わさった語で、もともとは法律や規則を「文書として前もって書き記しておく」という一般的な意味だった。医師が薬を「処方する」という現在よく知られる意味は、16世紀末になってから、この一般的な意味から派生する形で定着したとされる。",
+      "trivia": "処方箋を意味するprescriptionの略号Rx(アールエックス)は、ラテン語のrecipe(取れ、受け取れ)という命令形に由来するとされ、prescribeとは別系統の語源だが、同じ「薬の処方」という場面で今も一緒に使われている興味深い組み合わせである。",
+      "explanation": "医療の文脈での「処方する」という意味に加え、規則や方針が「〜を定める、規定する」という意味でもビジネス・法律の文書でよく使われる。"
+    }
+  },
+  {
+    "english": "postscript",
+    "detail": {
+      "pronunciation": "/ˈpoʊstskrɪpt/",
+      "pos": "名詞",
+      "meanings": [
+        "手紙や文書の末尾に付け加える一文、追伸"
+      ],
+      "examples": [
+        {
+          "en": "In the postscript, she added a quick note about the upcoming holiday.",
+          "ja": "追伸で、彼女は今度の休暇について簡単な一言を書き加えた。"
+        },
+        {
+          "en": "As a postscript to the report, the analyst included a brief warning about market risks.",
+          "ja": "報告書の追記として、そのアナリストは市場リスクについての簡単な警告を加えた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "afterthought",
+          "note": "文書に限らず、後から思いついたこと全般を指す"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のpost scriptum(後に書かれたもの)に由来する。post(後に)とscriptum(scribere「書く」の過去分詞、書かれたもの)が組み合わさった語で、文字通りには手紙の本文をすでに書き終えた「後で」書き加えられた部分を意味する。",
+      "trivia": "手紙の最後に添える「追伸」を表す略号P.S.は、このpostscriptumをそのまま省略したものである。かつて手紙を書くのに紙と時間が貴重だった時代、本文を書き終えてから思い出したことを慌てて書き足す、という実用的な習慣がそのまま単語として定着した。",
+      "explanation": "手紙やメールの末尾に加える「追伸」の意味で使われるほか、比喩的に文書やスピーチの「補足、後日談」を表す際にも使われる。"
+    }
+  },
+  {
+    "english": "manuscript",
+    "detail": {
+      "pronunciation": "/ˈmænjuskrɪpt/",
+      "pos": "名詞",
+      "meanings": [
+        "手書きの文書、出版前の原稿"
+      ],
+      "examples": [
+        {
+          "en": "The publisher received hundreds of manuscripts from aspiring authors last year.",
+          "ja": "その出版社は昨年、作家志望者たちから何百もの原稿を受け取った。"
+        },
+        {
+          "en": "The ancient manuscript was carefully preserved in the university library.",
+          "ja": "その古い写本は、大学の図書館で大切に保存されていた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "draft",
+          "note": "より一般的に「下書き、草稿」を指す語"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "print",
+          "note": "印刷されたもの"
+        }
+      ],
+      "origin": "中世ラテン語のmanuscriptum(手で書かれたもの)に由来する。manus(手)とscriptus(scribere「書く」の過去分詞)が組み合わさった語で、文字通りには「手書きの文書」を意味する。活版印刷が普及する以前、あらゆる書物は手で書き写されており、印刷された本と区別するためにこの語が使われるようになった。",
+      "trivia": "同じmanus(手)を語源に持つ単語には、manufacture(手で作る、後に「製造する」)やmanage(元は馬を手綱で操ること)がある。かつて「手作業」を意味していた語が、今では機械化された大量生産や経営管理を表す言葉に変化しているのは、産業の歴史を映す興味深い変化と言える。",
+      "explanation": "出版業界で「(未出版の)原稿」を指す語として頻出するほか、歴史的な「手書きの写本」を指す際にも使われる。"
+    }
+  },
+  {
+    "english": "suspend",
+    "detail": {
+      "pronunciation": "/səˈspend/",
+      "pos": "動詞",
+      "meanings": [
+        "(活動や効力を)一時的に停止する",
+        "(物を)高い位置からぶら下げる"
+      ],
+      "examples": [
+        {
+          "en": "The airline suspended flights to the region due to safety concerns.",
+          "ja": "その航空会社は、安全性への懸念からその地域への便を一時運休した。"
+        },
+        {
+          "en": "The lamp was suspended from the ceiling by a thin metal chain.",
+          "ja": "そのランプは、細い金属の鎖で天井からぶら下げられていた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "suspension",
+          "pos": "名詞",
+          "ja": "停止、一時中断、サスペンション"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "halt",
+          "note": "より完全に、突然「止める」ことを表す"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "resume",
+          "note": "再開する"
+        }
+      ],
+      "origin": "ラテン語のsuspendere(下に吊るす)に由来する。sub-(下から)とpendere(ぶら下がる、量る)が組み合わさった語で、文字通りには「支えの下からぶら下げる」という意味だった。物理的に「宙ぶらりんに吊るす」というイメージが、活動や効力が「一時的に宙ぶらりんの状態になる=停止する」という比喩的な意味に発展した。",
+      "trivia": "同じpendere(ぶら下がる、量る)を語源とする単語には、pension(年金、元は労働の対価として量って支払われるもの)やdepend(〜次第である、元は「〜からぶら下がる」)がある。「ぶら下がる」という物理的なイメージが、経済や人間関係における「頼る、依存する」という抽象的な概念にまで広がっている。",
+      "explanation": "suspend a flight/service(便・サービスを一時停止する)のようにビジネス・ニュースの文脈で頻出するほか、文字通り「吊るす」という意味でも使われる。"
+    }
+  },
+  {
+    "english": "pension",
+    "detail": {
+      "pronunciation": "/ˈpenʃn/",
+      "pos": "名詞",
+      "meanings": [
+        "退職後などに定期的に支払われる年金"
+      ],
+      "examples": [
+        {
+          "en": "He plans to retire early and live on his pension.",
+          "ja": "彼は早期に退職し、年金で生活する計画だ。"
+        },
+        {
+          "en": "The company offers a generous pension plan to long-term employees.",
+          "ja": "その会社は、長期勤続の従業員に手厚い年金制度を提供している。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "pensioner",
+          "pos": "名詞",
+          "ja": "年金受給者"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "annuity",
+          "note": "保険契約に基づいて定期的に受け取る給付金を指すことが多い"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のpendere(ぶら下げる、量る、支払う)に由来する。もともと「(重さを)量る」という意味だったが、古代ローマでは貨幣の重さを量って支払いを行っていたことから、「支払う」という意味に発展した。pensionは、この「支払われるもの」という意味から、特に退職後などに定期的に支払われる給付金を指すようになった。",
+      "trivia": "同じpendere(量る、支払う)を語源とする単語には、compensate(埋め合わせをする、共に量る)やsuspend(宙に吊るす)、expense(支出、外へ量り出す)などがある。天秤で重さを量るという古代の行為が、現代の「支払い、経済」に関する語彙の土台になっている。",
+      "explanation": "退職金や年金制度に関するビジネス・ニュースの文脈で頻出する基本語。pension plan/fund(年金制度・基金)のような形でよく使われる。"
+    }
+  },
+  {
+    "english": "protest",
+    "detail": {
+      "pronunciation": "/prəˈtest/",
+      "pos": "動詞",
+      "meanings": [
+        "不満や反対の意思を公に表明する",
+        "(まれに)〜だと強く主張する"
+      ],
+      "examples": [
+        {
+          "en": "Local residents protested against the construction of the new highway.",
+          "ja": "地元住民は、新しい高速道路の建設に反対の声を上げた。"
+        },
+        {
+          "en": "The defendant continued to protest his innocence throughout the trial.",
+          "ja": "被告人は裁判の間ずっと自らの無実を強く主張し続けた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "protester",
+          "pos": "名詞",
+          "ja": "抗議者"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "object",
+          "note": "より個人的・限定的な場面での「異議を唱える」ことを表すことが多い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "endorse",
+          "note": "支持する、承認する"
+        }
+      ],
+      "origin": "ラテン語のprotestari(人前で宣言する、証言する)に由来する。pro-(前で)とtestari(証言する、証人となる)が組み合わさった語で、さらにtestisは「証人」を意味する。もともとは「反対」ではなく、むしろ「公に強く肯定・宣言する」という意味の語だった。protest one's innocence(無実を主張する)という表現に、この古い「宣言する」という意味の名残が今も残っている。",
+      "trivia": "18世紀半ばまでは「不満の表明」という意味は薄く、19世紀に入ってから徐々に「反対の意思表示」という現在よく知られる意味が主流になった。「公に宣言する」という中立的な意味から、「反対を宣言する」という意味に狭まっていった変化の過程が興味深い。",
+      "explanation": "現代英語では主に「抗議する、反対する」という意味で使われるが、protest one's innocence(無実を主張する)のように、古い「強く主張する」という意味も一部の決まった表現に残っている。"
+    }
+  },
+  {
+    "english": "testify",
+    "detail": {
+      "pronunciation": "/ˈtestɪfaɪ/",
+      "pos": "動詞",
+      "meanings": [
+        "(法廷などで)証言する",
+        "(比喩的に)〜を物語る、裏付ける"
+      ],
+      "examples": [
+        {
+          "en": "The witness was called to testify in court about what she had seen.",
+          "ja": "その証人は、自分が目撃したことについて法廷で証言するよう求められた。"
+        },
+        {
+          "en": "Sales figures testify to the growing popularity of the new product.",
+          "ja": "売上高が、その新製品の人気の高まりを物語っている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "testimony",
+          "pos": "名詞",
+          "ja": "証言"
+        },
+        {
+          "word": "testament",
+          "pos": "名詞",
+          "ja": "証、証拠となるもの"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "attest",
+          "note": "より書き言葉的で、公式に証明するというニュアンスが強い"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のtestificari(証言する、証拠を示す)に由来する。testis(証人)とfacere(行う、作る)が組み合わさった語で、文字通りには「証人としての行為を行う」という意味になる。testisという語自体は「第三者として立ち会う者」を意味し、法廷で真実を保証する存在を表していた。",
+      "trivia": "「証人」を意味するtestisから、testimony(証言)やprotest(もともとは公の場での宣言)など、法廷や公的な場での「発言」に関する単語群が生まれている。なお、体の器官を指す同じつづりのtestis(睾丸)との関連がしばしば語られるが、これは根拠のない後世の俗説とされており、確かな歴史的裏付けはない。",
+      "explanation": "法廷での「証言する」という意味に加え、ビジネスやデータの文脈で「〜が〜を裏付ける、物語る」という比喩的な意味でもよく使われる動詞。"
+    }
+  },
+  {
+    "english": "money",
+    "detail": {
+      "pronunciation": "/ˈmʌni/",
+      "pos": "名詞",
+      "meanings": [
+        "取引に使われる貨幣・紙幣などの支払い手段"
+      ],
+      "examples": [
+        {
+          "en": "She saved enough money to travel around Europe for a month.",
+          "ja": "彼女は、1か月間ヨーロッパを旅行できるだけのお金を貯めた。"
+        },
+        {
+          "en": "The startup is struggling to raise money from investors.",
+          "ja": "そのスタートアップ企業は、投資家から資金を調達するのに苦労している。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "monetary",
+          "pos": "形容詞",
+          "ja": "通貨の、金銭上の"
+        },
+        {
+          "word": "monetize",
+          "pos": "動詞",
+          "ja": "収益化する"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "currency",
+          "note": "特定の国や地域で流通する通貨制度そのものを指すことが多い"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のmoneta(鋳造貨幣、また貨幣を作る場所)に由来する。これはローマの女神ユノに付けられた添え名Monetaから来ており、その神殿の近くで実際に貨幣が鋳造されていたことから、「貨幣」そのものを指す語になったとされる。Monetaという添え名自体は、「警告する、忠告する」を意味するmonereに由来するという説が伝統的に語られているが、この語源自体は確定していない。",
+      "trivia": "伝説によれば、紀元前390年頃にガリア人がローマを奇襲しようとした際、この神殿で飼われていたガチョウの鳴き声が守備兵に危険を知らせ、ローマを救ったとされる。この「警告してくれた」という逸話がMoneta(警告する女神)という名前と結び付けられて語られることが多いが、貨幣の鋳造と結び付いたのは神殿の立地上の理由による可能性が高いとされ、詳しい経緯は今も完全には解明されていない。",
+      "explanation": "英語で最も基本的な単語の一つ。make money(稼ぐ)、save money(貯める)、raise money(資金を調達する)など、多くの決まった表現とセットで使われる。"
+    }
+  },
+  {
+    "english": "premonition",
+    "detail": {
+      "pronunciation": "/ˌpriːməˈnɪʃn/",
+      "pos": "名詞",
+      "meanings": [
+        "何か悪いことが起こりそうだという事前の予感"
+      ],
+      "examples": [
+        {
+          "en": "She had a strange premonition that something was wrong before she got the call.",
+          "ja": "彼女はその電話を受ける前から、何かがおかしいという奇妙な予感を抱いていた。"
+        },
+        {
+          "en": "Ignoring his premonition, he decided to go on the business trip anyway.",
+          "ja": "彼はその予感を無視し、結局そのまま出張に行くことにした。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "premonitory",
+          "pos": "形容詞",
+          "ja": "予感を抱かせる、前兆となる"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "foreboding",
+          "note": "より不吉で漠然とした悪い予感を強調する"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のpraemonere(前もって警告する)に由来する。prae-(前もって)とmonere(警告する、忠告する)が組み合わさった語で、元々は誰かが他者に対して行う「事前の警告、通知」を意味していた。時代を経て、他者からの警告ではなく、自分の内側から湧き上がる「虫の知らせ」のような直感的な予感を指す意味に変化した。",
+      "trivia": "同じmonere(警告する)を語源とする単語には、monitor(監視する、警告を発する装置)、monument(記念碑、後世に何かを思い起こさせるもの)、admonish(たしなめる)などがある。「警告する」という一つの動詞から、「見張る」「思い出させる」「たしなめる」という異なる方向へ意味が枝分かれしている。",
+      "explanation": "小説や日常会話で「虫の知らせ、悪い予感」を表す際に使われるやや文学的な響きを持つ語。have a premonitionの形でよく使われる。"
+    }
+  },
+  {
+    "english": "sinister",
+    "detail": {
+      "pronunciation": "/ˈsɪnɪstər/",
+      "pos": "形容詞",
+      "meanings": [
+        "邪悪な、不吉な、悪意を感じさせる"
+      ],
+      "examples": [
+        {
+          "en": "There was something sinister about the way he avoided answering the question.",
+          "ja": "彼が質問への回答を避けるやり方には、どこか不穏なものがあった。"
+        },
+        {
+          "en": "The abandoned building had a sinister atmosphere at night.",
+          "ja": "その廃墟となった建物は、夜になると不気味な雰囲気を漂わせていた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "ominous",
+          "note": "「悪い予兆を感じさせる」というニュアンスがより強い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "benign",
+          "note": "無害な、善意に満ちた"
+        }
+      ],
+      "origin": "ラテン語のsinister(左の、左側の)に由来する。右を意味するdexterの対義語だが、なぜ「左」が語源かというと、古代ローマの鳥占い(空を飛ぶ鳥の動きで吉凶を占う儀式)において、左側に現れた兆候が不吉とされたことに関係すると伝統的に説明される。左右どちらを不吉とするかは占いの流派によって逆転することもあったとされ、この語がなぜ「不吉」の意味に固定されたかは完全には解明されていない。",
+      "trivia": "対照的に「右」を意味するdexterからは、器用さを表すdexterity(デクステリティ)という単語が生まれている。多くの文化で「右利き」が標準とされてきた歴史が、「右=良い、左=悪い」という言語表現に影を落としている興味深い例と言える。",
+      "explanation": "現代英語では、視覚的な「左」の意味では通常使われず、もっぱら「不気味な、悪意を感じさせる」という比喩的な意味で使われる形容詞。"
+    }
+  },
+  {
+    "english": "dexterity",
+    "detail": {
+      "pronunciation": "/dekˈsterəti/",
+      "pos": "名詞",
+      "meanings": [
+        "手先の器用さ、身のこなしの巧みさ",
+        "(比喩的に)物事を処理する手腕"
+      ],
+      "examples": [
+        {
+          "en": "Surgeons need great manual dexterity to perform such delicate operations.",
+          "ja": "外科医は、そのような繊細な手術を行うために優れた手先の器用さを必要とする。"
+        },
+        {
+          "en": "He handled the difficult negotiation with remarkable dexterity.",
+          "ja": "彼はその難しい交渉を見事な手腕で乗り切った。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "dexterous",
+          "pos": "形容詞",
+          "ja": "器用な、巧みな"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "adroitness",
+          "note": "より書き言葉的で、機転を利かせた巧みさを強調する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "clumsiness",
+          "note": "不器用さ"
+        }
+      ],
+      "origin": "ラテン語のdexteritas(器用さ、有能さ)に由来し、「右(手)」を意味するdexterが元になっている。多くの古代社会で右手が利き手として標準的とされ、右手を使うことが「正しく、有能である」という価値観と結び付いたことから、dexterには「右の」という意味に加えて「器用な、巧みな」という意味も生まれた。",
+      "trivia": "英語のsinister(不吉な)は、dexterの反対語であるラテン語のsinister(左の)に由来する。「右=良い」「左=悪い」という価値観は英語だけでなく多くの言語に見られ、フランス語のadroit(器用な、droit=右由来)にも同様の発想が見て取れる。",
+      "explanation": "manual dexterity(手先の器用さ)のように身体的な意味で使われるほか、比喩的に「頭の回転の速さ、対応力の巧みさ」を表す場合にも使われるやや硬めの語。"
+    }
+  },
+  {
+    "english": "inaugurate",
+    "detail": {
+      "pronunciation": "/ɪˈnɔːɡjəreɪt/",
+      "pos": "動詞",
+      "meanings": [
+        "正式な儀式を行って就任させる",
+        "(制度・施設などを)開始する、発足させる"
+      ],
+      "examples": [
+        {
+          "en": "The new president will be inaugurated next January.",
+          "ja": "新大統領は来年1月に就任式を迎える。"
+        },
+        {
+          "en": "The city inaugurated a new subway line to ease traffic congestion.",
+          "ja": "その市は、交通渋滞を緩和するために新しい地下鉄路線を開通させた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "inauguration",
+          "pos": "名詞",
+          "ja": "就任式、開始式"
+        },
+        {
+          "word": "inaugural",
+          "pos": "形容詞",
+          "ja": "就任の、開始の"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "install",
+          "note": "より事務的に「(役職に)就かせる」ことを表す"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のinaugurare(鳥占いで吉兆を確認して聖別する)に由来する。in-とaugurare(鳥占い師augurとして行動する)からなる語で、古代ローマでは、新しい神官や公職者を任命する際、鳥の飛び方などを観察して神々の承認を得られたかどうかを確認する儀式が行われた。この宗教的な儀式が、時代を経て「正式な儀式を経て就任させる」という世俗的な意味に変化した。",
+      "trivia": "同じaugur(鳥占い師)から派生した単語にauspicious(幸先の良い)がある。ラテン語のavis(鳥)とspecere(見る)が組み合わさった語で、こちらも鳥の様子を観察して吉凶を占う古代ローマの習慣に由来する。政治や公式行事に関する英単語には、こうした古代の宗教儀式の名残が意外と多く残っている。",
+      "explanation": "大統領や首長の就任式、新しい制度・施設の開始式典など、フォーマルな「発足・開始」の場面で使われる硬めの語彙。ニュース英語で頻出する。"
+    }
+  },
+  {
+    "english": "desire",
+    "detail": {
+      "pronunciation": "/dɪˈzaɪər/",
+      "pos": "動詞",
+      "meanings": [
+        "(何かを)強く望む、切望する"
+      ],
+      "examples": [
+        {
+          "en": "Many young professionals desire more flexibility in their working hours.",
+          "ja": "多くの若い社会人は、勤務時間により柔軟性があることを望んでいる。"
+        },
+        {
+          "en": "She has always desired a career in international diplomacy.",
+          "ja": "彼女はずっと国際外交の分野でのキャリアを望んできた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "desirable",
+          "pos": "形容詞",
+          "ja": "望ましい、魅力的な"
+        },
+        {
+          "word": "desirous",
+          "pos": "形容詞",
+          "ja": "切望している"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "crave",
+          "note": "より本能的・肉体的な強い欲求を表すことが多い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "despise",
+          "note": "軽蔑する、嫌悪する"
+        }
+      ],
+      "origin": "ラテン語のdesiderare(切望する)に由来するとされ、伝統的にはde-(〜から)とsidus(星、星座)が組み合わさった語だと説明される。星占いで「星がもたらすものをじっと待ち望む」という意味合いから、「強く望む」という意味が生まれたという説だが、この語源については現代の言語学者の間でも異論があり、確定した定説とは言えない。",
+      "trivia": "同じsidus(星)を含む語にconsider(よく考える)があり、こちらも「星の動きを注意深く観察する」という占星術的な行為が語源ではないかとしばしば紹介される。ただしdesire同様、この説にも異論があり、ラテン語の語源研究では「星占い由来」とされる単語の解釈には慎重な立場を取る学者も多い。",
+      "explanation": "願望や欲求を表す基本的な動詞・名詞。desire to do ~、desire for ~の形でビジネス・日常どちらでも幅広く使われる。"
+    }
+  },
+  {
+    "english": "decimate",
+    "detail": {
+      "pronunciation": "/ˈdesɪmeɪt/",
+      "pos": "動詞",
+      "meanings": [
+        "(集団や数を)大幅に減らす、壊滅させる"
+      ],
+      "examples": [
+        {
+          "en": "The economic crisis decimated small businesses across the region.",
+          "ja": "その経済危機は、その地域の中小企業に壊滅的な打撃を与えた。"
+        },
+        {
+          "en": "A wildfire decimated the forest, destroying thousands of acres.",
+          "ja": "山火事はその森を壊滅させ、数千エーカーを焼失させた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "decimation",
+          "pos": "名詞",
+          "ja": "壊滅、大幅な削減"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "devastate",
+          "note": "より広く「壊滅的な打撃を与える」ことを表す一般的な語"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "preserve",
+          "note": "保存する、守る"
+        }
+      ],
+      "origin": "ラテン語のdecimare(10人に1人を処罰する)に由来し、decem(10)から作られた語。古代ローマ軍には、反乱を起こした部隊や敗走した部隊に対し、くじ引きで選んだ10人に1人を処刑するという過酷な軍紀処罰があったとされ、これがdecimateの語源となった。",
+      "trivia": "本来は「10分の1を失わせる」という厳密な意味だったが、17世紀以降「大部分を破壊する、壊滅させる」という緩い意味で使われるようになり、この用法が現在では主流になっている。語源に厳格な人の中には、この「不正確な」現代的用法を嫌う人もいるが、辞書的にはすでに標準的な意味として認められている。",
+      "explanation": "ニュースや歴史・経済の文脈で、「壊滅的な被害を与える」という強い意味で使われることが多い動詞。"
+    }
+  },
+  {
+    "english": "sinecure",
+    "detail": {
+      "pronunciation": "/ˈsaɪnɪkjʊr/",
+      "pos": "名詞",
+      "meanings": [
+        "ほとんど職務を伴わないのに報酬だけ得られる仕事、閑職"
+      ],
+      "examples": [
+        {
+          "en": "Critics called the newly created position a sinecure with no real responsibilities.",
+          "ja": "批評家たちは、その新設された役職を、実質的な職務のない閑職だと呼んだ。"
+        },
+        {
+          "en": "He was accused of using his political connections to secure a sinecure.",
+          "ja": "彼は、政治的なコネを使って閑職を確保したとして非難された。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "cushy job",
+          "note": "よりくだけた口語表現で、「楽な仕事」というニュアンス"
+        }
+      ],
+      "antonyms": [],
+      "origin": "中世ラテン語のbeneficium sine cura(世話を伴わない聖職禄)に由来する。sine(〜なしに)とcura(世話、配慮)が組み合わさった語で、もともとは信徒の魂の「世話(牧会活動)」を行う義務を伴わずに収入だけを得られる、教会内の特殊な役職を指していた。この「働かずに報酬だけ得る」という構造が、現代では教会に限らず広く「閑職、名ばかりの役職」を指す言葉として使われている。",
+      "trivia": "同じcura(世話、配慮)を語源とする単語にはcure(治療)やcurator(学芸員、世話をする人)がある。sinecureは、その正反対、つまり「世話をしなくてよい」という否定形から生まれた、やや皮肉のきいた単語だと言える。",
+      "explanation": "やや硬く、皮肉を込めて使われることが多い語彙。TOEICでは頻出しないが、ビジネスニュースや政治関連の記事で「名目だけの役職」を批判的に表現する際に使われる。"
+    }
+  },
+  {
+    "english": "ovation",
+    "detail": {
+      "pronunciation": "/oʊˈveɪʃn/",
+      "pos": "名詞",
+      "meanings": [
+        "熱狂的な拍手喝采"
+      ],
+      "examples": [
+        {
+          "en": "The singer received a standing ovation at the end of her concert.",
+          "ja": "その歌手は、コンサートの最後にスタンディングオベーションを受けた。"
+        },
+        {
+          "en": "His retirement speech was met with a warm ovation from his coworkers.",
+          "ja": "彼の退職スピーチは、同僚たちからの温かい拍手喝采で迎えられた。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "acclaim",
+          "note": "拍手に限らず、称賛や高い評価全般を指す"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "boo",
+          "note": "ブーイング"
+        }
+      ],
+      "origin": "ラテン語のovare(歓喜する、勝利を祝う)に由来する。古代ローマでは、正式な凱旋式(トリウンフス)を挙げるほどの大勝利には至らなかったものの、それなりの戦果を上げた将軍に対して、簡略化された「小凱旋式」が与えられることがあり、これがovatioと呼ばれた。ovareそのものは、勝利を祝う際の叫び声を模した語だと考えられている。",
+      "trivia": "本来のovatioは、正式な凱旋式で牛を生贄に捧げるのに対し、より格の低い儀式として羊を生贄に捧げていたとされる。1830年代になって、この古代ローマの儀式名が、劇場やコンサートで観客が惜しみなく送る「熱狂的な拍手喝采」を指す言葉として比喩的に使われるようになり、現在の意味が定着した。",
+      "explanation": "コンサートや式典などで、熱狂的な拍手を表す語としてよく使われる。give someone a standing ovation(スタンディングオベーションを送る)の形が特に頻出する。"
+    }
+  },
+  {
+    "english": "circus",
+    "detail": {
+      "pronunciation": "/ˈsɜːrkəs/",
+      "pos": "名詞",
+      "meanings": [
+        "曲芸などを見せる移動式の娯楽興行",
+        "(比喩的に)大混乱、収拾のつかない状況"
+      ],
+      "examples": [
+        {
+          "en": "The children were thrilled to watch the acrobats perform at the circus.",
+          "ja": "子どもたちは、サーカスで曲芸師たちが演技するのを見てわくわくした。"
+        },
+        {
+          "en": "The meeting turned into a complete circus, with everyone talking over each other.",
+          "ja": "その会議は、全員が同時にしゃべり出す完全な大混乱に陥った。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "chaos",
+          "note": "circusの比喩的用法(大混乱)に近い、より一般的な語"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のcircus(円、円形の線)に由来する。古代ローマでは、この語が戦車競走や見世物が行われる円形・楕円形の競技場、特に有名なキルクス・マキシムス(Circus Maximus)を指すのに使われた。18世紀末のイギリスで、曲馬や曲芸を見せる円形の会場を指す語として復活し、そこから「移動式の曲芸興行」全体を指す現代の意味が生まれた。",
+      "trivia": "1869年頃からは、比喩的に「騒々しく収拾のつかない状況」を表す口語表現としても使われるようになった。ロンドンのピカデリー・サーカス(Piccadilly Circus)のように、地名としての「サーカス」は、道路が円形に交わる場所を指す、この語のもう一つの古い意味を今に伝えている。",
+      "explanation": "娯楽としての「サーカス」を指す基本語だが、比喩的に「大混乱、収拾のつかない状況」を表す口語表現としても日常会話で使われる。"
+    }
+  },
+  {
+    "english": "arena",
+    "detail": {
+      "pronunciation": "/əˈriːnə/",
+      "pos": "名詞",
+      "meanings": [
+        "競技場、試合会場",
+        "(比喩的に)活動や競争が行われる分野"
+      ],
+      "examples": [
+        {
+          "en": "The new arena can seat up to twenty thousand spectators for basketball games.",
+          "ja": "その新しいアリーナは、バスケットボールの試合で最大2万人の観客を収容できる。"
+        },
+        {
+          "en": "She has become a respected voice in the political arena.",
+          "ja": "彼女は、政治の分野で一目置かれる存在になった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "stadium",
+          "note": "主に屋外の、より大規模な競技場を指すことが多い"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のharena(砂、砂地)に由来する。古代ローマの円形闘技場では、剣闘士同士の戦いなどで流れる血を吸い取らせるために、中央の闘技場に砂が敷き詰められていた。この「戦いの場に敷かれた砂」そのものを指す語が、やがて戦いや競技が行われる「場」そのものを指す語に転じた。",
+      "trivia": "この語の由来については、ラテン語以前にさかのぼるとエトルリア語から来た可能性があるとされ、完全には解明されていない。19世紀初頭には、スポーツの競技場という意味を超えて、political arena(政治の舞台)やbusiness arena(ビジネスの世界)のように、比喩的な「活動・競争の場」を指す意味にも広がった。",
+      "explanation": "スポーツ施設としての「アリーナ」を指す基本語だが、in the political/business arena(政治・ビジネスの舞台で)のように、比喩的な意味でもTOEICやビジネス英語で頻出する。"
+    }
+  },
+  {
+    "english": "cereal",
+    "detail": {
+      "pronunciation": "/ˈsɪriəl/",
+      "pos": "名詞",
+      "meanings": [
+        "食用の穀物、または穀物を加工した朝食用食品"
+      ],
+      "examples": [
+        {
+          "en": "He usually eats a bowl of cereal with milk for breakfast.",
+          "ja": "彼はたいてい朝食に、牛乳をかけたシリアルを一杯食べる。"
+        },
+        {
+          "en": "Rice is one of the most widely consumed cereals in the world.",
+          "ja": "米は、世界で最も広く消費されている穀物の一つだ。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "grain",
+          "note": "より広く穀物一般を指す一般的な語"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のCerealis(ケレスの、穀物の)に由来する。ローマ神話の農業と豊穣の女神ケレス(Ceres)の名にちなんだ形容詞で、彼女が小麦などの穀物を人々にもたらしたとされることから、穀物全般を指す語として使われるようになった。19世紀末のアメリカで、加工された朝食用の穀物食品を指す意味が新たに加わった。",
+      "trivia": "英語のcreate(創造する)やincrease(増加する)も、「育てる、増やす」を意味する同じ語根(creareの起源となったPIE語根)にさかのぼるとされ、農業の女神ケレスの名前と「創造・増加」を表す単語群は、遠い親戚関係にある。",
+      "explanation": "朝食用のシリアル食品を指す日常語として最も頻繁に使われるが、農学や食品関連の文章では「穀物」全般を指す語としても使われる。"
+    }
+  },
+  {
+    "english": "companion",
+    "detail": {
+      "pronunciation": "/kəmˈpænjən/",
+      "pos": "名詞",
+      "meanings": [
+        "行動や時間を共にする仲間、相棒"
+      ],
+      "examples": [
+        {
+          "en": "The elderly man adopted a dog to be his companion after retirement.",
+          "ja": "その高齢の男性は、退職後の話し相手として犬を引き取った。"
+        },
+        {
+          "en": "She has been a loyal companion to her business partner for over a decade.",
+          "ja": "彼女は10年以上にわたり、ビジネスパートナーの誠実な相棒であり続けている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "companionship",
+          "pos": "名詞",
+          "ja": "仲間であること、友情関係"
+        },
+        {
+          "word": "accompany",
+          "pos": "動詞",
+          "ja": "同行する、付き添う"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "comrade",
+          "note": "苦楽を共にする仲間というニュアンスが強く、やや古風・改まった響きを持つ"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "stranger",
+          "note": "見知らぬ他人"
+        }
+      ],
+      "origin": "後期ラテン語のcompanio(パンを共にする者)に由来する。com-(共に)とpanis(パン)が組み合わさった語で、文字通りには「同じパンを分け合う仲間」を意味した。フランクの民族の間で生まれたとされ、ゲルマン語にも「同じパンを食べる者」を意味する似た表現(ゴート語のgahlaiba等)があったことから、翻訳語として定着したとも考えられている。",
+      "trivia": "同じcom+panisの語源を持つ単語にcompany(会社、仲間)がある。「会社」という単語も、元をたどれば「同じ釜の飯を食う仲間」に近い発想から生まれたと考えると、企業文化における一体感の重要性がなんとなく腑に落ちる。",
+      "explanation": "旅行記や物語、日常会話で「連れ、相棒」を表す際によく使われる語。travel companion(旅の道連れ)のように名詞を修飾する形でも頻出する。"
+    }
+  },
+  {
+    "english": "incandescent",
+    "detail": {
+      "pronunciation": "/ˌɪnkænˈdesnt/",
+      "pos": "形容詞",
+      "meanings": [
+        "熱せられて白く光り輝いている",
+        "(比喩的に)感情や才能などが強烈で圧倒的な"
+      ],
+      "examples": [
+        {
+          "en": "The old incandescent light bulbs waste a lot of energy as heat.",
+          "ja": "旧式の白熱電球は、多くのエネルギーを熱として無駄にしてしまう。"
+        },
+        {
+          "en": "Her incandescent performance earned a standing ovation from the audience.",
+          "ja": "彼女の目もくらむような熱演は、観客からスタンディングオベーションを受けた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "incandescence",
+          "pos": "名詞",
+          "ja": "白熱、強烈な輝き"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "luminous",
+          "note": "より広く「発光している」ことを指し、熱による発光に限らない"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "dim",
+          "note": "薄暗い、光が弱い"
+        }
+      ],
+      "origin": "ラテン語のincandescere(熱くなって輝き出す)に由来する。in-(〜の中で)とcandescere(白く輝き始める)が組み合わさった語で、candescereはさらに「輝く」を意味するcandereにつながる。もともとは金属などを熱したときに白く発光する現象そのものを表す語だった。",
+      "trivia": "17世紀に発明家たちが電気で発光する仕組みを研究する中で、この「熱して白く輝かせる」というラテン語由来の概念が「白熱電球(incandescent light bulb)」という形で1880年代に定着した。LED照明の普及とともに、白熱電球は徐々に姿を消しつつある。",
+      "explanation": "物理的な「白熱」の意味に加え、比喩的に「(才能・感情などが)強烈で圧倒的な」という意味でも使われる、やや硬めの語彙。"
+    }
+  },
+  {
+    "english": "fascinate",
+    "detail": {
+      "pronunciation": "/ˈfæsɪneɪt/",
+      "pos": "動詞",
+      "meanings": [
+        "(人を)強く引きつけて夢中にさせる、魅了する"
+      ],
+      "examples": [
+        {
+          "en": "The lecture on ancient Roman history fascinated the entire audience.",
+          "ja": "古代ローマ史についての講義は、聴衆全員を魅了した。"
+        },
+        {
+          "en": "Children are often fascinated by how airplanes manage to fly.",
+          "ja": "子どもたちは、飛行機がどうやって飛ぶのかにしばしば夢中になる。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "fascinating",
+          "pos": "形容詞",
+          "ja": "魅力的な、興味をそそる"
+        },
+        {
+          "word": "fascination",
+          "pos": "名詞",
+          "ja": "魅了されること、強い興味"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "captivate",
+          "note": "より「心を奪う」という積極的な魅力を強調する語"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "bore",
+          "note": "退屈させる"
+        }
+      ],
+      "origin": "ラテン語のfascinare(魔法をかける、呪縛する)に由来する。名詞fascinum(魔除け・呪術)から派生した語で、元来は蛇や魔女が視線の力で相手を金縛りにするという迷信的な力を指した。fascinumそのものの語源は不明とされているが、視線によって人を動けなくする、という不思議な力のイメージが基盤にある。",
+      "trivia": "「魅了する」を意味する類語にはenchant(魔法をかける)やcharm(魔力・お守り)もあるが、いずれも元をたどると「呪術的な力で人を支配する」という古代の世界観に行き着く。19世紀になってようやく、fascinateは超自然的な意味合いを離れ、単に「強く興味を引く」という穏やかな意味で定着した。",
+      "explanation": "現代英語では日常的にポジティブな意味で「魅了される、興味をそそられる」という場面で幅広く使われる。be fascinated by ~の形が特によく使われる。"
+    }
+  },
+  {
+    "english": "trivial",
+    "detail": {
+      "pronunciation": "/ˈtrɪviəl/",
+      "pos": "形容詞",
+      "meanings": [
+        "取るに足らない、些細な"
+      ],
+      "examples": [
+        {
+          "en": "Don't waste the meeting arguing over such a trivial detail.",
+          "ja": "そんな些細な点をめぐって、会議の時間を無駄にしないでください。"
+        },
+        {
+          "en": "To her, the mistake seemed trivial, but her boss saw it differently.",
+          "ja": "彼女にとってそのミスは些細に思えたが、上司の見方は違った。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "trivia",
+          "pos": "名詞",
+          "ja": "雑学、ちょっとした豆知識"
+        },
+        {
+          "word": "trivialize",
+          "pos": "動詞",
+          "ja": "軽視する、些細なことのように扱う"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "insignificant",
+          "note": "より客観的に「重要性が低い」ことを強調する語"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "crucial",
+          "note": "極めて重要な"
+        }
+      ],
+      "origin": "ラテン語のtrivialis(三叉路の、どこにでもある)に由来する。tri-(三つの)とvia(道)からなるtrivium(三本の道が交わる場所)が元になっている。人通りの多い交差点は誰もが行き交う場所であり、そこで交わされる話題は「ありふれた、当たり前の」ものだと考えられたことから、「平凡な」→「取るに足らない」という意味に変化した。",
+      "trivia": "中世ヨーロッパの大学では、文法・修辞学・論理学の3科目をtrivium(トリウィウム)と呼び、専門教育に進む前の基礎課程とされていた。基礎的で誰もが学ぶ内容であったことも、trivialが「ありふれた」という語感を強めた一因と考えられている。ちなみに名詞のtrivia(雑学)も同じ語源から生まれた単語である。",
+      "explanation": "ビジネスの会話でも「些細な問題」「重要でない詳細」を表す際に頻繁に使われる形容詞。a trivial matter/issueのような形でよく使われる。"
+    }
+  },
+  {
+    "english": "adult",
+    "detail": {
+      "pronunciation": "/əˈdʌlt/",
+      "pos": "名詞",
+      "meanings": [
+        "十分に成長した人、成人"
+      ],
+      "examples": [
+        {
+          "en": "This amusement park charges a different admission fee for adults and children.",
+          "ja": "この遊園地では、大人と子どもで異なる入場料が設定されている。"
+        },
+        {
+          "en": "As an adult, she finally understood why her parents had worried so much.",
+          "ja": "大人になって、彼女はようやく両親があれほど心配していた理由を理解した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "adulthood",
+          "pos": "名詞",
+          "ja": "成人期、大人であること"
+        },
+        {
+          "word": "adolescent",
+          "pos": "名詞・形容詞",
+          "ja": "思春期の(若者)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "grown-up",
+          "note": "より口語的でくだけた言い方"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "minor",
+          "note": "未成年者"
+        }
+      ],
+      "origin": "ラテン語のadultus(成長した)に由来する。これはadolescere(成長する、成熟に向かう)の過去分詞形で、「まだ成長の途中にある」ことを表すadolescent(思春期の)と同じ語源を持つ。adultは「成長のプロセスが完了した状態」を、adolescentは「成長のプロセスの最中にある状態」を指しており、両者は対になる関係にある。",
+      "trivia": "adolescere自体は「養われる、育つ」を意味するalescereにさかのぼり、さらに「育てる、養う」を意味するalereに関係する。alereは、栄養を与えて育てるという意味の単語aliment(食物)などにも痕跡を残しており、「成長」と「栄養」が語源的に深く結びついていることが分かる。",
+      "explanation": "年齢や成熟度に関する基本的な語で、法律・教育・日常会話のあらゆる場面で使われる。形容詞としても「成人向けの、成熟した」という意味で使われる。"
+    }
+  },
+  {
+    "english": "hostile",
+    "detail": {
+      "pronunciation": "/ˈhɑːstl/",
+      "pos": "形容詞",
+      "meanings": [
+        "敵意を持った、対立的な"
+      ],
+      "examples": [
+        {
+          "en": "The two companies have a hostile relationship due to a long-standing lawsuit.",
+          "ja": "その2社は、長年続く訴訟のせいで敵対的な関係にある。"
+        },
+        {
+          "en": "Employees described the workplace as increasingly hostile after the merger.",
+          "ja": "従業員たちは、合併後に職場がますます険悪になったと述べた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "hostility",
+          "pos": "名詞",
+          "ja": "敵意、敵対関係"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "antagonistic",
+          "note": "個人間の敵対的な態度をより強調する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "amicable",
+          "note": "友好的な"
+        }
+      ],
+      "origin": "ラテン語のhostis(見知らぬ者、外国人、後に「敵」)に由来する。もともとは単に「よそ者、外部の者」を意味する中立的な語だったが、見知らぬ相手は味方にも敵にもなり得るという古代社会の現実を反映し、次第に「敵」という意味に偏っていった。この語は、インド・ヨーロッパ祖語の「客人・よそ者」を意味する語根にさかのぼり、hospitality(もてなし)やhospital(病院)の語源であるhospes(客、主人)とも親戚関係にある。",
+      "trivia": "「見知らぬ者」を意味した同じ語根から、一方では「客をもてなす」という意味のhospitality、hotelが生まれ、もう一方では「敵」という意味のhostile、hostage(人質)が生まれた。見知らぬ相手を歓迎するか警戒するかという、古代社会の二つの態度がそのまま単語の分岐として残っている興味深い例である。",
+      "explanation": "ビジネスの文脈でもhostile takeover(敵対的買収)、hostile environment(険悪な環境)のように頻出する形容詞。"
+    }
+  },
+  {
+    "english": "curriculum",
+    "detail": {
+      "pronunciation": "/kəˈrɪkjələm/",
+      "pos": "名詞",
+      "meanings": [
+        "学校などで体系的に組まれた学習内容・科目の計画"
+      ],
+      "examples": [
+        {
+          "en": "The university revised its curriculum to include more practical training.",
+          "ja": "その大学は、より実践的な研修を含めるようカリキュラムを改訂した。"
+        },
+        {
+          "en": "Coding classes have become part of the standard curriculum in many schools.",
+          "ja": "多くの学校で、プログラミングの授業が標準的なカリキュラムの一部となっている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "curricular",
+          "pos": "形容詞",
+          "ja": "カリキュラムの"
+        },
+        {
+          "word": "extracurricular",
+          "pos": "形容詞",
+          "ja": "課外の"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "syllabus",
+          "note": "より個別の授業・科目ごとの詳細な計画を指すことが多い"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のcurriculum(走ること、競走路、経歴)に由来する。走ることを意味するcurrere(クレレレ)から派生した語で、もともとは戦車競走で使われる「走路」や「疾走する戦車」そのものを指していた。学業の道のりを、決まったコースを走り抜けるレースになぞらえたことから、19世紀のスコットランドの大学で「学習課程」という意味で使われるようになった。",
+      "trivia": "「走る」を意味するcurrereからは、courier(急使、速く走って手紙を届ける人)やcurrent(流れ、現在の)、occur(起こる、思いがけず走り込んでくる)など、非常に多くの単語が枝分かれしている。「決められたコースを走り抜ける」というイメージが、学業の「カリキュラム」という言葉の裏に隠れているとは、多くの学生も気づいていないだろう。",
+      "explanation": "教育関連の話題で頻出する基本語。TOEICでは学校・研修プログラムに関する文章でよく登場する。"
+    }
+  },
+  {
+    "english": "courier",
+    "detail": {
+      "pronunciation": "/ˈkʊriər/",
+      "pos": "名詞",
+      "meanings": [
+        "手紙や荷物を届ける配達人、急使"
+      ],
+      "examples": [
+        {
+          "en": "The company uses a courier service to deliver important documents overnight.",
+          "ja": "その会社は、重要な書類を翌日配達するために宅配業者を利用している。"
+        },
+        {
+          "en": "A courier arrived at the office with an urgent package for the manager.",
+          "ja": "急使が、マネージャー宛ての至急の荷物を持ってオフィスに到着した。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "messenger",
+          "note": "より広く「伝達者」全般を指し、必ずしも荷物配達に限らない"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のcurrere(走る)に由来する。もともとは「速い馬」を意味する語として英語に入り、そこから馬に乗って手紙や知らせを運ぶ「急使」を指すようになった。18世紀には、旅行者のために宿の手配などを行う「旅行付き添い人」という意味にも広がった。",
+      "trivia": "同じcurrere(走る)を語源に持つcurriculum(カリキュラム、本来は競走路)とcourier(急使、本来は速く走る馬)は、どちらも「速く走る」というイメージを核に持ちながら、まったく異なる現代の意味に発展した親戚の単語である。",
+      "explanation": "ビジネス文書や配送に関する話題で頻出する語で、by courier(宅配便で)、courier service(宅配業者)のような形でよく使われる。"
+    }
+  },
+  {
+    "english": "compromise",
+    "detail": {
+      "pronunciation": "/ˈkɑːmprəmaɪz/",
+      "pos": "名詞",
+      "meanings": [
+        "互いに譲歩し合って成立させる合意、妥協案"
+      ],
+      "examples": [
+        {
+          "en": "After hours of negotiation, both sides finally reached a compromise.",
+          "ja": "何時間もの交渉の末、両者はついに妥協案に達した。"
+        },
+        {
+          "en": "She refused to make any compromise on the quality of the product.",
+          "ja": "彼女は、その製品の品質に関しては一切妥協しようとしなかった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "compromising",
+          "pos": "形容詞",
+          "ja": "体面を傷つけかねない"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "concession",
+          "note": "一方的に譲歩する行為そのものを指すことが多い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "deadlock",
+          "note": "行き詰まり、膠着状態"
+        }
+      ],
+      "origin": "後期ラテン語のcompromissus(共に誓約したこと)に由来する。com-(共に)とpromittere(約束する、誓う)が組み合わさった語で、さらにpromittereはpro-(前へ)とmittere(送る、放つ)からなる。もともとは、対立する当事者同士が「第三者の裁定に共に従う」と約束する行為を指しており、そこから「互いに譲歩して合意する」という現在の意味に発展した。",
+      "trivia": "動詞のcompromiseには、「体面や安全を危険にさらす」という一見別の意味もある(compromise one's safety/integrityなど)。これは、当初の「合意によって自らの立場を制限する」という意味合いが、時代とともに「自らを不利な立場に追い込む」というネガティブな方向に広がった結果とされる。",
+      "explanation": "ビジネスや外交の交渉の場面で頻出する基本語。reach a compromise(妥協案に達する)の形でよく使われる。"
+    }
+  },
+  {
+    "english": "amateur",
+    "detail": {
+      "pronunciation": "/ˈæmətər/",
+      "pos": "名詞",
+      "meanings": [
+        "職業としてではなく趣味や愛好として行う人、素人"
+      ],
+      "examples": [
+        {
+          "en": "She is an amateur photographer who sells her work on weekends only.",
+          "ja": "彼女はアマチュアの写真家で、週末だけ自分の作品を販売している。"
+        },
+        {
+          "en": "The tournament is open to both professional and amateur golfers.",
+          "ja": "その大会は、プロとアマチュアの両方のゴルファーに門戸を開いている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "amateurish",
+          "pos": "形容詞",
+          "ja": "素人くさい、稚拙な"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "hobbyist",
+          "note": "より趣味に打ち込む人というニュアンスが強い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "professional",
+          "note": "職業として行う人"
+        }
+      ],
+      "origin": "ラテン語のamare(愛する)に由来する。フランス語のamateur(愛好者)を経て英語に入った語で、もとになるamatorem(愛する者)は、amare(愛する)の過去分詞amatusから作られた名詞である。「お金のためではなく、純粋にそれを愛するがゆえに行う人」という発想が、そのまま「アマチュア、愛好家」という意味の基盤になっている。",
+      "trivia": "18世紀に英語に定着した当初は、単に「ある分野を愛し、たしなむ人」という肯定的な意味合いが強かったが、次第に「専門家ではない、生半可な人」という、やや見下したニュアンスも帯びるようになった。ただしスポーツの世界では、amateur(アマチュア)であることがむしろプロよりも高潔だとみなされてきた歴史もあり、必ずしも否定的な意味だけではない。",
+      "explanation": "スポーツ・芸術・趣味の分野で、「プロではなく愛好家として行う人」を表す基本語。amateur photographer/athleteのような形でよく使われる。"
+    }
+  },
+  {
+    "english": "cancel",
+    "detail": {
+      "pronunciation": "/ˈkænsl/",
+      "pos": "動詞",
+      "meanings": [
+        "(予定・契約などを)取り消す、解約する"
+      ],
+      "examples": [
+        {
+          "en": "We had to cancel the meeting because half the team was out sick.",
+          "ja": "チームの半分が病欠だったため、その会議を中止せざるを得なかった。"
+        },
+        {
+          "en": "You can cancel your subscription at any time without a penalty.",
+          "ja": "違約金なしで、いつでもご契約を解約いただけます。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "cancellation",
+          "pos": "名詞",
+          "ja": "取り消し、解約"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "annul",
+          "note": "契約や結婚などを法的に無効にするという、より公式なニュアンス"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "confirm",
+          "note": "確定する"
+        }
+      ],
+      "origin": "ラテン語のcancellare(格子状にする)に由来する。cancelli(格子、柵)の動詞形で、文書に格子状の線を引いて内容を無効にする、という中世の習慣が元になっている。線を交差させて書類を「見え消し」にする行為そのものが、そのまま「取り消す」という意味の動詞になった。",
+      "trivia": "このcancelliは「蟹」を意味するcancer(病気の癌や星座のかに座と同じつづり)とは別の語で、実は「牢屋」を意味するcarcerの変化形とされている。つづりが同じcancerでも、格子模様の柵を指す語と、蟹を指す語は語源的には別系統というのは紛らわしいが面白い事実である。",
+      "explanation": "予定・契約・注文などを「取り消す」という意味で日常的に非常によく使われる基本動詞。TOEICのメール・予約関連の場面でも頻出する。"
+    }
+  },
+  {
+    "english": "explode",
+    "detail": {
+      "pronunciation": "/ɪkˈsploʊd/",
+      "pos": "動詞",
+      "meanings": [
+        "爆発する、破裂する",
+        "(感情などが)急に爆発する",
+        "(数量などが)急増する"
+      ],
+      "examples": [
+        {
+          "en": "The old boiler exploded, causing significant damage to the factory.",
+          "ja": "その古いボイラーが爆発し、工場に大きな被害をもたらした。"
+        },
+        {
+          "en": "He finally exploded with anger after months of frustration.",
+          "ja": "彼は何か月ものフラストレーションの末、ついに怒りを爆発させた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "explosion",
+          "pos": "名詞",
+          "ja": "爆発"
+        },
+        {
+          "word": "explosive",
+          "pos": "形容詞",
+          "ja": "爆発性の、爆発的な"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "detonate",
+          "note": "火薬などを意図的に爆発させる、より専門的な語"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "implode",
+          "note": "内側に向かって崩壊する"
+        }
+      ],
+      "origin": "ラテン語のexplodere(舞台から追い出す)に由来する。ex-(外へ)とplaudere(手を叩く)が組み合わさった語で、もともとは古代ローマの劇場で、観客が下手な役者を拍手や罵声で舞台から追い払う様子を表していた。「大きな音や騒ぎで何かを追い出す」という意味から、時代を経て「大きな音を立てて破裂する」という物理的な意味に変化した。",
+      "trivia": "同じplaudere(手を叩く)を語源に持つ単語にapplaud(拍手する)がある。explodeが「拍手で追い払う」だったのに対し、applaudは「拍手で称える」という正反対の使われ方をする、面白い対の関係にある。",
+      "explanation": "物理的な爆発だけでなく、人口や需要などが「急増する」、感情が「爆発する」という比喩的な意味でも非常によく使われる基本動詞。"
+    }
+  },
+  {
+    "english": "applaud",
+    "detail": {
+      "pronunciation": "/əˈplɔːd/",
+      "pos": "動詞",
+      "meanings": [
+        "拍手を送る、称賛する"
+      ],
+      "examples": [
+        {
+          "en": "The audience applauded loudly when the pianist finished her performance.",
+          "ja": "ピアニストが演奏を終えると、観客は大きな拍手を送った。"
+        },
+        {
+          "en": "Critics applauded the company's decision to invest in renewable energy.",
+          "ja": "評論家たちは、その企業が再生可能エネルギーへの投資を決めたことを称賛した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "applause",
+          "pos": "名詞",
+          "ja": "拍手、称賛"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "commend",
+          "note": "公式に、または改まった調子で称賛するというニュアンスが強い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "criticize",
+          "note": "批判する"
+        }
+      ],
+      "origin": "ラテン語のapplaudere(拍手を送る、賛意を示す)に由来する。ad-(〜に対して)とplaudere(手を叩く)が組み合わさった語。興味深いことに英語では、「称賛する」という抽象的な意味の方が、「手を叩く」という具体的な意味よりも先に定着したとされる。",
+      "trivia": "plaudereの語源そのものは不明とされているが、そこから派生した単語群は多岐にわたる。explode(爆発する、元は拍手で舞台から追い出す)やplausible(もっともらしい、元は「拍手に値する」)も同じ語族の仲間である。",
+      "explanation": "文字通りの「拍手する」という意味のほか、ビジネスやニュースの文脈で「(決定や行動を)称賛する、支持を表明する」という意味でもよく使われる。"
+    }
+  },
+  {
+    "english": "entertain",
+    "detail": {
+      "pronunciation": "/ˌentərˈteɪn/",
+      "pos": "動詞",
+      "meanings": [
+        "(人を)楽しませる、もてなす",
+        "(考えや提案を)心にとどめて検討する"
+      ],
+      "examples": [
+        {
+          "en": "The comedian entertained the crowd with his witty jokes.",
+          "ja": "その芸人は、機知に富んだジョークで観客を楽しませた。"
+        },
+        {
+          "en": "The manager was willing to entertain new ideas from junior staff.",
+          "ja": "そのマネージャーは、若手社員からの新しいアイデアを検討する用意があった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "entertainment",
+          "pos": "名詞",
+          "ja": "娯楽"
+        },
+        {
+          "word": "entertaining",
+          "pos": "形容詞",
+          "ja": "面白い、楽しませる"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "amuse",
+          "note": "より単純に「笑わせる、楽しませる」ことに焦点を当てる"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "bore",
+          "note": "退屈させる"
+        }
+      ],
+      "origin": "古フランス語のentretenir(保つ、維持する)に由来し、さらにさかのぼるとラテン語のinter(〜の間で)とtenere(保つ、持つ)にたどり着く。文字通りには「(人々を)互いの間でつなぎ止めておく」という意味で、もともとは客を「引き止めてもてなす」という意味だった。ここから、客を楽しませて場をつなぎ止めるという行為が「娯楽を提供する」という意味に発展した。",
+      "trivia": "「(考えや提案を)検討する」という一見別の意味も、実は同じ語源から来ている。ある考えを頭の中に「保持しておく、心にとどめておく」というtenere本来の意味が、そのままentertain an idea(ある考えを検討する)という表現に残っている。",
+      "explanation": "「楽しませる、もてなす」という意味に加え、ビジネスの文脈でentertain a proposal/idea(提案・考えを検討する)という形でもよく使われる。"
+    }
+  },
+  {
+    "english": "pecuniary",
+    "detail": {
+      "pronunciation": "/pɪˈkjuːnieri/",
+      "pos": "形容詞",
+      "meanings": [
+        "金銭に関する、金銭上の"
+      ],
+      "examples": [
+        {
+          "en": "The lawsuit resulted in significant pecuniary damages for the company.",
+          "ja": "その訴訟により、その会社は多額の金銭的損害を被る結果となった。"
+        },
+        {
+          "en": "He had no pecuniary interest in the outcome of the deal.",
+          "ja": "彼はその取引の結果に金銭的な利害関係を持っていなかった。"
+        }
+      ],
+      "derivatives": [],
+      "synonyms": [
+        {
+          "word": "monetary",
+          "note": "より一般的で使用頻度の高い同義語"
+        },
+        {
+          "word": "financial",
+          "note": "より広く「財務・金融に関する」ことを表す"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のpecunia(金、財産)に由来し、さらにさかのぼるとpecu(家畜)につながるとされる。古代社会では牛や羊などの家畜そのものが富の単位として扱われており、家畜を意味する語が「お金」を意味する語に変化した。この家畜と富の結びつきは、古代ローマの文人キケロの時代にもまだ意識されていたと伝えられている。",
+      "trivia": "英語のcattle(牛)やchattel(動産、財産)も、家畜を意味するラテン語capitale(頭数で数えられるもの)にさかのぼる親戚の単語とされる。「財産を数える」という発想が、動物の頭数を数えることと密接に結び付いていた古代の名残が、複数の英単語に分かれて残っている。",
+      "explanation": "monetaryやfinancialよりもやや硬く書き言葉的な響きを持つ語で、法律文書やフォーマルなビジネス文書でpecuniary damages(金銭的損害)、pecuniary interest(金銭的利害)のような形でよく使われる。"
+    }
+  },
+  {
+    "english": "abundant",
+    "detail": {
+      "pronunciation": "/əˈbʌndənt/",
+      "pos": "形容詞",
+      "meanings": [
+        "有り余るほど豊富にある"
+      ],
+      "examples": [
+        {
+          "en": "The region has abundant natural resources, including oil and natural gas.",
+          "ja": "その地域には、石油や天然ガスを含む豊富な天然資源がある。"
+        },
+        {
+          "en": "There was abundant evidence to support the company's claims.",
+          "ja": "その企業の主張を裏付ける証拠は十分すぎるほどあった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "abundance",
+          "pos": "名詞",
+          "ja": "豊富さ、大量"
+        },
+        {
+          "word": "abound",
+          "pos": "動詞",
+          "ja": "あふれるほどたくさんある"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "plentiful",
+          "note": "より日常的でくだけた響きを持つ同義語"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "scarce",
+          "note": "不足している、乏しい"
+        }
+      ],
+      "origin": "ラテン語のabundare(あふれ出る、余るほど流れ出る)に由来する。ab-(離れて)とundare(波のように盛り上がる、あふれる)が組み合わさった語で、undaは「波」を意味する。川や海の水が堤防を越えてあふれ出るイメージが、そのまま「有り余るほど豊富にある」という意味に転じた。",
+      "trivia": "同じundaを語源とする単語には、inundate(水浸しにする、押し寄せる)やredundant(余分な、重複した)がある。いずれも「波」や「あふれる水」のイメージを核に持つ単語で、豊かさや過剰さを表す英単語の背景に、川の氾濫という古代の身近な自然現象が横たわっている。",
+      "explanation": "ビジネスやニュースの文脈で「資源・証拠・機会などが豊富にある」ことを表す際によく使われる形容詞。an abundance of ~という名詞形も頻出する。"
+    }
+  },
+  {
+    "english": "inundate",
+    "detail": {
+      "pronunciation": "/ˈɪnʌndeɪt/",
+      "pos": "動詞",
+      "meanings": [
+        "大量のもので圧倒する、殺到させる",
+        "(本来は)水浸しにする"
+      ],
+      "examples": [
+        {
+          "en": "The customer service team was inundated with complaints after the system failure.",
+          "ja": "システム障害の後、カスタマーサービスチームには苦情が殺到した。"
+        },
+        {
+          "en": "Heavy rain inundated the low-lying areas of the city.",
+          "ja": "大雨がその都市の低地を水浸しにした。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "inundation",
+          "pos": "名詞",
+          "ja": "氾濫、殺到"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "overwhelm",
+          "note": "物理的な水だけでなく、感情や情報量など幅広い対象に使える"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語のinundare(水があふれ出る、氾濫する)に由来する。in-(中へ)とundare(波打つ、あふれる)が組み合わさった語で、undaは「波」を意味する。もともとは川の水が堤防を越えて土地を水浸しにする様子を表す語だった。",
+      "trivia": "abundant(豊富な)やredundant(余分な)と同じくunda(波)を語源に持つ仲間の単語。現代英語ではbe inundated with emails/requests(メールや依頼が殺到する)のように、物理的な洪水ではなく「情報や仕事量の洪水」を表す比喩表現として使われることが非常に多い。",
+      "explanation": "be inundated with ~の形で、「〜が殺到して圧倒される」という意味の受動態表現としてビジネスメールや報告でよく使われる。"
+    }
+  }
+]
