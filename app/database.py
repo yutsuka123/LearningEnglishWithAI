@@ -7,6 +7,7 @@ the data directory defined in :mod:`app.config`.
 
 from __future__ import annotations
 
+import os
 import sqlite3
 from contextlib import contextmanager
 from datetime import date
@@ -19,7 +20,7 @@ from .config import paths
 # ---------------------------------------------------------------------------
 
 SCHEMA = """
-CREATE TABLE IF NOT EXISTS words (
+CREATE TABLE IF NOT EXISTS content.words (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     english       TEXT    NOT NULL,
     japanese      TEXT    NOT NULL,
@@ -43,16 +44,20 @@ CREATE TABLE IF NOT EXISTS words (
 );
 
 -- Per-attempt log so we can award +5 only when BOTH directions are correct.
+-- word_id has no REFERENCES: words lives in the attached `content` database
+-- after the 2026-09-14 DB split, and SQLite foreign keys cannot cross
+-- ATTACHed database files (see docs/TODO.md "DB分割の検討"). Cascade-delete
+-- on word removal is handled explicitly in vocabulary.py's delete_word.
 CREATE TABLE IF NOT EXISTS word_attempts (
     id        INTEGER PRIMARY KEY AUTOINCREMENT,
-    word_id   INTEGER NOT NULL REFERENCES words(id) ON DELETE CASCADE,
+    word_id   INTEGER NOT NULL,
     direction TEXT    NOT NULL,                  -- 'ja2en' | 'en2ja'
     correct   INTEGER NOT NULL,                  -- 0 | 1
     created_at TEXT   NOT NULL DEFAULT (datetime('now'))
 );
 
 -- Generic mastery-tracked categories for 会話/リーディング/ライティング/文学.
-CREATE TABLE IF NOT EXISTS categories (
+CREATE TABLE IF NOT EXISTS content.categories (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     area         TEXT    NOT NULL,   -- conversation/reading/writing/literature
     grp          TEXT    DEFAULT '', -- 日常会話 / ビジネス / IT / 旅行 ...
@@ -64,7 +69,7 @@ CREATE TABLE IF NOT EXISTS categories (
 );
 
 -- Listening has extra fields (accent, weak areas, comprehension).
-CREATE TABLE IF NOT EXISTS listening_topics (
+CREATE TABLE IF NOT EXISTS content.listening_topics (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     source        TEXT NOT NULL,    -- 映画/ドラマ/YouTube/ニュース
     accent        TEXT DEFAULT '',  -- アメリカ英語 / イギリス英語
@@ -99,7 +104,7 @@ CREATE TABLE IF NOT EXISTS study_sessions (
 
 -- Mini-phrases (ミニフレーズ): short useful expressions, mastery-tracked
 -- the same way as words (both directions + forgetting curve).
-CREATE TABLE IF NOT EXISTS phrases (
+CREATE TABLE IF NOT EXISTS content.phrases (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     english      TEXT NOT NULL,
     japanese     TEXT NOT NULL,
@@ -122,7 +127,7 @@ CREATE TABLE IF NOT EXISTS phrases (
 -- （例: engagement を「恋愛」を主分類にしつつ「冠婚葬祭」にもタグ付け）。
 -- 「同綴りだが意味が違う語」(agentのIT用語/スパイ用語等)は、この仕組みでは
 -- なく別々のwords行として登録する(§論点1-b、resolve API側で対応)。
-CREATE TABLE IF NOT EXISTS word_domain_tags (
+CREATE TABLE IF NOT EXISTS content.word_domain_tags (
     word_id    INTEGER NOT NULL REFERENCES words(id) ON DELETE CASCADE,
     domain     TEXT    NOT NULL,
     created_at TEXT    NOT NULL DEFAULT (datetime('now')),
@@ -135,7 +140,7 @@ CREATE TABLE IF NOT EXISTS word_domain_tags (
 -- 2026-08-20〜: kind列を追加し、ページ閲覧('visit'・pathに実際のパス)に
 -- 加えて新規登録の試行('signup'・successに成否)も同じテーブルに記録する
 -- ようにした（管理画面「未登録アクセス状況」の「登録しようとしたか」用）。
-CREATE TABLE IF NOT EXISTS landing_visits (
+CREATE TABLE IF NOT EXISTS logs.landing_visits (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     ip         TEXT    DEFAULT '',
     path       TEXT    DEFAULT '',
@@ -144,7 +149,8 @@ CREATE TABLE IF NOT EXISTS landing_visits (
     success    INTEGER,
     created_at TEXT    NOT NULL DEFAULT (datetime('now'))
 );
-CREATE INDEX IF NOT EXISTS idx_landing_visits_ip ON landing_visits(ip);
+CREATE INDEX IF NOT EXISTS logs.idx_landing_visits_ip
+    ON landing_visits(ip);
 
 -- IPごとの位置情報キャッシュ（2026-08-20・外部ジオロケーションAPIの
 -- 結果を保存し、同じIPへの再問い合わせを避ける。private/loopback等は
@@ -152,7 +158,7 @@ CREATE INDEX IF NOT EXISTS idx_landing_visits_ip ON landing_visits(ip);
 -- 会社もしくは名前」表示に使う。空ならhostname(PTR逆引き)にフォール
 -- バック）。fetched_atは再取得の要否判断に使う想定（現状は無期限
 -- キャッシュ・必要になれば期限判定を追加）。
-CREATE TABLE IF NOT EXISTS ip_geo_cache (
+CREATE TABLE IF NOT EXISTS logs.ip_geo_cache (
     ip         TEXT PRIMARY KEY,
     country    TEXT DEFAULT '',
     region     TEXT DEFAULT '',
@@ -166,7 +172,7 @@ CREATE TABLE IF NOT EXISTS ip_geo_cache (
 -- ログイン試行ログ（成功/失敗とも記録・管理画面のログ確認用・
 -- 2026-08-13ユーザー要望）。失敗ロックの判定(auth.login_locked)は
 -- 従来通りメモリ上のカウンタで行い、こちらは可視化専用の記録。
-CREATE TABLE IF NOT EXISTS login_log (
+CREATE TABLE IF NOT EXISTS logs.login_log (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     username   TEXT    NOT NULL,
     ip         TEXT    DEFAULT '',
@@ -175,9 +181,11 @@ CREATE TABLE IF NOT EXISTS login_log (
     created_at TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 
+-- phrase_id has no REFERENCES: phrases lives in the attached `content`
+-- database (see word_attempts comment above for the same reasoning).
 CREATE TABLE IF NOT EXISTS phrase_attempts (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    phrase_id  INTEGER NOT NULL REFERENCES phrases(id) ON DELETE CASCADE,
+    phrase_id  INTEGER NOT NULL,
     direction  TEXT    NOT NULL,
     correct    INTEGER NOT NULL,
     created_at TEXT    NOT NULL DEFAULT (datetime('now'))
@@ -216,9 +224,12 @@ CREATE TABLE IF NOT EXISTS decks (
     settings   TEXT    DEFAULT '{}',   -- 出題方向/合格回数/SRS/出題数 等
     created_at TEXT    NOT NULL DEFAULT (datetime('now'))
 );
+-- word_id has no REFERENCES: words lives in the attached `content` database
+-- (see word_attempts comment above). Cascade-delete on word removal is
+-- handled explicitly in vocabulary.py's delete_word.
 CREATE TABLE IF NOT EXISTS deck_words (
     deck_id INTEGER NOT NULL REFERENCES decks(id) ON DELETE CASCADE,
-    word_id INTEGER NOT NULL REFERENCES words(id) ON DELETE CASCADE,
+    word_id INTEGER NOT NULL,
     PRIMARY KEY (deck_id, word_id)
 );
 -- デッキ別の進捗（N回正解で done。グローバルの mastery とは別管理）。
@@ -239,9 +250,12 @@ CREATE TABLE IF NOT EXISTS phrase_decks (
     settings   TEXT    DEFAULT '{}',
     created_at TEXT    NOT NULL DEFAULT (datetime('now'))
 );
+-- phrase_id has no REFERENCES: phrases lives in the attached `content`
+-- database (see word_attempts comment above). Cascade-delete on phrase
+-- removal is handled explicitly in phrases.py's delete_phrase.
 CREATE TABLE IF NOT EXISTS deck_phrases (
     deck_id   INTEGER NOT NULL REFERENCES phrase_decks(id) ON DELETE CASCADE,
-    phrase_id INTEGER NOT NULL REFERENCES phrases(id) ON DELETE CASCADE,
+    phrase_id INTEGER NOT NULL,
     PRIMARY KEY (deck_id, phrase_id)
 );
 CREATE TABLE IF NOT EXISTS phrase_deck_progress (
@@ -256,7 +270,7 @@ CREATE TABLE IF NOT EXISTS phrase_deck_progress (
 -- playback be free (no API token) and supports DB(BLOB) storage as an
 -- alternative to on-disk files (AUDIO_STORAGE=db|hybrid). One row per
 -- (item_type, item_id, kind, voice).
-CREATE TABLE IF NOT EXISTS audio_blobs (
+CREATE TABLE IF NOT EXISTS content.audio_blobs (
     item_type  TEXT    NOT NULL,   -- 'word' | 'phrase'
     item_id    INTEGER NOT NULL,
     kind       TEXT    NOT NULL,   -- 'word' | 'example' | 'phrase'
@@ -290,9 +304,13 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- 単語の進捗（per-user）。words 本体の mastery/SRS 列の置き換え先。
+-- word_idにはREFERENCESを付けない: wordsはATTACH先の`content`データベース
+-- にあり、SQLiteの外部キーはATTACH間を跨げないため(word_attempts上の
+-- コメント参照)。単語削除時のカスケードはvocabulary.pyのdelete_wordで
+-- 明示的に処理する。
 CREATE TABLE IF NOT EXISTS user_word_progress (
     user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    word_id       INTEGER NOT NULL REFERENCES words(id) ON DELETE CASCADE,
+    word_id       INTEGER NOT NULL,
     mastery       INTEGER NOT NULL DEFAULT 0,
     last_studied  TEXT,
     times_asked   INTEGER NOT NULL DEFAULT 0,
@@ -322,9 +340,13 @@ CREATE TABLE IF NOT EXISTS user_material_progress (
 -- 会話/読/書/文学カテゴリの習熟度（per-user）。カテゴリ名自体(area/grp/name)は
 -- 共有、習熟度だけ user 別（旧: categories.mastery 直書きは全員で共有/混在
 -- していたバグのため2026-08-08に分離）。
+-- category_idにはREFERENCESを付けない: categoriesはATTACH先の`content`
+-- データベースにあるため(word_attempts上のコメント参照)。カテゴリ削除
+-- 機能は現状無いため、明示カスケードの追加は不要(将来削除機能を作る際は
+-- 要対応)。
 CREATE TABLE IF NOT EXISTS user_category_progress (
     user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    category_id  INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+    category_id  INTEGER NOT NULL,
     mastery      INTEGER NOT NULL DEFAULT 0,
     last_studied TEXT,
     study_count  INTEGER NOT NULL DEFAULT 0,
@@ -333,9 +355,13 @@ CREATE TABLE IF NOT EXISTS user_category_progress (
 
 -- リスニングトピックの理解度（per-user）。トピック自体(source/accent)は
 -- 共有、理解度・弱点メモだけ user 別（同上の理由で分離）。
+-- topic_idにはREFERENCESを付けない: listening_topicsはATTACH先の`content`
+-- データベースにあるため(word_attempts上のコメント参照)。トピック削除
+-- 機能は現状無いため、明示カスケードの追加は不要(将来削除機能を作る際は
+-- 要対応)。
 CREATE TABLE IF NOT EXISTS user_listening_progress (
     user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    topic_id      INTEGER NOT NULL REFERENCES listening_topics(id) ON DELETE CASCADE,
+    topic_id      INTEGER NOT NULL,
     comprehension INTEGER NOT NULL DEFAULT 0,
     weak_areas    TEXT DEFAULT '',
     study_count   INTEGER NOT NULL DEFAULT 0,
@@ -364,9 +390,12 @@ CREATE INDEX IF NOT EXISTS idx_user_settings_backups_user
     ON user_settings_backups(user_id, created_at);
 
 -- フレーズの進捗（per-user）。
+-- phrase_idにはREFERENCESを付けない: phrasesはATTACH先の`content`
+-- データベースにあるため(word_attempts上のコメント参照)。フレーズ削除時
+-- のカスケードはphrases.pyのdelete_phraseで明示的に処理する。
 CREATE TABLE IF NOT EXISTS user_phrase_progress (
     user_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    phrase_id     INTEGER NOT NULL REFERENCES phrases(id) ON DELETE CASCADE,
+    phrase_id     INTEGER NOT NULL,
     mastery       INTEGER NOT NULL DEFAULT 0,
     last_studied  TEXT,
     study_count   INTEGER NOT NULL DEFAULT 0,
@@ -562,7 +591,7 @@ CREATE TABLE IF NOT EXISTS base_orders (
 -- user_id は auth.current_user_id() をそのまま入れる（ゲストは疑似ユーザー
 -- idが入るため、users.username='guest'等で判別可能）。集計はSQL側で
 -- created_at/ip/user_id/category/labelを自由に組み合わせて行う。
-CREATE TABLE IF NOT EXISTS usage_events (
+CREATE TABLE IF NOT EXISTS logs.usage_events (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id    INTEGER,
     ip         TEXT    DEFAULT '',
@@ -571,15 +600,15 @@ CREATE TABLE IF NOT EXISTS usage_events (
     label      TEXT    NOT NULL DEFAULT '',
     created_at TEXT    NOT NULL DEFAULT (datetime('now'))
 );
-CREATE INDEX IF NOT EXISTS idx_usage_events_kind
+CREATE INDEX IF NOT EXISTS logs.idx_usage_events_kind
     ON usage_events(kind, created_at);
-CREATE INDEX IF NOT EXISTS idx_usage_events_ip ON usage_events(ip);
+CREATE INDEX IF NOT EXISTS logs.idx_usage_events_ip ON usage_events(ip);
 
 -- フロントエンドの未捕捉JS例外(window.onerror/unhandledrejection)を
 -- 記録する(2026-08-20発覚の「フロントのエラーがブラウザのコンソール
 -- にしか残らずサーバーからは見えない」穴への対応・2026-08-30)。
 -- static/js/error-report.jsからPOST /api/system/client-errorで送られる。
-CREATE TABLE IF NOT EXISTS client_errors (
+CREATE TABLE IF NOT EXISTS logs.client_errors (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id    INTEGER,
     ip         TEXT    DEFAULT '',
@@ -592,7 +621,7 @@ CREATE TABLE IF NOT EXISTS client_errors (
     col        INTEGER,
     created_at TEXT    NOT NULL DEFAULT (datetime('now'))
 );
-CREATE INDEX IF NOT EXISTS idx_client_errors_created
+CREATE INDEX IF NOT EXISTS logs.idx_client_errors_created
     ON client_errors(created_at);
 
 -- ゲーム機能第一弾「クロスワード」のプレイセッション(2026-09-03・
@@ -655,7 +684,7 @@ CREATE INDEX IF NOT EXISTS idx_crossword_sessions_user
 -- 集客用に一般公開する、事前に作り込んだ固定のサンプルクロスワード
 -- (2026-09-05)。パズル内容は全ユーザー共通(その場生成ではない)なので
 -- AI代・生成コストは初回作成時のみ(全ユーザー共有のsunkコスト)。
-CREATE TABLE IF NOT EXISTS crossword_samples (
+CREATE TABLE IF NOT EXISTS content.crossword_samples (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     title          TEXT    NOT NULL,
     description    TEXT    NOT NULL DEFAULT '',
@@ -678,11 +707,14 @@ CREATE TABLE IF NOT EXISTS crossword_samples (
 -- 再プレイは新規消費にしない=games.pyの_sample_already_played参照)。
 -- ゲストはuser_idを共有するためguest_sidで区別する(上記crossword_sessions
 -- と同じ理由)。
+-- sample_idにはREFERENCESを付けない: crossword_samplesはATTACH先の
+-- `content`データベースにあるため(word_attempts上のコメント参照)。
+-- サンプル削除機能は現状無いため、明示カスケードの追加は不要。
 CREATE TABLE IF NOT EXISTS crossword_sample_plays (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id     INTEGER NOT NULL,
     guest_sid   TEXT    NOT NULL DEFAULT '',
-    sample_id   INTEGER NOT NULL REFERENCES crossword_samples(id),
+    sample_id   INTEGER NOT NULL,
     session_id  INTEGER,
     created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
 );
@@ -710,10 +742,22 @@ def _seed_phrases(conn: sqlite3.Connection) -> None:
 
 
 def get_connection() -> sqlite3.Connection:
-    """Open a connection with sensible defaults (FK on, row dicts, WAL)."""
+    """Open a connection with sensible defaults (FK on, row dicts, WAL).
+
+    2026-09-14 DB分割: 旧単一`vocabulary.db`をcontent(語彙等)/core(users・
+    決済・単語帳・進捗等、この接続のmain)/logs(アクセスログ等)の3ファイルに
+    分割した。`content`/`logs`をATTACHしておけば、SQLiteは未修飾の
+    テーブル名をmain→ATTACH順で自動的に探すため、既存のクロスグループ
+    JOIN(例: words JOIN user_word_progress)を含む大半のSQLは無修正で動く
+    （docs/TODO.md「DB分割の検討」参照）。ATTACHは各PRAGMAより前に行う
+    必要がある(PRAGMA journal_mode=WALは無修飾だとATTACH済み全DBに効くが、
+    ATTACH**後**でないと新規ファイルに反映されないため)。
+    """
     paths.ensure()
     conn = sqlite3.connect(paths.db_file)
     conn.row_factory = sqlite3.Row
+    conn.execute("ATTACH DATABASE ? AS content", (str(paths.content_db_file),))
+    conn.execute("ATTACH DATABASE ? AS logs", (str(paths.logs_db_file),))
     conn.execute("PRAGMA foreign_keys = ON")
     conn.execute("PRAGMA journal_mode = WAL")
     # WAL でも書き込みは同時に1本まで。busy_timeout 未設定(既定0)だと
@@ -920,7 +964,7 @@ def _migrate(conn: sqlite3.Connection) -> None:
     # detail側も正しく更新していれば発火しない(ローカルDBのコピーで
     # 動作確認済み)。
     conn.execute("""
-        CREATE TRIGGER IF NOT EXISTS trg_words_example_ja_invalidate
+        CREATE TRIGGER IF NOT EXISTS content.trg_words_example_ja_invalidate
         AFTER UPDATE OF example ON words
         FOR EACH ROW
         WHEN NEW.example IS NOT OLD.example
@@ -1169,10 +1213,94 @@ def _migrate_membership_status(conn: sqlite3.Connection) -> None:
     )
 
 
+def _check_no_duplicate_table_names(conn: sqlite3.Connection) -> None:
+    """2026-09-14 DB分割ガード: main(core)/content/logsの3スキーマに
+    同名テーブルが無いことを起動時に確認する。SQLiteは同名テーブルが
+    複数ATTACH先に存在してもエラーにせず未修飾参照が片方だけを指す
+    ようになる(=もう片方は静かに参照不能になる)ため、移行ミスを即座に
+    検知できるようこの一回限りのチェックを設ける（サブエージェントによる
+    技術検証で判明した注意点、docs/TODO.md「DB分割の検討」参照）。"""
+    # sqlite_sequence はAUTOINCREMENT用のSQLite内部テーブルで、
+    # ファイルごとに1つずつ存在するのが正常(重複ではない)ため除外する。
+    rows = conn.execute(
+        "SELECT name, 'main' AS db FROM sqlite_master "
+        "WHERE type='table' AND name != 'sqlite_sequence' "
+        "UNION ALL "
+        "SELECT name, 'content' FROM content.sqlite_master "
+        "WHERE type='table' AND name != 'sqlite_sequence' "
+        "UNION ALL "
+        "SELECT name, 'logs' FROM logs.sqlite_master "
+        "WHERE type='table' AND name != 'sqlite_sequence'"
+    ).fetchall()
+    seen: dict[str, str] = {}
+    dupes = []
+    for r in rows:
+        name, dbname = r["name"], r["db"]
+        if name in seen and seen[name] != dbname:
+            dupes.append((name, seen[name], dbname))
+        else:
+            seen[name] = dbname
+    if dupes:
+        detail = ", ".join(f"{n}({a}/{b})" for n, a, b in dupes)
+        raise RuntimeError(
+            f"DB分割ガード: 同名テーブルが複数DBに存在します: {detail}"
+        )
+
+
+def _guard_against_premature_split_startup() -> None:
+    """2026-09-14 DB分割ガード(Fable指摘C3、2回目レビューM-3で部分状態も
+    追加): 新スキーマ対応コードがデプロイされたのに移行スクリプト
+    (scripts/migrate_split_db_2026_09_14.py)がまだ実行されていない場合、
+    `get_connection()`が(sqlite3.connect()の仕様により)黙って空の
+    core.db/content.db/logs.dbを新規作成してしまい、ヘルスチェックは
+    DBの中身を見ないため「全ユーザー・決済履歴が消えた状態」がそのまま
+    健全起動と判定されてしまう(9/13事故と同種の危険)。
+    さらに、3ファイルの一部だけが存在する「中途半端な状態」(例:
+    core.dbはあるがcontent.db/logs.dbが無い)も同様に危険と判明した
+    (2回目Fableレビュー実機テスト: この状態で起動すると、無いcontent.db
+    に対して`_seed_words`が既定のシード単語(399語)を黙って新規作成し、
+    既存ユーザーの学習記録(user_word_progress等)が本来指していた語とは
+    別の語を指してしまう=進捗が入れ替わって見える)。したがって、
+    3ファイルは「揃って存在」か「1つも無い(真の新規環境)」のどちらか
+    以外は拒否する。旧`vocabulary.db`が存在するのに3ファイルが揃って
+    いない場合も同様に拒否する。いずれも明示的に`ALLOW_FRESH_DB=1`が
+    設定されていない限り拒否する(sqlite3.connect()を一切呼ぶ前に、
+    ファイル存在チェックだけで判定する必要がある点に注意)。"""
+    if os.getenv("ALLOW_FRESH_DB") == "1":
+        return
+    legacy_db = paths.data_dir / "vocabulary.db"
+    split_files = [paths.db_file, paths.content_db_file, paths.logs_db_file]
+    existing_split = [p for p in split_files if p.exists()]
+
+    if 0 < len(existing_split) < len(split_files):
+        missing = [p for p in split_files if not p.exists()]
+        raise RuntimeError(
+            "起動を拒否しました: DB分割の3ファイルの一部だけが存在します"
+            f"(存在: {existing_split} / 不在: {missing})。中途半端な状態"
+            "での起動は、無いファイル側が黙って空スキーマで新規作成され、"
+            "既存ユーザーの学習記録が別の語を指してしまう等の重大な不整合"
+            "を招きます。移行のやり直しか手動復旧が必要です。本当に新規"
+            "環境として始めたい場合のみ環境変数 ALLOW_FRESH_DB=1 を"
+            "設定してください。"
+        )
+
+    if legacy_db.exists() and not existing_split:
+        raise RuntimeError(
+            f"起動を拒否しました: {legacy_db} は存在しますが "
+            f"{paths.db_file} がありません。DB分割の移行スクリプトが "
+            "まだ実行されていない可能性があります(移行スクリプトを先に"
+            "実行してください)。本当に新規環境として空DBから始めたい"
+            "場合のみ環境変数 ALLOW_FRESH_DB=1 を設定してください。"
+        )
+
+
 def init_db() -> None:
     """Create the schema and seed reference data. Safe to call repeatedly."""
+    paths.ensure()
+    _guard_against_premature_split_startup()
     with db() as conn:
         conn.executescript(SCHEMA)
+        _check_no_duplicate_table_names(conn)
         _migrate(conn)
         _seed_categories(conn)
         _seed_listening(conn)

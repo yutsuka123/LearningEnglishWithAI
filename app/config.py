@@ -30,6 +30,8 @@ class Paths:
     root: Path
     data_dir: Path
     db_file: Path
+    content_db_file: Path
+    logs_db_file: Path
     memory_file: Path
     study_log_file: Path
     static_dir: Path
@@ -51,7 +53,14 @@ _data_dir = _resolve_data_dir()
 paths = Paths(
     root=ROOT_DIR,
     data_dir=_data_dir,
-    db_file=_data_dir / "vocabulary.db",
+    # 2026-09-14 DB分割: 旧`vocabulary.db`(語彙+ライブデータ混在)を
+    # 3ファイルに分割。`db_file`は「core」(users/決済/単語帳/進捗等)を指す
+    # ように変更(旧名のまま残すと「vocabulary.db=語彙」という誤解が
+    # 事故の再発要因になるため、あえて改名する。docs/TODO.md「DB分割の
+    # 検討」参照)。
+    db_file=_data_dir / "core.db",
+    content_db_file=_data_dir / "content.db",
+    logs_db_file=_data_dir / "logs.db",
     memory_file=_data_dir / "memory.md",
     study_log_file=_data_dir / "study_log.md",
     static_dir=ROOT_DIR / "static",

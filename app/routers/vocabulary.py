@@ -343,6 +343,16 @@ def delete_word(word_id: int):
                 "7004", "この単語には学習記録があるため削除できません。"
                 "一覧から除外したい場合は、分野を「禁止用語」に変更して"
                 "ください。")
+        # 2026-09-14 DB分割: wordsはcontent.db、以下はcore.dbのため、
+        # SQLiteのFOREIGN KEYがATTACH間を跨げず自動カスケードされない。
+        # 上のガードでuser_word_progressは既に無いことを確認済みだが、
+        # word_attempts/deck_wordsは学習記録が無くても残り得るため、
+        # 明示的に道連れ削除する(word_domain_tagsはwords同様content.db側
+        # なので、これまで通りFKの自動カスケードで削除される)。
+        conn.execute("DELETE FROM word_attempts WHERE word_id = ?", (word_id,))
+        conn.execute("DELETE FROM deck_words WHERE word_id = ?", (word_id,))
+        conn.execute(
+            "DELETE FROM user_word_progress WHERE word_id = ?", (word_id,))
         cur = conn.execute("DELETE FROM words WHERE id = ?", (word_id,))
         if cur.rowcount == 0:
             raise errors.http_error("7001", "単語が見つかりません")

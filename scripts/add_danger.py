@@ -322,6 +322,13 @@ QUOTES: list[tuple[str, str]] = [
 
 
 def main() -> int:
+    # 2026-09-14 DB分割注記(Fableレビュー指摘M3): DB分割後はwords/phrases
+    # からword_attempts/deck_words/user_word_progress等へのFOREIGN KEYが
+    # ATTACH間では効かなくなり、ON DELETE CASCADEも発動しない。このスクリプト
+    # は初回実行時点(分割前)のプレースホルダー掃除用で再実行の想定は
+    # 薄いが、万一再実行して実際に削除対象が出た場合は、道連れ削除
+    # (vocabulary.pyのdelete_word/phrases.pyのdelete_phraseと同じ内容)を
+    # 追加してから実行すること。
     with db() as conn:
         # 1) Replace earlier CENSORED placeholders (any english containing '*').
         del_w = conn.execute(
