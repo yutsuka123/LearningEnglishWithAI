@@ -145,8 +145,32 @@ else
 fi
 
 # --- 2. 新イメージを候補タグでビルド(稼働中コンテナは無停止・無変更) -------
+# 2026-09-15 本番投入時に判明した事象への対応: このVPS環境の
+# docker compose(v5.1.4)では、`EIGO_IMAGE=$CANDIDATE_IMAGE docker compose
+# build`が候補タグではなく`$IMAGE`(:latest)に直接書き込むことが実際に
+# 起きた(ローカルの新しいdocker compose(v5.5.1)では再現せず、バージョン
+# 依存の挙動と推測されるが未解明)。実害は無かった(手順1の`:prev`は
+# `:latest`ではなく稼働中コンテナの実IDから取るため無事だった)が、
+# 「検証が通るまで:latestを一切変更しない」という設計上の安全マージンが
+# 失われるため、ビルド前後で:latestが意図せず変化していないかを検証し、
+# 変化していれば候補タグを明示的に貼り直した上で:latestを復元する。
+PRE_BUILD_LATEST_ID="$(docker image inspect "$IMAGE" --format '{{.Id}}' 2>/dev/null || true)"
 echo "--- 新イメージをビルド中(候補タグ、稼働中コンテナには影響しません) ---"
 EIGO_IMAGE="$CANDIDATE_IMAGE" docker compose -f "$COMPOSE_FILE" build
+POST_BUILD_LATEST_ID="$(docker image inspect "$IMAGE" --format '{{.Id}}' 2>/dev/null || true)"
+if [ -n "$PRE_BUILD_LATEST_ID" ] \
+   && [ "$POST_BUILD_LATEST_ID" != "$PRE_BUILD_LATEST_ID" ]; then
+  echo "警告: ビルドで候補タグではなく$IMAGEが直接書き換えられました。" >&2
+  echo "  候補タグへ明示的に貼り直し、$IMAGEを復元します。" >&2
+  docker tag "$POST_BUILD_LATEST_ID" "$CANDIDATE_IMAGE"
+  docker tag "$PRE_BUILD_LATEST_ID" "$IMAGE"
+  log_json build warn \
+    "EIGO_IMAGEが$IMAGEに直接反映されたため候補タグへ手動で分離・復元"
+elif ! docker image inspect "$CANDIDATE_IMAGE" >/dev/null 2>&1; then
+  # 上記のIDずれでは検知できないが候補タグ自体が存在しないケースの保険。
+  echo "警告: ビルド後に$CANDIDATE_IMAGEが見つかりません。" >&2
+  exit 1
+fi
 log_json build ok "$CANDIDATE_IMAGE"
 
 confirm "旧コンテナを停止して移行を実行します(ここからダウンタイム開始)。よろしいですか?" \

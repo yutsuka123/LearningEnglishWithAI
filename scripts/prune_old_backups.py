@@ -35,6 +35,14 @@ TARGETS = [
     ("backup_vocabulary_2*.db", 5),      # 定期/作業前アドホックのバックアップ
     ("backup_vocabulary_pre_*.db", 5),   # DB一括修正前のアドホックバックアップ
     ("vocabulary.predeploy-*.db", 5),    # デプロイ前スナップショット
+    # 2026-09-15 DB分割対応: scheduled_deploy.shは分割後、旧
+    # backup_vocabulary_*.dbの代わりにbackup_core/content/logs_*.dbを
+    # 生成する(deploy/scheduled_deploy.sh参照)。旧パターンのままだと
+    # これらが世代管理の対象外のまま無期限に蓄積してしまう
+    # (2026-09-03に発覚した3.3GB蓄積事故の再発)ため追加。
+    ("backup_core_*.db", 5),
+    ("backup_content_*.db", 5),
+    ("backup_logs_*.db", 5),
 ]
 
 
