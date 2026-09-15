@@ -1222,8 +1222,22 @@ def admin_registration_funnel(days: int = 30):
         ua_by_guest: dict[str, str] = {}
         for r in visit_ua_rows:
             ua_by_guest.setdefault(r["guest_sid"], r["user_agent"] or "")
+        # ボット判定用には、visitを経由せずsignupへ直行したアクセスの
+        # UAも合わせて見る(2026-09-16修正: curl等での動作確認がvisit記録
+        # を作らないままsignupだけを叩くと、visit由来のUAしか見ていない
+        # 判定をすり抜け、登録ファネルの「登録完了」等に混入していた。
+        # 「訪問」段階の端末/ブラウザ内訳はvisit経由のua_by_guestのまま
+        # 使うため、判定専用の別dictに分けている)。
+        signup_ua_rows = conn.execute(
+            "SELECT guest_sid, user_agent FROM landing_visits "
+            "WHERE guest_sid != '' AND kind='signup' "
+            "AND created_at >= datetime('now', ?)", (since,),
+        ).fetchall()
+        ua_for_bot_check = dict(ua_by_guest)
+        for r in signup_ua_rows:
+            ua_for_bot_check.setdefault(r["guest_sid"], r["user_agent"] or "")
         bot_guests = {
-            g for g, ua in ua_by_guest.items()
+            g for g, ua in ua_for_bot_check.items()
             if visitor_kind.classify_ua(ua)[0] != visitor_kind.MARK_NONE
         }
         bot_placeholders = ",".join("?" * len(bot_guests)) if bot_guests else ""
