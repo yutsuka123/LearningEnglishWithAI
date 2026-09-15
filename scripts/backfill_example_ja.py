@@ -33,9 +33,16 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from app.config import paths  # noqa: E402
 from app.database import db  # noqa: E402
 
-MISS = Path(__file__).resolve().parent.parent / "data" / "example_ja_missing.json"
+# 2026-09-16修正: リポジトリ相対パス(scripts/../data)固定だったため、
+# 本番コンテナ(DATA_DIR=/data、リポジトリは/app)で実行すると
+# /app/data が存在せずFileNotFoundErrorでMISS書き出しだけ失敗していた
+# (DB更新自体は先に完了・コミット済みのため実害は無かったが、実行の
+# たびに例外で終了していた)。`paths.data_dir`(DATA_DIR環境変数を見る)
+# を使い、ローカル/本番どちらでも正しい場所に書けるようにする。
+MISS = paths.data_dir / "example_ja_missing.json"
 
 
 def _norm(s: str) -> str:

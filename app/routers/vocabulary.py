@@ -233,10 +233,18 @@ def facets(include_banned: bool = False, include_hidden: bool = False):
         current_user_id, get_user_settings
     include_banned = include_banned and current_user_allow_banned()
     with db() as conn:
+        # word_domain_tags(§B17・複数分野タグ付け)経由でその分野に属する
+        # 語もカウントに含める(2026-09-16修正: 主分類=domain列だけを数えて
+        # いたため、基本動詞72語をword_domain_tagsで「多義語」に追加タグ
+        # 付けしても、ようこそ画面の分野別語数表示に反映されなかった)。
+        # UNION(ALLでない)でword_id×domainの重複行を自動的に除く。
         domain_count_rows = conn.execute(
-            "SELECT domain, COUNT(*) AS cnt FROM words "
-            "WHERE COALESCE(domain, '') <> '' "
-            "GROUP BY domain ORDER BY domain"
+            "SELECT domain, COUNT(DISTINCT word_id) AS cnt FROM ("
+            "  SELECT id AS word_id, domain FROM words "
+            "  WHERE COALESCE(domain, '') <> '' "
+            "  UNION "
+            "  SELECT word_id, domain FROM word_domain_tags"
+            ") GROUP BY domain ORDER BY domain"
         ).fetchall()
         domains = [r["domain"] for r in domain_count_rows]
         domain_counts = {r["domain"]: r["cnt"] for r in domain_count_rows}
