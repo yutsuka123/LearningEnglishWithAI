@@ -1,0 +1,966 @@
+[
+  {
+    "english": "put",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "置く、入れる、(ある状態に)する",
+    "example": "Please put the book on the table.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/pʊt/",
+      "pos": "動詞",
+      "meanings": [
+        "(ある場所に)置く",
+        "入れる",
+        "(ある状態・状況に)する、至らせる",
+        "(言葉で)表現する、述べる",
+        "(責任・非難などを)負わせる"
+      ],
+      "examples": [
+        {
+          "en": "Please put the book on the table.",
+          "ja": "その本をテーブルの上に置いてください。"
+        },
+        {
+          "en": "She put some sugar in her coffee.",
+          "ja": "彼女はコーヒーに砂糖を少し入れた。"
+        },
+        {
+          "en": "The new policy put the company in a difficult position.",
+          "ja": "新しい方針はその会社を難しい立場に追い込んだ。"
+        },
+        {
+          "en": "Let me put it another way.",
+          "ja": "別の言い方をさせてください。"
+        },
+        {
+          "en": "Don't put the blame on me.",
+          "ja": "私のせいにしないで。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "output",
+          "pos": "名詞",
+          "ja": "出力・産出(量)(out+put)"
+        },
+        {
+          "word": "input",
+          "pos": "名詞",
+          "ja": "入力(in+put)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "place",
+          "note": "「置く」のより一般的・フォーマルな言い方"
+        },
+        {
+          "word": "set",
+          "note": "「置く」だがやや動作を丁寧に置くニュアンス"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "remove",
+          "note": "「取り除く」で置いた物を取り去る反対の動作"
+        }
+      ],
+      "origin": "中英語 putten（後期古英語の未証明形 *putian）に由来するとされるゲルマン系の語で、デンマーク語 putte、スウェーデン語 putta、オランダ語 poten、古ノルド語 pota など北欧・低地ゲルマン諸語に同系語が見られる。原義は「突く、押す、押しやる」で、そこから「物を動かしてある場所・状態に位置づける」という現在の中心的な意味に発展した。正確にどのゲルマン語形から借用・継承されたかは確定しておらず、諸説がある。",
+      "trivia": "put は現在形・過去形・過去分詞がすべて put のまま変わらない不規則動詞。また前置詞 out・in と結びついた output（出力）・input（入力）はどちらも put の複合語で、コンピュータ用語として定着している。",
+      "explanation": "put は前置詞・副詞と組み合わさって多数の句動詞を作る代表的な基礎動詞。put on(着る・身につける)、put off(延期する)、put up with(〜を我慢する)、put away(片付ける)、put together(組み立てる・まとめる)などはTOEICでも頻出なので、まずはここで put 単体の中心的な意味を押さえ、句動詞は別途学習するとよい。"
+    }
+  },
+  {
+    "english": "keep",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "保つ、持ち続ける、飼う",
+    "example": "Please keep the door closed.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/kiːp/",
+      "pos": "動詞",
+      "meanings": [
+        "持ち続ける、保持する",
+        "(ある状態を)保つ",
+        "(約束・秘密などを)守る",
+        "(日記・記録を)つける",
+        "(動物を)飼う"
+      ],
+      "examples": [
+        {
+          "en": "You can keep the pen; I have another one.",
+          "ja": "そのペンはあげます。私はもう1本持っているので。"
+        },
+        {
+          "en": "Please keep the door closed.",
+          "ja": "ドアを閉めたままにしておいてください。"
+        },
+        {
+          "en": "He always keeps his promises.",
+          "ja": "彼はいつも約束を守る。"
+        },
+        {
+          "en": "She keeps a diary every day.",
+          "ja": "彼女は毎日日記をつけている。"
+        },
+        {
+          "en": "They keep several dogs on their farm.",
+          "ja": "彼らは農場で犬を数匹飼っている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "keeper",
+          "pos": "名詞",
+          "ja": "飼育係・番人・保持者"
+        },
+        {
+          "word": "keeping",
+          "pos": "名詞",
+          "ja": "保管・一致(in keeping with)"
+        },
+        {
+          "word": "upkeep",
+          "pos": "名詞",
+          "ja": "維持・維持費"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "retain",
+          "note": "「保持する」のフォーマルな言い方"
+        },
+        {
+          "word": "maintain",
+          "note": "「(状態を)維持する」に重点を置く言い方"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "lose",
+          "note": "「失う」で持ち続けることの反対"
+        },
+        {
+          "word": "discard",
+          "note": "「捨てる」"
+        }
+      ],
+      "origin": "中英語 kēpen（後期古英語 cepan）に由来し、さらに遡ると出自不明のゲルマン祖語 *kopjan に行き着くとされる。原義は「つかむ、保持する、求める、欲する」、および「(何かに)注意を払う、目を配る」で、「見る」に関係する語根から「気にかけて見守る」という基本イメージが生まれたと考えられている。古英語では文語より俗語的な語だったが、西暦1000年頃に急に文語にも現れるようになったとされ、語源自体は「出自不明」と明記されている。",
+      "trivia": "housekeeping(家事)、bookkeeping(簿記)のような複合語は、いずれも keep の「管理する・維持する」という意味から発展したもの。",
+      "explanation": "keep は前置詞と組み合わせた句動詞が豊富。keep up with 〜(〜に遅れずついていく)、keep on 〜ing(〜し続ける)、keep away from 〜(〜に近づかない)、keep off(離れている・触れない)などはTOEICのPart 5・7でもよく出る表現。"
+    }
+  },
+  {
+    "english": "let",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "〜させる、許す、貸す",
+    "example": "My parents let me stay out late on weekends.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/let/",
+      "pos": "動詞",
+      "meanings": [
+        "(人に)〜させる、許す(使役・許可)",
+        "(Let's〜で)〜しよう(提案)",
+        "(部屋・家などを)貸す(主に英)",
+        "(物・人を)通す、入れる"
+      ],
+      "examples": [
+        {
+          "en": "My parents let me stay out late on weekends.",
+          "ja": "両親は週末は遅くまで外にいることを許してくれる。"
+        },
+        {
+          "en": "Let's start the meeting.",
+          "ja": "会議を始めましょう。"
+        },
+        {
+          "en": "They let out their spare room to students.",
+          "ja": "彼らは空き部屋を学生に貸している。"
+        },
+        {
+          "en": "Could you let some fresh air in?",
+          "ja": "新鮮な空気を少し入れてもらえますか。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "sublet",
+          "pos": "動詞",
+          "ja": "転貸する"
+        },
+        {
+          "word": "let-down",
+          "pos": "名詞",
+          "ja": "失望・期待外れ"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "allow",
+          "note": "「許可する」のより一般的な言い方"
+        },
+        {
+          "word": "permit",
+          "note": "「許可する」のフォーマルな言い方"
+        },
+        {
+          "word": "rent out",
+          "note": "「(部屋・家を)貸す」の米でより一般的な言い方"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "forbid",
+          "note": "「禁じる」"
+        },
+        {
+          "word": "prevent",
+          "note": "「妨げる、させない」"
+        }
+      ],
+      "origin": "古英語 lætan に由来し、ゲルマン祖語 *letan、さらに印欧祖語の語根 *lē-「緩める、手放す」に遡るとされる。「(人を)行かせる、〜させる」という中心的な語感は、「それまで縛っていた(比喩的な)紐を緩めて解放する」というイメージに基づくとされる。なお、これとは別に「妨げる」を意味する古英語 lettan に由来する語(現在では廃れた名詞「妨害」の意味で、法律文書の without let or hindrance に残る)があり、綴りが同じ let に収束したため紛らわしいが、語源上は別語とされる。母音の音変化については「十分には説明されていない」と指摘されており、細部は未解明な点が残る。",
+      "trivia": "テニスやバレーボールの「レット(サーブがネットに触れて入り直しになること)」は、一見「〜させる」の let と関係がありそうだが、実は語源的には別語である「妨げる(hinder)」を意味する let（lettan由来）に由来するとされる、紛らわしい豆知識。",
+      "explanation": "let は句動詞のもとになりやすい語。let down(がっかりさせる)、let go(手放す・解雇する)、let up(弱まる・緩む)、let out((声・秘密を)漏らす・貸し出す)などが代表的。使役動詞としての let は let + O + 原形不定詞(let me know のように)という語順を取る点も重要。"
+    }
+  },
+  {
+    "english": "give",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "与える、渡す、(催しを)行う",
+    "example": "She gave her sister a birthday present.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/ɡɪv/",
+      "pos": "動詞",
+      "meanings": [
+        "与える、あげる",
+        "渡す、手渡す",
+        "(パーティー・講演などを)行う、催す",
+        "(声・音を)発する",
+        "屈する、たわむ"
+      ],
+      "examples": [
+        {
+          "en": "She gave her sister a birthday present.",
+          "ja": "彼女は妹に誕生日プレゼントをあげた。"
+        },
+        {
+          "en": "Could you give me the salt, please?",
+          "ja": "塩を取ってもらえますか。"
+        },
+        {
+          "en": "The professor will give a lecture on Friday.",
+          "ja": "教授は金曜日に講義を行う予定だ。"
+        },
+        {
+          "en": "He gave a deep sigh of relief.",
+          "ja": "彼は安堵のため息を深くついた。"
+        },
+        {
+          "en": "The old wooden floor gave under his weight.",
+          "ja": "その古い木の床は彼の重みでたわんだ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "giver",
+          "pos": "名詞",
+          "ja": "与える人・寄贈者"
+        },
+        {
+          "word": "forgive",
+          "pos": "動詞",
+          "ja": "許す(for+give)"
+        },
+        {
+          "word": "giving",
+          "pos": "形容詞",
+          "ja": "気前の良い"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "provide",
+          "note": "「提供する」のややフォーマルな言い方"
+        },
+        {
+          "word": "hand",
+          "note": "「手渡す」に重点を置く動詞"
+        },
+        {
+          "word": "donate",
+          "note": "「寄付する」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "take",
+          "note": "「取る」で与える方向の逆"
+        },
+        {
+          "word": "receive",
+          "note": "「受け取る」"
+        }
+      ],
+      "origin": "古英語 giefan（西サクソン方言形）に由来し、ゲルマン祖語 *geban、印欧祖語の語根 *ghabh-「与える、または受け取る」に遡るとされる。古英語では強変化動詞（過去形 geaf、過去分詞 giefen）で、中英語期には音変化で yiven のような形になりかけたが、古ノルド語 gefa(与える)や古デンマーク語 givæ の影響で語頭が硬い g の音に定着し、現代の give になったとされる。",
+      "trivia": "give の語頭が現代英語で「ギ(g)」と硬く発音されるのは、本来の英語の音変化だけを辿ると「イ(y)」寄りの音になっていたはずが、古ノルド語(ヴァイキングの言語)からの影響で g の音に置き換わったためとされる。get と同様、ヴァイキング時代の言語接触が現代の基礎語彙に痕跡を残している例。",
+      "explanation": "give も句動詞を多く作る基礎動詞。give up(あきらめる・やめる)、give in(屈する・降参する)、give away((秘密などを)漏らす・ただであげる)、give out(配る・尽きる)、give back(返す)はTOEICでも頻出。"
+    }
+  },
+  {
+    "english": "show",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "見せる、示す、案内する",
+    "example": "Can you show me your ticket, please?",
+    "level": 320,
+    "detail": {
+      "pronunciation": "/ʃoʊ/",
+      "pos": "動詞",
+      "meanings": [
+        "見せる",
+        "示す、明らかにする",
+        "案内する",
+        "(感情などを)表す",
+        "(映画・番組が)上映・放送される"
+      ],
+      "examples": [
+        {
+          "en": "Can you show me your ticket, please?",
+          "ja": "チケットを見せていただけますか。"
+        },
+        {
+          "en": "The results show a clear improvement.",
+          "ja": "その結果は明らかな改善を示している。"
+        },
+        {
+          "en": "Let me show you around the office.",
+          "ja": "オフィスをご案内しましょう。"
+        },
+        {
+          "en": "She showed no sign of nervousness.",
+          "ja": "彼女は緊張の様子を全く見せなかった。"
+        },
+        {
+          "en": "The movie is showing at three theaters downtown.",
+          "ja": "その映画は繁華街の3つの劇場で上映されている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "showcase",
+          "pos": "名詞・動詞",
+          "ja": "陳列棚・披露する"
+        },
+        {
+          "word": "showing",
+          "pos": "名詞",
+          "ja": "上映・成績・出来栄え"
+        },
+        {
+          "word": "show-off",
+          "pos": "名詞",
+          "ja": "見せびらかす人"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "display",
+          "note": "「展示する、示す」で視覚的に並べるニュアンス"
+        },
+        {
+          "word": "demonstrate",
+          "note": "「実演して示す、証明する」"
+        },
+        {
+          "word": "reveal",
+          "note": "「(隠れていたものを)明らかにする」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "hide",
+          "note": "「隠す」"
+        },
+        {
+          "word": "conceal",
+          "note": "「隠す」のよりフォーマルな言い方"
+        }
+      ],
+      "origin": "中英語 sheuen（古英語 sceawian、ゲルマン祖語 *skauwojanan、印欧祖語の語根 *skou-「見る、注意して見る」）に由来する。もともとは「見る、眺める、注意深く見る、調べる」という意味で、現在のような「(人に)見せる、知らせる」という使役的な意味は1200年頃に発達したもの。この使役的な意味への変化は英語に特有の現象とされ、なぜそのように変化したのかは明確には分かっていないとされる。",
+      "trivia": "show はもともと「(自分が)見る」という意味だったのに、1200年頃から「(他人に)見せる」という正反対の方向(使役)の意味に変化し、それが数百年のうちに元の意味を完全に置き換えてしまった。このような意味の転換は英語に特有とされ、珍しい変化として紹介される。",
+      "explanation": "show up(現れる)、show off(見せびらかす)、show around(案内する)などが代表的な句動詞。「show=提示して見せる」と「tell=言葉で伝える」の使い分け(show, don't tell)もライティングでよく言われるポイント。"
+    }
+  },
+  {
+    "english": "use",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "使う、利用する、消費する",
+    "example": "You can use my computer if you like.",
+    "level": 310,
+    "detail": {
+      "pronunciation": "/juːz/(動詞)",
+      "pos": "動詞",
+      "meanings": [
+        "使う、利用する",
+        "(人を)利用する、都合よく使う",
+        "消費する、使い切る",
+        "(used to doで)以前は〜したものだ"
+      ],
+      "examples": [
+        {
+          "en": "You can use my computer if you like.",
+          "ja": "よかったら私のパソコンを使っていいよ。"
+        },
+        {
+          "en": "He felt she was just using him for his money.",
+          "ja": "彼は彼女がお金目当てで自分を利用しているだけだと感じた。"
+        },
+        {
+          "en": "We used up all the milk this morning.",
+          "ja": "今朝、牛乳を全部使い切ってしまった。"
+        },
+        {
+          "en": "I used to live in Osaka.",
+          "ja": "以前は大阪に住んでいた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "useful",
+          "pos": "形容詞",
+          "ja": "役に立つ"
+        },
+        {
+          "word": "useless",
+          "pos": "形容詞",
+          "ja": "役に立たない"
+        },
+        {
+          "word": "usage",
+          "pos": "名詞",
+          "ja": "使用法・語法"
+        },
+        {
+          "word": "user",
+          "pos": "名詞",
+          "ja": "使用者・ユーザー"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "utilize",
+          "note": "「活用する」のフォーマルな言い方"
+        },
+        {
+          "word": "employ",
+          "note": "「用いる」のフォーマルな言い方"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "waste",
+          "note": "「無駄にする」で有効に使わない反対の意味"
+        }
+      ],
+      "origin": "1200年頃の中英語 usen に由来し、古フランス語 user を経て、俗ラテン語 usare、さらにラテン語 uti「使う」に遡る。uti 自体は「出自不明の語」とされ、これより前の起源ははっきりしない。中英語期に古英語の動詞 brucan(使う)が担っていた意味の一部を use が吸収して語義を広げていったとされる。",
+      "trivia": "動詞 use は語末が濁った /z/ の音(ユーズ)で発音されるのに対し、名詞 use は語末が濁らない /s/ の音(ユース)で発音される。house(家、動詞は「収容する」で濁る)や close(閉める/近い)などと同じく、品詞によって語末の子音が有声・無声で変わる英語特有のパターンの一つ。",
+      "explanation": "「used to do(以前は〜したものだ、今はしていない)」と「be used to doing(〜することに慣れている)」は形が似ていて学習者が混同しやすい重要ポイント。use up(使い切る)という句動詞もよく使われる。"
+    }
+  },
+  {
+    "english": "add",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "加える、足す、言い添える",
+    "example": "Add two cups of flour to the bowl.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/æd/",
+      "pos": "動詞",
+      "meanings": [
+        "加える、足す",
+        "(数値を)合計する",
+        "言い添える、付け加えて言う",
+        "(価値・魅力などを)増す"
+      ],
+      "examples": [
+        {
+          "en": "Add two cups of flour to the bowl.",
+          "ja": "ボウルに小麦粉を2カップ加えてください。"
+        },
+        {
+          "en": "Can you add up these numbers for me?",
+          "ja": "これらの数字を合計してもらえますか。"
+        },
+        {
+          "en": "\"By the way,\" she added, \"we're leaving early.\"",
+          "ja": "「ちなみに」と彼女は付け加えた。「早めに出発するわ」"
+        },
+        {
+          "en": "The new lighting really adds to the room's atmosphere.",
+          "ja": "新しい照明は部屋の雰囲気を大いに引き立てている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "addition",
+          "pos": "名詞",
+          "ja": "追加・足し算"
+        },
+        {
+          "word": "additional",
+          "pos": "形容詞",
+          "ja": "追加の"
+        },
+        {
+          "word": "additive",
+          "pos": "名詞",
+          "ja": "添加物"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "append",
+          "note": "文書などの末尾に「付け加える」というフォーマルな言い方"
+        },
+        {
+          "word": "supplement",
+          "note": "「補う、補足する」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "subtract",
+          "note": "「引く」で足し算の反対"
+        },
+        {
+          "word": "remove",
+          "note": "「取り除く」"
+        }
+      ],
+      "origin": "14世紀後半の中英語 adden に由来し、ラテン語 addere「加える、結びつける」から来ている。addere は ad-(〜へ)と -dere(置く、印欧祖語の語根 *dhē-「置く、設置する」に由来する結合形)から成る。ラテン語・印欧祖語まで比較的はっきり遡れる語源で、大きな不確定要素は指摘されていない。",
+      "trivia": "「話の辻褄が合う、意味をなす」という意味の add up(例: His story doesn't add up.)は、もともとの「数字を合計する」という意味から比較的新しく(1942年頃)派生した比喩的な用法とされる。",
+      "explanation": "add up(合計する・辻褄が合う)、add to(〜を増す)のような句動詞的な組み合わせがよく使われる。in addition (to)(〜に加えて)という熟語もTOEICで頻出。"
+    }
+  },
+  {
+    "english": "make",
+    "is_existing": true,
+    "existing_id": 16044,
+    "japanese": "作る、〜させる、稼ぐ",
+    "example": "She made a beautiful cake for her friend's birthday.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/meɪk/",
+      "pos": "動詞",
+      "meanings": [
+        "作る、作り出す",
+        "〜に…させる(使役)",
+        "(お金を)稼ぐ",
+        "(決定を)下す",
+        "間に合う、うまくいく(make it)",
+        "意味をなす(make sense)"
+      ],
+      "examples": [
+        {
+          "en": "She made a beautiful cake for her friend's birthday.",
+          "ja": "彼女は友達の誕生日にきれいなケーキを作った。"
+        },
+        {
+          "en": "His joke made everyone laugh.",
+          "ja": "彼の冗談でみんなが笑った。"
+        },
+        {
+          "en": "He makes a good salary working as an engineer.",
+          "ja": "彼はエンジニアとして良い給料を稼いでいる。"
+        },
+        {
+          "en": "They finally made a decision about where to live.",
+          "ja": "彼らはようやくどこに住むか決断した。"
+        },
+        {
+          "en": "We made it to the station just before the last train left.",
+          "ja": "終電が出る直前に何とか駅に間に合った。"
+        },
+        {
+          "en": "It took her a while, but everything finally made sense.",
+          "ja": "しばらくかかったが、彼女にとってようやく全てに納得がいった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "maker",
+          "pos": "名詞",
+          "ja": "作る人・メーカー"
+        },
+        {
+          "word": "making",
+          "pos": "名詞",
+          "ja": "制作・形成過程"
+        },
+        {
+          "word": "makeshift",
+          "pos": "形容詞",
+          "ja": "間に合わせの"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "create",
+          "note": "ゼロから何かを生み出すニュアンスが強い"
+        },
+        {
+          "word": "produce",
+          "note": "工業的・大量生産のニュアンスを含む場合がある"
+        },
+        {
+          "word": "earn",
+          "note": "「(お金を)稼ぐ」の意味で使う場合の類義語"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "destroy",
+          "note": "「作る」の反対で「壊す」"
+        }
+      ],
+      "origin": "古英語 macian に由来し、西ゲルマン祖語 *makōjanan「形作る、はめ込む」に遡るとされる。ドイツ語 machen、古サクソン語 makon、古フリジア語 makia、オランダ語 maken と同系語で、印欧祖語の語根 *mag-「こねる、形作る、合わせる」まで遡るとされる。「作る」という語義がどのように発展したかについては、粘土(泥)で家を建てていたことに由来するのではという説があるが、これは推測の域を出ないとされる。",
+      "trivia": "make は do と並んで「軽動詞(light verb)」として使われることが多く、make a decision、make an effort、make progress のように名詞と組み合わさって様々な行為を表す。同じ軽動詞の do との使い分け(make a mistake ○ / do a mistake ×など)は学習者が混同しやすいポイント。",
+      "explanation": "この項目は make という動詞そのものが持つ中心的な語義(作る・使役・稼ぐ・決定するなど)を幅広くカバーする。make up(仲直りする・化粧をする・〜を構成する)、make up for(〜の埋め合わせをする)、make out(かろうじて分かる・言い訳をする)のような句動詞的な組み合わせも多い。take/get と異なり make 専用の句動詞ドメインは本アプリには無いため、代表的なものはこの項目内で軽く触れている。"
+    }
+  },
+  {
+    "english": "get",
+    "is_existing": true,
+    "existing_id": 16043,
+    "japanese": "得る、着く、〜になる",
+    "example": "I need to get some milk from the store on my way home.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/ɡɛt/",
+      "pos": "動詞",
+      "meanings": [
+        "得る、手に入れる",
+        "着く、到着する",
+        "(ある状態に)なる",
+        "〜に…させる(使役)",
+        "(話・冗談を)理解する",
+        "(乗り物を)つかまえる、間に合う"
+      ],
+      "examples": [
+        {
+          "en": "I need to get some milk from the store on my way home.",
+          "ja": "帰り道にお店で牛乳を買わないと。"
+        },
+        {
+          "en": "What time will we get to the airport?",
+          "ja": "何時に空港に着く予定ですか。"
+        },
+        {
+          "en": "She got really angry when she found out the truth.",
+          "ja": "真実を知って、彼女はひどく怒った。"
+        },
+        {
+          "en": "Could you get him to call me back?",
+          "ja": "彼に折り返し電話するよう伝えてもらえますか。"
+        },
+        {
+          "en": "It took him a while to get the joke.",
+          "ja": "彼がその冗談を理解するのに少し時間がかかった。"
+        },
+        {
+          "en": "We just managed to get the last train home.",
+          "ja": "何とか終電に間に合った。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "getaway",
+          "pos": "名詞",
+          "ja": "逃走・(短い)小旅行"
+        },
+        {
+          "word": "get-together",
+          "pos": "名詞",
+          "ja": "気軽な集まり"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "obtain",
+          "note": "よりフォーマルな「入手する」"
+        },
+        {
+          "word": "receive",
+          "note": "「受け取る」の意味で使う場合の類義語"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "give",
+          "note": "「与える」"
+        },
+        {
+          "word": "lose",
+          "note": "「得る」の反対で「失う」"
+        }
+      ],
+      "origin": "1200年頃に中英語に入った語で、古ノルド語 geta「得る、達する、〜できる、もうける、学ぶ、気に入る」に由来し、印欧祖語の語根 *ghend-「つかむ、取る」まで遡るとされる。もともと非常に幅広い意味を持つ語で、しばしば助動詞に近い形で使われた。対応する語は古英語にも begietan(beget=もうける、の元)のような複合語の形で存在したが、単純形の get はデーンロー(ヴァイキングが定住した地域)を経由して中英語期に定着したとされる。",
+      "trivia": "get は意味があまりに広く使われるため、Oxford English Dictionary では get から派生・関連する項目だけで約29段(コラム)を割いているとされ、英語で最も用法の幅が広い動詞の一つとされる。",
+      "explanation": "この項目は get という動詞そのものが持つ中心的な語義(得る・着く・〜になる・使役など)を幅広くカバーする。get over(乗り越える)、get by(何とかやっていく)、get away(逃げる)、get along(仲良くやる)、get up(起きる)のような前置詞・副詞と組み合わさる句動詞は、このアプリでは 句動詞(get) ドメインに別途まとめてあるので、そちらも参照してほしい。"
+    }
+  },
+  {
+    "english": "offer",
+    "is_existing": true,
+    "existing_id": 194,
+    "japanese": "提供する、申し出る、(値を)つける",
+    "example": "They offered me the job the next day.",
+    "level": 400,
+    "detail": {
+      "pronunciation": "/ˈɔːfər/",
+      "pos": "動詞・名詞",
+      "meanings": [
+        "申し出る、提供する",
+        "(援助・物などを)差し出す",
+        "(値を)つける、提示する",
+        "(機会・可能性を)与える",
+        "(名詞)申し出、提案、オファー"
+      ],
+      "examples": [
+        {
+          "en": "They offered me the job the next day.",
+          "ja": "彼らは翌日、私にその仕事を提示した。"
+        },
+        {
+          "en": "She offered to help us carry the boxes.",
+          "ja": "彼女は箱を運ぶのを手伝うと申し出た。"
+        },
+        {
+          "en": "The buyer offered a lower price for the house.",
+          "ja": "その買い手は家により低い価格を提示した。"
+        },
+        {
+          "en": "The new park offers a quiet place to relax.",
+          "ja": "新しい公園は静かにくつろげる場所を提供してくれる。"
+        },
+        {
+          "en": "His offer to help was greatly appreciated.",
+          "ja": "彼の手伝いの申し出は大変ありがたく受け取られた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "offering",
+          "pos": "名詞",
+          "ja": "提供物・(宗教的な)捧げ物"
+        },
+        {
+          "word": "counteroffer",
+          "pos": "名詞",
+          "ja": "対案・逆提示(交渉での)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "provide",
+          "note": "「供給する」"
+        },
+        {
+          "word": "propose",
+          "note": "「提案する」"
+        },
+        {
+          "word": "extend",
+          "note": "「(正式に申し出・招待などを)差し出す」ややフォーマルな言い方(extend an offer)"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "refuse",
+          "note": "「拒否する」"
+        },
+        {
+          "word": "withdraw",
+          "note": "「撤回する」"
+        }
+      ],
+      "origin": "中英語 offeren に由来し、ラテン語 offerre「差し出す、提示する」から来ている。offerre は ob-(〜へ向かって)と ferre(運ぶ、印欧祖語の語根 *bher-「運ぶ」に由来)から成る。もともとはキリスト教の文脈で「神への捧げ物として差し出す、生贄を捧げる」という強い宗教的な意味を持っていたが、15世紀初めには「(受諾・拒否のために)何かを提示する」という一般的な意味に広がり、1530年代には「試みる」、1630年代には「売りに出す」という商業的な意味も加わった。",
+      "trivia": "offer の宗教的な語源(神への捧げ物として差し出す)の名残で、名詞 offering は現代でも教会での献金・捧げ物を指す専門的な意味で使われることが多く、日常的な「(ビジネス上の)提案・提示」を表す offer とは少しニュアンスが異なる。",
+      "explanation": "offer to do(〜すると申し出る)の形でよく使われる(動詞+to不定詞)。似た意味の suggest(提案する)は「suggest doing/that〜」の形を取り、offer のように「to不定詞」を直接続けない点が学習者の混同しやすいポイント。ビジネス英語では job offer(採用内定)のようによく使われる。"
+    }
+  },
+  {
+    "english": "open",
+    "is_existing": true,
+    "existing_id": 15429,
+    "japanese": "開ける、開いている、開始する",
+    "example": "Could you open the window a little?",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/ˈoʊpən/",
+      "pos": "動詞・形容詞",
+      "meanings": [
+        "(動詞)開ける",
+        "(動詞)(店・会議・施設などを)開く、開始する",
+        "(動詞)(可能性・道を)開く",
+        "(形容詞)開いている、営業中の",
+        "(形容詞)率直な、開放的な"
+      ],
+      "examples": [
+        {
+          "en": "Could you open the window a little?",
+          "ja": "窓を少し開けてもらえますか。"
+        },
+        {
+          "en": "The new branch will open next Monday.",
+          "ja": "新しい支店は来週の月曜日に開店する。"
+        },
+        {
+          "en": "Studying abroad opened up many new opportunities for her.",
+          "ja": "留学は彼女に多くの新しい機会をもたらした。"
+        },
+        {
+          "en": "The store is open until nine every day.",
+          "ja": "その店は毎日9時まで開いている。"
+        },
+        {
+          "en": "He's always open about his feelings.",
+          "ja": "彼はいつも自分の気持ちについて率直だ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "opening",
+          "pos": "名詞",
+          "ja": "開始・空き・隙間"
+        },
+        {
+          "word": "openly",
+          "pos": "副詞",
+          "ja": "公然と・率直に"
+        },
+        {
+          "word": "openness",
+          "pos": "名詞",
+          "ja": "開放性・率直さ"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "unlock",
+          "note": "「鍵を開ける」で施錠を外すニュアンス"
+        },
+        {
+          "word": "launch",
+          "note": "「(事業・催しなどを)開始する」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "close",
+          "note": "「閉める・閉まっている」"
+        },
+        {
+          "word": "shut",
+          "note": "「閉める」"
+        }
+      ],
+      "origin": "古英語 open「閉じていない、上がった状態の」に由来し、ゲルマン祖語 *upana-「上げられた、立てられた」に遡るとされ、印欧祖語の語根 *upo「下から上へ」と関連するとされる。形の上では動詞の過去分詞のように見える(あたかも「upする」という動詞があったかのような形)が、そのような動詞自体はゲルマン諸語のどこにも実際には見つかっていないという興味深い空白があると指摘されている。なお、多くの印欧語族の言語で「開いている」を表す語は「閉じている」を表す語の反対語として作られた形跡があるとされる。",
+      "trivia": "open は形の上では「upする」という動詞の過去分詞のように見えるが、そのような動詞自体は歴史上見つかっておらず、「元になった動詞が存在しない過去分詞のような形」という珍しいケースとして紹介される。",
+      "explanation": "open up((心を)打ち明ける・(規制などを)開放する)という句動詞がよく使われる。形容詞としての open(The store is open.=状態)と、動詞の過去分詞 opened(The store was opened by the new owner.=動作)の使い分けは学習者が混同しやすいポイント。"
+    }
+  },
+  {
+    "english": "cut",
+    "is_existing": true,
+    "existing_id": 15483,
+    "japanese": "切る、削減する、遮断する",
+    "example": "She cut the cake into eight equal pieces.",
+    "level": 400,
+    "detail": {
+      "pronunciation": "/kʌt/",
+      "pos": "動詞・名詞",
+      "meanings": [
+        "(刃物で)切る",
+        "(量・予算などを)削減する",
+        "(電気・通話などを)遮断する、切る",
+        "(映画・録音を)編集する、カットする",
+        "(名詞)切り傷、削減(額)"
+      ],
+      "examples": [
+        {
+          "en": "She cut the cake into eight equal pieces.",
+          "ja": "彼女はケーキを8等分に切った。"
+        },
+        {
+          "en": "The company decided to cut prices by ten percent.",
+          "ja": "その会社は価格を10%引き下げることにした。"
+        },
+        {
+          "en": "The storm cut the power to the whole town.",
+          "ja": "嵐が町全体の電力を遮断した。"
+        },
+        {
+          "en": "The director cut the final scene from the movie.",
+          "ja": "監督はその映画から最後のシーンをカットした。"
+        },
+        {
+          "en": "He had a small cut on his finger.",
+          "ja": "彼は指に小さな切り傷があった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "cutback",
+          "pos": "名詞",
+          "ja": "削減"
+        },
+        {
+          "word": "cutting",
+          "pos": "形容詞・名詞",
+          "ja": "鋭い・切り取ったもの"
+        },
+        {
+          "word": "cutter",
+          "pos": "名詞",
+          "ja": "裁断する人・道具"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "slice",
+          "note": "「薄く切る」"
+        },
+        {
+          "word": "trim",
+          "note": "「刈り込む、余分な部分を整える」"
+        },
+        {
+          "word": "slash",
+          "note": "「大幅に削減する」比喩的な用法でよく使われる"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "join",
+          "note": "「つなぐ」で切る動作の反対"
+        },
+        {
+          "word": "increase",
+          "note": "「増やす」で削減の反対"
+        }
+      ],
+      "origin": "1300年頃に現れた語で、正確な由来ははっきりしないとされる。証拠として確認されていない古英語 *cyttan を想定する説のほか、「ナイフ」を意味する北ゲルマン語系の語根 *kut-(スウェーデン語・古ノルド語のナイフを表す語と関連)に由来するとする説、古フランス語 couteau「ナイフ」に由来するとする説などが競合しており、etymonlineでも語源は「はっきりしない」と明記されている。それまで「切る」を表していた古英語の動詞 ceorfan(彫る、carveの元)や scieran(刈る、shearの元)に取って代わったとされる。",
+      "trivia": "cut は現在形・過去形・過去分詞がすべて cut のまま変わらない不規則動詞(put や let と同じパターン)。ただし中英語期には cutted という規則変化形も一時的に使われていたことがあるとされる。",
+      "explanation": "cut down on 〜(〜を減らす)、cut off(切断する・遮断する)、cut in(割り込む)、cut out(切り取る・(習慣などを)やめる、be cut out for 〜=〜に向いている)のような句動詞が代表的。"
+    }
+  }
+]

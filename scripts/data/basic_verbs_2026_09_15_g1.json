@@ -1,0 +1,882 @@
+[
+  {
+    "english": "be",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "〜である、いる、ある",
+    "example": "She is a doctor.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/biː/",
+      "pos": "動詞・助動詞",
+      "meanings": [
+        "〜である(主語の性質・状態を説明する)",
+        "いる、ある(存在を表す)",
+        "(出来事が)起こる、開催される",
+        "(be + 現在分詞で)進行形を作る",
+        "(be + 過去分詞で)受動態を作る",
+        "(be to do で)予定・義務を表す"
+      ],
+      "examples": [
+        {
+          "en": "She is a doctor.",
+          "ja": "彼女は医者だ。"
+        },
+        {
+          "en": "There is a cat under the table.",
+          "ja": "テーブルの下に猫がいる。"
+        },
+        {
+          "en": "The meeting is tomorrow.",
+          "ja": "会議は明日だ。"
+        },
+        {
+          "en": "I am studying English now.",
+          "ja": "私は今、英語を勉強している。"
+        },
+        {
+          "en": "This letter was written by him.",
+          "ja": "この手紙は彼によって書かれた。"
+        },
+        {
+          "en": "We are to meet at six.",
+          "ja": "私たちは6時に会う予定だ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "being",
+          "pos": "名詞",
+          "ja": "存在、生き物、〜であること"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "exist",
+          "note": "より形式的に「存在する」を表す"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語には bēon/bēom(「存在する、〜になる」)という系統と、am/was という別系統の動詞(印欧祖語 *es- に遡る)が存在し、この2つが1つの活用体系に融合してできた語とされる。bēon 系は印欧祖語 *bheue-(「存在する、育つ」)に遡り、ゲルマン祖語 *biju-(「私は〜である/〜であるだろう」)を経て現在の be の形になったとされる。この融合により、be動詞は現代英語で最も不規則な活用を持つ動詞になっている。",
+      "trivia": "be動詞は am/is/are/was/were/been/being という8つの形を持つが、これは元々別系統だった複数の動詞が歴史的に1つの語に統合された結果とされる。この現象は英語だけでなくドイツ語(bin/ist/sind)やラテン語(fui)など多くの印欧語族の言語に共通して見られる。",
+      "explanation": "be動詞は一般動詞と違い、疑問文・否定文を作るのに do を使わない。疑問文は主語とbe動詞を倒置するだけ(Is he a teacher? / Are you ready?)、否定文はbe動詞の直後にnotを置くだけでよい(He isn't a teacher. / I am not ready.)。また、現在分詞と組み合わせて進行形(be + -ing)、過去分詞と組み合わせて受動態(be + 過去分詞)を作る助動詞としての役割も非常に重要。"
+    }
+  },
+  {
+    "english": "have",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "持つ、食べる、経験する、〜させる",
+    "example": "I have a car.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/hæv/",
+      "pos": "動詞・助動詞",
+      "meanings": [
+        "持っている、所有している",
+        "食べる、飲む",
+        "(病気・けがなどを)患う、負う",
+        "(経験として)〜する、〜を持つ",
+        "(使役: have + O + 過去分詞/原形で)〜してもらう、〜させる",
+        "(完了形を作る助動詞: have + 過去分詞)"
+      ],
+      "examples": [
+        {
+          "en": "I have a car.",
+          "ja": "私は車を持っている。"
+        },
+        {
+          "en": "Let's have lunch together.",
+          "ja": "一緒に昼食を食べよう。"
+        },
+        {
+          "en": "She has a bad cold.",
+          "ja": "彼女はひどい風邪をひいている。"
+        },
+        {
+          "en": "We had a great time at the party.",
+          "ja": "私たちはパーティーで素晴らしい時間を過ごした。"
+        },
+        {
+          "en": "I had my hair cut yesterday.",
+          "ja": "私は昨日髪を切ってもらった。"
+        },
+        {
+          "en": "Have you finished your homework?",
+          "ja": "宿題は終わりましたか。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "have-not",
+          "pos": "名詞",
+          "ja": "持たざる者、貧困層"
+        },
+        {
+          "word": "having",
+          "pos": "名詞・現在分詞",
+          "ja": "所有すること"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "possess",
+          "note": "よりフォーマルに「所有する」"
+        },
+        {
+          "word": "own",
+          "note": "「自分のものとして」所有することを強調"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "lack",
+          "note": "「〜を欠いている」という反対の状態"
+        }
+      ],
+      "origin": "古英語 habban(「所有する、〜の状態にある、経験する」)に由来し、ゲルマン祖語 *habejanan(古ノルド語 hafa、ドイツ語 haben なども同根)を経て、印欧祖語 *kap-(「つかむ」)に遡るとされる。綴りや意味がよく似たラテン語 habere とは無関係とされる、語源上の偶然の類似である点に注意。",
+      "trivia": "have は所有を表すだけでなく、現在完了形(have + 過去分詞)を作る最重要の助動詞でもある。また日常会話では「持つ」から「食べる・飲む」(have lunch, have coffee)、「経験する」(have a good time)など非常に幅広い意味に拡張して使われる。",
+      "explanation": "一般動詞としての have は、Do you have...? / I don't have... のように do を使って疑問文・否定文を作るのが基本(特にアメリカ英語)。一方、現在完了を作る助動詞としての have は、Have you finished...? / I haven't finished... のように have 自体を主語の前に出したり not をつけたりして疑問文・否定文を作る。イギリス英語では所有の意味でも Have you a car? のように助動詞的に使うことがある点も押さえておきたい。"
+    }
+  },
+  {
+    "english": "do",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "する、行う、足りる",
+    "example": "I do my homework every evening.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/duː/",
+      "pos": "動詞・助動詞",
+      "meanings": [
+        "する、行う",
+        "(仕事・課題などを)行う、片付ける",
+        "役に立つ、間に合う、足りる(That will do.)",
+        "(進み具合が)〜である、やっていく(How are you doing?)",
+        "(疑問文・否定文を作る助動詞)",
+        "(動詞の繰り返しを避ける代動詞、強調のdo)"
+      ],
+      "examples": [
+        {
+          "en": "I do my homework every evening.",
+          "ja": "私は毎晩宿題をする。"
+        },
+        {
+          "en": "She did the dishes after dinner.",
+          "ja": "彼女は夕食後に皿洗いをした。"
+        },
+        {
+          "en": "This small bag will do for the trip.",
+          "ja": "この小さなかばんで旅行には十分だ。"
+        },
+        {
+          "en": "How is your new project doing?",
+          "ja": "新しいプロジェクトの調子はどうですか。"
+        },
+        {
+          "en": "Do you like coffee?",
+          "ja": "コーヒーは好きですか。"
+        },
+        {
+          "en": "I do like this song.",
+          "ja": "私はこの歌が本当に好きだ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "doer",
+          "pos": "名詞",
+          "ja": "実行する人"
+        },
+        {
+          "word": "doable",
+          "pos": "形容詞",
+          "ja": "実行可能な"
+        },
+        {
+          "word": "undo",
+          "pos": "動詞",
+          "ja": "元に戻す"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "perform",
+          "note": "よりフォーマルに「(作業・任務を)遂行する」"
+        },
+        {
+          "word": "carry out",
+          "note": "「(計画・指示を)実行する」という句動詞"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語 dōn(「作る、行う、〜を引き起こす、置く」)に由来し、ゲルマン祖語 *dōanan(オランダ語 doen、ドイツ語 tun なども同根)を経て、印欧祖語 *dhē-(「置く、定める」)に遡るとされる。中英語期に、疑問文・否定文を作る助動詞としての用法(いわゆる do-support)が発達した。",
+      "trivia": "疑問文・否定文で do を使う語法(do-support)は英語特有の発達で、中英語期に徐々に一般化した。古英語では否定文を Hie ne wendon(「彼らは思わなかった」)のように ne(not)を動詞の前に置くだけで作っていたが、これが They did not think のようにdo を使う形に置き換わっていったとされる。",
+      "explanation": "do は一般動詞(する、行う)としての用法に加えて、他の一般動詞の疑問文・否定文を作る助動詞としての用法が非常に重要(do-support)。Do you like...? / I don't like... のように、do が主語の前に出たり not と結びついたりする。また Yes, I do. のように前に出た動詞の代わりをする代動詞としての用法や、I do like it.(本当に好きだ)のように動詞を強調する用法もある。"
+    }
+  },
+  {
+    "english": "seem",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "〜のように見える、〜のようだ",
+    "example": "She seems happy today.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/siːm/",
+      "pos": "動詞",
+      "meanings": [
+        "(見たところ)〜のように見える、〜のようだ",
+        "(that節/to不定詞を伴い)〜であるらしい、〜と思われる",
+        "(it seems that 〜で)どうやら〜らしい",
+        "(seem to do で)〜するように思われる"
+      ],
+      "examples": [
+        {
+          "en": "She seems happy today.",
+          "ja": "彼女は今日、幸せそうに見える。"
+        },
+        {
+          "en": "It seems that he has already left.",
+          "ja": "彼はもう出発したようだ。"
+        },
+        {
+          "en": "He seems to know a lot about music.",
+          "ja": "彼は音楽について多くを知っているようだ。"
+        },
+        {
+          "en": "There seems to be a mistake here.",
+          "ja": "ここに間違いがあるようだ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "seeming",
+          "pos": "形容詞",
+          "ja": "うわべの、見せかけの"
+        },
+        {
+          "word": "seemingly",
+          "pos": "副詞",
+          "ja": "見たところ、うわべは"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "appear",
+          "note": "ほぼ同義でよりフォーマルな「〜のように見える」"
+        },
+        {
+          "word": "look",
+          "note": "視覚的な印象に基づく「〜に見える」"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古ノルド語 sœma(「ふさわしくする、当てはめる、我慢する」)、さらに形容詞 sœmr(「ふさわしい、適した」)に由来し、ゲルマン祖語 *sōmiz、印欧祖語 *sem-(「一つ、共に」)に遡るとされる。13世紀頃に英語に入り、hit semeth(「それはふさわしく思われる→〜のようだ」)という非人称構文で使われ始めた。「ふさわしい」という元の意味は seemly(見苦しくない)、unseemly(見苦しい)に痕跡として残っている。",
+      "trivia": "seem はもともと「ふさわしい、似合う」という意味を持つ古ノルド語由来の語で、この元の意味は現在では seemly(お行儀のよい)・unseemly(見苦しい)という形容詞にのみ残っている。動詞の seem 自体は「(客観的な事実というより)そう見える・思われる」というニュアンスを表す点が特徴。",
+      "explanation": "seem は主観的な印象を表す状態動詞で、通常は進行形にしない(seeming ではなく seems と使うのが基本)。It seems that S+V 〜 と S seems to do 〜 の書き換えがTOEICでもよく問われる(例: It seems that he is tired. = He seems to be tired.)。"
+    }
+  },
+  {
+    "english": "know",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "知っている、分かる、知り合いである",
+    "example": "I know her name.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/noʊ/",
+      "pos": "動詞",
+      "meanings": [
+        "(事実・情報を)知っている",
+        "(人と)知り合いである、面識がある",
+        "分かる、理解している",
+        "(技能・言語を)習得している、できる",
+        "(〜と)見分ける、識別する(know A from B)"
+      ],
+      "examples": [
+        {
+          "en": "I know her name.",
+          "ja": "私は彼女の名前を知っている。"
+        },
+        {
+          "en": "Do you know Mr. Tanaka?",
+          "ja": "田中さんを知っていますか。"
+        },
+        {
+          "en": "I don't know why he is angry.",
+          "ja": "なぜ彼が怒っているのか分からない。"
+        },
+        {
+          "en": "She knows how to swim.",
+          "ja": "彼女は泳ぎ方を知っている(泳げる)。"
+        },
+        {
+          "en": "It's hard to know right from wrong sometimes.",
+          "ja": "時には善悪を見分けるのが難しい。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "knowledge",
+          "pos": "名詞",
+          "ja": "知識"
+        },
+        {
+          "word": "known",
+          "pos": "形容詞",
+          "ja": "知られている"
+        },
+        {
+          "word": "unknown",
+          "pos": "形容詞",
+          "ja": "未知の"
+        },
+        {
+          "word": "knowingly",
+          "pos": "副詞",
+          "ja": "故意に、承知の上で"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "understand",
+          "note": "知識よりも「理解している」ことに重点"
+        },
+        {
+          "word": "recognize",
+          "note": "「見て・聞いてそれと分かる」というニュアンス"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語の強変化動詞 cnāwan(「区別する、識別する、〜だと認識する」)に由来し、印欧祖語 *gno-(「知る」)に遡るとされる。この語根はゲルマン語派の中では英語に色濃く残っており、他の多くの言語では複数の動詞で表す意味を know 一語でカバーしている。",
+      "trivia": "know の語頭の k は古英語では実際に発音されていたが、17世紀頃までに脱落し、現在では knee(膝)や knife(ナイフ)などと同様に黙字(サイレントレター)になっている。語源となった印欧祖語 *gno- は、ラテン語 gnoscere(→ recognize, ignore)やギリシャ語 gnosis(知識)にも見られる、know・knowledge と同じ語根。",
+      "explanation": "know は状態動詞(進行形にしない)の代表格で、I am knowing ではなく I know のように使う。疑問文・否定文は一般動詞なので do を使う(Do you know...? / I don't know...)。get to know(だんだん知り合いになる)や come to know(知るようになる)のように「変化」を表すには get/come と組み合わせる点もよく問われる。"
+    }
+  },
+  {
+    "english": "see",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "見る、分かる、会う、確かめる",
+    "example": "I can see the mountain from here.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/siː/",
+      "pos": "動詞",
+      "meanings": [
+        "(目で)見る、見える",
+        "分かる、理解する",
+        "(人と)会う、面会する",
+        "(医者などに)診てもらう",
+        "確かめる、確認する(see if/whether)",
+        "(物事・変化を)経験する、目撃する"
+      ],
+      "examples": [
+        {
+          "en": "I can see the mountain from here.",
+          "ja": "ここから山が見える。"
+        },
+        {
+          "en": "I see what you mean.",
+          "ja": "あなたの言いたいことが分かる。"
+        },
+        {
+          "en": "I'll see you at the station at noon.",
+          "ja": "正午に駅で会いましょう。"
+        },
+        {
+          "en": "I'm seeing my dentist tomorrow.",
+          "ja": "明日、歯医者に診てもらう予定だ。"
+        },
+        {
+          "en": "Let me see if I can help you.",
+          "ja": "手伝えるかどうか確かめてみます。"
+        },
+        {
+          "en": "This city has seen a lot of change.",
+          "ja": "この街は多くの変化を経験してきた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "sight",
+          "pos": "名詞",
+          "ja": "視力、光景"
+        },
+        {
+          "word": "unforeseen",
+          "pos": "形容詞",
+          "ja": "予期しない"
+        },
+        {
+          "word": "oversee",
+          "pos": "動詞",
+          "ja": "監督する"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "watch",
+          "note": "動くもの・進行しているものを「見守る」ニュアンス"
+        },
+        {
+          "word": "notice",
+          "note": "「気づく」という発見のニュアンス"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語 sēon(「目で見る、視覚で知覚する」)に由来し、ゲルマン祖語 *sehwanan、印欧祖語 *sekw-(「見る」)に遡るとされる。「(目で)追う」を意味する別の印欧祖語 *sekw-(follow系)と同一ではないかという説もあるが、確証はないとされる。",
+      "trivia": "see・look・watch はいずれも「見る」と訳されるが、see は「(意図せず)目に入る、見える」という結果に重点があるのに対し、look は「視線を向ける」という動作、watch は「動くものを注意して見続ける」という継続性に重点がある点が異なる。",
+      "explanation": "see は状態動詞としては進行形にしないが(I see = 見える/分かる)、「(人に)会う・面談する予定である」という意味では I'm seeing... のように進行形で使われる点に注意。疑問文・否定文は一般動詞として do を使う(Do you see...? / I don't see...)。Let's see(ええと)、You see(あのね)といった会話表現も頻出。"
+    }
+  },
+  {
+    "english": "feel",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "感じる、触る、〜な気がする",
+    "example": "I feel happy today.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/fiːl/",
+      "pos": "動詞",
+      "meanings": [
+        "(感情・感覚を)感じる",
+        "(手などで)触る、触れてみる",
+        "(〜のように)感じられる、〜な感触がする",
+        "〜だと思う、〜な気がする(feel that 〜)",
+        "(feel like で)〜したい気がする"
+      ],
+      "examples": [
+        {
+          "en": "I feel happy today.",
+          "ja": "私は今日、幸せに感じる。"
+        },
+        {
+          "en": "Feel this fabric; it's so soft.",
+          "ja": "この生地を触ってみて、とても柔らかいよ。"
+        },
+        {
+          "en": "The water feels cold.",
+          "ja": "その水は冷たく感じる。"
+        },
+        {
+          "en": "I feel that we should wait a little longer.",
+          "ja": "もう少し待つべきだと思う。"
+        },
+        {
+          "en": "I feel like eating something sweet.",
+          "ja": "何か甘いものが食べたい気分だ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "feeling",
+          "pos": "名詞",
+          "ja": "気持ち、感覚"
+        },
+        {
+          "word": "feelings",
+          "pos": "名詞(複数)",
+          "ja": "感情"
+        },
+        {
+          "word": "heartfelt",
+          "pos": "形容詞",
+          "ja": "心からの"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "sense",
+          "note": "より知覚・直感的に「感じ取る」"
+        },
+        {
+          "word": "touch",
+          "note": "物理的に「触れる」動作そのもの"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語 fēlan(「触れる、感覚的に知覚する」)に由来し、ゲルマン祖語 *foljanan を経て、印欧祖語 *pal-(「触れる、感じる、軽く打つ」)または *pel-(「突く、打つ、駆り立てる」)に遡るとされる。もともとは触覚に限定された語だったが、次第に感情や感覚全般を表す語へと意味が広がった。",
+      "trivia": "feel はもともと「(手で)触る」という触覚だけを表す語だったが、特定の感覚器官に結びつかない知覚全般(気分・感情・直感)を表す語へと意味が拡張した。feel like 〜ing(〜したい気がする)という口語表現は1829年頃に定着したとされる、比較的新しい用法。",
+      "explanation": "feel は「感じる」という状態的な意味では進行形にしないことが多いが(I feel great.)、体調などが徐々に変化していることを強調するときは I'm feeling better(だんだん良くなってきている)のように進行形も使われる。疑問文・否定文は一般動詞なので do を使う(How do you feel? / I don't feel well.)。feel + 形容詞(feel happy)、feel like + 名詞/動名詞(feel like coffee / feel like going)の語法もよく問われる。"
+    }
+  },
+  {
+    "english": "think",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "思う、考える、〜のつもりだ",
+    "example": "I think it will rain tomorrow.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/θɪŋk/",
+      "pos": "動詞",
+      "meanings": [
+        "(〜だと)思う、考える",
+        "(じっくり)考える、思考する",
+        "(〜するつもりだと)考えている、意図する",
+        "(think of/about で)〜について考える、思いつく",
+        "(think highly of などで)〜だと評価する、みなす"
+      ],
+      "examples": [
+        {
+          "en": "I think it will rain tomorrow.",
+          "ja": "明日は雨が降ると思う。"
+        },
+        {
+          "en": "Let me think about it for a moment.",
+          "ja": "少し考えさせてください。"
+        },
+        {
+          "en": "We are thinking of moving to Tokyo.",
+          "ja": "私たちは東京に引っ越すことを考えている。"
+        },
+        {
+          "en": "I can't think of his name right now.",
+          "ja": "今、彼の名前が思い出せない。"
+        },
+        {
+          "en": "They think highly of her work.",
+          "ja": "彼らは彼女の仕事を高く評価している。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "thought",
+          "pos": "名詞",
+          "ja": "考え、思考"
+        },
+        {
+          "word": "thinker",
+          "pos": "名詞",
+          "ja": "思想家、考える人"
+        },
+        {
+          "word": "thoughtful",
+          "pos": "形容詞",
+          "ja": "思いやりのある、考え深い"
+        },
+        {
+          "word": "rethink",
+          "pos": "動詞",
+          "ja": "考え直す"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "believe",
+          "note": "確信の度合いがやや強い「〜だと思う」"
+        },
+        {
+          "word": "consider",
+          "note": "よりフォーマルに「よく考える、みなす」"
+        }
+      ],
+      "antonyms": [],
+      "origin": "中英語期に、古英語の2つの異なる動詞 þencan(「理性を働かせる、思考する、意図する」)と þyncan(「〜のように見える、思われる」)が同じ形に融合してできた語とされる。þyncan の「〜のように見える」という意味は methinks(「私には〜のように思われる」という古い表現)に痕跡として残っている。ゲルマン祖語 *thankjanan / *thunkjan を経て、印欧祖語 *tong-(「思う、感じる」)に遡るとされる。",
+      "trivia": "think は元々2つの別々の古英語動詞(「考える」の þencan と「〜のように見える」の þyncan)が中英語期に同じ形に合流してできた語とされる。後者の名残は、現代ではほぼ使われない methinks(「私には〜と思われる」)という古風な表現にのみ残っている。",
+      "explanation": "think は「〜だと思う」を表すときは進行形にしないが(I think so.)、「今まさに考え中である」ことを強調するときは I'm thinking about it. のように進行形にできる点が feel などと似ている。疑問文・否定文は一般動詞として do を使う(Do you think...? / I don't think...)。I don't think S+V(〜ではないと思う)のように、否定を think の前に置く語法(否定転移)が日本語の発想と異なるためTOEICでも狙われやすい。"
+    }
+  },
+  {
+    "english": "remember",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "覚えている、思い出す、忘れずに〜する",
+    "example": "I remember his name.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/rɪˈmembər/",
+      "pos": "動詞",
+      "meanings": [
+        "覚えている、記憶している",
+        "思い出す、思い当たる",
+        "(〜し忘れないように)覚えておく、心に留める",
+        "(人に)よろしくと伝える(remember A to B)"
+      ],
+      "examples": [
+        {
+          "en": "I remember his name.",
+          "ja": "私は彼の名前を覚えている。"
+        },
+        {
+          "en": "Suddenly, I remembered where I had left my keys.",
+          "ja": "突然、鍵をどこに置いたか思い出した。"
+        },
+        {
+          "en": "Please remember to lock the door.",
+          "ja": "ドアの鍵を閉めるのを忘れないでください。"
+        },
+        {
+          "en": "Remember me to your family.",
+          "ja": "ご家族によろしくお伝えください。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "memory",
+          "pos": "名詞",
+          "ja": "記憶、思い出"
+        },
+        {
+          "word": "reminder",
+          "pos": "名詞",
+          "ja": "思い出させるもの、リマインダー"
+        },
+        {
+          "word": "remembrance",
+          "pos": "名詞",
+          "ja": "追憶、記念"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "recall",
+          "note": "意識的に「思い出す」という動作に重点"
+        },
+        {
+          "word": "memorize",
+          "note": "意図的に「暗記する」という準備段階の意味"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "forget",
+          "note": "「忘れる」という反対の意味"
+        }
+      ],
+      "origin": "11世紀の古フランス語 remembrer に由来し、さらにラテン語 rememorari(「再び心に留める」)にさかのぼるとされる。ラテン語の接頭辞 re-(「再び」)と memorari(「心に留める」、memor「心に留めている」から)からなり、最終的には印欧祖語 *(s)mer-(「覚えている」)に行き着くとされる。number・chamber・humble などと同様、m と子音の間に b が挿入される英語の音韻変化パターンの一例でもある。",
+      "trivia": "remember の -mb- の b は発音の都合で挿入された音で、number(数)や chamber(部屋)、humble(謙虚な)などにも同じ現象が見られる。remember to do(これから〜するのを覚えている=し忘れない)と remember doing(すでに〜したことを覚えている)の意味の違いは、TOEICの語法問題でも頻出。",
+      "explanation": "remember to do(〜するのを忘れずにいる=これからの行動)と remember doing(〜したことを覚えている=過去の行動)の違いが最重要ポイント。疑問文・否定文は一般動詞なので do を使う(Do you remember...? / I don't remember...)。"
+    }
+  },
+  {
+    "english": "love",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "愛する、大好きだ、愛",
+    "example": "I love my family.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/lʌv/",
+      "pos": "動詞・名詞",
+      "meanings": [
+        "(人を)愛する、深く大切に思う",
+        "(物事が)大好きだ、とても気に入っている",
+        "(would love to で)ぜひ〜したい",
+        "(名詞)愛、愛情"
+      ],
+      "examples": [
+        {
+          "en": "I love my family very much.",
+          "ja": "私は家族をとても愛している。"
+        },
+        {
+          "en": "She loves chocolate cake.",
+          "ja": "彼女はチョコレートケーキが大好きだ。"
+        },
+        {
+          "en": "I would love to visit Japan someday.",
+          "ja": "いつか日本をぜひ訪れたい。"
+        },
+        {
+          "en": "Their love for each other never changed.",
+          "ja": "彼らのお互いへの愛は決して変わらなかった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "lovely",
+          "pos": "形容詞",
+          "ja": "かわいらしい、素敵な"
+        },
+        {
+          "word": "lover",
+          "pos": "名詞",
+          "ja": "恋人、愛好者"
+        },
+        {
+          "word": "beloved",
+          "pos": "形容詞・名詞",
+          "ja": "最愛の(人)"
+        },
+        {
+          "word": "lovable",
+          "pos": "形容詞",
+          "ja": "愛すべき、かわいい"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "adore",
+          "note": "より熱烈に「大好きだ、崇拝する」"
+        },
+        {
+          "word": "cherish",
+          "note": "「大切に慈しむ」というニュアンス"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "hate",
+          "note": "「憎む、大嫌いだ」という反対の感情"
+        }
+      ],
+      "origin": "名詞は古英語 lufu(「愛情、恋愛感情、友情」)、動詞は古英語 lufian(「愛する、大切にする、喜ぶ」)に由来し、いずれもゲルマン祖語 *lubō(名詞)/ *lubōjanan(動詞)を経て、印欧祖語 *leubh-(「大切にする、望む、愛する」)に遡るとされる。ドイツ語 Liebe(愛)やオランダ語 lief(いとしい)なども同じ語源。",
+      "trivia": "テニスなどのスコアで0点を love と呼ぶのは、フランス語で「卵」を意味する l'œuf(卵の形が0に似ていることから)が語源という説が広く知られているが、確証はなく俗説の域を出ないとされる。believe(信じる)と love は同じ印欧祖語の語根 *leubh- を共有する親戚語である点も興味深い。",
+      "explanation": "love は状態動詞として進行形にしないのが伝統的な用法だが(I love you. であって I am loving you. とは通常言わない)、現代の口語やカジュアルな広告表現(I'm lovin' it. など)では一時的な感情として進行形が使われることもある。疑問文・否定文は一般動詞なので do を使う(Do you love...? / I don't love...)。"
+    }
+  },
+  {
+    "english": "understand",
+    "is_existing": true,
+    "existing_id": 496,
+    "japanese": "理解する、分かる、察する",
+    "example": "I understand what you are saying.",
+    "level": 400,
+    "detail": {
+      "pronunciation": "/ˌʌndərˈstænd/",
+      "pos": "動詞",
+      "meanings": [
+        "(話・状況などを)理解する、分かる",
+        "(人の気持ちや事情を)察する、理解を示す",
+        "(that節を伴い)〜だと聞いている、〜だと解釈している",
+        "(言語を)理解する、聞いて分かる"
+      ],
+      "examples": [
+        {
+          "en": "I understand what you are saying.",
+          "ja": "あなたの言っていることが分かります。"
+        },
+        {
+          "en": "She understands how hard you have worked.",
+          "ja": "彼女はあなたがどれだけ頑張ったか分かってくれている。"
+        },
+        {
+          "en": "I understand that the meeting has been postponed.",
+          "ja": "会議が延期されたと聞いています。"
+        },
+        {
+          "en": "He can understand French but can't speak it well.",
+          "ja": "彼はフランス語を理解できるが、うまく話せない。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "understanding",
+          "pos": "名詞・形容詞",
+          "ja": "理解(力)、理解のある"
+        },
+        {
+          "word": "misunderstand",
+          "pos": "動詞",
+          "ja": "誤解する"
+        },
+        {
+          "word": "understandable",
+          "pos": "形容詞",
+          "ja": "理解できる、もっともな"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "comprehend",
+          "note": "よりフォーマルに「(複雑な内容を)理解する」"
+        },
+        {
+          "word": "grasp",
+          "note": "「(要点を)つかむ」というニュアンス"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "misunderstand",
+          "note": "「誤解する」という反対の意味"
+        }
+      ],
+      "origin": "古英語 understandan(under「〜の間に、〜の中で」+ standan「立つ」)に由来するとされる。ここでの under は現代の「下に」という意味ではなく、印欧祖語 *nter-(「〜の間に」)に由来する「〜の間に、〜の中に」という意味で使われており、「(物事の)真っただ中に立つ→本質をつかむ」というイメージから「理解する」の意味が生まれたと考えられている。",
+      "trivia": "understand を「under(下に)+ stand(立つ)」と覚える人が多いが、実際にはこの under は「間に、中に」を意味する古い用法で、「下に」の意味ではないとされる。ドイツ語で「理解する」に当たる verstehen が文字通り「前に立つ」を意味するのと対照的に、英語は「間に立つ」というイメージで理解を捉えている。",
+      "explanation": "understand は状態動詞なので、原則として進行形にしない(I understand. であって I am understanding. とは言わない)。疑問文・否定文は一般動詞として do を使う(Do you understand? / I don't understand.)。ビジネス英語では I understand that 〜(〜だと理解しています/聞いております)という形で、伝聞や把握している内容を丁寧に伝える表現としてもよく使われる。"
+    }
+  },
+  {
+    "english": "believe",
+    "is_existing": true,
+    "existing_id": 417,
+    "japanese": "信じる、(〜だと)思う",
+    "example": "I believe you.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/bɪˈliːv/",
+      "pos": "動詞",
+      "meanings": [
+        "(人・話などを)信じる、信用する",
+        "(that節を伴い)〜だと思う、〜だと信じている",
+        "(神などを)信仰する、信心する(believe in)",
+        "(〜の存在・価値を)信じる、信頼を置く(believe in)"
+      ],
+      "examples": [
+        {
+          "en": "I believe you; I know you wouldn't lie to me.",
+          "ja": "あなたを信じます。私に嘘をつくはずがないと分かっているから。"
+        },
+        {
+          "en": "I believe that honesty is the best policy.",
+          "ja": "正直であることが一番だと私は思う。"
+        },
+        {
+          "en": "She believes in God.",
+          "ja": "彼女は神を信仰している。"
+        },
+        {
+          "en": "He believes in himself.",
+          "ja": "彼は自分自身を信じている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "belief",
+          "pos": "名詞",
+          "ja": "信念、信仰"
+        },
+        {
+          "word": "believable",
+          "pos": "形容詞",
+          "ja": "信じられる、もっともらしい"
+        },
+        {
+          "word": "unbelievable",
+          "pos": "形容詞",
+          "ja": "信じられない"
+        },
+        {
+          "word": "believer",
+          "pos": "名詞",
+          "ja": "信者、信奉者"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "trust",
+          "note": "人や物事への「信頼」に重点があるニュアンス"
+        },
+        {
+          "word": "think",
+          "note": "確信の度合いが弱めの「〜だと思う」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "doubt",
+          "note": "「疑う」という反対の意味"
+        }
+      ],
+      "origin": "古英語 belyfan(gelēfan などの異形あり)に由来し、ゲルマン祖語 *ga-laubjan(「信じる」、文字通りには「大切なもの・価値あるものとして心にとどめる」)を経て、印欧祖語 *leubh-(「大切にする、望む、愛する」)に遡るとされる。この語根は love(愛する)とも同じ祖先を共有しており、「信じる」と「愛する」は語源的に近い関係にあるとされる。",
+      "trivia": "believe と love は、印欧祖語の同じ語根 *leubh-(「大切にする、愛する」)に由来する語源上の親戚語とされる。「信じる」という行為の根底に「大切なものとして心に留める」という感覚があったことがうかがえる。",
+      "explanation": "believe は状態動詞なので、通常は進行形にしない(I believe you. であって I am believing you. とは言わない)。疑問文・否定文は一般動詞として do を使う(Do you believe...? / I don't believe...)。「〜を信じる」というとき、人そのものを信じる believe him と、神・主義などの存在や価値を信じる believe in him(彼の人間性・能力を信頼する)の違いに注意。"
+    }
+  }
+]

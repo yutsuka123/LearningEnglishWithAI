@@ -1,0 +1,913 @@
+[
+  {
+    "english": "go",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "行く、進む、〜になる",
+    "example": "I go to school every day.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/ɡoʊ/",
+      "pos": "動詞",
+      "meanings": [
+        "行く、進む",
+        "(物事が)進む、運ぶ",
+        "〜になる、〜の状態になる",
+        "なくなる、消える",
+        "(機械などが)動く、作動する"
+      ],
+      "examples": [
+        {
+          "en": "I go to school by bike every day.",
+          "ja": "私は毎日自転車で学校に行く。"
+        },
+        {
+          "en": "How is the project going?",
+          "ja": "プロジェクトはどう進んでいますか。"
+        },
+        {
+          "en": "The milk has gone bad.",
+          "ja": "牛乳が腐ってしまった(悪い状態になった)。"
+        },
+        {
+          "en": "All my money is gone.",
+          "ja": "私のお金は全部なくなった。"
+        },
+        {
+          "en": "This old clock still goes perfectly.",
+          "ja": "この古い時計は今でも問題なく動く。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "ongoing",
+          "pos": "形容詞",
+          "ja": "進行中の"
+        },
+        {
+          "word": "outgoing",
+          "pos": "形容詞",
+          "ja": "社交的な、外向的な;(役職などを)退任する"
+        },
+        {
+          "word": "goings-on",
+          "pos": "名詞",
+          "ja": "(通例好ましくない)出来事、騒動"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "proceed",
+          "note": "よりフォーマルに「進む」"
+        },
+        {
+          "word": "head (for)",
+          "note": "目的地に向かって進む"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "come",
+          "note": "話し手の方へ向かう反対方向の動き"
+        },
+        {
+          "word": "stay",
+          "note": "その場にとどまる"
+        }
+      ],
+      "origin": "古英語 gān(西ゲルマン祖語 *gaian)に由来し、さらに遡ると印欧祖語の語根 *ghē-「放す、解放される」に行き着くとされる。過去形 went はもともと別の動詞 wenden「進路を取る」の過去形で、古英語での go の過去形 eode(語源不詳)を中英語期(1400年頃)までに置き換えた。現代英語で go と be だけが全く別語源の過去形を借用しているという珍しい補充法(サプリション)の実例とされる。",
+      "trivia": "「go」の過去形が全く別の動詞由来の went である現象は補充法(サプリション)と呼ばれ、英語では be/am/is/was の変化と並んで代表的な例とされる。",
+      "explanation": "go on(続ける、起こる)、go off(鳴る・作動する、爆発する、(食べ物が)腐る)、go over(見直す、確認する)、go through(経験する、詳しく調べる)、go up/down(上がる/下がる)など、前置詞・副詞と組み合わさる句動詞が非常に多い基本動詞。TOEICでは go over(資料などを見直す)、go through(手続きを経る)がよく出る。"
+    }
+  },
+  {
+    "english": "come",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "来る、到着する、〜になる",
+    "example": "Please come to my house tomorrow.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/kʌm/",
+      "pos": "動詞",
+      "meanings": [
+        "来る、やって来る",
+        "到着する、着く",
+        "〜になる、実現する",
+        "由来する、〜から来る"
+      ],
+      "examples": [
+        {
+          "en": "Please come to my office at three.",
+          "ja": "3時に私のオフィスに来てください。"
+        },
+        {
+          "en": "The bus comes every ten minutes.",
+          "ja": "バスは10分おきに来る(到着する)。"
+        },
+        {
+          "en": "Her dream finally came true.",
+          "ja": "彼女の夢はついに実現した。"
+        },
+        {
+          "en": "This word comes from French.",
+          "ja": "この単語はフランス語に由来する。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "become",
+          "pos": "動詞",
+          "ja": "〜になる"
+        },
+        {
+          "word": "income",
+          "pos": "名詞",
+          "ja": "収入"
+        },
+        {
+          "word": "outcome",
+          "pos": "名詞",
+          "ja": "結果"
+        },
+        {
+          "word": "newcomer",
+          "pos": "名詞",
+          "ja": "新参者"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "arrive",
+          "note": "到着する、ややフォーマル"
+        },
+        {
+          "word": "approach",
+          "note": "近づいてくる"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "go",
+          "note": "その場から離れる反対方向"
+        },
+        {
+          "word": "leave",
+          "note": "出発する、立ち去る"
+        }
+      ],
+      "origin": "古英語 cuman(ゲルマン祖語 *kwemanan)に由来し、印欧祖語の語根 *gwa-「行く、来る」に遡るとされる。元々は「到達する目的で移動する、動いて到達する」という物理的な意味で、そこから「現れる、知覚できるようになる」へ広がり、12世紀初めには「起こる、生じる」という比喩的な意味も獲得した。",
+      "trivia": "come and go(行ったり来たり)のように come と go は対で使われることが多いが、視点(話し手/聞き手のどちらを基準にするか)が日本語の「行く/来る」と逆になることがある。例えば「(今そちらへ)行きます」は日本語では「行く」だが、英語では聞き手のいる場所を基準に I'm coming と言うのが自然。",
+      "explanation": "come up with(〜を思いつく)、come across(〜に偶然出会う・気づく)、come up(話題に上る、近づく)、come along(一緒に来る、はかどる)、come back(戻る)など。TOEICでは come up with(アイデアを思いつく)が頻出。"
+    }
+  },
+  {
+    "english": "bring",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "持ってくる、連れてくる、もたらす",
+    "example": "Can you bring your umbrella tomorrow?",
+    "level": 320,
+    "detail": {
+      "pronunciation": "/brɪŋ/",
+      "pos": "動詞",
+      "meanings": [
+        "(物を)持ってくる",
+        "(人を)連れてくる",
+        "(結果を)もたらす、引き起こす",
+        "(話題を)持ち出す"
+      ],
+      "examples": [
+        {
+          "en": "Can you bring your laptop tomorrow?",
+          "ja": "明日ノートパソコンを持ってきてくれますか。"
+        },
+        {
+          "en": "She brought her friend to the party.",
+          "ja": "彼女は友人をパーティーに連れてきた。"
+        },
+        {
+          "en": "The new policy brought many changes.",
+          "ja": "その新しい政策は多くの変化をもたらした。"
+        },
+        {
+          "en": "He brought up an important issue at the meeting.",
+          "ja": "彼は会議で重要な問題を持ち出した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "upbringing",
+          "pos": "名詞",
+          "ja": "しつけ、養育"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "carry",
+          "note": "持ち運ぶという動作そのものに焦点"
+        },
+        {
+          "word": "fetch",
+          "note": "取りに行って持ってくる"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "take (away)",
+          "note": "話し手から離れる方向へ持っていく"
+        }
+      ],
+      "origin": "古英語 bringan に由来し、ゲルマン祖語 *brangjanan、さらに印欧祖語 *bhrengk-(「運ぶ、子を産む」を意味する語根 *bher- (1) に基づくとされる)に遡るとされる。古英語での原義は「運ぶ、携えてくる、生み出す、差し出す」という広い意味だった。",
+      "trivia": "bring と take はどちらも「持っていく/持ってくる」を表すが方向が逆。bring は話し手・聞き手のいる場所へ「持ってくる」方向、take はそこから離れる方向で使うのが基本。",
+      "explanation": "bring up(育てる、話題に出す)、bring about(引き起こす)、bring back(持ち帰る、思い出させる)、bring down(下げる、失脚させる)など句動詞が豊富。bring vs take の方向の違いに注意。"
+    }
+  },
+  {
+    "english": "send",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "送る、行かせる",
+    "example": "I will send you an email tonight.",
+    "level": 310,
+    "detail": {
+      "pronunciation": "/send/",
+      "pos": "動詞",
+      "meanings": [
+        "(物・情報を)送る",
+        "(人を)行かせる、派遣する",
+        "(信号などを)発信する",
+        "(ある状態に)至らせる"
+      ],
+      "examples": [
+        {
+          "en": "I'll send you the file tonight.",
+          "ja": "今夜そのファイルを送ります。"
+        },
+        {
+          "en": "The company sent an engineer to fix the machine.",
+          "ja": "会社は機械を直すためにエンジニアを派遣した。"
+        },
+        {
+          "en": "The satellite sends signals back to Earth.",
+          "ja": "その衛星は地球に信号を送り返す。"
+        },
+        {
+          "en": "The loud noise sent the birds flying.",
+          "ja": "大きな音で鳥たちが飛び立った(その状態にさせた)。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "sender",
+          "pos": "名詞",
+          "ja": "送信者、差出人"
+        },
+        {
+          "word": "resend",
+          "pos": "動詞",
+          "ja": "再送する"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "dispatch",
+          "note": "公式・業務的に送る"
+        },
+        {
+          "word": "transmit",
+          "note": "信号・データなどを送信する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "receive",
+          "note": "受け取る"
+        }
+      ],
+      "origin": "古英語 sendan に由来し、ゲルマン祖語 *sandjanan「行かせる」、印欧祖語の語根 *sent-「〜に向かう、行く」に遡るとされる。元々は使者を派遣したり物を一方から他方へ移動させたりする意味で、1831年までには「(人を)ある状態にする」(send to sleep など)という抽象的な意味にも広がったとされる。",
+      "trivia": "send off(見送る、(スポーツで)退場させる)や send someone to Coventry(人を村八分にする)のようなイディオムがある。",
+      "explanation": "send for(人を呼びにやる)、send out(発送する、送り出す)、send off(見送る、退場させる)、send in(提出する、送り込む)など。ビジネス英語では send out(案内状などを送付する)が頻出。"
+    }
+  },
+  {
+    "english": "leave",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "去る、出発する、残す",
+    "example": "The train leaves at nine.",
+    "level": 330,
+    "detail": {
+      "pronunciation": "/liːv/",
+      "pos": "動詞",
+      "meanings": [
+        "去る、出発する",
+        "(物を)置き忘れる、残す",
+        "〜のままにしておく",
+        "(仕事などを)辞める"
+      ],
+      "examples": [
+        {
+          "en": "The train leaves platform 3 at nine.",
+          "ja": "電車は9時に3番ホームから出発する。"
+        },
+        {
+          "en": "I left my phone at home.",
+          "ja": "家に携帯電話を置き忘れた。"
+        },
+        {
+          "en": "Leave the door open, please.",
+          "ja": "ドアを開けたままにしておいてください。"
+        },
+        {
+          "en": "She left her job to start her own business.",
+          "ja": "彼女は自分の事業を始めるために仕事を辞めた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "leftover",
+          "pos": "名詞・形容詞",
+          "ja": "残り物、残りの"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "depart",
+          "note": "出発する、ややフォーマル"
+        },
+        {
+          "word": "exit",
+          "note": "退出する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "arrive",
+          "note": "到着する"
+        },
+        {
+          "word": "stay",
+          "note": "とどまる"
+        }
+      ],
+      "origin": "古英語 læfan(ゲルマン祖語 *laibjanan)に由来し、印欧祖語の語根 *leip-「くっつく、粘着する」に遡るとされる。元々は使役的に「同じ状態のままにしておく、残しておく」という意味で、1200年頃に現代の中心的な意味「立ち去る、出発する」を獲得した。なお名詞の leave(休暇・許可)は別語源(ゲルマン祖語 *laubo、印欧祖語 *leubh-「愛する、望む」)とされ、動詞の leave とは由来の異なる同形異義語とされる。",
+      "trivia": "動詞 leave(去る・残す)と名詞 leave(休暇・許可)は綴りは同じだが語源が異なる別語とされ、on leave(休暇中)、maternity leave(産休)のように使う。",
+      "explanation": "leave for(〜に向けて出発する)、leave out(除く、省く)、leave behind(置き忘れる、後に残す)、leave off(やめる、中断する)など。名詞の leave を使った on leave(休暇中)、sick leave(病気休暇)もTOEICで重要。"
+    }
+  },
+  {
+    "english": "move",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "動く、動かす、引っ越す",
+    "example": "Please move your car.",
+    "level": 310,
+    "detail": {
+      "pronunciation": "/muːv/",
+      "pos": "動詞",
+      "meanings": [
+        "動く、移動する",
+        "(物を)動かす",
+        "引っ越す",
+        "感動させる",
+        "(提案を)提出する"
+      ],
+      "examples": [
+        {
+          "en": "Don't move until I say so.",
+          "ja": "私が言うまで動かないで。"
+        },
+        {
+          "en": "Could you help me move this sofa?",
+          "ja": "このソファを動かすのを手伝ってもらえますか。"
+        },
+        {
+          "en": "They moved to a bigger house last month.",
+          "ja": "彼らは先月もっと大きな家に引っ越した。"
+        },
+        {
+          "en": "The speech moved many people to tears.",
+          "ja": "そのスピーチは多くの人を感動させて涙を流させた。"
+        },
+        {
+          "en": "He moved that the meeting be postponed.",
+          "ja": "彼は会議の延期を提案した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "movement",
+          "pos": "名詞",
+          "ja": "動き、運動"
+        },
+        {
+          "word": "movable",
+          "pos": "形容詞",
+          "ja": "動かせる、可動の"
+        },
+        {
+          "word": "mover",
+          "pos": "名詞",
+          "ja": "動かす人、引っ越し業者"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "shift",
+          "note": "位置や方針を移す"
+        },
+        {
+          "word": "relocate",
+          "note": "(会社・住居などを)移転する、ややフォーマル"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "stay",
+          "note": "その場にとどまる"
+        },
+        {
+          "word": "remain",
+          "note": "残る、とどまる"
+        }
+      ],
+      "origin": "古フランス語・アングロフレンチ語を経てラテン語 movere「動かす、動く、かき乱す」に由来し、印欧祖語の語根 *meue-「押しやる」に遡るとされる。13世紀末に英語に入り、まず自動詞的な「位置や姿勢を変える」という意味、続いて他動詞的な「動かす」という意味に広がった。",
+      "trivia": "チェスなどの「手」を意味する名詞 move は15世紀末から使われている用法で、そこから比喩的に「(交渉や政策上の)一手・動き」という意味にも広がった。",
+      "explanation": "move in(引っ越してくる)、move out(引っ越して出る)、move on(次に進む)、move up(昇進する、繰り上がる)など。ビジネスでは move forward with(〜を進める)のような表現も頻出。"
+    }
+  },
+  {
+    "english": "reach",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "着く、届く、達する",
+    "example": "We will reach the airport by noon.",
+    "level": 380,
+    "detail": {
+      "pronunciation": "/riːtʃ/",
+      "pos": "動詞",
+      "meanings": [
+        "(場所に)着く、到達する",
+        "(手を)伸ばす",
+        "(物に)届く",
+        "(ある水準・量に)達する",
+        "連絡が取れる"
+      ],
+      "examples": [
+        {
+          "en": "We reached the hotel just before midnight.",
+          "ja": "私たちは真夜中直前にそのホテルに着いた。"
+        },
+        {
+          "en": "She reached for her glasses on the table.",
+          "ja": "彼女はテーブルの上の眼鏡に手を伸ばした。"
+        },
+        {
+          "en": "I can't reach the top shelf without a stool.",
+          "ja": "踏み台なしでは一番上の棚に手が届かない。"
+        },
+        {
+          "en": "Sales reached a record high last quarter.",
+          "ja": "売上は前四半期に過去最高に達した。"
+        },
+        {
+          "en": "You can reach me at this number anytime.",
+          "ja": "この番号にいつでも連絡いただけます。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "reachable",
+          "pos": "形容詞",
+          "ja": "手の届く、連絡がつく"
+        },
+        {
+          "word": "outreach",
+          "pos": "名詞",
+          "ja": "働きかけ、支援活動"
+        },
+        {
+          "word": "far-reaching",
+          "pos": "形容詞",
+          "ja": "広範囲に及ぶ"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "arrive at",
+          "note": "(場所・結論などに)到達する"
+        },
+        {
+          "word": "attain",
+          "note": "(目標・水準に)達する、ややフォーマル"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "miss",
+          "note": "届かない、逃す"
+        }
+      ],
+      "origin": "中英語 rēchen、古英語 ræcan/reccan に由来し、西ゲルマン祖語 *raikejanan「手を伸ばす」、印欧祖語の語根 *reig-「伸ばす、張る、硬直する」に遡るとされる。元々は「手や体を伸ばす」「触れる・打つことに成功する」という意味で、そこから「(場所に)到達する」「(人に)影響を及ぼす」へ広がった。",
+      "trivia": "名詞の reach はもともと1520年代に「(川などの)一続きの区間」を意味していたが、そこから「手の届く範囲」「(影響・能力の)及ぶ範囲」へ意味が広がった。",
+      "explanation": "reach out(手を差し伸べる、連絡を取る)はビジネス英語で非常によく使われる句動詞。reach a conclusion/agreement/decision(結論・合意・決定に達する)のような「達する」の意味はTOEICでも重要。"
+    }
+  },
+  {
+    "english": "stay",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "とどまる、滞在する",
+    "example": "We stayed at a hotel near the station.",
+    "level": 320,
+    "detail": {
+      "pronunciation": "/steɪ/",
+      "pos": "動詞",
+      "meanings": [
+        "とどまる、残る",
+        "滞在する、泊まる",
+        "〜のままでいる",
+        "(困難の中でも)持続する、存続する"
+      ],
+      "examples": [
+        {
+          "en": "Please stay here until I get back.",
+          "ja": "私が戻るまでここにいてください。"
+        },
+        {
+          "en": "We stayed at a small hotel near the beach.",
+          "ja": "私たちはビーチ近くの小さなホテルに泊まった。"
+        },
+        {
+          "en": "Try to stay calm during the interview.",
+          "ja": "面接中は落ち着いたままでいるようにしてください。"
+        },
+        {
+          "en": "The company managed to stay in business despite the crisis.",
+          "ja": "その会社は危機にもかかわらず何とか事業を続けた(存続した)。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "mainstay",
+          "pos": "名詞",
+          "ja": "大黒柱、支えとなるもの"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "remain",
+          "note": "その場・状態にとどまる、ややフォーマル"
+        },
+        {
+          "word": "stop over",
+          "note": "(旅の途中で)一時的に滞在する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "leave",
+          "note": "出発する、立ち去る"
+        },
+        {
+          "word": "go",
+          "note": "行ってしまう"
+        }
+      ],
+      "origin": "古フランス語 estare(ラテン語 stare「立つ、立ち続ける、とどまる」に由来)を経て英語に入り、印欧祖語の語根 *sta-「立つ、しっかりしている」に遡るとされる。中英語の15世紀半ばには「引き止める」という意味で使われており、現代の中心的な意味「(立ち去らずに)とどまる」は1570年代に確立したとされる。",
+      "trivia": "stay の語源であるラテン語 stare「立つ」は steel(鋼鉄)や staid(落ち着いた)、船のメインマストを支える綱を意味する mainstay とも同じ語根の仲間とされる。",
+      "explanation": "stay up(夜更かしする)、stay in(家にいる)、stay out(外にいる、帰らない)、stay away from(〜に近づかない)など。ホテル・出張関連の英文で「宿泊する」の意味の stay も頻出語。"
+    }
+  },
+  {
+    "english": "fall",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "落ちる、下がる、倒れる",
+    "example": "Be careful not to fall on the ice.",
+    "level": 330,
+    "detail": {
+      "pronunciation": "/fɔːl/",
+      "pos": "動詞",
+      "meanings": [
+        "落ちる、転ぶ",
+        "(価格・気温などが)下がる",
+        "崩壊する、倒れる",
+        "(ある状態に)陥る",
+        "(夜・静寂などが)訪れる"
+      ],
+      "examples": [
+        {
+          "en": "Be careful not to fall on the wet floor.",
+          "ja": "濡れた床で転ばないように気をつけて。"
+        },
+        {
+          "en": "Temperatures are expected to fall tonight.",
+          "ja": "今夜は気温が下がる見込みだ。"
+        },
+        {
+          "en": "The ancient empire eventually fell.",
+          "ja": "その古代帝国は最終的に崩壊した。"
+        },
+        {
+          "en": "They fell in love during their trip to Kyoto.",
+          "ja": "彼らは京都旅行中に恋に落ちた。"
+        },
+        {
+          "en": "Darkness fell as we reached the village.",
+          "ja": "私たちが村に着いた頃、闇が訪れた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "waterfall",
+          "pos": "名詞",
+          "ja": "滝"
+        },
+        {
+          "word": "downfall",
+          "pos": "名詞",
+          "ja": "失脚、没落"
+        },
+        {
+          "word": "rainfall",
+          "pos": "名詞",
+          "ja": "降雨量"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "drop",
+          "note": "落ちる、下がる"
+        },
+        {
+          "word": "collapse",
+          "note": "崩れ落ちる、崩壊する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "rise",
+          "note": "上がる、上昇する"
+        },
+        {
+          "word": "climb",
+          "note": "上る、登る"
+        }
+      ],
+      "origin": "古英語 feallan に由来し、ゲルマン祖語 *fallanan、印欧祖語の語根 *pol-「落ちる」に遡るとされる。元々は「高い所から落ちる、衰える、死ぬ」という意味で、古英語末期までに「不意に地面に倒れる」という意味も加わった。",
+      "trivia": "アメリカ英語の fall(秋)は元々 the fall of the leaf「木の葉が落ちる季節」という表現が短縮されたものとされる。イギリス英語では主に autumn が使われる。",
+      "explanation": "fall for(だまされる、恋に落ちる)、fall behind(遅れる)、fall through(だめになる、流れる)、fall apart(ばらばらになる)、fall back on(〜に頼る)など。fall in love(恋に落ちる)、fall asleep(眠りに落ちる)も基本表現。"
+    }
+  },
+  {
+    "english": "follow",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "ついていく、従う、理解する",
+    "example": "Please follow me to the meeting room.",
+    "level": 370,
+    "detail": {
+      "pronunciation": "/ˈfɑːloʊ/",
+      "pos": "動詞",
+      "meanings": [
+        "ついていく、後を追う",
+        "(規則・指示に)従う",
+        "(話などを)理解する",
+        "(結果として)続いて起こる",
+        "(SNSで)フォローする"
+      ],
+      "examples": [
+        {
+          "en": "Follow this road until you see the station.",
+          "ja": "駅が見えるまでこの道を進んでください(ついていってください)。"
+        },
+        {
+          "en": "All employees must follow the safety rules.",
+          "ja": "全従業員は安全規則に従わなければならない。"
+        },
+        {
+          "en": "I'm sorry, I don't quite follow you.",
+          "ja": "すみません、あまり理解できません(話についていけません)。"
+        },
+        {
+          "en": "A long silence followed his announcement.",
+          "ja": "彼の発表の後、長い沈黙が続いた。"
+        },
+        {
+          "en": "She follows several news accounts on social media.",
+          "ja": "彼女はSNSでいくつかのニュースアカウントをフォローしている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "follower",
+          "pos": "名詞",
+          "ja": "フォロワー、信奉者"
+        },
+        {
+          "word": "following",
+          "pos": "形容詞・名詞",
+          "ja": "次の、以下の;支持者たち"
+        },
+        {
+          "word": "follow-up",
+          "pos": "名詞・形容詞",
+          "ja": "追跡調査、フォローアップの"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "pursue",
+          "note": "(目標などを)追い求める、ややフォーマル"
+        },
+        {
+          "word": "obey",
+          "note": "(規則・命令に)従う"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "lead",
+          "note": "先導する、導く"
+        },
+        {
+          "word": "precede",
+          "note": "先行する、〜に先立つ"
+        }
+      ],
+      "origin": "中英語 folwen、古英語 folgian/fylgian に由来し、ゲルマン祖語 *fulgojanan(「十分に進む」を意味する複合語に始まり、「仕える」「従者として同行する」の意味に転じたとされる)に遡るとされる。元々は「(特に弟子として)同行する、同じ方向に進む、後を追う」「規則・法に従う」という意味だった。",
+      "trivia": "SNSで誰かを「フォローする」という現代的な使い方も、「後についていく」という follow の基本義がそのまま転用されたものとされる。",
+      "explanation": "follow up(追跡調査する、フォローアップする)はビジネス英語で非常に頻出。follow through(最後までやり遂げる)、as follows(次の通り、以下の通り)もTOEICで重要な表現。"
+    }
+  },
+  {
+    "english": "take",
+    "is_existing": true,
+    "existing_id": 16042,
+    "japanese": "取る、(乗り物に)乗る、(時間が)かかる",
+    "example": "She took a pen from the drawer.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/teɪk/",
+      "pos": "動詞",
+      "meanings": [
+        "(物を)手に取る、取る",
+        "(乗り物に)乗る",
+        "(時間が)かかる",
+        "(薬を)服用する",
+        "(試験・行動を)受ける、取る"
+      ],
+      "examples": [
+        {
+          "en": "She took a pen from the drawer.",
+          "ja": "彼女は引き出しからペンを取った。"
+        },
+        {
+          "en": "We took the last train home.",
+          "ja": "私たちは最終電車に乗って帰った。"
+        },
+        {
+          "en": "It takes about an hour to get there by car.",
+          "ja": "車でそこに行くのに約1時間かかる。"
+        },
+        {
+          "en": "Take this medicine after every meal.",
+          "ja": "この薬は毎食後に服用してください。"
+        },
+        {
+          "en": "She took the TOEIC test again this month.",
+          "ja": "彼女は今月もう一度TOEICを受けた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "intake",
+          "pos": "名詞",
+          "ja": "摂取量、取り入れ口"
+        },
+        {
+          "word": "takeaway",
+          "pos": "名詞",
+          "ja": "持ち帰り料理、(そこから得られる)教訓"
+        },
+        {
+          "word": "overtake",
+          "pos": "動詞",
+          "ja": "追い越す"
+        },
+        {
+          "word": "retake",
+          "pos": "動詞・名詞",
+          "ja": "再受験する、撮り直す(こと)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "grab",
+          "note": "素早く・カジュアルに「つかむ」"
+        },
+        {
+          "word": "obtain",
+          "note": "入手する、ややフォーマル"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "give",
+          "note": "与える"
+        }
+      ],
+      "origin": "後期古英語 tacan として北欧語(古ノルド語 taka「つかむ、手に取る」)から借用され、ゲルマン祖語 *tēkan- に遡るとされる(原義は「触れる」だった可能性があるが不確かとされる)。元は「力ずくで掴む、捕らえる」という意味で、12世紀末には「自分の手に入れる、得る、受け取る」へと意味が弱まり、それまで同じ意味で使われていた古英語由来の動詞 niman(nim)に取って代わって定着した。",
+      "trivia": "take は非常に多義的な基本動詞で、大きな辞書では40以上の語義区分がなされることもある。",
+      "explanation": "take off(離陸する、脱ぐ、急に売れ出す)、take on(引き受ける、雇う)、take up(始める、(時間・場所を)取る)、take after(〜に似る)、take over(引き継ぐ)など句動詞が非常に豊富。特に take over(事業などを引き継ぐ)、take on(業務を引き受ける)はTOEICでも頻出。"
+    }
+  },
+  {
+    "english": "run",
+    "is_existing": true,
+    "existing_id": 15425,
+    "japanese": "走る、経営する、動かす",
+    "example": "He runs five kilometers every morning.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/rʌn/",
+      "pos": "動詞",
+      "meanings": [
+        "走る",
+        "(会社などを)経営する",
+        "(機械・プログラムを)動かす、実行する",
+        "(バス・電車が)運行する",
+        "(在庫・時間が)尽きる、切れる"
+      ],
+      "examples": [
+        {
+          "en": "He runs along the river every morning.",
+          "ja": "彼は毎朝川沿いを走る。"
+        },
+        {
+          "en": "She runs a small restaurant downtown.",
+          "ja": "彼女は繁華街で小さなレストランを経営している。"
+        },
+        {
+          "en": "This software runs on any laptop.",
+          "ja": "このソフトウェアはどのノートパソコンでも動く。"
+        },
+        {
+          "en": "Trains run every fifteen minutes on weekdays.",
+          "ja": "平日は電車が15分おきに運行している。"
+        },
+        {
+          "en": "We're running out of time.",
+          "ja": "時間が足りなくなってきている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "runner",
+          "pos": "名詞",
+          "ja": "走者、ランナー"
+        },
+        {
+          "word": "running",
+          "pos": "形容詞・名詞",
+          "ja": "稼働中の、連続した;運営、ランニング"
+        },
+        {
+          "word": "runway",
+          "pos": "名詞",
+          "ja": "滑走路"
+        },
+        {
+          "word": "outrun",
+          "pos": "動詞",
+          "ja": "〜より速く走る、〜を上回る"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "jog",
+          "note": "ゆっくり走る、ジョギングする"
+        },
+        {
+          "word": "operate",
+          "note": "機械・事業を動かす、運営する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "walk",
+          "note": "歩く"
+        },
+        {
+          "word": "stop",
+          "note": "止める、止まる"
+        }
+      ],
+      "origin": "古英語の自動詞 rinnan/iernan と、他動詞の弱変化動詞 ærnan/earnan という2つの語が中英語期に混ざり合って現在の run になったとされる。ともにゲルマン祖語 *rannjanan、印欧祖語の語根 *rei-「走る、流れる」に遡るとされる。",
+      "trivia": "run は英語の動詞の中でも特に語義が多いことで知られ、大規模な辞書では100を超える語義・用法が区分されることもある。",
+      "explanation": "run out (of)(〜を使い果たす、〜が尽きる)、run into(偶然出会う、〜にぶつかる)、run over((車で)轢く、(時間を)超過する)、run by(意見を聞くために説明する:run it by me)など。run out of(在庫切れ)はビジネス英語で頻出。"
+    }
+  }
+]

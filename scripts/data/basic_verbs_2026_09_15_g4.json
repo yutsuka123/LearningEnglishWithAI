@@ -1,0 +1,925 @@
+[
+  {
+    "english": "say",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "言う、述べる、〜と書いてある",
+    "example": "She said she was happy to help.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/seɪ/",
+      "pos": "動詞",
+      "meanings": [
+        "(言葉で)言う、話す",
+        "述べる、表明する(意見など)",
+        "(掲示・数字などが)〜と示している、書いてある",
+        "仮に〜としよう、例えば(let's say)"
+      ],
+      "examples": [
+        {
+          "en": "She said, \"I'm happy to help.\"",
+          "ja": "彼女は「喜んで手伝います」と言った。"
+        },
+        {
+          "en": "The report says that sales increased by 10 percent.",
+          "ja": "その報告書は売上が10パーセント増加したと述べている。"
+        },
+        {
+          "en": "The clock says three o'clock.",
+          "ja": "時計は3時を示している。"
+        },
+        {
+          "en": "Let's say we meet at noon tomorrow.",
+          "ja": "例えば明日の正午に会うとしましょう。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "saying",
+          "pos": "名詞",
+          "ja": "ことわざ、格言"
+        },
+        {
+          "word": "unsaid",
+          "pos": "形容詞",
+          "ja": "口に出されていない"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "state",
+          "note": "よりフォーマルに明確に述べる"
+        },
+        {
+          "word": "utter",
+          "note": "声に出す、口にするという物理的な発話行為に焦点(文語的)"
+        },
+        {
+          "word": "remark",
+          "note": "感想・気づいたこととして述べる"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語 secgan「発話する、告げる」に由来し、原始ゲルマン語 *sagjanan にさかのぼる。古ノルド語 segja、オランダ語 zeggen、ドイツ語 sagen など、ゲルマン語族全体に同系の語が見られる。さらに印欧祖語 *sokwyo- に遡る可能性が指摘されているが、この対応関係には異論もあり確実ではないとされる。",
+      "trivia": "英語日常会話で最も使用頻度の高い動詞の一つで、'You don't say!'(まさか、本当に?)のように驚きを表す決まり文句としても使われる。",
+      "explanation": "say と tell の使い分けが重要: say は「(人)に」を直接目的語に取れず、say to 人 の形になる(例: He said to me..., ×He said me...)。一方 tell は tell + 人 の形で相手を直接目的語に取れる(He told me...)。また that's to say(つまり)、needless to say(言うまでもなく)のような定型表現も頻出。"
+    }
+  },
+  {
+    "english": "tell",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "話す、伝える、見分ける",
+    "example": "Can you tell me the way to the station?",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/tel/",
+      "pos": "動詞",
+      "meanings": [
+        "(人に)話す、伝える",
+        "(物語などを)語る",
+        "命じる、言いつける(tell + 人 + to do)",
+        "見分ける、判別する(tell A from B)",
+        "わかる、判断できる(can tell)"
+      ],
+      "examples": [
+        {
+          "en": "She told me an interesting story.",
+          "ja": "彼女は私に面白い話をしてくれた。"
+        },
+        {
+          "en": "He told the children a bedtime story.",
+          "ja": "彼は子どもたちに寝る前のお話を語った。"
+        },
+        {
+          "en": "The teacher told the students to be quiet.",
+          "ja": "先生は生徒たちに静かにするよう言った。"
+        },
+        {
+          "en": "It's hard to tell the twins apart.",
+          "ja": "その双子を見分けるのは難しい。"
+        },
+        {
+          "en": "I can tell that something is wrong.",
+          "ja": "何かがおかしいとわかる。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "teller",
+          "pos": "名詞",
+          "ja": "(銀行の)窓口係、話し手"
+        },
+        {
+          "word": "telltale",
+          "pos": "形容詞・名詞",
+          "ja": "秘密を暴露する(もの)、証拠となる"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "inform",
+          "note": "正式に情報を知らせる、ややフォーマル"
+        },
+        {
+          "word": "say",
+          "note": "tell とは異なり人を直接目的語に取れない動詞という対比が重要"
+        },
+        {
+          "word": "relate",
+          "note": "物語る、詳しく語るというフォーマルな言い方"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語 tellan「(順序立てて)数える、述べる」に由来し、原始ゲルマン語 *taljan「順序立てて述べる」、さらに印欧祖語 *del-「数える、計算する」にさかのぼるとされる。ドイツ語 zählen(数える)、オランダ語 tellen、デンマーク語 tale(話す)など同系語がゲルマン語圏に広く分布する。原義は「数える」で、西暦1000年頃から「物語る、述べる」の意味に広がり、14世紀後半に「明かす、暴露する」、1590年代に「命じる」の意味が加わった。",
+      "trivia": "銀行の窓口係を意味する teller は、もともと「(お金を)数える人」という tell の原義(数える)がそのまま残った語で、tell が「話す」の意味に転じた後もこの語だけは古い意味を保っている。",
+      "explanation": "tell は目的語に「人」を直接取れる点が say との最大の違い(tell + 人 + that/to do)。例: He told me the truth.(○) / He said me the truth.(×、正しくは said to me)。また tell A from B / tell A and B apart(AとBを見分ける)という重要表現もTOEICで頻出する。"
+    }
+  },
+  {
+    "english": "ask",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "尋ねる、頼む、求める",
+    "example": "Can I ask you a question?",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/æsk/(米)、/ɑːsk/(英)",
+      "pos": "動詞",
+      "meanings": [
+        "(質問を)尋ねる、聞く",
+        "(人に)頼む、依頼する",
+        "(許可などを)求める",
+        "誘う、招待する(ask someone out)",
+        "(値段を)請求する、要求する(asking price)"
+      ],
+      "examples": [
+        {
+          "en": "She asked me what time it was.",
+          "ja": "彼女は私に今何時か尋ねた。"
+        },
+        {
+          "en": "Can you ask him to call me back?",
+          "ja": "彼に折り返し電話するよう頼んでもらえますか。"
+        },
+        {
+          "en": "He asked for permission to leave early.",
+          "ja": "彼は早退の許可を求めた。"
+        },
+        {
+          "en": "He finally asked her out on a date.",
+          "ja": "彼はついに彼女をデートに誘った。"
+        },
+        {
+          "en": "How much are they asking for the car?",
+          "ja": "その車はいくらで売りに出されていますか。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "asking",
+          "pos": "名詞・形容詞",
+          "ja": "要求、言い値(asking price=言い値)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "inquire",
+          "note": "フォーマルに問い合わせる、尋ねる"
+        },
+        {
+          "word": "request",
+          "note": "丁寧に依頼する、ややフォーマル"
+        },
+        {
+          "word": "demand",
+          "note": "強く要求する、askより強いニュアンス"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "answer",
+          "note": "「尋ねる」に対して「答える」という反対の行為"
+        }
+      ],
+      "origin": "中英語 asken は古英語 ascian にさかのぼり、さらに原始ゲルマン語 *aiskojanan、印欧祖語 *ais-「望む、欲する」に由来するとされる。サンスクリット語 icchati(探求する、欲する)、古教会スラヴ語 iskati(探す)、ドイツ語 heischen(尋ねる、要求する)などが同系語とされる。現代の方言形 ax/aks は誤用ではなく、古英語 acsian にさかのぼる古い形で、1600年頃までは文語としても普通に使われていた。",
+      "trivia": "口語でよく聞く ax/aks(「アスク」の音位転換形)は単なる崩れた発音ではなく、古英語の acsian に由来する歴史的に古い形であることが辞書学的に確認されている。",
+      "explanation": "ask A for B(AにBを求める)、ask A to do(Aに〜するよう頼む)、ask after 人(人の様子を尋ねる)といった語法が重要。TOEICでは ask for(要求する)、on request/upon request(要求があり次第)のような関連表現も頻出する。"
+    }
+  },
+  {
+    "english": "call",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "呼ぶ、電話する、〜と名付ける",
+    "example": "Please call me tomorrow.",
+    "level": 310,
+    "detail": {
+      "pronunciation": "/kɔːl/",
+      "pos": "動詞",
+      "meanings": [
+        "(大声で)呼ぶ、叫ぶ",
+        "電話をかける",
+        "〜と名付ける、呼ぶ(call A B)",
+        "立ち寄る(call on/at)",
+        "(会議などを)招集する"
+      ],
+      "examples": [
+        {
+          "en": "She called his name across the street.",
+          "ja": "彼女は通りの向こうから彼の名前を呼んだ。"
+        },
+        {
+          "en": "I'll call you when I get home.",
+          "ja": "家に着いたら電話するね。"
+        },
+        {
+          "en": "They named the baby and called her Emma.",
+          "ja": "彼らは赤ちゃんに名前をつけ、エマと呼んだ。"
+        },
+        {
+          "en": "He called on his grandmother on the way home.",
+          "ja": "彼は帰り道に祖母の家に立ち寄った。"
+        },
+        {
+          "en": "The manager called a meeting for Monday morning.",
+          "ja": "マネージャーは月曜の朝に会議を招集した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "caller",
+          "pos": "名詞",
+          "ja": "電話をかけてきた人、訪問者"
+        },
+        {
+          "word": "calling",
+          "pos": "名詞",
+          "ja": "天職、使命"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "shout",
+          "note": "大声で叫ぶ、call より声量そのものに焦点"
+        },
+        {
+          "word": "phone",
+          "note": "電話するのカジュアルな言い方"
+        },
+        {
+          "word": "name",
+          "note": "〜と名付ける、の意味でcallとほぼ同義"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古ノルド語 kalla「大声で叫ぶ、大声で呼ぶ、名前をつける」に由来し、原始ゲルマン語 *kall-、さらに印欧祖語 *gal-「呼ぶ、叫ぶ」にさかのぼるとされる。中英語 callen として13世紀半ばに英語に定着し、それまで同義で使われていた古英語由来の動詞に取って代わった。中オランダ語 kallen(話す、言う)、古高ドイツ語 kallon(大声で話す、呼ぶ)などが同系語。",
+      "trivia": "call off(中止する)、call for(要求する、必要とする)、call up(電話する/招集する)、call back(かけ直す)のように、call は句動詞のバリエーションが非常に豊富な基礎動詞の一つ。",
+      "explanation": "TOEICで頻出する句動詞: call off(中止する)、call for(〜を要求する・必要とする)、call on(訪ねる・指名して発言させる)、call back(かけ直す)。また call A B(AをBと呼ぶ、第5文型)の語順にも注意。"
+    }
+  },
+  {
+    "english": "speak",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "話す、演説する、(言語を)話せる",
+    "example": "Do you speak English?",
+    "level": 330,
+    "detail": {
+      "pronunciation": "/spiːk/",
+      "pos": "動詞",
+      "meanings": [
+        "話す、しゃべる",
+        "(言語を)話す、使いこなせる",
+        "演説する、スピーチする",
+        "代弁する、代表して話す(speak for)",
+        "大きな声で話す、意見を述べる(speak up)"
+      ],
+      "examples": [
+        {
+          "en": "He speaks very quietly.",
+          "ja": "彼はとても静かに話す。"
+        },
+        {
+          "en": "She speaks three languages fluently.",
+          "ja": "彼女は3か国語を流ちょうに話す。"
+        },
+        {
+          "en": "The mayor spoke at the opening ceremony.",
+          "ja": "市長は開会式でスピーチをした。"
+        },
+        {
+          "en": "I can't speak for everyone, but I agree.",
+          "ja": "全員を代弁することはできないが、私は賛成だ。"
+        },
+        {
+          "en": "Could you speak up? I can't hear you.",
+          "ja": "もう少し大きな声で話してもらえますか、聞こえません。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "speaker",
+          "pos": "名詞",
+          "ja": "話し手、演説者、スピーカー(音響機器)"
+        },
+        {
+          "word": "speech",
+          "pos": "名詞",
+          "ja": "スピーチ、言語能力"
+        },
+        {
+          "word": "spokesperson",
+          "pos": "名詞",
+          "ja": "広報担当者、代弁者"
+        },
+        {
+          "word": "unspeakable",
+          "pos": "形容詞",
+          "ja": "言葉にできないほどひどい"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "talk",
+          "note": "よりカジュアルで対話的な「話す」"
+        },
+        {
+          "word": "address",
+          "note": "(聴衆に)演説する、フォーマル"
+        },
+        {
+          "word": "converse",
+          "note": "会話する、フォーマルな言い方"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "listen",
+          "note": "「話す」に対して「聞く」という反対の役割"
+        }
+      ],
+      "origin": "古英語 specan(sprecan の異形)に由来し、原始ゲルマン語 *sprekanan にさかのぼる。古ザクセン語・古フリジア語・中部オランダ語・古高ドイツ語にも同系語がある。原義は「歌わずに言葉を明確に発音する、話す力を持つ・使う」とされる。古英語では話す意味の主要な動詞は maþelian であり、specan/sprecan はそこまで主要ではなかったが、中英語期に -r- 音が脱落し12世紀半ばまでに現代の speak の形に定着した。",
+      "trivia": "禁酒法時代のアメリカで生まれた speakeasy(もぐり酒場)は、「(バレないように)声を低くして話せ」という意味合いから来ているとされる。",
+      "explanation": "speak と talk の使い分け: speak はよりフォーマルで一方向的な発話(演説・言語能力)、talk はより対話的・カジュアルな「話す」。句動詞では speak up(はっきり話す・声を上げる)、speak out(公然と意見を述べる)、speak for(代弁する)がTOEICでも重要。"
+    }
+  },
+  {
+    "english": "read",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "読む、読み取る、解釈する",
+    "example": "I like to read books before bed.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/riːd/(現在形)、過去形・過去分詞の read は /red/ と発音が変わる",
+      "pos": "動詞",
+      "meanings": [
+        "(文字・本を)読む",
+        "読み取る、判読する(地図・計器などを読む)",
+        "解釈する、理解する(状況を読む)",
+        "〜と書いてある、記されている(掲示などが)"
+      ],
+      "examples": [
+        {
+          "en": "She reads a book every night before sleeping.",
+          "ja": "彼女は毎晩寝る前に本を読む。"
+        },
+        {
+          "en": "He can read a map very well.",
+          "ja": "彼は地図を読むのがとても上手だ。"
+        },
+        {
+          "en": "I couldn't read his expression at all.",
+          "ja": "彼の表情を全く読み取れなかった。"
+        },
+        {
+          "en": "The sign reads \"No Parking.\"",
+          "ja": "その標識には「駐車禁止」と書いてある。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "reader",
+          "pos": "名詞",
+          "ja": "読者、読本"
+        },
+        {
+          "word": "reading",
+          "pos": "名詞",
+          "ja": "読書、読み取り値"
+        },
+        {
+          "word": "readable",
+          "pos": "形容詞",
+          "ja": "読みやすい"
+        },
+        {
+          "word": "unreadable",
+          "pos": "形容詞",
+          "ja": "読みにくい、判読できない"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "peruse",
+          "note": "じっくり読む、フォーマルな言い方"
+        },
+        {
+          "word": "skim",
+          "note": "ざっと目を通す、要点だけ読む"
+        },
+        {
+          "word": "interpret",
+          "note": "解釈する、「読み取る」の意味に近い"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語 rædan/redan「助言する、指導する、統べる、取り決める」に由来し、原始ゲルマン語 *redan、印欧祖語 *re-「理由づける、数える」にさかのぼるとされる。ドイツ語 raten は今も「助言する」の意味を保持しており、英語で「読む」の意味に転じたのは(古ノルド語の影響も受けつつ)英語に特有の意味変化とされる。関連語に rede(古英語 ræd「助言」)、riddle(謎かけ、「解釈する」という概念でつながる)がある。",
+      "trivia": "read は現在形と過去形・過去分詞の綴りが同じ(read-read-read)なのに発音が /riːd/ から /red/ に変わるという、英語学習者を悩ませる特徴を持つ動詞。",
+      "explanation": "句動詞 read out(声に出して読む、読み上げる)、read up on(〜について調べて勉強する)、read into(〜を深読みする、過剰に解釈する)はTOEICでも重要。現在形/riːd/と過去形/red/の発音の違いにも注意。"
+    }
+  },
+  {
+    "english": "write",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "書く、記す、執筆する",
+    "example": "She writes a letter to her friend every week.",
+    "level": 320,
+    "detail": {
+      "pronunciation": "/raɪt/",
+      "pos": "動詞",
+      "meanings": [
+        "(文字・文章を)書く",
+        "執筆する、著述する",
+        "手紙を書く、書き送る",
+        "書き込む、記入する(write down)",
+        "(データなどを)書き込む(write to a disk)"
+      ],
+      "examples": [
+        {
+          "en": "He wrote his name at the top of the page.",
+          "ja": "彼はページの上部に自分の名前を書いた。"
+        },
+        {
+          "en": "She is writing a novel about her childhood.",
+          "ja": "彼女は自分の子ども時代についての小説を執筆している。"
+        },
+        {
+          "en": "I'll write to you as soon as I arrive.",
+          "ja": "到着したらすぐに手紙を書きます。"
+        },
+        {
+          "en": "Please write down your phone number here.",
+          "ja": "ここに電話番号を書き留めてください。"
+        },
+        {
+          "en": "The software writes data to the disk automatically.",
+          "ja": "そのソフトウェアは自動的にディスクにデータを書き込む。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "writer",
+          "pos": "名詞",
+          "ja": "作家、書き手"
+        },
+        {
+          "word": "writing",
+          "pos": "名詞",
+          "ja": "文章、筆記(すること)"
+        },
+        {
+          "word": "written",
+          "pos": "形容詞",
+          "ja": "書かれた、書面の"
+        },
+        {
+          "word": "rewrite",
+          "pos": "動詞",
+          "ja": "書き直す"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "compose",
+          "note": "文章を作成する、ややフォーマル"
+        },
+        {
+          "word": "pen",
+          "note": "執筆する、文語的な言い方"
+        },
+        {
+          "word": "jot down",
+          "note": "さっとメモを取る"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "erase",
+          "note": "書いたものを「消す」という反対の行為"
+        }
+      ],
+      "origin": "古英語 writan「引っかく、傷つける」に由来し、原始ゲルマン語 *writan にさかのぼるとされる。ラテン語 scribere(刻む、切る、の意)が「書く」に転じたのと同様、「刻む・引っかく」から「書く」への意味変化はインド・ヨーロッパ語族に広く見られるパターン。ドイツ語 reißen(引き裂く)、古ノルド語 rita(書く、傷つける)が同系語とされる。",
+      "trivia": "かつて木や石に文字を「刻んで」記録していた時代の名残として、write の語源が「引っかく、傷つける」であるのは、文字を書く行為の歴史を映す興味深い例とされる。",
+      "explanation": "句動詞 write down(書き留める)、write up(まとめて詳しく書く、報告書化する)、write off(帳消しにする、見限る)はTOEICでも頻出。write to 人(人に手紙を書く、主に英)/write 人(米では人を直接目的語に取ることが多い)の違いにも触れておくとよい。"
+    }
+  },
+  {
+    "english": "hear",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "聞く、聞こえる、耳にする",
+    "example": "Did you hear that noise?",
+    "level": 320,
+    "detail": {
+      "pronunciation": "/hɪər/",
+      "pos": "動詞",
+      "meanings": [
+        "(音が自然に)聞こえる",
+        "(人の話を)聞く",
+        "耳にする、聞いて知る(伝聞)",
+        "hear from 〜(〜から連絡をもらう)",
+        "(裁判などで)審理する(法律用語)"
+      ],
+      "examples": [
+        {
+          "en": "I heard a strange sound outside.",
+          "ja": "外で変な音が聞こえた。"
+        },
+        {
+          "en": "Did you hear what she said?",
+          "ja": "彼女が言ったこと聞こえた？"
+        },
+        {
+          "en": "I heard that he moved to Tokyo last month.",
+          "ja": "彼が先月東京に引っ越したと聞いた。"
+        },
+        {
+          "en": "I haven't heard from her in weeks.",
+          "ja": "何週間も彼女から連絡がない。"
+        },
+        {
+          "en": "The court will hear the case next month.",
+          "ja": "裁判所は来月その事件を審理する。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "hearing",
+          "pos": "名詞",
+          "ja": "聴力、公聴会、審理"
+        },
+        {
+          "word": "hearsay",
+          "pos": "名詞",
+          "ja": "伝聞、うわさ"
+        },
+        {
+          "word": "unheard",
+          "pos": "形容詞",
+          "ja": "聞いたことがない、前例のない"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "listen",
+          "note": "意識して耳を傾ける、hearとの対比が重要"
+        },
+        {
+          "word": "overhear",
+          "note": "偶然耳にする、立ち聞きする"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語 heran(アングル方言)・(ge)hieran/hyran(西サクソン方言)に由来し、原始ゲルマン語 *hausejanan、印欧祖語 *kous-「聞く」にさかのぼるとされる。古ノルド語 heyra、オランダ語 horen、ドイツ語 hören が同系語で、ギリシャ語 koein(認識する、聞く)とも関連するとされる。acoustic(音響の)もこの語根に由来する。",
+      "trivia": "hear と here は綴りが異なる同音異義語だが、この綴りの区別は1200年から1550年の間にかけて徐々に定着したとされる。",
+      "explanation": "hear と listen の使い分けが重要: hear は意図せず自然に「聞こえる」(能力・受動的な知覚)、listen は意識して「(注意を向けて)聴く」。句動詞 hear from 〜(〜から連絡をもらう)、hear of 〜(〜のことを耳にする)、hear out(最後まで話を聞く)もTOEICで頻出。"
+    }
+  },
+  {
+    "english": "watch",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "見る、見張る、注意する",
+    "example": "I like to watch movies on weekends.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/wɑːtʃ/(米)、/wɒtʃ/(英)",
+      "pos": "動詞",
+      "meanings": [
+        "(動きのあるものを)見る、観察する",
+        "見張る、監視する",
+        "気をつける、注意する(watch out)",
+        "世話をする、見ていてあげる",
+        "(名詞)腕時計"
+      ],
+      "examples": [
+        {
+          "en": "We watched the sunset from the beach.",
+          "ja": "私たちは浜辺から夕日を眺めた。"
+        },
+        {
+          "en": "The guard watched the entrance all night.",
+          "ja": "警備員は一晩中入口を見張った。"
+        },
+        {
+          "en": "Watch out! There's a car coming.",
+          "ja": "気をつけて！車が来てるよ。"
+        },
+        {
+          "en": "Can you watch my bag for a minute?",
+          "ja": "ちょっとの間、私のかばんを見ていてもらえますか。"
+        },
+        {
+          "en": "He checked his watch and left in a hurry.",
+          "ja": "彼は腕時計を確認し、急いで出かけた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "watcher",
+          "pos": "名詞",
+          "ja": "観察者、監視者"
+        },
+        {
+          "word": "watchful",
+          "pos": "形容詞",
+          "ja": "油断のない、用心深い"
+        },
+        {
+          "word": "watchdog",
+          "pos": "名詞",
+          "ja": "番犬、(不正を監視する)監視団体"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "observe",
+          "note": "じっくり観察する、フォーマルな言い方"
+        },
+        {
+          "word": "look at",
+          "note": "視線を向ける、watchより一瞬の動作"
+        },
+        {
+          "word": "guard",
+          "note": "見張る、守るというニュアンスが強い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "ignore",
+          "note": "注意を払うwatchに対して「無視する」"
+        }
+      ],
+      "origin": "古英語 wæccan に由来し、原始ゲルマン語 *wakjan、印欧祖語 *weg-「強い、活発である」にさかのぼるとされる。原義は「見張りをする、目を覚ましている」で、wake(目覚める)と本質的に同語源。腕時計・置時計の意味(名詞)は1580年代に登場し、「眠っている人を起こすもの」という発想から発展したとされる。",
+      "trivia": "「腕時計」を意味する watch は、元々「(寝ずの)見張り」という動詞の意味から、見張りの交代時刻を知らせる装置、さらに携帯用の時計全般へと意味が広がったとされ、wake(目覚める)と語源的なきょうだい関係にある。",
+      "explanation": "watch・see・look の使い分け: see は自然に「(視界に入って)見える」、look (at) は視線を意図的に向ける、watch は動きのあるものを一定時間注視し続ける、という違いがある。句動詞 watch out (for)(〜に気をつける)、watch over(見守る)もTOEICで重要。"
+    }
+  },
+  {
+    "english": "play",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "遊ぶ、(スポーツを)する、演奏する",
+    "example": "Children love to play outside.",
+    "level": 320,
+    "detail": {
+      "pronunciation": "/pleɪ/",
+      "pos": "動詞",
+      "meanings": [
+        "遊ぶ",
+        "(スポーツ・ゲームを)する",
+        "(楽器を)演奏する",
+        "(役を)演じる",
+        "(音楽・映像を)再生する"
+      ],
+      "examples": [
+        {
+          "en": "The kids are playing in the park.",
+          "ja": "子どもたちは公園で遊んでいる。"
+        },
+        {
+          "en": "He plays tennis every Sunday.",
+          "ja": "彼は毎週日曜日にテニスをする。"
+        },
+        {
+          "en": "She plays the piano beautifully.",
+          "ja": "彼女はピアノを美しく演奏する。"
+        },
+        {
+          "en": "He played the lead role in the movie.",
+          "ja": "彼はその映画で主役を演じた。"
+        },
+        {
+          "en": "Could you play that song again?",
+          "ja": "その曲をもう一度再生してもらえますか。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "player",
+          "pos": "名詞",
+          "ja": "選手、演奏者、再生機"
+        },
+        {
+          "word": "playful",
+          "pos": "形容詞",
+          "ja": "遊び好きな、ふざけた"
+        },
+        {
+          "word": "playground",
+          "pos": "名詞",
+          "ja": "遊び場、運動場"
+        },
+        {
+          "word": "playwright",
+          "pos": "名詞",
+          "ja": "劇作家"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "perform",
+          "note": "演じる、演奏する、ややフォーマル"
+        },
+        {
+          "word": "act",
+          "note": "(演劇などで)演じる"
+        },
+        {
+          "word": "compete",
+          "note": "競技する、スポーツの意味に近い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "work",
+          "note": "「仕事」と対比される「遊び・娯楽」の概念"
+        }
+      ],
+      "origin": "古英語 plegan/plegian に由来し、原始西ゲルマン語 *plegōjanan「自分自身を占める、忙しくさせる」にさかのぼるとされる。古ザクセン語・古フリジア語・中部オランダ語・ドイツ語にも同系語(独 pflegen「世話をする」など)があるが、plight(誓う)との関連も指摘されつつ最終的な語源は不確実とされている。1200年頃に「スポーツ・競技に参加する」、14世紀後期に「舞台で演じる」の意味が加わり、「仕事(work)」と対比される語として定着した。",
+      "trivia": "play の最終的な語源は辞書学的にも「不確実(of uncertain origin)」と明記されており、あらゆる基礎動詞が明快な語源を持つわけではないことを示す例として興味深い。",
+      "explanation": "楽器には定冠詞をつけて play the piano のように言うのが基本だが、スポーツには冠詞をつけず play tennis のように言うという文法上の対比が重要。句動詞 play down(軽視する)、play up(強調する)、熟語 play a part in 〜(〜において役割を果たす)もTOEICで頻出。"
+    }
+  },
+  {
+    "english": "learn",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "学ぶ、習う、知る",
+    "example": "I want to learn how to swim.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/lɜːrn/(米)、/lɜːn/(英)",
+      "pos": "動詞",
+      "meanings": [
+        "学ぶ、習得する",
+        "習う、教わる",
+        "(経験から)知る、わかるようになる",
+        "(人づてに)聞いて知る、知らせを受ける(learn that)"
+      ],
+      "examples": [
+        {
+          "en": "She is learning how to play the guitar.",
+          "ja": "彼女はギターの弾き方を習っている。"
+        },
+        {
+          "en": "He learned French while living in Paris.",
+          "ja": "彼はパリに住んでいる間にフランス語を習得した。"
+        },
+        {
+          "en": "We learned a lot from our mistakes.",
+          "ja": "私たちは失敗から多くを学んだ。"
+        },
+        {
+          "en": "I later learned that she had already left the company.",
+          "ja": "私は後になって彼女がすでに退職していたことを知った。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "learner",
+          "pos": "名詞",
+          "ja": "学習者"
+        },
+        {
+          "word": "learning",
+          "pos": "名詞",
+          "ja": "学習、学識"
+        },
+        {
+          "word": "learned",
+          "pos": "形容詞",
+          "ja": "博学な(※発音/ˈlɜːrnɪd/)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "study",
+          "note": "体系的に机に向かって勉強する行為そのもの、learnとの対比が重要"
+        },
+        {
+          "word": "master",
+          "note": "習得して極める、より高いレベルを含意"
+        },
+        {
+          "word": "acquire",
+          "note": "知識・技能を獲得する、フォーマルな言い方"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "forget",
+          "note": "学んで得た知識を「忘れる」という反対の行為"
+        }
+      ],
+      "origin": "中英語 lernen は古英語 leornian にさかのぼり、さらに原始ゲルマン語 *lisnojanan、印欧祖語 *lois-「溝、軌跡」に由来するとされる。原義は「足跡をたどる、軌跡を見つける」で、そこから「経験を通じて知識を得る」の意味に発展したとされる。関連語に lore(伝承知識)、last(靴型、「足の形をたどる型」の意)がある。なお古英語には「教える」を意味する læran も存在し、learn とは別だが同じ語根の親戚にあたる。",
+      "trivia": "learn(学ぶ)と、教える意味を持つ古英語 læran(lore の語源筋)は同じ語根から分かれたきょうだい語で、どちらも「(知識の)跡をたどる」という共通イメージを持つ。",
+      "explanation": "learn と study の使い分け: study は机に向かって「勉強する」行為そのものに焦点があり、learn はその結果として「習得する・身につく」ことに重点がある。learn to do(〜できるようになる)、learn about/of 〜(〜について知る)、learn from 〜(〜から学ぶ)の語法もTOEICで重要。"
+    }
+  },
+  {
+    "english": "meet",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "会う、出会う、満たす",
+    "example": "Let's meet at the station at noon.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/miːt/",
+      "pos": "動詞",
+      "meanings": [
+        "(約束して、または偶然)会う",
+        "初めて会う、知り合う",
+        "(要求・基準を)満たす",
+        "(道・線などが)交わる、合流する",
+        "(期限・目標に)間に合う、達成する"
+      ],
+      "examples": [
+        {
+          "en": "Let's meet at the coffee shop at three.",
+          "ja": "3時にカフェで会いましょう。"
+        },
+        {
+          "en": "I met her for the first time at a party.",
+          "ja": "私は彼女にパーティーで初めて会った。"
+        },
+        {
+          "en": "The product does not meet our quality standards.",
+          "ja": "その製品は私たちの品質基準を満たしていない。"
+        },
+        {
+          "en": "The two roads meet just outside the town.",
+          "ja": "その2本の道は町のすぐ外で合流する。"
+        },
+        {
+          "en": "We need to meet the deadline by Friday.",
+          "ja": "金曜日までにその締め切りに間に合わせる必要がある。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "meeting",
+          "pos": "名詞",
+          "ja": "会議、面会"
+        },
+        {
+          "word": "meet-up",
+          "pos": "名詞",
+          "ja": "(カジュアルな)集まり"
+        },
+        {
+          "word": "unmet",
+          "pos": "形容詞",
+          "ja": "満たされていない(unmet needs)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "encounter",
+          "note": "偶然出会う、ややフォーマル"
+        },
+        {
+          "word": "satisfy",
+          "note": "要求を満たす、meetの「満たす」の意味に近い"
+        },
+        {
+          "word": "gather",
+          "note": "複数人が集まる、集合するニュアンス"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "avoid",
+          "note": "「会う」に対して意図的に「避ける」という反対の行為"
+        }
+      ],
+      "origin": "中英語 mēten は古英語 metan にさかのぼり、原始ゲルマン語 *motjanan、印欧祖語 *mod-に由来するとされる。古英語では「見つける、出会う、同じ場所で出会う」の意味だった。1300年頃に物理的な「接触する・結合する」、同時期に人について「反対方向から近づく」の意味、14世紀後期に抽象的な「出会う・遭遇する」、1690年代に「一致する・要求に応える」の意味が加わった。古英語 gemot(集会)と関連があるとされる。",
+      "trivia": "「会議」を意味する meeting は、古英語 gemot(人々が「出会う」場)にさかのぼる語で、法律用語 moot court(模擬裁判)の moot も同じ語族の親戚とされる。",
+      "explanation": "meet with 〜(正式に会う、または困難などに遭遇する)、meet up (with)(カジュアルに待ち合わせる)、meet the needs of/meet requirements(要求を満たす)のような表現に注意。初対面の場面では meet、すでに知っている相手と会う場面では see を使うことが多いという使い分けの目安もある。"
+    }
+  }
+]

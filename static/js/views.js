@@ -914,7 +914,10 @@ function deleteButton(name, onDel) {
 }
 
 // 簡易モーダル（例文ポップアップ等）。閉じるとDOMから消える。
-function openModal(title, buildBody) {
+// onClose: ✕/Esc/背景クリック/呼び出し元によるclose()呼び出しを問わず、
+// 閉じられたときに必ず1回呼ばれる(2026-09-15・フラッシュ単語の開始前
+// 選択ポップアップのように「閉じ方によらず後始末が要る」用途のため追加)。
+function openModal(title, buildBody, onClose) {
   const ov = el(`<div class="modal-ov"></div>`);
   const box = el(`<div class="modal-box">
     <div class="row modal-head" style="justify-content:space-between">
@@ -926,6 +929,7 @@ function openModal(title, buildBody) {
     speech.stopSpeaking();
     document.removeEventListener("keydown", onKey);
     ov.remove();
+    if (onClose) onClose();
   };
   // Escで閉じられない・長いモーダルで✕がスクロールアウトする指摘への対応
   // (2026-09-15・UIレビュー)。ヘッダーはCSS側でsticky化(.modal-head)。
@@ -936,6 +940,33 @@ function openModal(title, buildBody) {
   ov.appendChild(box);
   document.body.appendChild(ov);
   return close;
+}
+
+// フラッシュ単語/フラッシュフレーズの開始前に「無料で聴ける範囲のみ」か
+// 「聴けないものも含める」かを毎回選んでもらうポップアップ(2026-09-15
+// ユーザー要望: 音声無料範囲外の語が出題されて🔒でガッカリする事態を
+// 避けたい)。戻り値: true=無料のみ/false=全部含める/null=キャンセル
+// (✕・Esc・背景クリックで閉じた場合。呼び出し元は開始自体を中断する)。
+function askFreeRangeChoice(kindLabel) {
+  return new Promise((resolve) => {
+    let resolved = false;
+    const settle = (v) => { if (!resolved) { resolved = true; resolve(v); } };
+    const close = openModal(`🔊 出題範囲を選択`, (body) => {
+      body.innerHTML = `
+        <p class="muted">音声無料範囲外の${kindLabel}も出題に含めますか？
+          （範囲外は🔒で再生だけできません、表示・採点は変わりません）</p>
+        <div class="row mt" style="flex-direction:column; gap:8px">
+          <button class="btn" id="frcFreeOnly">🔊 無料で聴ける${kindLabel}のみ</button>
+          <button class="btn ghost" id="frcAll">📚 聴けない${kindLabel}も含める</button>
+        </div>`;
+      body.querySelector("#frcFreeOnly").addEventListener("click", () => {
+        settle(true); close();
+      });
+      body.querySelector("#frcAll").addEventListener("click", () => {
+        settle(false); close();
+      });
+    }, () => settle(resolved ? undefined : null));
+  });
 }
 
 // 詳細(JSON)を整形して描画。類義語/対義語/派生語のうちDB登録済みの語は、
@@ -1426,7 +1457,13 @@ function runFlashcards(stage, initialQueue, opts) {
     const detBtn = el(`<button class="btn ghost">📖 詳細</button>`);
     detBtn.addEventListener("click",
       () => (kind === "phrase" ? showPhraseDetail(c) : showWordDetail(c)));
-    tools.append(exBtn, detBtn);
+    // セッション途中でフィルタを変更したくなっても、従来は全カードを
+    // めくり終えるかメニューを再クリックするしかなかった(2026-09-15
+    // ユーザー指摘)。プレイ中いつでも設定画面へ戻れるボタンを追加。
+    const settingsBtn = el(`<button class="btn ghost">⚙️ 設定</button>`);
+    settingsBtn.addEventListener("click",
+      () => go(kind === "phrase" ? "flashphrase" : "flashcard"));
+    tools.append(exBtn, detBtn, settingsBtn);
     // 採点ボタン(スワイプできない端末用)。
     const actions = stage.querySelector(".fc-actions");
     const mk = (cls, label, fn) => {
@@ -1668,6 +1705,19 @@ export async function flashcard(root) {
   refreshFcCount();
 
   root.querySelector("#fcStart").addEventListener("click", async () => {
+    // 開始前に毎回「無料で聴ける範囲のみ/聴けないものも含める」を選んで
+    // もらう(2026-09-15ユーザー要望)。キャンセル(✕/Esc/背景クリック)
+    // なら開始しない。選択結果は既存の#fcFreeOnlyへ反映するので、
+    // 以降のロジック(fcFilterParams等)は変更不要。
+    // 課金ユーザー・管理者は音声無料範囲の制限自体が無い(全語再生可)ため
+    // この選択に意味が無く、聞かずにスキップする(2026-09-15ユーザー指摘)。
+    if (state.isChargedTier) {
+      root.querySelector("#fcFreeOnly").checked = false;
+    } else {
+      const choice = await askFreeRangeChoice("単語");
+      if (choice === null) return;
+      root.querySelector("#fcFreeOnly").checked = choice;
+    }
     const v = (id) => root.querySelector(id).value;
     const dir = v("#fcDir"), dom = [...selectedDomains].join(",");
     const size = v("#fcSize");
@@ -1902,6 +1952,15 @@ export async function flashPhrase(root) {
   refreshFpCount();
 
   root.querySelector("#fpStart").addEventListener("click", async () => {
+    // フラッシュ単語と同じく、開始前に毎回選んでもらう(2026-09-15)。
+    // 課金ユーザー・管理者は無料範囲の制限自体が無いためスキップ。
+    if (state.isChargedTier) {
+      root.querySelector("#fpFreeOnly").checked = false;
+    } else {
+      const choice = await askFreeRangeChoice("フレーズ");
+      if (choice === null) return;
+      root.querySelector("#fpFreeOnly").checked = choice;
+    }
     const v = (id) => root.querySelector(id).value;
     const dir = v("#fpDir"), scene = [...selectedScenes].join(",");
     const size = v("#fpSize");

@@ -1,0 +1,5077 @@
+[
+  {
+    "english": "be",
+    "detail": {
+      "pronunciation": "/biː/",
+      "pos": "動詞・助動詞",
+      "meanings": [
+        "〜である(主語の性質・状態を説明する)",
+        "いる、ある(存在を表す)",
+        "(出来事が)起こる、開催される",
+        "(be + 現在分詞で)進行形を作る",
+        "(be + 過去分詞で)受動態を作る",
+        "(be to do で)予定・義務を表す"
+      ],
+      "examples": [
+        {
+          "en": "She is a doctor.",
+          "ja": "彼女は医者だ。"
+        },
+        {
+          "en": "There is a cat under the table.",
+          "ja": "テーブルの下に猫がいる。"
+        },
+        {
+          "en": "The meeting is tomorrow.",
+          "ja": "会議は明日だ。"
+        },
+        {
+          "en": "I am studying English now.",
+          "ja": "私は今、英語を勉強している。"
+        },
+        {
+          "en": "This letter was written by him.",
+          "ja": "この手紙は彼によって書かれた。"
+        },
+        {
+          "en": "We are to meet at six.",
+          "ja": "私たちは6時に会う予定だ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "being",
+          "pos": "名詞",
+          "ja": "存在、生き物、〜であること"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "exist",
+          "note": "より形式的に「存在する」を表す"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語には bēon/bēom(「存在する、〜になる」)という系統と、am/was という別系統の動詞(印欧祖語 *es- に遡る)が存在し、この2つが1つの活用体系に融合してできた語とされる。bēon 系は印欧祖語 *bheue-(「存在する、育つ」)に遡り、ゲルマン祖語 *biju-(「私は〜である/〜であるだろう」)を経て現在の be の形になったとされる。この融合により、be動詞は現代英語で最も不規則な活用を持つ動詞になっている。",
+      "trivia": "be動詞は am/is/are/was/were/been/being という8つの形を持つが、これは元々別系統だった複数の動詞が歴史的に1つの語に統合された結果とされる。この現象は英語だけでなくドイツ語(bin/ist/sind)やラテン語(fui)など多くの印欧語族の言語に共通して見られる。",
+      "explanation": "be動詞は一般動詞と違い、疑問文・否定文を作るのに do を使わない。疑問文は主語とbe動詞を倒置するだけ(Is he a teacher? / Are you ready?)、否定文はbe動詞の直後にnotを置くだけでよい(He isn't a teacher. / I am not ready.)。また、現在分詞と組み合わせて進行形(be + -ing)、過去分詞と組み合わせて受動態(be + 過去分詞)を作る助動詞としての役割も非常に重要。"
+    }
+  },
+  {
+    "english": "have",
+    "detail": {
+      "pronunciation": "/hæv/",
+      "pos": "動詞・助動詞",
+      "meanings": [
+        "持っている、所有している",
+        "食べる、飲む",
+        "(病気・けがなどを)患う、負う",
+        "(経験として)〜する、〜を持つ",
+        "(使役: have + O + 過去分詞/原形で)〜してもらう、〜させる",
+        "(完了形を作る助動詞: have + 過去分詞)"
+      ],
+      "examples": [
+        {
+          "en": "I have a car.",
+          "ja": "私は車を持っている。"
+        },
+        {
+          "en": "Let's have lunch together.",
+          "ja": "一緒に昼食を食べよう。"
+        },
+        {
+          "en": "She has a bad cold.",
+          "ja": "彼女はひどい風邪をひいている。"
+        },
+        {
+          "en": "We had a great time at the party.",
+          "ja": "私たちはパーティーで素晴らしい時間を過ごした。"
+        },
+        {
+          "en": "I had my hair cut yesterday.",
+          "ja": "私は昨日髪を切ってもらった。"
+        },
+        {
+          "en": "Have you finished your homework?",
+          "ja": "宿題は終わりましたか。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "have-not",
+          "pos": "名詞",
+          "ja": "持たざる者、貧困層"
+        },
+        {
+          "word": "having",
+          "pos": "名詞・現在分詞",
+          "ja": "所有すること"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "possess",
+          "note": "よりフォーマルに「所有する」"
+        },
+        {
+          "word": "own",
+          "note": "「自分のものとして」所有することを強調"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "lack",
+          "note": "「〜を欠いている」という反対の状態"
+        }
+      ],
+      "origin": "古英語 habban(「所有する、〜の状態にある、経験する」)に由来し、ゲルマン祖語 *habejanan(古ノルド語 hafa、ドイツ語 haben なども同根)を経て、印欧祖語 *kap-(「つかむ」)に遡るとされる。綴りや意味がよく似たラテン語 habere とは無関係とされる、語源上の偶然の類似である点に注意。",
+      "trivia": "have は所有を表すだけでなく、現在完了形(have + 過去分詞)を作る最重要の助動詞でもある。また日常会話では「持つ」から「食べる・飲む」(have lunch, have coffee)、「経験する」(have a good time)など非常に幅広い意味に拡張して使われる。",
+      "explanation": "一般動詞としての have は、Do you have...? / I don't have... のように do を使って疑問文・否定文を作るのが基本(特にアメリカ英語)。一方、現在完了を作る助動詞としての have は、Have you finished...? / I haven't finished... のように have 自体を主語の前に出したり not をつけたりして疑問文・否定文を作る。イギリス英語では所有の意味でも Have you a car? のように助動詞的に使うことがある点も押さえておきたい。"
+    }
+  },
+  {
+    "english": "do",
+    "detail": {
+      "pronunciation": "/duː/",
+      "pos": "動詞・助動詞",
+      "meanings": [
+        "する、行う",
+        "(仕事・課題などを)行う、片付ける",
+        "役に立つ、間に合う、足りる(That will do.)",
+        "(進み具合が)〜である、やっていく(How are you doing?)",
+        "(疑問文・否定文を作る助動詞)",
+        "(動詞の繰り返しを避ける代動詞、強調のdo)"
+      ],
+      "examples": [
+        {
+          "en": "I do my homework every evening.",
+          "ja": "私は毎晩宿題をする。"
+        },
+        {
+          "en": "She did the dishes after dinner.",
+          "ja": "彼女は夕食後に皿洗いをした。"
+        },
+        {
+          "en": "This small bag will do for the trip.",
+          "ja": "この小さなかばんで旅行には十分だ。"
+        },
+        {
+          "en": "How is your new project doing?",
+          "ja": "新しいプロジェクトの調子はどうですか。"
+        },
+        {
+          "en": "Do you like coffee?",
+          "ja": "コーヒーは好きですか。"
+        },
+        {
+          "en": "I do like this song.",
+          "ja": "私はこの歌が本当に好きだ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "doer",
+          "pos": "名詞",
+          "ja": "実行する人"
+        },
+        {
+          "word": "doable",
+          "pos": "形容詞",
+          "ja": "実行可能な"
+        },
+        {
+          "word": "undo",
+          "pos": "動詞",
+          "ja": "元に戻す"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "perform",
+          "note": "よりフォーマルに「(作業・任務を)遂行する」"
+        },
+        {
+          "word": "carry out",
+          "note": "「(計画・指示を)実行する」という句動詞"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語 dōn(「作る、行う、〜を引き起こす、置く」)に由来し、ゲルマン祖語 *dōanan(オランダ語 doen、ドイツ語 tun なども同根)を経て、印欧祖語 *dhē-(「置く、定める」)に遡るとされる。中英語期に、疑問文・否定文を作る助動詞としての用法(いわゆる do-support)が発達した。",
+      "trivia": "疑問文・否定文で do を使う語法(do-support)は英語特有の発達で、中英語期に徐々に一般化した。古英語では否定文を Hie ne wendon(「彼らは思わなかった」)のように ne(not)を動詞の前に置くだけで作っていたが、これが They did not think のようにdo を使う形に置き換わっていったとされる。",
+      "explanation": "do は一般動詞(する、行う)としての用法に加えて、他の一般動詞の疑問文・否定文を作る助動詞としての用法が非常に重要(do-support)。Do you like...? / I don't like... のように、do が主語の前に出たり not と結びついたりする。また Yes, I do. のように前に出た動詞の代わりをする代動詞としての用法や、I do like it.(本当に好きだ)のように動詞を強調する用法もある。"
+    }
+  },
+  {
+    "english": "seem",
+    "detail": {
+      "pronunciation": "/siːm/",
+      "pos": "動詞",
+      "meanings": [
+        "(見たところ)〜のように見える、〜のようだ",
+        "(that節/to不定詞を伴い)〜であるらしい、〜と思われる",
+        "(it seems that 〜で)どうやら〜らしい",
+        "(seem to do で)〜するように思われる"
+      ],
+      "examples": [
+        {
+          "en": "She seems happy today.",
+          "ja": "彼女は今日、幸せそうに見える。"
+        },
+        {
+          "en": "It seems that he has already left.",
+          "ja": "彼はもう出発したようだ。"
+        },
+        {
+          "en": "He seems to know a lot about music.",
+          "ja": "彼は音楽について多くを知っているようだ。"
+        },
+        {
+          "en": "There seems to be a mistake here.",
+          "ja": "ここに間違いがあるようだ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "seeming",
+          "pos": "形容詞",
+          "ja": "うわべの、見せかけの"
+        },
+        {
+          "word": "seemingly",
+          "pos": "副詞",
+          "ja": "見たところ、うわべは"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "appear",
+          "note": "ほぼ同義でよりフォーマルな「〜のように見える」"
+        },
+        {
+          "word": "look",
+          "note": "視覚的な印象に基づく「〜に見える」"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古ノルド語 sœma(「ふさわしくする、当てはめる、我慢する」)、さらに形容詞 sœmr(「ふさわしい、適した」)に由来し、ゲルマン祖語 *sōmiz、印欧祖語 *sem-(「一つ、共に」)に遡るとされる。13世紀頃に英語に入り、hit semeth(「それはふさわしく思われる→〜のようだ」)という非人称構文で使われ始めた。「ふさわしい」という元の意味は seemly(見苦しくない)、unseemly(見苦しい)に痕跡として残っている。",
+      "trivia": "seem はもともと「ふさわしい、似合う」という意味を持つ古ノルド語由来の語で、この元の意味は現在では seemly(お行儀のよい)・unseemly(見苦しい)という形容詞にのみ残っている。動詞の seem 自体は「(客観的な事実というより)そう見える・思われる」というニュアンスを表す点が特徴。",
+      "explanation": "seem は主観的な印象を表す状態動詞で、通常は進行形にしない(seeming ではなく seems と使うのが基本)。It seems that S+V 〜 と S seems to do 〜 の書き換えがTOEICでもよく問われる(例: It seems that he is tired. = He seems to be tired.)。"
+    }
+  },
+  {
+    "english": "know",
+    "detail": {
+      "pronunciation": "/noʊ/",
+      "pos": "動詞",
+      "meanings": [
+        "(事実・情報を)知っている",
+        "(人と)知り合いである、面識がある",
+        "分かる、理解している",
+        "(技能・言語を)習得している、できる",
+        "(〜と)見分ける、識別する(know A from B)"
+      ],
+      "examples": [
+        {
+          "en": "I know her name.",
+          "ja": "私は彼女の名前を知っている。"
+        },
+        {
+          "en": "Do you know Mr. Tanaka?",
+          "ja": "田中さんを知っていますか。"
+        },
+        {
+          "en": "I don't know why he is angry.",
+          "ja": "なぜ彼が怒っているのか分からない。"
+        },
+        {
+          "en": "She knows how to swim.",
+          "ja": "彼女は泳ぎ方を知っている(泳げる)。"
+        },
+        {
+          "en": "It's hard to know right from wrong sometimes.",
+          "ja": "時には善悪を見分けるのが難しい。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "knowledge",
+          "pos": "名詞",
+          "ja": "知識"
+        },
+        {
+          "word": "known",
+          "pos": "形容詞",
+          "ja": "知られている"
+        },
+        {
+          "word": "unknown",
+          "pos": "形容詞",
+          "ja": "未知の"
+        },
+        {
+          "word": "knowingly",
+          "pos": "副詞",
+          "ja": "故意に、承知の上で"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "understand",
+          "note": "知識よりも「理解している」ことに重点"
+        },
+        {
+          "word": "recognize",
+          "note": "「見て・聞いてそれと分かる」というニュアンス"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語の強変化動詞 cnāwan(「区別する、識別する、〜だと認識する」)に由来し、印欧祖語 *gno-(「知る」)に遡るとされる。この語根はゲルマン語派の中では英語に色濃く残っており、他の多くの言語では複数の動詞で表す意味を know 一語でカバーしている。",
+      "trivia": "know の語頭の k は古英語では実際に発音されていたが、17世紀頃までに脱落し、現在では knee(膝)や knife(ナイフ)などと同様に黙字(サイレントレター)になっている。語源となった印欧祖語 *gno- は、ラテン語 gnoscere(→ recognize, ignore)やギリシャ語 gnosis(知識)にも見られる、know・knowledge と同じ語根。",
+      "explanation": "know は状態動詞(進行形にしない)の代表格で、I am knowing ではなく I know のように使う。疑問文・否定文は一般動詞なので do を使う(Do you know...? / I don't know...)。get to know(だんだん知り合いになる)や come to know(知るようになる)のように「変化」を表すには get/come と組み合わせる点もよく問われる。"
+    }
+  },
+  {
+    "english": "see",
+    "detail": {
+      "pronunciation": "/siː/",
+      "pos": "動詞",
+      "meanings": [
+        "(目で)見る、見える",
+        "分かる、理解する",
+        "(人と)会う、面会する",
+        "(医者などに)診てもらう",
+        "確かめる、確認する(see if/whether)",
+        "(物事・変化を)経験する、目撃する"
+      ],
+      "examples": [
+        {
+          "en": "I can see the mountain from here.",
+          "ja": "ここから山が見える。"
+        },
+        {
+          "en": "I see what you mean.",
+          "ja": "あなたの言いたいことが分かる。"
+        },
+        {
+          "en": "I'll see you at the station at noon.",
+          "ja": "正午に駅で会いましょう。"
+        },
+        {
+          "en": "I'm seeing my dentist tomorrow.",
+          "ja": "明日、歯医者に診てもらう予定だ。"
+        },
+        {
+          "en": "Let me see if I can help you.",
+          "ja": "手伝えるかどうか確かめてみます。"
+        },
+        {
+          "en": "This city has seen a lot of change.",
+          "ja": "この街は多くの変化を経験してきた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "sight",
+          "pos": "名詞",
+          "ja": "視力、光景"
+        },
+        {
+          "word": "unforeseen",
+          "pos": "形容詞",
+          "ja": "予期しない"
+        },
+        {
+          "word": "oversee",
+          "pos": "動詞",
+          "ja": "監督する"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "watch",
+          "note": "動くもの・進行しているものを「見守る」ニュアンス"
+        },
+        {
+          "word": "notice",
+          "note": "「気づく」という発見のニュアンス"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語 sēon(「目で見る、視覚で知覚する」)に由来し、ゲルマン祖語 *sehwanan、印欧祖語 *sekw-(「見る」)に遡るとされる。「(目で)追う」を意味する別の印欧祖語 *sekw-(follow系)と同一ではないかという説もあるが、確証はないとされる。",
+      "trivia": "see・look・watch はいずれも「見る」と訳されるが、see は「(意図せず)目に入る、見える」という結果に重点があるのに対し、look は「視線を向ける」という動作、watch は「動くものを注意して見続ける」という継続性に重点がある点が異なる。",
+      "explanation": "see は状態動詞としては進行形にしないが(I see = 見える/分かる)、「(人に)会う・面談する予定である」という意味では I'm seeing... のように進行形で使われる点に注意。疑問文・否定文は一般動詞として do を使う(Do you see...? / I don't see...)。Let's see(ええと)、You see(あのね)といった会話表現も頻出。"
+    }
+  },
+  {
+    "english": "feel",
+    "detail": {
+      "pronunciation": "/fiːl/",
+      "pos": "動詞",
+      "meanings": [
+        "(感情・感覚を)感じる",
+        "(手などで)触る、触れてみる",
+        "(〜のように)感じられる、〜な感触がする",
+        "〜だと思う、〜な気がする(feel that 〜)",
+        "(feel like で)〜したい気がする"
+      ],
+      "examples": [
+        {
+          "en": "I feel happy today.",
+          "ja": "私は今日、幸せに感じる。"
+        },
+        {
+          "en": "Feel this fabric; it's so soft.",
+          "ja": "この生地を触ってみて、とても柔らかいよ。"
+        },
+        {
+          "en": "The water feels cold.",
+          "ja": "その水は冷たく感じる。"
+        },
+        {
+          "en": "I feel that we should wait a little longer.",
+          "ja": "もう少し待つべきだと思う。"
+        },
+        {
+          "en": "I feel like eating something sweet.",
+          "ja": "何か甘いものが食べたい気分だ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "feeling",
+          "pos": "名詞",
+          "ja": "気持ち、感覚"
+        },
+        {
+          "word": "feelings",
+          "pos": "名詞(複数)",
+          "ja": "感情"
+        },
+        {
+          "word": "heartfelt",
+          "pos": "形容詞",
+          "ja": "心からの"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "sense",
+          "note": "より知覚・直感的に「感じ取る」"
+        },
+        {
+          "word": "touch",
+          "note": "物理的に「触れる」動作そのもの"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語 fēlan(「触れる、感覚的に知覚する」)に由来し、ゲルマン祖語 *foljanan を経て、印欧祖語 *pal-(「触れる、感じる、軽く打つ」)または *pel-(「突く、打つ、駆り立てる」)に遡るとされる。もともとは触覚に限定された語だったが、次第に感情や感覚全般を表す語へと意味が広がった。",
+      "trivia": "feel はもともと「(手で)触る」という触覚だけを表す語だったが、特定の感覚器官に結びつかない知覚全般(気分・感情・直感)を表す語へと意味が拡張した。feel like 〜ing(〜したい気がする)という口語表現は1829年頃に定着したとされる、比較的新しい用法。",
+      "explanation": "feel は「感じる」という状態的な意味では進行形にしないことが多いが(I feel great.)、体調などが徐々に変化していることを強調するときは I'm feeling better(だんだん良くなってきている)のように進行形も使われる。疑問文・否定文は一般動詞なので do を使う(How do you feel? / I don't feel well.)。feel + 形容詞(feel happy)、feel like + 名詞/動名詞(feel like coffee / feel like going)の語法もよく問われる。"
+    }
+  },
+  {
+    "english": "think",
+    "detail": {
+      "pronunciation": "/θɪŋk/",
+      "pos": "動詞",
+      "meanings": [
+        "(〜だと)思う、考える",
+        "(じっくり)考える、思考する",
+        "(〜するつもりだと)考えている、意図する",
+        "(think of/about で)〜について考える、思いつく",
+        "(think highly of などで)〜だと評価する、みなす"
+      ],
+      "examples": [
+        {
+          "en": "I think it will rain tomorrow.",
+          "ja": "明日は雨が降ると思う。"
+        },
+        {
+          "en": "Let me think about it for a moment.",
+          "ja": "少し考えさせてください。"
+        },
+        {
+          "en": "We are thinking of moving to Tokyo.",
+          "ja": "私たちは東京に引っ越すことを考えている。"
+        },
+        {
+          "en": "I can't think of his name right now.",
+          "ja": "今、彼の名前が思い出せない。"
+        },
+        {
+          "en": "They think highly of her work.",
+          "ja": "彼らは彼女の仕事を高く評価している。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "thought",
+          "pos": "名詞",
+          "ja": "考え、思考"
+        },
+        {
+          "word": "thinker",
+          "pos": "名詞",
+          "ja": "思想家、考える人"
+        },
+        {
+          "word": "thoughtful",
+          "pos": "形容詞",
+          "ja": "思いやりのある、考え深い"
+        },
+        {
+          "word": "rethink",
+          "pos": "動詞",
+          "ja": "考え直す"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "believe",
+          "note": "確信の度合いがやや強い「〜だと思う」"
+        },
+        {
+          "word": "consider",
+          "note": "よりフォーマルに「よく考える、みなす」"
+        }
+      ],
+      "antonyms": [],
+      "origin": "中英語期に、古英語の2つの異なる動詞 þencan(「理性を働かせる、思考する、意図する」)と þyncan(「〜のように見える、思われる」)が同じ形に融合してできた語とされる。þyncan の「〜のように見える」という意味は methinks(「私には〜のように思われる」という古い表現)に痕跡として残っている。ゲルマン祖語 *thankjanan / *thunkjan を経て、印欧祖語 *tong-(「思う、感じる」)に遡るとされる。",
+      "trivia": "think は元々2つの別々の古英語動詞(「考える」の þencan と「〜のように見える」の þyncan)が中英語期に同じ形に合流してできた語とされる。後者の名残は、現代ではほぼ使われない methinks(「私には〜と思われる」)という古風な表現にのみ残っている。",
+      "explanation": "think は「〜だと思う」を表すときは進行形にしないが(I think so.)、「今まさに考え中である」ことを強調するときは I'm thinking about it. のように進行形にできる点が feel などと似ている。疑問文・否定文は一般動詞として do を使う(Do you think...? / I don't think...)。I don't think S+V(〜ではないと思う)のように、否定を think の前に置く語法(否定転移)が日本語の発想と異なるためTOEICでも狙われやすい。"
+    }
+  },
+  {
+    "english": "remember",
+    "detail": {
+      "pronunciation": "/rɪˈmembər/",
+      "pos": "動詞",
+      "meanings": [
+        "覚えている、記憶している",
+        "思い出す、思い当たる",
+        "(〜し忘れないように)覚えておく、心に留める",
+        "(人に)よろしくと伝える(remember A to B)"
+      ],
+      "examples": [
+        {
+          "en": "I remember his name.",
+          "ja": "私は彼の名前を覚えている。"
+        },
+        {
+          "en": "Suddenly, I remembered where I had left my keys.",
+          "ja": "突然、鍵をどこに置いたか思い出した。"
+        },
+        {
+          "en": "Please remember to lock the door.",
+          "ja": "ドアの鍵を閉めるのを忘れないでください。"
+        },
+        {
+          "en": "Remember me to your family.",
+          "ja": "ご家族によろしくお伝えください。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "memory",
+          "pos": "名詞",
+          "ja": "記憶、思い出"
+        },
+        {
+          "word": "reminder",
+          "pos": "名詞",
+          "ja": "思い出させるもの、リマインダー"
+        },
+        {
+          "word": "remembrance",
+          "pos": "名詞",
+          "ja": "追憶、記念"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "recall",
+          "note": "意識的に「思い出す」という動作に重点"
+        },
+        {
+          "word": "memorize",
+          "note": "意図的に「暗記する」という準備段階の意味"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "forget",
+          "note": "「忘れる」という反対の意味"
+        }
+      ],
+      "origin": "11世紀の古フランス語 remembrer に由来し、さらにラテン語 rememorari(「再び心に留める」)にさかのぼるとされる。ラテン語の接頭辞 re-(「再び」)と memorari(「心に留める」、memor「心に留めている」から)からなり、最終的には印欧祖語 *(s)mer-(「覚えている」)に行き着くとされる。number・chamber・humble などと同様、m と子音の間に b が挿入される英語の音韻変化パターンの一例でもある。",
+      "trivia": "remember の -mb- の b は発音の都合で挿入された音で、number(数)や chamber(部屋)、humble(謙虚な)などにも同じ現象が見られる。remember to do(これから〜するのを覚えている=し忘れない)と remember doing(すでに〜したことを覚えている)の意味の違いは、TOEICの語法問題でも頻出。",
+      "explanation": "remember to do(〜するのを忘れずにいる=これからの行動)と remember doing(〜したことを覚えている=過去の行動)の違いが最重要ポイント。疑問文・否定文は一般動詞なので do を使う(Do you remember...? / I don't remember...)。"
+    }
+  },
+  {
+    "english": "love",
+    "detail": {
+      "pronunciation": "/lʌv/",
+      "pos": "動詞・名詞",
+      "meanings": [
+        "(人を)愛する、深く大切に思う",
+        "(物事が)大好きだ、とても気に入っている",
+        "(would love to で)ぜひ〜したい",
+        "(名詞)愛、愛情"
+      ],
+      "examples": [
+        {
+          "en": "I love my family very much.",
+          "ja": "私は家族をとても愛している。"
+        },
+        {
+          "en": "She loves chocolate cake.",
+          "ja": "彼女はチョコレートケーキが大好きだ。"
+        },
+        {
+          "en": "I would love to visit Japan someday.",
+          "ja": "いつか日本をぜひ訪れたい。"
+        },
+        {
+          "en": "Their love for each other never changed.",
+          "ja": "彼らのお互いへの愛は決して変わらなかった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "lovely",
+          "pos": "形容詞",
+          "ja": "かわいらしい、素敵な"
+        },
+        {
+          "word": "lover",
+          "pos": "名詞",
+          "ja": "恋人、愛好者"
+        },
+        {
+          "word": "beloved",
+          "pos": "形容詞・名詞",
+          "ja": "最愛の(人)"
+        },
+        {
+          "word": "lovable",
+          "pos": "形容詞",
+          "ja": "愛すべき、かわいい"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "adore",
+          "note": "より熱烈に「大好きだ、崇拝する」"
+        },
+        {
+          "word": "cherish",
+          "note": "「大切に慈しむ」というニュアンス"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "hate",
+          "note": "「憎む、大嫌いだ」という反対の感情"
+        }
+      ],
+      "origin": "名詞は古英語 lufu(「愛情、恋愛感情、友情」)、動詞は古英語 lufian(「愛する、大切にする、喜ぶ」)に由来し、いずれもゲルマン祖語 *lubō(名詞)/ *lubōjanan(動詞)を経て、印欧祖語 *leubh-(「大切にする、望む、愛する」)に遡るとされる。ドイツ語 Liebe(愛)やオランダ語 lief(いとしい)なども同じ語源。",
+      "trivia": "テニスなどのスコアで0点を love と呼ぶのは、フランス語で「卵」を意味する l'œuf(卵の形が0に似ていることから)が語源という説が広く知られているが、確証はなく俗説の域を出ないとされる。believe(信じる)と love は同じ印欧祖語の語根 *leubh- を共有する親戚語である点も興味深い。",
+      "explanation": "love は状態動詞として進行形にしないのが伝統的な用法だが(I love you. であって I am loving you. とは通常言わない)、現代の口語やカジュアルな広告表現(I'm lovin' it. など)では一時的な感情として進行形が使われることもある。疑問文・否定文は一般動詞なので do を使う(Do you love...? / I don't love...)。"
+    }
+  },
+  {
+    "english": "understand",
+    "detail": {
+      "pronunciation": "/ˌʌndərˈstænd/",
+      "pos": "動詞",
+      "meanings": [
+        "(話・状況などを)理解する、分かる",
+        "(人の気持ちや事情を)察する、理解を示す",
+        "(that節を伴い)〜だと聞いている、〜だと解釈している",
+        "(言語を)理解する、聞いて分かる"
+      ],
+      "examples": [
+        {
+          "en": "I understand what you are saying.",
+          "ja": "あなたの言っていることが分かります。"
+        },
+        {
+          "en": "She understands how hard you have worked.",
+          "ja": "彼女はあなたがどれだけ頑張ったか分かってくれている。"
+        },
+        {
+          "en": "I understand that the meeting has been postponed.",
+          "ja": "会議が延期されたと聞いています。"
+        },
+        {
+          "en": "He can understand French but can't speak it well.",
+          "ja": "彼はフランス語を理解できるが、うまく話せない。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "understanding",
+          "pos": "名詞・形容詞",
+          "ja": "理解(力)、理解のある"
+        },
+        {
+          "word": "misunderstand",
+          "pos": "動詞",
+          "ja": "誤解する"
+        },
+        {
+          "word": "understandable",
+          "pos": "形容詞",
+          "ja": "理解できる、もっともな"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "comprehend",
+          "note": "よりフォーマルに「(複雑な内容を)理解する」"
+        },
+        {
+          "word": "grasp",
+          "note": "「(要点を)つかむ」というニュアンス"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "misunderstand",
+          "note": "「誤解する」という反対の意味"
+        }
+      ],
+      "origin": "古英語 understandan(under「〜の間に、〜の中で」+ standan「立つ」)に由来するとされる。ここでの under は現代の「下に」という意味ではなく、印欧祖語 *nter-(「〜の間に」)に由来する「〜の間に、〜の中に」という意味で使われており、「(物事の)真っただ中に立つ→本質をつかむ」というイメージから「理解する」の意味が生まれたと考えられている。",
+      "trivia": "understand を「under(下に)+ stand(立つ)」と覚える人が多いが、実際にはこの under は「間に、中に」を意味する古い用法で、「下に」の意味ではないとされる。ドイツ語で「理解する」に当たる verstehen が文字通り「前に立つ」を意味するのと対照的に、英語は「間に立つ」というイメージで理解を捉えている。",
+      "explanation": "understand は状態動詞なので、原則として進行形にしない(I understand. であって I am understanding. とは言わない)。疑問文・否定文は一般動詞として do を使う(Do you understand? / I don't understand.)。ビジネス英語では I understand that 〜(〜だと理解しています/聞いております)という形で、伝聞や把握している内容を丁寧に伝える表現としてもよく使われる。"
+    }
+  },
+  {
+    "english": "believe",
+    "detail": {
+      "pronunciation": "/bɪˈliːv/",
+      "pos": "動詞",
+      "meanings": [
+        "(人・話などを)信じる、信用する",
+        "(that節を伴い)〜だと思う、〜だと信じている",
+        "(神などを)信仰する、信心する(believe in)",
+        "(〜の存在・価値を)信じる、信頼を置く(believe in)"
+      ],
+      "examples": [
+        {
+          "en": "I believe you; I know you wouldn't lie to me.",
+          "ja": "あなたを信じます。私に嘘をつくはずがないと分かっているから。"
+        },
+        {
+          "en": "I believe that honesty is the best policy.",
+          "ja": "正直であることが一番だと私は思う。"
+        },
+        {
+          "en": "She believes in God.",
+          "ja": "彼女は神を信仰している。"
+        },
+        {
+          "en": "He believes in himself.",
+          "ja": "彼は自分自身を信じている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "belief",
+          "pos": "名詞",
+          "ja": "信念、信仰"
+        },
+        {
+          "word": "believable",
+          "pos": "形容詞",
+          "ja": "信じられる、もっともらしい"
+        },
+        {
+          "word": "unbelievable",
+          "pos": "形容詞",
+          "ja": "信じられない"
+        },
+        {
+          "word": "believer",
+          "pos": "名詞",
+          "ja": "信者、信奉者"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "trust",
+          "note": "人や物事への「信頼」に重点があるニュアンス"
+        },
+        {
+          "word": "think",
+          "note": "確信の度合いが弱めの「〜だと思う」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "doubt",
+          "note": "「疑う」という反対の意味"
+        }
+      ],
+      "origin": "古英語 belyfan(gelēfan などの異形あり)に由来し、ゲルマン祖語 *ga-laubjan(「信じる」、文字通りには「大切なもの・価値あるものとして心にとどめる」)を経て、印欧祖語 *leubh-(「大切にする、望む、愛する」)に遡るとされる。この語根は love(愛する)とも同じ祖先を共有しており、「信じる」と「愛する」は語源的に近い関係にあるとされる。",
+      "trivia": "believe と love は、印欧祖語の同じ語根 *leubh-(「大切にする、愛する」)に由来する語源上の親戚語とされる。「信じる」という行為の根底に「大切なものとして心に留める」という感覚があったことがうかがえる。",
+      "explanation": "believe は状態動詞なので、通常は進行形にしない(I believe you. であって I am believing you. とは言わない)。疑問文・否定文は一般動詞として do を使う(Do you believe...? / I don't believe...)。「〜を信じる」というとき、人そのものを信じる believe him と、神・主義などの存在や価値を信じる believe in him(彼の人間性・能力を信頼する)の違いに注意。"
+    }
+  },
+  {
+    "english": "go",
+    "detail": {
+      "pronunciation": "/ɡoʊ/",
+      "pos": "動詞",
+      "meanings": [
+        "行く、進む",
+        "(物事が)進む、運ぶ",
+        "〜になる、〜の状態になる",
+        "なくなる、消える",
+        "(機械などが)動く、作動する"
+      ],
+      "examples": [
+        {
+          "en": "I go to school by bike every day.",
+          "ja": "私は毎日自転車で学校に行く。"
+        },
+        {
+          "en": "How is the project going?",
+          "ja": "プロジェクトはどう進んでいますか。"
+        },
+        {
+          "en": "The milk has gone bad.",
+          "ja": "牛乳が腐ってしまった(悪い状態になった)。"
+        },
+        {
+          "en": "All my money is gone.",
+          "ja": "私のお金は全部なくなった。"
+        },
+        {
+          "en": "This old clock still goes perfectly.",
+          "ja": "この古い時計は今でも問題なく動く。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "ongoing",
+          "pos": "形容詞",
+          "ja": "進行中の"
+        },
+        {
+          "word": "outgoing",
+          "pos": "形容詞",
+          "ja": "社交的な、外向的な;(役職などを)退任する"
+        },
+        {
+          "word": "goings-on",
+          "pos": "名詞",
+          "ja": "(通例好ましくない)出来事、騒動"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "proceed",
+          "note": "よりフォーマルに「進む」"
+        },
+        {
+          "word": "head (for)",
+          "note": "目的地に向かって進む"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "come",
+          "note": "話し手の方へ向かう反対方向の動き"
+        },
+        {
+          "word": "stay",
+          "note": "その場にとどまる"
+        }
+      ],
+      "origin": "古英語 gān(西ゲルマン祖語 *gaian)に由来し、さらに遡ると印欧祖語の語根 *ghē-「放す、解放される」に行き着くとされる。過去形 went はもともと別の動詞 wenden「進路を取る」の過去形で、古英語での go の過去形 eode(語源不詳)を中英語期(1400年頃)までに置き換えた。現代英語で go と be だけが全く別語源の過去形を借用しているという珍しい補充法(サプリション)の実例とされる。",
+      "trivia": "「go」の過去形が全く別の動詞由来の went である現象は補充法(サプリション)と呼ばれ、英語では be/am/is/was の変化と並んで代表的な例とされる。",
+      "explanation": "go on(続ける、起こる)、go off(鳴る・作動する、爆発する、(食べ物が)腐る)、go over(見直す、確認する)、go through(経験する、詳しく調べる)、go up/down(上がる/下がる)など、前置詞・副詞と組み合わさる句動詞が非常に多い基本動詞。TOEICでは go over(資料などを見直す)、go through(手続きを経る)がよく出る。"
+    }
+  },
+  {
+    "english": "come",
+    "detail": {
+      "pronunciation": "/kʌm/",
+      "pos": "動詞",
+      "meanings": [
+        "来る、やって来る",
+        "到着する、着く",
+        "〜になる、実現する",
+        "由来する、〜から来る"
+      ],
+      "examples": [
+        {
+          "en": "Please come to my office at three.",
+          "ja": "3時に私のオフィスに来てください。"
+        },
+        {
+          "en": "The bus comes every ten minutes.",
+          "ja": "バスは10分おきに来る(到着する)。"
+        },
+        {
+          "en": "Her dream finally came true.",
+          "ja": "彼女の夢はついに実現した。"
+        },
+        {
+          "en": "This word comes from French.",
+          "ja": "この単語はフランス語に由来する。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "become",
+          "pos": "動詞",
+          "ja": "〜になる"
+        },
+        {
+          "word": "income",
+          "pos": "名詞",
+          "ja": "収入"
+        },
+        {
+          "word": "outcome",
+          "pos": "名詞",
+          "ja": "結果"
+        },
+        {
+          "word": "newcomer",
+          "pos": "名詞",
+          "ja": "新参者"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "arrive",
+          "note": "到着する、ややフォーマル"
+        },
+        {
+          "word": "approach",
+          "note": "近づいてくる"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "go",
+          "note": "その場から離れる反対方向"
+        },
+        {
+          "word": "leave",
+          "note": "出発する、立ち去る"
+        }
+      ],
+      "origin": "古英語 cuman(ゲルマン祖語 *kwemanan)に由来し、印欧祖語の語根 *gwa-「行く、来る」に遡るとされる。元々は「到達する目的で移動する、動いて到達する」という物理的な意味で、そこから「現れる、知覚できるようになる」へ広がり、12世紀初めには「起こる、生じる」という比喩的な意味も獲得した。",
+      "trivia": "come and go(行ったり来たり)のように come と go は対で使われることが多いが、視点(話し手/聞き手のどちらを基準にするか)が日本語の「行く/来る」と逆になることがある。例えば「(今そちらへ)行きます」は日本語では「行く」だが、英語では聞き手のいる場所を基準に I'm coming と言うのが自然。",
+      "explanation": "come up with(〜を思いつく)、come across(〜に偶然出会う・気づく)、come up(話題に上る、近づく)、come along(一緒に来る、はかどる)、come back(戻る)など。TOEICでは come up with(アイデアを思いつく)が頻出。"
+    }
+  },
+  {
+    "english": "bring",
+    "detail": {
+      "pronunciation": "/brɪŋ/",
+      "pos": "動詞",
+      "meanings": [
+        "(物を)持ってくる",
+        "(人を)連れてくる",
+        "(結果を)もたらす、引き起こす",
+        "(話題を)持ち出す"
+      ],
+      "examples": [
+        {
+          "en": "Can you bring your laptop tomorrow?",
+          "ja": "明日ノートパソコンを持ってきてくれますか。"
+        },
+        {
+          "en": "She brought her friend to the party.",
+          "ja": "彼女は友人をパーティーに連れてきた。"
+        },
+        {
+          "en": "The new policy brought many changes.",
+          "ja": "その新しい政策は多くの変化をもたらした。"
+        },
+        {
+          "en": "He brought up an important issue at the meeting.",
+          "ja": "彼は会議で重要な問題を持ち出した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "upbringing",
+          "pos": "名詞",
+          "ja": "しつけ、養育"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "carry",
+          "note": "持ち運ぶという動作そのものに焦点"
+        },
+        {
+          "word": "fetch",
+          "note": "取りに行って持ってくる"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "take (away)",
+          "note": "話し手から離れる方向へ持っていく"
+        }
+      ],
+      "origin": "古英語 bringan に由来し、ゲルマン祖語 *brangjanan、さらに印欧祖語 *bhrengk-(「運ぶ、子を産む」を意味する語根 *bher- (1) に基づくとされる)に遡るとされる。古英語での原義は「運ぶ、携えてくる、生み出す、差し出す」という広い意味だった。",
+      "trivia": "bring と take はどちらも「持っていく/持ってくる」を表すが方向が逆。bring は話し手・聞き手のいる場所へ「持ってくる」方向、take はそこから離れる方向で使うのが基本。",
+      "explanation": "bring up(育てる、話題に出す)、bring about(引き起こす)、bring back(持ち帰る、思い出させる)、bring down(下げる、失脚させる)など句動詞が豊富。bring vs take の方向の違いに注意。"
+    }
+  },
+  {
+    "english": "send",
+    "detail": {
+      "pronunciation": "/send/",
+      "pos": "動詞",
+      "meanings": [
+        "(物・情報を)送る",
+        "(人を)行かせる、派遣する",
+        "(信号などを)発信する",
+        "(ある状態に)至らせる"
+      ],
+      "examples": [
+        {
+          "en": "I'll send you the file tonight.",
+          "ja": "今夜そのファイルを送ります。"
+        },
+        {
+          "en": "The company sent an engineer to fix the machine.",
+          "ja": "会社は機械を直すためにエンジニアを派遣した。"
+        },
+        {
+          "en": "The satellite sends signals back to Earth.",
+          "ja": "その衛星は地球に信号を送り返す。"
+        },
+        {
+          "en": "The loud noise sent the birds flying.",
+          "ja": "大きな音で鳥たちが飛び立った(その状態にさせた)。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "sender",
+          "pos": "名詞",
+          "ja": "送信者、差出人"
+        },
+        {
+          "word": "resend",
+          "pos": "動詞",
+          "ja": "再送する"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "dispatch",
+          "note": "公式・業務的に送る"
+        },
+        {
+          "word": "transmit",
+          "note": "信号・データなどを送信する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "receive",
+          "note": "受け取る"
+        }
+      ],
+      "origin": "古英語 sendan に由来し、ゲルマン祖語 *sandjanan「行かせる」、印欧祖語の語根 *sent-「〜に向かう、行く」に遡るとされる。元々は使者を派遣したり物を一方から他方へ移動させたりする意味で、1831年までには「(人を)ある状態にする」(send to sleep など)という抽象的な意味にも広がったとされる。",
+      "trivia": "send off(見送る、(スポーツで)退場させる)や send someone to Coventry(人を村八分にする)のようなイディオムがある。",
+      "explanation": "send for(人を呼びにやる)、send out(発送する、送り出す)、send off(見送る、退場させる)、send in(提出する、送り込む)など。ビジネス英語では send out(案内状などを送付する)が頻出。"
+    }
+  },
+  {
+    "english": "leave",
+    "detail": {
+      "pronunciation": "/liːv/",
+      "pos": "動詞",
+      "meanings": [
+        "去る、出発する",
+        "(物を)置き忘れる、残す",
+        "〜のままにしておく",
+        "(仕事などを)辞める"
+      ],
+      "examples": [
+        {
+          "en": "The train leaves platform 3 at nine.",
+          "ja": "電車は9時に3番ホームから出発する。"
+        },
+        {
+          "en": "I left my phone at home.",
+          "ja": "家に携帯電話を置き忘れた。"
+        },
+        {
+          "en": "Leave the door open, please.",
+          "ja": "ドアを開けたままにしておいてください。"
+        },
+        {
+          "en": "She left her job to start her own business.",
+          "ja": "彼女は自分の事業を始めるために仕事を辞めた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "leftover",
+          "pos": "名詞・形容詞",
+          "ja": "残り物、残りの"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "depart",
+          "note": "出発する、ややフォーマル"
+        },
+        {
+          "word": "exit",
+          "note": "退出する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "arrive",
+          "note": "到着する"
+        },
+        {
+          "word": "stay",
+          "note": "とどまる"
+        }
+      ],
+      "origin": "古英語 læfan(ゲルマン祖語 *laibjanan)に由来し、印欧祖語の語根 *leip-「くっつく、粘着する」に遡るとされる。元々は使役的に「同じ状態のままにしておく、残しておく」という意味で、1200年頃に現代の中心的な意味「立ち去る、出発する」を獲得した。なお名詞の leave(休暇・許可)は別語源(ゲルマン祖語 *laubo、印欧祖語 *leubh-「愛する、望む」)とされ、動詞の leave とは由来の異なる同形異義語とされる。",
+      "trivia": "動詞 leave(去る・残す)と名詞 leave(休暇・許可)は綴りは同じだが語源が異なる別語とされ、on leave(休暇中)、maternity leave(産休)のように使う。",
+      "explanation": "leave for(〜に向けて出発する)、leave out(除く、省く)、leave behind(置き忘れる、後に残す)、leave off(やめる、中断する)など。名詞の leave を使った on leave(休暇中)、sick leave(病気休暇)もTOEICで重要。"
+    }
+  },
+  {
+    "english": "move",
+    "detail": {
+      "pronunciation": "/muːv/",
+      "pos": "動詞",
+      "meanings": [
+        "動く、移動する",
+        "(物を)動かす",
+        "引っ越す",
+        "感動させる",
+        "(提案を)提出する"
+      ],
+      "examples": [
+        {
+          "en": "Don't move until I say so.",
+          "ja": "私が言うまで動かないで。"
+        },
+        {
+          "en": "Could you help me move this sofa?",
+          "ja": "このソファを動かすのを手伝ってもらえますか。"
+        },
+        {
+          "en": "They moved to a bigger house last month.",
+          "ja": "彼らは先月もっと大きな家に引っ越した。"
+        },
+        {
+          "en": "The speech moved many people to tears.",
+          "ja": "そのスピーチは多くの人を感動させて涙を流させた。"
+        },
+        {
+          "en": "He moved that the meeting be postponed.",
+          "ja": "彼は会議の延期を提案した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "movement",
+          "pos": "名詞",
+          "ja": "動き、運動"
+        },
+        {
+          "word": "movable",
+          "pos": "形容詞",
+          "ja": "動かせる、可動の"
+        },
+        {
+          "word": "mover",
+          "pos": "名詞",
+          "ja": "動かす人、引っ越し業者"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "shift",
+          "note": "位置や方針を移す"
+        },
+        {
+          "word": "relocate",
+          "note": "(会社・住居などを)移転する、ややフォーマル"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "stay",
+          "note": "その場にとどまる"
+        },
+        {
+          "word": "remain",
+          "note": "残る、とどまる"
+        }
+      ],
+      "origin": "古フランス語・アングロフレンチ語を経てラテン語 movere「動かす、動く、かき乱す」に由来し、印欧祖語の語根 *meue-「押しやる」に遡るとされる。13世紀末に英語に入り、まず自動詞的な「位置や姿勢を変える」という意味、続いて他動詞的な「動かす」という意味に広がった。",
+      "trivia": "チェスなどの「手」を意味する名詞 move は15世紀末から使われている用法で、そこから比喩的に「(交渉や政策上の)一手・動き」という意味にも広がった。",
+      "explanation": "move in(引っ越してくる)、move out(引っ越して出る)、move on(次に進む)、move up(昇進する、繰り上がる)など。ビジネスでは move forward with(〜を進める)のような表現も頻出。"
+    }
+  },
+  {
+    "english": "reach",
+    "detail": {
+      "pronunciation": "/riːtʃ/",
+      "pos": "動詞",
+      "meanings": [
+        "(場所に)着く、到達する",
+        "(手を)伸ばす",
+        "(物に)届く",
+        "(ある水準・量に)達する",
+        "連絡が取れる"
+      ],
+      "examples": [
+        {
+          "en": "We reached the hotel just before midnight.",
+          "ja": "私たちは真夜中直前にそのホテルに着いた。"
+        },
+        {
+          "en": "She reached for her glasses on the table.",
+          "ja": "彼女はテーブルの上の眼鏡に手を伸ばした。"
+        },
+        {
+          "en": "I can't reach the top shelf without a stool.",
+          "ja": "踏み台なしでは一番上の棚に手が届かない。"
+        },
+        {
+          "en": "Sales reached a record high last quarter.",
+          "ja": "売上は前四半期に過去最高に達した。"
+        },
+        {
+          "en": "You can reach me at this number anytime.",
+          "ja": "この番号にいつでも連絡いただけます。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "reachable",
+          "pos": "形容詞",
+          "ja": "手の届く、連絡がつく"
+        },
+        {
+          "word": "outreach",
+          "pos": "名詞",
+          "ja": "働きかけ、支援活動"
+        },
+        {
+          "word": "far-reaching",
+          "pos": "形容詞",
+          "ja": "広範囲に及ぶ"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "arrive at",
+          "note": "(場所・結論などに)到達する"
+        },
+        {
+          "word": "attain",
+          "note": "(目標・水準に)達する、ややフォーマル"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "miss",
+          "note": "届かない、逃す"
+        }
+      ],
+      "origin": "中英語 rēchen、古英語 ræcan/reccan に由来し、西ゲルマン祖語 *raikejanan「手を伸ばす」、印欧祖語の語根 *reig-「伸ばす、張る、硬直する」に遡るとされる。元々は「手や体を伸ばす」「触れる・打つことに成功する」という意味で、そこから「(場所に)到達する」「(人に)影響を及ぼす」へ広がった。",
+      "trivia": "名詞の reach はもともと1520年代に「(川などの)一続きの区間」を意味していたが、そこから「手の届く範囲」「(影響・能力の)及ぶ範囲」へ意味が広がった。",
+      "explanation": "reach out(手を差し伸べる、連絡を取る)はビジネス英語で非常によく使われる句動詞。reach a conclusion/agreement/decision(結論・合意・決定に達する)のような「達する」の意味はTOEICでも重要。"
+    }
+  },
+  {
+    "english": "stay",
+    "detail": {
+      "pronunciation": "/steɪ/",
+      "pos": "動詞",
+      "meanings": [
+        "とどまる、残る",
+        "滞在する、泊まる",
+        "〜のままでいる",
+        "(困難の中でも)持続する、存続する"
+      ],
+      "examples": [
+        {
+          "en": "Please stay here until I get back.",
+          "ja": "私が戻るまでここにいてください。"
+        },
+        {
+          "en": "We stayed at a small hotel near the beach.",
+          "ja": "私たちはビーチ近くの小さなホテルに泊まった。"
+        },
+        {
+          "en": "Try to stay calm during the interview.",
+          "ja": "面接中は落ち着いたままでいるようにしてください。"
+        },
+        {
+          "en": "The company managed to stay in business despite the crisis.",
+          "ja": "その会社は危機にもかかわらず何とか事業を続けた(存続した)。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "mainstay",
+          "pos": "名詞",
+          "ja": "大黒柱、支えとなるもの"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "remain",
+          "note": "その場・状態にとどまる、ややフォーマル"
+        },
+        {
+          "word": "stop over",
+          "note": "(旅の途中で)一時的に滞在する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "leave",
+          "note": "出発する、立ち去る"
+        },
+        {
+          "word": "go",
+          "note": "行ってしまう"
+        }
+      ],
+      "origin": "古フランス語 estare(ラテン語 stare「立つ、立ち続ける、とどまる」に由来)を経て英語に入り、印欧祖語の語根 *sta-「立つ、しっかりしている」に遡るとされる。中英語の15世紀半ばには「引き止める」という意味で使われており、現代の中心的な意味「(立ち去らずに)とどまる」は1570年代に確立したとされる。",
+      "trivia": "stay の語源であるラテン語 stare「立つ」は steel(鋼鉄)や staid(落ち着いた)、船のメインマストを支える綱を意味する mainstay とも同じ語根の仲間とされる。",
+      "explanation": "stay up(夜更かしする)、stay in(家にいる)、stay out(外にいる、帰らない)、stay away from(〜に近づかない)など。ホテル・出張関連の英文で「宿泊する」の意味の stay も頻出語。"
+    }
+  },
+  {
+    "english": "fall",
+    "detail": {
+      "pronunciation": "/fɔːl/",
+      "pos": "動詞",
+      "meanings": [
+        "落ちる、転ぶ",
+        "(価格・気温などが)下がる",
+        "崩壊する、倒れる",
+        "(ある状態に)陥る",
+        "(夜・静寂などが)訪れる"
+      ],
+      "examples": [
+        {
+          "en": "Be careful not to fall on the wet floor.",
+          "ja": "濡れた床で転ばないように気をつけて。"
+        },
+        {
+          "en": "Temperatures are expected to fall tonight.",
+          "ja": "今夜は気温が下がる見込みだ。"
+        },
+        {
+          "en": "The ancient empire eventually fell.",
+          "ja": "その古代帝国は最終的に崩壊した。"
+        },
+        {
+          "en": "They fell in love during their trip to Kyoto.",
+          "ja": "彼らは京都旅行中に恋に落ちた。"
+        },
+        {
+          "en": "Darkness fell as we reached the village.",
+          "ja": "私たちが村に着いた頃、闇が訪れた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "waterfall",
+          "pos": "名詞",
+          "ja": "滝"
+        },
+        {
+          "word": "downfall",
+          "pos": "名詞",
+          "ja": "失脚、没落"
+        },
+        {
+          "word": "rainfall",
+          "pos": "名詞",
+          "ja": "降雨量"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "drop",
+          "note": "落ちる、下がる"
+        },
+        {
+          "word": "collapse",
+          "note": "崩れ落ちる、崩壊する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "rise",
+          "note": "上がる、上昇する"
+        },
+        {
+          "word": "climb",
+          "note": "上る、登る"
+        }
+      ],
+      "origin": "古英語 feallan に由来し、ゲルマン祖語 *fallanan、印欧祖語の語根 *pol-「落ちる」に遡るとされる。元々は「高い所から落ちる、衰える、死ぬ」という意味で、古英語末期までに「不意に地面に倒れる」という意味も加わった。",
+      "trivia": "アメリカ英語の fall(秋)は元々 the fall of the leaf「木の葉が落ちる季節」という表現が短縮されたものとされる。イギリス英語では主に autumn が使われる。",
+      "explanation": "fall for(だまされる、恋に落ちる)、fall behind(遅れる)、fall through(だめになる、流れる)、fall apart(ばらばらになる)、fall back on(〜に頼る)など。fall in love(恋に落ちる)、fall asleep(眠りに落ちる)も基本表現。"
+    }
+  },
+  {
+    "english": "follow",
+    "detail": {
+      "pronunciation": "/ˈfɑːloʊ/",
+      "pos": "動詞",
+      "meanings": [
+        "ついていく、後を追う",
+        "(規則・指示に)従う",
+        "(話などを)理解する",
+        "(結果として)続いて起こる",
+        "(SNSで)フォローする"
+      ],
+      "examples": [
+        {
+          "en": "Follow this road until you see the station.",
+          "ja": "駅が見えるまでこの道を進んでください(ついていってください)。"
+        },
+        {
+          "en": "All employees must follow the safety rules.",
+          "ja": "全従業員は安全規則に従わなければならない。"
+        },
+        {
+          "en": "I'm sorry, I don't quite follow you.",
+          "ja": "すみません、あまり理解できません(話についていけません)。"
+        },
+        {
+          "en": "A long silence followed his announcement.",
+          "ja": "彼の発表の後、長い沈黙が続いた。"
+        },
+        {
+          "en": "She follows several news accounts on social media.",
+          "ja": "彼女はSNSでいくつかのニュースアカウントをフォローしている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "follower",
+          "pos": "名詞",
+          "ja": "フォロワー、信奉者"
+        },
+        {
+          "word": "following",
+          "pos": "形容詞・名詞",
+          "ja": "次の、以下の;支持者たち"
+        },
+        {
+          "word": "follow-up",
+          "pos": "名詞・形容詞",
+          "ja": "追跡調査、フォローアップの"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "pursue",
+          "note": "(目標などを)追い求める、ややフォーマル"
+        },
+        {
+          "word": "obey",
+          "note": "(規則・命令に)従う"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "lead",
+          "note": "先導する、導く"
+        },
+        {
+          "word": "precede",
+          "note": "先行する、〜に先立つ"
+        }
+      ],
+      "origin": "中英語 folwen、古英語 folgian/fylgian に由来し、ゲルマン祖語 *fulgojanan(「十分に進む」を意味する複合語に始まり、「仕える」「従者として同行する」の意味に転じたとされる)に遡るとされる。元々は「(特に弟子として)同行する、同じ方向に進む、後を追う」「規則・法に従う」という意味だった。",
+      "trivia": "SNSで誰かを「フォローする」という現代的な使い方も、「後についていく」という follow の基本義がそのまま転用されたものとされる。",
+      "explanation": "follow up(追跡調査する、フォローアップする)はビジネス英語で非常に頻出。follow through(最後までやり遂げる)、as follows(次の通り、以下の通り)もTOEICで重要な表現。"
+    }
+  },
+  {
+    "english": "take",
+    "detail": {
+      "pronunciation": "/teɪk/",
+      "pos": "動詞",
+      "meanings": [
+        "(物を)手に取る、取る",
+        "(乗り物に)乗る",
+        "(時間が)かかる",
+        "(薬を)服用する",
+        "(試験・行動を)受ける、取る"
+      ],
+      "examples": [
+        {
+          "en": "She took a pen from the drawer.",
+          "ja": "彼女は引き出しからペンを取った。"
+        },
+        {
+          "en": "We took the last train home.",
+          "ja": "私たちは最終電車に乗って帰った。"
+        },
+        {
+          "en": "It takes about an hour to get there by car.",
+          "ja": "車でそこに行くのに約1時間かかる。"
+        },
+        {
+          "en": "Take this medicine after every meal.",
+          "ja": "この薬は毎食後に服用してください。"
+        },
+        {
+          "en": "She took the TOEIC test again this month.",
+          "ja": "彼女は今月もう一度TOEICを受けた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "intake",
+          "pos": "名詞",
+          "ja": "摂取量、取り入れ口"
+        },
+        {
+          "word": "takeaway",
+          "pos": "名詞",
+          "ja": "持ち帰り料理、(そこから得られる)教訓"
+        },
+        {
+          "word": "overtake",
+          "pos": "動詞",
+          "ja": "追い越す"
+        },
+        {
+          "word": "retake",
+          "pos": "動詞・名詞",
+          "ja": "再受験する、撮り直す(こと)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "grab",
+          "note": "素早く・カジュアルに「つかむ」"
+        },
+        {
+          "word": "obtain",
+          "note": "入手する、ややフォーマル"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "give",
+          "note": "与える"
+        }
+      ],
+      "origin": "後期古英語 tacan として北欧語(古ノルド語 taka「つかむ、手に取る」)から借用され、ゲルマン祖語 *tēkan- に遡るとされる(原義は「触れる」だった可能性があるが不確かとされる)。元は「力ずくで掴む、捕らえる」という意味で、12世紀末には「自分の手に入れる、得る、受け取る」へと意味が弱まり、それまで同じ意味で使われていた古英語由来の動詞 niman(nim)に取って代わって定着した。",
+      "trivia": "take は非常に多義的な基本動詞で、大きな辞書では40以上の語義区分がなされることもある。",
+      "explanation": "take off(離陸する、脱ぐ、急に売れ出す)、take on(引き受ける、雇う)、take up(始める、(時間・場所を)取る)、take after(〜に似る)、take over(引き継ぐ)など句動詞が非常に豊富。特に take over(事業などを引き継ぐ)、take on(業務を引き受ける)はTOEICでも頻出。"
+    }
+  },
+  {
+    "english": "run",
+    "detail": {
+      "pronunciation": "/rʌn/",
+      "pos": "動詞",
+      "meanings": [
+        "走る",
+        "(会社などを)経営する",
+        "(機械・プログラムを)動かす、実行する",
+        "(バス・電車が)運行する",
+        "(在庫・時間が)尽きる、切れる"
+      ],
+      "examples": [
+        {
+          "en": "He runs along the river every morning.",
+          "ja": "彼は毎朝川沿いを走る。"
+        },
+        {
+          "en": "She runs a small restaurant downtown.",
+          "ja": "彼女は繁華街で小さなレストランを経営している。"
+        },
+        {
+          "en": "This software runs on any laptop.",
+          "ja": "このソフトウェアはどのノートパソコンでも動く。"
+        },
+        {
+          "en": "Trains run every fifteen minutes on weekdays.",
+          "ja": "平日は電車が15分おきに運行している。"
+        },
+        {
+          "en": "We're running out of time.",
+          "ja": "時間が足りなくなってきている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "runner",
+          "pos": "名詞",
+          "ja": "走者、ランナー"
+        },
+        {
+          "word": "running",
+          "pos": "形容詞・名詞",
+          "ja": "稼働中の、連続した;運営、ランニング"
+        },
+        {
+          "word": "runway",
+          "pos": "名詞",
+          "ja": "滑走路"
+        },
+        {
+          "word": "outrun",
+          "pos": "動詞",
+          "ja": "〜より速く走る、〜を上回る"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "jog",
+          "note": "ゆっくり走る、ジョギングする"
+        },
+        {
+          "word": "operate",
+          "note": "機械・事業を動かす、運営する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "walk",
+          "note": "歩く"
+        },
+        {
+          "word": "stop",
+          "note": "止める、止まる"
+        }
+      ],
+      "origin": "古英語の自動詞 rinnan/iernan と、他動詞の弱変化動詞 ærnan/earnan という2つの語が中英語期に混ざり合って現在の run になったとされる。ともにゲルマン祖語 *rannjanan、印欧祖語の語根 *rei-「走る、流れる」に遡るとされる。",
+      "trivia": "run は英語の動詞の中でも特に語義が多いことで知られ、大規模な辞書では100を超える語義・用法が区分されることもある。",
+      "explanation": "run out (of)(〜を使い果たす、〜が尽きる)、run into(偶然出会う、〜にぶつかる)、run over((車で)轢く、(時間を)超過する)、run by(意見を聞くために説明する:run it by me)など。run out of(在庫切れ)はビジネス英語で頻出。"
+    }
+  },
+  {
+    "english": "put",
+    "detail": {
+      "pronunciation": "/pʊt/",
+      "pos": "動詞",
+      "meanings": [
+        "(ある場所に)置く",
+        "入れる",
+        "(ある状態・状況に)する、至らせる",
+        "(言葉で)表現する、述べる",
+        "(責任・非難などを)負わせる"
+      ],
+      "examples": [
+        {
+          "en": "Please put the book on the table.",
+          "ja": "その本をテーブルの上に置いてください。"
+        },
+        {
+          "en": "She put some sugar in her coffee.",
+          "ja": "彼女はコーヒーに砂糖を少し入れた。"
+        },
+        {
+          "en": "The new policy put the company in a difficult position.",
+          "ja": "新しい方針はその会社を難しい立場に追い込んだ。"
+        },
+        {
+          "en": "Let me put it another way.",
+          "ja": "別の言い方をさせてください。"
+        },
+        {
+          "en": "Don't put the blame on me.",
+          "ja": "私のせいにしないで。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "output",
+          "pos": "名詞",
+          "ja": "出力・産出(量)(out+put)"
+        },
+        {
+          "word": "input",
+          "pos": "名詞",
+          "ja": "入力(in+put)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "place",
+          "note": "「置く」のより一般的・フォーマルな言い方"
+        },
+        {
+          "word": "set",
+          "note": "「置く」だがやや動作を丁寧に置くニュアンス"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "remove",
+          "note": "「取り除く」で置いた物を取り去る反対の動作"
+        }
+      ],
+      "origin": "中英語 putten（後期古英語の未証明形 *putian）に由来するとされるゲルマン系の語で、デンマーク語 putte、スウェーデン語 putta、オランダ語 poten、古ノルド語 pota など北欧・低地ゲルマン諸語に同系語が見られる。原義は「突く、押す、押しやる」で、そこから「物を動かしてある場所・状態に位置づける」という現在の中心的な意味に発展した。正確にどのゲルマン語形から借用・継承されたかは確定しておらず、諸説がある。",
+      "trivia": "put は現在形・過去形・過去分詞がすべて put のまま変わらない不規則動詞。また前置詞 out・in と結びついた output（出力）・input（入力）はどちらも put の複合語で、コンピュータ用語として定着している。",
+      "explanation": "put は前置詞・副詞と組み合わさって多数の句動詞を作る代表的な基礎動詞。put on(着る・身につける)、put off(延期する)、put up with(〜を我慢する)、put away(片付ける)、put together(組み立てる・まとめる)などはTOEICでも頻出なので、まずはここで put 単体の中心的な意味を押さえ、句動詞は別途学習するとよい。"
+    }
+  },
+  {
+    "english": "keep",
+    "detail": {
+      "pronunciation": "/kiːp/",
+      "pos": "動詞",
+      "meanings": [
+        "持ち続ける、保持する",
+        "(ある状態を)保つ",
+        "(約束・秘密などを)守る",
+        "(日記・記録を)つける",
+        "(動物を)飼う"
+      ],
+      "examples": [
+        {
+          "en": "You can keep the pen; I have another one.",
+          "ja": "そのペンはあげます。私はもう1本持っているので。"
+        },
+        {
+          "en": "Please keep the door closed.",
+          "ja": "ドアを閉めたままにしておいてください。"
+        },
+        {
+          "en": "He always keeps his promises.",
+          "ja": "彼はいつも約束を守る。"
+        },
+        {
+          "en": "She keeps a diary every day.",
+          "ja": "彼女は毎日日記をつけている。"
+        },
+        {
+          "en": "They keep several dogs on their farm.",
+          "ja": "彼らは農場で犬を数匹飼っている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "keeper",
+          "pos": "名詞",
+          "ja": "飼育係・番人・保持者"
+        },
+        {
+          "word": "keeping",
+          "pos": "名詞",
+          "ja": "保管・一致(in keeping with)"
+        },
+        {
+          "word": "upkeep",
+          "pos": "名詞",
+          "ja": "維持・維持費"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "retain",
+          "note": "「保持する」のフォーマルな言い方"
+        },
+        {
+          "word": "maintain",
+          "note": "「(状態を)維持する」に重点を置く言い方"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "lose",
+          "note": "「失う」で持ち続けることの反対"
+        },
+        {
+          "word": "discard",
+          "note": "「捨てる」"
+        }
+      ],
+      "origin": "中英語 kēpen（後期古英語 cepan）に由来し、さらに遡ると出自不明のゲルマン祖語 *kopjan に行き着くとされる。原義は「つかむ、保持する、求める、欲する」、および「(何かに)注意を払う、目を配る」で、「見る」に関係する語根から「気にかけて見守る」という基本イメージが生まれたと考えられている。古英語では文語より俗語的な語だったが、西暦1000年頃に急に文語にも現れるようになったとされ、語源自体は「出自不明」と明記されている。",
+      "trivia": "housekeeping(家事)、bookkeeping(簿記)のような複合語は、いずれも keep の「管理する・維持する」という意味から発展したもの。",
+      "explanation": "keep は前置詞と組み合わせた句動詞が豊富。keep up with 〜(〜に遅れずついていく)、keep on 〜ing(〜し続ける)、keep away from 〜(〜に近づかない)、keep off(離れている・触れない)などはTOEICのPart 5・7でもよく出る表現。"
+    }
+  },
+  {
+    "english": "let",
+    "detail": {
+      "pronunciation": "/let/",
+      "pos": "動詞",
+      "meanings": [
+        "(人に)〜させる、許す(使役・許可)",
+        "(Let's〜で)〜しよう(提案)",
+        "(部屋・家などを)貸す(主に英)",
+        "(物・人を)通す、入れる"
+      ],
+      "examples": [
+        {
+          "en": "My parents let me stay out late on weekends.",
+          "ja": "両親は週末は遅くまで外にいることを許してくれる。"
+        },
+        {
+          "en": "Let's start the meeting.",
+          "ja": "会議を始めましょう。"
+        },
+        {
+          "en": "They let out their spare room to students.",
+          "ja": "彼らは空き部屋を学生に貸している。"
+        },
+        {
+          "en": "Could you let some fresh air in?",
+          "ja": "新鮮な空気を少し入れてもらえますか。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "sublet",
+          "pos": "動詞",
+          "ja": "転貸する"
+        },
+        {
+          "word": "let-down",
+          "pos": "名詞",
+          "ja": "失望・期待外れ"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "allow",
+          "note": "「許可する」のより一般的な言い方"
+        },
+        {
+          "word": "permit",
+          "note": "「許可する」のフォーマルな言い方"
+        },
+        {
+          "word": "rent out",
+          "note": "「(部屋・家を)貸す」の米でより一般的な言い方"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "forbid",
+          "note": "「禁じる」"
+        },
+        {
+          "word": "prevent",
+          "note": "「妨げる、させない」"
+        }
+      ],
+      "origin": "古英語 lætan に由来し、ゲルマン祖語 *letan、さらに印欧祖語の語根 *lē-「緩める、手放す」に遡るとされる。「(人を)行かせる、〜させる」という中心的な語感は、「それまで縛っていた(比喩的な)紐を緩めて解放する」というイメージに基づくとされる。なお、これとは別に「妨げる」を意味する古英語 lettan に由来する語(現在では廃れた名詞「妨害」の意味で、法律文書の without let or hindrance に残る)があり、綴りが同じ let に収束したため紛らわしいが、語源上は別語とされる。母音の音変化については「十分には説明されていない」と指摘されており、細部は未解明な点が残る。",
+      "trivia": "テニスやバレーボールの「レット(サーブがネットに触れて入り直しになること)」は、一見「〜させる」の let と関係がありそうだが、実は語源的には別語である「妨げる(hinder)」を意味する let（lettan由来）に由来するとされる、紛らわしい豆知識。",
+      "explanation": "let は句動詞のもとになりやすい語。let down(がっかりさせる)、let go(手放す・解雇する)、let up(弱まる・緩む)、let out((声・秘密を)漏らす・貸し出す)などが代表的。使役動詞としての let は let + O + 原形不定詞(let me know のように)という語順を取る点も重要。"
+    }
+  },
+  {
+    "english": "give",
+    "detail": {
+      "pronunciation": "/ɡɪv/",
+      "pos": "動詞",
+      "meanings": [
+        "与える、あげる",
+        "渡す、手渡す",
+        "(パーティー・講演などを)行う、催す",
+        "(声・音を)発する",
+        "屈する、たわむ"
+      ],
+      "examples": [
+        {
+          "en": "She gave her sister a birthday present.",
+          "ja": "彼女は妹に誕生日プレゼントをあげた。"
+        },
+        {
+          "en": "Could you give me the salt, please?",
+          "ja": "塩を取ってもらえますか。"
+        },
+        {
+          "en": "The professor will give a lecture on Friday.",
+          "ja": "教授は金曜日に講義を行う予定だ。"
+        },
+        {
+          "en": "He gave a deep sigh of relief.",
+          "ja": "彼は安堵のため息を深くついた。"
+        },
+        {
+          "en": "The old wooden floor gave under his weight.",
+          "ja": "その古い木の床は彼の重みでたわんだ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "giver",
+          "pos": "名詞",
+          "ja": "与える人・寄贈者"
+        },
+        {
+          "word": "forgive",
+          "pos": "動詞",
+          "ja": "許す(for+give)"
+        },
+        {
+          "word": "giving",
+          "pos": "形容詞",
+          "ja": "気前の良い"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "provide",
+          "note": "「提供する」のややフォーマルな言い方"
+        },
+        {
+          "word": "hand",
+          "note": "「手渡す」に重点を置く動詞"
+        },
+        {
+          "word": "donate",
+          "note": "「寄付する」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "take",
+          "note": "「取る」で与える方向の逆"
+        },
+        {
+          "word": "receive",
+          "note": "「受け取る」"
+        }
+      ],
+      "origin": "古英語 giefan（西サクソン方言形）に由来し、ゲルマン祖語 *geban、印欧祖語の語根 *ghabh-「与える、または受け取る」に遡るとされる。古英語では強変化動詞（過去形 geaf、過去分詞 giefen）で、中英語期には音変化で yiven のような形になりかけたが、古ノルド語 gefa(与える)や古デンマーク語 givæ の影響で語頭が硬い g の音に定着し、現代の give になったとされる。",
+      "trivia": "give の語頭が現代英語で「ギ(g)」と硬く発音されるのは、本来の英語の音変化だけを辿ると「イ(y)」寄りの音になっていたはずが、古ノルド語(ヴァイキングの言語)からの影響で g の音に置き換わったためとされる。get と同様、ヴァイキング時代の言語接触が現代の基礎語彙に痕跡を残している例。",
+      "explanation": "give も句動詞を多く作る基礎動詞。give up(あきらめる・やめる)、give in(屈する・降参する)、give away((秘密などを)漏らす・ただであげる)、give out(配る・尽きる)、give back(返す)はTOEICでも頻出。"
+    }
+  },
+  {
+    "english": "show",
+    "detail": {
+      "pronunciation": "/ʃoʊ/",
+      "pos": "動詞",
+      "meanings": [
+        "見せる",
+        "示す、明らかにする",
+        "案内する",
+        "(感情などを)表す",
+        "(映画・番組が)上映・放送される"
+      ],
+      "examples": [
+        {
+          "en": "Can you show me your ticket, please?",
+          "ja": "チケットを見せていただけますか。"
+        },
+        {
+          "en": "The results show a clear improvement.",
+          "ja": "その結果は明らかな改善を示している。"
+        },
+        {
+          "en": "Let me show you around the office.",
+          "ja": "オフィスをご案内しましょう。"
+        },
+        {
+          "en": "She showed no sign of nervousness.",
+          "ja": "彼女は緊張の様子を全く見せなかった。"
+        },
+        {
+          "en": "The movie is showing at three theaters downtown.",
+          "ja": "その映画は繁華街の3つの劇場で上映されている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "showcase",
+          "pos": "名詞・動詞",
+          "ja": "陳列棚・披露する"
+        },
+        {
+          "word": "showing",
+          "pos": "名詞",
+          "ja": "上映・成績・出来栄え"
+        },
+        {
+          "word": "show-off",
+          "pos": "名詞",
+          "ja": "見せびらかす人"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "display",
+          "note": "「展示する、示す」で視覚的に並べるニュアンス"
+        },
+        {
+          "word": "demonstrate",
+          "note": "「実演して示す、証明する」"
+        },
+        {
+          "word": "reveal",
+          "note": "「(隠れていたものを)明らかにする」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "hide",
+          "note": "「隠す」"
+        },
+        {
+          "word": "conceal",
+          "note": "「隠す」のよりフォーマルな言い方"
+        }
+      ],
+      "origin": "中英語 sheuen（古英語 sceawian、ゲルマン祖語 *skauwojanan、印欧祖語の語根 *skou-「見る、注意して見る」）に由来する。もともとは「見る、眺める、注意深く見る、調べる」という意味で、現在のような「(人に)見せる、知らせる」という使役的な意味は1200年頃に発達したもの。この使役的な意味への変化は英語に特有の現象とされ、なぜそのように変化したのかは明確には分かっていないとされる。",
+      "trivia": "show はもともと「(自分が)見る」という意味だったのに、1200年頃から「(他人に)見せる」という正反対の方向(使役)の意味に変化し、それが数百年のうちに元の意味を完全に置き換えてしまった。このような意味の転換は英語に特有とされ、珍しい変化として紹介される。",
+      "explanation": "show up(現れる)、show off(見せびらかす)、show around(案内する)などが代表的な句動詞。「show=提示して見せる」と「tell=言葉で伝える」の使い分け(show, don't tell)もライティングでよく言われるポイント。"
+    }
+  },
+  {
+    "english": "use",
+    "detail": {
+      "pronunciation": "/juːz/(動詞)",
+      "pos": "動詞",
+      "meanings": [
+        "使う、利用する",
+        "(人を)利用する、都合よく使う",
+        "消費する、使い切る",
+        "(used to doで)以前は〜したものだ"
+      ],
+      "examples": [
+        {
+          "en": "You can use my computer if you like.",
+          "ja": "よかったら私のパソコンを使っていいよ。"
+        },
+        {
+          "en": "He felt she was just using him for his money.",
+          "ja": "彼は彼女がお金目当てで自分を利用しているだけだと感じた。"
+        },
+        {
+          "en": "We used up all the milk this morning.",
+          "ja": "今朝、牛乳を全部使い切ってしまった。"
+        },
+        {
+          "en": "I used to live in Osaka.",
+          "ja": "以前は大阪に住んでいた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "useful",
+          "pos": "形容詞",
+          "ja": "役に立つ"
+        },
+        {
+          "word": "useless",
+          "pos": "形容詞",
+          "ja": "役に立たない"
+        },
+        {
+          "word": "usage",
+          "pos": "名詞",
+          "ja": "使用法・語法"
+        },
+        {
+          "word": "user",
+          "pos": "名詞",
+          "ja": "使用者・ユーザー"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "utilize",
+          "note": "「活用する」のフォーマルな言い方"
+        },
+        {
+          "word": "employ",
+          "note": "「用いる」のフォーマルな言い方"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "waste",
+          "note": "「無駄にする」で有効に使わない反対の意味"
+        }
+      ],
+      "origin": "1200年頃の中英語 usen に由来し、古フランス語 user を経て、俗ラテン語 usare、さらにラテン語 uti「使う」に遡る。uti 自体は「出自不明の語」とされ、これより前の起源ははっきりしない。中英語期に古英語の動詞 brucan(使う)が担っていた意味の一部を use が吸収して語義を広げていったとされる。",
+      "trivia": "動詞 use は語末が濁った /z/ の音(ユーズ)で発音されるのに対し、名詞 use は語末が濁らない /s/ の音(ユース)で発音される。house(家、動詞は「収容する」で濁る)や close(閉める/近い)などと同じく、品詞によって語末の子音が有声・無声で変わる英語特有のパターンの一つ。",
+      "explanation": "「used to do(以前は〜したものだ、今はしていない)」と「be used to doing(〜することに慣れている)」は形が似ていて学習者が混同しやすい重要ポイント。use up(使い切る)という句動詞もよく使われる。"
+    }
+  },
+  {
+    "english": "add",
+    "detail": {
+      "pronunciation": "/æd/",
+      "pos": "動詞",
+      "meanings": [
+        "加える、足す",
+        "(数値を)合計する",
+        "言い添える、付け加えて言う",
+        "(価値・魅力などを)増す"
+      ],
+      "examples": [
+        {
+          "en": "Add two cups of flour to the bowl.",
+          "ja": "ボウルに小麦粉を2カップ加えてください。"
+        },
+        {
+          "en": "Can you add up these numbers for me?",
+          "ja": "これらの数字を合計してもらえますか。"
+        },
+        {
+          "en": "\"By the way,\" she added, \"we're leaving early.\"",
+          "ja": "「ちなみに」と彼女は付け加えた。「早めに出発するわ」"
+        },
+        {
+          "en": "The new lighting really adds to the room's atmosphere.",
+          "ja": "新しい照明は部屋の雰囲気を大いに引き立てている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "addition",
+          "pos": "名詞",
+          "ja": "追加・足し算"
+        },
+        {
+          "word": "additional",
+          "pos": "形容詞",
+          "ja": "追加の"
+        },
+        {
+          "word": "additive",
+          "pos": "名詞",
+          "ja": "添加物"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "append",
+          "note": "文書などの末尾に「付け加える」というフォーマルな言い方"
+        },
+        {
+          "word": "supplement",
+          "note": "「補う、補足する」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "subtract",
+          "note": "「引く」で足し算の反対"
+        },
+        {
+          "word": "remove",
+          "note": "「取り除く」"
+        }
+      ],
+      "origin": "14世紀後半の中英語 adden に由来し、ラテン語 addere「加える、結びつける」から来ている。addere は ad-(〜へ)と -dere(置く、印欧祖語の語根 *dhē-「置く、設置する」に由来する結合形)から成る。ラテン語・印欧祖語まで比較的はっきり遡れる語源で、大きな不確定要素は指摘されていない。",
+      "trivia": "「話の辻褄が合う、意味をなす」という意味の add up(例: His story doesn't add up.)は、もともとの「数字を合計する」という意味から比較的新しく(1942年頃)派生した比喩的な用法とされる。",
+      "explanation": "add up(合計する・辻褄が合う)、add to(〜を増す)のような句動詞的な組み合わせがよく使われる。in addition (to)(〜に加えて)という熟語もTOEICで頻出。"
+    }
+  },
+  {
+    "english": "make",
+    "detail": {
+      "pronunciation": "/meɪk/",
+      "pos": "動詞",
+      "meanings": [
+        "作る、作り出す",
+        "〜に…させる(使役)",
+        "(お金を)稼ぐ",
+        "(決定を)下す",
+        "間に合う、うまくいく(make it)",
+        "意味をなす(make sense)"
+      ],
+      "examples": [
+        {
+          "en": "She made a beautiful cake for her friend's birthday.",
+          "ja": "彼女は友達の誕生日にきれいなケーキを作った。"
+        },
+        {
+          "en": "His joke made everyone laugh.",
+          "ja": "彼の冗談でみんなが笑った。"
+        },
+        {
+          "en": "He makes a good salary working as an engineer.",
+          "ja": "彼はエンジニアとして良い給料を稼いでいる。"
+        },
+        {
+          "en": "They finally made a decision about where to live.",
+          "ja": "彼らはようやくどこに住むか決断した。"
+        },
+        {
+          "en": "We made it to the station just before the last train left.",
+          "ja": "終電が出る直前に何とか駅に間に合った。"
+        },
+        {
+          "en": "It took her a while, but everything finally made sense.",
+          "ja": "しばらくかかったが、彼女にとってようやく全てに納得がいった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "maker",
+          "pos": "名詞",
+          "ja": "作る人・メーカー"
+        },
+        {
+          "word": "making",
+          "pos": "名詞",
+          "ja": "制作・形成過程"
+        },
+        {
+          "word": "makeshift",
+          "pos": "形容詞",
+          "ja": "間に合わせの"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "create",
+          "note": "ゼロから何かを生み出すニュアンスが強い"
+        },
+        {
+          "word": "produce",
+          "note": "工業的・大量生産のニュアンスを含む場合がある"
+        },
+        {
+          "word": "earn",
+          "note": "「(お金を)稼ぐ」の意味で使う場合の類義語"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "destroy",
+          "note": "「作る」の反対で「壊す」"
+        }
+      ],
+      "origin": "古英語 macian に由来し、西ゲルマン祖語 *makōjanan「形作る、はめ込む」に遡るとされる。ドイツ語 machen、古サクソン語 makon、古フリジア語 makia、オランダ語 maken と同系語で、印欧祖語の語根 *mag-「こねる、形作る、合わせる」まで遡るとされる。「作る」という語義がどのように発展したかについては、粘土(泥)で家を建てていたことに由来するのではという説があるが、これは推測の域を出ないとされる。",
+      "trivia": "make は do と並んで「軽動詞(light verb)」として使われることが多く、make a decision、make an effort、make progress のように名詞と組み合わさって様々な行為を表す。同じ軽動詞の do との使い分け(make a mistake ○ / do a mistake ×など)は学習者が混同しやすいポイント。",
+      "explanation": "この項目は make という動詞そのものが持つ中心的な語義(作る・使役・稼ぐ・決定するなど)を幅広くカバーする。make up(仲直りする・化粧をする・〜を構成する)、make up for(〜の埋め合わせをする)、make out(かろうじて分かる・言い訳をする)のような句動詞的な組み合わせも多い。take/get と異なり make 専用の句動詞ドメインは本アプリには無いため、代表的なものはこの項目内で軽く触れている。"
+    }
+  },
+  {
+    "english": "get",
+    "detail": {
+      "pronunciation": "/ɡɛt/",
+      "pos": "動詞",
+      "meanings": [
+        "得る、手に入れる",
+        "着く、到着する",
+        "(ある状態に)なる",
+        "〜に…させる(使役)",
+        "(話・冗談を)理解する",
+        "(乗り物を)つかまえる、間に合う"
+      ],
+      "examples": [
+        {
+          "en": "I need to get some milk from the store on my way home.",
+          "ja": "帰り道にお店で牛乳を買わないと。"
+        },
+        {
+          "en": "What time will we get to the airport?",
+          "ja": "何時に空港に着く予定ですか。"
+        },
+        {
+          "en": "She got really angry when she found out the truth.",
+          "ja": "真実を知って、彼女はひどく怒った。"
+        },
+        {
+          "en": "Could you get him to call me back?",
+          "ja": "彼に折り返し電話するよう伝えてもらえますか。"
+        },
+        {
+          "en": "It took him a while to get the joke.",
+          "ja": "彼がその冗談を理解するのに少し時間がかかった。"
+        },
+        {
+          "en": "We just managed to get the last train home.",
+          "ja": "何とか終電に間に合った。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "getaway",
+          "pos": "名詞",
+          "ja": "逃走・(短い)小旅行"
+        },
+        {
+          "word": "get-together",
+          "pos": "名詞",
+          "ja": "気軽な集まり"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "obtain",
+          "note": "よりフォーマルな「入手する」"
+        },
+        {
+          "word": "receive",
+          "note": "「受け取る」の意味で使う場合の類義語"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "give",
+          "note": "「与える」"
+        },
+        {
+          "word": "lose",
+          "note": "「得る」の反対で「失う」"
+        }
+      ],
+      "origin": "1200年頃に中英語に入った語で、古ノルド語 geta「得る、達する、〜できる、もうける、学ぶ、気に入る」に由来し、印欧祖語の語根 *ghend-「つかむ、取る」まで遡るとされる。もともと非常に幅広い意味を持つ語で、しばしば助動詞に近い形で使われた。対応する語は古英語にも begietan(beget=もうける、の元)のような複合語の形で存在したが、単純形の get はデーンロー(ヴァイキングが定住した地域)を経由して中英語期に定着したとされる。",
+      "trivia": "get は意味があまりに広く使われるため、Oxford English Dictionary では get から派生・関連する項目だけで約29段(コラム)を割いているとされ、英語で最も用法の幅が広い動詞の一つとされる。",
+      "explanation": "この項目は get という動詞そのものが持つ中心的な語義(得る・着く・〜になる・使役など)を幅広くカバーする。get over(乗り越える)、get by(何とかやっていく)、get away(逃げる)、get along(仲良くやる)、get up(起きる)のような前置詞・副詞と組み合わさる句動詞は、このアプリでは 句動詞(get) ドメインに別途まとめてあるので、そちらも参照してほしい。"
+    }
+  },
+  {
+    "english": "offer",
+    "detail": {
+      "pronunciation": "/ˈɔːfər/",
+      "pos": "動詞・名詞",
+      "meanings": [
+        "申し出る、提供する",
+        "(援助・物などを)差し出す",
+        "(値を)つける、提示する",
+        "(機会・可能性を)与える",
+        "(名詞)申し出、提案、オファー"
+      ],
+      "examples": [
+        {
+          "en": "They offered me the job the next day.",
+          "ja": "彼らは翌日、私にその仕事を提示した。"
+        },
+        {
+          "en": "She offered to help us carry the boxes.",
+          "ja": "彼女は箱を運ぶのを手伝うと申し出た。"
+        },
+        {
+          "en": "The buyer offered a lower price for the house.",
+          "ja": "その買い手は家により低い価格を提示した。"
+        },
+        {
+          "en": "The new park offers a quiet place to relax.",
+          "ja": "新しい公園は静かにくつろげる場所を提供してくれる。"
+        },
+        {
+          "en": "His offer to help was greatly appreciated.",
+          "ja": "彼の手伝いの申し出は大変ありがたく受け取られた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "offering",
+          "pos": "名詞",
+          "ja": "提供物・(宗教的な)捧げ物"
+        },
+        {
+          "word": "counteroffer",
+          "pos": "名詞",
+          "ja": "対案・逆提示(交渉での)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "provide",
+          "note": "「供給する」"
+        },
+        {
+          "word": "propose",
+          "note": "「提案する」"
+        },
+        {
+          "word": "extend",
+          "note": "「(正式に申し出・招待などを)差し出す」ややフォーマルな言い方(extend an offer)"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "refuse",
+          "note": "「拒否する」"
+        },
+        {
+          "word": "withdraw",
+          "note": "「撤回する」"
+        }
+      ],
+      "origin": "中英語 offeren に由来し、ラテン語 offerre「差し出す、提示する」から来ている。offerre は ob-(〜へ向かって)と ferre(運ぶ、印欧祖語の語根 *bher-「運ぶ」に由来)から成る。もともとはキリスト教の文脈で「神への捧げ物として差し出す、生贄を捧げる」という強い宗教的な意味を持っていたが、15世紀初めには「(受諾・拒否のために)何かを提示する」という一般的な意味に広がり、1530年代には「試みる」、1630年代には「売りに出す」という商業的な意味も加わった。",
+      "trivia": "offer の宗教的な語源(神への捧げ物として差し出す)の名残で、名詞 offering は現代でも教会での献金・捧げ物を指す専門的な意味で使われることが多く、日常的な「(ビジネス上の)提案・提示」を表す offer とは少しニュアンスが異なる。",
+      "explanation": "offer to do(〜すると申し出る)の形でよく使われる(動詞+to不定詞)。似た意味の suggest(提案する)は「suggest doing/that〜」の形を取り、offer のように「to不定詞」を直接続けない点が学習者の混同しやすいポイント。ビジネス英語では job offer(採用内定)のようによく使われる。"
+    }
+  },
+  {
+    "english": "open",
+    "detail": {
+      "pronunciation": "/ˈoʊpən/",
+      "pos": "動詞・形容詞",
+      "meanings": [
+        "(動詞)開ける",
+        "(動詞)(店・会議・施設などを)開く、開始する",
+        "(動詞)(可能性・道を)開く",
+        "(形容詞)開いている、営業中の",
+        "(形容詞)率直な、開放的な"
+      ],
+      "examples": [
+        {
+          "en": "Could you open the window a little?",
+          "ja": "窓を少し開けてもらえますか。"
+        },
+        {
+          "en": "The new branch will open next Monday.",
+          "ja": "新しい支店は来週の月曜日に開店する。"
+        },
+        {
+          "en": "Studying abroad opened up many new opportunities for her.",
+          "ja": "留学は彼女に多くの新しい機会をもたらした。"
+        },
+        {
+          "en": "The store is open until nine every day.",
+          "ja": "その店は毎日9時まで開いている。"
+        },
+        {
+          "en": "He's always open about his feelings.",
+          "ja": "彼はいつも自分の気持ちについて率直だ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "opening",
+          "pos": "名詞",
+          "ja": "開始・空き・隙間"
+        },
+        {
+          "word": "openly",
+          "pos": "副詞",
+          "ja": "公然と・率直に"
+        },
+        {
+          "word": "openness",
+          "pos": "名詞",
+          "ja": "開放性・率直さ"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "unlock",
+          "note": "「鍵を開ける」で施錠を外すニュアンス"
+        },
+        {
+          "word": "launch",
+          "note": "「(事業・催しなどを)開始する」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "close",
+          "note": "「閉める・閉まっている」"
+        },
+        {
+          "word": "shut",
+          "note": "「閉める」"
+        }
+      ],
+      "origin": "古英語 open「閉じていない、上がった状態の」に由来し、ゲルマン祖語 *upana-「上げられた、立てられた」に遡るとされ、印欧祖語の語根 *upo「下から上へ」と関連するとされる。形の上では動詞の過去分詞のように見える(あたかも「upする」という動詞があったかのような形)が、そのような動詞自体はゲルマン諸語のどこにも実際には見つかっていないという興味深い空白があると指摘されている。なお、多くの印欧語族の言語で「開いている」を表す語は「閉じている」を表す語の反対語として作られた形跡があるとされる。",
+      "trivia": "open は形の上では「upする」という動詞の過去分詞のように見えるが、そのような動詞自体は歴史上見つかっておらず、「元になった動詞が存在しない過去分詞のような形」という珍しいケースとして紹介される。",
+      "explanation": "open up((心を)打ち明ける・(規制などを)開放する)という句動詞がよく使われる。形容詞としての open(The store is open.=状態)と、動詞の過去分詞 opened(The store was opened by the new owner.=動作)の使い分けは学習者が混同しやすいポイント。"
+    }
+  },
+  {
+    "english": "cut",
+    "detail": {
+      "pronunciation": "/kʌt/",
+      "pos": "動詞・名詞",
+      "meanings": [
+        "(刃物で)切る",
+        "(量・予算などを)削減する",
+        "(電気・通話などを)遮断する、切る",
+        "(映画・録音を)編集する、カットする",
+        "(名詞)切り傷、削減(額)"
+      ],
+      "examples": [
+        {
+          "en": "She cut the cake into eight equal pieces.",
+          "ja": "彼女はケーキを8等分に切った。"
+        },
+        {
+          "en": "The company decided to cut prices by ten percent.",
+          "ja": "その会社は価格を10%引き下げることにした。"
+        },
+        {
+          "en": "The storm cut the power to the whole town.",
+          "ja": "嵐が町全体の電力を遮断した。"
+        },
+        {
+          "en": "The director cut the final scene from the movie.",
+          "ja": "監督はその映画から最後のシーンをカットした。"
+        },
+        {
+          "en": "He had a small cut on his finger.",
+          "ja": "彼は指に小さな切り傷があった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "cutback",
+          "pos": "名詞",
+          "ja": "削減"
+        },
+        {
+          "word": "cutting",
+          "pos": "形容詞・名詞",
+          "ja": "鋭い・切り取ったもの"
+        },
+        {
+          "word": "cutter",
+          "pos": "名詞",
+          "ja": "裁断する人・道具"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "slice",
+          "note": "「薄く切る」"
+        },
+        {
+          "word": "trim",
+          "note": "「刈り込む、余分な部分を整える」"
+        },
+        {
+          "word": "slash",
+          "note": "「大幅に削減する」比喩的な用法でよく使われる"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "join",
+          "note": "「つなぐ」で切る動作の反対"
+        },
+        {
+          "word": "increase",
+          "note": "「増やす」で削減の反対"
+        }
+      ],
+      "origin": "1300年頃に現れた語で、正確な由来ははっきりしないとされる。証拠として確認されていない古英語 *cyttan を想定する説のほか、「ナイフ」を意味する北ゲルマン語系の語根 *kut-(スウェーデン語・古ノルド語のナイフを表す語と関連)に由来するとする説、古フランス語 couteau「ナイフ」に由来するとする説などが競合しており、etymonlineでも語源は「はっきりしない」と明記されている。それまで「切る」を表していた古英語の動詞 ceorfan(彫る、carveの元)や scieran(刈る、shearの元)に取って代わったとされる。",
+      "trivia": "cut は現在形・過去形・過去分詞がすべて cut のまま変わらない不規則動詞(put や let と同じパターン)。ただし中英語期には cutted という規則変化形も一時的に使われていたことがあるとされる。",
+      "explanation": "cut down on 〜(〜を減らす)、cut off(切断する・遮断する)、cut in(割り込む)、cut out(切り取る・(習慣などを)やめる、be cut out for 〜=〜に向いている)のような句動詞が代表的。"
+    }
+  },
+  {
+    "english": "say",
+    "detail": {
+      "pronunciation": "/seɪ/",
+      "pos": "動詞",
+      "meanings": [
+        "(言葉で)言う、話す",
+        "述べる、表明する(意見など)",
+        "(掲示・数字などが)〜と示している、書いてある",
+        "仮に〜としよう、例えば(let's say)"
+      ],
+      "examples": [
+        {
+          "en": "She said, \"I'm happy to help.\"",
+          "ja": "彼女は「喜んで手伝います」と言った。"
+        },
+        {
+          "en": "The report says that sales increased by 10 percent.",
+          "ja": "その報告書は売上が10パーセント増加したと述べている。"
+        },
+        {
+          "en": "The clock says three o'clock.",
+          "ja": "時計は3時を示している。"
+        },
+        {
+          "en": "Let's say we meet at noon tomorrow.",
+          "ja": "例えば明日の正午に会うとしましょう。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "saying",
+          "pos": "名詞",
+          "ja": "ことわざ、格言"
+        },
+        {
+          "word": "unsaid",
+          "pos": "形容詞",
+          "ja": "口に出されていない"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "state",
+          "note": "よりフォーマルに明確に述べる"
+        },
+        {
+          "word": "utter",
+          "note": "声に出す、口にするという物理的な発話行為に焦点(文語的)"
+        },
+        {
+          "word": "remark",
+          "note": "感想・気づいたこととして述べる"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語 secgan「発話する、告げる」に由来し、原始ゲルマン語 *sagjanan にさかのぼる。古ノルド語 segja、オランダ語 zeggen、ドイツ語 sagen など、ゲルマン語族全体に同系の語が見られる。さらに印欧祖語 *sokwyo- に遡る可能性が指摘されているが、この対応関係には異論もあり確実ではないとされる。",
+      "trivia": "英語日常会話で最も使用頻度の高い動詞の一つで、'You don't say!'(まさか、本当に?)のように驚きを表す決まり文句としても使われる。",
+      "explanation": "say と tell の使い分けが重要: say は「(人)に」を直接目的語に取れず、say to 人 の形になる(例: He said to me..., ×He said me...)。一方 tell は tell + 人 の形で相手を直接目的語に取れる(He told me...)。また that's to say(つまり)、needless to say(言うまでもなく)のような定型表現も頻出。"
+    }
+  },
+  {
+    "english": "tell",
+    "detail": {
+      "pronunciation": "/tel/",
+      "pos": "動詞",
+      "meanings": [
+        "(人に)話す、伝える",
+        "(物語などを)語る",
+        "命じる、言いつける(tell + 人 + to do)",
+        "見分ける、判別する(tell A from B)",
+        "わかる、判断できる(can tell)"
+      ],
+      "examples": [
+        {
+          "en": "She told me an interesting story.",
+          "ja": "彼女は私に面白い話をしてくれた。"
+        },
+        {
+          "en": "He told the children a bedtime story.",
+          "ja": "彼は子どもたちに寝る前のお話を語った。"
+        },
+        {
+          "en": "The teacher told the students to be quiet.",
+          "ja": "先生は生徒たちに静かにするよう言った。"
+        },
+        {
+          "en": "It's hard to tell the twins apart.",
+          "ja": "その双子を見分けるのは難しい。"
+        },
+        {
+          "en": "I can tell that something is wrong.",
+          "ja": "何かがおかしいとわかる。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "teller",
+          "pos": "名詞",
+          "ja": "(銀行の)窓口係、話し手"
+        },
+        {
+          "word": "telltale",
+          "pos": "形容詞・名詞",
+          "ja": "秘密を暴露する(もの)、証拠となる"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "inform",
+          "note": "正式に情報を知らせる、ややフォーマル"
+        },
+        {
+          "word": "say",
+          "note": "tell とは異なり人を直接目的語に取れない動詞という対比が重要"
+        },
+        {
+          "word": "relate",
+          "note": "物語る、詳しく語るというフォーマルな言い方"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語 tellan「(順序立てて)数える、述べる」に由来し、原始ゲルマン語 *taljan「順序立てて述べる」、さらに印欧祖語 *del-「数える、計算する」にさかのぼるとされる。ドイツ語 zählen(数える)、オランダ語 tellen、デンマーク語 tale(話す)など同系語がゲルマン語圏に広く分布する。原義は「数える」で、西暦1000年頃から「物語る、述べる」の意味に広がり、14世紀後半に「明かす、暴露する」、1590年代に「命じる」の意味が加わった。",
+      "trivia": "銀行の窓口係を意味する teller は、もともと「(お金を)数える人」という tell の原義(数える)がそのまま残った語で、tell が「話す」の意味に転じた後もこの語だけは古い意味を保っている。",
+      "explanation": "tell は目的語に「人」を直接取れる点が say との最大の違い(tell + 人 + that/to do)。例: He told me the truth.(○) / He said me the truth.(×、正しくは said to me)。また tell A from B / tell A and B apart(AとBを見分ける)という重要表現もTOEICで頻出する。"
+    }
+  },
+  {
+    "english": "ask",
+    "detail": {
+      "pronunciation": "/æsk/(米)、/ɑːsk/(英)",
+      "pos": "動詞",
+      "meanings": [
+        "(質問を)尋ねる、聞く",
+        "(人に)頼む、依頼する",
+        "(許可などを)求める",
+        "誘う、招待する(ask someone out)",
+        "(値段を)請求する、要求する(asking price)"
+      ],
+      "examples": [
+        {
+          "en": "She asked me what time it was.",
+          "ja": "彼女は私に今何時か尋ねた。"
+        },
+        {
+          "en": "Can you ask him to call me back?",
+          "ja": "彼に折り返し電話するよう頼んでもらえますか。"
+        },
+        {
+          "en": "He asked for permission to leave early.",
+          "ja": "彼は早退の許可を求めた。"
+        },
+        {
+          "en": "He finally asked her out on a date.",
+          "ja": "彼はついに彼女をデートに誘った。"
+        },
+        {
+          "en": "How much are they asking for the car?",
+          "ja": "その車はいくらで売りに出されていますか。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "asking",
+          "pos": "名詞・形容詞",
+          "ja": "要求、言い値(asking price=言い値)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "inquire",
+          "note": "フォーマルに問い合わせる、尋ねる"
+        },
+        {
+          "word": "request",
+          "note": "丁寧に依頼する、ややフォーマル"
+        },
+        {
+          "word": "demand",
+          "note": "強く要求する、askより強いニュアンス"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "answer",
+          "note": "「尋ねる」に対して「答える」という反対の行為"
+        }
+      ],
+      "origin": "中英語 asken は古英語 ascian にさかのぼり、さらに原始ゲルマン語 *aiskojanan、印欧祖語 *ais-「望む、欲する」に由来するとされる。サンスクリット語 icchati(探求する、欲する)、古教会スラヴ語 iskati(探す)、ドイツ語 heischen(尋ねる、要求する)などが同系語とされる。現代の方言形 ax/aks は誤用ではなく、古英語 acsian にさかのぼる古い形で、1600年頃までは文語としても普通に使われていた。",
+      "trivia": "口語でよく聞く ax/aks(「アスク」の音位転換形)は単なる崩れた発音ではなく、古英語の acsian に由来する歴史的に古い形であることが辞書学的に確認されている。",
+      "explanation": "ask A for B(AにBを求める)、ask A to do(Aに〜するよう頼む)、ask after 人(人の様子を尋ねる)といった語法が重要。TOEICでは ask for(要求する)、on request/upon request(要求があり次第)のような関連表現も頻出する。"
+    }
+  },
+  {
+    "english": "call",
+    "detail": {
+      "pronunciation": "/kɔːl/",
+      "pos": "動詞",
+      "meanings": [
+        "(大声で)呼ぶ、叫ぶ",
+        "電話をかける",
+        "〜と名付ける、呼ぶ(call A B)",
+        "立ち寄る(call on/at)",
+        "(会議などを)招集する"
+      ],
+      "examples": [
+        {
+          "en": "She called his name across the street.",
+          "ja": "彼女は通りの向こうから彼の名前を呼んだ。"
+        },
+        {
+          "en": "I'll call you when I get home.",
+          "ja": "家に着いたら電話するね。"
+        },
+        {
+          "en": "They named the baby and called her Emma.",
+          "ja": "彼らは赤ちゃんに名前をつけ、エマと呼んだ。"
+        },
+        {
+          "en": "He called on his grandmother on the way home.",
+          "ja": "彼は帰り道に祖母の家に立ち寄った。"
+        },
+        {
+          "en": "The manager called a meeting for Monday morning.",
+          "ja": "マネージャーは月曜の朝に会議を招集した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "caller",
+          "pos": "名詞",
+          "ja": "電話をかけてきた人、訪問者"
+        },
+        {
+          "word": "calling",
+          "pos": "名詞",
+          "ja": "天職、使命"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "shout",
+          "note": "大声で叫ぶ、call より声量そのものに焦点"
+        },
+        {
+          "word": "phone",
+          "note": "電話するのカジュアルな言い方"
+        },
+        {
+          "word": "name",
+          "note": "〜と名付ける、の意味でcallとほぼ同義"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古ノルド語 kalla「大声で叫ぶ、大声で呼ぶ、名前をつける」に由来し、原始ゲルマン語 *kall-、さらに印欧祖語 *gal-「呼ぶ、叫ぶ」にさかのぼるとされる。中英語 callen として13世紀半ばに英語に定着し、それまで同義で使われていた古英語由来の動詞に取って代わった。中オランダ語 kallen(話す、言う)、古高ドイツ語 kallon(大声で話す、呼ぶ)などが同系語。",
+      "trivia": "call off(中止する)、call for(要求する、必要とする)、call up(電話する/招集する)、call back(かけ直す)のように、call は句動詞のバリエーションが非常に豊富な基礎動詞の一つ。",
+      "explanation": "TOEICで頻出する句動詞: call off(中止する)、call for(〜を要求する・必要とする)、call on(訪ねる・指名して発言させる)、call back(かけ直す)。また call A B(AをBと呼ぶ、第5文型)の語順にも注意。"
+    }
+  },
+  {
+    "english": "speak",
+    "detail": {
+      "pronunciation": "/spiːk/",
+      "pos": "動詞",
+      "meanings": [
+        "話す、しゃべる",
+        "(言語を)話す、使いこなせる",
+        "演説する、スピーチする",
+        "代弁する、代表して話す(speak for)",
+        "大きな声で話す、意見を述べる(speak up)"
+      ],
+      "examples": [
+        {
+          "en": "He speaks very quietly.",
+          "ja": "彼はとても静かに話す。"
+        },
+        {
+          "en": "She speaks three languages fluently.",
+          "ja": "彼女は3か国語を流ちょうに話す。"
+        },
+        {
+          "en": "The mayor spoke at the opening ceremony.",
+          "ja": "市長は開会式でスピーチをした。"
+        },
+        {
+          "en": "I can't speak for everyone, but I agree.",
+          "ja": "全員を代弁することはできないが、私は賛成だ。"
+        },
+        {
+          "en": "Could you speak up? I can't hear you.",
+          "ja": "もう少し大きな声で話してもらえますか、聞こえません。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "speaker",
+          "pos": "名詞",
+          "ja": "話し手、演説者、スピーカー(音響機器)"
+        },
+        {
+          "word": "speech",
+          "pos": "名詞",
+          "ja": "スピーチ、言語能力"
+        },
+        {
+          "word": "spokesperson",
+          "pos": "名詞",
+          "ja": "広報担当者、代弁者"
+        },
+        {
+          "word": "unspeakable",
+          "pos": "形容詞",
+          "ja": "言葉にできないほどひどい"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "talk",
+          "note": "よりカジュアルで対話的な「話す」"
+        },
+        {
+          "word": "address",
+          "note": "(聴衆に)演説する、フォーマル"
+        },
+        {
+          "word": "converse",
+          "note": "会話する、フォーマルな言い方"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "listen",
+          "note": "「話す」に対して「聞く」という反対の役割"
+        }
+      ],
+      "origin": "古英語 specan(sprecan の異形)に由来し、原始ゲルマン語 *sprekanan にさかのぼる。古ザクセン語・古フリジア語・中部オランダ語・古高ドイツ語にも同系語がある。原義は「歌わずに言葉を明確に発音する、話す力を持つ・使う」とされる。古英語では話す意味の主要な動詞は maþelian であり、specan/sprecan はそこまで主要ではなかったが、中英語期に -r- 音が脱落し12世紀半ばまでに現代の speak の形に定着した。",
+      "trivia": "禁酒法時代のアメリカで生まれた speakeasy(もぐり酒場)は、「(バレないように)声を低くして話せ」という意味合いから来ているとされる。",
+      "explanation": "speak と talk の使い分け: speak はよりフォーマルで一方向的な発話(演説・言語能力)、talk はより対話的・カジュアルな「話す」。句動詞では speak up(はっきり話す・声を上げる)、speak out(公然と意見を述べる)、speak for(代弁する)がTOEICでも重要。"
+    }
+  },
+  {
+    "english": "read",
+    "detail": {
+      "pronunciation": "/riːd/(現在形)、過去形・過去分詞の read は /red/ と発音が変わる",
+      "pos": "動詞",
+      "meanings": [
+        "(文字・本を)読む",
+        "読み取る、判読する(地図・計器などを読む)",
+        "解釈する、理解する(状況を読む)",
+        "〜と書いてある、記されている(掲示などが)"
+      ],
+      "examples": [
+        {
+          "en": "She reads a book every night before sleeping.",
+          "ja": "彼女は毎晩寝る前に本を読む。"
+        },
+        {
+          "en": "He can read a map very well.",
+          "ja": "彼は地図を読むのがとても上手だ。"
+        },
+        {
+          "en": "I couldn't read his expression at all.",
+          "ja": "彼の表情を全く読み取れなかった。"
+        },
+        {
+          "en": "The sign reads \"No Parking.\"",
+          "ja": "その標識には「駐車禁止」と書いてある。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "reader",
+          "pos": "名詞",
+          "ja": "読者、読本"
+        },
+        {
+          "word": "reading",
+          "pos": "名詞",
+          "ja": "読書、読み取り値"
+        },
+        {
+          "word": "readable",
+          "pos": "形容詞",
+          "ja": "読みやすい"
+        },
+        {
+          "word": "unreadable",
+          "pos": "形容詞",
+          "ja": "読みにくい、判読できない"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "peruse",
+          "note": "じっくり読む、フォーマルな言い方"
+        },
+        {
+          "word": "skim",
+          "note": "ざっと目を通す、要点だけ読む"
+        },
+        {
+          "word": "interpret",
+          "note": "解釈する、「読み取る」の意味に近い"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語 rædan/redan「助言する、指導する、統べる、取り決める」に由来し、原始ゲルマン語 *redan、印欧祖語 *re-「理由づける、数える」にさかのぼるとされる。ドイツ語 raten は今も「助言する」の意味を保持しており、英語で「読む」の意味に転じたのは(古ノルド語の影響も受けつつ)英語に特有の意味変化とされる。関連語に rede(古英語 ræd「助言」)、riddle(謎かけ、「解釈する」という概念でつながる)がある。",
+      "trivia": "read は現在形と過去形・過去分詞の綴りが同じ(read-read-read)なのに発音が /riːd/ から /red/ に変わるという、英語学習者を悩ませる特徴を持つ動詞。",
+      "explanation": "句動詞 read out(声に出して読む、読み上げる)、read up on(〜について調べて勉強する)、read into(〜を深読みする、過剰に解釈する)はTOEICでも重要。現在形/riːd/と過去形/red/の発音の違いにも注意。"
+    }
+  },
+  {
+    "english": "write",
+    "detail": {
+      "pronunciation": "/raɪt/",
+      "pos": "動詞",
+      "meanings": [
+        "(文字・文章を)書く",
+        "執筆する、著述する",
+        "手紙を書く、書き送る",
+        "書き込む、記入する(write down)",
+        "(データなどを)書き込む(write to a disk)"
+      ],
+      "examples": [
+        {
+          "en": "He wrote his name at the top of the page.",
+          "ja": "彼はページの上部に自分の名前を書いた。"
+        },
+        {
+          "en": "She is writing a novel about her childhood.",
+          "ja": "彼女は自分の子ども時代についての小説を執筆している。"
+        },
+        {
+          "en": "I'll write to you as soon as I arrive.",
+          "ja": "到着したらすぐに手紙を書きます。"
+        },
+        {
+          "en": "Please write down your phone number here.",
+          "ja": "ここに電話番号を書き留めてください。"
+        },
+        {
+          "en": "The software writes data to the disk automatically.",
+          "ja": "そのソフトウェアは自動的にディスクにデータを書き込む。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "writer",
+          "pos": "名詞",
+          "ja": "作家、書き手"
+        },
+        {
+          "word": "writing",
+          "pos": "名詞",
+          "ja": "文章、筆記(すること)"
+        },
+        {
+          "word": "written",
+          "pos": "形容詞",
+          "ja": "書かれた、書面の"
+        },
+        {
+          "word": "rewrite",
+          "pos": "動詞",
+          "ja": "書き直す"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "compose",
+          "note": "文章を作成する、ややフォーマル"
+        },
+        {
+          "word": "pen",
+          "note": "執筆する、文語的な言い方"
+        },
+        {
+          "word": "jot down",
+          "note": "さっとメモを取る"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "erase",
+          "note": "書いたものを「消す」という反対の行為"
+        }
+      ],
+      "origin": "古英語 writan「引っかく、傷つける」に由来し、原始ゲルマン語 *writan にさかのぼるとされる。ラテン語 scribere(刻む、切る、の意)が「書く」に転じたのと同様、「刻む・引っかく」から「書く」への意味変化はインド・ヨーロッパ語族に広く見られるパターン。ドイツ語 reißen(引き裂く)、古ノルド語 rita(書く、傷つける)が同系語とされる。",
+      "trivia": "かつて木や石に文字を「刻んで」記録していた時代の名残として、write の語源が「引っかく、傷つける」であるのは、文字を書く行為の歴史を映す興味深い例とされる。",
+      "explanation": "句動詞 write down(書き留める)、write up(まとめて詳しく書く、報告書化する)、write off(帳消しにする、見限る)はTOEICでも頻出。write to 人(人に手紙を書く、主に英)/write 人(米では人を直接目的語に取ることが多い)の違いにも触れておくとよい。"
+    }
+  },
+  {
+    "english": "hear",
+    "detail": {
+      "pronunciation": "/hɪər/",
+      "pos": "動詞",
+      "meanings": [
+        "(音が自然に)聞こえる",
+        "(人の話を)聞く",
+        "耳にする、聞いて知る(伝聞)",
+        "hear from 〜(〜から連絡をもらう)",
+        "(裁判などで)審理する(法律用語)"
+      ],
+      "examples": [
+        {
+          "en": "I heard a strange sound outside.",
+          "ja": "外で変な音が聞こえた。"
+        },
+        {
+          "en": "Did you hear what she said?",
+          "ja": "彼女が言ったこと聞こえた？"
+        },
+        {
+          "en": "I heard that he moved to Tokyo last month.",
+          "ja": "彼が先月東京に引っ越したと聞いた。"
+        },
+        {
+          "en": "I haven't heard from her in weeks.",
+          "ja": "何週間も彼女から連絡がない。"
+        },
+        {
+          "en": "The court will hear the case next month.",
+          "ja": "裁判所は来月その事件を審理する。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "hearing",
+          "pos": "名詞",
+          "ja": "聴力、公聴会、審理"
+        },
+        {
+          "word": "hearsay",
+          "pos": "名詞",
+          "ja": "伝聞、うわさ"
+        },
+        {
+          "word": "unheard",
+          "pos": "形容詞",
+          "ja": "聞いたことがない、前例のない"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "listen",
+          "note": "意識して耳を傾ける、hearとの対比が重要"
+        },
+        {
+          "word": "overhear",
+          "note": "偶然耳にする、立ち聞きする"
+        }
+      ],
+      "antonyms": [],
+      "origin": "古英語 heran(アングル方言)・(ge)hieran/hyran(西サクソン方言)に由来し、原始ゲルマン語 *hausejanan、印欧祖語 *kous-「聞く」にさかのぼるとされる。古ノルド語 heyra、オランダ語 horen、ドイツ語 hören が同系語で、ギリシャ語 koein(認識する、聞く)とも関連するとされる。acoustic(音響の)もこの語根に由来する。",
+      "trivia": "hear と here は綴りが異なる同音異義語だが、この綴りの区別は1200年から1550年の間にかけて徐々に定着したとされる。",
+      "explanation": "hear と listen の使い分けが重要: hear は意図せず自然に「聞こえる」(能力・受動的な知覚)、listen は意識して「(注意を向けて)聴く」。句動詞 hear from 〜(〜から連絡をもらう)、hear of 〜(〜のことを耳にする)、hear out(最後まで話を聞く)もTOEICで頻出。"
+    }
+  },
+  {
+    "english": "watch",
+    "detail": {
+      "pronunciation": "/wɑːtʃ/(米)、/wɒtʃ/(英)",
+      "pos": "動詞",
+      "meanings": [
+        "(動きのあるものを)見る、観察する",
+        "見張る、監視する",
+        "気をつける、注意する(watch out)",
+        "世話をする、見ていてあげる",
+        "(名詞)腕時計"
+      ],
+      "examples": [
+        {
+          "en": "We watched the sunset from the beach.",
+          "ja": "私たちは浜辺から夕日を眺めた。"
+        },
+        {
+          "en": "The guard watched the entrance all night.",
+          "ja": "警備員は一晩中入口を見張った。"
+        },
+        {
+          "en": "Watch out! There's a car coming.",
+          "ja": "気をつけて！車が来てるよ。"
+        },
+        {
+          "en": "Can you watch my bag for a minute?",
+          "ja": "ちょっとの間、私のかばんを見ていてもらえますか。"
+        },
+        {
+          "en": "He checked his watch and left in a hurry.",
+          "ja": "彼は腕時計を確認し、急いで出かけた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "watcher",
+          "pos": "名詞",
+          "ja": "観察者、監視者"
+        },
+        {
+          "word": "watchful",
+          "pos": "形容詞",
+          "ja": "油断のない、用心深い"
+        },
+        {
+          "word": "watchdog",
+          "pos": "名詞",
+          "ja": "番犬、(不正を監視する)監視団体"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "observe",
+          "note": "じっくり観察する、フォーマルな言い方"
+        },
+        {
+          "word": "look at",
+          "note": "視線を向ける、watchより一瞬の動作"
+        },
+        {
+          "word": "guard",
+          "note": "見張る、守るというニュアンスが強い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "ignore",
+          "note": "注意を払うwatchに対して「無視する」"
+        }
+      ],
+      "origin": "古英語 wæccan に由来し、原始ゲルマン語 *wakjan、印欧祖語 *weg-「強い、活発である」にさかのぼるとされる。原義は「見張りをする、目を覚ましている」で、wake(目覚める)と本質的に同語源。腕時計・置時計の意味(名詞)は1580年代に登場し、「眠っている人を起こすもの」という発想から発展したとされる。",
+      "trivia": "「腕時計」を意味する watch は、元々「(寝ずの)見張り」という動詞の意味から、見張りの交代時刻を知らせる装置、さらに携帯用の時計全般へと意味が広がったとされ、wake(目覚める)と語源的なきょうだい関係にある。",
+      "explanation": "watch・see・look の使い分け: see は自然に「(視界に入って)見える」、look (at) は視線を意図的に向ける、watch は動きのあるものを一定時間注視し続ける、という違いがある。句動詞 watch out (for)(〜に気をつける)、watch over(見守る)もTOEICで重要。"
+    }
+  },
+  {
+    "english": "play",
+    "detail": {
+      "pronunciation": "/pleɪ/",
+      "pos": "動詞",
+      "meanings": [
+        "遊ぶ",
+        "(スポーツ・ゲームを)する",
+        "(楽器を)演奏する",
+        "(役を)演じる",
+        "(音楽・映像を)再生する"
+      ],
+      "examples": [
+        {
+          "en": "The kids are playing in the park.",
+          "ja": "子どもたちは公園で遊んでいる。"
+        },
+        {
+          "en": "He plays tennis every Sunday.",
+          "ja": "彼は毎週日曜日にテニスをする。"
+        },
+        {
+          "en": "She plays the piano beautifully.",
+          "ja": "彼女はピアノを美しく演奏する。"
+        },
+        {
+          "en": "He played the lead role in the movie.",
+          "ja": "彼はその映画で主役を演じた。"
+        },
+        {
+          "en": "Could you play that song again?",
+          "ja": "その曲をもう一度再生してもらえますか。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "player",
+          "pos": "名詞",
+          "ja": "選手、演奏者、再生機"
+        },
+        {
+          "word": "playful",
+          "pos": "形容詞",
+          "ja": "遊び好きな、ふざけた"
+        },
+        {
+          "word": "playground",
+          "pos": "名詞",
+          "ja": "遊び場、運動場"
+        },
+        {
+          "word": "playwright",
+          "pos": "名詞",
+          "ja": "劇作家"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "perform",
+          "note": "演じる、演奏する、ややフォーマル"
+        },
+        {
+          "word": "act",
+          "note": "(演劇などで)演じる"
+        },
+        {
+          "word": "compete",
+          "note": "競技する、スポーツの意味に近い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "work",
+          "note": "「仕事」と対比される「遊び・娯楽」の概念"
+        }
+      ],
+      "origin": "古英語 plegan/plegian に由来し、原始西ゲルマン語 *plegōjanan「自分自身を占める、忙しくさせる」にさかのぼるとされる。古ザクセン語・古フリジア語・中部オランダ語・ドイツ語にも同系語(独 pflegen「世話をする」など)があるが、plight(誓う)との関連も指摘されつつ最終的な語源は不確実とされている。1200年頃に「スポーツ・競技に参加する」、14世紀後期に「舞台で演じる」の意味が加わり、「仕事(work)」と対比される語として定着した。",
+      "trivia": "play の最終的な語源は辞書学的にも「不確実(of uncertain origin)」と明記されており、あらゆる基礎動詞が明快な語源を持つわけではないことを示す例として興味深い。",
+      "explanation": "楽器には定冠詞をつけて play the piano のように言うのが基本だが、スポーツには冠詞をつけず play tennis のように言うという文法上の対比が重要。句動詞 play down(軽視する)、play up(強調する)、熟語 play a part in 〜(〜において役割を果たす)もTOEICで頻出。"
+    }
+  },
+  {
+    "english": "learn",
+    "detail": {
+      "pronunciation": "/lɜːrn/(米)、/lɜːn/(英)",
+      "pos": "動詞",
+      "meanings": [
+        "学ぶ、習得する",
+        "習う、教わる",
+        "(経験から)知る、わかるようになる",
+        "(人づてに)聞いて知る、知らせを受ける(learn that)"
+      ],
+      "examples": [
+        {
+          "en": "She is learning how to play the guitar.",
+          "ja": "彼女はギターの弾き方を習っている。"
+        },
+        {
+          "en": "He learned French while living in Paris.",
+          "ja": "彼はパリに住んでいる間にフランス語を習得した。"
+        },
+        {
+          "en": "We learned a lot from our mistakes.",
+          "ja": "私たちは失敗から多くを学んだ。"
+        },
+        {
+          "en": "I later learned that she had already left the company.",
+          "ja": "私は後になって彼女がすでに退職していたことを知った。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "learner",
+          "pos": "名詞",
+          "ja": "学習者"
+        },
+        {
+          "word": "learning",
+          "pos": "名詞",
+          "ja": "学習、学識"
+        },
+        {
+          "word": "learned",
+          "pos": "形容詞",
+          "ja": "博学な(※発音/ˈlɜːrnɪd/)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "study",
+          "note": "体系的に机に向かって勉強する行為そのもの、learnとの対比が重要"
+        },
+        {
+          "word": "master",
+          "note": "習得して極める、より高いレベルを含意"
+        },
+        {
+          "word": "acquire",
+          "note": "知識・技能を獲得する、フォーマルな言い方"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "forget",
+          "note": "学んで得た知識を「忘れる」という反対の行為"
+        }
+      ],
+      "origin": "中英語 lernen は古英語 leornian にさかのぼり、さらに原始ゲルマン語 *lisnojanan、印欧祖語 *lois-「溝、軌跡」に由来するとされる。原義は「足跡をたどる、軌跡を見つける」で、そこから「経験を通じて知識を得る」の意味に発展したとされる。関連語に lore(伝承知識)、last(靴型、「足の形をたどる型」の意)がある。なお古英語には「教える」を意味する læran も存在し、learn とは別だが同じ語根の親戚にあたる。",
+      "trivia": "learn(学ぶ)と、教える意味を持つ古英語 læran(lore の語源筋)は同じ語根から分かれたきょうだい語で、どちらも「(知識の)跡をたどる」という共通イメージを持つ。",
+      "explanation": "learn と study の使い分け: study は机に向かって「勉強する」行為そのものに焦点があり、learn はその結果として「習得する・身につく」ことに重点がある。learn to do(〜できるようになる)、learn about/of 〜(〜について知る)、learn from 〜(〜から学ぶ)の語法もTOEICで重要。"
+    }
+  },
+  {
+    "english": "meet",
+    "detail": {
+      "pronunciation": "/miːt/",
+      "pos": "動詞",
+      "meanings": [
+        "(約束して、または偶然)会う",
+        "初めて会う、知り合う",
+        "(要求・基準を)満たす",
+        "(道・線などが)交わる、合流する",
+        "(期限・目標に)間に合う、達成する"
+      ],
+      "examples": [
+        {
+          "en": "Let's meet at the coffee shop at three.",
+          "ja": "3時にカフェで会いましょう。"
+        },
+        {
+          "en": "I met her for the first time at a party.",
+          "ja": "私は彼女にパーティーで初めて会った。"
+        },
+        {
+          "en": "The product does not meet our quality standards.",
+          "ja": "その製品は私たちの品質基準を満たしていない。"
+        },
+        {
+          "en": "The two roads meet just outside the town.",
+          "ja": "その2本の道は町のすぐ外で合流する。"
+        },
+        {
+          "en": "We need to meet the deadline by Friday.",
+          "ja": "金曜日までにその締め切りに間に合わせる必要がある。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "meeting",
+          "pos": "名詞",
+          "ja": "会議、面会"
+        },
+        {
+          "word": "meet-up",
+          "pos": "名詞",
+          "ja": "(カジュアルな)集まり"
+        },
+        {
+          "word": "unmet",
+          "pos": "形容詞",
+          "ja": "満たされていない(unmet needs)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "encounter",
+          "note": "偶然出会う、ややフォーマル"
+        },
+        {
+          "word": "satisfy",
+          "note": "要求を満たす、meetの「満たす」の意味に近い"
+        },
+        {
+          "word": "gather",
+          "note": "複数人が集まる、集合するニュアンス"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "avoid",
+          "note": "「会う」に対して意図的に「避ける」という反対の行為"
+        }
+      ],
+      "origin": "中英語 mēten は古英語 metan にさかのぼり、原始ゲルマン語 *motjanan、印欧祖語 *mod-に由来するとされる。古英語では「見つける、出会う、同じ場所で出会う」の意味だった。1300年頃に物理的な「接触する・結合する」、同時期に人について「反対方向から近づく」の意味、14世紀後期に抽象的な「出会う・遭遇する」、1690年代に「一致する・要求に応える」の意味が加わった。古英語 gemot(集会)と関連があるとされる。",
+      "trivia": "「会議」を意味する meeting は、古英語 gemot(人々が「出会う」場)にさかのぼる語で、法律用語 moot court(模擬裁判)の moot も同じ語族の親戚とされる。",
+      "explanation": "meet with 〜(正式に会う、または困難などに遭遇する)、meet up (with)(カジュアルに待ち合わせる)、meet the needs of/meet requirements(要求を満たす)のような表現に注意。初対面の場面では meet、すでに知っている相手と会う場面では see を使うことが多いという使い分けの目安もある。"
+    }
+  },
+  {
+    "english": "want",
+    "detail": {
+      "pronunciation": "/wɑnt/",
+      "pos": "動詞",
+      "meanings": [
+        "〜が欲しい、〜を望む",
+        "〜したいと思う(want to do)",
+        "〜を必要とする",
+        "(古風・口語)〜する必要がある、〜すべきだ(you want to ...)"
+      ],
+      "examples": [
+        {
+          "en": "I want a new phone.",
+          "ja": "私は新しい携帯電話が欲しい。"
+        },
+        {
+          "en": "She wants to study abroad next year.",
+          "ja": "彼女は来年留学したいと思っている。"
+        },
+        {
+          "en": "This plant wants more sunlight.",
+          "ja": "この植物にはもっと日光が必要だ。"
+        },
+        {
+          "en": "You want to be careful with that knife.",
+          "ja": "そのナイフには気をつけたほうがいいよ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "wanted",
+          "pos": "形容詞",
+          "ja": "指名手配の・求人中の"
+        },
+        {
+          "word": "unwanted",
+          "pos": "形容詞",
+          "ja": "望まれていない"
+        },
+        {
+          "word": "wanting",
+          "pos": "形容詞",
+          "ja": "不足している、欠けている"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "desire",
+          "note": "よりフォーマルで強い欲求を表す"
+        },
+        {
+          "word": "wish",
+          "note": "実現が難しい願望にも使いやすい"
+        }
+      ],
+      "antonyms": [],
+      "origin": "1200年頃、古ノルド語の vanta「欠ける、不足する」に由来する。原始ゲルマン語 *wanen を経て、最終的にはインド・ヨーロッパ語根 *eue-「去る、尽きる」に遡るとされる。当初は「欠いている、不十分である」という客観的な状態を表す語で、現代的な「欲する、望む」という意味は1706年頃までは記録されていない。",
+      "trivia": "want は元々「欠乏」を表す語で、名詞としても14世紀初頭に「貧困、窮乏」、16世紀には「欠けているが必要なもの」の意味を獲得した。「欠けている」→「だから欲しい」という意味の転換をたどった珍しい基礎動詞。",
+      "explanation": "want to do(〜したい)、want + 人 + to do(人に〜してほしい)の形が最重要。want for nothing(何不自由ない)という慣用表現にも want 本来の「欠ける」という語感が残っている。"
+    }
+  },
+  {
+    "english": "find",
+    "detail": {
+      "pronunciation": "/faɪnd/",
+      "pos": "動詞",
+      "meanings": [
+        "(探して)見つける",
+        "(探さずに)偶然出くわす、見かける",
+        "(経験・調査の結果)〜だとわかる、気づく",
+        "(努力して時間・お金などを)工面する、ひねり出す",
+        "(法廷が)認定する、判決を下す"
+      ],
+      "examples": [
+        {
+          "en": "I can't find my keys anywhere.",
+          "ja": "鍵がどこにも見つからない。"
+        },
+        {
+          "en": "We found a nice little cafe near the station.",
+          "ja": "駅の近くで素敵な小さなカフェを見つけた。"
+        },
+        {
+          "en": "I found the movie surprisingly boring.",
+          "ja": "その映画は意外と退屈だとわかった。"
+        },
+        {
+          "en": "She always finds time to help others.",
+          "ja": "彼女はいつも人を助ける時間を見つける(作る)。"
+        },
+        {
+          "en": "The jury found him guilty.",
+          "ja": "陪審は彼を有罪と認定した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "finding",
+          "pos": "名詞",
+          "ja": "(調査の)結果、発見事項"
+        },
+        {
+          "word": "finder",
+          "pos": "名詞",
+          "ja": "発見者"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "discover",
+          "note": "より重要・劇的な発見のニュアンス"
+        },
+        {
+          "word": "locate",
+          "note": "物の位置を特定するニュアンスが強い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "lose",
+          "note": "「見つける」の反対で「失う、なくす」"
+        }
+      ],
+      "origin": "古英語 findan に由来し、原始ゲルマン語 *findan「出くわす、発見する」に遡る。さらに古いインド・ヨーロッパ語根 *pent-「踏む、行く」に関連するとされ、「移動する」という基本義から「(移動の末に)発見する」へ意味が転じたと考えられている。",
+      "trivia": "find out(調べて知る、〜だと判明する)という句動詞は1550年代から使われている表現。名詞としての find(掘り出し物、発見物)は1825年に確立された比較的新しい用法。",
+      "explanation": "find out(調べて知る)が代表的な句動詞。find + O + C(find it difficult など「〜だとわかる/思う」の形)も TOEIC で頻出。過去形・過去分詞はどちらも found の不規則変化。"
+    }
+  },
+  {
+    "english": "work",
+    "detail": {
+      "pronunciation": "/wɜːrk/",
+      "pos": "動詞",
+      "meanings": [
+        "働く、仕事をする",
+        "(機械・装置が)動く、機能する",
+        "(方法・計画などが)うまくいく、効果がある",
+        "(材料を)加工する、練る、細工する",
+        "(徐々に)ある状態に持っていく、動かしていく"
+      ],
+      "examples": [
+        {
+          "en": "She works at a hospital in the city.",
+          "ja": "彼女は市内の病院で働いている。"
+        },
+        {
+          "en": "This old radio still works.",
+          "ja": "この古いラジオはまだ動く。"
+        },
+        {
+          "en": "I don't think this plan will work.",
+          "ja": "この計画はうまくいかないと思う。"
+        },
+        {
+          "en": "The potter worked the clay into a bowl.",
+          "ja": "陶工は粘土をこねて鉢の形に仕上げた。"
+        },
+        {
+          "en": "He worked his way up to manager.",
+          "ja": "彼は少しずつ昇進してマネージャーになった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "worker",
+          "pos": "名詞",
+          "ja": "労働者"
+        },
+        {
+          "word": "workout",
+          "pos": "名詞",
+          "ja": "運動、トレーニング"
+        },
+        {
+          "word": "workable",
+          "pos": "形容詞",
+          "ja": "実行可能な"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "function",
+          "note": "機械・システムが「機能する」の意味で近い"
+        },
+        {
+          "word": "labor",
+          "note": "肉体労働のニュアンスが強い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "rest",
+          "note": "「休む」"
+        },
+        {
+          "word": "fail",
+          "note": "「(計画などが)うまくいかない」の反対"
+        }
+      ],
+      "origin": "中英語 werk は古英語 weorc/worc「行為、行動、労働」に由来し、原始ゲルマン語 *werka- を経て、最終的にはインド・ヨーロッパ語根 *werg-「行う」に遡る。当初は「行為」や「製造物」全般を指す語だった。",
+      "trivia": "1200年頃に「身体的努力・労働」の意味が定着し、13世紀後期には「刺繍・針仕事」のような特定の工芸を指す用法も生まれた。work ethic(労働倫理、1955年)、work in progress(制作中の作品、1880年)のような複合表現も後から加わった。",
+      "explanation": "work out(うまくいく/運動する/解決する)、work on(〜に取り組む)、work up(徐々に高める、発展させる)など句動詞が非常に多い。TOEICでは work on a project、work out a solution のような形で頻出。"
+    }
+  },
+  {
+    "english": "live",
+    "detail": {
+      "pronunciation": "/lɪv/",
+      "pos": "動詞",
+      "meanings": [
+        "住む、居住する",
+        "生きている、生存する",
+        "(ある生活様式で)暮らす、生活する",
+        "(信念・原則を)実践する、体現する(live by)",
+        "(苦難の中でも)生き延びる、なんとかやっていく"
+      ],
+      "examples": [
+        {
+          "en": "I live in Tokyo with my family.",
+          "ja": "私は家族と東京に住んでいる。"
+        },
+        {
+          "en": "My grandmother lived to be ninety-five.",
+          "ja": "祖母は95歳まで生きた。"
+        },
+        {
+          "en": "They live a simple life in the countryside.",
+          "ja": "彼らは田舎でシンプルな暮らしをしている。"
+        },
+        {
+          "en": "He tries to live by his own principles.",
+          "ja": "彼は自分自身の信条に従って生きようとしている。"
+        },
+        {
+          "en": "The refugees had to live on very little food.",
+          "ja": "難民たちはわずかな食料でしのがなければならなかった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "living",
+          "pos": "名詞・形容詞",
+          "ja": "生活、生計、生きている"
+        },
+        {
+          "word": "life",
+          "pos": "名詞",
+          "ja": "人生、生命"
+        },
+        {
+          "word": "lively",
+          "pos": "形容詞",
+          "ja": "活発な、生き生きとした"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "reside",
+          "note": "「居住する」を表すフォーマルな語"
+        },
+        {
+          "word": "dwell",
+          "note": "やや文語的な「住む」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "die",
+          "note": "「死ぬ」"
+        }
+      ],
+      "origin": "古英語 lifian(アングル方言)・libban(西サクソン方言)に由来し、原始ゲルマン語 *libejanan を経てインド・ヨーロッパ語根 *leip-「粘着する、付着する」に遡るとされる。ここから「(この世に)留まる、続く」という意味合いが生まれ、「生きている」という基本義になった。",
+      "trivia": "形容詞 live「生放送の、生きた」は発音が /laɪv/ になり、動詞 live /lɪv/ とスペルは同じでも発音が異なるため学習者が混同しやすい。live up to(期待などに応える)は1690年代、live down(汚名をすすぐ)は1842年に記録された比較的新しい句動詞。",
+      "explanation": "live on(〜を主食にする/生き続ける)、live up to(期待・基準に応える)、live with(〜を受け入れて共存する)などの句動詞が重要。前置詞 in/at と組み合わせて住んでいる場所を表す用法が最頻出。"
+    }
+  },
+  {
+    "english": "pay",
+    "detail": {
+      "pronunciation": "/peɪ/",
+      "pos": "動詞",
+      "meanings": [
+        "(代金・料金を)支払う",
+        "(利益・成果を)もたらす、割に合う(pay off)",
+        "(注意・敬意などを)払う",
+        "(罰・代償を)受ける、償う",
+        "(訪問などを)する(pay a visit)"
+      ],
+      "examples": [
+        {
+          "en": "I paid for the tickets in cash.",
+          "ja": "私はチケット代を現金で支払った。"
+        },
+        {
+          "en": "Hard work always pays off in the end.",
+          "ja": "努力は最終的には必ず報われる。"
+        },
+        {
+          "en": "Please pay attention to the instructions.",
+          "ja": "指示に注意を払ってください。"
+        },
+        {
+          "en": "He had to pay for his mistake.",
+          "ja": "彼は自分の過ちの代償を払わなければならなかった。"
+        },
+        {
+          "en": "We paid a visit to our old teacher.",
+          "ja": "私たちは昔の先生を訪ねた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "payment",
+          "pos": "名詞",
+          "ja": "支払い"
+        },
+        {
+          "word": "payable",
+          "pos": "形容詞",
+          "ja": "支払うべき、支払い可能な"
+        },
+        {
+          "word": "payroll",
+          "pos": "名詞",
+          "ja": "給与支払名簿"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "compensate",
+          "note": "「補償する」を表すフォーマルな語"
+        },
+        {
+          "word": "reimburse",
+          "note": "「(経費などを)払い戻す」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "owe",
+          "note": "「(お金を)借りている、負っている」"
+        }
+      ],
+      "origin": "ラテン語 pacare「平和にする、満足させる」(pax「平和」由来)に遡り、古フランス語 paier を経て1200年頃、中英語に paien として入った。当初は「(相手を)宥める、満足させる」の意味で、13世紀初頭までに「商品・サービスの対価を与える」という現代的な金銭的意味が確立した。",
+      "trivia": "「支払う」の原義が実は「平和にする」であるとは意外だが、これは appease(なだめる)と同根であることからも裏付けられる。「宥める」の意味は1500年までに英語から消え、金銭的な意味だけが残った。",
+      "explanation": "pay off(完済する/努力が報われる)、pay for(代金を払う/報いを受ける)、pay attention to(〜に注意を払う)などの句動詞・表現が重要。過去形・過去分詞は不規則変化の paid。"
+    }
+  },
+  {
+    "english": "wait",
+    "detail": {
+      "pronunciation": "/weɪt/",
+      "pos": "動詞",
+      "meanings": [
+        "待つ",
+        "(何かが起こるのを)待ち構える、見守る",
+        "(判断・行動を)保留する、控える",
+        "(レストランなどで)給仕する(wait on / wait tables)"
+      ],
+      "examples": [
+        {
+          "en": "Please wait here for a moment.",
+          "ja": "少しの間ここで待っていてください。"
+        },
+        {
+          "en": "We waited anxiously for the results.",
+          "ja": "私たちは結果を不安げに待った。"
+        },
+        {
+          "en": "Let's wait until we have more information.",
+          "ja": "もっと情報が集まるまで待とう。"
+        },
+        {
+          "en": "She worked as a student, waiting tables at a diner.",
+          "ja": "彼女は学生時代、食堂で給仕のアルバイトをしていた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "waiting",
+          "pos": "名詞・形容詞",
+          "ja": "待つこと、待機中の"
+        },
+        {
+          "word": "waiter / waitress",
+          "pos": "名詞",
+          "ja": "ウェイター、ウェイトレス"
+        },
+        {
+          "word": "waitlist",
+          "pos": "名詞",
+          "ja": "キャンセル待ちリスト"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "await",
+          "note": "他動詞でforを伴わないフォーマルな語"
+        },
+        {
+          "word": "pause",
+          "note": "一時的に動きを止めるニュアンス"
+        }
+      ],
+      "antonyms": [],
+      "origin": "1200年頃、アングロ・フランス語 waitier に由来し、フランク語 *wahton を経てゲルマン語族に遡る。原義は「敵意を持って見張る、待ち伏せする、陰謀をたくらむ」という監視的な行為で、14世紀後期になって「ある場所で忍耐強く期待しながら留まる」という現代的な意味に転じた。",
+      "trivia": "waiter(給仕人)は「待つ人」ではなく、元は「(主人に)付き従って仕える人」を指す語で、waitの古い語義「見張る、付き添う」に由来する。16世紀60年代に「食卓での給仕」という職業的意味が確立した。",
+      "explanation": "wait for(〜を待つ)、wait on(給仕する/〜次第である)が代表的な句動詞。「〜するのを待つ」は wait for + 人 + to do、または wait to do の形になる。"
+    }
+  },
+  {
+    "english": "win",
+    "detail": {
+      "pronunciation": "/wɪn/",
+      "pos": "動詞",
+      "meanings": [
+        "(試合・競争に)勝つ",
+        "(賞・地位などを)獲得する、勝ち取る",
+        "(努力して人の信頼・好意を)得る(win over)",
+        "(戦い・争いに)勝利する"
+      ],
+      "examples": [
+        {
+          "en": "Our team won the game 3 to 1.",
+          "ja": "私たちのチームは3対1でその試合に勝った。"
+        },
+        {
+          "en": "She won first prize in the speech contest.",
+          "ja": "彼女はスピーチコンテストで一等賞を獲得した。"
+        },
+        {
+          "en": "His honesty won the trust of his colleagues.",
+          "ja": "彼の誠実さは同僚たちの信頼を勝ち取った。"
+        },
+        {
+          "en": "The company eventually won over its skeptical customers.",
+          "ja": "その会社は最終的に懐疑的だった顧客たちを味方につけた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "winner",
+          "pos": "名詞",
+          "ja": "勝者"
+        },
+        {
+          "word": "winning",
+          "pos": "形容詞・名詞",
+          "ja": "勝利の、勝ち取ること"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "triumph",
+          "note": "より劇的・大げさな「勝利する」"
+        },
+        {
+          "word": "prevail",
+          "note": "フォーマルな文脈での「打ち勝つ」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "lose",
+          "note": "「負ける」"
+        }
+      ],
+      "origin": "古英語 winnan「労働する、奮闘する」と gewinnan「努力して得る」が融合した語で、原始ゲルマン語 *wennanan「獲得しようとする」、さらにインド・ヨーロッパ語根 *wen-「欲する、努力する」に遡る。原義は「試みて獲得する」であり、1300年頃に「(競争・戦いで)勝利する」という意味が確立した。",
+      "trivia": "「努力して得る」という原義は win over(説得して味方につける、14世紀後期に登場)にも表れている。ゲームや競技での勝利を表す名詞用法(a win)は1862年になってから記録された比較的新しい用法。",
+      "explanation": "win over(〜を説得して味方につける)が代表的な句動詞。過去形・過去分詞は不規則変化の won。「(賞などを)獲得する」の意味では win a prize のように直接目的語を取る点が get と少し異なる。"
+    }
+  },
+  {
+    "english": "buy",
+    "detail": {
+      "pronunciation": "/baɪ/",
+      "pos": "動詞",
+      "meanings": [
+        "(お金を払って)買う、購入する",
+        "(苦労・犠牲を払って)得る",
+        "(俗語で)信じる、真実として受け入れる(not buy it)",
+        "(時間を)稼ぐ(buy time)"
+      ],
+      "examples": [
+        {
+          "en": "I bought a new car last week.",
+          "ja": "私は先週新しい車を買った。"
+        },
+        {
+          "en": "Freedom was bought at a great cost.",
+          "ja": "自由は大きな犠牲を払って得られた。"
+        },
+        {
+          "en": "I don't buy his excuse at all.",
+          "ja": "彼の言い訳は全く信じられない。"
+        },
+        {
+          "en": "The extra staff bought us some time before the deadline.",
+          "ja": "増員のおかげで締め切り前に多少の時間を稼ぐことができた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "buyer",
+          "pos": "名詞",
+          "ja": "買い手、バイヤー"
+        },
+        {
+          "word": "buyout",
+          "pos": "名詞",
+          "ja": "(会社などの)買収"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "purchase",
+          "note": "ややフォーマルな「購入する」"
+        },
+        {
+          "word": "acquire",
+          "note": "必ずしも金銭を伴わない「取得する」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "sell",
+          "note": "「売る」"
+        }
+      ],
+      "origin": "語源不詳の原始ゲルマン語 *bugjan に由来する古英語 bycgan から発展した語で、中英語では bien の形で記録されている。本来は「金銭を払って何かを得る、身代金を払う、贖う」という商取引的な意味だった。1926年までに「(話などを)信じる」という口語的な新用法が加わり、1946年には「時間を稼ぐ」という表現も現れた。",
+      "trivia": "buy の綴りは古英語・中英語の -dg- 音(「budge」「bidge」のような発音)に由来し、南西イングランド方言の綴りが現代に生き残ったとされる珍しいケース。\"I don't buy it\"(それは信じられない)という口語表現はTOEICのPart 3・4の会話でも使われることがある。",
+      "explanation": "buy into(〜を信じ込む/〜に出資する)、buy out(会社などを買収する)などの句動詞に注意。過去形・過去分詞は不規則変化の bought。"
+    }
+  },
+  {
+    "english": "spend",
+    "detail": {
+      "pronunciation": "/spɛnd/",
+      "pos": "動詞",
+      "meanings": [
+        "(お金を)使う、支払う",
+        "(時間を)過ごす",
+        "(労力・エネルギーを)注ぐ、費やす",
+        "使い果たす、消耗させる"
+      ],
+      "examples": [
+        {
+          "en": "I spent two hours on my homework.",
+          "ja": "私は宿題に2時間費やした。"
+        },
+        {
+          "en": "We spent our vacation at the beach.",
+          "ja": "私たちは海辺で休暇を過ごした。"
+        },
+        {
+          "en": "She spends a lot of effort on her work.",
+          "ja": "彼女は仕事に多くの労力を注いでいる。"
+        },
+        {
+          "en": "By evening, the storm had spent itself.",
+          "ja": "夕方までに嵐は勢いを使い果たしていた(収まっていた)。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "spending",
+          "pos": "名詞",
+          "ja": "支出、出費"
+        },
+        {
+          "word": "spender",
+          "pos": "名詞",
+          "ja": "(お金を)使う人"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "expend",
+          "note": "ややフォーマルな「費やす」"
+        },
+        {
+          "word": "use up",
+          "note": "「使い果たす」を表す口語的な言い方"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "save",
+          "note": "「貯める、節約する」"
+        },
+        {
+          "word": "earn",
+          "note": "「稼ぐ」"
+        }
+      ],
+      "origin": "中英語 spenden は古英語 -spendan に遡り、最終的にはラテン語 expendere(金銭を計量して支払う)または dispendere(支払う)に由来するとされ、インド・ヨーロッパ語根 *(s)pen-「引く、伸ばす」に関連する。中世に金銭的な「支払う、失う」の意味で使われ始め、13世紀頃には労力・時間などより広い「価値あるものを消費する」の意味に拡大した。",
+      "trivia": "\"spend a penny\"はイギリス英語の口語で「お手洗いに行く」を婉曲的に表す慣用表現(公衆トイレが1ペニー硬貨で使えた時代の名残とされる)。14世紀後期には「浪費する」というマイナスのニュアンスも加わった。",
+      "explanation": "spend + 時間/お金 + on ... (〜に時間・お金を使う)、spend + 時間 + -ing(〜して時間を過ごす)の形が頻出。過去形・過去分詞は不規則変化の spent。"
+    }
+  },
+  {
+    "english": "sit",
+    "detail": {
+      "pronunciation": "/sɪt/",
+      "pos": "動詞",
+      "meanings": [
+        "座る",
+        "(物が)ある場所に置かれている、位置する",
+        "(議会・会議などに)出席する、議席を持つ",
+        "(肖像画などのモデルとして)ポーズをとる(sit for)"
+      ],
+      "examples": [
+        {
+          "en": "Please sit down here and relax.",
+          "ja": "ここに座ってくつろいでください。"
+        },
+        {
+          "en": "The remote control was sitting on the table.",
+          "ja": "リモコンはテーブルの上に置かれていた。"
+        },
+        {
+          "en": "She has sat on the city council for ten years.",
+          "ja": "彼女は10年間市議会の議員を務めている。"
+        },
+        {
+          "en": "The artist asked him to sit for a portrait.",
+          "ja": "画家は彼に肖像画のモデルになってほしいと頼んだ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "sitting",
+          "pos": "名詞・形容詞",
+          "ja": "着席、一回のセッション"
+        },
+        {
+          "word": "babysit",
+          "pos": "動詞",
+          "ja": "子守りをする"
+        },
+        {
+          "word": "seat",
+          "pos": "名詞",
+          "ja": "座席(関連語)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "be seated",
+          "note": "ややフォーマルな「着席する」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "stand",
+          "note": "「立つ」"
+        }
+      ],
+      "origin": "古英語 sittan に由来し、原始ゲルマン語 *setjan を経てインド・ヨーロッパ語根 *sed-「座る」に遡る。中英語では sitten の形で記録され、14世紀後期に「議席を占める」、16世紀初頭に「会議を開く」、1530年代には「肖像画のモデルとしてポーズをとる」という意味が次々に加わった。",
+      "trivia": "自動詞 sit(座る)と他動詞 set(置く)はどちらも同じ印欧語根 *sed- に由来するため綴り・意味ともに混同されやすい。babysit(子守りをする)は1966年以降に babysitter から逆成された比較的新しい語。",
+      "explanation": "sit down(座る)、sit for(試験を受ける/肖像のモデルになる)、sit through(最後まで我慢して座り通す)などの句動詞に注意。自動詞なので「(人)を座らせる」は他動詞の seat または make ... sit を使う。"
+    }
+  },
+  {
+    "english": "stand",
+    "detail": {
+      "pronunciation": "/stænd/",
+      "pos": "動詞",
+      "meanings": [
+        "立つ、立っている",
+        "(ある場所に)位置する、建っている",
+        "(苦痛・状況に)耐える、我慢する",
+        "(ある状態・立場を)保つ、〜のままである",
+        "(選挙に)立候補する(stand for election)"
+      ],
+      "examples": [
+        {
+          "en": "He stood by the door, waiting for her.",
+          "ja": "彼はドアのそばに立って彼女を待っていた。"
+        },
+        {
+          "en": "An old church stands at the top of the hill.",
+          "ja": "古い教会が丘の頂上に建っている。"
+        },
+        {
+          "en": "I can't stand this noise any longer.",
+          "ja": "この騒音にはもう耐えられない。"
+        },
+        {
+          "en": "The offer still stands.",
+          "ja": "その申し出は今もそのまま有効だ。"
+        },
+        {
+          "en": "She decided to stand for city council.",
+          "ja": "彼女は市議会議員に立候補することを決めた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "standing",
+          "pos": "名詞・形容詞",
+          "ja": "地位、立っている、常設の"
+        },
+        {
+          "word": "standard",
+          "pos": "名詞",
+          "ja": "基準(関連語)"
+        },
+        {
+          "word": "understand",
+          "pos": "動詞",
+          "ja": "理解する(関連語)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "tolerate",
+          "note": "「耐える」の意味で近い"
+        },
+        {
+          "word": "endure",
+          "note": "よりフォーマルな「耐え抜く」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "sit",
+          "note": "「座る」"
+        },
+        {
+          "word": "fall",
+          "note": "「倒れる」"
+        }
+      ],
+      "origin": "古英語 standan に由来し、原始ゲルマン語 *standanan を経て、インド・ヨーロッパ語根 *sta-「立つ、確固たる状態にする」に遡る。古英語段階では「一つの場所を占める、立ち続ける」という意味だったが、1300年頃「存在する」、14世紀中頃「(費用が)かかる」、1600年頃「耐える」、1550年代「候補者になる」と次々に意味が拡張した。",
+      "trivia": "「(費用が)かかる」という意味(This will stand you 100 dollars.のような用法)はラテン語 constare と発想が似ている。名詞としての stand も「立つ行為」から「観覧席」「屋台、売店」を指すように発展した。",
+      "explanation": "stand for(〜を意味する/〜の略である/〜を支持する)、stand out(目立つ)、stand up for(〜を擁護する)などの句動詞がTOEICでも頻出。can't stand ...(〜が我慢できない)は日常会話で非常によく使われる。"
+    }
+  },
+  {
+    "english": "begin",
+    "detail": {
+      "pronunciation": "/bɪˈɡɪn/",
+      "pos": "動詞",
+      "meanings": [
+        "始める、開始する(他動詞)",
+        "始まる(自動詞)",
+        "(仕事などに)着手する、取り掛かる",
+        "(段階的に)〜し始める(begin to do / begin doing)"
+      ],
+      "examples": [
+        {
+          "en": "The meeting will begin at 10 AM.",
+          "ja": "会議は午前10時に始まる予定だ。"
+        },
+        {
+          "en": "She began her speech with a joke.",
+          "ja": "彼女は冗談で自分のスピーチを始めた。"
+        },
+        {
+          "en": "We should begin the project as soon as possible.",
+          "ja": "私たちはできるだけ早くそのプロジェクトに着手すべきだ。"
+        },
+        {
+          "en": "It began to rain just as we left the house.",
+          "ja": "私たちが家を出たちょうどその時、雨が降り始めた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "beginning",
+          "pos": "名詞",
+          "ja": "始まり、開始"
+        },
+        {
+          "word": "beginner",
+          "pos": "名詞",
+          "ja": "初心者"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "start",
+          "note": "より口語的で汎用的な「始める」"
+        },
+        {
+          "word": "commence",
+          "note": "フォーマルな文脈で使われる「開始する」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "end",
+          "note": "「終える、終わる」"
+        },
+        {
+          "word": "finish",
+          "note": "「終わらせる、仕上げる」"
+        }
+      ],
+      "origin": "古英語 beginnan に由来し、西ゲルマン語 *ginnan に接頭辞 be- が付いた形とされる。原義は「開く、開き上げる」と考えられ、そこから「試みる、着手する」へ意味が転じたとされる。同根語として古高ドイツ語 in-ginnan(文字通り「切り開く」)、ゴート語 duginnan がある。古英語の時代からより一般的だった同義語 onginnan よりは使用頻度が低かったとされる。",
+      "trivia": "begin の過去形 began・過去分詞 begun という不規則変化はTOEICの文法問題でも狙われやすいポイント。\"to begin with\"(まず第一に、そもそも)は begin から派生した頻出の慣用表現。",
+      "explanation": "begin to do と begin doing はほぼ同じ意味で使えるが、understand のような状態動詞が続く場合は begin to understand のように to不定詞が好まれる傾向がある。begin 単体に紐づく代表的な句動詞は無いが、\"to begin with\" という副詞句はよく使われる。"
+    }
+  },
+  {
+    "english": "lose",
+    "detail": {
+      "pronunciation": "/luz/",
+      "pos": "動詞",
+      "meanings": [
+        "失う、なくす",
+        "(試合・勝負に)負ける",
+        "道に迷う(get lost / be lost)",
+        "(時間・お金などを)浪費する、損する",
+        "(体重を)減らす(lose weight)"
+      ],
+      "examples": [
+        {
+          "en": "She lost her keys somewhere in the park.",
+          "ja": "彼女は公園のどこかで鍵をなくした。"
+        },
+        {
+          "en": "Our team lost the match by two points.",
+          "ja": "私たちのチームは2点差で試合に負けた。"
+        },
+        {
+          "en": "We got lost on our way to the museum.",
+          "ja": "私たちは美術館へ行く途中で道に迷った。"
+        },
+        {
+          "en": "He lost a lot of money on that investment.",
+          "ja": "彼はその投資で多くのお金を失った。"
+        },
+        {
+          "en": "She is trying to lose weight before summer.",
+          "ja": "彼女は夏前に体重を減らそうとしている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "loss",
+          "pos": "名詞",
+          "ja": "喪失・損失"
+        },
+        {
+          "word": "loser",
+          "pos": "名詞",
+          "ja": "敗者"
+        },
+        {
+          "word": "lost",
+          "pos": "形容詞",
+          "ja": "失われた・道に迷った"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "misplace",
+          "note": "(物を)置き忘れる、一時的に見当たらなくする"
+        },
+        {
+          "word": "forfeit",
+          "note": "(権利などを)失う、没収される。ややフォーマル"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "win",
+          "note": "勝つ"
+        },
+        {
+          "word": "find",
+          "note": "見つける"
+        }
+      ],
+      "origin": "古英語 losian「滅びる、失われる」に由来し、ゲルマン祖語 *lausa-(「緩んだ、自由になった」)を経て、印欧祖語の語根 *leu-(「緩める、切り離す」)に遡るとされる。「結びつきが緩んで離れていく」という原義から、「失う」「(戦いに)負ける」へと意味が広がった。",
+      "trivia": "lose と loose(緩い)は綴りが紛らわしく学習者が混同しやすいが、実際に同じ印欧祖語の語根 *leu- に遡る「遠い親戚」の関係にあるとされる。",
+      "explanation": "「失う」が中核の意味で、負ける(lose a game)、道に迷う(get lost / be lost)、体重を減らす(lose weight)など幅広く使われる。句動詞としては lose out (on)(〜を逃す、恩恵にあずかれない)、lose track of(〜を見失う、把握できなくなる)が代表的でTOEICにも登場する。"
+    }
+  },
+  {
+    "english": "stop",
+    "detail": {
+      "pronunciation": "/stɑp/",
+      "pos": "動詞",
+      "meanings": [
+        "止まる、停止する",
+        "止める、中止する",
+        "(立ち寄って)〜する、途中下車する(stop by/stop off)",
+        "やめる、〜するのをやめる(stop doing)",
+        "阻止する、防ぐ(stop A from doing)"
+      ],
+      "examples": [
+        {
+          "en": "The train stopped at every station.",
+          "ja": "電車はすべての駅に停車した。"
+        },
+        {
+          "en": "Please stop the car here.",
+          "ja": "ここで車を止めてください。"
+        },
+        {
+          "en": "I'll stop by the bakery on my way home.",
+          "ja": "帰り道にパン屋に立ち寄るつもりだ。"
+        },
+        {
+          "en": "She stopped smoking last year.",
+          "ja": "彼女は去年たばこをやめた。"
+        },
+        {
+          "en": "The heavy rain stopped us from going outside.",
+          "ja": "大雨のせいで私たちは外出できなかった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "stoppage",
+          "pos": "名詞",
+          "ja": "停止・中断"
+        },
+        {
+          "word": "nonstop",
+          "pos": "形容詞・副詞",
+          "ja": "ノンストップの・直行で"
+        },
+        {
+          "word": "stopover",
+          "pos": "名詞",
+          "ja": "途中降機・乗り継ぎ滞在"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "halt",
+          "note": "(ややフォーマルに)停止する"
+        },
+        {
+          "word": "cease",
+          "note": "(フォーマルに)やむ、終わる"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "start",
+          "note": "始める"
+        },
+        {
+          "word": "continue",
+          "note": "続ける"
+        }
+      ],
+      "origin": "中英語 stoppen に由来し、古ザクセン語 stuppon、ドイツ語 stopfen(「(穴などを)塞ぐ」)などと同系の西ゲルマン語派の語。さらにラテン語 stuppa(麻くず、栓に使う粗い繊維)からの借用とする説もあるが、Century Dictionaryは「音韻的には合うが意味的にはやや疑わしい」と指摘しており確定していない(ゲルマン語に固有の語根とする説もある)。「穴を塞ぐ」という原義から、「流れを止める」→「動きを止める」へ意味が広がったとされる。",
+      "trivia": "stop by(ちょっと立ち寄る)、stop off(途中下車する)、stop over(乗り継ぎで一泊する)など、前置詞・副詞と組み合わさる句動詞は旅行や日常会話で頻出。nonstop(ノンストップの)は航空券の直行便表示などでもおなじみ。",
+      "explanation": "「止まる/止める」が中核。stop doing(〜するのをやめる)と stop to do(〜するために立ち止まる)の意味の違いはTOEIC・英検でも狙われやすいポイント。句動詞としては stop by(立ち寄る)、stop off(途中下車する)などがある。"
+    }
+  },
+  {
+    "english": "create",
+    "detail": {
+      "pronunciation": "/kriˈeɪt/",
+      "pos": "動詞",
+      "meanings": [
+        "創造する、作り出す",
+        "(新しい役職・組織などを)設ける、設立する",
+        "(問題・状況を)引き起こす、生じさせる",
+        "(芸術作品などを)創作する"
+      ],
+      "examples": [
+        {
+          "en": "God created the heavens and the earth.",
+          "ja": "神は天と地を創造した。"
+        },
+        {
+          "en": "The company created 200 new jobs last year.",
+          "ja": "その会社は昨年200の新しい雇用を生み出した。"
+        },
+        {
+          "en": "The new policy created a lot of confusion among staff.",
+          "ja": "その新方針は従業員の間に大きな混乱を引き起こした。"
+        },
+        {
+          "en": "She created a beautiful painting for the exhibition.",
+          "ja": "彼女は展覧会のために美しい絵を創作した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "creation",
+          "pos": "名詞",
+          "ja": "創造・創作物"
+        },
+        {
+          "word": "creator",
+          "pos": "名詞",
+          "ja": "創造主・創作者"
+        },
+        {
+          "word": "creative",
+          "pos": "形容詞",
+          "ja": "創造的な"
+        },
+        {
+          "word": "creativity",
+          "pos": "名詞",
+          "ja": "創造性"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "produce",
+          "note": "生産する、作り出す。より一般的な語"
+        },
+        {
+          "word": "generate",
+          "note": "(エネルギー・アイデアなどを)生み出す"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "destroy",
+          "note": "破壊する"
+        }
+      ],
+      "origin": "ラテン語 creare(「作る、生み出す」)に由来し、印欧祖語の語根 *ker-(2)(「成長する」)に遡るとされる。同じ語根から派生した crescere(「生じる、増える、成長する」)とも関連があり、言語学者De Vaanは「creareの本来の意味は『成長させること』だった」と指摘している。15世紀初頭に英語へ入った。",
+      "trivia": "create と同じ語根 *ker- からは increase(増える)、crescent(三日月)、concrete(具体的な・コンクリート)なども派生しているとされ、いずれも「成長・増大」のイメージでつながっている。",
+      "explanation": "「無から何かを作り出す」というニュアンスが強く、make よりもフォーマルで創造的な行為に使われることが多い(例: create a masterpiece / make a sandwich)。create a problem/confusion のように「(意図せず)引き起こす」という使い方もTOEICで頻出。"
+    }
+  },
+  {
+    "english": "grow",
+    "detail": {
+      "pronunciation": "/ɡroʊ/",
+      "pos": "動詞",
+      "meanings": [
+        "育つ、成長する",
+        "(植物を)栽培する、育てる",
+        "増える、拡大する",
+        "徐々に〜になる(grow + 形容詞)",
+        "(髪・ひげなどを)伸ばす"
+      ],
+      "examples": [
+        {
+          "en": "Children grow so fast.",
+          "ja": "子供はとても早く成長する。"
+        },
+        {
+          "en": "My grandfather grows tomatoes in his garden.",
+          "ja": "祖父は庭でトマトを栽培している。"
+        },
+        {
+          "en": "The company has grown rapidly over the past five years.",
+          "ja": "その会社は過去5年間で急速に成長した。"
+        },
+        {
+          "en": "It grew dark as we walked home.",
+          "ja": "家に歩いて帰る間に暗くなっていった。"
+        },
+        {
+          "en": "He decided to grow a beard.",
+          "ja": "彼はひげを伸ばすことにした。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "growth",
+          "pos": "名詞",
+          "ja": "成長・増加"
+        },
+        {
+          "word": "grown-up",
+          "pos": "名詞・形容詞",
+          "ja": "大人(の)"
+        },
+        {
+          "word": "grower",
+          "pos": "名詞",
+          "ja": "栽培者"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "develop",
+          "note": "発達する、発展する"
+        },
+        {
+          "word": "increase",
+          "note": "増加する。数量の増加に焦点を当てる"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "shrink",
+          "note": "縮む"
+        },
+        {
+          "word": "decline",
+          "note": "衰退する"
+        }
+      ],
+      "origin": "古英語 growan(「(植物が)茂る、伸びる」)に由来し、ゲルマン祖語 *gro-、さらに印欧祖語の語根 *ghre- に遡るとされる。古ノルド語 groa、オランダ語 groeien、古高ドイツ語 gruoen など同系語が「育つ、青々と茂る」の意味を持つことから、この語根が広くゲルマン語派に共通していたことが確認されている。他動詞用法「〜を育てる、栽培する」は18世紀後半(1774年)になって記録された比較的新しい用法とされる。",
+      "trivia": "grow up(大人になる、育つ)、grow out of(〜を卒業する、成長して着られなくなる)、grow apart(疎遠になる)など、grow を使った句動詞は人の成長や人間関係の変化を表す表現として頻出。",
+      "explanation": "自動詞「育つ・成長する」と他動詞「(植物などを)栽培する」の両方で使われる基本動詞。grow + 形容詞(grow old, grow dark)で「徐々に〜になる」という変化を表す用法も重要。句動詞としては grow up(成長する、大人になる)、grow out of(成長して〜しなくなる)などが代表的。"
+    }
+  },
+  {
+    "english": "kill",
+    "detail": {
+      "pronunciation": "/kɪl/",
+      "pos": "動詞",
+      "meanings": [
+        "殺す、死なせる",
+        "(植物・エンジンなどを)枯らす、止める",
+        "(時間を)つぶす(kill time)",
+        "(痛み・雑音などを)和らげる、消す",
+        "(計画・提案などを)つぶす、廃案にする"
+      ],
+      "examples": [
+        {
+          "en": "The car accident killed two people.",
+          "ja": "その自動車事故で2人が亡くなった。"
+        },
+        {
+          "en": "She accidentally killed the plant by giving it too much water.",
+          "ja": "彼女は水をやりすぎて誤って植物を枯らしてしまった。"
+        },
+        {
+          "en": "We played cards to kill time at the airport.",
+          "ja": "空港で時間をつぶすためにトランプをした。"
+        },
+        {
+          "en": "This medicine will kill the pain quickly.",
+          "ja": "この薬はすぐに痛みを和らげてくれる。"
+        },
+        {
+          "en": "The committee killed the proposal before it reached a vote.",
+          "ja": "委員会は採決に至る前にその提案をつぶした。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "killer",
+          "pos": "名詞",
+          "ja": "殺人者・(形容詞的に)ものすごい"
+        },
+        {
+          "word": "killing",
+          "pos": "名詞",
+          "ja": "殺害・(a killingで)大儲け"
+        },
+        {
+          "word": "overkill",
+          "pos": "名詞",
+          "ja": "過剰・やりすぎ"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "murder",
+          "note": "(計画的な)殺人を犯す"
+        },
+        {
+          "word": "slaughter",
+          "note": "(大量に)虐殺する、屠殺する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "save",
+          "note": "救う"
+        },
+        {
+          "word": "revive",
+          "note": "生き返らせる"
+        }
+      ],
+      "origin": "1200年頃「打つ」、1300年頃「殺す」の意味で確認される語で、記録には残っていないものの古英語 *cwellan(推定形)に由来するとされる。ゲルマン祖語 *kwaljanan、さらに印欧祖語の語根 *gwele-(「投げる、突き刺す」)に遡るとされ、古英語 cwelan(「死ぬ」)や古ノルド語 kvelja(「苦しめる」)などの同系語がこの説を裏付けている。",
+      "trivia": "kill time(時間をつぶす)、kill off(絶滅させる、(物語の登場人物を)退場させる)のように、文字通りの「殺す」以外の比喩的な用法が非常に多い。ニュース英語では kill a bill(法案を廃案にする)のように、計画や提案を「つぶす」という意味でも頻出。",
+      "explanation": "文字通りの「殺す」に加え、kill time(時間をつぶす)、kill a plant(植物を枯らす)、kill an engine(エンジンを止める)、kill pain(痛みを和らげる)のように比喩的にも幅広く使われる。句動詞 kill off(絶滅させる、退場させる)も覚えておくとよい。"
+    }
+  },
+  {
+    "english": "appear",
+    "detail": {
+      "pronunciation": "/əˈpɪr/",
+      "pos": "動詞",
+      "meanings": [
+        "現れる、出現する",
+        "〜のように見える、思われる(seem)",
+        "出演する、登場する",
+        "(裁判などに)出頭する(appear in court)"
+      ],
+      "examples": [
+        {
+          "en": "A rainbow suddenly appeared in the sky after the rain.",
+          "ja": "雨上がりに空に虹が突然現れた。"
+        },
+        {
+          "en": "He appears to be tired.",
+          "ja": "彼は疲れているように見える。"
+        },
+        {
+          "en": "He has appeared in several popular TV dramas.",
+          "ja": "彼はいくつかの人気テレビドラマに出演したことがある。"
+        },
+        {
+          "en": "The defendant is required to appear in court next week.",
+          "ja": "被告人は来週裁判所に出頭しなければならない。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "appearance",
+          "pos": "名詞",
+          "ja": "出現・外見"
+        },
+        {
+          "word": "disappearance",
+          "pos": "名詞",
+          "ja": "消失"
+        },
+        {
+          "word": "apparent",
+          "pos": "形容詞",
+          "ja": "明らかな・見かけ上の"
+        },
+        {
+          "word": "apparently",
+          "pos": "副詞",
+          "ja": "見たところでは・どうやら"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "seem",
+          "note": "〜のように思われる。よりカジュアルで直接的"
+        },
+        {
+          "word": "emerge",
+          "note": "(隠れていたものが)現れ出る、浮上する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "disappear",
+          "note": "消える、姿を消す"
+        },
+        {
+          "word": "vanish",
+          "note": "忽然と消える"
+        }
+      ],
+      "origin": "ラテン語 apparere(「視界に入る、現れる」)に由来し、ad-(「〜へ」)+ parere(「前に出る、見える」)から成る。古フランス語 aparoir/aperer を経て14世紀後期に英語へ入った。なお parere 自体の語源は不確かとされており(uncertain origin)、言語学者De Vaanは印欧祖語 *prh-o-(「供給する」)との関連を推測しているが、確定してはいない。",
+      "trivia": "同じ語根 parere から派生した語には apparent(明らかな)、apparatus(装置)、transparent(透明な。trans-「通して」+ parere)などがあり、いずれも「(何かが)現れ見える」というイメージでつながっている。",
+      "explanation": "「現れる」と「〜のように見える(seem)」の2つの中心的な意味を持つ。後者は appear to be / appear + 形容詞(He appears tired.)の形でTOEICにも頻出。対義語は disappear(消える)。appear on(〜に出演する、掲載される: appear on TV/in a magazine)という組み合わせもよく使われる。"
+    }
+  },
+  {
+    "english": "expect",
+    "detail": {
+      "pronunciation": "/ɪkˈspɛkt/",
+      "pos": "動詞",
+      "meanings": [
+        "予期する、予想する",
+        "期待する、楽しみに待つ",
+        "(当然のこととして)要求する",
+        "妊娠している(be expecting。婉曲表現)"
+      ],
+      "examples": [
+        {
+          "en": "I expect it will rain tomorrow.",
+          "ja": "明日は雨が降ると思う。"
+        },
+        {
+          "en": "We expect good results from the new manager.",
+          "ja": "私たちは新しいマネージャーに良い結果を期待している。"
+        },
+        {
+          "en": "Teachers expect students to submit their homework on time.",
+          "ja": "教師は生徒に宿題を期限内に提出することを求めている。"
+        },
+        {
+          "en": "She is expecting her first baby in December.",
+          "ja": "彼女は12月に第一子を出産予定だ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "expectation",
+          "pos": "名詞",
+          "ja": "期待・予想"
+        },
+        {
+          "word": "expected",
+          "pos": "形容詞",
+          "ja": "予想された・期待された"
+        },
+        {
+          "word": "unexpected",
+          "pos": "形容詞",
+          "ja": "予期しない"
+        },
+        {
+          "word": "expectancy",
+          "pos": "名詞",
+          "ja": "予期・(life expectancyで)平均余命"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "anticipate",
+          "note": "(備えをしつつ)予期する。ややフォーマル"
+        },
+        {
+          "word": "hope for",
+          "note": "(願望を込めて)望む"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語 exspectare/expectare(「待ち望む、期待する」)に由来し、ex-(「外へ、徹底的に」)+ spectare(「見る」。specere「見る」の反復形)から成る。「外を見ながら待つ」という原義から、16世紀半ばに英語へ入り、その後「予期する、楽しみに待つ」という現代的な意味に発展した。1817年以降は be expecting の形で「妊娠している」を婉曲的に表す用法も生まれた。",
+      "trivia": "expect と同じ語根 spectare からは spectator(観客)、inspect(検査する)、respect(尊敬する。re-「再び」+ spectare「見る」→「見返す」)など「見る」に関連した語が多数派生している。",
+      "explanation": "「(根拠を持って)予期する」が中核の意味で、hope(単なる願望)より確度が高いニュアンス。expect A to do(Aが〜すると予想する)の形がTOEICで頻出。婉曲的に be expecting で「妊娠している」を表す用法も覚えておくとよい。"
+    }
+  },
+  {
+    "english": "allow",
+    "detail": {
+      "pronunciation": "/əˈlaʊ/",
+      "pos": "動詞",
+      "meanings": [
+        "許可する、認める",
+        "〜することを許す、〜させておく(allow + 目的語 + to do)",
+        "(allow for)〜を考慮に入れる、見込む",
+        "(時間・お金などを)取っておく、割り当てる"
+      ],
+      "examples": [
+        {
+          "en": "The school does not allow students to use their phones in class.",
+          "ja": "学校は授業中に生徒が携帯電話を使用することを許可していない。"
+        },
+        {
+          "en": "Her parents finally allowed her to travel abroad alone.",
+          "ja": "彼女の両親はついに彼女が一人で海外旅行することを許した。"
+        },
+        {
+          "en": "You should allow for traffic delays when planning your trip.",
+          "ja": "旅行を計画する際は交通渋滞を考慮に入れるべきだ。"
+        },
+        {
+          "en": "Please allow two weeks for delivery.",
+          "ja": "配達には2週間見ておいてください。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "allowance",
+          "pos": "名詞",
+          "ja": "手当・小遣い・許容量"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "permit",
+          "note": "許可する。ややフォーマル"
+        },
+        {
+          "word": "let",
+          "note": "〜させる。カジュアル"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "forbid",
+          "note": "禁じる"
+        },
+        {
+          "word": "prohibit",
+          "note": "禁止する。フォーマル"
+        }
+      ],
+      "origin": "中英語 allouen に由来し、古フランス語の段階で語源の異なる2つのラテン語系動詞が混同・融合したとされる(OEDによる)。一つはラテン語 allocare(「割り当てる」。ad- + locare「置く」)で、「(正当なものとして)認める」という意味につながった。もう一つはラテン語 allaudare/adlaudare(「褒める」。ad- + laudare「褒める」)で、「称賛して認める」というニュアンスを加えた。この2系統が古フランス語で混ざり合い、現代英語の「許可する・認める」という意味に発展した。",
+      "trivia": "allow for(〜を考慮に入れる、見込む)は、見積もりやスケジュールの文脈でTOEICにも頻出。「許可する」の allow とは少しニュアンスが異なるので注意。",
+      "explanation": "「許可する・認める」が中核。allow A to do(Aが〜するのを許す)の形が基本。allow for(〜を見込む、考慮に入れる)は句動詞的な用法として重要で、見積もりや計画のビジネス文脈で頻出。対義語は forbid/prohibit。"
+    }
+  },
+  {
+    "english": "include",
+    "detail": {
+      "pronunciation": "/ɪnˈklud/",
+      "pos": "動詞",
+      "meanings": [
+        "含む、含んでいる",
+        "含める、加える",
+        "(会話・活動などに)参加させる、仲間に入れる"
+      ],
+      "examples": [
+        {
+          "en": "The price includes tax and a service charge.",
+          "ja": "その価格には税とサービス料が含まれている。"
+        },
+        {
+          "en": "Please include your phone number in the application form.",
+          "ja": "申込書に電話番号も記入(含めて)してください。"
+        },
+        {
+          "en": "The teacher always tries to include every student in the discussion.",
+          "ja": "その教師はいつも全ての生徒を議論に参加させようとする。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "including",
+          "pos": "前置詞",
+          "ja": "〜を含めて"
+        },
+        {
+          "word": "inclusive",
+          "pos": "形容詞",
+          "ja": "包括的な・込みの"
+        },
+        {
+          "word": "inclusion",
+          "pos": "名詞",
+          "ja": "包含・参加"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "contain",
+          "note": "(中身として)含む"
+        },
+        {
+          "word": "comprise",
+          "note": "(全体が〜から)成る、構成する。フォーマル"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "exclude",
+          "note": "除外する"
+        }
+      ],
+      "origin": "ラテン語 includere(「中に閉じ込める」)に由来し、in-(「中へ」)+ claudere(「閉じる」)から成る。15世紀初頭に英語へ入り、当初は「閉じ込める、投獄する」という物理的な意味だったが、その後「(構成要素として)中に含める」という抽象的な意味へ発展した。",
+      "trivia": "映画製作者サム・ゴールドウィンが言ったとされる “Include me out”(私は仲間に入れないでくれ)という逆説的な言い回しが1937年の記録に残っており、include の「含める」イメージを逆手に取ったジョークとして知られる。",
+      "explanation": "「中に含む」が中核。inclusive(込みの、包括的な)は tax inclusive(税込み)のようにビジネス文書で頻出。対義語は exclude(除外する)。"
+    }
+  },
+  {
+    "english": "continue",
+    "detail": {
+      "pronunciation": "/kənˈtɪnju/",
+      "pos": "動詞",
+      "meanings": [
+        "続ける、続行する",
+        "(中断していたものが)続く、継続する",
+        "(中断後に)再開する",
+        "(道・線などが)延びる、続いている"
+      ],
+      "examples": [
+        {
+          "en": "Please continue with your presentation after the break.",
+          "ja": "休憩の後、プレゼンテーションを続けてください。"
+        },
+        {
+          "en": "The meeting continued for another two hours.",
+          "ja": "会議はさらに2時間続いた。"
+        },
+        {
+          "en": "We will continue the discussion tomorrow morning.",
+          "ja": "議論は明日の朝再開します。"
+        },
+        {
+          "en": "The road continues for another ten kilometers.",
+          "ja": "その道はさらに10キロ続いている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "continuous",
+          "pos": "形容詞",
+          "ja": "連続的な・絶え間ない"
+        },
+        {
+          "word": "continuation",
+          "pos": "名詞",
+          "ja": "継続・続編"
+        },
+        {
+          "word": "continual",
+          "pos": "形容詞",
+          "ja": "頻繁に繰り返される"
+        },
+        {
+          "word": "continuity",
+          "pos": "名詞",
+          "ja": "連続性"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "proceed",
+          "note": "(フォーマルに)続行する、先に進む"
+        },
+        {
+          "word": "carry on",
+          "note": "(口語的に)続ける"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "stop",
+          "note": "やめる、止まる"
+        },
+        {
+          "word": "cease",
+          "note": "(フォーマルに)やむ、中止する"
+        }
+      ],
+      "origin": "ラテン語 continuare(「途切れずにつなげる」)に由来し、continuus(「つながっている」)から派生した。continuus はさらにcontinere(「一つにまとまる」。com-「共に」+ tenere「保つ」)に遡り、最終的には印欧祖語の語根 *ten-(「伸ばす」)に行き着くとされる。「途切れずにつながっている」という原義から、「続ける・続く」の意味が生まれた。",
+      "trivia": "プログラミング言語の continue 文(繰り返し処理を次の周回へ進める命令)も、この「中断せずに次へ進む」という語のイメージがそのまま使われている。",
+      "explanation": "「続ける・続く」が中核で、continue to do / continue doing の両方の形を取れる(意味の違いはほぼ無い)点がTOEICで問われやすい。対義語は stop/cease。continue with(〜を続ける)のように前置詞 with を伴う用法も頻出。"
+    }
+  },
+  {
+    "english": "happen",
+    "detail": {
+      "pronunciation": "/ˈhæpən/",
+      "pos": "動詞",
+      "meanings": [
+        "(出来事が)起こる、生じる",
+        "たまたま〜する(happen to do)",
+        "(happen to+人・物で)身に降りかかる、〜の身に起こる"
+      ],
+      "examples": [
+        {
+          "en": "Accidents can happen at any time, so please be careful.",
+          "ja": "事故はいつでも起こり得るので、気をつけてください。"
+        },
+        {
+          "en": "I happened to meet my old friend at the station yesterday.",
+          "ja": "昨日、駅でたまたま旧友に出会った。"
+        },
+        {
+          "en": "What happened to your arm? It looks bruised.",
+          "ja": "腕どうしたの? あざになってるよ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "happening",
+          "pos": "名詞",
+          "ja": "出来事・(the happeningsで)一連の出来事"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "occur",
+          "note": "(ややフォーマルに)起こる"
+        },
+        {
+          "word": "take place",
+          "note": "(予定された事が)行われる、開催される"
+        }
+      ],
+      "antonyms": [],
+      "origin": "中英語期(14世紀後期)に happenen として現れ、「起こる、生じる」の意味を持った。より古い名詞 hap(「偶然、運、巡り合わせ」)に動詞化の接尾辞 -en を付けて作られた語で、hap 自体は「偶然の出来事」を意味した。同じ hap から派生した happy(幸せな)も、元々は「運が良い」という意味だった。",
+      "trivia": "happy・happen・perhaps(「もしかすると」)はいずれも同じ語根 hap(偶然、運)から派生しており、英語では「幸運」と「偶然」が語源的に深く結びついている。",
+      "explanation": "「(予定されず)偶然に起こる」というニュアンスが強く、take place(予定されたイベントが開催される)とはニュアンスが異なる。happen to do(たまたま〜する)、happen to + 人(〜の身に起こる。例: What happened to you?)の形がよく使われる。"
+    }
+  },
+  {
+    "english": "remain",
+    "detail": {
+      "pronunciation": "/rɪˈmeɪn/",
+      "pos": "動詞",
+      "meanings": [
+        "残る、残っている",
+        "(依然として)〜のままである(remain + 形容詞/名詞)",
+        "とどまる、居残る",
+        "(remainsで)残り、遺跡、遺体"
+      ],
+      "examples": [
+        {
+          "en": "Only a few cookies remain in the jar.",
+          "ja": "瓶の中にはクッキーがわずかしか残っていない。"
+        },
+        {
+          "en": "The shop remains open even on national holidays.",
+          "ja": "その店は祝日でも開いたままだ。"
+        },
+        {
+          "en": "She decided to remain in Tokyo after graduation.",
+          "ja": "彼女は卒業後も東京にとどまることに決めた。"
+        },
+        {
+          "en": "Ancient remains were discovered near the old castle.",
+          "ja": "古城の近くで古代の遺跡が発見された。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "remainder",
+          "pos": "名詞",
+          "ja": "残り・余り"
+        },
+        {
+          "word": "remaining",
+          "pos": "形容詞",
+          "ja": "残りの"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "stay",
+          "note": "とどまる、滞在する"
+        },
+        {
+          "word": "persist",
+          "note": "(状態などが)持続する、しつこく続く"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "leave",
+          "note": "去る、出発する"
+        },
+        {
+          "word": "depart",
+          "note": "出発する。フォーマル"
+        }
+      ],
+      "origin": "ラテン語 remanere(「後に残る」。re-「後ろに、再び」+ manere「とどまる」)に由来し、古フランス語 remanoir を経て15世紀初頭に英語へ入った。manere はさらに印欧祖語の語根 *men-(「とどまる」)に遡るとされる。「一部を失った後になお残る」という原義から、「(状態が)〜のままである」「とどまる」へと意味が広がった。",
+      "trivia": "名詞形 remains(遺跡・遺体)は、remain の「(一部が失われた後に)残る」という原義が最もよく表れた用法とされ、考古学(ancient remains)やニュース記事(the remains of the victim)で頻出する。",
+      "explanation": "「残る」に加え、remain + 形容詞(remain calm/remain silent)の形で「(依然として)〜のままである」という用法が非常に重要(seem/become と同じ「連結動詞」のグループ)。名詞形 remains(遺跡・残骸・遺体)も合わせて覚えておきたい。"
+    }
+  }
+]

@@ -1,0 +1,893 @@
+[
+  {
+    "english": "lose",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "失う、負ける、道に迷う",
+    "example": "She lost her keys somewhere in the park.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/luz/",
+      "pos": "動詞",
+      "meanings": [
+        "失う、なくす",
+        "(試合・勝負に)負ける",
+        "道に迷う(get lost / be lost)",
+        "(時間・お金などを)浪費する、損する",
+        "(体重を)減らす(lose weight)"
+      ],
+      "examples": [
+        {
+          "en": "She lost her keys somewhere in the park.",
+          "ja": "彼女は公園のどこかで鍵をなくした。"
+        },
+        {
+          "en": "Our team lost the match by two points.",
+          "ja": "私たちのチームは2点差で試合に負けた。"
+        },
+        {
+          "en": "We got lost on our way to the museum.",
+          "ja": "私たちは美術館へ行く途中で道に迷った。"
+        },
+        {
+          "en": "He lost a lot of money on that investment.",
+          "ja": "彼はその投資で多くのお金を失った。"
+        },
+        {
+          "en": "She is trying to lose weight before summer.",
+          "ja": "彼女は夏前に体重を減らそうとしている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "loss",
+          "pos": "名詞",
+          "ja": "喪失・損失"
+        },
+        {
+          "word": "loser",
+          "pos": "名詞",
+          "ja": "敗者"
+        },
+        {
+          "word": "lost",
+          "pos": "形容詞",
+          "ja": "失われた・道に迷った"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "misplace",
+          "note": "(物を)置き忘れる、一時的に見当たらなくする"
+        },
+        {
+          "word": "forfeit",
+          "note": "(権利などを)失う、没収される。ややフォーマル"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "win",
+          "note": "勝つ"
+        },
+        {
+          "word": "find",
+          "note": "見つける"
+        }
+      ],
+      "origin": "古英語 losian「滅びる、失われる」に由来し、ゲルマン祖語 *lausa-(「緩んだ、自由になった」)を経て、印欧祖語の語根 *leu-(「緩める、切り離す」)に遡るとされる。「結びつきが緩んで離れていく」という原義から、「失う」「(戦いに)負ける」へと意味が広がった。",
+      "trivia": "lose と loose(緩い)は綴りが紛らわしく学習者が混同しやすいが、実際に同じ印欧祖語の語根 *leu- に遡る「遠い親戚」の関係にあるとされる。",
+      "explanation": "「失う」が中核の意味で、負ける(lose a game)、道に迷う(get lost / be lost)、体重を減らす(lose weight)など幅広く使われる。句動詞としては lose out (on)(〜を逃す、恩恵にあずかれない)、lose track of(〜を見失う、把握できなくなる)が代表的でTOEICにも登場する。"
+    }
+  },
+  {
+    "english": "stop",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "止まる、止める",
+    "example": "The train stopped at every station.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/stɑp/",
+      "pos": "動詞",
+      "meanings": [
+        "止まる、停止する",
+        "止める、中止する",
+        "(立ち寄って)〜する、途中下車する(stop by/stop off)",
+        "やめる、〜するのをやめる(stop doing)",
+        "阻止する、防ぐ(stop A from doing)"
+      ],
+      "examples": [
+        {
+          "en": "The train stopped at every station.",
+          "ja": "電車はすべての駅に停車した。"
+        },
+        {
+          "en": "Please stop the car here.",
+          "ja": "ここで車を止めてください。"
+        },
+        {
+          "en": "I'll stop by the bakery on my way home.",
+          "ja": "帰り道にパン屋に立ち寄るつもりだ。"
+        },
+        {
+          "en": "She stopped smoking last year.",
+          "ja": "彼女は去年たばこをやめた。"
+        },
+        {
+          "en": "The heavy rain stopped us from going outside.",
+          "ja": "大雨のせいで私たちは外出できなかった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "stoppage",
+          "pos": "名詞",
+          "ja": "停止・中断"
+        },
+        {
+          "word": "nonstop",
+          "pos": "形容詞・副詞",
+          "ja": "ノンストップの・直行で"
+        },
+        {
+          "word": "stopover",
+          "pos": "名詞",
+          "ja": "途中降機・乗り継ぎ滞在"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "halt",
+          "note": "(ややフォーマルに)停止する"
+        },
+        {
+          "word": "cease",
+          "note": "(フォーマルに)やむ、終わる"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "start",
+          "note": "始める"
+        },
+        {
+          "word": "continue",
+          "note": "続ける"
+        }
+      ],
+      "origin": "中英語 stoppen に由来し、古ザクセン語 stuppon、ドイツ語 stopfen(「(穴などを)塞ぐ」)などと同系の西ゲルマン語派の語。さらにラテン語 stuppa(麻くず、栓に使う粗い繊維)からの借用とする説もあるが、Century Dictionaryは「音韻的には合うが意味的にはやや疑わしい」と指摘しており確定していない(ゲルマン語に固有の語根とする説もある)。「穴を塞ぐ」という原義から、「流れを止める」→「動きを止める」へ意味が広がったとされる。",
+      "trivia": "stop by(ちょっと立ち寄る)、stop off(途中下車する)、stop over(乗り継ぎで一泊する)など、前置詞・副詞と組み合わさる句動詞は旅行や日常会話で頻出。nonstop(ノンストップの)は航空券の直行便表示などでもおなじみ。",
+      "explanation": "「止まる/止める」が中核。stop doing(〜するのをやめる)と stop to do(〜するために立ち止まる)の意味の違いはTOEIC・英検でも狙われやすいポイント。句動詞としては stop by(立ち寄る)、stop off(途中下車する)などがある。"
+    }
+  },
+  {
+    "english": "create",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "創造する、作り出す、生み出す",
+    "example": "The company created 200 new jobs last year.",
+    "level": 400,
+    "detail": {
+      "pronunciation": "/kriˈeɪt/",
+      "pos": "動詞",
+      "meanings": [
+        "創造する、作り出す",
+        "(新しい役職・組織などを)設ける、設立する",
+        "(問題・状況を)引き起こす、生じさせる",
+        "(芸術作品などを)創作する"
+      ],
+      "examples": [
+        {
+          "en": "God created the heavens and the earth.",
+          "ja": "神は天と地を創造した。"
+        },
+        {
+          "en": "The company created 200 new jobs last year.",
+          "ja": "その会社は昨年200の新しい雇用を生み出した。"
+        },
+        {
+          "en": "The new policy created a lot of confusion among staff.",
+          "ja": "その新方針は従業員の間に大きな混乱を引き起こした。"
+        },
+        {
+          "en": "She created a beautiful painting for the exhibition.",
+          "ja": "彼女は展覧会のために美しい絵を創作した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "creation",
+          "pos": "名詞",
+          "ja": "創造・創作物"
+        },
+        {
+          "word": "creator",
+          "pos": "名詞",
+          "ja": "創造主・創作者"
+        },
+        {
+          "word": "creative",
+          "pos": "形容詞",
+          "ja": "創造的な"
+        },
+        {
+          "word": "creativity",
+          "pos": "名詞",
+          "ja": "創造性"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "produce",
+          "note": "生産する、作り出す。より一般的な語"
+        },
+        {
+          "word": "generate",
+          "note": "(エネルギー・アイデアなどを)生み出す"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "destroy",
+          "note": "破壊する"
+        }
+      ],
+      "origin": "ラテン語 creare(「作る、生み出す」)に由来し、印欧祖語の語根 *ker-(2)(「成長する」)に遡るとされる。同じ語根から派生した crescere(「生じる、増える、成長する」)とも関連があり、言語学者De Vaanは「creareの本来の意味は『成長させること』だった」と指摘している。15世紀初頭に英語へ入った。",
+      "trivia": "create と同じ語根 *ker- からは increase(増える)、crescent(三日月)、concrete(具体的な・コンクリート)なども派生しているとされ、いずれも「成長・増大」のイメージでつながっている。",
+      "explanation": "「無から何かを作り出す」というニュアンスが強く、make よりもフォーマルで創造的な行為に使われることが多い(例: create a masterpiece / make a sandwich)。create a problem/confusion のように「(意図せず)引き起こす」という使い方もTOEICで頻出。"
+    }
+  },
+  {
+    "english": "grow",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "育つ、栽培する、〜になる",
+    "example": "Children grow so fast.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/ɡroʊ/",
+      "pos": "動詞",
+      "meanings": [
+        "育つ、成長する",
+        "(植物を)栽培する、育てる",
+        "増える、拡大する",
+        "徐々に〜になる(grow + 形容詞)",
+        "(髪・ひげなどを)伸ばす"
+      ],
+      "examples": [
+        {
+          "en": "Children grow so fast.",
+          "ja": "子供はとても早く成長する。"
+        },
+        {
+          "en": "My grandfather grows tomatoes in his garden.",
+          "ja": "祖父は庭でトマトを栽培している。"
+        },
+        {
+          "en": "The company has grown rapidly over the past five years.",
+          "ja": "その会社は過去5年間で急速に成長した。"
+        },
+        {
+          "en": "It grew dark as we walked home.",
+          "ja": "家に歩いて帰る間に暗くなっていった。"
+        },
+        {
+          "en": "He decided to grow a beard.",
+          "ja": "彼はひげを伸ばすことにした。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "growth",
+          "pos": "名詞",
+          "ja": "成長・増加"
+        },
+        {
+          "word": "grown-up",
+          "pos": "名詞・形容詞",
+          "ja": "大人(の)"
+        },
+        {
+          "word": "grower",
+          "pos": "名詞",
+          "ja": "栽培者"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "develop",
+          "note": "発達する、発展する"
+        },
+        {
+          "word": "increase",
+          "note": "増加する。数量の増加に焦点を当てる"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "shrink",
+          "note": "縮む"
+        },
+        {
+          "word": "decline",
+          "note": "衰退する"
+        }
+      ],
+      "origin": "古英語 growan(「(植物が)茂る、伸びる」)に由来し、ゲルマン祖語 *gro-、さらに印欧祖語の語根 *ghre- に遡るとされる。古ノルド語 groa、オランダ語 groeien、古高ドイツ語 gruoen など同系語が「育つ、青々と茂る」の意味を持つことから、この語根が広くゲルマン語派に共通していたことが確認されている。他動詞用法「〜を育てる、栽培する」は18世紀後半(1774年)になって記録された比較的新しい用法とされる。",
+      "trivia": "grow up(大人になる、育つ)、grow out of(〜を卒業する、成長して着られなくなる)、grow apart(疎遠になる)など、grow を使った句動詞は人の成長や人間関係の変化を表す表現として頻出。",
+      "explanation": "自動詞「育つ・成長する」と他動詞「(植物などを)栽培する」の両方で使われる基本動詞。grow + 形容詞(grow old, grow dark)で「徐々に〜になる」という変化を表す用法も重要。句動詞としては grow up(成長する、大人になる)、grow out of(成長して〜しなくなる)などが代表的。"
+    }
+  },
+  {
+    "english": "kill",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "殺す、(時間を)つぶす、台無しにする",
+    "example": "The car accident killed two people.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/kɪl/",
+      "pos": "動詞",
+      "meanings": [
+        "殺す、死なせる",
+        "(植物・エンジンなどを)枯らす、止める",
+        "(時間を)つぶす(kill time)",
+        "(痛み・雑音などを)和らげる、消す",
+        "(計画・提案などを)つぶす、廃案にする"
+      ],
+      "examples": [
+        {
+          "en": "The car accident killed two people.",
+          "ja": "その自動車事故で2人が亡くなった。"
+        },
+        {
+          "en": "She accidentally killed the plant by giving it too much water.",
+          "ja": "彼女は水をやりすぎて誤って植物を枯らしてしまった。"
+        },
+        {
+          "en": "We played cards to kill time at the airport.",
+          "ja": "空港で時間をつぶすためにトランプをした。"
+        },
+        {
+          "en": "This medicine will kill the pain quickly.",
+          "ja": "この薬はすぐに痛みを和らげてくれる。"
+        },
+        {
+          "en": "The committee killed the proposal before it reached a vote.",
+          "ja": "委員会は採決に至る前にその提案をつぶした。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "killer",
+          "pos": "名詞",
+          "ja": "殺人者・(形容詞的に)ものすごい"
+        },
+        {
+          "word": "killing",
+          "pos": "名詞",
+          "ja": "殺害・(a killingで)大儲け"
+        },
+        {
+          "word": "overkill",
+          "pos": "名詞",
+          "ja": "過剰・やりすぎ"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "murder",
+          "note": "(計画的な)殺人を犯す"
+        },
+        {
+          "word": "slaughter",
+          "note": "(大量に)虐殺する、屠殺する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "save",
+          "note": "救う"
+        },
+        {
+          "word": "revive",
+          "note": "生き返らせる"
+        }
+      ],
+      "origin": "1200年頃「打つ」、1300年頃「殺す」の意味で確認される語で、記録には残っていないものの古英語 *cwellan(推定形)に由来するとされる。ゲルマン祖語 *kwaljanan、さらに印欧祖語の語根 *gwele-(「投げる、突き刺す」)に遡るとされ、古英語 cwelan(「死ぬ」)や古ノルド語 kvelja(「苦しめる」)などの同系語がこの説を裏付けている。",
+      "trivia": "kill time(時間をつぶす)、kill off(絶滅させる、(物語の登場人物を)退場させる)のように、文字通りの「殺す」以外の比喩的な用法が非常に多い。ニュース英語では kill a bill(法案を廃案にする)のように、計画や提案を「つぶす」という意味でも頻出。",
+      "explanation": "文字通りの「殺す」に加え、kill time(時間をつぶす)、kill a plant(植物を枯らす)、kill an engine(エンジンを止める)、kill pain(痛みを和らげる)のように比喩的にも幅広く使われる。句動詞 kill off(絶滅させる、退場させる)も覚えておくとよい。"
+    }
+  },
+  {
+    "english": "appear",
+    "is_existing": true,
+    "existing_id": 146,
+    "japanese": "現れる、〜のように見える、出演する",
+    "example": "He appears to be tired.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/əˈpɪr/",
+      "pos": "動詞",
+      "meanings": [
+        "現れる、出現する",
+        "〜のように見える、思われる(seem)",
+        "出演する、登場する",
+        "(裁判などに)出頭する(appear in court)"
+      ],
+      "examples": [
+        {
+          "en": "A rainbow suddenly appeared in the sky after the rain.",
+          "ja": "雨上がりに空に虹が突然現れた。"
+        },
+        {
+          "en": "He appears to be tired.",
+          "ja": "彼は疲れているように見える。"
+        },
+        {
+          "en": "He has appeared in several popular TV dramas.",
+          "ja": "彼はいくつかの人気テレビドラマに出演したことがある。"
+        },
+        {
+          "en": "The defendant is required to appear in court next week.",
+          "ja": "被告人は来週裁判所に出頭しなければならない。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "appearance",
+          "pos": "名詞",
+          "ja": "出現・外見"
+        },
+        {
+          "word": "disappearance",
+          "pos": "名詞",
+          "ja": "消失"
+        },
+        {
+          "word": "apparent",
+          "pos": "形容詞",
+          "ja": "明らかな・見かけ上の"
+        },
+        {
+          "word": "apparently",
+          "pos": "副詞",
+          "ja": "見たところでは・どうやら"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "seem",
+          "note": "〜のように思われる。よりカジュアルで直接的"
+        },
+        {
+          "word": "emerge",
+          "note": "(隠れていたものが)現れ出る、浮上する"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "disappear",
+          "note": "消える、姿を消す"
+        },
+        {
+          "word": "vanish",
+          "note": "忽然と消える"
+        }
+      ],
+      "origin": "ラテン語 apparere(「視界に入る、現れる」)に由来し、ad-(「〜へ」)+ parere(「前に出る、見える」)から成る。古フランス語 aparoir/aperer を経て14世紀後期に英語へ入った。なお parere 自体の語源は不確かとされており(uncertain origin)、言語学者De Vaanは印欧祖語 *prh-o-(「供給する」)との関連を推測しているが、確定してはいない。",
+      "trivia": "同じ語根 parere から派生した語には apparent(明らかな)、apparatus(装置)、transparent(透明な。trans-「通して」+ parere)などがあり、いずれも「(何かが)現れ見える」というイメージでつながっている。",
+      "explanation": "「現れる」と「〜のように見える(seem)」の2つの中心的な意味を持つ。後者は appear to be / appear + 形容詞(He appears tired.)の形でTOEICにも頻出。対義語は disappear(消える)。appear on(〜に出演する、掲載される: appear on TV/in a magazine)という組み合わせもよく使われる。"
+    }
+  },
+  {
+    "english": "expect",
+    "is_existing": true,
+    "existing_id": 173,
+    "japanese": "予期する、期待する、予想する",
+    "example": "We expect good results.",
+    "level": 400,
+    "detail": {
+      "pronunciation": "/ɪkˈspɛkt/",
+      "pos": "動詞",
+      "meanings": [
+        "予期する、予想する",
+        "期待する、楽しみに待つ",
+        "(当然のこととして)要求する",
+        "妊娠している(be expecting。婉曲表現)"
+      ],
+      "examples": [
+        {
+          "en": "I expect it will rain tomorrow.",
+          "ja": "明日は雨が降ると思う。"
+        },
+        {
+          "en": "We expect good results from the new manager.",
+          "ja": "私たちは新しいマネージャーに良い結果を期待している。"
+        },
+        {
+          "en": "Teachers expect students to submit their homework on time.",
+          "ja": "教師は生徒に宿題を期限内に提出することを求めている。"
+        },
+        {
+          "en": "She is expecting her first baby in December.",
+          "ja": "彼女は12月に第一子を出産予定だ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "expectation",
+          "pos": "名詞",
+          "ja": "期待・予想"
+        },
+        {
+          "word": "expected",
+          "pos": "形容詞",
+          "ja": "予想された・期待された"
+        },
+        {
+          "word": "unexpected",
+          "pos": "形容詞",
+          "ja": "予期しない"
+        },
+        {
+          "word": "expectancy",
+          "pos": "名詞",
+          "ja": "予期・(life expectancyで)平均余命"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "anticipate",
+          "note": "(備えをしつつ)予期する。ややフォーマル"
+        },
+        {
+          "word": "hope for",
+          "note": "(願望を込めて)望む"
+        }
+      ],
+      "antonyms": [],
+      "origin": "ラテン語 exspectare/expectare(「待ち望む、期待する」)に由来し、ex-(「外へ、徹底的に」)+ spectare(「見る」。specere「見る」の反復形)から成る。「外を見ながら待つ」という原義から、16世紀半ばに英語へ入り、その後「予期する、楽しみに待つ」という現代的な意味に発展した。1817年以降は be expecting の形で「妊娠している」を婉曲的に表す用法も生まれた。",
+      "trivia": "expect と同じ語根 spectare からは spectator(観客)、inspect(検査する)、respect(尊敬する。re-「再び」+ spectare「見る」→「見返す」)など「見る」に関連した語が多数派生している。",
+      "explanation": "「(根拠を持って)予期する」が中核の意味で、hope(単なる願望)より確度が高いニュアンス。expect A to do(Aが〜すると予想する)の形がTOEICで頻出。婉曲的に be expecting で「妊娠している」を表す用法も覚えておくとよい。"
+    }
+  },
+  {
+    "english": "allow",
+    "is_existing": true,
+    "existing_id": 439,
+    "japanese": "許可する、認める、〜させる",
+    "example": "The school does not allow students to use their phones in class.",
+    "level": 400,
+    "detail": {
+      "pronunciation": "/əˈlaʊ/",
+      "pos": "動詞",
+      "meanings": [
+        "許可する、認める",
+        "〜することを許す、〜させておく(allow + 目的語 + to do)",
+        "(allow for)〜を考慮に入れる、見込む",
+        "(時間・お金などを)取っておく、割り当てる"
+      ],
+      "examples": [
+        {
+          "en": "The school does not allow students to use their phones in class.",
+          "ja": "学校は授業中に生徒が携帯電話を使用することを許可していない。"
+        },
+        {
+          "en": "Her parents finally allowed her to travel abroad alone.",
+          "ja": "彼女の両親はついに彼女が一人で海外旅行することを許した。"
+        },
+        {
+          "en": "You should allow for traffic delays when planning your trip.",
+          "ja": "旅行を計画する際は交通渋滞を考慮に入れるべきだ。"
+        },
+        {
+          "en": "Please allow two weeks for delivery.",
+          "ja": "配達には2週間見ておいてください。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "allowance",
+          "pos": "名詞",
+          "ja": "手当・小遣い・許容量"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "permit",
+          "note": "許可する。ややフォーマル"
+        },
+        {
+          "word": "let",
+          "note": "〜させる。カジュアル"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "forbid",
+          "note": "禁じる"
+        },
+        {
+          "word": "prohibit",
+          "note": "禁止する。フォーマル"
+        }
+      ],
+      "origin": "中英語 allouen に由来し、古フランス語の段階で語源の異なる2つのラテン語系動詞が混同・融合したとされる(OEDによる)。一つはラテン語 allocare(「割り当てる」。ad- + locare「置く」)で、「(正当なものとして)認める」という意味につながった。もう一つはラテン語 allaudare/adlaudare(「褒める」。ad- + laudare「褒める」)で、「称賛して認める」というニュアンスを加えた。この2系統が古フランス語で混ざり合い、現代英語の「許可する・認める」という意味に発展した。",
+      "trivia": "allow for(〜を考慮に入れる、見込む)は、見積もりやスケジュールの文脈でTOEICにも頻出。「許可する」の allow とは少しニュアンスが異なるので注意。",
+      "explanation": "「許可する・認める」が中核。allow A to do(Aが〜するのを許す)の形が基本。allow for(〜を見込む、考慮に入れる)は句動詞的な用法として重要で、見積もりや計画のビジネス文脈で頻出。対義語は forbid/prohibit。"
+    }
+  },
+  {
+    "english": "include",
+    "is_existing": true,
+    "existing_id": 184,
+    "japanese": "含む、含める、盛り込む",
+    "example": "The price includes tax.",
+    "level": 400,
+    "detail": {
+      "pronunciation": "/ɪnˈklud/",
+      "pos": "動詞",
+      "meanings": [
+        "含む、含んでいる",
+        "含める、加える",
+        "(会話・活動などに)参加させる、仲間に入れる"
+      ],
+      "examples": [
+        {
+          "en": "The price includes tax and a service charge.",
+          "ja": "その価格には税とサービス料が含まれている。"
+        },
+        {
+          "en": "Please include your phone number in the application form.",
+          "ja": "申込書に電話番号も記入(含めて)してください。"
+        },
+        {
+          "en": "The teacher always tries to include every student in the discussion.",
+          "ja": "その教師はいつも全ての生徒を議論に参加させようとする。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "including",
+          "pos": "前置詞",
+          "ja": "〜を含めて"
+        },
+        {
+          "word": "inclusive",
+          "pos": "形容詞",
+          "ja": "包括的な・込みの"
+        },
+        {
+          "word": "inclusion",
+          "pos": "名詞",
+          "ja": "包含・参加"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "contain",
+          "note": "(中身として)含む"
+        },
+        {
+          "word": "comprise",
+          "note": "(全体が〜から)成る、構成する。フォーマル"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "exclude",
+          "note": "除外する"
+        }
+      ],
+      "origin": "ラテン語 includere(「中に閉じ込める」)に由来し、in-(「中へ」)+ claudere(「閉じる」)から成る。15世紀初頭に英語へ入り、当初は「閉じ込める、投獄する」という物理的な意味だったが、その後「(構成要素として)中に含める」という抽象的な意味へ発展した。",
+      "trivia": "映画製作者サム・ゴールドウィンが言ったとされる “Include me out”(私は仲間に入れないでくれ)という逆説的な言い回しが1937年の記録に残っており、include の「含める」イメージを逆手に取ったジョークとして知られる。",
+      "explanation": "「中に含む」が中核。inclusive(込みの、包括的な)は tax inclusive(税込み)のようにビジネス文書で頻出。対義語は exclude(除外する)。"
+    }
+  },
+  {
+    "english": "continue",
+    "is_existing": true,
+    "existing_id": 477,
+    "japanese": "続ける、続く、再開する",
+    "example": "Please continue with your presentation.",
+    "level": 400,
+    "detail": {
+      "pronunciation": "/kənˈtɪnju/",
+      "pos": "動詞",
+      "meanings": [
+        "続ける、続行する",
+        "(中断していたものが)続く、継続する",
+        "(中断後に)再開する",
+        "(道・線などが)延びる、続いている"
+      ],
+      "examples": [
+        {
+          "en": "Please continue with your presentation after the break.",
+          "ja": "休憩の後、プレゼンテーションを続けてください。"
+        },
+        {
+          "en": "The meeting continued for another two hours.",
+          "ja": "会議はさらに2時間続いた。"
+        },
+        {
+          "en": "We will continue the discussion tomorrow morning.",
+          "ja": "議論は明日の朝再開します。"
+        },
+        {
+          "en": "The road continues for another ten kilometers.",
+          "ja": "その道はさらに10キロ続いている。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "continuous",
+          "pos": "形容詞",
+          "ja": "連続的な・絶え間ない"
+        },
+        {
+          "word": "continuation",
+          "pos": "名詞",
+          "ja": "継続・続編"
+        },
+        {
+          "word": "continual",
+          "pos": "形容詞",
+          "ja": "頻繁に繰り返される"
+        },
+        {
+          "word": "continuity",
+          "pos": "名詞",
+          "ja": "連続性"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "proceed",
+          "note": "(フォーマルに)続行する、先に進む"
+        },
+        {
+          "word": "carry on",
+          "note": "(口語的に)続ける"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "stop",
+          "note": "やめる、止まる"
+        },
+        {
+          "word": "cease",
+          "note": "(フォーマルに)やむ、中止する"
+        }
+      ],
+      "origin": "ラテン語 continuare(「途切れずにつなげる」)に由来し、continuus(「つながっている」)から派生した。continuus はさらにcontinere(「一つにまとまる」。com-「共に」+ tenere「保つ」)に遡り、最終的には印欧祖語の語根 *ten-(「伸ばす」)に行き着くとされる。「途切れずにつながっている」という原義から、「続ける・続く」の意味が生まれた。",
+      "trivia": "プログラミング言語の continue 文(繰り返し処理を次の周回へ進める命令)も、この「中断せずに次へ進む」という語のイメージがそのまま使われている。",
+      "explanation": "「続ける・続く」が中核で、continue to do / continue doing の両方の形を取れる(意味の違いはほぼ無い)点がTOEICで問われやすい。対義語は stop/cease。continue with(〜を続ける)のように前置詞 with を伴う用法も頻出。"
+    }
+  },
+  {
+    "english": "happen",
+    "is_existing": true,
+    "existing_id": 501,
+    "japanese": "起こる、生じる、たまたま〜する",
+    "example": "Accidents can happen at any time.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/ˈhæpən/",
+      "pos": "動詞",
+      "meanings": [
+        "(出来事が)起こる、生じる",
+        "たまたま〜する(happen to do)",
+        "(happen to+人・物で)身に降りかかる、〜の身に起こる"
+      ],
+      "examples": [
+        {
+          "en": "Accidents can happen at any time, so please be careful.",
+          "ja": "事故はいつでも起こり得るので、気をつけてください。"
+        },
+        {
+          "en": "I happened to meet my old friend at the station yesterday.",
+          "ja": "昨日、駅でたまたま旧友に出会った。"
+        },
+        {
+          "en": "What happened to your arm? It looks bruised.",
+          "ja": "腕どうしたの? あざになってるよ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "happening",
+          "pos": "名詞",
+          "ja": "出来事・(the happeningsで)一連の出来事"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "occur",
+          "note": "(ややフォーマルに)起こる"
+        },
+        {
+          "word": "take place",
+          "note": "(予定された事が)行われる、開催される"
+        }
+      ],
+      "antonyms": [],
+      "origin": "中英語期(14世紀後期)に happenen として現れ、「起こる、生じる」の意味を持った。より古い名詞 hap(「偶然、運、巡り合わせ」)に動詞化の接尾辞 -en を付けて作られた語で、hap 自体は「偶然の出来事」を意味した。同じ hap から派生した happy(幸せな)も、元々は「運が良い」という意味だった。",
+      "trivia": "happy・happen・perhaps(「もしかすると」)はいずれも同じ語根 hap(偶然、運)から派生しており、英語では「幸運」と「偶然」が語源的に深く結びついている。",
+      "explanation": "「(予定されず)偶然に起こる」というニュアンスが強く、take place(予定されたイベントが開催される)とはニュアンスが異なる。happen to do(たまたま〜する)、happen to + 人(〜の身に起こる。例: What happened to you?)の形がよく使われる。"
+    }
+  },
+  {
+    "english": "remain",
+    "is_existing": true,
+    "existing_id": 523,
+    "japanese": "残る、〜のままである、とどまる",
+    "example": "Only a few cookies remain in the jar.",
+    "level": 500,
+    "detail": {
+      "pronunciation": "/rɪˈmeɪn/",
+      "pos": "動詞",
+      "meanings": [
+        "残る、残っている",
+        "(依然として)〜のままである(remain + 形容詞/名詞)",
+        "とどまる、居残る",
+        "(remainsで)残り、遺跡、遺体"
+      ],
+      "examples": [
+        {
+          "en": "Only a few cookies remain in the jar.",
+          "ja": "瓶の中にはクッキーがわずかしか残っていない。"
+        },
+        {
+          "en": "The shop remains open even on national holidays.",
+          "ja": "その店は祝日でも開いたままだ。"
+        },
+        {
+          "en": "She decided to remain in Tokyo after graduation.",
+          "ja": "彼女は卒業後も東京にとどまることに決めた。"
+        },
+        {
+          "en": "Ancient remains were discovered near the old castle.",
+          "ja": "古城の近くで古代の遺跡が発見された。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "remainder",
+          "pos": "名詞",
+          "ja": "残り・余り"
+        },
+        {
+          "word": "remaining",
+          "pos": "形容詞",
+          "ja": "残りの"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "stay",
+          "note": "とどまる、滞在する"
+        },
+        {
+          "word": "persist",
+          "note": "(状態などが)持続する、しつこく続く"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "leave",
+          "note": "去る、出発する"
+        },
+        {
+          "word": "depart",
+          "note": "出発する。フォーマル"
+        }
+      ],
+      "origin": "ラテン語 remanere(「後に残る」。re-「後ろに、再び」+ manere「とどまる」)に由来し、古フランス語 remanoir を経て15世紀初頭に英語へ入った。manere はさらに印欧祖語の語根 *men-(「とどまる」)に遡るとされる。「一部を失った後になお残る」という原義から、「(状態が)〜のままである」「とどまる」へと意味が広がった。",
+      "trivia": "名詞形 remains(遺跡・遺体)は、remain の「(一部が失われた後に)残る」という原義が最もよく表れた用法とされ、考古学(ancient remains)やニュース記事(the remains of the victim)で頻出する。",
+      "explanation": "「残る」に加え、remain + 形容詞(remain calm/remain silent)の形で「(依然として)〜のままである」という用法が非常に重要(seem/become と同じ「連結動詞」のグループ)。名詞形 remains(遺跡・残骸・遺体)も合わせて覚えておきたい。"
+    }
+  }
+]

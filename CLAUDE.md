@@ -173,10 +173,26 @@ VPS の `~/eigo/` へ `rsync --delete` した際、ソース側に存在しな�
   Windows の2系統になった」参照）。実パスは公開リポジトリに書かない。
 - **本プロジェクト用フォルダ**: `products/study_nyangailab/`
   - `README.md`: 事業サマリ（詳細はこちら側の`docs/`参照という設計）。
-  - `運用リファレンス.md`: 本番VPSのIP/SSH鍵パス/デプロイ手順の**バックアップ
-    コピー**（`docs/TODO.md`の「🔧 運用リファレンス」がgit管理外＝
-    このマシンにしかバックアップが無いため2026-08-09に開始）。
-    **`docs/TODO.md`側を更新したら、このファイルも都度同期すること**。
+  - `docs/`（**2026-09-15〜・`docs/`全体のgitバックアップ本体**）:
+    このリポジトリ（LearningEnglishWithAI）の`docs/`ディレクトリ全体を
+    `rsync -a --exclude='.DS_Store'`でそのままミラーしたもの
+    （`DESIGN.md`/`TODO.md`/`TODO_OLD.md`等ファイル名もそのまま）。
+    `docs/`はこのリポジトリでは`.gitignore`対象＝このマシンにしか
+    存在せずgit管理外だったため、**business_plan側でgit管理下に置く
+    ことで初めてバックアップ・履歴管理される**（2026-08-09〜あった
+    `運用リファレンス.md`という単一ファイルの手動バックアップ方式を
+    `docs/`全体のミラーに統合・発展させたもの）。
+    **`docs/`配下を更新した回のセッションでは、このミラーも
+    `rsync -a --exclude='.DS_Store' --exclude='TODO_20260915_pre_reorg_backup.md'
+    docs/ <business_plan clone先>/products/study_nyangailab/docs/`で
+    都度同期し、business_plan側でgit commitすること**（pushは
+    [[feedback-business-plan-local-commit-only]]の通り明示的に頼まれた
+    時のみ）。
+  - `運用リファレンス.md`・`プロジェクトTODOバックアップ.md`等の日本語名
+    ファイル（2026-08-09〜2026-09-09頃に作られた手動バックアップの名残）:
+    **2026-09-15以降は更新対象外**。内容は上記`docs/`ミラー（特に
+    `docs/TODO.md`）に完全に含まれるため、今後参照する場合は`docs/`
+    ミラー側を見ること。削除はせず当面残置（要否は別途ユーザー判断）。
   - `secrets_backup/`（**2026-08-13〜**）: 本番VPS用SSH鍵ペアと
     `deploy/.env.study`（`OPENAI_API_KEY`/`SESSION_SECRET`等の実値）の
     バックアップ。rsync --deleteがVPS専用の`.env.study`を誤削除する

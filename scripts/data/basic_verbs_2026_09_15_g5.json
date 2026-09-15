@@ -1,0 +1,868 @@
+[
+  {
+    "english": "want",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "欲しい、望む、必要とする",
+    "example": "I want a new phone.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/wɑnt/",
+      "pos": "動詞",
+      "meanings": [
+        "〜が欲しい、〜を望む",
+        "〜したいと思う(want to do)",
+        "〜を必要とする",
+        "(古風・口語)〜する必要がある、〜すべきだ(you want to ...)"
+      ],
+      "examples": [
+        {
+          "en": "I want a new phone.",
+          "ja": "私は新しい携帯電話が欲しい。"
+        },
+        {
+          "en": "She wants to study abroad next year.",
+          "ja": "彼女は来年留学したいと思っている。"
+        },
+        {
+          "en": "This plant wants more sunlight.",
+          "ja": "この植物にはもっと日光が必要だ。"
+        },
+        {
+          "en": "You want to be careful with that knife.",
+          "ja": "そのナイフには気をつけたほうがいいよ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "wanted",
+          "pos": "形容詞",
+          "ja": "指名手配の・求人中の"
+        },
+        {
+          "word": "unwanted",
+          "pos": "形容詞",
+          "ja": "望まれていない"
+        },
+        {
+          "word": "wanting",
+          "pos": "形容詞",
+          "ja": "不足している、欠けている"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "desire",
+          "note": "よりフォーマルで強い欲求を表す"
+        },
+        {
+          "word": "wish",
+          "note": "実現が難しい願望にも使いやすい"
+        }
+      ],
+      "antonyms": [],
+      "origin": "1200年頃、古ノルド語の vanta「欠ける、不足する」に由来する。原始ゲルマン語 *wanen を経て、最終的にはインド・ヨーロッパ語根 *eue-「去る、尽きる」に遡るとされる。当初は「欠いている、不十分である」という客観的な状態を表す語で、現代的な「欲する、望む」という意味は1706年頃までは記録されていない。",
+      "trivia": "want は元々「欠乏」を表す語で、名詞としても14世紀初頭に「貧困、窮乏」、16世紀には「欠けているが必要なもの」の意味を獲得した。「欠けている」→「だから欲しい」という意味の転換をたどった珍しい基礎動詞。",
+      "explanation": "want to do(〜したい)、want + 人 + to do(人に〜してほしい)の形が最重要。want for nothing(何不自由ない)という慣用表現にも want 本来の「欠ける」という語感が残っている。"
+    }
+  },
+  {
+    "english": "find",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "見つける、気づく、わかる",
+    "example": "I can't find my keys.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/faɪnd/",
+      "pos": "動詞",
+      "meanings": [
+        "(探して)見つける",
+        "(探さずに)偶然出くわす、見かける",
+        "(経験・調査の結果)〜だとわかる、気づく",
+        "(努力して時間・お金などを)工面する、ひねり出す",
+        "(法廷が)認定する、判決を下す"
+      ],
+      "examples": [
+        {
+          "en": "I can't find my keys anywhere.",
+          "ja": "鍵がどこにも見つからない。"
+        },
+        {
+          "en": "We found a nice little cafe near the station.",
+          "ja": "駅の近くで素敵な小さなカフェを見つけた。"
+        },
+        {
+          "en": "I found the movie surprisingly boring.",
+          "ja": "その映画は意外と退屈だとわかった。"
+        },
+        {
+          "en": "She always finds time to help others.",
+          "ja": "彼女はいつも人を助ける時間を見つける(作る)。"
+        },
+        {
+          "en": "The jury found him guilty.",
+          "ja": "陪審は彼を有罪と認定した。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "finding",
+          "pos": "名詞",
+          "ja": "(調査の)結果、発見事項"
+        },
+        {
+          "word": "finder",
+          "pos": "名詞",
+          "ja": "発見者"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "discover",
+          "note": "より重要・劇的な発見のニュアンス"
+        },
+        {
+          "word": "locate",
+          "note": "物の位置を特定するニュアンスが強い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "lose",
+          "note": "「見つける」の反対で「失う、なくす」"
+        }
+      ],
+      "origin": "古英語 findan に由来し、原始ゲルマン語 *findan「出くわす、発見する」に遡る。さらに古いインド・ヨーロッパ語根 *pent-「踏む、行く」に関連するとされ、「移動する」という基本義から「(移動の末に)発見する」へ意味が転じたと考えられている。",
+      "trivia": "find out(調べて知る、〜だと判明する)という句動詞は1550年代から使われている表現。名詞としての find(掘り出し物、発見物)は1825年に確立された比較的新しい用法。",
+      "explanation": "find out(調べて知る)が代表的な句動詞。find + O + C(find it difficult など「〜だとわかる/思う」の形)も TOEIC で頻出。過去形・過去分詞はどちらも found の不規則変化。"
+    }
+  },
+  {
+    "english": "work",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "働く、機能する、うまくいく",
+    "example": "She works at a hospital.",
+    "level": 300,
+    "detail": {
+      "pronunciation": "/wɜːrk/",
+      "pos": "動詞",
+      "meanings": [
+        "働く、仕事をする",
+        "(機械・装置が)動く、機能する",
+        "(方法・計画などが)うまくいく、効果がある",
+        "(材料を)加工する、練る、細工する",
+        "(徐々に)ある状態に持っていく、動かしていく"
+      ],
+      "examples": [
+        {
+          "en": "She works at a hospital in the city.",
+          "ja": "彼女は市内の病院で働いている。"
+        },
+        {
+          "en": "This old radio still works.",
+          "ja": "この古いラジオはまだ動く。"
+        },
+        {
+          "en": "I don't think this plan will work.",
+          "ja": "この計画はうまくいかないと思う。"
+        },
+        {
+          "en": "The potter worked the clay into a bowl.",
+          "ja": "陶工は粘土をこねて鉢の形に仕上げた。"
+        },
+        {
+          "en": "He worked his way up to manager.",
+          "ja": "彼は少しずつ昇進してマネージャーになった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "worker",
+          "pos": "名詞",
+          "ja": "労働者"
+        },
+        {
+          "word": "workout",
+          "pos": "名詞",
+          "ja": "運動、トレーニング"
+        },
+        {
+          "word": "workable",
+          "pos": "形容詞",
+          "ja": "実行可能な"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "function",
+          "note": "機械・システムが「機能する」の意味で近い"
+        },
+        {
+          "word": "labor",
+          "note": "肉体労働のニュアンスが強い"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "rest",
+          "note": "「休む」"
+        },
+        {
+          "word": "fail",
+          "note": "「(計画などが)うまくいかない」の反対"
+        }
+      ],
+      "origin": "中英語 werk は古英語 weorc/worc「行為、行動、労働」に由来し、原始ゲルマン語 *werka- を経て、最終的にはインド・ヨーロッパ語根 *werg-「行う」に遡る。当初は「行為」や「製造物」全般を指す語だった。",
+      "trivia": "1200年頃に「身体的努力・労働」の意味が定着し、13世紀後期には「刺繍・針仕事」のような特定の工芸を指す用法も生まれた。work ethic(労働倫理、1955年)、work in progress(制作中の作品、1880年)のような複合表現も後から加わった。",
+      "explanation": "work out(うまくいく/運動する/解決する)、work on(〜に取り組む)、work up(徐々に高める、発展させる)など句動詞が非常に多い。TOEICでは work on a project、work out a solution のような形で頻出。"
+    }
+  },
+  {
+    "english": "live",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "住む、生きる、暮らす",
+    "example": "I live in Tokyo.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/lɪv/",
+      "pos": "動詞",
+      "meanings": [
+        "住む、居住する",
+        "生きている、生存する",
+        "(ある生活様式で)暮らす、生活する",
+        "(信念・原則を)実践する、体現する(live by)",
+        "(苦難の中でも)生き延びる、なんとかやっていく"
+      ],
+      "examples": [
+        {
+          "en": "I live in Tokyo with my family.",
+          "ja": "私は家族と東京に住んでいる。"
+        },
+        {
+          "en": "My grandmother lived to be ninety-five.",
+          "ja": "祖母は95歳まで生きた。"
+        },
+        {
+          "en": "They live a simple life in the countryside.",
+          "ja": "彼らは田舎でシンプルな暮らしをしている。"
+        },
+        {
+          "en": "He tries to live by his own principles.",
+          "ja": "彼は自分自身の信条に従って生きようとしている。"
+        },
+        {
+          "en": "The refugees had to live on very little food.",
+          "ja": "難民たちはわずかな食料でしのがなければならなかった。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "living",
+          "pos": "名詞・形容詞",
+          "ja": "生活、生計、生きている"
+        },
+        {
+          "word": "life",
+          "pos": "名詞",
+          "ja": "人生、生命"
+        },
+        {
+          "word": "lively",
+          "pos": "形容詞",
+          "ja": "活発な、生き生きとした"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "reside",
+          "note": "「居住する」を表すフォーマルな語"
+        },
+        {
+          "word": "dwell",
+          "note": "やや文語的な「住む」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "die",
+          "note": "「死ぬ」"
+        }
+      ],
+      "origin": "古英語 lifian(アングル方言)・libban(西サクソン方言)に由来し、原始ゲルマン語 *libejanan を経てインド・ヨーロッパ語根 *leip-「粘着する、付着する」に遡るとされる。ここから「(この世に)留まる、続く」という意味合いが生まれ、「生きている」という基本義になった。",
+      "trivia": "形容詞 live「生放送の、生きた」は発音が /laɪv/ になり、動詞 live /lɪv/ とスペルは同じでも発音が異なるため学習者が混同しやすい。live up to(期待などに応える)は1690年代、live down(汚名をすすぐ)は1842年に記録された比較的新しい句動詞。",
+      "explanation": "live on(〜を主食にする/生き続ける)、live up to(期待・基準に応える)、live with(〜を受け入れて共存する)などの句動詞が重要。前置詞 in/at と組み合わせて住んでいる場所を表す用法が最頻出。"
+    }
+  },
+  {
+    "english": "pay",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "支払う、報いる、割に合う",
+    "example": "I paid for the tickets.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/peɪ/",
+      "pos": "動詞",
+      "meanings": [
+        "(代金・料金を)支払う",
+        "(利益・成果を)もたらす、割に合う(pay off)",
+        "(注意・敬意などを)払う",
+        "(罰・代償を)受ける、償う",
+        "(訪問などを)する(pay a visit)"
+      ],
+      "examples": [
+        {
+          "en": "I paid for the tickets in cash.",
+          "ja": "私はチケット代を現金で支払った。"
+        },
+        {
+          "en": "Hard work always pays off in the end.",
+          "ja": "努力は最終的には必ず報われる。"
+        },
+        {
+          "en": "Please pay attention to the instructions.",
+          "ja": "指示に注意を払ってください。"
+        },
+        {
+          "en": "He had to pay for his mistake.",
+          "ja": "彼は自分の過ちの代償を払わなければならなかった。"
+        },
+        {
+          "en": "We paid a visit to our old teacher.",
+          "ja": "私たちは昔の先生を訪ねた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "payment",
+          "pos": "名詞",
+          "ja": "支払い"
+        },
+        {
+          "word": "payable",
+          "pos": "形容詞",
+          "ja": "支払うべき、支払い可能な"
+        },
+        {
+          "word": "payroll",
+          "pos": "名詞",
+          "ja": "給与支払名簿"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "compensate",
+          "note": "「補償する」を表すフォーマルな語"
+        },
+        {
+          "word": "reimburse",
+          "note": "「(経費などを)払い戻す」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "owe",
+          "note": "「(お金を)借りている、負っている」"
+        }
+      ],
+      "origin": "ラテン語 pacare「平和にする、満足させる」(pax「平和」由来)に遡り、古フランス語 paier を経て1200年頃、中英語に paien として入った。当初は「(相手を)宥める、満足させる」の意味で、13世紀初頭までに「商品・サービスの対価を与える」という現代的な金銭的意味が確立した。",
+      "trivia": "「支払う」の原義が実は「平和にする」であるとは意外だが、これは appease(なだめる)と同根であることからも裏付けられる。「宥める」の意味は1500年までに英語から消え、金銭的な意味だけが残った。",
+      "explanation": "pay off(完済する/努力が報われる)、pay for(代金を払う/報いを受ける)、pay attention to(〜に注意を払う)などの句動詞・表現が重要。過去形・過去分詞は不規則変化の paid。"
+    }
+  },
+  {
+    "english": "wait",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "待つ、見合わせる",
+    "example": "Please wait here for a moment.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/weɪt/",
+      "pos": "動詞",
+      "meanings": [
+        "待つ",
+        "(何かが起こるのを)待ち構える、見守る",
+        "(判断・行動を)保留する、控える",
+        "(レストランなどで)給仕する(wait on / wait tables)"
+      ],
+      "examples": [
+        {
+          "en": "Please wait here for a moment.",
+          "ja": "少しの間ここで待っていてください。"
+        },
+        {
+          "en": "We waited anxiously for the results.",
+          "ja": "私たちは結果を不安げに待った。"
+        },
+        {
+          "en": "Let's wait until we have more information.",
+          "ja": "もっと情報が集まるまで待とう。"
+        },
+        {
+          "en": "She worked as a student, waiting tables at a diner.",
+          "ja": "彼女は学生時代、食堂で給仕のアルバイトをしていた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "waiting",
+          "pos": "名詞・形容詞",
+          "ja": "待つこと、待機中の"
+        },
+        {
+          "word": "waiter / waitress",
+          "pos": "名詞",
+          "ja": "ウェイター、ウェイトレス"
+        },
+        {
+          "word": "waitlist",
+          "pos": "名詞",
+          "ja": "キャンセル待ちリスト"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "await",
+          "note": "他動詞でforを伴わないフォーマルな語"
+        },
+        {
+          "word": "pause",
+          "note": "一時的に動きを止めるニュアンス"
+        }
+      ],
+      "antonyms": [],
+      "origin": "1200年頃、アングロ・フランス語 waitier に由来し、フランク語 *wahton を経てゲルマン語族に遡る。原義は「敵意を持って見張る、待ち伏せする、陰謀をたくらむ」という監視的な行為で、14世紀後期になって「ある場所で忍耐強く期待しながら留まる」という現代的な意味に転じた。",
+      "trivia": "waiter(給仕人)は「待つ人」ではなく、元は「(主人に)付き従って仕える人」を指す語で、waitの古い語義「見張る、付き添う」に由来する。16世紀60年代に「食卓での給仕」という職業的意味が確立した。",
+      "explanation": "wait for(〜を待つ)、wait on(給仕する/〜次第である)が代表的な句動詞。「〜するのを待つ」は wait for + 人 + to do、または wait to do の形になる。"
+    }
+  },
+  {
+    "english": "win",
+    "is_existing": false,
+    "existing_id": null,
+    "japanese": "勝つ、獲得する、勝ち取る",
+    "example": "Our team won the game.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/wɪn/",
+      "pos": "動詞",
+      "meanings": [
+        "(試合・競争に)勝つ",
+        "(賞・地位などを)獲得する、勝ち取る",
+        "(努力して人の信頼・好意を)得る(win over)",
+        "(戦い・争いに)勝利する"
+      ],
+      "examples": [
+        {
+          "en": "Our team won the game 3 to 1.",
+          "ja": "私たちのチームは3対1でその試合に勝った。"
+        },
+        {
+          "en": "She won first prize in the speech contest.",
+          "ja": "彼女はスピーチコンテストで一等賞を獲得した。"
+        },
+        {
+          "en": "His honesty won the trust of his colleagues.",
+          "ja": "彼の誠実さは同僚たちの信頼を勝ち取った。"
+        },
+        {
+          "en": "The company eventually won over its skeptical customers.",
+          "ja": "その会社は最終的に懐疑的だった顧客たちを味方につけた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "winner",
+          "pos": "名詞",
+          "ja": "勝者"
+        },
+        {
+          "word": "winning",
+          "pos": "形容詞・名詞",
+          "ja": "勝利の、勝ち取ること"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "triumph",
+          "note": "より劇的・大げさな「勝利する」"
+        },
+        {
+          "word": "prevail",
+          "note": "フォーマルな文脈での「打ち勝つ」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "lose",
+          "note": "「負ける」"
+        }
+      ],
+      "origin": "古英語 winnan「労働する、奮闘する」と gewinnan「努力して得る」が融合した語で、原始ゲルマン語 *wennanan「獲得しようとする」、さらにインド・ヨーロッパ語根 *wen-「欲する、努力する」に遡る。原義は「試みて獲得する」であり、1300年頃に「(競争・戦いで)勝利する」という意味が確立した。",
+      "trivia": "「努力して得る」という原義は win over(説得して味方につける、14世紀後期に登場)にも表れている。ゲームや競技での勝利を表す名詞用法(a win)は1862年になってから記録された比較的新しい用法。",
+      "explanation": "win over(〜を説得して味方につける)が代表的な句動詞。過去形・過去分詞は不規則変化の won。「(賞などを)獲得する」の意味では win a prize のように直接目的語を取る点が get と少し異なる。"
+    }
+  },
+  {
+    "english": "buy",
+    "is_existing": true,
+    "existing_id": 15431,
+    "japanese": "買う、購入する、(俗に)信じる",
+    "example": "I bought a new car last week.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/baɪ/",
+      "pos": "動詞",
+      "meanings": [
+        "(お金を払って)買う、購入する",
+        "(苦労・犠牲を払って)得る",
+        "(俗語で)信じる、真実として受け入れる(not buy it)",
+        "(時間を)稼ぐ(buy time)"
+      ],
+      "examples": [
+        {
+          "en": "I bought a new car last week.",
+          "ja": "私は先週新しい車を買った。"
+        },
+        {
+          "en": "Freedom was bought at a great cost.",
+          "ja": "自由は大きな犠牲を払って得られた。"
+        },
+        {
+          "en": "I don't buy his excuse at all.",
+          "ja": "彼の言い訳は全く信じられない。"
+        },
+        {
+          "en": "The extra staff bought us some time before the deadline.",
+          "ja": "増員のおかげで締め切り前に多少の時間を稼ぐことができた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "buyer",
+          "pos": "名詞",
+          "ja": "買い手、バイヤー"
+        },
+        {
+          "word": "buyout",
+          "pos": "名詞",
+          "ja": "(会社などの)買収"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "purchase",
+          "note": "ややフォーマルな「購入する」"
+        },
+        {
+          "word": "acquire",
+          "note": "必ずしも金銭を伴わない「取得する」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "sell",
+          "note": "「売る」"
+        }
+      ],
+      "origin": "語源不詳の原始ゲルマン語 *bugjan に由来する古英語 bycgan から発展した語で、中英語では bien の形で記録されている。本来は「金銭を払って何かを得る、身代金を払う、贖う」という商取引的な意味だった。1926年までに「(話などを)信じる」という口語的な新用法が加わり、1946年には「時間を稼ぐ」という表現も現れた。",
+      "trivia": "buy の綴りは古英語・中英語の -dg- 音(「budge」「bidge」のような発音)に由来し、南西イングランド方言の綴りが現代に生き残ったとされる珍しいケース。\"I don't buy it\"(それは信じられない)という口語表現はTOEICのPart 3・4の会話でも使われることがある。",
+      "explanation": "buy into(〜を信じ込む/〜に出資する)、buy out(会社などを買収する)などの句動詞に注意。過去形・過去分詞は不規則変化の bought。"
+    }
+  },
+  {
+    "english": "spend",
+    "is_existing": true,
+    "existing_id": 520,
+    "japanese": "(お金を)使う、(時間を)過ごす、費やす",
+    "example": "I spent two hours on my homework.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/spɛnd/",
+      "pos": "動詞",
+      "meanings": [
+        "(お金を)使う、支払う",
+        "(時間を)過ごす",
+        "(労力・エネルギーを)注ぐ、費やす",
+        "使い果たす、消耗させる"
+      ],
+      "examples": [
+        {
+          "en": "I spent two hours on my homework.",
+          "ja": "私は宿題に2時間費やした。"
+        },
+        {
+          "en": "We spent our vacation at the beach.",
+          "ja": "私たちは海辺で休暇を過ごした。"
+        },
+        {
+          "en": "She spends a lot of effort on her work.",
+          "ja": "彼女は仕事に多くの労力を注いでいる。"
+        },
+        {
+          "en": "By evening, the storm had spent itself.",
+          "ja": "夕方までに嵐は勢いを使い果たしていた(収まっていた)。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "spending",
+          "pos": "名詞",
+          "ja": "支出、出費"
+        },
+        {
+          "word": "spender",
+          "pos": "名詞",
+          "ja": "(お金を)使う人"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "expend",
+          "note": "ややフォーマルな「費やす」"
+        },
+        {
+          "word": "use up",
+          "note": "「使い果たす」を表す口語的な言い方"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "save",
+          "note": "「貯める、節約する」"
+        },
+        {
+          "word": "earn",
+          "note": "「稼ぐ」"
+        }
+      ],
+      "origin": "中英語 spenden は古英語 -spendan に遡り、最終的にはラテン語 expendere(金銭を計量して支払う)または dispendere(支払う)に由来するとされ、インド・ヨーロッパ語根 *(s)pen-「引く、伸ばす」に関連する。中世に金銭的な「支払う、失う」の意味で使われ始め、13世紀頃には労力・時間などより広い「価値あるものを消費する」の意味に拡大した。",
+      "trivia": "\"spend a penny\"はイギリス英語の口語で「お手洗いに行く」を婉曲的に表す慣用表現(公衆トイレが1ペニー硬貨で使えた時代の名残とされる)。14世紀後期には「浪費する」というマイナスのニュアンスも加わった。",
+      "explanation": "spend + 時間/お金 + on ... (〜に時間・お金を使う)、spend + 時間 + -ing(〜して時間を過ごす)の形が頻出。過去形・過去分詞は不規則変化の spent。"
+    }
+  },
+  {
+    "english": "sit",
+    "is_existing": true,
+    "existing_id": 15427,
+    "japanese": "座る、位置する、出席する",
+    "example": "Please sit down here.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/sɪt/",
+      "pos": "動詞",
+      "meanings": [
+        "座る",
+        "(物が)ある場所に置かれている、位置する",
+        "(議会・会議などに)出席する、議席を持つ",
+        "(肖像画などのモデルとして)ポーズをとる(sit for)"
+      ],
+      "examples": [
+        {
+          "en": "Please sit down here and relax.",
+          "ja": "ここに座ってくつろいでください。"
+        },
+        {
+          "en": "The remote control was sitting on the table.",
+          "ja": "リモコンはテーブルの上に置かれていた。"
+        },
+        {
+          "en": "She has sat on the city council for ten years.",
+          "ja": "彼女は10年間市議会の議員を務めている。"
+        },
+        {
+          "en": "The artist asked him to sit for a portrait.",
+          "ja": "画家は彼に肖像画のモデルになってほしいと頼んだ。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "sitting",
+          "pos": "名詞・形容詞",
+          "ja": "着席、一回のセッション"
+        },
+        {
+          "word": "babysit",
+          "pos": "動詞",
+          "ja": "子守りをする"
+        },
+        {
+          "word": "seat",
+          "pos": "名詞",
+          "ja": "座席(関連語)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "be seated",
+          "note": "ややフォーマルな「着席する」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "stand",
+          "note": "「立つ」"
+        }
+      ],
+      "origin": "古英語 sittan に由来し、原始ゲルマン語 *setjan を経てインド・ヨーロッパ語根 *sed-「座る」に遡る。中英語では sitten の形で記録され、14世紀後期に「議席を占める」、16世紀初頭に「会議を開く」、1530年代には「肖像画のモデルとしてポーズをとる」という意味が次々に加わった。",
+      "trivia": "自動詞 sit(座る)と他動詞 set(置く)はどちらも同じ印欧語根 *sed- に由来するため綴り・意味ともに混同されやすい。babysit(子守りをする)は1966年以降に babysitter から逆成された比較的新しい語。",
+      "explanation": "sit down(座る)、sit for(試験を受ける/肖像のモデルになる)、sit through(最後まで我慢して座り通す)などの句動詞に注意。自動詞なので「(人)を座らせる」は他動詞の seat または make ... sit を使う。"
+    }
+  },
+  {
+    "english": "stand",
+    "is_existing": true,
+    "existing_id": 15428,
+    "japanese": "立つ、耐える、位置する",
+    "example": "He stood by the door.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/stænd/",
+      "pos": "動詞",
+      "meanings": [
+        "立つ、立っている",
+        "(ある場所に)位置する、建っている",
+        "(苦痛・状況に)耐える、我慢する",
+        "(ある状態・立場を)保つ、〜のままである",
+        "(選挙に)立候補する(stand for election)"
+      ],
+      "examples": [
+        {
+          "en": "He stood by the door, waiting for her.",
+          "ja": "彼はドアのそばに立って彼女を待っていた。"
+        },
+        {
+          "en": "An old church stands at the top of the hill.",
+          "ja": "古い教会が丘の頂上に建っている。"
+        },
+        {
+          "en": "I can't stand this noise any longer.",
+          "ja": "この騒音にはもう耐えられない。"
+        },
+        {
+          "en": "The offer still stands.",
+          "ja": "その申し出は今もそのまま有効だ。"
+        },
+        {
+          "en": "She decided to stand for city council.",
+          "ja": "彼女は市議会議員に立候補することを決めた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "standing",
+          "pos": "名詞・形容詞",
+          "ja": "地位、立っている、常設の"
+        },
+        {
+          "word": "standard",
+          "pos": "名詞",
+          "ja": "基準(関連語)"
+        },
+        {
+          "word": "understand",
+          "pos": "動詞",
+          "ja": "理解する(関連語)"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "tolerate",
+          "note": "「耐える」の意味で近い"
+        },
+        {
+          "word": "endure",
+          "note": "よりフォーマルな「耐え抜く」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "sit",
+          "note": "「座る」"
+        },
+        {
+          "word": "fall",
+          "note": "「倒れる」"
+        }
+      ],
+      "origin": "古英語 standan に由来し、原始ゲルマン語 *standanan を経て、インド・ヨーロッパ語根 *sta-「立つ、確固たる状態にする」に遡る。古英語段階では「一つの場所を占める、立ち続ける」という意味だったが、1300年頃「存在する」、14世紀中頃「(費用が)かかる」、1600年頃「耐える」、1550年代「候補者になる」と次々に意味が拡張した。",
+      "trivia": "「(費用が)かかる」という意味(This will stand you 100 dollars.のような用法)はラテン語 constare と発想が似ている。名詞としての stand も「立つ行為」から「観覧席」「屋台、売店」を指すように発展した。",
+      "explanation": "stand for(〜を意味する/〜の略である/〜を支持する)、stand out(目立つ)、stand up for(〜を擁護する)などの句動詞がTOEICでも頻出。can't stand ...(〜が我慢できない)は日常会話で非常によく使われる。"
+    }
+  },
+  {
+    "english": "begin",
+    "is_existing": true,
+    "existing_id": 450,
+    "japanese": "始める、始まる、着手する",
+    "example": "The meeting will begin at 10 AM.",
+    "level": 350,
+    "detail": {
+      "pronunciation": "/bɪˈɡɪn/",
+      "pos": "動詞",
+      "meanings": [
+        "始める、開始する(他動詞)",
+        "始まる(自動詞)",
+        "(仕事などに)着手する、取り掛かる",
+        "(段階的に)〜し始める(begin to do / begin doing)"
+      ],
+      "examples": [
+        {
+          "en": "The meeting will begin at 10 AM.",
+          "ja": "会議は午前10時に始まる予定だ。"
+        },
+        {
+          "en": "She began her speech with a joke.",
+          "ja": "彼女は冗談で自分のスピーチを始めた。"
+        },
+        {
+          "en": "We should begin the project as soon as possible.",
+          "ja": "私たちはできるだけ早くそのプロジェクトに着手すべきだ。"
+        },
+        {
+          "en": "It began to rain just as we left the house.",
+          "ja": "私たちが家を出たちょうどその時、雨が降り始めた。"
+        }
+      ],
+      "derivatives": [
+        {
+          "word": "beginning",
+          "pos": "名詞",
+          "ja": "始まり、開始"
+        },
+        {
+          "word": "beginner",
+          "pos": "名詞",
+          "ja": "初心者"
+        }
+      ],
+      "synonyms": [
+        {
+          "word": "start",
+          "note": "より口語的で汎用的な「始める」"
+        },
+        {
+          "word": "commence",
+          "note": "フォーマルな文脈で使われる「開始する」"
+        }
+      ],
+      "antonyms": [
+        {
+          "word": "end",
+          "note": "「終える、終わる」"
+        },
+        {
+          "word": "finish",
+          "note": "「終わらせる、仕上げる」"
+        }
+      ],
+      "origin": "古英語 beginnan に由来し、西ゲルマン語 *ginnan に接頭辞 be- が付いた形とされる。原義は「開く、開き上げる」と考えられ、そこから「試みる、着手する」へ意味が転じたとされる。同根語として古高ドイツ語 in-ginnan(文字通り「切り開く」)、ゴート語 duginnan がある。古英語の時代からより一般的だった同義語 onginnan よりは使用頻度が低かったとされる。",
+      "trivia": "begin の過去形 began・過去分詞 begun という不規則変化はTOEICの文法問題でも狙われやすいポイント。\"to begin with\"(まず第一に、そもそも)は begin から派生した頻出の慣用表現。",
+      "explanation": "begin to do と begin doing はほぼ同じ意味で使えるが、understand のような状態動詞が続く場合は begin to understand のように to不定詞が好まれる傾向がある。begin 単体に紐づく代表的な句動詞は無いが、\"to begin with\" という副詞句はよく使われる。"
+    }
+  }
+]
