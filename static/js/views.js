@@ -917,11 +917,19 @@ function deleteButton(name, onDel) {
 function openModal(title, buildBody) {
   const ov = el(`<div class="modal-ov"></div>`);
   const box = el(`<div class="modal-box">
-    <div class="row" style="justify-content:space-between">
+    <div class="row modal-head" style="justify-content:space-between">
       <h2 style="margin:0">${escapeHtml(title)}</h2>
       <button class="btn ghost" id="mClose">✕</button></div>
     <div class="modal-body mt"></div></div>`);
-  const close = () => { speech.stopSpeaking(); ov.remove(); };
+  const onKey = (e) => { if (e.key === "Escape") close(); };
+  const close = () => {
+    speech.stopSpeaking();
+    document.removeEventListener("keydown", onKey);
+    ov.remove();
+  };
+  // Escで閉じられない・長いモーダルで✕がスクロールアウトする指摘への対応
+  // (2026-09-15・UIレビュー)。ヘッダーはCSS側でsticky化(.modal-head)。
+  document.addEventListener("keydown", onKey);
   ov.addEventListener("click", (e) => { if (e.target === ov) close(); });
   box.querySelector("#mClose").addEventListener("click", close);
   buildBody(box.querySelector(".modal-body"));
@@ -1213,6 +1221,14 @@ function runFlashcards(stage, initialQueue, opts) {
   const counts = { known: 0, vague: 0, wrong: 0, skip: 0 };
   const card = () => queue[pos];
 
+  // トースト(「1つ戻りました」等)がカード下の採点ボタン列に重なって見えな
+  // くなる指摘(2026-09-15・UIレビュー)への対応: このビュー滞在中だけ
+  // トーストの表示位置を採点ボタンの上まで持ち上げる(CSS変数で調整・
+  // 他画面のトーストには影響しない)。
+  document.documentElement.style.setProperty("--toast-bottom", "128px");
+  onLeaveView(() =>
+    document.documentElement.style.removeProperty("--toast-bottom"));
+
   // 連続読み上げ(単語→例文)の中断管理。speakSeq が変わると進行中の読み上げを打切り。
   let speakSeq = 0;
   function stopAudio() { speakSeq++; speech.stopSpeaking(); }
@@ -1298,6 +1314,14 @@ function runFlashcards(stage, initialQueue, opts) {
     const cardEl = stage.querySelector("#fcCard");
     pos++; revealed = false;
     if (cardEl && fly) {
+      // 採点時の手応え強化(2026-09-15・UIレビュー指摘: 反応が進捗の
+      // 数字が増えるだけで薄かった)。カードが飛んでいく間だけ大きな
+      // ラベルを重ねて表示する(次の描画までの150ms限定なので短く軽い)。
+      const badgeText = { known: "⬆ 覚えた", wrong: "⬇ できない",
+        vague: "➡ うろ覚え" }[action];
+      const badgeCls = { known: "good", wrong: "bad", vague: "vague" }[action];
+      cardEl.appendChild(
+        el(`<div class="fc-grade-badge ${badgeCls}">${badgeText}</div>`));
       cardEl.classList.add(fly);
       setTimeout(render, 150);
     } else render();
@@ -1535,13 +1559,48 @@ export async function flashcard(root) {
       </div>
       <div class="row mt">
         <button class="btn" id="fcStart">▶ 開始</button>
+        <span class="muted" id="fcCount"></span>
       </div>
+      <p class="muted fc-kbd-hint">PCキー操作: ↑覚えた ↓できない →うろ覚え
+        ←戻る ／ Space・Enterで反転 ／ Sでスキップ</p>
     </div>
     <div id="fcStage"></div>`;
 
   const setVal = (id, v) => {
     const e = root.querySelector(id);
     if (e && v != null) e.value = v;
+  };
+  // 開始前に該当語数を表示する(2026-09-15・UIレビュー指摘: 開始するまで
+  // 何件ヒットするか分からなかった)。フィルタを変えるたびに軽量な
+  // count=trueクエリで再取得する(実データは取得しないので安価)。
+  const fcFilterParams = () => {
+    const v = (id) => root.querySelector(id).value;
+    const dom = [...selectedDomains].join(",");
+    const lvmin = v("#fcLvMin"), lvmax = v("#fcLvMax");
+    const mastered = v("#fcMastered");
+    const freeOnly = root.querySelector("#fcFreeOnly").checked;
+    const deckId = fcDeckSel ? fcDeckSel.value : "";
+    const p = {};
+    if (dom) p.domain = dom;
+    if (lvmin) p.level_min = lvmin;
+    if (lvmax) p.level_max = lvmax;
+    if (mastered) p.mastered = mastered;
+    if (showBanned()) p.include_banned = "true";
+    if (freeOnly) p.free_range_only = "true";
+    if (deckId) p.deck_id = deckId;
+    return p;
+  };
+  let fcCountSeq = 0;
+  const refreshFcCount = async () => {
+    const el2 = root.querySelector("#fcCount");
+    if (!el2) return;
+    const my = ++fcCountSeq;
+    el2.textContent = "…";
+    const q = new URLSearchParams({ count: "true", ...fcFilterParams() });
+    try {
+      const r = await api.get("/api/words/quiz?" + q.toString());
+      if (my === fcCountSeq) el2.textContent = `該当 ${r.count}語`;
+    } catch (_) { if (my === fcCountSeq) el2.textContent = ""; }
   };
   setVal("#fcDir", localStorage.getItem("fc_dir") || "en2ja");
   // 分野(複数選択可・大分類カスケード)。旧バージョンは単一分野文字列を
@@ -1555,16 +1614,23 @@ export async function flashcard(root) {
     selectedDomains.clear();
     (domainGroups[dfw.category] || []).forEach((d) => selectedDomains.add(d));
     setVal("#fcCategory", dfw.category);
+  } else {
+    // 前回選んだ大分類の「表示」だけ復元する(2026-09-15・UIレビュー指摘:
+    // 分野の選択自体はfc_domから復元済みなのに、大分類セレクトだけ毎回
+    // 「全カテゴリ」に戻ってしまい紛らわしかった)。分野の絞り込み自体は
+    // 既にselectedDomainsに入っているため、この表示合わせだけでよい。
+    setVal("#fcCategory", localStorage.getItem("fc_category") || "");
   }
   const fcDomainDropdown = initCheckDropdown(root, "fcDomainBtn",
     "fcDomainPanel", () => {
       const cat = root.querySelector("#fcCategory").value;
       return cat ? { [cat]: domainGroups[cat] || [] } : domainGroups;
-    }, selectedDomains, () => {}, "分野");
+    }, selectedDomains, () => refreshFcCount(), "分野");
   root.querySelector("#fcCategory").addEventListener("change", () => {
     selectedDomains.clear();
     fcDomainDropdown.renderPanel();
     fcDomainDropdown.refreshLabel();
+    refreshFcCount();
   });
   // 前回選んだ単語帳が今も存在する場合のみ復元(削除済みIDで空扱いになる
   // のを防ぐため、optionが実在するかをvalue設定後に確認)。
@@ -1594,36 +1660,34 @@ export async function flashcard(root) {
     (localStorage.getItem("fc_auto") ?? "0") === "1";
   root.querySelector("#fcFreeOnly").checked =
     localStorage.getItem("fc_free_only") === "1";
+  // 件数表示を初期反映+以降フィルタ変更のたびに更新。
+  ["#fcLvMin", "#fcLvMax", "#fcMastered", "#fcFreeOnly"].forEach((id) => {
+    root.querySelector(id).addEventListener("change", refreshFcCount);
+  });
+  if (fcDeckSel) fcDeckSel.addEventListener("change", refreshFcCount);
+  refreshFcCount();
 
   root.querySelector("#fcStart").addEventListener("click", async () => {
     const v = (id) => root.querySelector(id).value;
     const dir = v("#fcDir"), dom = [...selectedDomains].join(",");
-    const lvmin = v("#fcLvMin"), lvmax = v("#fcLvMax");
-    const mastered = v("#fcMastered"), size = v("#fcSize");
+    const size = v("#fcSize");
     const speed = v("#fcSpeed"), voice = v("#fcVoice");
     const auto = root.querySelector("#fcAuto").checked;
-    const freeOnly = root.querySelector("#fcFreeOnly").checked;
-    const deckId = fcDeckSel ? fcDeckSel.value : "";
+    const fp = fcFilterParams();
     localStorage.setItem("fc_dir", dir);
     localStorage.setItem("fc_dom", dom);
-    localStorage.setItem("fc_lvmin", lvmin);
-    localStorage.setItem("fc_lvmax", lvmax);
-    localStorage.setItem("fc_mastered", mastered);
+    localStorage.setItem("fc_category", v("#fcCategory"));
+    localStorage.setItem("fc_lvmin", fp.level_min || "");
+    localStorage.setItem("fc_lvmax", fp.level_max || "");
+    localStorage.setItem("fc_mastered", fp.mastered || "");
     localStorage.setItem("fc_size", size);
     localStorage.setItem("fc_speed", speed);
     localStorage.setItem("fc_voice", voice);
     localStorage.setItem("fc_auto", auto ? "1" : "0");
-    localStorage.setItem("fc_free_only", freeOnly ? "1" : "0");
-    localStorage.setItem("fc_deck", deckId);
+    localStorage.setItem("fc_free_only", fp.free_range_only ? "1" : "0");
+    localStorage.setItem("fc_deck", fp.deck_id || "");
 
-    const q = new URLSearchParams({ limit: size });
-    if (dom) q.set("domain", dom);
-    if (lvmin) q.set("level_min", lvmin);
-    if (lvmax) q.set("level_max", lvmax);
-    if (mastered) q.set("mastered", mastered);
-    if (showBanned()) q.set("include_banned", "true");
-    if (freeOnly) q.set("free_range_only", "true");
-    if (deckId) q.set("deck_id", deckId);
+    const q = new URLSearchParams({ limit: size, ...fp });
     const qs = q.toString();
 
     const stage = root.querySelector("#fcStage");
@@ -1638,6 +1702,11 @@ export async function flashcard(root) {
         フィルタを緩めてください。</div>`;
       return;
     }
+    // 開始したら設定パネルを畳んでカードだけに集中できるようにする
+    // (2026-09-15・UIレビュー指摘: 開始後も設定パネルが画面上部に残り、
+    // カード・採点ボタンが画面外に押し出されていた)。
+    root.querySelector("#fcSetup").style.display = "none";
+    window.scrollTo({ top: 0, behavior: "instant" });
     runFlashcards(stage, queue, { dir, speed, auto, qs, voice, kind: "word" });
   });
 }
@@ -1734,13 +1803,46 @@ export async function flashPhrase(root) {
       </div>
       <div class="row mt">
         <button class="btn" id="fpStart">▶ 開始</button>
+        <span class="muted" id="fpCount"></span>
       </div>
+      <p class="muted fc-kbd-hint">PCキー操作: ↑覚えた ↓できない →うろ覚え
+        ←戻る ／ Space・Enterで反転 ／ Sでスキップ</p>
     </div>
     <div id="fpStage"></div>`;
 
   const setVal = (id, v) => {
     const e = root.querySelector(id);
     if (e && v != null) e.value = v;
+  };
+  // 開始前に該当件数を表示する(flashcard()と同じ・2026-09-15)。
+  const fpFilterParams = () => {
+    const v = (id) => root.querySelector(id).value;
+    const scene = [...selectedScenes].join(",");
+    const lvmin = v("#fpLvMin"), lvmax = v("#fpLvMax");
+    const mastered = v("#fpMastered");
+    const freeOnly = root.querySelector("#fpFreeOnly").checked;
+    const deckId = fpDeckSel ? fpDeckSel.value : "";
+    const p = {};
+    if (scene) p.scene = scene;
+    if (lvmin) p.level_min = lvmin;
+    if (lvmax) p.level_max = lvmax;
+    if (mastered) p.mastered = mastered;
+    if (showBanned()) p.include_banned = "true";
+    if (freeOnly) p.free_range_only = "true";
+    if (deckId) p.deck_id = deckId;
+    return p;
+  };
+  let fpCountSeq = 0;
+  const refreshFpCount = async () => {
+    const el2 = root.querySelector("#fpCount");
+    if (!el2) return;
+    const my = ++fpCountSeq;
+    el2.textContent = "…";
+    const q = new URLSearchParams({ count: "true", ...fpFilterParams() });
+    try {
+      const r = await api.get("/api/phrases/quiz?" + q.toString());
+      if (my === fpCountSeq) el2.textContent = `該当 ${r.count}件`;
+    } catch (_) { if (my === fpCountSeq) el2.textContent = ""; }
   };
   setVal("#fpDir", localStorage.getItem("fp_dir") || "en2ja");
   // シーン(複数選択可・大分類カスケード)。flashcard()の分野と同じ設計。
@@ -1752,16 +1854,21 @@ export async function flashPhrase(root) {
     selectedScenes.clear();
     (sceneGroups[dfp.category] || []).forEach((s) => selectedScenes.add(s));
     setVal("#fpCategory", dfp.category);
+  } else {
+    // 前回選んだ大分類の「表示」だけ復元する(flashcard()と同じ・2026-09-15
+    // UIレビュー指摘対応)。
+    setVal("#fpCategory", localStorage.getItem("fp_category") || "");
   }
   const fpSceneDropdown = initCheckDropdown(root, "fpSceneBtn",
     "fpScenePanel", () => {
       const cat = root.querySelector("#fpCategory").value;
       return cat ? { [cat]: sceneGroups[cat] || [] } : sceneGroups;
-    }, selectedScenes, () => {}, "シーン");
+    }, selectedScenes, () => refreshFpCount(), "シーン");
   root.querySelector("#fpCategory").addEventListener("change", () => {
     selectedScenes.clear();
     fpSceneDropdown.renderPanel();
     fpSceneDropdown.refreshLabel();
+    refreshFpCount();
   });
   // 前回選んだフレーズ帳が今も存在する場合のみ復元(削除済みIDで空扱いに
   // なるのを防ぐ・flashcard()と同じ方式)。
@@ -1788,36 +1895,33 @@ export async function flashPhrase(root) {
     (localStorage.getItem("fp_auto") ?? "0") === "1";
   root.querySelector("#fpFreeOnly").checked =
     localStorage.getItem("fp_free_only") === "1";
+  ["#fpLvMin", "#fpLvMax", "#fpMastered", "#fpFreeOnly"].forEach((id) => {
+    root.querySelector(id).addEventListener("change", refreshFpCount);
+  });
+  if (fpDeckSel) fpDeckSel.addEventListener("change", refreshFpCount);
+  refreshFpCount();
 
   root.querySelector("#fpStart").addEventListener("click", async () => {
     const v = (id) => root.querySelector(id).value;
     const dir = v("#fpDir"), scene = [...selectedScenes].join(",");
-    const lvmin = v("#fpLvMin"), lvmax = v("#fpLvMax");
-    const mastered = v("#fpMastered"), size = v("#fpSize");
+    const size = v("#fpSize");
     const speed = v("#fpSpeed"), voice = v("#fpVoice");
     const auto = root.querySelector("#fpAuto").checked;
-    const freeOnly = root.querySelector("#fpFreeOnly").checked;
-    const deckId = fpDeckSel ? fpDeckSel.value : "";
+    const fp = fpFilterParams();
     localStorage.setItem("fp_dir", dir);
     localStorage.setItem("fp_scene", scene);
-    localStorage.setItem("fp_lvmin", lvmin);
-    localStorage.setItem("fp_lvmax", lvmax);
-    localStorage.setItem("fp_mastered", mastered);
+    localStorage.setItem("fp_category", v("#fpCategory"));
+    localStorage.setItem("fp_lvmin", fp.level_min || "");
+    localStorage.setItem("fp_lvmax", fp.level_max || "");
+    localStorage.setItem("fp_mastered", fp.mastered || "");
     localStorage.setItem("fp_size", size);
     localStorage.setItem("fp_speed", speed);
     localStorage.setItem("fp_voice", voice);
     localStorage.setItem("fp_auto", auto ? "1" : "0");
-    localStorage.setItem("fp_free_only", freeOnly ? "1" : "0");
-    localStorage.setItem("fp_deck", deckId);
+    localStorage.setItem("fp_free_only", fp.free_range_only ? "1" : "0");
+    localStorage.setItem("fp_deck", fp.deck_id || "");
 
-    const q = new URLSearchParams({ limit: size });
-    if (scene) q.set("scene", scene);
-    if (lvmin) q.set("level_min", lvmin);
-    if (lvmax) q.set("level_max", lvmax);
-    if (mastered) q.set("mastered", mastered);
-    if (showBanned()) q.set("include_banned", "true");
-    if (freeOnly) q.set("free_range_only", "true");
-    if (deckId) q.set("deck_id", deckId);
+    const q = new URLSearchParams({ limit: size, ...fp });
     const qs = q.toString();
 
     const stage = root.querySelector("#fpStage");
@@ -1832,6 +1936,9 @@ export async function flashPhrase(root) {
         フィルタを緩めてください。</div>`;
       return;
     }
+    // 開始したら設定パネルを畳む(flashcard()と同じ・2026-09-15対応)。
+    root.querySelector("#fpSetup").style.display = "none";
+    window.scrollTo({ top: 0, behavior: "instant" });
     runFlashcards(stage, queue, { dir, speed, auto, qs, voice, kind: "phrase" });
   });
 }
@@ -1900,7 +2007,14 @@ function initCheckDropdown(root, btnId, panelId, groupsGetter, selected,
     panel.classList.toggle("open");
   });
   document.addEventListener("click", (e) => {
-    if (!panel.contains(e.target) && e.target !== btn) {
+    // 「すべて選択/クリア」ボタン押下時、その場のonChangeでrenderPanel()が
+    // panel.innerHTMLを差し替えるためe.targetが既にDOMから外れており、
+    // panel.contains(e.target)が誤ってfalseになりパネルが即座に閉じて
+    // しまっていた(2026-09-15・UIレビュー指摘)。composedPath()は
+    // イベント発火時点(=DOM書き換え前)の経路を保持しているため、これで
+    // 判定すれば正しく「パネル内クリック」と認識できる。
+    const path = e.composedPath ? e.composedPath() : [e.target];
+    if (!path.includes(panel) && !path.includes(btn)) {
       panel.classList.remove("open");
     }
   });

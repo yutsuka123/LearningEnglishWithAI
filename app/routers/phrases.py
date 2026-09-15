@@ -477,11 +477,13 @@ def quiz(
     mastered: str | None = None,   # 'only' | 'hide' | None
     free_range_only: bool = False,  # 🔊無料で再生できる範囲のみ(2026-08-12)
     deck_id: int | None = None,    # 自分のフレーズ帳で絞り込み(2026-08-18)
+    count: bool = False,           # 件数のみ返す(2026-09-15・単語版と同じ)
 ):
     """フラッシュフレーズと共用。シーン/レベル/覚えた状態でフィルタ可能
     （単語版`/api/words/quiz`と同じインタフェース、列だけscene違い）。
     deck_idを指定すると、そのフレーズ帳(自分の所有分のみ)に含まれる
-    フレーズだけに絞り込む(シーン/レベル等の他条件と併用可)。"""
+    フレーズだけに絞り込む(シーン/レベル等の他条件と併用可)。count=true
+    の場合は該当件数({"count": n})だけを返す(単語版と同じ)。"""
     from ..services import access_tiers
     from ..services.auth import (
         current_user_allow_banned, current_user_id, is_guest_user_id,
@@ -514,6 +516,15 @@ def quiz(
             where = where + [fr_clause]
             params = params + fr_params
         where_extra = " AND ".join(where)
+        if count:
+            from ..services.progress import user_items_subquery
+            src = user_items_subquery("phrases")
+            n = conn.execute(
+                f"SELECT COUNT(*) FROM {src} AS t"
+                + (f" WHERE {where_extra}" if where_extra else ""),
+                [uid, *params],
+            ).fetchone()[0]
+            return {"count": n}
         rows = select_for_review(
             conn, table="phrases", limit=limit,
             exclude_banned=False,  # banned は _phrase_filter 側で処理済み

@@ -578,10 +578,14 @@ th { color: var(--muted); font-weight: 600; }
 .voice-row .lang { color: var(--muted); font-size: 12px; }
 
 .toast {
-  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+  /* --toast-bottomは既定22px。フラッシュ単語/フレーズ滞在中だけ
+     runFlashcards()がJSで底上げし、採点ボタン列との重なりを避ける
+     (2026-09-15・他画面には影響しない)。 */
+  position: fixed; bottom: var(--toast-bottom, 22px); left: 50%;
+  transform: translateX(-50%);
   background: var(--panel-2); border: 1px solid var(--line);
   padding: 10px 18px; border-radius: 10px; opacity: 0; pointer-events: none;
-  transition: opacity .25s; z-index: 50;
+  transition: opacity .25s, bottom .2s ease; z-index: 50;
 }
 .toast.show { opacity: 1; }
 
@@ -822,6 +826,14 @@ table.rtable .ops-cell .vague-btn { margin-left: 0; }
   border-radius: 12px; padding: 20px; width: min(560px, 92vw);
   max-height: 86vh; overflow-y: auto;
 }
+/* 内容が長いモーダルで✕ボタンがスクロールアウトして押せなくなる指摘
+   (2026-09-15・UIレビュー)への対応: ヘッダーをsticky化して常に見える
+   ようにする。.modal-boxのpaddingを打ち消して幅いっぱいに固定する。 */
+.modal-head {
+  position: sticky; top: -20px; z-index: 2;
+  margin: -20px -20px 12px; padding: 16px 20px 10px;
+  background: var(--panel);
+}
 
 /* 単語詳細内の類義語/対義語/派生語ジャンプ（DB登録済みの語のみリンク化） */
 .jw-link {
@@ -877,21 +889,68 @@ table.rtable .ops-cell .vague-btn { margin-left: 0; }
 .fc-ipa { font-size: 15px; margin-bottom: 8px; }
 .fc-ex { font-size: 17px; margin-top: 6px; }
 .fc-exja { font-size: 14px; margin-top: 2px; }
-/* スワイプ採点のアニメーション（カードが飛んでいく） */
-.fc-card.fly-up    { transform: translateY(-130%) rotate(-8deg); opacity: 0; }
-.fc-card.fly-down  { transform: translateY(130%) rotate(8deg);  opacity: 0; }
-.fc-card.fly-right { transform: translateX(130%) rotate(8deg);  opacity: 0; }
+/* スワイプ採点のアニメーション（カードが飛んでいく）。2026-09-15:
+   採点結果が伝わりやすいよう、方向色のグロー(box-shadow)も付ける
+   （UIレビュー指摘「採点時の手応えが薄い」への対応）。 */
+.fc-card.fly-up    { transform: translateY(-130%) rotate(-8deg); opacity: 0;
+  box-shadow: 0 0 0 6px var(--accent-2), 0 6px 22px rgba(0,0,0,.28); }
+.fc-card.fly-down  { transform: translateY(130%) rotate(8deg);  opacity: 0;
+  box-shadow: 0 0 0 6px var(--danger), 0 6px 22px rgba(0,0,0,.28); }
+.fc-card.fly-right { transform: translateX(130%) rotate(8deg);  opacity: 0;
+  box-shadow: 0 0 0 6px var(--warn), 0 6px 22px rgba(0,0,0,.28); }
+/* 採点した瞬間、カードに大きく重ねて出す一言ラベル(150ms程度で消える)。
+   ⬆⬇➡覚えた/できない/うろ覚えのどれを選んだか一目で分かるようにする。 */
+.fc-grade-badge {
+  position: absolute; top: 50%; left: 50%; z-index: 5;
+  transform: translate(-50%, -50%) scale(.6);
+  font-size: clamp(20px, 5vw, 28px); font-weight: 800;
+  padding: 8px 20px; border-radius: 999px; opacity: 0; pointer-events: none;
+  white-space: nowrap;
+  animation: fcBadgePop .22s ease forwards;
+}
+.fc-grade-badge.good  { background: var(--accent-2); color: #042016; }
+.fc-grade-badge.bad   { background: var(--danger); color: #2a0a0a; }
+.fc-grade-badge.vague { background: var(--warn); color: #3a2600; }
+@keyframes fcBadgePop {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(.6); }
+  45%  { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
 /* スワイプの凡例はカード欄外に小さく。 */
 .fc-legend { margin: 10px 0 4px; font-size: 12px; text-align: center;
   line-height: 1.6; }
 .fc-tools { justify-content: center; margin-bottom: 6px; }
+/* フラッシュ内の音声ボタンは他のツールボタンと大きさを揃える
+   （2026-09-15・UIレビュー指摘: クロスワードの.cw-word-toolsと同じ
+   対応をフラッシュにも適用）。 */
+.fc-tools .btn.voice-m,
+.fc-tools .btn.voice-f { padding: 9px 15px; font-size: 17px; }
 .fc-actions { justify-content: center; gap: 8px; }
 .fc-actions .btn { padding: 10px 14px; font-size: 15px; }
+/* 採点3ボタン(できない/うろ覚え/覚えた)の幅を揃える(2026-09-15・
+   UIレビュー指摘: 文字数の違いで幅がバラバラ(107/107/92px)だった)。 */
+.fc-actions .btn.danger,
+.fc-actions .btn.vague-btn,
+.fc-actions .btn.good { min-width: 108px; text-align: center; }
 .fc-done { text-align: center; }
 .btn.danger { background: var(--danger); color: #2a0a0a; }
+/* PCキー操作の案内はスマホでは場所を取るだけなので隠す
+   （2026-09-15・UIレビュー指摘）。 */
+.fc-kbd-hint { font-size: 12px; margin: 6px 0 0; display: none; }
+@media (min-width: 761px) {
+  .fc-kbd-hint { display: block; }
+}
 @media (max-width: 760px) {
   .fc-card { min-height: 240px; padding: 22px 16px; }
 }
+/* 開始前設定パネルのタップ目標をやや大きめに(2026-09-15・UIレビュー
+   指摘: セレクト32px/チェックボックス13px/開始ボタン39pxは小さすぎる)。
+   影響範囲をフラッシュ単語/フレーズの設定パネルだけに絞り、他画面の
+   フォーム部品(一覧・設定画面等)は変えない。 */
+#fcSetup select, #fpSetup select { min-height: 40px; padding: 8px 10px; }
+#fcSetup .toggle input[type="checkbox"],
+#fpSetup .toggle input[type="checkbox"] { width: 18px; height: 18px; }
+#fcStart, #fpStart { min-height: 44px; padding: 10px 22px; font-size: 15px; }
 
 
 /* メンテナンス予定のお知らせ（2026-08-22導入）。予定は黄色、作業中は赤。
