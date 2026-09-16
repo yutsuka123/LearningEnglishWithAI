@@ -21,6 +21,10 @@ VALID_KINDS = {
     # 音声再生のタイミングでitem_id→分野/シーンを引いて記録する
     # (app/routers/learn.pyのtts_item)。
     "word_domain", "phrase_scene",
+    # 再生ボタンを押したが音声を返せなかったケース(2026-09-17・ゲスト
+    # IP別深掘り分析用)。app/routers/learn.pyの各TTSエンドポイントで、
+    # 通常の"play"の代わりにこちらを記録する。
+    "play_error",
 }
 
 

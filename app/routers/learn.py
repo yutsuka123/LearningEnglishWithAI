@@ -349,9 +349,11 @@ def sample_material_tts(material_id: int, voice: str = "ash"):
     audio, error = ai.synthesize_speech(
         text, voice, feature=feature, free_range=True)
     if error:
+        tracking.log_event(
+            "play_error", f"sample_{feature}", f"{voice}:{text[:60]}")
         return Response(content=error, status_code=422,
                         media_type="text/plain")
-    tracking.log_event("play", f"sample_{feature}", voice)
+    tracking.log_event("play", f"sample_{feature}", f"{voice}:{text[:60]}")
     return Response(content=audio, media_type="audio/mpeg")
 
 
@@ -886,8 +888,10 @@ def tts(payload: TtsIn):
         payload.text, payload.voice, feature=feature)
     if error:
         # 422 lets the frontend fall back to the browser voice.
+        tracking.log_event(
+            "play_error", feature, f"{payload.voice}:{payload.text[:60]}")
         return Response(content=error, status_code=422, media_type="text/plain")
-    tracking.log_event("play", feature, payload.voice)
+    tracking.log_event("play", feature, f"{payload.voice}:{payload.text[:60]}")
     return Response(content=audio, media_type="audio/mpeg")
 
 
@@ -973,6 +977,8 @@ def tts_item(
             conn, item_type, item_id, base, current_user_allow_banned(),
         )
         if not text:
+            tracking.log_event(
+                "play_error", item_type, f"no_text:{base}:id={item_id}")
             return Response(
                 content="読み上げる本文がありません（例文なし等）。",
                 status_code=422, media_type="text/plain",
@@ -980,12 +986,16 @@ def tts_item(
         charge_error = ai.charge_playback_if_needed(
             item_type, item_id, base, text)
         if charge_error:
+            tracking.log_event(
+                "play_error", item_type, f"no_charge:{base}:{text[:60]}")
             return Response(content=charge_error, status_code=402,
                             media_type="text/plain")
         cached = audio_store.get(conn, item_type, item_id, skind, voice, text)
         if cached is not None:
-            tracking.log_event(
-                "play", item_type, f"{base}:{voice}:{speed}")
+            # labelは分析用に「word/example/phraseの別:実際に再生した
+            # テキスト」を記録する(2026-09-17・ゲストIP別深掘り分析用。
+            # voice/speedは分析上の優先度が低いため対象外にした)。
+            tracking.log_event("play", item_type, f"{base}:{text[:60]}")
             _log_item_domain(conn, item_type, item_id)
             return Response(content=cached, media_type="audio/mpeg")
         from ..services.auth import current_user_id, is_guest_user_id
@@ -996,11 +1006,13 @@ def tts_item(
     audio, error = ai.synthesize_speech(
         text, voice, style=speed, free_range=free_range)
     if error:
+        tracking.log_event(
+            "play_error", item_type, f"synth_fail:{base}:{text[:60]}")
         return Response(content=error, status_code=422,
                         media_type="text/plain")
     with db() as conn:
         audio_store.put(conn, item_type, item_id, skind, voice, text, audio)
-        tracking.log_event("play", item_type, f"{base}:{voice}:{speed}")
+        tracking.log_event("play", item_type, f"{base}:{text[:60]}")
         _log_item_domain(conn, item_type, item_id)
     return Response(content=audio, media_type="audio/mpeg")
 

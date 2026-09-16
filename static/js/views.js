@@ -1182,6 +1182,10 @@ function renderPhraseDetail(box, d) {
 
 // フレーズの詳細ポップアップ（単語のshowWordDetailと同じ方式）。
 function showPhraseDetail(p) {
+  // showWordDetailのword_detailと対になる記録(2026-09-17・従来は
+  // フレーズ詳細だけ汎用クリック記録(ボタン文言のみ)しか残らず、
+  // どのフレーズを開いたか特定できなかった)。
+  api.track("page", "phrase_detail", p.english);
   openModal(p.english, (body) => {
     body.appendChild(el(`<p class="quiz-answer">${escapeHtml(p.english)}
       <span class="muted">${escapeHtml(p.japanese || "")}
@@ -4780,6 +4784,33 @@ export async function admin(root) {
         <p id="puSummaryWrap" class="muted mt">未読み込み</p>
         <div id="puItemsWrap" class="mt"><p class="muted">未読み込み</p></div>
       </details>
+
+      <details class="log-group" id="logGuestIpDetails">
+        <summary>🕵️ ゲストのIP別深掘り分析</summary>
+        <p class="muted mt">未ログイン利用者をIP単位でグルーピングし、
+          単語の分野・発声(単語/例文/フレーズの別)・再生に失敗した項目・
+          「詳細」ボタンで開いた単語/フレーズ・発生したJSエラー等を
+          集計します。表は概要のみで、行をクリックすると詳細が展開
+          されます。同一Wi-Fi/会社等でIPを共有する複数人は1行に
+          混ざる点にご注意ください。</p>
+        <div class="grid cols-3 mt" style="align-items:end">
+          <label>集計期間
+            <select id="giDays">
+              <option value="30">直近30日</option>
+              <option value="90" selected>直近90日</option>
+              <option value="180">直近180日</option>
+              <option value="365">直近1年</option>
+            </select>
+          </label>
+          <label>最低イベント数
+            <input type="number" id="giMinEvents" value="1" min="1"
+              style="width:70px" />
+          </label>
+          <button class="btn" id="giRefreshBtn">🔄 更新</button>
+        </div>
+        <p id="giSummaryWrap" class="muted mt">未読み込み</p>
+        <div id="giItemsWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
     </div>
 
     <div class="admin-sec" data-sec="inquiries" style="display:none">
@@ -6104,6 +6135,153 @@ export async function admin(root) {
     root.querySelector(`#${id}`).addEventListener("change", loadPowerUsers);
   });
 
+  // ゲストのIP別深掘り分析(2026-09-17ユーザー要望)。一覧は概要のみ、
+  // 行クリックで/admin/guest-ip-detailを遅延取得して展開する。
+  const giCache = {};
+  function renderGuestIpDetailHtml(d) {
+    const topList = (rows, empty) => (rows && rows.length)
+      ? rows.map(([k, v]) => `${escapeHtml(k)}(${v})`).join(" / ") : empty;
+    const sumCount = (rows) =>
+      (rows || []).reduce((s, [, v]) => s + v, 0);
+    const errList = (rows, empty) => (rows && rows.length)
+      ? `<ul style="margin:4px 0 0 18px">${rows.map((e) =>
+        `<li>${fmtDate(e.at)}
+          ${escapeHtml(e.category)}: ${escapeHtml(e.label)}</li>`)
+        .join("")}</ul>`
+      : `<p class="muted">${empty}</p>`;
+    const jsErrList = (rows, empty) => (rows && rows.length)
+      ? `<ul style="margin:4px 0 0 18px">${rows.map((e) =>
+        `<li>${fmtDate(e.created_at)} [${escapeHtml(e.kind)}]
+          ${escapeHtml(e.message || "")}
+          <span class="muted">${escapeHtml(e.url || "")}${
+            e.line ? ":" + e.line : ""}</span></li>`).join("")}</ul>`
+      : `<p class="muted">${empty}</p>`;
+    return `
+      <div class="grid cols-2 mt" style="gap:12px">
+        <div>
+          <p><b>単語の分野</b>: ${topList(d.top_word_domains, "—")}</p>
+          <p><b>フレーズのシーン</b>: ${topList(d.top_phrase_scenes, "—")}</p>
+          <p><b>よく開いたタブ</b>: ${topList(d.top_tabs, "—")}</p>
+          <p><b>クリックしたボタン</b>: ${topList(d.top_clicks, "—")}</p>
+        </div>
+        <div>
+          <p><b>開いた単語の「詳細」</b>: ${topList(d.word_details, "—")}</p>
+          <p><b>開いたフレーズの「詳細」</b>:
+            ${topList(d.phrase_details, "—")}</p>
+        </div>
+      </div>
+      <div class="grid cols-3 mt" style="gap:12px">
+        <div><p><b>🔊 単語の発声</b>（${sumCount(d.word_plays)}回）</p>
+          <p style="font-size:.9em">${topList(d.word_plays, "なし")}</p></div>
+        <div><p><b>📖 例文の発声</b>（${sumCount(d.example_plays)}回）</p>
+          <p style="font-size:.9em">
+            ${topList(d.example_plays, "なし")}</p></div>
+        <div><p><b>💬 フレーズの発声</b>（${sumCount(d.phrase_plays)}回）</p>
+          <p style="font-size:.9em">
+            ${topList(d.phrase_plays, "なし")}</p></div>
+      </div>
+      <div class="mt">
+        <p><b>⚠️ 再生に失敗した項目</b>（${(d.play_errors || []).length}件・
+          再生ボタンは押したが音声が出なかったケース）</p>
+        ${errList(d.play_errors, "なし")}
+      </div>
+      <div class="mt">
+        <p><b>🐞 JSエラー</b>（${(d.js_errors || []).length}件）</p>
+        ${jsErrList(d.js_errors, "なし")}
+      </div>`;
+  }
+  async function loadGuestIpAnalysis() {
+    const summaryWrap = root.querySelector("#giSummaryWrap");
+    const itemsWrap = root.querySelector("#giItemsWrap");
+    summaryWrap.textContent = "読み込み中…";
+    itemsWrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    const days = root.querySelector("#giDays").value;
+    const minEvents = root.querySelector("#giMinEvents").value || "1";
+    let res;
+    try {
+      res = await api.get(`/api/system/admin/guest-ip-analysis?days=${days}`
+        + `&min_events=${minEvents}`);
+    } catch (e) {
+      summaryWrap.innerHTML = `取得失敗: ${escapeHtml(e.message)}`;
+      itemsWrap.innerHTML = "";
+      return;
+    }
+    summaryWrap.innerHTML = `対象IP: <b>${res.count}件</b>
+      （直近${res.days}日・イベント${res.min_events}件以上が対象）`;
+    if (!res.items.length) {
+      itemsWrap.innerHTML = `<p class="muted">条件に合うゲストの
+        アクセスはまだありません。</p>`;
+      return;
+    }
+    const topList = (rows, empty) => (rows && rows.length)
+      ? rows.map(([k, v]) => `${escapeHtml(k)}(${v})`).join(" / ") : empty;
+    itemsWrap.innerHTML = `<table><thead><tr>
+      <th></th><th>IP</th><th>訪問日数</th><th>イベント数</th>
+      <th>発声</th><th>再生失敗</th><th>JSエラー</th>
+      <th>単語詳細</th><th>フレーズ詳細</th>
+      <th>初回</th><th>最終</th><th>単語の分野（多い順）</th>
+    </tr></thead><tbody>${res.items.map((it) => `
+      <tr class="gi-row" data-ip="${escapeHtml(it.ip)}"
+        style="cursor:pointer">
+        <td class="gi-arrow">▶</td>
+        <td>${escapeHtml(it.ip)}${it.is_admin
+          ? ' <span class="muted">(管理者)</span>' : ""}</td>
+        <td>${it.distinct_days}</td>
+        <td>${it.total_events}</td>
+        <td>${it.total_plays}</td>
+        <td>${it.total_play_errors > 0
+          ? `<span class="badge-bad">${it.total_play_errors}</span>`
+          : "0"}</td>
+        <td>${it.total_client_errors > 0
+          ? `<span class="badge-bad">${it.total_client_errors}</span>`
+          : "0"}</td>
+        <td>${it.word_detail_clicks}</td>
+        <td>${it.phrase_detail_clicks}</td>
+        <td>${fmtDate(it.first_seen)}</td>
+        <td>${fmtDate(it.last_seen)}</td>
+        <td>${topList(it.top_word_domains, "—")}</td>
+      </tr>`).join("")}</tbody></table>`;
+    itemsWrap.querySelectorAll(".gi-row").forEach((tr) => {
+      tr.addEventListener("click", async () => {
+        const existing = tr.nextElementSibling;
+        if (existing && existing.classList.contains("gi-detail-row")) {
+          existing.remove();
+          tr.querySelector(".gi-arrow").textContent = "▶";
+          return;
+        }
+        itemsWrap.querySelectorAll(".gi-detail-row")
+          .forEach((r) => r.remove());
+        itemsWrap.querySelectorAll(".gi-row .gi-arrow")
+          .forEach((a) => { a.textContent = "▶"; });
+        tr.querySelector(".gi-arrow").textContent = "▼";
+        const ip = tr.dataset.ip;
+        const detailTr = el(`<tr class="gi-detail-row"><td colspan="12">
+          <p class="muted">読み込み中…</p></td></tr>`);
+        tr.after(detailTr);
+        try {
+          const cacheKey = `${ip}:${days}`;
+          let d = giCache[cacheKey];
+          if (!d) {
+            d = await api.get(`/api/system/admin/guest-ip-detail`
+              + `?ip=${encodeURIComponent(ip)}&days=${days}`);
+            giCache[cacheKey] = d;
+          }
+          detailTr.querySelector("td").innerHTML =
+            renderGuestIpDetailHtml(d);
+        } catch (e) {
+          detailTr.querySelector("td").innerHTML =
+            `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+        }
+      });
+    });
+  }
+  root.querySelector("#giRefreshBtn")
+    .addEventListener("click", loadGuestIpAnalysis);
+  ["giDays", "giMinEvents"].forEach((id) => {
+    root.querySelector(`#${id}`)
+      .addEventListener("change", loadGuestIpAnalysis);
+  });
+
   // ログの各項目は開いたときに初めて取得する(2026-08-19・「概要をまず
   // だし、細かい項目は最初はたたんでおき」というユーザー要望に対応。
   // 併せて管理画面を開くたび無条件に5本のAPIを叩いていたのを解消)。
@@ -6121,6 +6299,7 @@ export async function admin(root) {
     ["#logAccessDetails", loadAccessLog],
     ["#logUsageAnalyticsDetails", loadUsageAnalytics],
     ["#logPowerUsersDetails", loadPowerUsers],
+    ["#logGuestIpDetails", loadGuestIpAnalysis],
   ];
   lazySections.forEach(([sel, loader]) => {
     const el2 = root.querySelector(sel);

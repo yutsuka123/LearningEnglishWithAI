@@ -2052,6 +2052,12 @@ def admin_usage_analytics(
     }
 
 
+def _top(counter: collections.Counter, n: int = 5) -> list[list]:
+    """Counterを[[key, count], ...]の多い順リストに変換する小ヘルパー
+    （admin_power_users・admin_guest_ip_analysis共用）。"""
+    return [[k, v] for k, v in counter.most_common(n)]
+
+
 @router.get("/admin/power-users")
 def admin_power_users(
     days: int = 90, min_events: int = 5, min_days: int = 2,
@@ -2106,9 +2112,6 @@ def admin_power_users(
         })
         g["events"].append(r)
         g["days"].add(r["jst_date"])
-
-    def _top(counter: collections.Counter, n: int = 5) -> list[list]:
-        return [[k, v] for k, v in counter.most_common(n)]
 
     items = []
     for (id_type, ident), g in groups.items():
@@ -2179,6 +2182,190 @@ def admin_power_users(
             "top_tabs": _top(agg_tabs, 10),
         },
         "items": items,
+    }
+
+
+@router.get("/admin/guest-ip-analysis")
+def admin_guest_ip_analysis(days: int = 90, min_events: int = 1,
+                             limit: int = 200):
+    """ゲスト(未ログイン)利用者をIP単位で深掘り分析する一覧（管理画面
+    「ゲストIP別分析」・2026-09-17ユーザー要望「ゲストのIP別に、単語の
+    分野・発声の有無・エラーの有無・詳細ボタン押下・例文再生・再生失敗を
+    できるだけ細かく分析したい、一覧はクリックで詳細が見えるように」への
+    対応）。usage_events(user_id IS NULL=未ログイン)をip単位でグルーピング
+    し、この一覧では概要だけを返す。単語ごとの内訳やエラーメッセージ一覧
+    など詳しい内容は、この一覧のipを指定してadmin_guest_ip_detailを呼ぶ
+    （画面側は行クリックで遅延取得する想定）。
+
+    注意（IP単位の限界・admin_anon_accessと同じ）: 同一Wi-Fi/会社・モバイル
+    回線の共有IP等では複数人が1行に混ざる。guest_sid単位（Cookie）で見たい
+    場合はadmin_power_usersを使う。"""
+    _require_admin()
+    days = max(1, min(days, 365))
+    min_events = max(1, min_events)
+    limit = max(1, min(limit, 1000))
+    since = f"-{days} days"
+
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT ip, kind, category, label, created_at, "
+            "substr(datetime(created_at, '+9 hours'), 1, 10) AS jst_date "
+            "FROM usage_events "
+            "WHERE user_id IS NULL AND ip IS NOT NULL AND ip != '' "
+            "AND created_at >= datetime('now', ?) "
+            "ORDER BY created_at",
+            (since,),
+        ).fetchall()
+        err_rows = conn.execute(
+            "SELECT ip, COUNT(*) AS n FROM client_errors "
+            "WHERE user_id IS NULL AND ip IS NOT NULL AND ip != '' "
+            "AND created_at >= datetime('now', ?) GROUP BY ip",
+            (since,),
+        ).fetchall()
+
+    client_error_map = {r["ip"]: r["n"] for r in err_rows}
+    admin_ips = load_admin_known_ips()
+
+    groups: dict[str, dict] = {}
+    for r in rows:
+        g = groups.setdefault(r["ip"], {"events": [], "days": set()})
+        g["events"].append(r)
+        g["days"].add(r["jst_date"])
+
+    items = []
+    for ip, g in groups.items():
+        events = g["events"]
+        if len(events) < min_events:
+            continue
+        domains: collections.Counter = collections.Counter()
+        total_plays = total_play_errors = 0
+        word_detail_clicks = phrase_detail_clicks = 0
+        for e in events:
+            kind = e["kind"]
+            category = e["category"] or ""
+            if kind == "word_domain":
+                domains[category] += 1
+            elif kind == "play":
+                total_plays += 1
+            elif kind == "play_error":
+                total_play_errors += 1
+            elif kind == "page" and category == "word_detail":
+                word_detail_clicks += 1
+            elif kind == "page" and category == "phrase_detail":
+                phrase_detail_clicks += 1
+        items.append({
+            "ip": ip,
+            "is_admin": ip in admin_ips,
+            "total_events": len(events),
+            "distinct_days": len(g["days"]),
+            "first_seen": min(e["created_at"] for e in events),
+            "last_seen": max(e["created_at"] for e in events),
+            "total_plays": total_plays,
+            "total_play_errors": total_play_errors,
+            "total_client_errors": client_error_map.get(ip, 0),
+            "word_detail_clicks": word_detail_clicks,
+            "phrase_detail_clicks": phrase_detail_clicks,
+            "top_word_domains": _top(domains, 3),
+        })
+
+    items.sort(key=lambda it: (-it["distinct_days"], -it["total_events"]))
+    items = items[:limit]
+    return {
+        "days": days, "min_events": min_events, "count": len(items),
+        "items": items,
+    }
+
+
+@router.get("/admin/guest-ip-detail")
+def admin_guest_ip_detail(ip: str, days: int = 90):
+    """指定IP(ゲスト)1件分の深掘り詳細（admin_guest_ip_analysisの行を
+    クリックした時に呼ぶ・2026-09-17）。単語/例文/フレーズのどれを再生
+    したか、再生に失敗した項目、開いた単語・フレーズ詳細、発生したJS
+    エラー等をできるだけ詳しく返す。"""
+    _require_admin()
+    days = max(1, min(days, 365))
+    ip = (ip or "").strip()
+    if not ip:
+        return {"error": "ip is required"}
+    since = f"-{days} days"
+
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT kind, category, label, created_at FROM usage_events "
+            "WHERE user_id IS NULL AND ip = ? "
+            "AND created_at >= datetime('now', ?) ORDER BY created_at",
+            (ip, since),
+        ).fetchall()
+        js_error_rows = conn.execute(
+            "SELECT kind, message, url, line, col, created_at "
+            "FROM client_errors WHERE user_id IS NULL AND ip = ? "
+            "AND created_at >= datetime('now', ?) "
+            "ORDER BY created_at DESC LIMIT 50",
+            (ip, since),
+        ).fetchall()
+
+    domains: collections.Counter = collections.Counter()
+    scenes: collections.Counter = collections.Counter()
+    word_plays: collections.Counter = collections.Counter()
+    example_plays: collections.Counter = collections.Counter()
+    phrase_plays: collections.Counter = collections.Counter()
+    word_details: collections.Counter = collections.Counter()
+    phrase_details: collections.Counter = collections.Counter()
+    tabs: collections.Counter = collections.Counter()
+    clicks: collections.Counter = collections.Counter()
+    play_errors = []
+    for r in rows:
+        kind = r["kind"]
+        category = r["category"] or ""
+        label = r["label"] or ""
+        if kind == "word_domain":
+            domains[category] += 1
+        elif kind == "phrase_scene":
+            scenes[category] += 1
+        elif kind == "play":
+            # labelは "word:実際のテキスト" / "example:実際のテキスト" /
+            # "phrase:実際のテキスト" 形式(app/routers/learn.pyのtts_item)。
+            # /api/learn/tts(読み上げ・音読機能)は item紐付けが無いため
+            # "voice:テキスト" 形式のまま単語再生として扱う。
+            base, sep, ident = label.partition(":")
+            if sep and base == "example":
+                example_plays[ident[:80]] += 1
+            elif sep and base == "phrase":
+                phrase_plays[ident[:80]] += 1
+            elif sep and base == "word":
+                word_plays[ident[:80]] += 1
+            else:
+                word_plays[label[:80]] += 1
+        elif kind == "play_error":
+            play_errors.append({
+                "category": category, "label": label, "at": r["created_at"],
+            })
+        elif kind == "page" and category == "word_detail":
+            word_details[label] += 1
+        elif kind == "page" and category == "phrase_detail":
+            phrase_details[label] += 1
+        elif kind == "page":
+            tabs[label or category] += 1
+        elif kind == "click":
+            clicks[label or category] += 1
+
+    return {
+        "ip": ip,
+        "days": days,
+        "total_events": len(rows),
+        "first_seen": rows[0]["created_at"] if rows else None,
+        "last_seen": rows[-1]["created_at"] if rows else None,
+        "top_word_domains": _top(domains, 10),
+        "top_phrase_scenes": _top(scenes, 10),
+        "top_tabs": _top(tabs, 10),
+        "top_clicks": _top(clicks, 10),
+        "word_plays": _top(word_plays, 20),
+        "example_plays": _top(example_plays, 20),
+        "phrase_plays": _top(phrase_plays, 20),
+        "play_errors": play_errors[-50:],
+        "word_details": _top(word_details, 20),
+        "phrase_details": _top(phrase_details, 20),
+        "js_errors": [dict(r) for r in js_error_rows],
     }
 
 
