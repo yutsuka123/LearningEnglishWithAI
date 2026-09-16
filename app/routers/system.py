@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import collections
 import json
 import re
 from datetime import datetime, timedelta, timezone
+from typing import Literal
 
 from fastapi import APIRouter
 
@@ -1507,18 +1509,135 @@ def admin_visit_trend(days: int = 30):
     return {"days": days, "summary": summary, "daily": daily}
 
 
+_LOG_LINE_RE = re.compile(
+    r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} (\w+) ")
+_LOG_LEVEL_ORDER = {
+    "DEBUG": 10, "INFO": 20, "WARNING": 30, "ERROR": 40, "CRITICAL": 50,
+}
+
+
 @router.get("/admin/error-log")
-def admin_error_log(lines: int = 200):
+def admin_error_log(lines: int = 200, level: str = "ERROR"):
     """アプリのエラーログ(data/app.log)の末尾を返す（管理画面のログ確認用・
-    2026-08-13）。ファイルが無い/空でも空配列を返す（起動直後等）。"""
+    2026-08-13）。ファイルが無い/空でも空配列を返す（起動直後等）。
+    level: "ALL"|"WARNING"|"ERROR"（既定ERROR・2026-09-16追加）。INFO行
+    (定期処理の正常ログ等)が大半を占めてエラーが埋もれる問題があった
+    ため、既定でWARNING/ERROR/CRITICALのみに絞り込む。トレースバックの
+    続き行（タイムスタンプ行頭を持たない行）は直前の判定に従える。"""
     _require_admin()
     lines = max(1, min(lines, 1000))
     path = paths.data_dir / "app.log"
     if not path.exists():
         return {"lines": []}
     with path.open(encoding="utf-8", errors="replace") as f:
-        all_lines = f.readlines()
-    return {"lines": [ln.rstrip("\n") for ln in all_lines[-lines:]]}
+        all_lines = [ln.rstrip("\n") for ln in f.readlines()]
+
+    threshold = _LOG_LEVEL_ORDER.get((level or "ALL").upper())
+    if threshold is None:
+        picked = all_lines
+    else:
+        picked = []
+        keep_current = False
+        for ln in all_lines:
+            m = _LOG_LINE_RE.match(ln)
+            if m:
+                keep_current = (
+                    _LOG_LEVEL_ORDER.get(m.group(1), 0) >= threshold
+                )
+            if keep_current:
+                picked.append(ln)
+    return {"lines": picked[-lines:]}
+
+
+# 管理概要バナー(2026-09-16・ユーザー要望「登録者が増えた/エラーが
+# あった場合にわかりやすく警告を出したい、確認ボタンを押すまで出続けて
+# ほしい」)。「確認済み」はapp_state(DB)に時刻で永続化するので、admin
+# ページを再読み込みしても・別端末から見ても、確認するまで出続ける。
+_ALERT_ACK_KEYS = {
+    "registrants": "admin_alert_ack_registrants_at",
+    "errors": "admin_alert_ack_errors_at",
+}
+
+
+def _get_alert_ack(conn, kind: str) -> str:
+    key = _ALERT_ACK_KEYS[kind]
+    row = conn.execute(
+        "SELECT value FROM app_state WHERE key = ?", (key,),
+    ).fetchone()
+    if row and (row["value"] or "").strip():
+        return row["value"]
+    # 初回はこの機能の導入前からいた既存データを一気に「新着」扱いに
+    # しないよう、「今より前は既読」として基準時刻を書き込む。
+    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    conn.execute(
+        "INSERT OR REPLACE INTO app_state (key, value) VALUES (?, ?)",
+        (key, now),
+    )
+    return now
+
+
+def _compute_alerts() -> dict:
+    with db() as conn:
+        reg_ack = _get_alert_ack(conn, "registrants")
+        filter_sql = _user_filter_sql(False, False, False)
+        reg_row = conn.execute(
+            "SELECT COUNT(*) c, MAX(created_at) latest FROM users u "
+            f"WHERE {filter_sql} AND u.username != '{auth.GUEST_USERNAME}' "
+            "AND u.created_at > ?",
+            (reg_ack,),
+        ).fetchone()
+        err_ack = _get_alert_ack(conn, "errors")
+
+    err_count = 0
+    err_latest: list[str] = []
+    path = paths.data_dir / "app.log"
+    if path.exists():
+        with path.open(encoding="utf-8", errors="replace") as f:
+            for ln in f:
+                m = _LOG_LINE_RE.match(ln)
+                if not m:
+                    continue
+                if _LOG_LEVEL_ORDER.get(m.group(1), 0) < \
+                        _LOG_LEVEL_ORDER["ERROR"]:
+                    continue
+                if ln[:23] > err_ack:
+                    err_count += 1
+                    err_latest.append(ln.rstrip("\n"))
+    return {
+        "registrants": {
+            "count": reg_row["c"] or 0, "since": reg_ack,
+            "latest_at": reg_row["latest"],
+        },
+        "errors": {
+            "count": err_count, "since": err_ack,
+            "latest_lines": err_latest[-5:],
+        },
+    }
+
+
+@router.get("/admin/alerts")
+def admin_alerts():
+    """管理概要バナー用: 前回確認以降の新規登録者数・エラーログ件数。"""
+    _require_admin()
+    return _compute_alerts()
+
+
+class AlertAckIn(BaseModel):
+    kind: Literal["registrants", "errors"]
+
+
+@router.post("/admin/alerts/ack")
+def admin_alerts_ack(payload: AlertAckIn):
+    """バナーの「確認」ボタン用。確認時刻を今に更新し、消えた状態の
+    最新集計を返す。"""
+    _require_admin()
+    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+    with db() as conn:
+        conn.execute(
+            "INSERT OR REPLACE INTO app_state (key, value) VALUES (?, ?)",
+            (_ALERT_ACK_KEYS[payload.kind], now),
+        )
+    return _compute_alerts()
 
 
 @router.get("/admin/access-log-summary")
@@ -1930,6 +2049,136 @@ def admin_usage_analytics(
         "daily": daily_list,
         "hourly": hourly_list,
         "referrals": referrals,
+    }
+
+
+@router.get("/admin/power-users")
+def admin_power_users(
+    days: int = 90, min_events: int = 5, min_days: int = 2,
+    include_admin: bool = False, include_invited: bool = False,
+    include_test: bool = False, limit: int = 100,
+):
+    """複数回・複数日にわたって使ってくれている「お得意様」の深掘り分析
+    （管理画面・2026-09-16ユーザー要望「複数回5回以上操作、複数日2日
+    以上の方の深掘り分析」）。usage_eventsを人単位でグルーピングする:
+    ログイン済みはuser_id、未ログインはguest_sid Cookie（2026-08-30
+    導入・それ以前のデータやCookie不可の環境はip単位にフォールバック
+    ＝同一IPの複数人が1人として混ざる可能性がある点に注意）。直近
+    days日でイベント数min_events件以上・訪問日数(JST日付)min_days日
+    以上の利用者を抽出し、各利用者の閲覧タブ・単語の分野・フレーズの
+    シーン等の内訳から興味の傾向を返す。"""
+    _require_admin()
+    days = max(1, min(days, 365))
+    min_events = max(1, min_events)
+    min_days = max(1, min_days)
+    limit = max(1, min(limit, 500))
+    filter_sql = _user_filter_sql(include_admin, include_invited,
+                                   include_test)
+
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT ue.user_id AS user_id, ue.guest_sid AS guest_sid, "
+            "ue.ip AS ip, ue.kind AS kind, ue.category AS category, "
+            "ue.label AS label, ue.created_at AS created_at, "
+            "substr(datetime(ue.created_at, '+9 hours'), 1, 10) "
+            " AS jst_date, "
+            "u.username AS username, u.display_name AS display_name "
+            "FROM usage_events ue LEFT JOIN users u ON u.id = ue.user_id "
+            "WHERE ue.created_at >= datetime('now', ?) "
+            f"AND {filter_sql} "
+            "ORDER BY ue.created_at",
+            (f"-{days} days",),
+        ).fetchall()
+
+    groups: dict[tuple[str, str], dict] = {}
+    for r in rows:
+        if r["user_id"]:
+            key = ("user", str(r["user_id"]))
+        elif r["guest_sid"]:
+            key = ("guest", r["guest_sid"])
+        elif r["ip"]:
+            key = ("ip_legacy", r["ip"])
+        else:
+            continue
+        g = groups.setdefault(key, {
+            "events": [], "days": set(),
+            "username": r["username"], "display_name": r["display_name"],
+        })
+        g["events"].append(r)
+        g["days"].add(r["jst_date"])
+
+    def _top(counter: collections.Counter, n: int = 5) -> list[list]:
+        return [[k, v] for k, v in counter.most_common(n)]
+
+    items = []
+    for (id_type, ident), g in groups.items():
+        events = g["events"]
+        if len(events) < min_events or len(g["days"]) < min_days:
+            continue
+        tabs: collections.Counter = collections.Counter()
+        domains: collections.Counter = collections.Counter()
+        scenes: collections.Counter = collections.Counter()
+        words: collections.Counter = collections.Counter()
+        plays = clicks = 0
+        for e in events:
+            if e["kind"] == "page" and e["category"] == "word_detail":
+                words[e["label"]] += 1
+            elif e["kind"] == "page":
+                tabs[e["label"] or e["category"]] += 1
+            elif e["kind"] == "word_domain":
+                domains[e["category"]] += 1
+            elif e["kind"] == "phrase_scene":
+                scenes[e["category"]] += 1
+            elif e["kind"] == "play":
+                plays += 1
+            elif e["kind"] == "click":
+                clicks += 1
+        if id_type == "user":
+            label = g["display_name"] or g["username"] or f"user#{ident}"
+        elif id_type == "guest":
+            label = f"ゲスト({ident[:8]})"
+        else:
+            label = f"IP:{ident}（旧データ・複数人の可能性あり）"
+        items.append({
+            "identity_type": id_type,
+            "identity": ident,
+            "label": label,
+            "total_events": len(events),
+            "distinct_days": len(g["days"]),
+            "first_seen": min(e["created_at"] for e in events),
+            "last_seen": max(e["created_at"] for e in events),
+            "plays": plays,
+            "clicks": clicks,
+            "top_tabs": _top(tabs),
+            "top_word_domains": _top(domains),
+            "top_phrase_scenes": _top(scenes),
+            "top_words": _top(words, 8),
+        })
+
+    items.sort(key=lambda it: (-it["distinct_days"], -it["total_events"]))
+    items = items[:limit]
+
+    # 個々を見なくても傾向がわかるよう、対象者全員分の興味分野を合算。
+    agg_domains: collections.Counter = collections.Counter()
+    agg_scenes: collections.Counter = collections.Counter()
+    agg_tabs: collections.Counter = collections.Counter()
+    for it in items:
+        for k, v in it["top_word_domains"]:
+            agg_domains[k] += v
+        for k, v in it["top_phrase_scenes"]:
+            agg_scenes[k] += v
+        for k, v in it["top_tabs"]:
+            agg_tabs[k] += v
+
+    return {
+        "days": days, "min_events": min_events, "min_days": min_days,
+        "count": len(items),
+        "summary": {
+            "top_word_domains": _top(agg_domains, 10),
+            "top_phrase_scenes": _top(agg_scenes, 10),
+            "top_tabs": _top(agg_tabs, 10),
+        },
+        "items": items,
     }
 
 

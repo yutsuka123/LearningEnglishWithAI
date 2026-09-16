@@ -4281,12 +4281,16 @@ export async function admin(root) {
   // 3本とも互いに依存が無いため並列実行する(2026-09-07・以前は直列
   // 3回だった)。dの失敗だけは権限エラー画面に切り替える特別扱いが
   // 必要なため、Promise.allSettledで個別に結果を見る。
-  const [dRes, inquiriesRes, ordersRes] = await Promise.allSettled([
+  const [dRes, inquiriesRes, ordersRes, alertsRes] = await Promise.allSettled([
     api.get(`/api/system/admin/overview?${adminAggQuery()}`),
     api.get("/api/inquiries"),
     // 購入キー発行待ち(BASE注文)の件数。フルフィルメント画面に行かなくても
     // 管理者情報画面の更新だけで気づけるようにする(2026-08-19ユーザー要望)。
     api.get("/api/fulfillment/orders?status=pending"),
+    // 前回確認以降の新規登録・エラーログ件数(2026-09-16ユーザー要望
+    // 「登録者が増えた/エラーがあった場合わかりやすく警告、確認ボタンを
+    // 押すまで出続けてほしい」)。
+    api.get("/api/system/admin/alerts"),
   ]);
   if (dRes.status === "rejected") {
     root.innerHTML = `<h1>管理者情報</h1>
@@ -4303,6 +4307,7 @@ export async function admin(root) {
   const fmtDate = fmtDateJST;
   const pendingInquiries =
     inquiries.filter((q) => q.status !== "対応済み").length;
+  let alerts = alertsRes.status === "fulfilled" ? alertsRes.value : null;
 
   // ユーザー別管理(操作)とユーザー別使用状況(閲覧)で列を分ける
   // (2026-08-19・従来は1つの表に混在していて見づらかった)。
@@ -4377,6 +4382,7 @@ export async function admin(root) {
   root.innerHTML = `
     <h1>👑 管理者情報</h1>
     <p class="sub">ユーザー別の利用状況・上限・残高・問題の把握（管理者専用）。</p>
+    <div id="adminAlertBanner"></div>
     <div class="steps" id="adminTabs">${TABS.map(([key, label], i) => `
       <button type="button" class="step-chip${i === 0 ? " active" : ""}"
         data-sec="${key}">${label}</button>`).join("")}
@@ -4603,6 +4609,12 @@ export async function admin(root) {
               <option value="500">直近500件</option>
               <option value="1000">直近1000件</option>
             </select></label>
+          <label>絞り込み:
+            <select id="errLogLevel">
+              <option value="ERROR" selected>エラーのみ</option>
+              <option value="WARNING">警告以上</option>
+              <option value="ALL">全件（INFO含む）</option>
+            </select></label>
           <button class="btn ghost" id="errLogReload"
             style="padding:3px 10px">再読み込み</button>
         </div>
@@ -4736,6 +4748,37 @@ export async function admin(root) {
             まとめています。</p>
           <div id="uaDemoWrap" class="mt"><p class="muted">未読み込み</p></div>
         </details>
+      </details>
+
+      <details class="log-group" id="logPowerUsersDetails">
+        <summary>⭐ お得意様の深掘り分析（複数回・複数日の利用者）</summary>
+        <p class="muted mt">条件を満たす利用者を人単位（ログイン済みは
+          アカウント、未ログインはCookie）でグルーピングし、閲覧タブ・
+          単語の分野・フレーズのシーン等の内訳から興味の傾向を出します。
+          2026-08-30より前の未ログイン操作やCookie不可の環境はIP単位に
+          フォールバックするため、複数人が1人として混ざる場合があります
+          （該当行に注記）。</p>
+        <div class="grid cols-4 mt" style="align-items:end">
+          <label>集計期間
+            <select id="puDays">
+              <option value="30">直近30日</option>
+              <option value="90" selected>直近90日</option>
+              <option value="180">直近180日</option>
+              <option value="365">直近1年</option>
+            </select>
+          </label>
+          <label>最低イベント数
+            <input type="number" id="puMinEvents" value="5" min="1"
+              style="width:70px" />
+          </label>
+          <label>最低訪問日数
+            <input type="number" id="puMinDays" value="2" min="1"
+              style="width:70px" />
+          </label>
+          <button class="btn" id="puRefreshBtn">🔄 更新</button>
+        </div>
+        <p id="puSummaryWrap" class="muted mt">未読み込み</p>
+        <div id="puItemsWrap" class="mt"><p class="muted">未読み込み</p></div>
       </details>
     </div>
 
@@ -5480,11 +5523,12 @@ export async function admin(root) {
     const wrap = root.querySelector("#errorLogWrap");
     wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
     const lines = root.querySelector("#errLogLines").value;
+    const level = root.querySelector("#errLogLevel").value;
     try {
       const res = await api.get(
-        `/api/system/admin/error-log?lines=${lines}`);
+        `/api/system/admin/error-log?lines=${lines}&level=${level}`);
       if (!res.lines.length) {
-        wrap.innerHTML = `<p class="muted">まだありません。</p>`;
+        wrap.innerHTML = `<p class="muted">該当するログがありません。</p>`;
         return;
       }
       wrap.innerHTML = `<p class="muted">日時はJST表記です。</p>
@@ -5498,6 +5542,7 @@ export async function admin(root) {
   }
   root.querySelector("#errLogReload").addEventListener("click", loadErrorLog);
   root.querySelector("#errLogLines").addEventListener("change", loadErrorLog);
+  root.querySelector("#errLogLevel").addEventListener("change", loadErrorLog);
 
   const clientErrKindLabel = {
     jserror: "JS例外", unhandledrejection: "未処理rejection",
@@ -5996,6 +6041,69 @@ export async function admin(root) {
   root.querySelector("#uaDays")
     .addEventListener("change", loadUsageAnalytics);
 
+  // お得意様(複数回・複数日利用者)の深掘り分析(2026-09-16ユーザー要望)。
+  async function loadPowerUsers() {
+    const summaryWrap = root.querySelector("#puSummaryWrap");
+    const itemsWrap = root.querySelector("#puItemsWrap");
+    summaryWrap.textContent = "読み込み中…";
+    itemsWrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    const days = root.querySelector("#puDays").value;
+    const minEvents = root.querySelector("#puMinEvents").value || "5";
+    const minDays = root.querySelector("#puMinDays").value || "2";
+    let res;
+    try {
+      res = await api.get(`/api/system/admin/power-users?days=${days}`
+        + `&min_events=${minEvents}&min_days=${minDays}`
+        + `&${adminAggQuery()}`);
+    } catch (e) {
+      const msg = `取得失敗: ${escapeHtml(e.message)}`;
+      summaryWrap.innerHTML = msg;
+      itemsWrap.innerHTML = "";
+      return;
+    }
+    const topList = (rows, empty) => (rows && rows.length)
+      ? rows.map(([k, v]) => `${escapeHtml(k)}(${v})`).join(" / ")
+      : empty;
+    summaryWrap.innerHTML = `対象: <b>${res.count}人</b>
+      （直近${res.days}日・イベント${res.min_events}件以上・
+      訪問${res.min_days}日以上が対象）<br>
+      <span class="muted">対象者全体でよく見られた単語の分野:
+      ${topList(res.summary.top_word_domains, "—")}<br>
+      対象者全体でよく見られたフレーズのシーン:
+      ${topList(res.summary.top_phrase_scenes, "—")}<br>
+      対象者全体でよく開かれたタブ:
+      ${topList(res.summary.top_tabs, "—")}</span>`;
+    if (!res.items.length) {
+      itemsWrap.innerHTML = `<p class="muted">条件に合う利用者はまだ
+        いません（期間や件数条件を緩めてお試しください）。</p>`;
+      return;
+    }
+    itemsWrap.innerHTML = `<table><thead><tr>
+      <th>利用者</th><th>訪問日数</th><th>イベント数</th>
+      <th>初回</th><th>最終</th>
+      <th>単語の分野（多い順）</th><th>フレーズのシーン（多い順）</th>
+      <th>よく開いたタブ</th><th>よく見た単語</th>
+    </tr></thead><tbody>${res.items.map((it) => `
+      <tr>
+        <td>${escapeHtml(it.label)}${it.identity_type === "user" ? "" :
+          ` <span class="muted">(${it.identity_type === "guest"
+            ? "未登録" : "旧IP単位"})</span>`}</td>
+        <td>${it.distinct_days}</td>
+        <td>${it.total_events}</td>
+        <td>${fmtDate(it.first_seen)}</td>
+        <td>${fmtDate(it.last_seen)}</td>
+        <td>${topList(it.top_word_domains, "—")}</td>
+        <td>${topList(it.top_phrase_scenes, "—")}</td>
+        <td>${topList(it.top_tabs, "—")}</td>
+        <td>${topList(it.top_words, "—")}</td>
+      </tr>`).join("")}</tbody></table>`;
+  }
+  root.querySelector("#puRefreshBtn")
+    .addEventListener("click", loadPowerUsers);
+  ["puDays", "puMinEvents", "puMinDays"].forEach((id) => {
+    root.querySelector(`#${id}`).addEventListener("change", loadPowerUsers);
+  });
+
   // ログの各項目は開いたときに初めて取得する(2026-08-19・「概要をまず
   // だし、細かい項目は最初はたたんでおき」というユーザー要望に対応。
   // 併せて管理画面を開くたび無条件に5本のAPIを叩いていたのを解消)。
@@ -6012,6 +6120,7 @@ export async function admin(root) {
     ["#logClientErrorDetails", loadClientErrorLog],
     ["#logAccessDetails", loadAccessLog],
     ["#logUsageAnalyticsDetails", loadUsageAnalytics],
+    ["#logPowerUsersDetails", loadPowerUsers],
   ];
   lazySections.forEach(([sel, loader]) => {
     const el2 = root.querySelector(sel);
@@ -6020,6 +6129,73 @@ export async function admin(root) {
       if (el2.open && !loaded) { loaded = true; loader(); }
     });
   });
+
+  // 管理概要の確認式アラートバナー(2026-09-16・新着登録/エラーログを
+  // 確認ボタンを押すまで出し続ける。「詳細確認」はログタブの該当項目を
+  // 開いてスクロールする)。
+  function jumpToLogSection(detailsSelector) {
+    const tabBtn = root.querySelector(
+      '#adminTabs .step-chip[data-sec="logs"]');
+    if (tabBtn) tabBtn.click();
+    const details = root.querySelector(detailsSelector);
+    if (details) {
+      details.open = true;
+      details.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+  function renderAlertBanner() {
+    const wrap = root.querySelector("#adminAlertBanner");
+    if (!alerts) { wrap.innerHTML = ""; return; }
+    const rows = [];
+    if (alerts.registrants && alerts.registrants.count > 0) {
+      rows.push(`<div class="alert-banner-row" data-kind="registrants"
+        style="display:flex; align-items:center; gap:10px; padding:8px 12px;
+        border-radius:8px; margin-bottom:8px; font-size:14px;
+        background:rgba(54,201,141,.18); border:1px solid rgba(54,201,141,.5)">
+        <span>🆕 新着登録者が <b>${alerts.registrants.count}件</b>
+          あります（前回確認以降）。</span>
+        <button type="button" class="btn ghost alert-detail-btn"
+          data-kind="registrants" style="padding:2px 10px">詳細確認</button>
+        <button type="button" class="btn alert-ack-btn"
+          data-kind="registrants" style="padding:2px 10px">確認</button>
+      </div>`);
+    }
+    if (alerts.errors && alerts.errors.count > 0) {
+      rows.push(`<div class="alert-banner-row" data-kind="errors"
+        style="display:flex; align-items:center; gap:10px; padding:8px 12px;
+        border-radius:8px; margin-bottom:8px; font-size:14px;
+        background:rgba(226,80,59,.18); border:1px solid rgba(226,80,59,.6)">
+        <span>⚠️ エラーログが <b>${alerts.errors.count}件</b>
+          発生しています（前回確認以降）。</span>
+        <button type="button" class="btn ghost alert-detail-btn"
+          data-kind="errors" style="padding:2px 10px">詳細確認</button>
+        <button type="button" class="btn alert-ack-btn"
+          data-kind="errors" style="padding:2px 10px">確認</button>
+      </div>`);
+    }
+    wrap.innerHTML = rows.join("");
+    wrap.querySelectorAll(".alert-detail-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        jumpToLogSection(btn.dataset.kind === "registrants"
+          ? "#logRegistrantsDetails" : "#logErrorDetails");
+      });
+    });
+    wrap.querySelectorAll(".alert-ack-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        btn.disabled = true;
+        try {
+          alerts = await api.post("/api/system/admin/alerts/ack",
+            { kind: btn.dataset.kind });
+        } catch (e) {
+          btn.disabled = false;
+          alert(`確認処理に失敗しました: ${e.message}`);
+          return;
+        }
+        renderAlertBanner();
+      });
+    });
+  }
+  renderAlertBanner();
 
   // ディスク使用量（「その他」タブを開いたときだけ取得・2026-08-19）。
   async function loadDiskUsage() {
