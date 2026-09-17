@@ -256,7 +256,16 @@ export function quizRunner(config) {
         t.classList.add("show");
         setTimeout(() => t.classList.remove("show"), 1500);
       }
-    } catch (e) { /* ignore, still advance */ }
+    } catch (e) {
+      // 2026-09-18修正: 従来は失敗しても完全に無言で次へ進んでいたため、
+      // 採点(mastery加点)が保存されていないことにユーザーが気づけなかった
+      // (ユーザー要望「その他のそうさも離脱を防ぐ重要な情報」への対応で
+      // 監査した際に発見)。保存されなかったことが分かるようにする。
+      const t = document.getElementById("toast");
+      if (t) { t.textContent = "⚠️ 記録に失敗しました(採点は保存されていません)";
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 2200); }
+    }
     idx++;
     render();
   }
@@ -272,7 +281,13 @@ export function quizRunner(config) {
         if (t) { t.textContent = "🎉 両方向クリア +5"; t.classList.add("show");
           setTimeout(() => t.classList.remove("show"), 1500); }
       }
-    } catch (e) { /* ignore, still advance */ }
+    } catch (e) {
+      // markKnownと同じ理由(2026-09-18修正)。
+      const t = document.getElementById("toast");
+      if (t) { t.textContent = "⚠️ 記録に失敗しました(採点は保存されていません)";
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 2200); }
+    }
     idx++;
     render();
   }

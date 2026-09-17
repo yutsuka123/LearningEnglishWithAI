@@ -520,10 +520,16 @@ export function speakAndWait(text, opts = {}) {
       if (!synth) { resolve(); return; }
       synth.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.lang = "en-US"; u.rate = opts.rate || playbackRate || 0.95;
+      u.lang = opts.lang || "en-US"; u.rate = opts.rate || playbackRate || 0.95;
       u.onend = () => resolve(); u.onerror = () => resolve();
       synth.speak(u);
     };
+    // opts.forceBrowser: 常にブラウザ内蔵音声のみを使う(2026-09-18・
+    // 会話ストリームのエラー通知用に追加)。エラーが起きた直後に、また
+    // 有料のAI音声(/api/learn/tts)を叩いて二重に失敗しうる経路へ入らない
+    // ようにするため(Fable2回目レビュー指摘)。日本語文言なので
+    // opts.langで発音言語も指定できるようにした。
+    if (opts.forceBrowser) { browser(); return; }
     if (!(isNatural() && aiEnabled)) { browser(); return; }
     if (!currentIsOpenAI || !currentVoiceName) pickRoundVoice();
     const body = { text, voice: currentVoiceName };

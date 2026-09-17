@@ -581,13 +581,27 @@ CREATE TABLE IF NOT EXISTS base_orders (
     delivered_at   TEXT
 );
 
--- 利用状況イベントログ（2026-08-17・管理画面の分析用）。
--- kind: 'page'(画面表示) | 'play'(音声再生) | 'click'(ボタン押下)。
--- category/label の意味は kind により異なる（記録元を参照）:
---   page:  category=タブID(例 'vocab') / label=タブの日本語名
---   play:  category=再生機能(例 'word'/'word_example'/'phrase'/
---          'reading_tts'/'listening_tts'/'tts') / label=声・速度等の詳細
---   click: category=押されたときの画面(タブID) / label=ボタンの文言
+-- 利用状況イベントログ（2026-08-17・管理画面の分析用）。ここがkind一覧の
+-- 正（2026-09-18更新・従来この一覧が古くなり実態と食い違っていたため、
+-- 「ログを一通り見直す」際はまずここを更新すること）。
+-- クライアントから送れるのは POST /api/system/track 経由の
+-- 'page'/'click' のみ（app/routers/system.pyのtrack_event()で制限。
+-- 'play'等はサーバー側で実際に処理が成功した時だけtracking.log_event()
+-- から直接書く設計＝クライアントが偽装できない）。
+--   page:        category=タブID(例 'vocab') / label=タブの日本語名
+--                (category='word_detail'/'phrase_detail' の場合のみ
+--                 label=開いた単語/フレーズの英語表記)
+--   click:       category=押されたときの画面(タブID) / label=ボタンの文言
+--   play:        category=再生機能(例 'word'/'phrase'/'reading_tts'/
+--                'listening_tts'/'tts'/'sample_*') / label=
+--                'word:実際に再生したテキスト' 等(app/routers/learn.py。
+--                2026-09-17〜テキストを含めるよう変更、旧データは
+--                'word:声:速度'形式)
+--   play_error:  (2026-09-17〜) 再生ボタンは押されたが音声を返せなかった
+--                ケース。category=item_type、label='no_text:.../
+--                no_charge:.../synth_fail:...'(app/routers/learn.py)
+--   word_domain: 単語の分野(words.domain)。category=分野名
+--   phrase_scene: フレーズのシーン(phrases.scene)。category=シーン名
 -- user_id は auth.current_user_id() をそのまま入れる（ゲストは疑似ユーザー
 -- idが入るため、users.username='guest'等で判別可能）。集計はSQL側で
 -- created_at/ip/user_id/category/labelを自由に組み合わせて行う。
@@ -604,16 +618,19 @@ CREATE INDEX IF NOT EXISTS logs.idx_usage_events_kind
     ON usage_events(kind, created_at);
 CREATE INDEX IF NOT EXISTS logs.idx_usage_events_ip ON usage_events(ip);
 
--- フロントエンドの未捕捉JS例外(window.onerror/unhandledrejection)を
--- 記録する(2026-08-20発覚の「フロントのエラーがブラウザのコンソール
--- にしか残らずサーバーからは見えない」穴への対応・2026-08-30)。
--- static/js/error-report.jsからPOST /api/system/client-errorで送られる。
+-- フロントエンドの未捕捉JS例外・APIエラーを記録する(2026-08-20発覚の
+-- 「フロントのエラーがブラウザのコンソールにしか残らずサーバーからは
+-- 見えない」穴への対応・2026-08-30)。static/js/error-report.jsの
+-- window.onerror/unhandledrejectionと、static/js/api.jsのreq()/stream()
+-- が非2xx応答や`{ok:false}`を検知した時(2026-09-18〜kind='api_error')の
+-- 両方からPOST /api/system/client-errorで送られる。
 CREATE TABLE IF NOT EXISTS logs.client_errors (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id    INTEGER,
     ip         TEXT    DEFAULT '',
     guest_sid  TEXT    DEFAULT '',
-    kind       TEXT    NOT NULL,   -- 'jserror' | 'unhandledrejection'
+    -- 'jserror' | 'unhandledrejection' | 'api_error'(2026-09-18〜)。
+    kind       TEXT    NOT NULL,
     message    TEXT    DEFAULT '',
     stack      TEXT    DEFAULT '',
     url        TEXT    DEFAULT '',

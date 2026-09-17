@@ -590,6 +590,35 @@ def chat(
     )
 
 
+# ストリーミング開始後に起きたエラーを、呼び出し元(learn.pyの
+# conversation_stream)がAIの発言と区別できるようにする印(2026-09-18)。
+# HTTPは既に200・text/plainで送り始めているため、ステータスコードでは
+# エラーを伝えられず、本文の先頭にこの印を付けるしかない。実際のAI応答が
+# 偶然この文字列で始まる確率は無視できるくらい低い記号の組み合わせにして
+# ある。api.jsのSTREAM_ERROR_MARKERと完全に一致させること。
+STREAM_ERROR_MARKER = "§§STREAM_ERROR§§"
+
+
+def chat_stream_precheck(feature: str = "") -> tuple[str, int] | None:
+    """ストリーム開始前に判定できる失敗(AI未設定/ガード拒否)があれば
+    (メッセージ, HTTPステータス)を返す。無ければNone(続行してよい)。
+
+    2026-09-18新設(Fableレビューで発覚したバグの修正): 従来はchat_stream
+    自身がこれらの場合もyieldで「エラーであることを示す文字列」を返して
+    いたが、呼び出し元は既にHTTP 200のストリーミング応答を開始済みで、
+    この文字列をAIの発言そのものとして画面表示・会話履歴への保存・
+    自動保存・(ハンズフリー時は)音声読み上げまでしてしまっていた。
+    判定できるものは呼び出し元がストリーム開始前(=まだ普通のHTTP
+    エラー応答を返せる段階)に弾けるよう、ここで先出しする。"""
+    client, _settings = _client()
+    if client is None:
+        return ("AI機能は現在利用できません(APIキー未設定)。", 503)
+    refusal = _guard(feature)
+    if refusal:
+        return (refusal, 429)
+    return None
+
+
 def chat_stream(
     system: str,
     user: str,
@@ -605,17 +634,16 @@ def chat_stream(
     is NOT yielded as text; callers stream text and can fetch usage separately.
     ``model`` overrides the configured chat model (2026-08-22: 会話の
     「応答速度優先」チェックボックス用に追加。未指定時は従来通り
-    ``settings.openai_model``)。"""
+    ``settings.openai_model``)。
+
+    呼び出し元は必ず先に``chat_stream_precheck()``を呼び、判定できる
+    失敗を弾いてから使うこと(2026-09-18)。ここで再度``_client()``/
+    ``_guard()``を呼ばないのは意図的: 一度目のレビューでは「保険として
+    両方に残す」実装にしたが、``_guard()``は呼ぶたびにレート制限用の
+    呼び出し時刻を1回消費する副作用があり、precheckとここの2箇所で
+    呼ぶと1ターンで分間レート制限の枠を2つ消費してしまう(実質半減する)
+    regressionだったため、2回目のレビューで削除した。"""
     client, settings = _client()
-    if client is None:
-        yield "[AI未設定] OPENAI_API_KEY を設定すると会話できます。"
-        return
-
-    refusal = _guard(feature)
-    if refusal:
-        yield f"[停止] {refusal}"
-        return
-
     use_model = model or settings.openai_model
     t0 = time.monotonic()
     try:
@@ -654,7 +682,11 @@ def chat_stream(
         elapsed = time.monotonic() - t0
         log.error("chat_stream 失敗 (feature=%s model=%s elapsed=%.1fs): %s",
                    feature, use_model, elapsed, exc)
-        yield f"\n[エラー] {exc}"
+        # 2026-08-29のTTS生エラー漏洩修正と同じ理由で、例外の生文字列
+        # ({exc})はユーザーへ出さない(内部情報が混じりうる)。詳細は
+        # 上のlog.errorにサーバー側でのみ残す。
+        yield (STREAM_ERROR_MARKER
+               + "通信エラーが発生しました。もう一度お試しください。")
 
 
 # OpenAI TTS voices (ChatGPT-quality, natural). Names shown in the UI.

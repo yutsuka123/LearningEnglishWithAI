@@ -511,10 +511,20 @@ def conversation(payload: ConversationIn):
 
 @router.post("/conversation/stream")
 def conversation_stream(payload: ConversationIn):
-    """Streamed conversation turn for responsiveness (text/plain chunks)."""
+    """Streamed conversation turn for responsiveness (text/plain chunks)。
+
+    2026-09-18修正: ストリーム開始前に判定できる失敗(AI未設定/ガード拒否)
+    は、通常のHTTPエラー応答として返す(以前はここも200でストリームを
+    開始し、エラー文をAIの発言として返していた)。"""
     system, user = _conversation_prompts(payload)
     mode = "free" if _is_free_mode(payload) else (payload.topic or payload.grp)
     model = _conversation_model(payload)
+
+    precheck = ai.chat_stream_precheck("conversation")
+    if precheck:
+        message, status = precheck
+        return Response(content=message, status_code=status,
+                        media_type="text/plain")
 
     def gen():
         # Log the learner's message (real production for level judging).
@@ -527,7 +537,14 @@ def conversation_stream(payload: ConversationIn):
         ):
             full.append(chunk)
             yield chunk
-        _log_conversation("assistant", "".join(full), mode)
+        joined = "".join(full)
+        # ストリーム開始後に例外が起きたケース(ai.STREAM_ERROR_MARKER)は、
+        # AIの発言として学習履歴に残さない(2026-09-18修正)。2回目の
+        # レビューでの指摘: 例外は正常なチャンクを何文字か返した**後**に
+        # 起きることもある(例: OpenAI側が生成途中で切断)ため、先頭一致
+        # (startswith)ではなく本文中のどこにあっても検出できるようにする。
+        if ai.STREAM_ERROR_MARKER not in joined:
+            _log_conversation("assistant", joined, mode)
 
     return StreamingResponse(gen(), media_type="text/plain; charset=utf-8")
 

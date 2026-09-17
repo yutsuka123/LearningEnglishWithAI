@@ -24,6 +24,10 @@
 
   window.addEventListener("unhandledrejection", function (e) {
     const reason = e.reason;
+    // api.jsのreq()/stream()が投げたエラーは、投げる前に既に
+    // POST /client-errorで(kind="api_error"として)記録済みなので、
+    // ここでunhandledrejectionとして二重記録しない(2026-09-18)。
+    if (reason && reason.apiErrorLogged) return;
     const message = reason && reason.message ? reason.message : String(reason);
     const stack = reason && reason.stack ? reason.stack : "";
     report("unhandledrejection", message, stack, location.href, 0, 0);

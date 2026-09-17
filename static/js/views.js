@@ -1329,7 +1329,12 @@ function runFlashcards(stage, initialQueue, opts) {
           c.mastery = r.mastery;
           c.review_level = r.review_level; c.next_review = r.next_review;
         }
-      } catch (_) { /* 失敗しても次へ進む */ }
+      } catch (_) {
+        // 2026-09-18修正: quiz.jsのmarkKnown/recordと同じ理由で、
+        // 失敗が完全に無言だと採点未保存にユーザーが気づけないため
+        // トーストを出す(それでも次のカードへは進む)。
+        toast("⚠️ 記録に失敗しました(採点は保存されていません)");
+      }
     })();
   }
 
@@ -3085,6 +3090,18 @@ export async function conversation(root) {
     chat.appendChild(m); chat.scrollTop = chat.scrollHeight;
   }
 
+  // エラー時の表示を共通化(2026-09-18・Fableレビュー指摘への対応)。
+  // addMsg("ai", ...)が付ける🌐翻訳/🔊読み上げ/添削例ボタンをそのまま
+  // 残すと、エラー文を有料の翻訳APIへ送ったり音声で読み上げたりできて
+  // しまう(自動では止めたが、手動クリックの経路が残っていた)ため、
+  // エラー表示ではツール行ごと取り除く。
+  function showTurnError(target, message) {
+    target.textContent = "⚠️ " + message;
+    const bubble = target.parentElement;
+    const tools = bubble && bubble.querySelector(".row");
+    if (tools) tools.remove();
+  }
+
   // message can be a user turn, or an AI-initiated opener (kickoff=true).
   async function send(text, kickoff = false) {
     if (!kickoff) {
@@ -3103,10 +3120,33 @@ export async function conversation(root) {
     let full = "";
     if (state.aiEnabled) {
       target.textContent = "";
-      await api.stream("/api/learn/conversation/stream", body, (chunk) => {
-        full += chunk; target.textContent = full;
-        chat.scrollTop = chat.scrollHeight;
-      });
+      try {
+        await api.stream("/api/learn/conversation/stream", body, (chunk) => {
+          full += chunk; target.textContent = full;
+          chat.scrollTop = chat.scrollHeight;
+        });
+      } catch (e) {
+        // 2026-09-18修正: 従来はここでエラーを検知しておらず、エラー
+        // 応答の本文がそのままAIの発言として表示され、会話履歴に積まれ
+        // AIへ送信・自動保存・(設定次第で)読み上げまでされてしまう
+        // 実害のあるバグだった(Fableレビューで発見)。エラー時は履歴に
+        // 積まず、保存も読み上げもしない。
+        showTurnError(target,
+          e.message || "エラーが発生しました。もう一度お試しください。");
+        // 積んだユーザー発言が(返答の無いまま)次回送信時のAIへの文脈に
+        // 残り続けないよう戻す(kickoffは元々ユーザー発言を積んでいない)。
+        if (!kickoff) history.pop();
+        refreshCost();
+        return;
+      }
+      if (!full.trim()) {
+        // 生成が0文字で終わった場合(途中で切れた等)も、無言のAI発言を
+        // 履歴に積まないようエラー扱いにする。
+        showTurnError(target, "応答が空でした。もう一度お試しください。");
+        if (!kickoff) history.pop();
+        refreshCost();
+        return;
+      }
     } else {
       full = "（AI未設定）設定でAPIキーを登録すると会話できます。";
       target.textContent = full;
@@ -3206,13 +3246,39 @@ export async function conversation(root) {
     const s = scene();
     const target = addMsg("ai", "");
     let full = "";
-    await api.stream("/api/learn/conversation/stream",
-      { grp: s.grp, topic: s.topic, history, persona: s.persona || "",
-        message: text, fast: root.querySelector("#fastMode").checked },
-      (chunk) => {
-        full += chunk; target.textContent = full;
-        chat.scrollTop = chat.scrollHeight;
-      });
+    try {
+      await api.stream("/api/learn/conversation/stream",
+        { grp: s.grp, topic: s.topic, history, persona: s.persona || "",
+          message: text, fast: root.querySelector("#fastMode").checked },
+        (chunk) => {
+          full += chunk; target.textContent = full;
+          chat.scrollTop = chat.scrollHeight;
+        });
+    } catch (e) {
+      // sendと同じ理由(2026-09-18修正)。従来はここでのエラーがそのまま
+      // 「AIの発言」として画面表示・履歴保存され、さらに音声で読み上げ
+      // までされていた(ハンズフリー機能のため実害が一番大きい経路)。
+      showTurnError(target,
+        e.message || "エラーが発生しました。もう一度お試しください。");
+      history.pop();
+      refreshCost();
+      // ハンズフリー中は画面を見ていない前提の機能のため、テキスト表示
+      // だけでは失敗に気づけない(Fableレビュー指摘)。固定の短い案内文
+      // だけを読み上げる(エラーの生文言は読み上げない＝内部情報の
+      // 音声経由の漏洩も防ぐ)。forceBrowser: エラー直後にまた有料AI音声
+      // (/api/learn/tts)へ二重に頼らない(Fable2回目レビュー指摘)。
+      await speech.speakAndWait("エラーが発生しました。もう一度お試しください。",
+        { forceBrowser: true, lang: "ja-JP" });
+      return;
+    }
+    if (!full.trim()) {
+      showTurnError(target, "応答が空でした。もう一度お試しください。");
+      history.pop();
+      refreshCost();
+      await speech.speakAndWait("応答が空でした。もう一度お試しください。",
+        { forceBrowser: true, lang: "ja-JP" });
+      return;
+    }
     history.push({ role: "assistant", content: full });
     refreshCost();
     scheduleAutoSave();
@@ -5577,6 +5643,7 @@ export async function admin(root) {
 
   const clientErrKindLabel = {
     jserror: "JS例外", unhandledrejection: "未処理rejection",
+    api_error: "APIエラー",  // 2026-09-18〜(ボタン押下等のAPI失敗)
   };
   async function loadClientErrorLog() {
     const wrap = root.querySelector("#clientErrorLogWrap");
@@ -6182,11 +6249,18 @@ export async function admin(root) {
       </div>
       <div class="mt">
         <p><b>⚠️ 再生に失敗した項目</b>（${(d.play_errors || []).length}件・
-          再生ボタンは押したが音声が出なかったケース）</p>
-        ${errList(d.play_errors, "なし")}
+          再生ボタンは押したが音声が出なかったケース。同じ対象への
+          失敗回数が多いほど「何度も押した」ことを示します）</p>
+        <p style="font-size:.9em">${
+          topList(d.play_errors_by_target, "なし")}</p>
+        <details style="margin-top:4px"><summary class="muted"
+          style="cursor:pointer;font-size:.85em">時系列の生ログを見る</summary>
+          ${errList(d.play_errors, "なし")}</details>
       </div>
       <div class="mt">
-        <p><b>🐞 JSエラー</b>（${(d.js_errors || []).length}件）</p>
+        <p><b>🐞 JS/APIエラー</b>（${(d.js_errors || []).length}件・
+          ボタン押下等でAPIエラーになったケース[api_error]と、
+          未捕捉のJS例外[jserror/unhandledrejection]の両方）</p>
         ${jsErrList(d.js_errors, "なし")}
       </div>`;
   }

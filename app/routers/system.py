@@ -1782,13 +1782,16 @@ class ClientErrorIn(BaseModel):
 
 @router.post("/client-error")
 def client_error(payload: ClientErrorIn):
-    """フロントエンドの未捕捉JS例外の報告(2026-08-20発覚の「フロントの
-    エラーがブラウザのコンソールにしか残らずサーバーからは見えない」
-    穴への対応・2026-08-30)。static/js/error-report.jsのwindow.onerror/
-    unhandledrejectionから送られる。ゲストも送信対象
-    (_GUEST_READ_PREFIXESに追加済み)。記録失敗が画面操作を妨げないよう
-    常に200を返すbest-effort。"""
-    if payload.kind in ("jserror", "unhandledrejection"):
+    """フロントエンドの未捕捉JS例外・APIエラーの報告(2026-08-20発覚の
+    「フロントのエラーがブラウザのコンソールにしか残らずサーバーからは
+    見えない」穴への対応・2026-08-30)。static/js/error-report.jsの
+    window.onerror/unhandledrejectionに加え、2026-09-18〜
+    static/js/api.jsのreq()/stream()が非2xx応答を検知した時にも
+    kind="api_error"で送られる(「ボタンでエラーになった」を広く拾う
+    ため。401/402/429はゲスト操作等の正常なガードなので送信元で除外
+    済み)。ゲストも送信対象(_GUEST_READ_PREFIXESに追加済み)。記録失敗が
+    画面操作を妨げないよう常に200を返すbest-effort。"""
+    if payload.kind in ("jserror", "unhandledrejection", "api_error"):
         tracking.record_client_error(
             payload.kind, payload.message, payload.stack, payload.url,
             payload.line, payload.col,
@@ -2098,7 +2101,14 @@ def admin_power_users(
 
     groups: dict[tuple[str, str], dict] = {}
     for r in rows:
-        if r["user_id"]:
+        # 2026-09-18修正(Fableレビューで発覚): 未ログインアクセスは
+        # user_idがNULLにはならず、全ゲスト共有の疑似ユーザー行
+        # (auth.GUEST_USERNAME)のidが入る(_user_filter_sqlの
+        # 2026-09-12コメント参照)。`if r["user_id"]:`だけで判定すると
+        # 全ゲストがこの1つのuser_idに丸ごと集約されてしまい
+        # (guest_sid/ip単位への分岐が実質デッドコード化していた)、
+        # 「ゲスト」が常に1行に見えていた原因だった。
+        if r["user_id"] and r["username"] != auth.GUEST_USERNAME:
             key = ("user", str(r["user_id"]))
         elif r["guest_sid"]:
             key = ("guest", r["guest_sid"])
@@ -2192,10 +2202,10 @@ def admin_guest_ip_analysis(days: int = 90, min_events: int = 1,
     「ゲストIP別分析」・2026-09-17ユーザー要望「ゲストのIP別に、単語の
     分野・発声の有無・エラーの有無・詳細ボタン押下・例文再生・再生失敗を
     できるだけ細かく分析したい、一覧はクリックで詳細が見えるように」への
-    対応）。usage_events(user_id IS NULL=未ログイン)をip単位でグルーピング
-    し、この一覧では概要だけを返す。単語ごとの内訳やエラーメッセージ一覧
-    など詳しい内容は、この一覧のipを指定してadmin_guest_ip_detailを呼ぶ
-    （画面側は行クリックで遅延取得する想定）。
+    対応）。usage_eventsをip単位でグルーピングし、この一覧では概要だけを
+    返す。単語ごとの内訳やエラーメッセージ一覧など詳しい内容は、この
+    一覧のipを指定してadmin_guest_ip_detailを呼ぶ（画面側は行クリックで
+    遅延取得する想定）。
 
     注意（IP単位の限界・admin_anon_accessと同じ）: 同一Wi-Fi/会社・モバイル
     回線の共有IP等では複数人が1行に混ざる。guest_sid単位（Cookie）で見たい
@@ -2207,20 +2217,26 @@ def admin_guest_ip_analysis(days: int = 90, min_events: int = 1,
     since = f"-{days} days"
 
     with db() as conn:
+        # 2026-09-18修正(Fableレビューで発覚): 未ログインアクセスの
+        # user_idはNULLではなく、全ゲスト共有の疑似ユーザー行
+        # (auth.GUEST_USERNAME)のid。`user_id IS NULL`では1件もヒット
+        # せず一覧が常に空になっていた(_user_filter_sqlの2026-09-12
+        # コメント・admin_power_usersの同型バグと同じ原因)。
+        guest_uid = auth.ensure_guest_user_id(conn)
         rows = conn.execute(
             "SELECT ip, kind, category, label, created_at, "
             "substr(datetime(created_at, '+9 hours'), 1, 10) AS jst_date "
             "FROM usage_events "
-            "WHERE user_id IS NULL AND ip IS NOT NULL AND ip != '' "
+            "WHERE user_id = ? AND ip IS NOT NULL AND ip != '' "
             "AND created_at >= datetime('now', ?) "
             "ORDER BY created_at",
-            (since,),
+            (guest_uid, since),
         ).fetchall()
         err_rows = conn.execute(
             "SELECT ip, COUNT(*) AS n FROM client_errors "
-            "WHERE user_id IS NULL AND ip IS NOT NULL AND ip != '' "
+            "WHERE user_id = ? AND ip IS NOT NULL AND ip != '' "
             "AND created_at >= datetime('now', ?) GROUP BY ip",
-            (since,),
+            (guest_uid, since),
         ).fetchall()
 
     client_error_map = {r["ip"]: r["n"] for r in err_rows}
@@ -2290,18 +2306,21 @@ def admin_guest_ip_detail(ip: str, days: int = 90):
     since = f"-{days} days"
 
     with db() as conn:
+        # admin_guest_ip_analysisと同じ理由(2026-09-18修正)でuser_id=
+        # guest_uid判定に統一。
+        guest_uid = auth.ensure_guest_user_id(conn)
         rows = conn.execute(
             "SELECT kind, category, label, created_at FROM usage_events "
-            "WHERE user_id IS NULL AND ip = ? "
+            "WHERE user_id = ? AND ip = ? "
             "AND created_at >= datetime('now', ?) ORDER BY created_at",
-            (ip, since),
+            (guest_uid, ip, since),
         ).fetchall()
         js_error_rows = conn.execute(
             "SELECT kind, message, url, line, col, created_at "
-            "FROM client_errors WHERE user_id IS NULL AND ip = ? "
+            "FROM client_errors WHERE user_id = ? AND ip = ? "
             "AND created_at >= datetime('now', ?) "
             "ORDER BY created_at DESC LIMIT 50",
-            (ip, since),
+            (guest_uid, ip, since),
         ).fetchall()
 
     domains: collections.Counter = collections.Counter()
@@ -2314,6 +2333,7 @@ def admin_guest_ip_detail(ip: str, days: int = 90):
     tabs: collections.Counter = collections.Counter()
     clicks: collections.Counter = collections.Counter()
     play_errors = []
+    play_error_counts: collections.Counter = collections.Counter()
     for r in rows:
         kind = r["kind"]
         category = r["category"] or ""
@@ -2340,6 +2360,10 @@ def admin_guest_ip_detail(ip: str, days: int = 90):
             play_errors.append({
                 "category": category, "label": label, "at": r["created_at"],
             })
+            # 「再生できないものを何度も押下した」を一目で見えるように、
+            # 同じ対象(category+label)への失敗回数も別途集計する
+            # (2026-09-18ユーザー要望)。
+            play_error_counts[f"{category}: {label}"] += 1
         elif kind == "page" and category == "word_detail":
             word_details[label] += 1
         elif kind == "page" and category == "phrase_detail":
@@ -2363,6 +2387,7 @@ def admin_guest_ip_detail(ip: str, days: int = 90):
         "example_plays": _top(example_plays, 20),
         "phrase_plays": _top(phrase_plays, 20),
         "play_errors": play_errors[-50:],
+        "play_errors_by_target": _top(play_error_counts, 20),
         "word_details": _top(word_details, 20),
         "phrase_details": _top(phrase_details, 20),
         "js_errors": [dict(r) for r in js_error_rows],
