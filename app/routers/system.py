@@ -2065,7 +2065,8 @@ def _top(counter: collections.Counter, n: int = 5) -> list[list]:
 def admin_power_users(
     days: int = 90, min_events: int = 5, min_days: int = 2,
     include_admin: bool = False, include_invited: bool = False,
-    include_test: bool = False, limit: int = 100,
+    include_test: bool = False, include_registered: bool = True,
+    limit: int = 100,
 ):
     """複数回・複数日にわたって使ってくれている「お得意様」の深掘り分析
     （管理画面・2026-09-16ユーザー要望「複数回5回以上操作、複数日2日
@@ -2075,7 +2076,14 @@ def admin_power_users(
     ＝同一IPの複数人が1人として混ざる可能性がある点に注意）。直近
     days日でイベント数min_events件以上・訪問日数(JST日付)min_days日
     以上の利用者を抽出し、各利用者の閲覧タブ・単語の分野・フレーズの
-    シーン等の内訳から興味の傾向を返す。"""
+    シーン等の内訳から興味の傾向を返す。
+
+    2026-09-18ユーザー要望「ログイン名がわかるように・登録者/テスト
+    ユーザー/管理者を個別に入れる/入れないでフィルタリングしたい」対応:
+    ログイン済み利用者はusername(ログイン名)をdisplay_nameと併せて返す。
+    include_registered=Falseで「管理者でもテストユーザーでもない、普通の
+    登録会員」の行を除外できる（ゲストは常に含む。テスト/管理者は
+    include_test/include_adminで別途制御）。"""
     _require_admin()
     days = max(1, min(days, 365))
     min_events = max(1, min_events)
@@ -2091,7 +2099,8 @@ def admin_power_users(
             "ue.label AS label, ue.created_at AS created_at, "
             "substr(datetime(ue.created_at, '+9 hours'), 1, 10) "
             " AS jst_date, "
-            "u.username AS username, u.display_name AS display_name "
+            "u.username AS username, u.display_name AS display_name, "
+            "u.role AS role, u.is_test AS is_test "
             "FROM usage_events ue LEFT JOIN users u ON u.id = ue.user_id "
             "WHERE ue.created_at >= datetime('now', ?) "
             f"AND {filter_sql} "
@@ -2119,12 +2128,23 @@ def admin_power_users(
         g = groups.setdefault(key, {
             "events": [], "days": set(),
             "username": r["username"], "display_name": r["display_name"],
+            "role": r["role"], "is_test": r["is_test"],
         })
         g["events"].append(r)
         g["days"].add(r["jst_date"])
 
     items = []
     for (id_type, ident), g in groups.items():
+        # 「普通の登録会員」(管理者でもテストユーザーでもない)かどうか。
+        # include_registered=Falseの時、このタイプだけを一覧から除外する
+        # （テスト/管理者はinclude_test/include_adminで別途制御済み・
+        # 既にSQL段階でフィルタされているのでここではidentity_typeが
+        # "user"の行=常にその条件を満たしたアカウントである点に注意）。
+        is_plain_registered = (
+            id_type == "user" and g["role"] != "admin" and not g["is_test"]
+        )
+        if not include_registered and is_plain_registered:
+            continue
         events = g["events"]
         if len(events) < min_events or len(g["days"]) < min_days:
             continue
@@ -2156,6 +2176,15 @@ def admin_power_users(
             "identity_type": id_type,
             "identity": ident,
             "label": label,
+            # ログイン名(username)を別出しで返す(2026-09-18ユーザー要望・
+            # display_nameを設定していると本来のログイン名が分からない
+            # ため、表示側で併記できるように)。
+            "username": g["username"] if id_type == "user" else None,
+            "display_name": g["display_name"] if id_type == "user" else None,
+            "is_admin_user": g["role"] == "admin" if id_type == "user"
+                else False,
+            "is_test_user": bool(g["is_test"]) if id_type == "user"
+                else False,
             "total_events": len(events),
             "distinct_days": len(g["days"]),
             "first_seen": min(e["created_at"] for e in events),
@@ -2197,6 +2226,7 @@ def admin_power_users(
 
 @router.get("/admin/guest-ip-analysis")
 def admin_guest_ip_analysis(days: int = 90, min_events: int = 1,
+                             include_admin: bool = False,
                              limit: int = 200):
     """ゲスト(未ログイン)利用者をIP単位で深掘り分析する一覧（管理画面
     「ゲストIP別分析」・2026-09-17ユーザー要望「ゲストのIP別に、単語の
@@ -2209,7 +2239,13 @@ def admin_guest_ip_analysis(days: int = 90, min_events: int = 1,
 
     注意（IP単位の限界・admin_anon_accessと同じ）: 同一Wi-Fi/会社・モバイル
     回線の共有IP等では複数人が1行に混ざる。guest_sid単位（Cookie）で見たい
-    場合はadmin_power_usersを使う。"""
+    場合はadmin_power_usersを使う。
+
+    include_admin=False(既定)では、管理者の既知IP
+    (load_admin_known_ips())からのアクセスを一覧から除外する
+    （2026-09-18ユーザー要望「管理者も入れる/入れないをフィルタリング
+    したい」対応・管理者自身の動作確認アクセスがゲスト分析のノイズに
+    なるため）。"""
     _require_admin()
     days = max(1, min(days, 365))
     min_events = max(1, min_events)
@@ -2250,6 +2286,8 @@ def admin_guest_ip_analysis(days: int = 90, min_events: int = 1,
 
     items = []
     for ip, g in groups.items():
+        if not include_admin and ip in admin_ips:
+            continue
         events = g["events"]
         if len(events) < min_events:
             continue

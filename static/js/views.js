@@ -4827,7 +4827,9 @@ export async function admin(root) {
           単語の分野・フレーズのシーン等の内訳から興味の傾向を出します。
           2026-08-30より前の未ログイン操作やCookie不可の環境はIP単位に
           フォールバックするため、複数人が1人として混ざる場合があります
-          （該当行に注記）。</p>
+          （該当行に注記）。ログイン済みは表示名の下にログイン名(メール/
+          ユーザー名)も併記します。上部の集計フィルタ(管理者/招待
+          ユーザー/テストユーザーを含めるか)もこの一覧に反映されます。</p>
         <div class="grid cols-4 mt" style="align-items:end">
           <label>集計期間
             <select id="puDays">
@@ -4846,6 +4848,10 @@ export async function admin(root) {
               style="width:70px" />
           </label>
           <button class="btn" id="puRefreshBtn">🔄 更新</button>
+        </div>
+        <div class="row mt">
+          <label><input type="checkbox" id="puIncludeRegistered" checked />
+            登録ユーザー(通常会員)を含める</label>
         </div>
         <p id="puSummaryWrap" class="muted mt">未読み込み</p>
         <div id="puItemsWrap" class="mt"><p class="muted">未読み込み</p></div>
@@ -4873,6 +4879,10 @@ export async function admin(root) {
               style="width:70px" />
           </label>
           <button class="btn" id="giRefreshBtn">🔄 更新</button>
+        </div>
+        <div class="row mt">
+          <label><input type="checkbox" id="giIncludeAdmin" />
+            管理者の既知IPからのアクセスを含める</label>
         </div>
         <p id="giSummaryWrap" class="muted mt">未読み込み</p>
         <div id="giItemsWrap" class="mt"><p class="muted">未読み込み</p></div>
@@ -6148,10 +6158,13 @@ export async function admin(root) {
     const days = root.querySelector("#puDays").value;
     const minEvents = root.querySelector("#puMinEvents").value || "5";
     const minDays = root.querySelector("#puMinDays").value || "2";
+    const includeRegistered = root.querySelector("#puIncludeRegistered")
+      .checked;
     let res;
     try {
       res = await api.get(`/api/system/admin/power-users?days=${days}`
         + `&min_events=${minEvents}&min_days=${minDays}`
+        + `&include_registered=${includeRegistered}`
         + `&${adminAggQuery()}`);
     } catch (e) {
       const msg = `取得失敗: ${escapeHtml(e.message)}`;
@@ -6181,11 +6194,22 @@ export async function admin(root) {
       <th>初回</th><th>最終</th>
       <th>単語の分野（多い順）</th><th>フレーズのシーン（多い順）</th>
       <th>よく開いたタブ</th><th>よく見た単語</th>
-    </tr></thead><tbody>${res.items.map((it) => `
+    </tr></thead><tbody>${res.items.map((it) => {
+      // ログイン済みは表示名+ログイン名(username)を併記し、登録者か
+      // 否かを一目で判別できるようにする(2026-09-18ユーザー要望)。
+      const badges = [
+        it.is_admin_user ? '<span class="muted">(管理者)</span>' : "",
+        it.is_test_user ? '<span class="muted">(テスト)</span>' : "",
+      ].filter(Boolean).join(" ");
+      const who = it.identity_type === "user"
+        ? `${escapeHtml(it.label)} ${badges}<br>
+            <span class="muted">${escapeHtml(it.username || "")}</span>`
+        : `${escapeHtml(it.label)}
+            <span class="muted">(${it.identity_type === "guest"
+              ? "未登録" : "旧IP単位"})</span>`;
+      return `
       <tr>
-        <td>${escapeHtml(it.label)}${it.identity_type === "user" ? "" :
-          ` <span class="muted">(${it.identity_type === "guest"
-            ? "未登録" : "旧IP単位"})</span>`}</td>
+        <td>${who}</td>
         <td>${it.distinct_days}</td>
         <td>${it.total_events}</td>
         <td>${fmtDate(it.first_seen)}</td>
@@ -6194,13 +6218,16 @@ export async function admin(root) {
         <td>${topList(it.top_phrase_scenes, "—")}</td>
         <td>${topList(it.top_tabs, "—")}</td>
         <td>${topList(it.top_words, "—")}</td>
-      </tr>`).join("")}</tbody></table>`;
+      </tr>`;
+    }).join("")}</tbody></table>`;
   }
   root.querySelector("#puRefreshBtn")
     .addEventListener("click", loadPowerUsers);
-  ["puDays", "puMinEvents", "puMinDays"].forEach((id) => {
-    root.querySelector(`#${id}`).addEventListener("change", loadPowerUsers);
-  });
+  ["puDays", "puMinEvents", "puMinDays", "puIncludeRegistered"].forEach(
+    (id) => {
+      root.querySelector(`#${id}`)
+        .addEventListener("change", loadPowerUsers);
+    });
 
   // ゲストのIP別深掘り分析(2026-09-17ユーザー要望)。一覧は概要のみ、
   // 行クリックで/admin/guest-ip-detailを遅延取得して展開する。
@@ -6271,10 +6298,11 @@ export async function admin(root) {
     itemsWrap.innerHTML = `<p class="muted">読み込み中…</p>`;
     const days = root.querySelector("#giDays").value;
     const minEvents = root.querySelector("#giMinEvents").value || "1";
+    const includeAdmin = root.querySelector("#giIncludeAdmin").checked;
     let res;
     try {
       res = await api.get(`/api/system/admin/guest-ip-analysis?days=${days}`
-        + `&min_events=${minEvents}`);
+        + `&min_events=${minEvents}&include_admin=${includeAdmin}`);
     } catch (e) {
       summaryWrap.innerHTML = `取得失敗: ${escapeHtml(e.message)}`;
       itemsWrap.innerHTML = "";
@@ -6351,7 +6379,7 @@ export async function admin(root) {
   }
   root.querySelector("#giRefreshBtn")
     .addEventListener("click", loadGuestIpAnalysis);
-  ["giDays", "giMinEvents"].forEach((id) => {
+  ["giDays", "giMinEvents", "giIncludeAdmin"].forEach((id) => {
     root.querySelector(`#${id}`)
       .addEventListener("change", loadGuestIpAnalysis);
   });
