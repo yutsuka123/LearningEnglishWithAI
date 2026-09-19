@@ -26,7 +26,7 @@ from .routers import (
     phrase_decks, phrases, seo_pages, system, vocabulary,
 )
 from .services import auth as auth_svc
-from .services import geoip
+from .services import geoip, traffic_source, visitor_kind
 from .services.errors import error_response
 from .services.spaced_repetition import apply_forgetting_decay
 
@@ -48,7 +48,15 @@ _AUTH_ALLOW = {
 # 2026-08-24: /login到達率が見えず離脱分析ができなかったため追加
 # 　　（訪問→/login到達→登録フォームを開く→送信、の各段階を追えるように
 # 　　するため。/loginは元々_AUTH_ALLOWで認証不要だが記録対象ではなかった）。
+# 2026-09-19: SEO/LLMO入口ページ(/glossary・/phrasebook・/crossword配下)も
+# 記録対象に追加（traffic_source.SEO_PATH_PREFIXES・前方一致。用語集→
+# アプリの流れやLLM経由の効果が見えなかったため・計測設計3-A）。
 _LANDING_LOG_PATHS = {"/", "/static/about.html", "/login"}
+
+
+def _is_landing_log_path(path: str) -> bool:
+    return path in _LANDING_LOG_PATHS or traffic_source.is_seo_path(path)
+
 
 # この秒数以上かかったリクエストはapp.logにWARNINGを残す(2026-09-05
 # ユーザー要望「各処理や遷移の時間で課題なところをあぶりだしたい」・
@@ -200,6 +208,18 @@ async def _auth_context(request, call_next):
         if not gsid:
             gsid = secrets.token_urlsafe(16)
             new_gsid = True
+    # 「自分(管理者/テスト)の端末」判定（2026-09-19・計測設計3-D）。内部
+    # Cookieがある、または新端末用の`?internal=1`(GETのみ)なら以後の
+    # usage_events/landing_visits/client_errorsにis_internal=1を立てて
+    # 分析から除外できるようにする。`?internal=1`は誰が付けても「その人の
+    # 訪問が分析から消えるだけ」で害は無い。管理者ログイン時のCookie発行は
+    # auth_routes.login、既にログイン済みの管理者/テストは下のセッション
+    # 復元後に（トップページ表示時に一度だけ）付与する。
+    is_internal = request.cookies.get(auth_svc.INTERNAL_COOKIE) == "1"
+    issue_internal_cookie = False
+    if (not is_internal and request.method == "GET"
+            and request.query_params.get("internal") == "1"):
+        is_internal = issue_internal_cookie = True
     uid = OWNER_USER_ID
     if multiuser:
         uid = None
@@ -215,25 +235,54 @@ async def _auth_context(request, call_next):
                     # セッション（強制ログアウト済み）として扱う。
                     if auth_svc.get_session_epoch(conn, p_uid) == p_epoch:
                         uid = p_uid
+        if (uid is not None and not is_internal
+                and request.method == "GET" and request.url.path == "/"):
+            # 既にログイン済み(30日セッション)の管理者/テストアカウントは
+            # 再ログインするまで内部Cookieが付かないため、トップページ表示
+            # 時に一度だけ役割を見て付与する（一般ユーザーは毎回1回の
+            # 主キー検索が走るだけ。失敗しても表示には影響させない）。
+            try:
+                with db() as conn:
+                    me = auth_svc.get_user(conn, uid)
+                if me and (me.get("role") == "admin" or me.get("is_test")):
+                    is_internal = issue_internal_cookie = True
+            except Exception:
+                log.warning("内部Cookie判定に失敗", exc_info=True)
         if uid is None:
             path = request.url.path
-            if path in _LANDING_LOG_PATHS:
+            if _is_landing_log_path(path):
                 # 未ログインの訪問をIPで軽く記録する（2026-08-11・B1本
                 # 実装、2026-08-20にabout.html閲覧も対象に拡張。ログ
                 # 書き込み失敗はページ表示自体を妨げないよう握りつぶす
                 # （DBロック等の一過性エラー想定）。
+                # 2026-09-19(計測設計3-A/3-D): 流入元(referrerホスト名・
+                # 許可utmキー・広告クリックIDの有無だけ)・着地パス・記録時の
+                # ボット判定・内部端末フラグも保存する。gclid等の値・URLの
+                # クエリ全体は保存しない。
                 try:
+                    ua = request.headers.get("user-agent", "")[:300]
+                    src = traffic_source.extract(
+                        request.headers.get("referer", ""),
+                        request.url.query)
                     with db() as conn:
                         conn.execute(
                             "INSERT INTO landing_visits "
                             "(ip, path, user_agent, guest_sid, "
-                            " accept_language) "
-                            "VALUES (?, ?, ?, ?, ?)",
-                            (client_ip, path,
-                             request.headers.get("user-agent", "")[:300],
-                             gsid,
+                            " accept_language, referrer_host, utm_source, "
+                            " utm_medium, utm_campaign, utm_content, "
+                            " has_gclid, landing_path, bot_mark, "
+                            " is_internal) "
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
+                            "?, ?)",
+                            (client_ip, path, ua, gsid,
                              request.headers.get(
-                                 "accept-language", "")[:100]),
+                                 "accept-language", "")[:100],
+                             src["referrer_host"], src["utm_source"],
+                             src["utm_medium"], src["utm_campaign"],
+                             src["utm_content"], src["has_gclid"],
+                             path[:200],
+                             visitor_kind.classify_ua(ua)[0],
+                             1 if is_internal else 0),
                         )
                     # 国・場所・接続元組織名の非同期エンリッチ（未キャッ
                     # シュのIPのみ実際に外部API呼び出しが走る・失敗しても
@@ -276,6 +325,7 @@ async def _auth_context(request, call_next):
         uid if uid is not None else OWNER_USER_ID)
     ip_token = auth_svc.set_current_ip(client_ip)
     gsid_token = auth_svc.set_current_guest_sid(gsid)
+    internal_token = auth_svc.set_current_is_internal(is_internal)
     web_token = auth_svc.mark_web_request()
     # リクエスト全体の所要時間を計測し、遅いものだけapp.logに残す
     # (2026-09-05ユーザー要望「各処理や遷移の時間で課題なところを
@@ -294,10 +344,17 @@ async def _auth_context(request, call_next):
         auth_svc.reset_current_user_id(token)
         auth_svc.reset_current_ip(ip_token)
         auth_svc.reset_current_guest_sid(gsid_token)
+        auth_svc.reset_current_is_internal(internal_token)
         auth_svc.reset_web_request(web_token)
     if new_gsid:
         response.set_cookie(
             auth_svc.GUEST_SID_COOKIE, gsid, max_age=auth_svc.GUEST_SID_TTL,
+            httponly=True, samesite="lax", path="/",
+            secure=auth_svc.cookie_secure(request),
+        )
+    if issue_internal_cookie:
+        response.set_cookie(
+            auth_svc.INTERNAL_COOKIE, "1", max_age=auth_svc.INTERNAL_TTL,
             httponly=True, samesite="lax", path="/",
             secure=auth_svc.cookie_secure(request),
         )

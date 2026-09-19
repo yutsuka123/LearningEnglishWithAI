@@ -25,11 +25,37 @@ VALID_KINDS = {
     # IP別深掘り分析用)。app/routers/learn.pyの各TTSエンドポイントで、
     # 通常の"play"の代わりにこちらを記録する。
     "play_error",
+    # JS到達ビーコン(2026-09-19・計測設計フェーズ1 3-B)。boot=ページの
+    # インラインscript到達(category='html')/SPA初期表示完了
+    # (category='app_ready')、leave=ページ離脱(滞在ms)。値(ms)は
+    # usage_events.valueに入れる。これらは「操作」ではないので、利用状況
+    # 分析の集計(画面/ボタン/再生の件数・イベント数の閾値等)からは
+    # 除外して読むこと(app/routers/system.pyの_UE_ACTION_ONLY参照)。
+    "boot", "leave",
 }
 
+# 数値(ms等)をvalueに入れてよい範囲。ブラウザの計測値が壊れていても
+# 集計を狂わせないよう、範囲外・非数値は記録しない(NULL)。
+_VALUE_MAX = 86_400_000.0  # 24時間(ms)
 
-def log_event(kind: str, category: str = "", label: str = "") -> None:
-    """usage_events に1件記録する。kind不正・DB失敗はどちらも無視する。"""
+
+def _clean_value(value) -> float | None:
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return None
+    if v != v or v < 0 or v > _VALUE_MAX:  # NaN・負・桁外れは捨てる
+        return None
+    return round(v, 1)
+
+
+def log_event(
+    kind: str, category: str = "", label: str = "", value=None,
+) -> None:
+    """usage_events に1件記録する。kind不正・DB失敗はどちらも無視する。
+    value: ms等の数値(boot/leaveビーコン用・2026-09-19)。不正値はNULL。"""
     if kind not in VALID_KINDS:
         return
     uid = auth.current_user_id()
@@ -39,10 +65,10 @@ def log_event(kind: str, category: str = "", label: str = "") -> None:
         with db() as conn:
             conn.execute(
                 "INSERT INTO usage_events "
-                "(user_id, ip, kind, category, label, guest_sid) "
-                "VALUES (?, ?, ?, ?, ?, ?)",
+                "(user_id, ip, kind, category, label, guest_sid, value, "
+                " is_internal) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (uid, ip, kind, (category or "")[:100], (label or "")[:150],
-                 gsid),
+                 gsid, _clean_value(value), auth.current_is_internal()),
             )
     except Exception:
         log.warning("usage_events記録に失敗", exc_info=True)
@@ -74,9 +100,11 @@ def record_client_error(
             conn.execute(
                 "INSERT INTO client_errors "
                 "(user_id, ip, guest_sid, kind, message, stack, url, "
-                "line, col) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "line, col, is_internal) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (uid, ip, gsid, kind, (message or "")[:2000],
-                 (stack or "")[:2000], (url or "")[:500], line, col),
+                 (stack or "")[:2000], (url or "")[:500], line, col,
+                 auth.current_is_internal()),
             )
     except Exception:
         log.warning("client_errors記録に失敗", exc_info=True)

@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 from ..config import log
 from ..database import db
-from ..services import auth, geoip
+from ..services import auth, geoip, visitor_kind
 from ..services.errors import error_response
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -34,25 +34,33 @@ def _record_signup_attempt(
     request: Request, ip: str, success: bool,
     background_tasks: BackgroundTasks,
     fail_reason: str = "", is_disposable_email: bool = False,
+    user_id: int | None = None,
 ) -> None:
     """新規登録の試行(成否問わず)をlanding_visitsに記録する（2026-08-20・
     管理画面「未登録アクセス状況」の「登録しようとしたか」判定用）。
     2026-09-07・fail_reason(エラーコード)とis_disposable_emailを追加し、
     失敗理由を多角的に分析できるようにした(管理画面「登録に至らない
     原因分析」から失敗理由内訳として参照)。書き込み失敗は登録処理自体を
-    妨げないよう握りつぶす。"""
+    妨げないよう握りつぶす。
+    2026-09-19(計測設計3-M/3-D): 成功時はuser_id(登録されたユーザー)も
+    行に残し、登録前の行動(guest_sid)と登録後の利用・課金を明示的に
+    結べるようにした。内部端末(自分のテスト登録)ならis_internalも立てる。"""
     try:
+        ua = request.headers.get("user-agent", "")[:300]
         with db() as conn:
             conn.execute(
                 "INSERT INTO landing_visits "
                 "(ip, kind, success, user_agent, guest_sid, fail_reason, "
-                " is_disposable_email, accept_language) "
-                "VALUES (?, 'signup', ?, ?, ?, ?, ?, ?)",
-                (ip, 1 if success else 0,
-                 request.headers.get("user-agent", "")[:300],
+                " is_disposable_email, accept_language, user_id, "
+                " is_internal, bot_mark) "
+                "VALUES (?, 'signup', ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (ip, 1 if success else 0, ua,
                  auth.current_guest_sid(), fail_reason,
                  1 if is_disposable_email else 0,
-                 request.headers.get("accept-language", "")[:100]),
+                 request.headers.get("accept-language", "")[:100],
+                 user_id if success else None,
+                 auth.current_is_internal(),
+                 visitor_kind.classify_ua(ua)[0]),
             )
         background_tasks.add_task(geoip.enrich_ip, ip)
     except Exception:
@@ -169,6 +177,12 @@ def signup(
                 survey_free_text=payload.survey_free_text,
                 survey_interest_areas=payload.survey_interest_areas,
             )
+            # 登録時のゲストセッションCookieを明示的に保存する(2026-09-19・
+            # 計測設計3-M)。登録前の行動(usage_events/landing_visits)と
+            # 登録後の有効化・継続・課金をguest_sid経由で正確に結ぶため。
+            conn.execute(
+                "UPDATE users SET signup_guest_sid = ? WHERE id = ?",
+                (auth.current_guest_sid(), uid))
             if payload.charge_key.strip():
                 charge_keys.redeem_key(conn, uid, payload.charge_key)
             secret = auth.get_session_secret(conn)
@@ -184,7 +198,7 @@ def signup(
               ip, email, uid, bool(payload.charge_key.strip()))
     _record_signup_attempt(
         request, ip, True, background_tasks,
-        is_disposable_email=is_disposable_email)
+        is_disposable_email=is_disposable_email, user_id=uid)
     token = auth.make_session_token(
         secret, uid, u.get("session_epoch", 0), int(time.time()))
     resp = JSONResponse({"ok": True, "user": {
@@ -236,6 +250,15 @@ def login(
         httponly=True, samesite="lax", path="/",
         secure=auth.cookie_secure(request),
     )
+    # 管理者/テストアカウントでのログイン成功時に「自分の端末」の目印
+    # Cookieを付ける(2026-09-19・計測設計3-D)。以後この端末の記録は
+    # ログアウト後・IPが変わっても分析から除外できる。
+    if u.get("role") == "admin" or u.get("is_test"):
+        resp.set_cookie(
+            auth.INTERNAL_COOKIE, "1", max_age=auth.INTERNAL_TTL,
+            httponly=True, samesite="lax", path="/",
+            secure=auth.cookie_secure(request),
+        )
     return resp
 
 

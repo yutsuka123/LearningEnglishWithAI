@@ -776,15 +776,20 @@
       // track()と同じ方式(/api/system/trackへ直接POST・ゲストも記録対象)。
       // それまでこのページにはトラッキングが一切無く、CTAクリックが
       // 見えなかった。
-      function track(kind, category, label) {
+      // 2026-09-19(計測設計3-B): keepalive:trueで、CTAリンクの遷移直前に
+      // 送る記録が中断されないようにした。valueはms等の数値用。
+      function track(kind, category, label, value) {
         try {
           fetch('/api/system/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ kind, category, label }),
+            body: JSON.stringify({ kind, category, label, value }),
+            keepalive: true,
           });
         } catch (e) { /* ignore */ }
       }
+      // JS到達ビーコン(このページのJSが実行された印・label=どのページか)。
+      track('boot', 'html', 'about', Math.round(performance.now()));
       track('page', 'about_page', document.referrer ? 'with_referrer' : 'direct');
       document.querySelectorAll('[data-track]').forEach(function (el) {
         el.addEventListener('click', function () {

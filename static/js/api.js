@@ -91,12 +91,14 @@ function _streamError(path, message) {
   return err;
 }
 
-async function req(method, path, body) {
+async function req(method, path, body, extraOpts) {
   const opts = { method, headers: {} };
   if (body !== undefined) {
     opts.headers["Content-Type"] = "application/json";
     opts.body = JSON.stringify(body);
   }
+  // keepalive等の追加fetchオプション(track()用・2026-09-19)。
+  if (extraOpts) Object.assign(opts, extraOpts);
   const res = await fetch(path, opts);
   if (res.status === 204) return null;
   const text = await res.text();
@@ -143,8 +145,13 @@ async function req(method, path, body) {
 // 画面表示/ボタン押下の利用状況イベント記録（管理画面の分析用・
 // 2026-08-17）。呼び出し元の操作を絶対に妨げないよう、結果を待たず
 // 失敗も無視するfire-and-forget。
-function track(kind, category, label = "") {
-  req("POST", "/api/system/track", { kind, category, label })
+// 2026-09-19(計測設計3-B): fetchにkeepalive:trueを付け、ようこそ画面の
+// CTA(/login#signupへのリンク)のように「遷移を伴う操作」の直前に呼んでも
+// ページ遷移で送信が中断されない(従来は取りこぼしていた)。value=ms等の
+// 数値(boot/leaveビーコン用)。
+function track(kind, category, label = "", value) {
+  req("POST", "/api/system/track", { kind, category, label, value },
+    { keepalive: true })
     .catch(() => { /* 記録失敗は無視（UIに影響させない） */ });
 }
 

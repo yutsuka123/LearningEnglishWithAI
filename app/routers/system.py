@@ -6,9 +6,10 @@ import collections
 import json
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Literal
+from typing import Any, Literal
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
+from starlette.concurrency import run_in_threadpool
 
 from ..services import errors
 from pydantic import BaseModel
@@ -16,7 +17,9 @@ from pydantic import BaseModel
 from ..config import ROOT_DIR, load_admin_known_ips, load_settings, log, paths
 from ..database import ACCENTS, NEWS_FIELDS, db
 from ..schemas import MemoryUpdateIn, SettingsIn
-from ..services import ai, auth, persistence, tracking, ua_parse, visitor_kind
+from ..services import (
+    ai, auth, persistence, traffic_source, tracking, ua_parse, visitor_kind,
+)
 
 router = APIRouter(prefix="/api/system", tags=["system"])
 
@@ -101,6 +104,14 @@ def _own_device_sids(conn) -> dict[str, dict[str, bool]]:
         r["sid"]: {"admin": bool(r["is_admin"]), "test": bool(r["is_test"])}
         for r in rows
     }
+
+
+# usage_eventsのうち「操作」ではない計測ビーコン(JS到達boot・離脱leave・
+# 2026-09-19計測設計3-B)。画面/ボタン/再生の件数・イベント数の閾値・最後に
+# 見ていた画面の判定などの「利用状況」集計からは除く。到達率・滞在時間を
+# 見る専用の集計(admin_registration_funnel・admin_visit_trend)だけが読む。
+_UE_ACTION_ONLY = "kind NOT IN ('boot', 'leave')"
+_UE_ACTION_ONLY_UE = "ue.kind NOT IN ('boot', 'leave')"
 
 
 @router.post("/admin/users/{user_id}/test-flag")
@@ -1128,7 +1139,10 @@ def admin_anon_access(days: int = 30, limit: int = 500):
             " MAX(CASE WHEN kind='signup' AND success=1 THEN 1 ELSE 0 END) "
             "     AS signup_succeeded, "
             " MAX(CASE WHEN accept_language != '' THEN accept_language "
-            "     END) AS accept_language "
+            "     END) AS accept_language, "
+            # 2026-09-19: そのIPの全行が内部Cookie(自分の端末)由来なら
+            # 管理者(※1)扱いにする(ADMIN_KNOWN_IPSはIPが変わると効かない)。
+            " MIN(is_internal) AS all_internal "
             "FROM landing_visits "
             "WHERE created_at >= datetime('now', ?) AND ip != '' "
             "GROUP BY ip ORDER BY last_seen DESC",
@@ -1187,7 +1201,7 @@ def admin_anon_access(days: int = 30, limit: int = 500):
         d["city"] = geo.get("city", "")
         d["org"] = geo.get("org", "")
         d["hostname"] = geo.get("hostname", "")
-        d["is_admin"] = d["ip"] in admin_ips
+        d["is_admin"] = d["ip"] in admin_ips or bool(d.pop("all_internal", 0))
         # ※1〜※4 の推定（印なし=0＝人間が意識的に閲覧したとみなす）。
         d["mark"], d["mark_reason"] = visitor_kind.classify(
             ua_map.get(d["ip"], []), d["org"], d["hostname"], d["is_admin"],
@@ -1217,6 +1231,95 @@ def admin_anon_access(days: int = 30, limit: int = 500):
     }
 
 
+def _funnel_exclusions(conn, since: str):
+    """登録ファネル・訪問推移の分母から除外するguest_sidを洗い出す
+    （2026-09-19・計測設計3-D。従来admin_registration_funnelだけが持って
+    いたUA単体のボット判定を切り出し、内部端末の除外を加えた）。
+
+    戻り値: (ua_by_guest, bot_guests, internal_guests)
+    - ua_by_guest: visit行の代表UA（端末/ブラウザ内訳用・判定には使わない）
+    - bot_guests: UAがvisitor_kind.classify_uaで機械的と判定されたもの、
+      または記録時のbot_markが立っているもの。visitを経由せずsignupへ直行
+      したアクセスのUAも見る（2026-09-16修正の継承）。
+    - internal_guests: 自分(管理者/テスト)の端末。内部Cookie由来の
+      is_internal=1の行を持つもの＋管理者/テストアカウントでログインした
+      ことのある端末(_own_device_sids)。従来のファネルは管理者IP・
+      own端末の除外を一切していなかった。"""
+    ua_by_guest: dict[str, str] = {}
+    for r in conn.execute(
+        "SELECT guest_sid, user_agent FROM landing_visits "
+        "WHERE guest_sid != '' AND kind='visit' "
+        "AND created_at >= datetime('now', ?)", (since,),
+    ).fetchall():
+        ua_by_guest.setdefault(r["guest_sid"], r["user_agent"] or "")
+    # ボット判定用には、visitを経由せずsignupへ直行したアクセスのUAも
+    # 合わせて見る(2026-09-16修正)。「訪問」段階の端末/ブラウザ内訳は
+    # visit経由のua_by_guestのまま使うため、判定専用の別dictに分ける。
+    ua_for_bot_check = dict(ua_by_guest)
+    for r in conn.execute(
+        "SELECT guest_sid, user_agent FROM landing_visits "
+        "WHERE guest_sid != '' AND kind='signup' "
+        "AND created_at >= datetime('now', ?)", (since,),
+    ).fetchall():
+        ua_for_bot_check.setdefault(r["guest_sid"], r["user_agent"] or "")
+    bot_guests = {
+        g for g, ua in ua_for_bot_check.items()
+        if visitor_kind.classify_ua(ua)[0] != visitor_kind.MARK_NONE
+    }
+    # 記録時のbot_mark(新データのみ・旧行は0)。UA判定の方が最新のリストで
+    # 見直せる分だけ広いが、リスト改訂で判定が変わった場合にも「記録時に
+    # 機械的と判断していたもの」は除外し続ける。
+    bot_guests |= {
+        r["guest_sid"] for r in conn.execute(
+            "SELECT DISTINCT guest_sid FROM landing_visits "
+            "WHERE guest_sid != '' AND bot_mark != 0 "
+            "AND created_at >= datetime('now', ?)", (since,),
+        ).fetchall()
+    }
+    internal_guests = {
+        r["guest_sid"] for r in conn.execute(
+            "SELECT guest_sid FROM landing_visits "
+            "WHERE guest_sid != '' AND is_internal = 1 "
+            "AND created_at >= datetime('now', ?) "
+            "UNION SELECT guest_sid FROM usage_events "
+            "WHERE guest_sid != '' AND is_internal = 1 "
+            "AND created_at >= datetime('now', ?)", (since, since),
+        ).fetchall()
+    }
+    internal_guests |= set(_own_device_sids(conn))
+    return ua_by_guest, bot_guests, internal_guests
+
+
+def _load_excluded_guests(conn, sids: set[str]) -> str:
+    """除外guest_sidを接続内のTEMPテーブルに載せ、WHERE句に足すSQL断片を
+    返す。`NOT IN (?,?,...)`をそのまま並べると、Cookieを返さないボットが
+    毎回別guest_sidになる分(SEOページ記録の追加で増える)で変数上限に
+    当たりうるため。TEMPテーブルは接続(=リクエスト)限りで消える。"""
+    conn.execute(
+        "CREATE TEMP TABLE IF NOT EXISTS excl_guests "
+        "(guest_sid TEXT PRIMARY KEY)")
+    conn.execute("DELETE FROM temp.excl_guests")
+    conn.executemany(
+        "INSERT OR IGNORE INTO temp.excl_guests (guest_sid) VALUES (?)",
+        [(g,) for g in sids])
+    return " AND guest_sid NOT IN (SELECT guest_sid FROM temp.excl_guests)"
+
+
+def _median(values: list[float]) -> float | None:
+    if not values:
+        return None
+    v = sorted(values)
+    n = len(v)
+    return round(v[n // 2] if n % 2 else (v[n // 2 - 1] + v[n // 2]) / 2, 1)
+
+
+def _percentile(values: list[float], pct: float) -> float | None:
+    if not values:
+        return None
+    v = sorted(values)
+    return round(v[min(len(v) - 1, int(len(v) * pct))], 1)
+
+
 @router.get("/admin/registration-funnel")
 def admin_registration_funnel(days: int = 30):
     """登録に至らない原因分析(常設・2026-08-30)。未登録訪問者を1人ずつ
@@ -1236,51 +1339,35 @@ def admin_registration_funnel(days: int = 30):
     guest_sid単位のボット判定を行い、全段階の集計から除外する
     (IP単位のclassify()と違いip_geo_cache/管理者IP照合は行わない簡易
     判定だが、UAが無い/curl等の明白なボットは十分検出できる)。
-    あわせて「訪問」段階の端末/ブラウザ内訳(ua_parse.parse_ua)も返す。"""
+    あわせて「訪問」段階の端末/ブラウザ内訳(ua_parse.parse_ua)も返す。
+
+    **2026-09-19(計測設計フェーズ1 3-D/3-A/3-B)**:
+    - 自分(管理者/テストの端末・内部Cookie)も分母から除外する
+      (`_funnel_exclusions`)。
+    - 「訪問」の次に「JS到達」段(インラインビーコン`boot/html`が届いた
+      guest_sid)を追加。従来の「91%が無操作」は「JS未到達」と「見て
+      興味なし」が区別できなかった。あわせて『人間訪問(基準)』=HTML着地
+      のうちJS到達あり、または同一guest_sidで2回以上の閲覧、を返す
+      (Cookieを返さないクライアントは毎回別guest_sidになるため1回きり
+      になり、ここで落ちる)。JS到達の記録は本機能のリリース以降のデータ
+      のみ(それ以前の期間は0)。
+    - 流入元別の内訳(`by_channel`など): guest_sidごとの**初回**の
+      visit行のreferrerホスト/utm/gclid有無/着地パスから、チャネル
+      (広告/検索/SNS/LLM/サイト内/直接/その他)を判定して集計する。"""
     _require_admin()
     days = max(1, min(days, 365))
     since = f"-{days} days"
     with db() as conn:
-        visit_ua_rows = conn.execute(
-            "SELECT guest_sid, user_agent FROM landing_visits "
-            "WHERE guest_sid != '' AND kind='visit' "
-            "AND created_at >= datetime('now', ?)", (since,),
-        ).fetchall()
-        # guest_sidごとの代表UA(最初に見つかったもの)でボット判定する。
-        # 同一guest_sidに複数UAが記録されることは通常なく、あっても
-        # どれか1つで十分ボット兆候を拾える。
-        ua_by_guest: dict[str, str] = {}
-        for r in visit_ua_rows:
-            ua_by_guest.setdefault(r["guest_sid"], r["user_agent"] or "")
-        # ボット判定用には、visitを経由せずsignupへ直行したアクセスの
-        # UAも合わせて見る(2026-09-16修正: curl等での動作確認がvisit記録
-        # を作らないままsignupだけを叩くと、visit由来のUAしか見ていない
-        # 判定をすり抜け、登録ファネルの「登録完了」等に混入していた。
-        # 「訪問」段階の端末/ブラウザ内訳はvisit経由のua_by_guestのまま
-        # 使うため、判定専用の別dictに分けている)。
-        signup_ua_rows = conn.execute(
-            "SELECT guest_sid, user_agent FROM landing_visits "
-            "WHERE guest_sid != '' AND kind='signup' "
-            "AND created_at >= datetime('now', ?)", (since,),
-        ).fetchall()
-        ua_for_bot_check = dict(ua_by_guest)
-        for r in signup_ua_rows:
-            ua_for_bot_check.setdefault(r["guest_sid"], r["user_agent"] or "")
-        bot_guests = {
-            g for g, ua in ua_for_bot_check.items()
-            if visitor_kind.classify_ua(ua)[0] != visitor_kind.MARK_NONE
-        }
-        bot_placeholders = ",".join("?" * len(bot_guests)) if bot_guests else ""
-        bot_excl_sql = (
-            f" AND guest_sid NOT IN ({bot_placeholders})"
-            if bot_guests else "")
+        ua_by_guest, bot_guests, internal_guests = _funnel_exclusions(
+            conn, since)
+        excl = _load_excluded_guests(conn, bot_guests | internal_guests)
 
         def count_distinct_guest(where_sql: str) -> int:
             row = conn.execute(
                 "SELECT COUNT(DISTINCT guest_sid) AS c FROM landing_visits "
                 f"WHERE guest_sid != '' AND created_at >= datetime('now', ?) "
-                f"AND {where_sql}{bot_excl_sql}",
-                (since, *bot_guests),
+                f"AND {where_sql}{excl}",
+                (since,),
             ).fetchone()
             return row["c"]
 
@@ -1292,10 +1379,17 @@ def admin_registration_funnel(days: int = 30):
             row = conn.execute(
                 "SELECT COUNT(DISTINCT guest_sid) AS c FROM usage_events "
                 f"WHERE guest_sid != '' AND created_at >= datetime('now', ?) "
-                f"AND {where_sql}{bot_excl_sql}",
-                (since, *bot_guests),
+                f"AND {where_sql}{excl}",
+                (since,),
             ).fetchone()
             return row["c"]
+
+        def guest_set(table: str, where_sql: str) -> set[str]:
+            return {r["guest_sid"] for r in conn.execute(
+                f"SELECT DISTINCT guest_sid FROM {table} "
+                f"WHERE guest_sid != '' AND created_at >= datetime('now', ?) "
+                f"AND {where_sql}{excl}", (since,),
+            ).fetchall()}
 
         visited = count_distinct_guest("kind='visit'")
         viewed_word = count_distinct_guest_usage(
@@ -1308,10 +1402,65 @@ def admin_registration_funnel(days: int = 30):
         signup_succeeded = count_distinct_guest(
             "kind='signup' AND success=1")
 
+        # --- JS到達・人間訪問(2026-09-19) ---
+        # 訪問した(HTML着地の)guest_sidと、その閲覧回数。
+        visit_counts = {r["guest_sid"]: r["c"] for r in conn.execute(
+            "SELECT guest_sid, COUNT(*) AS c FROM landing_visits "
+            "WHERE guest_sid != '' AND kind='visit' "
+            f"AND created_at >= datetime('now', ?){excl} "
+            "GROUP BY guest_sid", (since,),
+        ).fetchall()}
+        visited_set = set(visit_counts)
+        boot_set = guest_set("usage_events", "kind='boot' AND category='html'")
+        ready_set = guest_set(
+            "usage_events", "kind='boot' AND category='app_ready'")
+        js_reached = len(boot_set & visited_set)
+        app_ready = len(ready_set & visited_set)
+        human_set = visited_set & (
+            boot_set | {g for g, c in visit_counts.items() if c >= 2})
+        # 意図的な操作(ボタン押下・再生・ようこそ以外の画面遷移)が1つでも
+        # あったguest_sid。boot/leave/app_readyやwelcome表示は含めない。
+        engaged_set = guest_set(
+            "usage_events",
+            "(kind IN ('click','play','word_domain','phrase_scene') "
+            "OR (kind='page' AND category != 'welcome'))")
+        signup_attempted_set = guest_set("landing_visits", "kind='signup'")
+        signup_succeeded_set = guest_set(
+            "landing_visits", "kind='signup' AND success=1")
+        # 表示速度(ms)の分布: HTML到達(boot/html)と初期表示完了(app_ready)。
+        html_ms = [r["value"] for r in conn.execute(
+            "SELECT value FROM usage_events WHERE kind='boot' "
+            "AND category='html' AND value IS NOT NULL "
+            f"AND created_at >= datetime('now', ?){excl}", (since,),
+        ).fetchall()]
+        ready_ms = [r["value"] for r in conn.execute(
+            "SELECT value FROM usage_events WHERE kind='boot' "
+            "AND category='app_ready' AND value IS NOT NULL "
+            f"AND created_at >= datetime('now', ?){excl}", (since,),
+        ).fetchall()]
+
+        # --- 流入元(初回のvisit行から) ---
+        first_visit: dict[str, dict] = {}
+        seo_guests: set[str] = set()   # 用語集等のSEOページに着地した人
+        app_guests: set[str] = set()   # アプリ/その他ページにも来た人
+        for r in conn.execute(
+            "SELECT guest_sid, referrer_host, utm_source, utm_medium, "
+            "utm_campaign, has_gclid, path, landing_path FROM landing_visits "
+            "WHERE guest_sid != '' AND kind='visit' "
+            f"AND created_at >= datetime('now', ?){excl} ORDER BY id",
+            (since,),
+        ).fetchall():
+            g = r["guest_sid"]
+            first_visit.setdefault(g, dict(r))
+            if traffic_source.is_seo_path(r["path"]):
+                seo_guests.add(g)
+            else:
+                app_guests.add(g)
+
         # 「訪問」段階(人間判定分のみ)の端末/ブラウザ内訳。
         device_counts: dict[tuple[str, str], int] = {}
         for g, ua in ua_by_guest.items():
-            if g in bot_guests:
+            if g in bot_guests or g in internal_guests:
                 continue
             device, browser = ua_parse.parse_ua(ua)
             key = (device, browser)
@@ -1322,10 +1471,14 @@ def admin_registration_funnel(days: int = 30):
             key=lambda x: -x["count"],
         )
 
+        # 離脱ポイント: boot/leave/app_readyは「操作」ではないので、最後の
+        # 画面の判定からは外す(外さないと全員の最終イベントが離脱ビーコン
+        # になってしまう)。
         dropoff_rows = conn.execute(
             "SELECT ue.guest_sid, ue.category, ue.created_at "
             "FROM usage_events ue "
             "WHERE ue.guest_sid != '' "
+            "AND ue.kind NOT IN ('boot', 'leave') "
             "AND ue.created_at >= datetime('now', ?) "
             "AND ue.guest_sid IN ("
             "  SELECT guest_sid FROM landing_visits WHERE kind='visit' "
@@ -1334,9 +1487,10 @@ def admin_registration_funnel(days: int = 30):
             "AND ue.guest_sid NOT IN ("
             "  SELECT guest_sid FROM landing_visits WHERE kind='signup' "
             "  AND guest_sid != '' AND created_at >= datetime('now', ?)"
-            f") {bot_excl_sql.replace('guest_sid', 'ue.guest_sid')} "
+            ") AND ue.guest_sid NOT IN "
+            "(SELECT guest_sid FROM temp.excl_guests) "
             "ORDER BY ue.guest_sid, ue.created_at",
-            (since, since, since, *bot_guests),
+            (since, since, since),
         ).fetchall()
 
         # 登録試行の失敗理由内訳(2026-09-07・ユーザー要望「失敗理由を
@@ -1345,10 +1499,9 @@ def admin_registration_funnel(days: int = 30):
         fail_reason_rows = conn.execute(
             "SELECT fail_reason, COUNT(*) AS c FROM landing_visits "
             "WHERE kind='signup' AND success=0 AND guest_sid != '' "
-            "AND created_at >= datetime('now', ?)"
-            f"{bot_excl_sql} "
+            f"AND created_at >= datetime('now', ?){excl} "
             "GROUP BY fail_reason ORDER BY c DESC",
-            (since, *bot_guests),
+            (since,),
         ).fetchall()
         fail_reasons = [{
             "code": r["fail_reason"] or "(不明・旧データ)",
@@ -1364,10 +1517,9 @@ def admin_registration_funnel(days: int = 30):
         disposable_rows = conn.execute(
             "SELECT success, COUNT(*) AS c FROM landing_visits "
             "WHERE kind='signup' AND is_disposable_email=1 "
-            "AND guest_sid != '' AND created_at >= datetime('now', ?)"
-            f"{bot_excl_sql} "
+            f"AND guest_sid != '' AND created_at >= datetime('now', ?){excl} "
             "GROUP BY success",
-            (since, *bot_guests),
+            (since,),
         ).fetchall()
         disposable_email_stats = {
             "succeeded": next(
@@ -1399,7 +1551,9 @@ def admin_registration_funnel(days: int = 30):
         return round(n / d * 100, 1) if d else 0.0
 
     stages = [
-        {"key": "visited", "label": "訪問", "count": visited},
+        {"key": "visited", "label": "訪問(HTML着地)", "count": visited},
+        {"key": "js_reached", "label": "JS到達(表示ビーコン受信)",
+         "count": js_reached},
         {"key": "viewed_word", "label": "英単語のページをみた",
          "count": viewed_word},
         {"key": "tried_audio", "label": "音声再生を試みた",
@@ -1411,18 +1565,105 @@ def admin_registration_funnel(days: int = 30):
         {"key": "signup_succeeded", "label": "登録完了",
          "count": signup_succeeded},
     ]
+    human_visited = len(human_set)
     for i, s in enumerate(stages):
         prev = stages[i - 1]["count"] if i > 0 else visited
         s["rate_from_start"] = rate(s["count"], visited)
         s["rate_from_prev"] = rate(s["count"], prev) if i > 0 else 100.0
+        # 人間訪問(基準)に対する比。JS到達の記録が無い期間(リリース前)は
+        # human_visitedが小さくなるため、比が100%超になりうる点は画面の
+        # 注記で読み手に伝える。
+        s["rate_from_human"] = rate(s["count"], human_visited)
+
+    # チャネル別・着地ページ別の内訳(guest_sidの初回visit行が基準)。
+    def _blank() -> dict:
+        return {"visited": 0, "human": 0, "js_reached": 0, "engaged": 0,
+                "signup_attempted": 0, "signup_succeeded": 0}
+
+    def _tally(bucket: dict, g: str) -> None:
+        bucket["visited"] += 1
+        if g in human_set:
+            bucket["human"] += 1
+        if g in boot_set:
+            bucket["js_reached"] += 1
+        if g in engaged_set:
+            bucket["engaged"] += 1
+        if g in signup_attempted_set:
+            bucket["signup_attempted"] += 1
+        if g in signup_succeeded_set:
+            bucket["signup_succeeded"] += 1
+
+    channel_buckets: dict[str, dict] = {}
+    landing_buckets: dict[str, dict] = {}
+    referrer_counts: dict[str, int] = {}
+    utm_counts: dict[str, int] = {}
+    ad_click_guests = 0
+    for g, fv in first_visit.items():
+        # landing_pathが空の行は流入元の記録を始める前(旧データ)。参照元
+        # なしの「直接」と区別するため別枠にする。
+        if not fv["landing_path"]:
+            channel = "unknown"
+        else:
+            channel = traffic_source.classify_channel(
+                fv["referrer_host"], fv["utm_source"], fv["utm_medium"],
+                fv["has_gclid"])
+        _tally(channel_buckets.setdefault(channel, _blank()), g)
+        _tally(landing_buckets.setdefault(
+            traffic_source.landing_group(fv["path"]), _blank()), g)
+        if fv["referrer_host"]:
+            referrer_counts[fv["referrer_host"]] = (
+                referrer_counts.get(fv["referrer_host"], 0) + 1)
+        if fv["utm_source"] or fv["utm_medium"] or fv["utm_campaign"]:
+            k = " / ".join([
+                fv["utm_source"] or "-", fv["utm_medium"] or "-",
+                fv["utm_campaign"] or "-"])
+            utm_counts[k] = utm_counts.get(k, 0) + 1
+        if fv["has_gclid"]:
+            ad_click_guests += 1
+
+    channel_order = [k for k, _ in traffic_source.CHANNELS] + ["unknown"]
+    by_channel = [
+        {"key": k, "label": traffic_source.CHANNEL_LABELS.get(
+            k, "計測開始前のデータ(流入元不明)"), **channel_buckets[k]}
+        for k in channel_order if k in channel_buckets
+    ]
+    by_landing = sorted(
+        [{"label": k, **v} for k, v in landing_buckets.items()],
+        key=lambda x: -x["visited"])
     return {
         "days": days, "stages": stages,
         "dropoff_summary": dropoff_summary,
         "dropoff_sessions": dropoff_sessions,
         "bot_excluded": len(bot_guests),
+        "internal_excluded": len(internal_guests - bot_guests),
         "device_breakdown": device_breakdown,
         "fail_reasons": fail_reasons,
         "disposable_email_stats": disposable_email_stats,
+        # --- 2026-09-19追加 ---
+        "human_visited": human_visited,
+        "js_reached": js_reached,
+        "app_ready": app_ready,
+        "js_timing": {
+            "html_ms_median": _median(html_ms),
+            "html_ms_p90": _percentile(html_ms, 0.9),
+            "ready_ms_median": _median(ready_ms),
+            "ready_ms_p90": _percentile(ready_ms, 0.9),
+        },
+        "by_channel": by_channel,
+        "by_landing": by_landing,
+        "top_referrers": sorted(
+            [{"host": k, "count": v} for k, v in referrer_counts.items()],
+            key=lambda x: -x["count"])[:15],
+        "utm_breakdown": sorted(
+            [{"label": k, "count": v} for k, v in utm_counts.items()],
+            key=lambda x: -x["count"])[:15],
+        "ad_click_visitors": ad_click_guests,
+        # 用語集/フレーズ集/クロスワード紹介(SEOページ)に着地し、その後
+        # アプリやその他のページにも来た人＝「SEOページ経由でアプリへ」。
+        "via_seo": {
+            "seo_landed": len(seo_guests),
+            "seo_then_app": len(seo_guests & app_guests),
+        },
     }
 
 
@@ -1433,14 +1674,18 @@ def admin_registration_funnel_guest(guest_sid: str):
     というユーザー要望対応)。"""
     _require_admin()
     with db() as conn:
+        # 2026-09-19: 流入元(referrerホスト/utm/広告クリックの有無)・登録
+        # 成功行のuser_id・ビーコンの数値(value)も返す(計測設計3-A/3-B/3-M)。
         lv = conn.execute(
             "SELECT 'landing_visits' AS src, kind, path, success, "
-            "user_agent, created_at FROM landing_visits "
+            "user_agent, referrer_host, utm_source, utm_medium, "
+            "utm_campaign, has_gclid, is_internal, user_id, created_at "
+            "FROM landing_visits "
             "WHERE guest_sid = ? ORDER BY created_at", (guest_sid,),
         ).fetchall()
         ue = conn.execute(
-            "SELECT 'usage_events' AS src, kind, category, label, "
-            "created_at FROM usage_events "
+            "SELECT 'usage_events' AS src, kind, category, label, value, "
+            "is_internal, created_at FROM usage_events "
             "WHERE guest_sid = ? ORDER BY created_at", (guest_sid,),
         ).fetchall()
     timeline = sorted(
@@ -1461,7 +1706,12 @@ def admin_visit_trend(days: int = 30):
     たび1回だけ記録される landing_visits の方を採用した。人間/クローラー
     の判定は「未登録アクセス状況」(admin_anon_access)と同じ
     visitor_kind.classify() を使い、判定基準を統一する。管理者自身の
-    アクセス(ADMIN_KNOWN_IPS)は訪問者数から除外する。"""
+    アクセス(ADMIN_KNOWN_IPS)は訪問者数から除外する。
+
+    2026-09-19(計測設計3-D/3-B): 内部Cookie(自分の端末)由来の行も除外
+    (is_internal=1)。系列に「JS到達」(インラインビーコンboot/htmlが届いた
+    guest_sidの日別ユニーク数・ボット/内部端末を除く)を追加した。JS到達は
+    このリリース以降の日付にしか値が入らない。"""
     _require_admin()
     days = max(1, min(days, 366))
     since = f"-{days} days"
@@ -1471,11 +1721,20 @@ def admin_visit_trend(days: int = 30):
             "substr(datetime(created_at, '+9 hours'), 1, 10) AS date "
             "FROM landing_visits "
             "WHERE kind='visit' AND created_at >= datetime('now', ?) "
-            "AND ip != ''",
+            "AND ip != '' AND is_internal = 0",
             (since,),
         ).fetchall()
         geo_rows = conn.execute(
             "SELECT ip, org, hostname FROM ip_geo_cache",
+        ).fetchall()
+        _, bot_guests, internal_guests = _funnel_exclusions(conn, since)
+        js_rows = conn.execute(
+            "SELECT guest_sid, "
+            "substr(datetime(created_at, '+9 hours'), 1, 10) AS date "
+            "FROM usage_events WHERE kind='boot' AND category='html' "
+            "AND guest_sid != '' AND is_internal = 0 "
+            "AND created_at >= datetime('now', ?)",
+            (since,),
         ).fetchall()
     geo_map = {r["ip"]: dict(r) for r in geo_rows}
     admin_ips = load_admin_known_ips()
@@ -1496,20 +1755,31 @@ def admin_visit_trend(days: int = 30):
         return mark_cache[ip]
 
     by_day: dict[str, dict] = {}
+
+    def _day(date: str) -> dict:
+        return by_day.setdefault(date, {
+            "human_total": 0, "human_ips": set(),
+            "bot_total": 0, "bot_ips": set(), "js_guests": set(),
+        })
+
     for r in rows:
         mark = ip_mark(r["ip"])
         if mark == visitor_kind.MARK_ADMIN:
             continue
-        d = by_day.setdefault(r["date"], {
-            "human_total": 0, "human_ips": set(),
-            "bot_total": 0, "bot_ips": set(),
-        })
+        d = _day(r["date"])
         if mark == visitor_kind.MARK_NONE:
             d["human_total"] += 1
             d["human_ips"].add(r["ip"])
         else:
             d["bot_total"] += 1
             d["bot_ips"].add(r["ip"])
+    excluded = bot_guests | internal_guests
+    js_all: set[str] = set()
+    for r in js_rows:
+        if r["guest_sid"] in excluded:
+            continue
+        _day(r["date"])["js_guests"].add(r["guest_sid"])
+        js_all.add(r["guest_sid"])
 
     daily = []
     for date in sorted(by_day):
@@ -1520,6 +1790,7 @@ def admin_visit_trend(days: int = 30):
             "human_unique_ips": len(d["human_ips"]),
             "bot_total": d["bot_total"],
             "bot_unique_ips": len(d["bot_ips"]),
+            "js_reached": len(d["js_guests"]),
         })
     # 期間合計のユニークIPは日次の単純合計だと複数日にまたがる同一IPを
     # 重複カウントしてしまうため、別途IP単位で数え直す。
@@ -1533,6 +1804,7 @@ def admin_visit_trend(days: int = 30):
         "human_unique_ips": len(all_human_ips),
         "bot_total": sum(d["bot_total"] for d in daily),
         "bot_unique_ips": len(all_bot_ips),
+        "js_reached": len(js_all),
     }
     return {"days": days, "summary": summary, "daily": daily}
 
@@ -1785,17 +2057,46 @@ class TrackEventIn(BaseModel):
     kind: str
     category: str = ""
     label: str = ""
+    # ms等の数値(boot/leaveビーコン用・2026-09-19)。壊れた値でイベント自体
+    # を捨てないよう型は緩く受け、tracking._clean_valueで数値化(不正はNULL)。
+    value: Any = None
+
+
+# track_eventが受け付けるkind。音声再生(play)等はサーバー側が実際に処理を
+# 返した時点で記録する設計（クライアントが偽装できない）なのでここには
+# 入れない。boot/leaveは2026-09-19(計測設計3-B)にJS到達ビーコン用として
+# 明示的に追加した。
+_CLIENT_TRACK_KINDS = ("page", "click", "boot", "leave")
+_TRACK_BODY_MAX = 4096
 
 
 @router.post("/track")
-def track_event(payload: TrackEventIn):
+async def track_event(request: Request):
     """画面表示・ボタン押下のイベント記録（管理画面の利用状況分析用・
     2026-08-17）。音声再生(play)は実際に音声を返した時点でサーバー側
-    (learn.pyのtts系エンドポイント)が記録するため、ここではpage/click
-    のみ受け付ける。ゲストも記録対象(_GUEST_READ_PREFIXESに追加済み)。
-    記録失敗が画面操作を妨げないよう常に200を返すbest-effort。"""
-    if payload.kind in ("page", "click"):
-        tracking.log_event(payload.kind, payload.category, payload.label)
+    (learn.pyのtts系エンドポイント)が記録するため、ここでは
+    page/click/boot/leaveのみ受け付ける。ゲストも記録対象
+    (_GUEST_READ_PREFIXESに追加済み)。記録失敗が画面操作を妨げないよう
+    常に200を返すbest-effort。
+
+    2026-09-19(計測設計3-B): navigator.sendBeacon(ページ離脱時にも確実に
+    送れる)はContent-Typeがtext/plainになる場合(文字列を渡した時や一部
+    ブラウザ)があり、FastAPIのモデル引数のままだと422で捨てられてしまう。
+    そのためContent-Typeを問わず本文をJSONとして読み、自前で検証する
+    (application/jsonの従来クライアントもそのまま動く)。"""
+    try:
+        raw = await request.body()
+        if len(raw) > _TRACK_BODY_MAX:
+            return {"ok": True}
+        payload = TrackEventIn(**json.loads(raw.decode("utf-8", "replace")))
+    except Exception:
+        return {"ok": True}
+    if payload.kind in _CLIENT_TRACK_KINDS:
+        # log_eventは同期のSQLite書き込みなのでイベントループを塞がない
+        # ようスレッドプールで実行する(contextvarsは引き継がれる)。
+        await run_in_threadpool(
+            tracking.log_event, payload.kind, payload.category,
+            payload.label, payload.value)
     return {"ok": True}
 
 
@@ -1874,6 +2175,13 @@ def admin_usage_analytics(
     since = f"-{days} days"
     filter_sql = _user_filter_sql(include_admin, include_invited,
                                    include_test)
+    # 2026-09-19(計測設計3-D): 内部Cookie(自分の端末)由来の行も既定で除外
+    # する(管理者/テストを含める指定のときは含める)。ログアウト状態で
+    # 動作確認した分やIPが変わった分も、role/is_testのJOINだけでは
+    # 落とせなかった。boot/leave(JS到達ビーコン)は「操作」ではないので
+    # 件数系から除く。
+    ue_internal = (
+        "" if (include_admin or include_test) else " AND ue.is_internal = 0")
 
     def _grouped(conn, kind: str, limit: int = 50) -> list[dict]:
         rows = conn.execute(
@@ -1882,7 +2190,7 @@ def admin_usage_analytics(
             "COUNT(DISTINCT user_id) AS uniq_user FROM usage_events ue "
             "LEFT JOIN users u ON u.id = ue.user_id "
             "WHERE ue.kind = ? AND ue.created_at >= datetime('now', ?) "
-            f"AND {filter_sql} "
+            f"AND {filter_sql}{ue_internal} "
             "GROUP BY category, label ORDER BY cnt DESC LIMIT ?",
             (kind, since, limit),
         ).fetchall()
@@ -1897,7 +2205,7 @@ def admin_usage_analytics(
             "COUNT(DISTINCT user_id) AS uniq_user FROM usage_events ue "
             "LEFT JOIN users u ON u.id = ue.user_id "
             "WHERE ue.kind = ? AND ue.created_at >= datetime('now', ?) "
-            f"AND {filter_sql} "
+            f"AND {filter_sql}{ue_internal} "
             "GROUP BY category ORDER BY cnt DESC LIMIT ?",
             (kind, since, limit),
         ).fetchall()
@@ -1922,7 +2230,8 @@ def admin_usage_analytics(
             " COUNT(*) AS cnt, COUNT(DISTINCT ue.user_id) AS uniq_user "
             "FROM usage_events ue JOIN users u ON u.id = ue.user_id "
             "WHERE ue.kind IN ('word_domain', 'phrase_scene') "
-            f" AND ue.created_at >= datetime('now', ?) AND {filter_sql} "
+            f" AND ue.created_at >= datetime('now', ?) AND {filter_sql}"
+            f"{ue_internal} "
             "GROUP BY age_group, gender, ue.kind, ue.category "
             "ORDER BY cnt DESC LIMIT 300",
             (since,),
@@ -1948,7 +2257,7 @@ def admin_usage_analytics(
             "MAX(ue.created_at) AS last_seen FROM usage_events ue "
             "LEFT JOIN users u ON u.id = ue.user_id "
             "WHERE ue.created_at >= datetime('now', ?) AND ue.ip != '' "
-            f"AND {filter_sql} "
+            f"AND {filter_sql}{ue_internal} AND {_UE_ACTION_ONLY_UE} "
             "GROUP BY ue.ip ORDER BY total DESC LIMIT 50",
             (since,),
         ).fetchall()
@@ -1965,7 +2274,7 @@ def admin_usage_analytics(
             "SUM(CASE WHEN kind='click' THEN 1 ELSE 0 END) AS clicks "
             "FROM usage_events ue LEFT JOIN users u ON u.id = ue.user_id "
             "WHERE ue.created_at >= datetime('now', ?) "
-            f"AND {filter_sql} "
+            f"AND {filter_sql}{ue_internal} "
             "GROUP BY date ORDER BY date",
             (since,),
         ).fetchall()
@@ -1995,7 +2304,7 @@ def admin_usage_analytics(
             "SUM(CASE WHEN kind='click' THEN 1 ELSE 0 END) AS clicks "
             "FROM usage_events ue LEFT JOIN users u ON u.id = ue.user_id "
             "WHERE ue.created_at >= datetime('now', ?) "
-            f"AND {filter_sql} "
+            f"AND {filter_sql}{ue_internal} "
             "GROUP BY hour ORDER BY hour",
             (since,),
         ).fetchall()
@@ -2003,7 +2312,8 @@ def admin_usage_analytics(
         total_events = conn.execute(
             "SELECT COUNT(*) FROM usage_events ue "
             "LEFT JOIN users u ON u.id = ue.user_id "
-            f"WHERE ue.created_at >= datetime('now', ?) AND {filter_sql}",
+            f"WHERE ue.created_at >= datetime('now', ?) AND {filter_sql}"
+            f"{ue_internal} AND {_UE_ACTION_ONLY_UE}",
             (since,),
         ).fetchone()[0]
         # フィルタ無しの総数(2026-09-07追記・ユーザー指摘「1時間に集中
@@ -2015,7 +2325,7 @@ def admin_usage_analytics(
         # 差分(filtered_out_events)を管理画面に出して気づけるようにする。
         total_events_unfiltered = conn.execute(
             "SELECT COUNT(*) FROM usage_events "
-            "WHERE created_at >= datetime('now', ?)",
+            f"WHERE created_at >= datetime('now', ?) AND {_UE_ACTION_ONLY}",
             (since,),
         ).fetchone()[0]
 
@@ -2128,10 +2438,11 @@ def admin_power_users(
             "substr(datetime(ue.created_at, '+9 hours'), 1, 10) "
             " AS jst_date, "
             "u.username AS username, u.display_name AS display_name, "
-            "u.role AS role, u.is_test AS is_test "
+            "u.role AS role, u.is_test AS is_test, "
+            "ue.is_internal AS is_internal "
             "FROM usage_events ue LEFT JOIN users u ON u.id = ue.user_id "
             "WHERE ue.created_at >= datetime('now', ?) "
-            f"AND {filter_sql} "
+            f"AND {filter_sql} AND {_UE_ACTION_ONLY_UE} "
             "ORDER BY ue.created_at",
             (f"-{days} days",),
         ).fetchall()
@@ -2149,6 +2460,11 @@ def admin_power_users(
         # 「ゲスト」が常に1行に見えていた原因だった。
         if r["user_id"] and r["username"] != auth.GUEST_USERNAME:
             key = ("user", str(r["user_id"]))
+        elif r["is_internal"] and not (include_admin or include_test):
+            # 内部Cookie(自分の端末)由来の未ログイン操作(2026-09-19・
+            # 計測設計3-D)。_own_device_sidsはログイン履歴のある端末しか
+            # 拾えないが、Cookieならログアウト後・新しいguest_sidでも効く。
+            continue
         elif r["guest_sid"]:
             key = ("guest", r["guest_sid"])
         elif r["ip"]:
@@ -2320,9 +2636,11 @@ def admin_guest_ip_analysis(days: int = 90, min_events: int = 1,
         guest_uid = auth.ensure_guest_user_id(conn)
         rows = conn.execute(
             "SELECT ip, kind, category, label, created_at, guest_sid, "
+            "is_internal, "
             "substr(datetime(created_at, '+9 hours'), 1, 10) AS jst_date "
             "FROM usage_events "
             "WHERE user_id = ? AND ip IS NOT NULL AND ip != '' "
+            f"AND {_UE_ACTION_ONLY} "
             "AND created_at >= datetime('now', ?) "
             "ORDER BY created_at",
             (guest_uid, since),
@@ -2347,13 +2665,20 @@ def admin_guest_ip_analysis(days: int = 90, min_events: int = 1,
             continue
         if own.get("test") and not include_test:
             continue
+        # 内部Cookie(自分の端末)だけで分かる分(2026-09-19・計測設計3-D)。
+        # 管理者かテストかは判別できないので、どちらかを含める指定の
+        # ときだけ残し、その場合は管理者側の印を付ける。
+        internal_only = bool(r["is_internal"]) and not own
+        if internal_only and not (include_admin or include_test):
+            continue
         g = groups.setdefault(r["ip"], {
             "events": [], "days": set(),
             "admin_dev": False, "test_dev": False,
         })
         g["events"].append(r)
         g["days"].add(r["jst_date"])
-        g["admin_dev"] = g["admin_dev"] or bool(own.get("admin"))
+        g["admin_dev"] = (
+            g["admin_dev"] or bool(own.get("admin")) or internal_only)
         g["test_dev"] = g["test_dev"] or bool(own.get("test"))
 
     items = []
@@ -2422,7 +2747,7 @@ def admin_guest_ip_detail(ip: str, days: int = 90):
         guest_uid = auth.ensure_guest_user_id(conn)
         rows = conn.execute(
             "SELECT kind, category, label, created_at FROM usage_events "
-            "WHERE user_id = ? AND ip = ? "
+            f"WHERE user_id = ? AND ip = ? AND {_UE_ACTION_ONLY} "
             "AND created_at >= datetime('now', ?) ORDER BY created_at",
             (guest_uid, ip, since),
         ).fetchall()
@@ -2529,8 +2854,37 @@ COST_REPORT_WARN_MARGIN_PCT = 20.0
 # 実態に合わせて1/3按分。広告費はGoogle Ads(nyangailabアカウント)の
 # 日予算¥100×30日。いずれも「月額」なので、pl-reportの集計期間(days)に
 # 応じて日割りする。
+# 2026-09-19: 広告費は下のAD_DAILY_BUDGET_SCHEDULE(予算スケジュール)と
+# 実額(logs.ad_spend_daily・管理画面から入力)に置き換えた。
+# FIXED_MONTHLY_AD_COST_JPYは「スケジュールの最初の日付より前」の日の
+# 推定にだけ使う旧来の値として残している。
 FIXED_MONTHLY_SERVER_COST_JPY = 1958.0 / 3
 FIXED_MONTHLY_AD_COST_JPY = 3000.0
+
+# Google広告の日予算スケジュール(円/日・「その日付以降」に適用)。
+# オーナー申告(2026-09-19): 2026-09-12〜09-18は¥500/日、2026-09-19以降
+# (当面)は¥1,000/日。実額(ad_spend_daily)が入力された日はそちらを優先し、
+# 入力の無い日だけこの予算で日割りした「予算(推定)」にフォールバックする。
+# 予算を変えたらここへ日付順に追記する。
+AD_DAILY_BUDGET_SCHEDULE = [("2026-09-12", 500), ("2026-09-19", 1000)]
+
+# 広告費入力の妥当な範囲(誤入力ガード)。1日あたり100万円まで。
+_AD_SPEND_MAX_JPY = 1_000_000.0
+_AD_SOURCES = ("google_ads", "other")
+
+# 数値目標(オーナー回答・2026-09-19)。管理画面「実収支」の目標欄で使う。
+GOAL_NEAR = {"registrants": 20, "payers": 2}
+GOAL_FINAL = {"registrants": 300, "payers": 30}
+
+
+def _ad_budget_for(date_str: str) -> float:
+    """その日(JST暦日 YYYY-MM-DD)の広告費の予算(推定)日額。最初の
+    スケジュール日付より前は従来の月額定数の日割り。"""
+    amount = FIXED_MONTHLY_AD_COST_JPY / 30.0
+    for start, jpy in sorted(AD_DAILY_BUDGET_SCHEDULE):
+        if date_str >= start:
+            amount = float(jpy)
+    return amount
 
 
 def _cost_report_feature_bucket(feature: str) -> str:
@@ -2667,7 +3021,19 @@ def admin_pl_report(days: int = 30):
     since = f"-{days} days"
     rate = load_settings().usd_jpy_rate
 
+    # 広告費: 集計期間をJST暦日に展開し、実額のある日は実額、無い日は予算
+    # (推定)で足す(2026-09-19・計測設計3-C)。今日も1日分として数える。
+    today_jst = _now_jst().date()
+    ad_dates = [
+        (today_jst - timedelta(days=i)).isoformat()
+        for i in range(days - 1, -1, -1)
+    ]
     with db() as conn:
+        ad_rows = conn.execute(
+            "SELECT date, SUM(jpy) AS jpy FROM ad_spend_daily "
+            "WHERE date >= ? AND date <= ? GROUP BY date",
+            (ad_dates[0], ad_dates[-1]),
+        ).fetchall()
         base_revenue = conn.execute(
             "SELECT COALESCE(SUM(amount_jpy), 0) FROM base_orders "
             "WHERE status != 'cancelled' "
@@ -2685,12 +3051,45 @@ def admin_pl_report(days: int = 30):
             "WHERE created_at >= datetime('now', ?)",
             (since,),
         ).fetchone()[0]
+        # 広告(gclid付き)経由の訪問と登録(自前計測・Ads側の数字との
+        # 突き合わせ/CPAの参考値用)。ボット・内部端末は除く。
+        ad_visit_guests = {r["guest_sid"] for r in conn.execute(
+            "SELECT DISTINCT guest_sid FROM landing_visits "
+            "WHERE kind='visit' AND has_gclid=1 AND guest_sid != '' "
+            "AND is_internal=0 AND bot_mark=0 "
+            "AND created_at >= datetime('now', ?)", (since,),
+        ).fetchall()}
+        ad_signup_guests = {r["guest_sid"] for r in conn.execute(
+            "SELECT DISTINCT guest_sid FROM landing_visits "
+            "WHERE kind='signup' AND success=1 AND guest_sid != '' "
+            "AND is_internal=0 AND bot_mark=0 "
+            "AND created_at >= datetime('now', ?)", (since,),
+        ).fetchall()} & ad_visit_guests
+        # 数値目標の達成状況(累計): 管理者/テスト/ゲスト疑似ユーザーを
+        # 除いた登録者数と、課金(BASE・PayPayのチャージ)した人数。
+        registrants = conn.execute(
+            "SELECT COUNT(*) FROM users u "
+            f"WHERE {_user_filter_sql(False, False, False)} "
+            f"AND u.username != '{auth.GUEST_USERNAME}'",
+        ).fetchone()[0]
+        payers = conn.execute(
+            "SELECT COUNT(DISTINCT bl.user_id) FROM balance_ledger bl "
+            "JOIN users u ON u.id = bl.user_id "
+            "WHERE bl.reason IN ('charge_key_redeem', 'paypay_charge') "
+            "AND bl.delta_jpy > 0 "
+            f"AND {_user_filter_sql(False, False, False)}",
+        ).fetchone()[0]
 
     revenue_jpy = int(base_revenue) + int(paypay_revenue)
     ai_cost_jpy = (ai_cost_usd or 0.0) * rate
     day_ratio = days / 30.0
     server_cost_jpy = FIXED_MONTHLY_SERVER_COST_JPY * day_ratio
-    ads_cost_jpy = FIXED_MONTHLY_AD_COST_JPY * day_ratio
+    ads_actual = {r["date"]: float(r["jpy"] or 0) for r in ad_rows}
+    ads_actual_jpy = sum(ads_actual.get(d, 0.0) for d in ad_dates
+                         if d in ads_actual)
+    est_dates = [d for d in ad_dates if d not in ads_actual]
+    ads_estimated_jpy = sum(_ad_budget_for(d) for d in est_dates)
+    ads_cost_jpy = ads_actual_jpy + ads_estimated_jpy
     fixed_cost_jpy = server_cost_jpy + ads_cost_jpy
     total_cost_jpy = ai_cost_jpy + fixed_cost_jpy
     profit_jpy = revenue_jpy - total_cost_jpy
@@ -2705,12 +3104,94 @@ def admin_pl_report(days: int = 30):
         "cost": {
             "ai_jpy": round(ai_cost_jpy, 2),
             "server_jpy": round(server_cost_jpy, 2),
+            # 広告費 = 実額(入力のある日) + 予算(推定・入力の無い日)。
             "ads_jpy": round(ads_cost_jpy, 2),
+            "ads_actual_jpy": round(ads_actual_jpy, 2),
+            "ads_estimated_jpy": round(ads_estimated_jpy, 2),
+            "ads_actual_days": len(ads_actual),
+            "ads_estimated_days": len(est_dates),
             "total_jpy": round(total_cost_jpy, 2),
         },
         "profit_jpy": round(profit_jpy, 2),
         "is_loss": profit_jpy < 0,
+        # 広告(gclid付き)経由の自前計測。登録が0件ならCPAはNone。
+        # 実額の入力が無い期間は予算(推定)ベースなので参考値。
+        "ads": {
+            "visitors": len(ad_visit_guests),
+            "signups": len(ad_signup_guests),
+            "cpa_jpy": (round(ads_cost_jpy / len(ad_signup_guests), 1)
+                        if ad_signup_guests else None),
+        },
+        "budget_schedule": [
+            {"from": d, "jpy": j} for d, j in sorted(AD_DAILY_BUDGET_SCHEDULE)],
+        "goals": {
+            "registrants": registrants, "payers": payers,
+            "near": GOAL_NEAR, "final": GOAL_FINAL,
+        },
     }
+
+
+class AdSpendIn(BaseModel):
+    date: str
+    jpy: float
+    source: str = "google_ads"
+    note: str = ""
+
+
+@router.get("/admin/ad-spend")
+def admin_ad_spend_list(days: int = 60):
+    """広告費の実額入力の一覧(管理者専用・新しい日付順)。予算スケジュール
+    で補っている日は含まれない(入力済みの日だけ)。"""
+    _require_admin()
+    days = max(1, min(days, 730))
+    start = (_now_jst().date() - timedelta(days=days - 1)).isoformat()
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT date, source, jpy, note, updated_at FROM ad_spend_daily "
+            "WHERE date >= ? ORDER BY date DESC, source", (start,),
+        ).fetchall()
+    return {"items": [dict(r) for r in rows]}
+
+
+@router.post("/admin/ad-spend")
+def admin_ad_spend_upsert(payload: AdSpendIn):
+    """広告費の実額を1日1ソース単位で登録/上書きする(管理者専用・
+    2026-09-19・計測設計3-C)。Ads APIは使わず、管理画面のCSV/手入力の
+    数字を入れる運用。入力した日は予算(推定)ではなくこの実額が使われる。"""
+    _require_admin()
+    date = (payload.date or "").strip()
+    try:
+        datetime.strptime(date, "%Y-%m-%d")
+    except ValueError:
+        raise errors.http_error("7002", "日付はYYYY-MM-DDで指定してください。")
+    if not (0 <= payload.jpy <= _AD_SPEND_MAX_JPY) or payload.jpy != payload.jpy:
+        raise errors.http_error(
+            "7002", f"金額は0〜{int(_AD_SPEND_MAX_JPY):,}円の範囲で指定して"
+            "ください。")
+    source = (payload.source or "google_ads").strip()
+    if source not in _AD_SOURCES:
+        raise errors.http_error("7002", "広告ソースが不正です。")
+    with db() as conn:
+        conn.execute(
+            "INSERT INTO ad_spend_daily (date, source, jpy, note) "
+            "VALUES (?, ?, ?, ?) ON CONFLICT(date, source) DO UPDATE SET "
+            "jpy = excluded.jpy, note = excluded.note, "
+            "updated_at = datetime('now')",
+            (date, source, round(payload.jpy, 2), (payload.note or "")[:200]),
+        )
+    return {"ok": True, "date": date, "source": source, "jpy": payload.jpy}
+
+
+@router.delete("/admin/ad-spend")
+def admin_ad_spend_delete(date: str, source: str = "google_ads"):
+    """入力済みの実額を取り消す(その日は予算(推定)に戻る)。"""
+    _require_admin()
+    with db() as conn:
+        cur = conn.execute(
+            "DELETE FROM ad_spend_daily WHERE date = ? AND source = ?",
+            (date.strip(), source.strip()),
+        )
+    return {"ok": True, "deleted": cur.rowcount}
 
 
 def _dir_size_bytes(path) -> int:

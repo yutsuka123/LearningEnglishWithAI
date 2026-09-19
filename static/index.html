@@ -64,6 +64,47 @@
   </script>
 </head>
 <body>
+  <!-- JS到達ビーコン(2026-09-19・計測設計3-B)。インラインの非モジュール
+       scriptで、app.js(ES Module)や各APIの応答を待たずに「このページの
+       JSが実行された」ことを1回だけ送る。JS無効/実行前に離脱した訪問
+       にはこれが届かない＝HTML着地との差が「JS未到達」。sendBeaconは
+       ページ離脱時にも送れる(Content-Typeがtext/plainになる環境でも
+       サーバー側で受けられる)。失敗しても画面には影響させない。
+       leave=ページを離れる/隠れた時の滞在ms(ページロード当たり複数行に
+       なりうるが値は累積msなので集計側はMAXを見る)。 -->
+  <script>
+  (function () {
+    function send(kind, category, label, value) {
+      try {
+        var body = JSON.stringify({
+          kind: kind, category: category, label: label, value: value });
+        var ok = false;
+        if (navigator.sendBeacon) {
+          ok = navigator.sendBeacon(
+            '/api/system/track',
+            new Blob([body], { type: 'application/json' }));
+        }
+        if (!ok && window.fetch) {
+          fetch('/api/system/track', {
+            method: 'POST', body: body, keepalive: true,
+            headers: { 'Content-Type': 'application/json' } });
+        }
+      } catch (e) { /* 計測の失敗は無視 */ }
+    }
+    send('boot', 'html', 'index', Math.round(performance.now()));
+    var lastLeave = -Infinity;
+    function leave(why) {
+      var now = performance.now();
+      if (now - lastLeave < 1000) return;  // hidden直後のpagehide等の二重送信防止
+      lastLeave = now;
+      send('leave', 'html', why, Math.round(now));
+    }
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') leave('hidden');
+    });
+    window.addEventListener('pagehide', function () { leave('pagehide'); });
+  })();
+  </script>
   <h1 class="sr-only">nyangailab（にゃんがいらぼ）｜サブスク疲れの人向け、前払い制で使った分だけ払う安いAI英語学習アプリ。
     AI活用で価格を抑え、日常会話からマニアックな専門用語・マイナーな英単語まで学べます。
     登録・ログイン不要でも単語/フレーズの閲覧とフラッシュカード、無料範囲の音声再生を今すぐ無料体験できます。</h1>
