@@ -620,7 +620,8 @@ CREATE TABLE IF NOT EXISTS base_orders (
 -- 正（2026-09-18更新・従来この一覧が古くなり実態と食い違っていたため、
 -- 「ログを一通り見直す」際はまずここを更新すること）。
 -- クライアントから送れるのは POST /api/system/track 経由の
--- 'page'/'click' のみ（app/routers/system.pyのtrack_event()で制限。
+-- 'page'/'click'/'boot'/'leave'（2026-09-19〜boot/leave追加）のみ
+-- （app/routers/system.pyのtrack_event()で制限。
 -- 'play'等はサーバー側で実際に処理が成功した時だけtracking.log_event()
 -- から直接書く設計＝クライアントが偽装できない）。
 --   page:        category=タブID(例 'vocab') / label=タブの日本語名
@@ -635,6 +636,14 @@ CREATE TABLE IF NOT EXISTS base_orders (
 --   play_error:  (2026-09-17〜) 再生ボタンは押されたが音声を返せなかった
 --                ケース。category=item_type、label='no_text:.../
 --                no_charge:.../synth_fail:...'(app/routers/learn.py)
+--   boot:        (2026-09-19〜) JS到達ビーコン。category='html'=ページの
+--                インラインscriptが実行された(label=index/login/about・
+--                value=そこまでのms)、category='app_ready'=SPAの初回go()
+--                (value=ページ開始からのms)。操作ではないので利用状況の
+--                件数集計からは除外して読む(app/routers/system.py
+--                _UE_ACTION_ONLY)。
+--   leave:       (2026-09-19〜) ページ離脱/非表示時のビーコン。
+--                label=hidden/pagehide・value=ページ開始からの滞在ms。
 --   word_domain: 単語の分野(words.domain)。category=分野名
 --   phrase_scene: フレーズのシーン(phrases.scene)。category=シーン名
 -- user_id は auth.current_user_id() をそのまま入れる（ゲストは疑似ユーザー
@@ -1160,6 +1169,9 @@ def _migrate_analytics_2026_09_19(conn: sqlite3.Connection) -> None:
              "is_internal INTEGER DEFAULT 0")
     _add_col(conn, "client_errors", "is_internal",
              "is_internal INTEGER DEFAULT 0")
+    # guest_sid列は作成時からCREATE TABLEにあるが、下のindexが列の存在を
+    # 前提にするため念のため冪等に確認する(旧スキーマ由来のDB対策)。
+    _add_col(conn, "client_errors", "guest_sid", "guest_sid TEXT DEFAULT ''")
     _add_col(conn, "login_log", "guest_sid", "guest_sid TEXT DEFAULT ''")
     _add_col(conn, "users", "signup_guest_sid",
              "signup_guest_sid TEXT DEFAULT ''")

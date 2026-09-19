@@ -6361,12 +6361,12 @@ export async function admin(root) {
         ${buildVisitTrendSvg(daily, showBot)}
         <div class="vt-tooltip" style="display:none"></div>
       </div>
-      <table class="mt"><thead><tr>
+      <div style="overflow-x:auto"><table class="mt" style="min-width:440px"><thead><tr>
         <th>日付</th><th>人間(${cumulative ? "累積" : "延べ"})</th>
         <th>人間(IP)</th>
         <th>クローラー(${cumulative ? "累積" : "延べ"})</th>
         <th>クローラー(IP)</th><th>JS到達</th>
-      </tr></thead><tbody>${rowsHtml}</tbody></table>`;
+      </tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
     wireVisitTrendHover(wrap.querySelector(".visit-trend-wrap"), daily);
   }
   root.querySelectorAll(".visit-trend-range").forEach((b) => {
