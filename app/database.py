@@ -550,6 +550,41 @@ CREATE TABLE IF NOT EXISTS inquiries (
     created_at TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 
+-- 管理者専用の気づきメモ「メモ（管）」(2026-09-19・外出先で「音声が間違って
+-- いた・訳を直したい」等をその場で記録し、あとで集計・検索するためのログ)。
+-- 単語/フレーズ詳細画面と設定画面の管理者専用ボタンから追記のみ行う(本文の
+-- 編集・削除は無し=ログ。対応状況statusだけ更新できる)。
+-- ref_idはcontent DB(words/phrases)のIDだがATTACH間はFKを張れないためREFERENCES
+-- 無し。語が後で直されても当時の内容が分かるようref_english/ref_japaneseに
+-- スナップショットを持つ。
+-- タグは別テーブル(1行1タグ)にして、`GROUP BY tag`での集計と
+-- `WHERE tag = '音声'`での完全一致検索をSQLだけで(人間もAIも)できるようにする。
+CREATE TABLE IF NOT EXISTS admin_memos (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id      INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    -- 記録した画面: word_detail | phrase_detail | settings
+    source       TEXT    NOT NULL DEFAULT '',
+    ref_kind     TEXT    NOT NULL DEFAULT '',  -- word|phrase|''(設定画面等)
+    ref_id       INTEGER,                      -- words.id / phrases.id
+    ref_english  TEXT    NOT NULL DEFAULT '',
+    ref_japanese TEXT    NOT NULL DEFAULT '',
+    body         TEXT    NOT NULL,
+    status       TEXT    NOT NULL DEFAULT '未対応',  -- 未対応|対応済み
+    created_at   TEXT    NOT NULL DEFAULT (datetime('now')),  -- UTC
+    resolved_at  TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_admin_memos_ref
+    ON admin_memos(ref_kind, ref_id);
+CREATE INDEX IF NOT EXISTS idx_admin_memos_created
+    ON admin_memos(created_at);
+CREATE TABLE IF NOT EXISTS admin_memo_tags (
+    memo_id INTEGER NOT NULL REFERENCES admin_memos(id) ON DELETE CASCADE,
+    tag     TEXT    NOT NULL,
+    PRIMARY KEY (memo_id, tag)
+);
+CREATE INDEX IF NOT EXISTS idx_admin_memo_tags_tag
+    ON admin_memo_tags(tag);
+
 -- BASE API連携のOAuthトークン保管（2026-08-18・注文自動検知用）。
 -- 単一ショップ運用のため1行のみ想定(id=1固定)。平文で保持するが本テーブルは
 -- 管理者専用API/内部処理からしか読めない(通常のuser向けAPIには一切露出しない)。

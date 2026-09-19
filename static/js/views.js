@@ -26,6 +26,34 @@ function freeOnlyToggle(id, kindLabel) {
       "登録すると再生できる数が増えます。さらに課金すると全て再生できます。")}`;
 }
 
+// ⓘヒント文言のうち複数画面で同じ内容を使うもの(2026-09-19・ヘルプ拡充)。
+// 各画面のhintIdを共通にしてあるので、「今後表示しない」は全画面で共通に効く。
+const QUIZ_GRADING_HINT =
+  "答えを見たあと、自動判定を確認して採点します。⭕正解・🤔うろ覚え・"
+  + "❌不正解は習熟度に記録され、✅覚えたは満点付近まで加点します。"
+  + "🚫ノーカウントは記録も集計もしません。同じ語を両方向とも正解すると"
+  + "ボーナスが付くことがあります。";
+const MASTERY_LEGEND_HINT =
+  "習熟度バーは覚え具合(pt)を表します。赤=0pt・黄=1〜20pt・緑=21〜50pt・"
+  + "青=51pt以上。表示は△うろ覚え→○覚えた→◎卒業の順に進みます。"
+  + "ボタン: うろ覚え=少し加点／覚えた=満点付近まで加点(もう一度押すと"
+  + "「戻す」)／卒業=満点で固定し、以後は時間が経っても減りません／"
+  + "クリア=0ptに戻す。加点量や「覚えた」の基準は設定の詳細設定で"
+  + "変えられます。";
+const MASTERED_FILTER_HINT =
+  "「覚えた」と判定された項目(習熟度が基準ptに達したもの)の扱いです。"
+  + "含む=すべて出題、隠す=覚えた項目を除いて出題、のみ=覚えた項目だけを"
+  + "復習用に出題します。基準は設定の詳細設定で変えられます。";
+const DECK_PROGRESS_HINT =
+  "「習得済み」は、習熟度が「覚えた」の基準pt(既定100pt)以上になった"
+  + "数です。達成率=習得済み÷全体で、フラッシュやクイズで正解する・"
+  + "「覚えた」「卒業」を押すと上がります。基準は設定の詳細設定で"
+  + "変えられます。";
+const COMPREHENSION_Q_HINT =
+  "長文やスクリプトの内容を確認する理解問題です。OFFにすると問題の部分を"
+  + "表示と読み上げから外します(問題は常に生成・保存されるので、あとで"
+  + "ONにすれば見られます)。";
+
 // 管理画面の各種集計フィルタ（2026-08-20ユーザー要望）。既定は管理者
 // 自身/メール未登録の招待ユーザー/テストユーザーを除外(=実際の一般
 // ユーザーの動向だけを見る)。管理者情報画面を開いている間・go("admin")
@@ -368,7 +396,12 @@ export async function dashboard(root) {
   };
 
   root.innerHTML = `
-    <h1>ダッシュボード</h1>
+    <h1>ダッシュボード ${infoIcon("help-dashboard",
+      "今の学習状況を一覧で確認する画面です。「TOEIC換算」は学習データ" +
+      "からの目安で、実際のスコアを保証するものではありません。" +
+      "「平均習熟度」は単語+フレーズの習熟度ptの平均、「習得数」は" +
+      "「覚えた」の基準(既定100pt)以上の数、「うろ覚え」はその手前の数" +
+      "です。ログインすると学習するたびに更新されます。")}</h1>
     <p class="sub">今日の学習を始めましょう。1回 約10分でOK。</p>
 
     <div class="grid cols-3 stats-wrap">
@@ -435,7 +468,9 @@ export async function dashboard(root) {
       </div>
     </div>` : ""}
 
-    <h2>項目別の習熟度</h2>
+    <h2>項目別の習熟度 ${infoIcon("dash-areas",
+      "英会話・リーディング・ライティング・リスニングなど、領域ごとの" +
+      "習熟度の平均です。その領域を学習して記録が増えると伸びます。")}</h2>
     <div class="grid cols-2">${areaCards}</div>`;
   root.querySelector("#goDeck")?.addEventListener("click", () => go("deck"));
   root.querySelector("#goPhraseDeck")?.addEventListener("click",
@@ -1075,6 +1110,81 @@ function showWordChoices(hits) {
   });
 }
 
+// --- 管理者専用「メモ（管）」(2026-09-19ユーザー要望) ------------------------
+// 単語/フレーズの詳細画面と設定画面に出す、管理者だけが押せるメモ入力。
+// 外出先で「音声が間違っていた・訳を直したい」等の気づきをその場で記録し、
+// あとで管理者画面の「📝 メモ（管）」タブで集計・検索する。記録先は
+// POST /api/admin-memos(サーバー側でも管理者のみ許可。ここで非管理者に
+// 出さないのは表示上の案内)。タグは下のクイック選択・自由入力・本文中の
+// #タグのどれでも付けられ、画面ごとの自動タグ(単語/フレーズ/設定)も付く。
+const ADMIN_MEMO_QUICK_TAGS = [
+  "音声", "発音", "訳", "例文", "詳細", "分野・レベル", "表示", "バグ", "要望",
+];
+// ctx: { source: "word_detail"|"phrase_detail"|"settings",
+//        kind?: "word"|"phrase", refId?, english?, japanese? }
+function adminMemoWidget(ctx) {
+  if (!state.isAdmin) return null;
+  const wrap = el(`<div class="admin-memo mt">
+    <button type="button" class="btn ghost am-open">📝 メモ（管）</button>
+    <span class="muted am-done"></span>
+    <div class="am-panel mt" style="display:none">
+      <textarea class="am-text" style="width:100%; min-height:80px"
+        placeholder="気づいたことをメモ（例: 音声が間違っている・訳を直したい）。本文に #タグ と書いてもタグになります"></textarea>
+      <div class="row mt am-chips">${ADMIN_MEMO_QUICK_TAGS.map((t) =>
+        `<label class="chk"><input type="checkbox" value="${escapeHtml(t)}"
+          /> ${escapeHtml(t)}</label>`).join("")}</div>
+      <input class="am-tags mt" style="width:100%"
+        placeholder="タグを追加（スペース区切り 例: 要確認 ネイティブ）" />
+      <div class="row mt">
+        <button type="button" class="btn good am-ok">OK</button>
+        <button type="button" class="btn ghost am-cancel">キャンセル</button>
+        <span class="muted am-out"></span>
+      </div>
+    </div>
+  </div>`);
+  const q = (s) => wrap.querySelector(s);
+  const panel = q(".am-panel");
+  q(".am-open").addEventListener("click", () => {
+    const open = panel.style.display === "none";
+    panel.style.display = open ? "" : "none";
+    if (open) q(".am-text").focus();
+  });
+  q(".am-cancel").addEventListener("click", () => {
+    panel.style.display = "none";
+  });
+  q(".am-ok").addEventListener("click", async () => {
+    const out = q(".am-out");
+    const text = q(".am-text").value.trim();
+    if (!text) { out.textContent = "メモを入力してください"; return; }
+    const tags = [...wrap.querySelectorAll(".am-chips input:checked")]
+      .map((c) => c.value)
+      .concat(q(".am-tags").value.split(/[\s,、，]+/).filter(Boolean));
+    const okBtn = q(".am-ok");
+    okBtn.disabled = true;
+    out.textContent = "記録中…";
+    try {
+      const r = await api.post("/api/admin-memos", {
+        body: text, tags, source: ctx.source, ref_kind: ctx.kind || "",
+        ref_id: ctx.refId ?? null, ref_english: ctx.english || "",
+        ref_japanese: ctx.japanese || "",
+      });
+      q(".am-text").value = "";
+      q(".am-tags").value = "";
+      wrap.querySelectorAll(".am-chips input")
+        .forEach((c) => { c.checked = false; });
+      panel.style.display = "none";
+      out.textContent = "";
+      q(".am-done").textContent =
+        `✅ 記録しました(#${r.id}・タグ: ${r.tags.join(" ")})`;
+    } catch (e) {
+      out.textContent = "記録に失敗しました: " + (e.message || "");
+    } finally {
+      okBtn.disabled = false;
+    }
+  });
+  return wrap;
+}
+
 // 単語の詳細ポップアップ: 例文(再生)＋AI詳細(品詞/意味複数/派生/類義/対義/
 // 由来/豆知識/解説)。詳細は押した時にAI生成→キャッシュ（2回目以降は無料）。
 function showWordDetail(w) {
@@ -1087,6 +1197,11 @@ function showWordDetail(w) {
     body.appendChild(el(`<p class="quiz-answer">${escapeHtml(w.english)}
       <span class="muted">${escapeHtml(w.japanese || "")}
       ${w.level ? "・Lv" + w.level : ""}</span></p>`));
+    const memo = adminMemoWidget({
+      source: "word_detail", kind: "word", refId: w.id,
+      english: w.english, japanese: w.japanese,
+    });
+    if (memo) body.appendChild(memo);
     const exLine = el(`<p style="margin-bottom:2px">${w.example
       ? "例文: " + escapeHtml(w.example) : "（例文なし）"}</p>`);
     body.appendChild(exLine);
@@ -1190,6 +1305,11 @@ function showPhraseDetail(p) {
     body.appendChild(el(`<p class="quiz-answer">${escapeHtml(p.english)}
       <span class="muted">${escapeHtml(p.japanese || "")}
       ${p.scene ? "・" + escapeHtml(p.scene) : ""}</span></p>`));
+    const memo = adminMemoWidget({
+      source: "phrase_detail", kind: "phrase", refId: p.id,
+      english: p.english, japanese: p.japanese,
+    });
+    if (memo) body.appendChild(memo);
     const detailBox = el(`<div class="mt"></div>`);
     body.appendChild(detailBox);
     const loadDetail = async () => {
@@ -1585,6 +1705,7 @@ export async function flashcard(root) {
           <option value="hide">覚えた: 隠す</option>
           <option value="only">覚えた: のみ</option>
         </select>
+        ${infoIcon("mastered-filter", MASTERED_FILTER_HINT)}
       </div>
       <div class="row mt">
         <select id="fcSize">
@@ -1842,6 +1963,7 @@ export async function flashPhrase(root) {
           <option value="hide">覚えた: 隠す</option>
           <option value="only">覚えた: のみ</option>
         </select>
+        ${infoIcon("mastered-filter", MASTERED_FILTER_HINT)}
       </div>
       <div class="row mt">
         <select id="fpSize">
@@ -2108,7 +2230,7 @@ export async function vocab(root) {
   const dfwActive = !!(dfw.category || dfw.level_min || dfw.level_max
     || dfw.mastered);
   root.innerHTML = `
-    <h1 id="pageTitle">英単語 ${infoIcon("help-vocab",
+    <h1 id="pageTitle"><span id="pageTitleText">英単語</span> ${infoIcon("help-vocab",
       "分野・レベルで絞り込んで単語を一覧表示します。ログインなしでも" +
       "閲覧・一部再生はできますが、習熟度の記録や単語帳への追加には" +
       "ログインが必要です。音声再生は無料範囲を超えると課金(チャージ)" +
@@ -2164,6 +2286,7 @@ export async function vocab(root) {
           <option value="hide">覚えた: 隠す</option>
           <option value="only">覚えた: のみ</option>
         </select>
+        ${infoIcon("mastery-legend", MASTERY_LEGEND_HINT)}
         ${speedSelect("wSpeed")}
         ${pageSizeSelect("wPage")}
         ${state.isAdmin ? `<label class="toggle"
@@ -2185,7 +2308,9 @@ export async function vocab(root) {
     </div>`;
 
   const rowsBody = root.querySelector("#rows");
-  const title = root.querySelector("#pageTitle");
+  // 件数表示は専用spanだけを書き換える。h1ごとtextContentで上書きすると
+  // 見出し内のⓘヘルプアイコンが最初の描画で消えてしまうため(2026-09-19修正)。
+  const title = root.querySelector("#pageTitleText");
   const kw = root.querySelector("#kw");
   const pagerEl = root.querySelector("#pager");
   let curWords = [];
@@ -2358,7 +2483,7 @@ export async function phrases(root) {
   const dfpActive = !!(dfp.category || dfp.level_min || dfp.level_max
     || dfp.mastered);
   root.innerHTML = `
-    <h1 id="pageTitle">ミニフレーズ (${list.length}) ${infoIcon(
+    <h1 id="pageTitle"><span id="pageTitleText">ミニフレーズ (${list.length})</span> ${infoIcon(
       "help-phrases", "シーン別の実用フレーズ一覧です。音声再生・フレーズ" +
       "帳への追加ができます。フレーズ帳の作成・保存にはログインが必要" +
       "です。")}</h1>
@@ -2420,6 +2545,7 @@ export async function phrases(root) {
           <option value="hide">覚えた: 隠す</option>
           <option value="only">覚えた: のみ</option>
         </select>
+        ${infoIcon("mastery-legend", MASTERY_LEGEND_HINT)}
         ${speedSelect("pSpeed")}
         ${pageSizeSelect("pPage")}
       </div>
@@ -2434,7 +2560,8 @@ export async function phrases(root) {
       <div id="pager" class="mt"></div>
     </div>`;
 
-  const title = root.querySelector("#pageTitle");
+  // 件数表示は専用spanだけを書き換える(英単語画面と同じ理由・2026-09-19)。
+  const title = root.querySelector("#pageTitleText");
   const kw = root.querySelector("#kw");
   const pagerEl = root.querySelector("#pager");
   let curList = [];
@@ -2588,19 +2715,23 @@ export async function quiz(root) {
   const hideMasteredDefault = !!us.hide_mastered;
   root.innerHTML = `
     <h1>クイズ ${infoIcon("help-quiz",
-      "英単語・フレーズを4択またはタイピングで出題する定番クイズです。" +
-      "分野・出題方向(英→日/日→英)を選んで挑戦できます。")}</h1>
+      "英単語またはフレーズから10問をランダムに出題します。同じ語を" +
+      "「英→日」「日→英」の両方向で出題し、答えは文字入力か音声で" +
+      "回答します(右上の「入力」で切替)。ログインすると結果が習熟度に" +
+      "記録されます。")}</h1>
     <p class="sub">10問ランダム出題。英単語・フレーズどちらも両方向で出題します。</p>
     <div class="card">
       <div class="row">
         <b>🔤 英単語クイズ</b>
         <button class="btn" id="quizWord">クイズ開始 (10語)</button>
+        ${infoIcon("quiz-grading", QUIZ_GRADING_HINT)}
       </div>
     </div>
     <div class="card">
       <div class="row">
         <b>💬 フレーズクイズ</b>
         <button class="btn" id="quizPhrase">クイズ開始 (10フレーズ)</button>
+        ${infoIcon("quiz-grading", QUIZ_GRADING_HINT)}
       </div>
     </div>`;
 
@@ -2676,10 +2807,11 @@ async function renderHistory(panel, areas, showInto) {
   });
 }
 
-function materialView(title, sub, area, fields, histAreas) {
+// help: [hintId, 説明文] を渡すと見出しにⓘヘルプを付ける(任意)。
+function materialView(title, sub, area, fields, histAreas, help) {
   return async function (root) {
     root.innerHTML = `
-      <h1>${title}</h1>
+      <h1>${title}${help ? " " + infoIcon(help[0], help[1]) : ""}</h1>
       ${sampleGateBanner()}
       <p class="sub">${sub}</p>
       ${aiBadgeNote()}
@@ -2691,6 +2823,7 @@ function materialView(title, sub, area, fields, histAreas) {
           ${lengthSelect("flen")}
           <label class="toggle" title="内容理解問題を表示(常に生成・保存)">
             <input type="checkbox" id="showQ" checked /> 内容理解問題</label>
+          ${infoIcon("comprehension-questions", COMPREHENSION_Q_HINT)}
           <input id="inst" placeholder="追加指示(任意)" style="width:160px" />
           <button class="btn" id="gen"
             ${(state.aiEnabled && !aiGateDisabled()) ? "" : "disabled"}>${
@@ -2761,7 +2894,13 @@ export const reading = (root) => materialView(
       ? state.taxonomy.news_fields.map((f) => "ニュース(" + f + ")")
       : ["ニュース(政治)", "ニュース(経済)", "ニュース(AI)",
          "ニュース(IT)"]),
-  ], "reading,literature,news")(root);
+  ], "reading,literature,news", [
+    "help-reading",
+    "分野・難易度・長さを選ぶと、AIが英語の長文と内容理解問題を作ります。"
+    + "文学やニュースも選べます。サンプルは無料で見られますが、生成には"
+    + "ログインとAI利用の残高が必要です。「履歴」から過去に作った教材を"
+    + "無料で再表示でき、「覚えた」「うろ覚え」で習熟度も付けられます。",
+  ])(root);
 
 // --- Writing ----------------------------------------------------------------
 
@@ -2885,6 +3024,11 @@ export async function conversation(root) {
     <div class="card" id="hfCard">
       <div class="row">
         <b>🎙️ ハンズフリー会話</b>
+        ${infoIcon("conv-handsfree",
+          "ボタンを押さずに話しかけるだけで会話が進むモードです。声の切れ目"
+          + "(無音)を音量で判定して、AIが自動で応答します。使い終わったら"
+          + "「終了」を押してください(つけっぱなしは利用料がかかり続けます。"
+          + "無音や最大時間での自動終了はあくまで保険です)。")}
         <button class="btn good" id="hfStart"
           ${aiGateDisabled() ? "disabled" : ""}>${
           aiGateDisabled() ? aiGateLabel("開始") : "▶ 開始"}</button>
@@ -2935,6 +3079,10 @@ export async function conversation(root) {
           話者名を読み上げる（AI）</label>
         <label class="toggle"><input type="checkbox" id="fastMode" />
           ⚡ 応答を高速化（試験運用）</label>
+        ${infoIcon("conv-fast-mode",
+          "ONにすると、会話専用の応答が速いモデルを使います。試験運用のため、"
+          + "返答の内容が通常と少し変わる場合があります。OFFなら通常の"
+          + "モデルのままです。")}
         <button class="btn secondary" id="start"
           ${aiGateDisabled() ? "disabled" : ""}>${
           aiGateLabel("AIから始める")}</button>
@@ -3496,6 +3644,7 @@ export async function listening(root) {
         </label>
         <label class="toggle" title="内容理解問題を表示(常に生成・保存)">
           <input type="checkbox" id="showQ" checked /> 内容理解問題</label>
+        ${infoIcon("comprehension-questions", COMPREHENSION_Q_HINT)}
         <button class="btn" id="gen"
           ${(state.aiEnabled && !aiGateDisabled()) ? "" : "disabled"}>${
           aiGateLabel("スクリプト生成")}
@@ -3507,6 +3656,11 @@ export async function listening(root) {
       <div class="row mt" style="border-top:1px solid var(--panel-2);
         padding-top:8px">
         <b>🎧 聞き流し</b>
+        ${infoIcon("listening-passive",
+          "スクリプトを1文ずつ連続で読み上げるモードです(スクリプトが未生成の"
+          + "ときは、約2分ぶんを自動で生成します)。英文・日本語訳の表示は"
+          + "切り替えられ、「繰り返し」で最初から何度も再生します。画面を"
+          + "離れると止まります。")}
         <button class="btn secondary" id="plStart">▶ 開始(約2分)</button>
         <button class="btn bad" id="plStop" style="display:none">⏹ 停止</button>
         <label class="toggle"><input type="checkbox" id="plEn" checked />
@@ -3523,6 +3677,10 @@ export async function listening(root) {
       <div class="row mt">
         <label class="toggle">理解度
           <input type="range" id="comp" min="0" max="100" value="50" /></label>
+        ${infoIcon("listening-comprehension",
+          "聞き取れた度合いを0〜100で自己評価して「記録」します。苦手だった"
+          + "点も一緒に残せます。記録すると、上の題材の選択肢に"
+          + "「(理解度○○)」と表示されます。")}
         <input id="weak" placeholder="苦手だった点" style="width:240px" />
         <button class="btn good" id="save">記録</button>
       </div>
@@ -3950,11 +4108,18 @@ export async function assess(root) {
   const p = await api.get("/api/system/progress");
   const w = p.words;
   root.innerHTML = `
-    <h1>判定・教材作成</h1>
+    <h1>判定・教材作成 ${infoIcon("help-assess",
+      "実力の判定と、苦手に合わせた教材の追加をまとめた画面です。" +
+      "「レベル判定」はこれまでの学習データをもとにAIが実力を分析し、" +
+      "「追加教材を作成」はAIが単語/フレーズを生成して追加します。" +
+      "どちらもAIを使うため、AI利用の残高(pt)が必要です。")}</h1>
     <p class="sub">好きなタイミングで実力を判定し、苦手に合わせて教材を追加できます。</p>
 
     <div class="card">
-      <h2>🎯 レベル判定</h2>
+      <h2>🎯 レベル判定 ${infoIcon("assess-level",
+        "判定結果は「判定をmemoryに保存」を押すと、学習履歴画面の" +
+        "「学習プロフィール」に残せます。保存した内容は、以後AIが会話や" +
+        "教材作成で参考にします。")}</h2>
       <div class="grid cols-3">
         <div class="stat"><div class="num">${
           p.toeic_estimate == null ? "未判定" : p.toeic_estimate}</div>
@@ -3975,7 +4140,10 @@ export async function assess(root) {
     </div>
 
     <div class="card">
-      <h2>📚 追加教材を作成</h2>
+      <h2>📚 追加教材を作成 ${infoIcon("assess-generate",
+        "テーマ・苦手分野(任意)を入れると、それに沿った単語/フレーズを" +
+        "AIが作ります。件数は10/20/30から選べ、すでに登録済みのものは" +
+        "自動でスキップします。高品質モデルで生成します。")}</h2>
       <p class="muted">AIが今のレベル・苦手に合わせて単語/フレーズを生成し、
         そのままDBに追加します（重複は自動でスキップ）。</p>
       <div class="row">
@@ -4041,7 +4209,12 @@ export async function history(root) {
     api.get("/api/system/memory"),
   ]);
   root.innerHTML = `
-    <h1>学習履歴</h1>
+    <h1>学習履歴 ${infoIcon("help-history",
+      "学習の記録を残す・見返す画面です。①「セッション終了→記録」に" +
+      "今日の学習内容や苦手を書いて保存します(AIに要約も頼めます)。" +
+      "②「学習プロフィール」に方針・目標・苦手を書くと、AIが会話や" +
+      "教材作成で参考にします。③「学習ログ」には学習内容が自動で" +
+      "記録されます。")}</h1>
     <p class="sub">学習の記録・メモリ・セッション終了処理。</p>
     <div class="card">
       <h2>セッション終了 → 記録</h2>
@@ -4182,7 +4355,9 @@ function releaseEntryHtml(v, isAdmin, showHeading) {
 }
 
 export async function release(root) {
-  root.innerHTML = `<h1>バージョン情報</h1>
+  root.innerHTML = `<h1>バージョン情報 ${infoIcon("help-release",
+      "アプリの更新内容とメンテナンス予定のお知らせを確認できます。" +
+      "最新版が先頭に表示され、過去の分は「更新履歴」から見られます。")}</h1>
     <p class="sub">更新内容とメンテナンス予定のお知らせ。</p>
     <div id="relBody"><p class="muted">読み込み中…</p></div>`;
   const body = root.querySelector("#relBody");
@@ -4446,6 +4621,7 @@ export async function admin(root) {
     ["logs", `📜 ログ`],
     ["inquiries", `📮 問い合わせ対応${pendingInquiries ? ` (${pendingInquiries})` : ""}`],
     ["charge-keys", `🧾 購入チャージキー対応${pendingOrders ? ` (${pendingOrders})` : ""}`],
+    ["memos", "📝 メモ（管）"],
     ["other", "🗂️ その他"],
   ];
 
@@ -4829,7 +5005,10 @@ export async function admin(root) {
           フォールバックするため、複数人が1人として混ざる場合があります
           （該当行に注記）。ログイン済みは表示名の下にログイン名(メール/
           ユーザー名)も併記します。上部の集計フィルタ(管理者/招待
-          ユーザー/テストユーザーを含めるか)もこの一覧に反映されます。</p>
+          ユーザー/テストユーザーを含めるか)もこの一覧に反映されます。
+          管理者/テストアカウントでログインしたことのある端末(ブラウザ)
+          は、ログアウト中の操作も同じフィルタで一覧から分けています
+          （含めた場合は「(管理者の端末)」等と表示）。</p>
         <div class="grid cols-4 mt" style="align-items:end">
           <label>集計期間
             <select id="puDays">
@@ -4882,8 +5061,14 @@ export async function admin(root) {
         </div>
         <div class="row mt">
           <label><input type="checkbox" id="giIncludeAdmin" />
-            管理者の既知IPからのアクセスを含める</label>
+            管理者のアクセスを含める</label>
+          <label><input type="checkbox" id="giIncludeTest" />
+            テストアカウントのアクセスを含める</label>
         </div>
+        <p class="muted" style="margin:2px 0 0">管理者/テストアカウントで
+          ログインしたことのある端末(ブラウザ)は、ログアウト中の操作も
+          この一覧から自動的に分けています(管理者は既知IPも判定に使用)。
+          一度もログインしていない端末は判別できません。</p>
         <p id="giSummaryWrap" class="muted mt">未読み込み</p>
         <div id="giItemsWrap" class="mt"><p class="muted">未読み込み</p></div>
       </details>
@@ -4911,6 +5096,30 @@ export async function admin(root) {
           </tr>`).join("") :
           `<tr><td colspan="8" class="muted">まだありません。</td></tr>`}
         </tbody></table>
+      </div>
+    </div>
+
+    <div class="admin-sec" data-sec="memos" style="display:none">
+      <div class="card">
+        <h2>📝 メモ（管）</h2>
+        <p class="muted">単語/フレーズ詳細・設定画面の「メモ（管）」ボタンで
+          記録した気づきの一覧です。キーワード・状態・タグで絞り込めます
+          （タグはクリックで絞り込み／もう一度クリックで解除）。AIからは
+          同じ内容を <code>/api/admin-memos</code> または
+          <code>admin_memos</code>・<code>admin_memo_tags</code>テーブルで
+          検索・集計できます。</p>
+        <div class="row">
+          <input id="amQ" placeholder="🔍 キーワード" style="width:180px" />
+          <select id="amStatus">
+            <option value="">状態: 全て</option>
+            <option value="未対応" selected>状態: 未対応</option>
+            <option value="対応済み">状態: 対応済み</option>
+          </select>
+          <button type="button" class="btn ghost" id="amReload">再読込</button>
+          <span class="muted" id="amCount"></span>
+        </div>
+        <div class="row mt" id="amTags"></div>
+        <div class="mt" id="amList"><p class="muted">読み込み中…</p></div>
       </div>
     </div>
 
@@ -5018,6 +5227,100 @@ export async function admin(root) {
       });
     });
   });
+
+  // 📝 メモ（管）タブ(2026-09-19): 初めて開いたときに読み込む。記録は単語/
+  // フレーズ詳細・設定画面のadminMemoWidgetから。タグ・キーワード・状態で
+  // 絞り込み、対応済みへ切り替えられる(本文は編集・削除不可のログ)。
+  {
+    const amSelTags = new Set();
+    const amList = root.querySelector("#amList");
+    const amTagsBox = root.querySelector("#amTags");
+    const AM_SRC = {
+      word_detail: "単語詳細", phrase_detail: "フレーズ詳細",
+      settings: "設定画面",
+    };
+    const loadMemos = async () => {
+      const q = new URLSearchParams({ limit: "200" });
+      const kw = root.querySelector("#amQ").value.trim();
+      const st = root.querySelector("#amStatus").value;
+      if (kw) q.set("q", kw);
+      if (st) q.set("status", st);
+      if (amSelTags.size) q.set("tag", [...amSelTags].join(","));
+      amList.innerHTML = `<p class="muted">読み込み中…</p>`;
+      try {
+        const [res, tg] = await Promise.all([
+          api.get("/api/admin-memos?" + q.toString()),
+          api.get("/api/admin-memos/tags"
+            + (st ? "?status=" + encodeURIComponent(st) : "")),
+        ]);
+        root.querySelector("#amCount").textContent = `${res.total}件`;
+        amTagsBox.innerHTML = tg.tags.map((t) => `<button type="button"
+          class="step-chip am-tag${amSelTags.has(t.tag) ? " active" : ""}"
+          data-tag="${escapeHtml(t.tag)}">#${escapeHtml(t.tag)}
+          (${t.count})</button>`).join("")
+          || `<span class="muted">タグはまだありません。</span>`;
+        amList.innerHTML = res.memos.length ? res.memos.map((m) => `
+          <div class="card" style="margin:8px 0">
+            <div class="row" style="justify-content:space-between">
+              <span class="muted">${fmtDate(m.created_at)}
+                ・${AM_SRC[m.source] || "—"}${m.ref_english
+                  ? ` ・<b>${escapeHtml(m.ref_english)}</b>
+                    ${escapeHtml(m.ref_japanese)}` : ""}</span>
+              <span class="pill ${m.status === "対応済み"
+                ? "mastered" : "vague"}">${escapeHtml(m.status)}</span>
+            </div>
+            <p style="white-space:pre-wrap; margin:6px 0">${
+              escapeHtml(m.body)}</p>
+            <div class="row">
+              ${m.tags.map((t) => `<button type="button"
+                class="step-chip am-tag" data-tag="${escapeHtml(t)}">#${
+                escapeHtml(t)}</button>`).join("")}
+              <button type="button" class="btn ghost am-status"
+                data-id="${m.id}" data-next="${m.status === "対応済み"
+                  ? "未対応" : "対応済み"}"
+                style="padding:3px 8px">${m.status === "対応済み"
+                  ? "未対応に戻す" : "対応済みにする"}</button>
+            </div>
+          </div>`).join("")
+          : `<p class="muted">該当するメモはありません。</p>`;
+      } catch (e) {
+        amList.innerHTML = `<p class="muted">取得できませんでした: ${
+          escapeHtml(e.message || "")}</p>`;
+      }
+    };
+    root.querySelector("#amReload").addEventListener("click", loadMemos);
+    root.querySelector("#amStatus").addEventListener("change", loadMemos);
+    root.querySelector("#amQ").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") loadMemos();
+    });
+    // タグチップ(絞り込み用の一覧・各メモ内のタグ)と状態切替ボタン。
+    root.querySelector('.admin-sec[data-sec="memos"]')
+      .addEventListener("click", async (e) => {
+        const tag = e.target.closest(".am-tag");
+        if (tag) {
+          const t = tag.dataset.tag;
+          if (amSelTags.has(t)) amSelTags.delete(t); else amSelTags.add(t);
+          loadMemos();
+          return;
+        }
+        const st = e.target.closest(".am-status");
+        if (!st) return;
+        st.disabled = true;
+        try {
+          await api.put(`/api/admin-memos/${st.dataset.id}/status`,
+            { status: st.dataset.next });
+          loadMemos();
+        } catch (err) {
+          st.disabled = false;
+          toast("更新に失敗しました");
+        }
+      });
+    let memosLoaded = false;
+    root.querySelector('#adminTabs .step-chip[data-sec="memos"]')
+      .addEventListener("click", () => {
+        if (!memosLoaded) { memosLoaded = true; loadMemos(); }
+      });
+  }
 
   async function loadServerStatus() {
     const wrap = root.querySelector("#serverStatusWrap");
@@ -6206,7 +6509,9 @@ export async function admin(root) {
             <span class="muted">${escapeHtml(it.username || "")}</span>`
         : `${escapeHtml(it.label)}
             <span class="muted">(${it.identity_type === "guest"
-              ? "未登録" : "旧IP単位"})</span>`;
+              ? "未登録" : "旧IP単位"})${it.is_admin_device
+              ? " (管理者の端末)" : ""}${it.is_test_device
+              ? " (テストの端末)" : ""}</span>`;
       return `
       <tr>
         <td>${who}</td>
@@ -6299,10 +6604,12 @@ export async function admin(root) {
     const days = root.querySelector("#giDays").value;
     const minEvents = root.querySelector("#giMinEvents").value || "1";
     const includeAdmin = root.querySelector("#giIncludeAdmin").checked;
+    const includeTest = root.querySelector("#giIncludeTest").checked;
     let res;
     try {
       res = await api.get(`/api/system/admin/guest-ip-analysis?days=${days}`
-        + `&min_events=${minEvents}&include_admin=${includeAdmin}`);
+        + `&min_events=${minEvents}&include_admin=${includeAdmin}`
+        + `&include_test=${includeTest}`);
     } catch (e) {
       summaryWrap.innerHTML = `取得失敗: ${escapeHtml(e.message)}`;
       itemsWrap.innerHTML = "";
@@ -6327,7 +6634,8 @@ export async function admin(root) {
         style="cursor:pointer">
         <td class="gi-arrow">▶</td>
         <td>${escapeHtml(it.ip)}${it.is_admin
-          ? ' <span class="muted">(管理者)</span>' : ""}</td>
+          ? ' <span class="muted">(管理者)</span>' : ""}${it.is_test
+          ? ' <span class="muted">(テスト)</span>' : ""}</td>
         <td>${it.distinct_days}</td>
         <td>${it.total_events}</td>
         <td>${it.total_plays}</td>
@@ -6379,7 +6687,7 @@ export async function admin(root) {
   }
   root.querySelector("#giRefreshBtn")
     .addEventListener("click", loadGuestIpAnalysis);
-  ["giDays", "giMinEvents", "giIncludeAdmin"].forEach((id) => {
+  ["giDays", "giMinEvents", "giIncludeAdmin", "giIncludeTest"].forEach((id) => {
     root.querySelector(`#${id}`)
       .addEventListener("change", loadGuestIpAnalysis);
   });
@@ -6801,8 +7109,14 @@ export async function settings(root) {
       `<option ${l === cur ? "selected" : ""}>${escapeHtml(l)}</option>`)
       .join("");
   root.innerHTML = `
-    <h1>設定 <span class="muted" id="roleBadge"></span></h1>
+    <h1>設定 <span class="muted" id="roleBadge"></span> ${infoIcon(
+      "help-settings",
+      "プロフィール・チャージ・表示する分野やシーン・既定フィルター・" +
+      "詳細設定(習熟度の基準など)・AIの声・お問い合わせをまとめた画面です。" +
+      "分野・シーンや既定フィルターなどは、各カードの「保存」ボタンを" +
+      "押すまで反映されません。")}</h1>
     <p class="sub">学習者プロフィールと音声・AIの設定。</p>
+    <div id="adminMemoSlot"></div>
     <div class="card">
       <h2>プロフィール</h2>
       <div class="row">
@@ -6974,7 +7288,10 @@ export async function settings(root) {
       </div>
 
       <hr class="mt" />
-      <h3>🧠 習熟度(mastery)・忘却曲線の設定</h3>
+      <h3>🧠 習熟度(mastery)・忘却曲線の設定 ${infoIcon("mastery-settings",
+        "忘却曲線とは、時間が経つと習熟度ptが少しずつ自動で減っていく仕組み" +
+        "です。復習しないと「覚えた」から外れていきます。「卒業」にした" +
+        "項目は減りません。減らす量を0にするとオフにできます。")}</h3>
       <p class="muted">単語・フレーズの習熟度は0〜満点のpt(ポイント)で管理し、
         設定したpt以上を「覚えた」と判定します。「覚えた」「うろ覚え」
         ボタンでの加点量、時間経過で自然に減っていく忘却曲線の強さも
@@ -7144,6 +7461,12 @@ export async function settings(root) {
           <td>${r.output_tokens}</td><td>$${r.cost_usd.toFixed(4)}</td></tr>`)
           .join("")}</tbody></table>
     </div>`;
+
+  // 管理者専用「メモ（管）」(外出先での気づき記録用)。
+  const settingsMemo = adminMemoWidget({ source: "settings" });
+  if (settingsMemo) {
+    root.querySelector("#adminMemoSlot").appendChild(settingsMemo);
+  }
 
   // 語彙の追加・インポート（英単語/フレーズ画面から移動）。
   const sq = (s) => root.querySelector(s);
@@ -7753,7 +8076,7 @@ export async function decks(root) {
       アカウント共通に調整できます。
       無料範囲では1個・100語まで、チャージ済みなら個数・件数とも無制限です。</p>
     <div class="card">
-      <h2>単語帳 全体の達成率</h2>
+      <h2>単語帳 全体の達成率 ${infoIcon("deck-progress", DECK_PROGRESS_HINT)}</h2>
       <div class="row" style="justify-content:space-between">
         <span class="muted">${summary.deck_count}個の単語帳・
           全${summary.total}語のうち${summary.mastered}語が習得済み</span>
@@ -8011,7 +8334,7 @@ export async function phraseDecks(root) {
       アカウント共通に調整できます。
       無料範囲では1個・100件まで、チャージ済みなら個数・件数とも無制限です。</p>
     <div class="card">
-      <h2>フレーズ帳 全体の達成率</h2>
+      <h2>フレーズ帳 全体の達成率 ${infoIcon("deck-progress", DECK_PROGRESS_HINT)}</h2>
       <div class="row" style="justify-content:space-between">
         <span class="muted">${summary.deck_count}個のフレーズ帳・
           全${summary.total}件のうち${summary.mastered}件が習得済み</span>
@@ -8737,7 +9060,11 @@ async function cwRenderSetup(root, preset) {
   root.innerHTML = `
     <button type="button" class="btn ghost" id="cwBack">
       ← ゲーム一覧に戻る</button>
-    <h1 class="mt">🧩 クロスワード - 設定</h1>
+    <h1 class="mt">🧩 クロスワード - 設定 ${infoIcon("help-cw-setup",
+      "分野または単語帳から単語を選び、AIがクロスワードを作ります。語数・" +
+      "盤面の詰め方・回答の難易度・ヒントの出し方を選べます。作成のたびに" +
+      "AI利用料が発生するため課金ユーザー限定です。最近使った設定は" +
+      "「この設定で作る」で再利用できます。")}</h1>
     ${state.isGuest ? `<div class="sample-gate-banner">
       ⚠️ この機能(自分で作る)はご登録(無料)に加えて課金が必要です
       (作成のたびにAI利用料が実際に発生するため)。

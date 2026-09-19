@@ -21,9 +21,9 @@ from fastapi.staticfiles import StaticFiles
 from .config import load_tokushoho_info, log, paths
 from .database import OWNER_USER_ID, db, init_db
 from .routers import (
-    auth_routes, base_oauth, billing, categories, decks, fulfillment,
-    games, inquiries, learn, paypay_charge, paypay_test, phrase_decks,
-    phrases, seo_pages, system, vocabulary,
+    admin_memos, auth_routes, base_oauth, billing, categories, decks,
+    fulfillment, games, inquiries, learn, paypay_charge, paypay_test,
+    phrase_decks, phrases, seo_pages, system, vocabulary,
 )
 from .services import auth as auth_svc
 from .services import geoip
@@ -319,6 +319,7 @@ app.include_router(phrase_decks.router)
 app.include_router(auth_routes.router)
 app.include_router(billing.router)
 app.include_router(inquiries.router)
+app.include_router(admin_memos.router)
 app.include_router(fulfillment.router)
 app.include_router(base_oauth.router)
 app.include_router(paypay_test.router)

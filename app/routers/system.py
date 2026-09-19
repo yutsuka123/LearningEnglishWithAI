@@ -75,6 +75,34 @@ def _user_filter_sql(
     return " AND ".join(conds) if conds else "1=1"
 
 
+def _own_device_sids(conn) -> dict[str, dict[str, bool]]:
+    """管理者/テストアカウントでログインしたことのある端末(guest_sid
+    Cookie)の一覧を返す: {guest_sid: {"admin": bool, "test": bool}}
+    （2026-09-19ユーザー要望「お得意様・ゲストIP別の分析から、自分の
+    テストアカウントと管理者を分離したい」対応）。
+
+    guest_sid Cookieはログイン中の操作にも同じ値で記録される
+    (app/main.py・tracking.log_event)ため、同じブラウザで管理者/
+    テストアカウントとして操作した記録があれば「自分の端末」と分かる。
+    これで、その端末で**ログアウト状態のまま**確認した操作(=ゲスト扱いで
+    IPも一般ゲストと区別できない)も分析から分離できる。IPが変わりやすい
+    モバイル回線でも効く点が、既知IP(ADMIN_KNOWN_IPS)判定との違い。
+    限界: 一度もログインしていない端末・Cookieを消した直後の操作は
+    判別できない(その端末でログインした時点から遡って効く)。"""
+    rows = conn.execute(
+        "SELECT ue.guest_sid AS sid, "
+        " MAX(CASE WHEN u.role = 'admin' THEN 1 ELSE 0 END) AS is_admin, "
+        " MAX(u.is_test) AS is_test "
+        "FROM usage_events ue JOIN users u ON u.id = ue.user_id "
+        "WHERE ue.guest_sid != '' AND (u.role = 'admin' OR u.is_test = 1) "
+        "GROUP BY ue.guest_sid"
+    ).fetchall()
+    return {
+        r["sid"]: {"admin": bool(r["is_admin"]), "test": bool(r["is_test"])}
+        for r in rows
+    }
+
+
 @router.post("/admin/users/{user_id}/test-flag")
 def admin_set_test_flag(user_id: int, payload: dict):
     """ユーザーの「テストユーザー」フラグを切り替える（管理画面の各種
@@ -2107,6 +2135,8 @@ def admin_power_users(
             "ORDER BY ue.created_at",
             (f"-{days} days",),
         ).fetchall()
+        own_sids = _own_device_sids(conn)
+    admin_ips = load_admin_known_ips()
 
     groups: dict[tuple[str, str], dict] = {}
     for r in rows:
@@ -2146,6 +2176,23 @@ def admin_power_users(
         if not include_registered and is_plain_registered:
             continue
         events = g["events"]
+        # 管理者/テストアカウントの「端末」(=未ログインで動作確認した分)の
+        # 分離(2026-09-19)。アカウントの行はSQL段階(_user_filter_sql)で
+        # 既に分離済みなので、ここは未ログイン(guest/旧IP単位)の行が対象。
+        # 端末の判定は_own_device_sids(ログイン履歴のあるguest_sid)に加え、
+        # 全イベントが管理者の既知IPからのものでも管理者扱いにする。
+        is_admin_dev = is_test_dev = False
+        if id_type == "guest":
+            own = own_sids.get(ident, {})
+            is_admin_dev = bool(own.get("admin")) or all(
+                e["ip"] in admin_ips for e in events)
+            is_test_dev = bool(own.get("test"))
+        elif id_type == "ip_legacy":
+            is_admin_dev = ident in admin_ips
+        if is_admin_dev and not include_admin:
+            continue
+        if is_test_dev and not include_test:
+            continue
         if len(events) < min_events or len(g["days"]) < min_days:
             continue
         tabs: collections.Counter = collections.Counter()
@@ -2185,6 +2232,10 @@ def admin_power_users(
                 else False,
             "is_test_user": bool(g["is_test"]) if id_type == "user"
                 else False,
+            # 未ログイン行のうち、管理者/テストアカウントの端末と判定した
+            # もの(include_admin/include_testで含めた場合の注記用)。
+            "is_admin_device": is_admin_dev,
+            "is_test_device": is_test_dev,
             "total_events": len(events),
             "distinct_days": len(g["days"]),
             "first_seen": min(e["created_at"] for e in events),
@@ -2227,6 +2278,7 @@ def admin_power_users(
 @router.get("/admin/guest-ip-analysis")
 def admin_guest_ip_analysis(days: int = 90, min_events: int = 1,
                              include_admin: bool = False,
+                             include_test: bool = False,
                              limit: int = 200):
     """ゲスト(未ログイン)利用者をIP単位で深掘り分析する一覧（管理画面
     「ゲストIP別分析」・2026-09-17ユーザー要望「ゲストのIP別に、単語の
@@ -2245,7 +2297,14 @@ def admin_guest_ip_analysis(days: int = 90, min_events: int = 1,
     (load_admin_known_ips())からのアクセスを一覧から除外する
     （2026-09-18ユーザー要望「管理者も入れる/入れないをフィルタリング
     したい」対応・管理者自身の動作確認アクセスがゲスト分析のノイズに
-    なるため）。"""
+    なるため）。
+
+    2026-09-19ユーザー要望「自分のテストアカウントと管理者を分離したい」
+    対応: 既知IPだけでは、IPの変わるモバイル回線等で未ログインのまま
+    動作確認した分が一般ゲストと区別できなかった。管理者/テストアカウント
+    でログインしたことのある端末(guest_sid・_own_device_sids)の未ログイン
+    時のイベントも、include_admin/include_test=False(既定)で除外する。
+    含めた場合は、該当IPの行にis_admin/is_testの印が付く。"""
     _require_admin()
     days = max(1, min(days, 365))
     min_events = max(1, min_events)
@@ -2260,7 +2319,7 @@ def admin_guest_ip_analysis(days: int = 90, min_events: int = 1,
         # コメント・admin_power_usersの同型バグと同じ原因)。
         guest_uid = auth.ensure_guest_user_id(conn)
         rows = conn.execute(
-            "SELECT ip, kind, category, label, created_at, "
+            "SELECT ip, kind, category, label, created_at, guest_sid, "
             "substr(datetime(created_at, '+9 hours'), 1, 10) AS jst_date "
             "FROM usage_events "
             "WHERE user_id = ? AND ip IS NOT NULL AND ip != '' "
@@ -2268,6 +2327,7 @@ def admin_guest_ip_analysis(days: int = 90, min_events: int = 1,
             "ORDER BY created_at",
             (guest_uid, since),
         ).fetchall()
+        own_sids = _own_device_sids(conn)
         err_rows = conn.execute(
             "SELECT ip, COUNT(*) AS n FROM client_errors "
             "WHERE user_id = ? AND ip IS NOT NULL AND ip != '' "
@@ -2280,9 +2340,21 @@ def admin_guest_ip_analysis(days: int = 90, min_events: int = 1,
 
     groups: dict[str, dict] = {}
     for r in rows:
-        g = groups.setdefault(r["ip"], {"events": [], "days": set()})
+        own = own_sids.get(r["guest_sid"] or "", {})
+        # 管理者/テストアカウントの端末の未ログイン操作はイベント単位で
+        # 除外する(同じIPを一般ゲストと共有していても巻き込まない)。
+        if own.get("admin") and not include_admin:
+            continue
+        if own.get("test") and not include_test:
+            continue
+        g = groups.setdefault(r["ip"], {
+            "events": [], "days": set(),
+            "admin_dev": False, "test_dev": False,
+        })
         g["events"].append(r)
         g["days"].add(r["jst_date"])
+        g["admin_dev"] = g["admin_dev"] or bool(own.get("admin"))
+        g["test_dev"] = g["test_dev"] or bool(own.get("test"))
 
     items = []
     for ip, g in groups.items():
@@ -2309,7 +2381,8 @@ def admin_guest_ip_analysis(days: int = 90, min_events: int = 1,
                 phrase_detail_clicks += 1
         items.append({
             "ip": ip,
-            "is_admin": ip in admin_ips,
+            "is_admin": ip in admin_ips or g["admin_dev"],
+            "is_test": g["test_dev"],
             "total_events": len(events),
             "distinct_days": len(g["days"]),
             "first_seen": min(e["created_at"] for e in events),
