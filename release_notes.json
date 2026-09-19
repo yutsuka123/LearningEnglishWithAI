@@ -15,6 +15,21 @@
  ],
  "versions": [
   {
+   "version": "ver1.4.10",
+   "date": "2026-09-20",
+   "title": "安定性の向上",
+   "public": [
+    "システムの堅牢性・安定性の向上のための改善を行いました。"
+   ],
+   "admin": [
+    "日次スナップショット(logs.growth_daily・logs.growth_cohort_daily)を新設。自分(内部Cookie・管理者/テスト端末・既知IP)とボットを除いた日次の訪問・JS到達・操作あり・登録開始/試行/完了・ログイン・アクティブ人数・エラー数・入金、流入元チャネル/端末/着地/referrer/utm_source別、機能別の利用回数を保存。人数・件数のみでIP・guest_sid・user_idは保存しない。usage_eventsをpruneしても過去の推移が変わらない。",
+    "登録日コホート×経過日(翌日〜60日・W1〜W4)のアクティブ人数を保存(growth_cohort_daily)。管理画面ログタブに「日次スナップショット」欄(日別表・チャネル別・機能別・コホート継続・最終実行の成否)を追加(管理者のみ・GET /api/system/admin/growth-daily)。",
+    "scripts/backfill_growth_daily.py(過去分の一括集計・冪等)と scripts/snapshot_growth_daily.py(毎日の更新)を追加。prune_usage_events.py が削除の前にスナップショットを更新し、失敗・未保存の日があれば生ログを削除せず終了コード1で止まる(緊急時のみ --force)。生ログが保持期間(90日)から外れた日は既存の行を上書きしない。",
+    "登録フォーム(login.html)に欄別の到達計測を追加: 欄の識別名と focus/input/open:survey/back_to_login/fail:<コード> の種別だけを送信(入力内容・文字数は一切送らない・同じ種別は1画面1回・送信失敗は登録に影響しない)。管理画面の「登録に至らない原因分析」に欄別の到達・離脱・最後に到達した所・エラー内訳を追加。",
+    "_own_device_sids の実装を app/services/growth_metrics.py へ移動(判定内容は不変)。ファネル説明文の操作記録保持日数(約35日)を約90日に修正。"
+   ]
+  },
+  {
    "version": "ver1.4.9",
    "date": "2026-09-20",
    "title": "読み上げの改善と表示の調整",

@@ -4855,7 +4855,7 @@ export async function admin(root) {
           上の「未登録アクセス状況」(IP単位)を参照してください）。
           ボット・自分の端末(管理者/テストでログインした端末・内部
           Cookie)は除外しています。「JS到達」以降の流入元・表示ビーコンは
-          計測開始以降のデータのみです。操作記録は約35日で古いものから削除
+          計測開始以降のデータのみです。操作記録は約90日で古いものから削除
           されるため、それより長い期間を選ぶと「JS到達」「人間訪問」などの
           人数は実際より少なく出ます(訪問記録の方が長く残るため)。</p>
         <div class="row">
@@ -4914,6 +4914,29 @@ export async function admin(root) {
             クローラー表示</label>
         </div>
         <div id="visitTrendWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
+
+      <details class="log-group" id="logGrowthDailyDetails">
+        <summary>📈 日次スナップショット（成長ログ・集計値を恒久保存）</summary>
+        <p class="muted mt">毎日、前日分の集計(訪問・JS到達・操作あり・登録・
+          ログイン・アクティブ人数・エラー数など)を、自分(管理者/テスト端末)
+          とボットを除いた人数・件数だけで保存しています。操作記録(約90日で
+          削除)が消えた後も過去の推移が変わりません。当日分は翌日の朝に入ります。
+          「日別ユニーク」の合計は延べ人日で、同じ人が複数日に来れば重複して
+          数えます。</p>
+        <div class="row">
+          <button class="btn ghost growth-range" data-days="14"
+            style="padding:3px 10px">2週間</button>
+          <button class="btn ghost growth-range active" data-days="30"
+            style="padding:3px 10px">1ヶ月</button>
+          <button class="btn ghost growth-range" data-days="90"
+            style="padding:3px 10px">3ヶ月</button>
+          <button class="btn ghost growth-range" data-days="180"
+            style="padding:3px 10px">6ヶ月</button>
+          <button class="btn ghost" id="growthDailyReload"
+            style="padding:3px 10px">🔄 再読み込み</button>
+        </div>
+        <div id="growthDailyWrap" class="mt"><p class="muted">未読み込み</p></div>
       </details>
 
       <details class="log-group" id="logChargeKeyDetails">
@@ -5899,6 +5922,56 @@ export async function admin(root) {
               campaign）</summary><table class="mt"><thead><tr>
               <th>utm</th><th>人数</th></tr></thead><tbody>${utmRows}</tbody>
               </table></details>` : ""}`;
+      // --- 登録フォーム内の欄別の到達/離脱(2026-09-20・計測設計3-E) ---
+      const sf = res.signup_form || {};
+      const sfOpened = sf.opened || 0;
+      const sfStallTotal = (sf.stalled || [])
+        .reduce((a, b) => a + b.count, 0);
+      const sfStepRows = (sf.steps || []).map((st) => {
+        const showRate = st.key !== "opened" && st.key !== "success";
+        const w = sfOpened && showRate
+          ? Math.min(100, st.count / sfOpened * 100) : 0;
+        return `<tr>
+          <td>${escapeHtml(st.label)}</td><td>${st.count}</td>
+          <td class="muted">${showRate ? pct(st.count, sfOpened) : ""}</td>
+          <td style="min-width:90px"><div style="background:var(--panel-2);
+            border-radius:3px; height:8px; overflow:hidden">
+            <div style="width:${w}%; background:var(--accent); height:100%">
+            </div></div></td></tr>`;
+      }).join("");
+      const sfStallRows = (sf.stalled || []).map((st) => `<tr>
+        <td>${escapeHtml(st.label)}</td><td>${st.count}</td>
+        <td class="muted">${pct(st.count, sfStallTotal)}</td></tr>`).join("");
+      const sfErrRows = (sf.errors || []).map((er) => `<tr>
+        <td>${escapeHtml(er.name)}</td>
+        <td class="muted">${escapeHtml(er.label)}</td>
+        <td>${er.count}</td></tr>`).join("");
+      const formHtml = `
+        <h3 class="mt">登録フォーム内の欄別の到達・離脱（2026-09-20〜記録）</h3>
+        <p class="muted" style="font-size:12px">
+          登録フォームを開いた人が、どの欄までふれたか/入力を始めたか、どこで
+          止まったか。記録しているのは欄の名前と「ふれた・入力を始めた・送信
+          した・エラーになった」の種類だけで、入力した内容・文字数・
+          メールアドレス等は取得していません。記録開始前に登録した人は
+          各段階に入りません(「登録完了(全体)」は期間内の実数)。</p>
+        ${sfOpened
+          ? `<div style="overflow-x:auto"><table class="mt"><thead><tr>
+              <th>段階</th><th>人数</th><th>開いた人比</th><th></th></tr></thead>
+              <tbody>${sfStepRows}</tbody></table></div>
+            <h3 class="mt" style="font-size:14px">登録に至らなかった人が
+              最後に到達していた所</h3>
+            <div style="overflow-x:auto"><table class="mt"><thead><tr>
+              <th>最後に到達</th><th>人数</th><th>割合</th></tr></thead>
+              <tbody>${sfStallRows}</tbody></table></div>
+            ${sfErrRows
+              ? `<h3 class="mt" style="font-size:14px">入力エラー・登録拒否
+                  （人数・重複あり）</h3>
+                <div style="overflow-x:auto"><table class="mt"><thead><tr>
+                  <th>内容</th><th>記録名</th><th>人数</th></tr></thead>
+                  <tbody>${sfErrRows}</tbody></table></div>`
+              : ""}`
+          : `<p class="muted">この期間にフォームを開いた記録はまだありません
+              (この計測を含むバージョンの本番反映後から溜まります)。</p>`}`;
       const deviceBreakdown = res.device_breakdown || [];
       const deviceRows = deviceBreakdown.map((d) => `<tr>
         <td>${escapeHtml(d.device)}</td><td>${escapeHtml(d.browser)}</td>
@@ -5940,6 +6013,8 @@ export async function admin(root) {
               <th>端末</th><th>ブラウザ</th><th>人数</th>
               </tr></thead><tbody>${deviceRows}</tbody></table>`
           : `<p class="muted">対象者がいません。</p>`}
+
+        ${formHtml}
 
         <h3 class="mt">登録試行の失敗理由内訳（多角的分析用・2026-09-07〜
           記録開始）</h3>
@@ -6482,6 +6557,146 @@ export async function admin(root) {
   root.querySelector("#visitTrendShowBot")
     .addEventListener("change", loadVisitTrend);
 
+  // --- 日次スナップショット(成長ログ・2026-09-20・計測設計3-F) ------------
+  let growthDays = 30;
+  async function loadGrowthDaily() {
+    const wrap = root.querySelector("#growthDailyWrap");
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    let res;
+    try {
+      res = await api.get(`/api/system/admin/growth-daily?days=${growthDays}`);
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+      return;
+    }
+    const n0 = (v) => (v == null ? "—" : Math.round(v).toLocaleString());
+    const pct = (a, b) => (b ? `${(a / b * 100).toFixed(0)}%` : "—");
+    const st = res.status;
+    let statusHtml;
+    if (!st) {
+      statusHtml = `<p class="muted" style="font-size:12px">⏳ まだ一度も
+        自動更新が実行されていません(初回のバックフィルと、毎日の更新待ち)。</p>`;
+    } else if (!st.ok) {
+      statusHtml = `<p style="font-size:13px; color:var(--danger)">
+        ⚠️ 最後の自動更新は<b>失敗</b>しました(${escapeHtml(fmtDateJST(st.at))}
+        JST・${escapeHtml(st.error || "")})。失敗した間は古い操作記録の
+        削除も止まっています。</p>`;
+    } else {
+      statusHtml = `<p class="muted" style="font-size:12px">最終更新:
+        ${escapeHtml(fmtDateJST(st.at))} JST・成功
+        (${st.days ?? 0}日分・${st.rows ?? 0}行を更新)。保存済み
+        ${res.coverage.days ?? 0}日分(${escapeHtml(res.coverage.first || "—")}
+        〜${escapeHtml(res.coverage.last || "—")})。</p>`;
+    }
+    const missingHtml = res.missing_days > 0
+      ? `<p class="muted" style="font-size:12px">この期間で未保存の日:
+        ${res.missing_days}日(バックフィル前や、記録開始前の日を含みます)。</p>`
+      : "";
+    const daily = res.daily || [];
+    if (!daily.length) {
+      wrap.innerHTML = `${statusHtml}${missingHtml}<p class="muted">この期間に
+        保存された日次データがまだありません。</p>`;
+      return;
+    }
+    const sum = (k) => daily.reduce((a, d) => a + (d.m[k] || 0), 0);
+    const tile = (v, lbl) => `<div class="stat"><div class="num">
+      ${Math.round(v).toLocaleString()}</div><div class="lbl">${lbl}</div></div>`;
+    const tilesHtml = `<div class="grid cols-4 mt">
+      ${tile(sum("visitors"), "訪問(日別ユニークの合計)")}
+      ${tile(sum("visitors_js"), "JS到達(同)")}
+      ${tile(sum("visitors_engaged"), "操作あり(同)")}
+      ${tile(sum("signup_done"), "登録完了")}
+      ${tile(sum("new_users"), "新規登録(アカウント数)")}
+      ${tile(sum("login_users"), "ログイン人日")}
+      ${tile(Math.max(...daily.map((d) => d.m.active_users || 0)),
+        "アクティブ人数の日最大")}
+      ${tile(sum("revenue_jpy"), "入金(円)")}
+    </div>`;
+    const maxV = Math.max(1, ...daily.map((d) => d.m.visitors || 0));
+    const rowsHtml = daily.slice().reverse().map((d) => {
+      const m = d.m;
+      const w = Math.round((m.visitors || 0) / maxV * 60);
+      // 操作系の指標は計測開始(2026-08-17)前の日は保存していない(—表示)。
+      return `<tr>
+        <td class="muted">${escapeHtml(d.date)}</td>
+        <td style="white-space:nowrap">${n0(m.visitors)} <span style="display:inline-block; height:8px;
+          width:${w}px; background:var(--accent); border-radius:2px;
+          vertical-align:middle"></span></td>
+        <td>${n0(m.visitors_js)}</td><td>${n0(m.visitors_human)}</td>
+        <td>${n0(m.visitors_engaged)}</td>
+        <td>${n0(m.signup_started)}</td><td>${n0(m.signup_attempted)}</td>
+        <td>${n0(m.signup_done)}</td><td>${n0(m.new_users)}</td>
+        <td>${n0(m.login_users)}</td><td>${n0(m.active_users)}</td>
+        <td>${n0(m.client_errors)}</td>
+        <td class="muted">${n0(m.visitors_bot_excluded)}/${
+          n0(m.visitors_internal_excluded)}</td>
+      </tr>`;
+    }).join("");
+    const chRows = (res.channels || []).map((c) => `<tr>
+      <td>${escapeHtml(c.label)}</td><td>${n0(c.visitors)}</td>
+      <td>${n0(c.visitors_human)}</td><td>${n0(c.visitors_js)}</td>
+      <td>${n0(c.visitors_engaged)}</td><td>${n0(c.signup_started)}</td>
+      <td>${n0(c.signup_done)}</td></tr>`).join("");
+    const ftRows = (res.features || []).map((f) => `<tr>
+      <td>${escapeHtml(f.name)}</td><td>${n0(f.events)}</td>
+      <td>${n0(f.actor_days)}</td></tr>`).join("");
+    const cell = (c, k) => (c.cells[k] == null
+      ? `<td class="muted">—</td>`
+      : `<td>${c.cells[k]}<span class="muted"> (${pct(c.cells[k], c.size)})
+        </span></td>`);
+    const coRows = (res.cohorts || []).slice().reverse().map((c) => `<tr>
+      <td class="muted">${escapeHtml(c.cohort_date)}</td><td>${c.size}</td>
+      ${cell(c, "d1")}${cell(c, "d7")}${cell(c, "w1")}${cell(c, "w2")}
+      ${cell(c, "w4")}</tr>`).join("");
+    wrap.innerHTML = `${statusHtml}${missingHtml}${tilesHtml}
+      <div style="overflow-x:auto"><table class="mt" style="min-width:760px">
+        <thead><tr><th>日付(JST)</th><th>訪問</th><th>JS到達</th>
+          <th>人間訪問</th><th>操作あり</th><th>登録開始</th><th>登録試行</th>
+          <th>登録完了</th><th>新規登録</th><th>ログイン</th><th>アクティブ</th>
+          <th>エラー</th><th>除外(ボット/自分)</th></tr></thead>
+        <tbody>${rowsHtml}</tbody></table></div>
+      <p class="muted" style="font-size:12px">訪問=その日のユニーク(ゲスト
+        単位)。JS到達・人間訪問・操作あり・登録開始・アクティブ・エラーは
+        操作記録の計測開始(2026-08-17)以降のみで、それ以前の日は「—」です。
+        JS到達の記録は2026-09-19以降のため、それ以前は0です。除外=ボット判定/
+        自分の端末として集計から外したゲスト数(除外が効いているかの確認用)。</p>
+      ${chRows
+        ? `<h3 class="mt">流入元チャネル別（期間合計・日別ユニークの延べ）</h3>
+          <div style="overflow-x:auto"><table class="mt"><thead><tr>
+            <th>チャネル</th><th>訪問</th><th>人間訪問</th><th>JS到達</th>
+            <th>操作あり</th><th>登録開始</th><th>登録完了</th></tr></thead>
+            <tbody>${chRows}</tbody></table></div>` : ""}
+      ${ftRows
+        ? `<details class="mt"><summary>機能別の利用回数（期間合計・上位）
+          </summary><div style="overflow-x:auto"><table class="mt"><thead><tr>
+            <th>機能</th><th>回数</th><th>人日</th></tr></thead>
+            <tbody>${ftRows}</tbody></table></div></details>` : ""}
+      <h3 class="mt">登録日コホート別の継続（登録した人のうち、その後に
+        活動した人数）</h3>
+      <p class="muted" style="font-size:12px">翌日=登録の翌日に活動 /
+        7日目=登録から7日後の1日に活動 / W1=登録後7〜13日目のどこかで活動 /
+        W2=14〜20日目 / W4=28〜34日目。活動=ログイン・単語/フレーズの学習・
+        AI利用・画面操作のいずれか。「—」は、まだその日/週が来ていない
+        か、生ログが残っておらず集計できなかったものです。人数が少ない間は
+        率(％)は参考程度に。</p>
+      ${coRows
+        ? `<div style="overflow-x:auto"><table class="mt"><thead><tr>
+            <th>登録日</th><th>登録人数</th><th>翌日</th><th>7日目</th>
+            <th>W1</th><th>W2</th><th>W4</th></tr></thead>
+            <tbody>${coRows}</tbody></table></div>`
+        : `<p class="muted">この期間に登録した人のコホートはまだありません。</p>`}`;
+  }
+  root.querySelectorAll(".growth-range").forEach((b) => {
+    b.addEventListener("click", () => {
+      growthDays = Number(b.dataset.days);
+      root.querySelectorAll(".growth-range").forEach((x) =>
+        x.classList.toggle("active", x === b));
+      loadGrowthDaily();
+    });
+  });
+  root.querySelector("#growthDailyReload")
+    .addEventListener("click", loadGrowthDaily);
+
   async function runAiUsageSearch() {
     const wrap = root.querySelector("#aiUsageSearchWrap");
     wrap.innerHTML = `<p class="muted">検索中…</p>`;
@@ -6928,6 +7143,7 @@ export async function admin(root) {
     ["#logRegistrantsDetails", loadRegistrants],
     ["#logSurveySummaryDetails", loadSurveySummary],
     ["#logVisitTrendDetails", loadVisitTrend],
+    ["#logGrowthDailyDetails", loadGrowthDaily],
     ["#logChargeKeyDetails", loadChargeKeyLog],
     ["#logErrorDetails", loadErrorLog],
     ["#logClientErrorDetails", loadClientErrorLog],

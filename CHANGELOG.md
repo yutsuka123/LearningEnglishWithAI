@@ -8,6 +8,55 @@
 （例: 1.1.0→1.1.1）。ユーザーから別途指示があった場合のみ上位の桁を
 上げる。
 
+## ver1.4.10 (2026-09-20作成・本番デプロイ待ち・ブランチ`ver1.4.10`)
+
+計測設計フェーズ2の先行部分(設計書3-F・3-E)。本番へは未反映。
+
+- **日次スナップショット(`logs.growth_daily`・`logs.growth_cohort_daily`)**:
+  usage_events等の生ログ(90日で削除)が消えても過去の推移が変わらない
+  よう、**自分(内部Cookie・管理者/テスト端末・ADMIN_KNOWN_IPS)とボット
+  (UA+接続元判定・記録時のbot_mark)を除いた人間の日次集計を恒久保存**。
+  日付はJST暦日。人数・件数のみでIP・guest_sid・user_idは保存しない。
+  定義は`app/services/growth_metrics.py`の先頭コメントが正。
+  - 指標(segment=all): visits/visitors(ユニーク=guest_sid・古い行はIP)/
+    visitors_js(JS到達)/visitors_ready/visitors_human(人間訪問=JS到達
+    or その日2回以上)/visitors_engaged/visitors_viewed_word/
+    visitors_tried_audio/signup_started・attempted・done/new_users/
+    logins・login_users/active_users/revenue_jpy・payments・chargers/
+    client_errors/play_errors/除外件数(bot・internal)。
+  - セグメント: channel:<広告/LLM/検索/SNS/サイト内/直接/その他/不明>・
+    device:・page:(着地)・referrer:(ホスト)・utm_source:・
+    feature:page/play/click/ai:(利用回数と人数)。
+  - コホート: 登録日×経過日(0〜60日)のアクティブ人数と、W1〜W4(登録から
+    7n〜7n+6日目のいずれか)の人数(`growth_cohort_daily`)。
+  - **生ログが消えた日は上書きしない**: 保持境界(now-90日)より古い日は
+    再集計せず既存の行を保持(欠けた生ログで0上書きする事故の防止)。
+  - 起動時マイグレーション(`CREATE TABLE IF NOT EXISTS`)のみ・既存テーブル
+    の行は変更しない。
+- **スクリプト**: `scripts/backfill_growth_daily.py`(全期間を冪等に集計・
+  `--dry-run`/`--from`/`--to`)、`scripts/snapshot_growth_daily.py`(毎日:
+  未保存の日+直近7日を再集計)。**`scripts/prune_usage_events.py`は削除の
+  前にスナップショットを更新し、失敗または未保存の日が残っていれば
+  生ログを削除せず終了コード1で止まる**(理由: 削除は不可逆だがpruneが
+  数日遅れる実害は小さい。緊急時のみ`--force`)。最終実行の成否は
+  app_state(`growth_snapshot_status`)に残り、管理画面に出る。
+- **管理画面**: ログタブに「📈 日次スナップショット」欄(日別表・チャネル別・
+  機能別・コホート継続・最終実行の成否・未保存日数)。
+  `GET /api/system/admin/growth-daily`(管理者のみ)。
+- **登録フォームの欄別計測(3-E)**: `login.html`が欄の識別名と種別
+  (`focus:`/`input:<欄>`・`open:survey`・`back_to_login`・
+  `fail:<4桁コード|network|other>`)だけを送る(入力内容・文字数は一切
+  送らない・同じ種別は1画面1回・失敗は登録に影響しない)。管理画面の
+  「登録に至らない原因分析」に、欄別の到達・最後に到達した所・エラー内訳を
+  追加(既存表示は不変)。
+- 保守: `_own_device_sids`の実装を`growth_metrics.own_device_sids`へ移動
+  (判定内容は不変)。ファネル説明文の保持日数「約35日」を「約90日」に修正。
+- 検証(隔離DBで実施): 起動時にテーブル作成・既存47テーブルの内容不変、
+  バックフィルの冪等、prune後も過去値不変、スナップショット失敗/未保存時に
+  pruneが止まること、自分・ボットの除外、登録フォームの送信本文に入力内容
+  が含まれないこと、/track失敗(500・通信断)でも登録が完了すること、
+  非管理者403、デスクトップ幅・スマホ幅で表示とJSエラー0。
+
 ## ver1.4.9 (2026-09-20作成・本番デプロイ待ち・commit `bced638`)
 
 ver1.4.8が2026-09-20 03:00 JSTに本番デプロイ済み(デプロイログ・本番の

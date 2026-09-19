@@ -18,7 +18,8 @@ from ..config import ROOT_DIR, load_admin_known_ips, load_settings, log, paths
 from ..database import ACCENTS, NEWS_FIELDS, db
 from ..schemas import MemoryUpdateIn, SettingsIn
 from ..services import (
-    ai, auth, persistence, traffic_source, tracking, ua_parse, visitor_kind,
+    ai, auth, growth_metrics, persistence, traffic_source, tracking,
+    ua_parse, visitor_kind,
 )
 
 router = APIRouter(prefix="/api/system", tags=["system"])
@@ -80,48 +81,11 @@ def _user_filter_sql(
 
 def _own_device_sids(conn) -> dict[str, dict[str, bool]]:
     """管理者/テストアカウントでログインしたことのある端末(guest_sid
-    Cookie)の一覧を返す: {guest_sid: {"admin": bool, "test": bool}}
-    （2026-09-19ユーザー要望「お得意様・ゲストIP別の分析から、自分の
-    テストアカウントと管理者を分離したい」対応）。
-
-    guest_sid Cookieはログイン中の操作にも同じ値で記録される
-    (app/main.py・tracking.log_event)ため、同じブラウザで管理者/
-    テストアカウントとして操作した記録があれば「自分の端末」と分かる。
-    これで、その端末で**ログアウト状態のまま**確認した操作(=ゲスト扱いで
-    IPも一般ゲストと区別できない)も分析から分離できる。IPが変わりやすい
-    モバイル回線でも効く点が、既知IP(ADMIN_KNOWN_IPS)判定との違い。
-    限界: 一度もログインしていない端末・Cookieを消した直後の操作は
-    判別できない(その端末でログインした時点から遡って効く)。"""
-    rows = conn.execute(
-        "SELECT ue.guest_sid AS sid, "
-        " MAX(CASE WHEN u.role = 'admin' THEN 1 ELSE 0 END) AS is_admin, "
-        " MAX(u.is_test) AS is_test "
-        "FROM usage_events ue JOIN users u ON u.id = ue.user_id "
-        "WHERE ue.guest_sid != '' AND (u.role = 'admin' OR u.is_test = 1) "
-        "GROUP BY ue.guest_sid"
-    ).fetchall()
-    out = {
-        r["sid"]: {"admin": bool(r["is_admin"]), "test": bool(r["is_test"])}
-        for r in rows
-    }
-    # ログインしただけで他の操作が無い端末も自分の端末に含める
-    # (login_log.guest_sid・2026-09-19 Fable敵対的レビューS7)。
-    try:
-        for r in conn.execute(
-            "SELECT l.guest_sid AS sid, "
-            " MAX(CASE WHEN u.role = 'admin' THEN 1 ELSE 0 END) AS is_admin, "
-            " MAX(u.is_test) AS is_test "
-            "FROM login_log l JOIN users u ON u.username = l.username "
-            "WHERE l.guest_sid != '' AND l.success = 1 "
-            "AND (u.role = 'admin' OR u.is_test = 1) "
-            "GROUP BY l.guest_sid"
-        ):
-            cur = out.setdefault(r["sid"], {"admin": False, "test": False})
-            cur["admin"] = cur["admin"] or bool(r["is_admin"])
-            cur["test"] = cur["test"] or bool(r["is_test"])
-    except Exception:
-        log.warning("login_logからの自分の端末判定に失敗", exc_info=True)
-    return out
+    Cookie)の一覧: {guest_sid: {"admin": bool, "test": bool}}。
+    実装は日次スナップショットの集計スクリプトと共通にするため
+    `app/services/growth_metrics.py`の`own_device_sids`へ移した
+    (2026-09-20・判定内容は従来のまま。詳細な説明はそちらのdocstring)。"""
+    return growth_metrics.own_device_sids(conn)
 
 
 # usage_eventsのうち「操作」ではない計測ビーコン(JS到達boot・離脱leave・
@@ -1338,6 +1302,105 @@ def _percentile(values: list[float], pct: float) -> float | None:
     return round(v[min(len(v) - 1, int(len(v) * pct))], 1)
 
 
+# 登録フォームの欄(login.htmlの送信側と揃える。ここに無い欄名・labelは
+# 集計しない＝万一想定外の文字列が送られても表示・保存しない)。
+_FORM_FIELDS = (
+    ("email", "メールアドレス"), ("email_confirm", "メールアドレス(確認)"),
+    ("password", "パスワード"), ("password_confirm", "パスワード(確認)"),
+    ("display_name", "お名前"), ("display_name_furigana", "フリガナ"),
+)
+_FORM_FIELD_KEYS = tuple(k for k, _ in _FORM_FIELDS)
+_FORM_LABEL_RE = re.compile(
+    r"opened|first_input|back_to_login|submit_attempt|open:survey"
+    r"|(focus|input):(" + "|".join(_FORM_FIELD_KEYS) + r")"
+    r"|invalid:(email_mismatch|pw_mismatch|pw_policy)"
+    r"|fail:(\d{4}|network|other)")
+
+
+def _signup_form_breakdown(
+    form_events: dict[str, list[str]], succeeded: int,
+) -> dict:
+    """登録フォームの到達/離脱内訳。form_events={guest_sid: 時系列のlabel}。
+    - steps: 各段階に到達した人数(ユニークguest_sid)。
+    - stalled: フォームに触れたが登録に至らなかった人が、最後に到達して
+      いた欄/段階(どこで止まったか)。
+    - errors: 検証エラー(invalid:*)・サーバー拒否(fail:*)の人数。
+    登録完了はlanding_visitsの成功行が正で(呼び出し側から受け取る)、
+    フォーム計測が始まる前に登録した人は各段階に入らない点に注意。"""
+    guests = list(form_events.values())
+    n_opened = sum(1 for ev in guests if "opened" in ev)
+
+    def n_with(label: str) -> int:
+        return sum(1 for ev in guests if label in ev)
+
+    steps = [{"key": "opened", "label": "登録フォームを開いた",
+              "count": n_opened}]
+    for k, name in _FORM_FIELDS:
+        steps.append({"key": f"focus:{k}", "label": f"{name}欄にふれた",
+                      "count": n_with(f"focus:{k}")})
+        steps.append({"key": f"input:{k}", "label": f"{name}欄に入力を始めた",
+                      "count": n_with(f"input:{k}")})
+    steps.append({"key": "open:survey", "label": "アンケート欄を開いた",
+                  "count": n_with("open:survey")})
+    steps.append({"key": "submit_attempt", "label": "送信ボタンを押した",
+                  "count": n_with("submit_attempt")})
+    steps.append({"key": "success", "label": "登録完了(全体)",
+                  "count": succeeded})
+
+    stalled_counts: dict[str, int] = {}
+    for ev in guests:
+        last = ev[-1]
+        if last in ("opened", "first_input"):
+            key = "no_field"
+        elif last == "back_to_login":
+            key = "back_to_login"
+        elif last == "submit_attempt":
+            key = "submit_attempt"
+        elif last.startswith(("invalid:", "fail:")):
+            key = "error"
+        elif last == "open:survey":
+            key = "open:survey"
+        else:
+            key = last.split(":", 1)[1]   # focus:xx / input:xx -> xx
+        stalled_counts[key] = stalled_counts.get(key, 0) + 1
+    stall_labels = {
+        "no_field": "どの欄にもふれず(フォームを開いただけ)",
+        "back_to_login": "ログイン画面へ戻った",
+        "submit_attempt": "送信後(結果の記録なし)",
+        "error": "入力エラー/登録拒否で止まった",
+        "open:survey": "アンケート欄を開いた所",
+        **{k: f"{name}欄まで" for k, name in _FORM_FIELDS},
+    }
+    order = ["no_field", *_FORM_FIELD_KEYS, "open:survey", "submit_attempt",
+             "error", "back_to_login"]
+    stalled = [{"key": k, "label": stall_labels[k], "count": stalled_counts[k]}
+               for k in order if k in stalled_counts]
+
+    err_counts: dict[str, int] = {}
+    for ev in guests:
+        for label in set(ev):
+            if label.startswith(("invalid:", "fail:")):
+                err_counts[label] = err_counts.get(label, 0) + 1
+    invalid_names = {
+        "invalid:email_mismatch": "メールアドレスの確認欄が一致しない",
+        "invalid:pw_mismatch": "パスワードの確認欄が一致しない",
+        "invalid:pw_policy": "パスワードの規則を満たさない",
+        "fail:network": "通信エラー(サーバーに届かない・応答を読めない)",
+        "fail:other": "サーバーに拒否された(コード不明)",
+    }
+    errors_list = []
+    for label, c in sorted(err_counts.items(), key=lambda x: -x[1]):
+        if label in invalid_names:
+            name = invalid_names[label]
+        else:
+            code = label.split(":", 1)[1]
+            name = "サーバーに拒否された: " + errors.ERROR_CODES.get(
+                code, (code, 0))[0]
+        errors_list.append({"label": label, "name": name, "count": c})
+    return {"opened": n_opened, "steps": steps, "stalled": stalled,
+            "errors": errors_list}
+
+
 @router.get("/admin/registration-funnel")
 def admin_registration_funnel(days: int = 30):
     """登録に至らない原因分析(常設・2026-08-30)。未登録訪問者を1人ずつ
@@ -1546,6 +1609,19 @@ def admin_registration_funnel(days: int = 30):
             "failed_other_reason": next(
                 (r["c"] for r in disposable_rows if r["success"] == 0), 0),
         }
+        # 登録フォーム内の欄別の到達/離脱(2026-09-20・計測設計フェーズ2
+        # 3-E)。login.htmlが送る欄の識別名と種別だけのイベント
+        # (click/signup_form)をguest_sidごとに時系列で読む。入力内容は
+        # そもそも送られていない。許可した形のlabel以外は無視する。
+        form_events: dict[str, list[str]] = {}
+        for r in conn.execute(
+            "SELECT guest_sid, label FROM usage_events "
+            "WHERE kind='click' AND category='signup_form' "
+            f"AND guest_sid != '' AND created_at >= datetime('now', ?){excl} "
+            "ORDER BY id", (since,),
+        ).fetchall():
+            if _FORM_LABEL_RE.fullmatch(r["label"] or ""):
+                form_events.setdefault(r["guest_sid"], []).append(r["label"])
     # guest_sidごとに最後のイベントだけ残す(created_at昇順で走査して
     # 上書きしていくため、最後に残った値が最新になる)。
     last_event: dict[str, dict] = {}
@@ -1677,6 +1753,9 @@ def admin_registration_funnel(days: int = 30):
             [{"label": k, "count": v} for k, v in utm_counts.items()],
             key=lambda x: -x["count"])[:15],
         "ad_click_visitors": ad_click_guests,
+        # 登録フォームの欄別の到達/離脱(2026-09-20・3-E)。
+        "signup_form": _signup_form_breakdown(
+            form_events, len(signup_succeeded_set)),
         # 用語集/フレーズ集/クロスワード紹介(SEOページ)に着地し、その後
         # アプリやその他のページにも来た人＝「SEOページ経由でアプリへ」。
         "via_seo": {
@@ -1826,6 +1905,99 @@ def admin_visit_trend(days: int = 30):
         "js_reached": len(js_all),
     }
     return {"days": days, "summary": summary, "daily": daily}
+
+
+# 日次スナップショットの画面に出す指標(流入元別の集計表・期間合計用)。
+_GROWTH_CHANNEL_METRICS = (
+    "visitors", "visitors_human", "visitors_js", "visitors_engaged",
+    "signup_started", "signup_attempted", "signup_done",
+)
+
+
+@router.get("/admin/growth-daily")
+def admin_growth_daily(days: int = 30):
+    """日次スナップショット(成長ログ・2026-09-20・計測設計3-F)の閲覧。
+    `logs.growth_daily`/`growth_cohort_daily`を読むだけ(生ログには触れない)
+    ので、usage_eventsをpruneした後でも過去の推移は変わらない。集計値は
+    scripts/snapshot_growth_daily.py(cron・毎日)が前日分を確定して保存する
+    (定義は app/services/growth_metrics.py の先頭コメント)。当日分は
+    まだ無い(翌日03:45頃に入る)。管理者のみ。
+
+    - daily: 日別の全体指標(segment='all')。
+    - channels: 流入元チャネル別の期間合計(日別ユニークの延べ人日)。
+    - features: 機能別の利用回数の期間合計(上位)。
+    - cohorts: 登録日ごとの人数と継続人数(翌日/7日目/W1〜W4)。
+    - status: 最後の日次集計の実行結果(失敗が続くと画面で気づける)。"""
+    _require_admin()
+    days = max(1, min(days, 366))
+    yday = growth_metrics.jst_yesterday()
+    first = growth_metrics.add_days(yday, -(days - 1))
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT date, segment, metric, value FROM growth_daily "
+            "WHERE date >= ? AND date <= ? ORDER BY date", (first, yday),
+        ).fetchall()
+        cohort_rows = conn.execute(
+            "SELECT cohort_date, offset_days, span_days, cohort_size, "
+            "active_users FROM growth_cohort_daily WHERE cohort_date >= ? "
+            "ORDER BY cohort_date", (first,),
+        ).fetchall()
+        status = growth_metrics.read_status(conn)
+        span = conn.execute(
+            "SELECT MIN(date) AS a, MAX(date) AS b, COUNT(DISTINCT date) AS n "
+            "FROM growth_daily WHERE segment='all' AND metric='visits'"
+        ).fetchone()
+
+    daily: dict[str, dict[str, float]] = {}
+    channels: dict[str, dict[str, float]] = {}
+    features: dict[str, dict[str, float]] = {}
+    for r in rows:
+        seg, metric, val = r["segment"], r["metric"], r["value"]
+        if seg == "all":
+            daily.setdefault(r["date"], {})[metric] = val
+        elif seg.startswith("channel:") and metric in _GROWTH_CHANNEL_METRICS:
+            ch = channels.setdefault(seg[len("channel:"):], {})
+            ch[metric] = ch.get(metric, 0) + val
+        elif seg.startswith("feature:"):
+            f = features.setdefault(seg[len("feature:"):], {})
+            f[metric] = f.get(metric, 0) + val
+    channel_out = [
+        {"key": k, "label": traffic_source.CHANNEL_LABELS.get(
+            k, {"unknown": "計測開始前のデータ(流入元不明)",
+                "unattributed": "その日の訪問記録なし"}.get(k, k)),
+         **{m: channels[k].get(m, 0) for m in _GROWTH_CHANNEL_METRICS}}
+        for k in [c for c, _ in traffic_source.CHANNELS]
+        + ["unknown", "unattributed"] if k in channels
+    ]
+    feature_out = sorted(
+        [{"name": k, "events": v.get("events", 0),
+          "actor_days": v.get("actors", 0)} for k, v in features.items()],
+        key=lambda x: -x["events"])[:20]
+
+    cohorts: dict[str, dict] = {}
+    for r in cohort_rows:
+        c = cohorts.setdefault(r["cohort_date"], {
+            "cohort_date": r["cohort_date"], "size": r["cohort_size"],
+            "cells": {}})
+        c["size"] = max(c["size"], r["cohort_size"])
+        if r["span_days"] == 1:
+            key = f"d{r['offset_days']}"
+        elif r["span_days"] == 7 and r["offset_days"] % 7 == 0:
+            key = f"w{r['offset_days'] // 7}"
+        else:
+            continue
+        c["cells"][key] = r["active_users"]
+
+    return {
+        "days": days, "from": first, "to": yday,
+        "daily": [{"date": d, "m": daily[d]} for d in sorted(daily)],
+        "missing_days": days - len(daily),
+        "channels": channel_out, "features": feature_out,
+        "cohorts": list(cohorts.values()),
+        "status": status,
+        "coverage": {"first": span["a"], "last": span["b"],
+                     "days": span["n"]},
+    }
 
 
 _LOG_LINE_RE = re.compile(

@@ -1020,6 +1020,7 @@ table.rtable .ops-cell .vague-btn { margin-left: 0; }
    （dataviz skillのmark仕様に準拠）。 */
 .visit-trend-range.active { background: var(--accent); color: #04101f; }
 .server-hist-range.active { background: var(--accent); color: #04101f; }
+.growth-range.active { background: var(--accent); color: #04101f; }
 .visit-trend-legend { align-items: center; }
 .vt-legend-item { display: inline-flex; align-items: center; gap: 6px;
   font-size: 13px; color: var(--muted); }

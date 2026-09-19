@@ -346,7 +346,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ kind, category, label, value }),
           keepalive: true,
-        });
+        }).catch(() => { /* 送信失敗(オフライン等)は無視する */ });
       } catch (e) { /* ignore */ }
     }
     // JS到達ビーコン(このページのJSが実行された印・index.htmlのbootと
@@ -406,7 +406,10 @@
     document.getElementById('toSignup')
       .addEventListener('click', () => showSignup(true));
     document.getElementById('toLogin')
-      .addEventListener('click', () => showLogin(true));
+      .addEventListener('click', () => {
+        track('click', 'signup_form', 'back_to_login');
+        showLogin(true);
+      });
     window.addEventListener('popstate', (ev) => {
       if (ev.state && ev.state.form === 'signup') showSignup(false);
       else showLogin(false);
@@ -425,11 +428,45 @@
     // 入力を始めた／送信を試みた／クライアントで弾かれた」を分けて
     // 記録する。first_inputは1回だけ送る。
     let signupFirstInputSent = false;
-    fSignup.addEventListener('input', () => {
+    // 登録フォームの欄別の到達計測(2026-09-20・計測設計フェーズ2 3-E・
+    // 「どの欄まで進んで離脱したか」を知るため)。**送るのは欄の識別名と
+    // 「ふれた(focus)/入力を始めた(input)」の種別だけ**。入力内容・文字数・
+    // メールアドレス等は一切読まない・送らない(欄の.valueには触れず、欄の
+    // idから固定の名前に引くだけ。パスワード欄も同じ)。同じ種別・同じ欄は
+    // ページ表示1回につき1回だけ送る。送信の失敗・例外は登録操作に影響
+    // させない(track()がbest-effort・ここでも握りつぶす)。
+    const SIGNUP_FIELDS = {
+      su: 'email', su2: 'email_confirm', sp: 'password',
+      sp2: 'password_confirm', sdisplay: 'display_name',
+      sdisplayKana: 'display_name_furigana',
+    };
+    const signupFieldSent = {};
+    function trackFieldOnce(type, ev) {
+      try {
+        const field = SIGNUP_FIELDS[ev && ev.target && ev.target.id];
+        if (!field) return;
+        const label = type + ':' + field;
+        if (signupFieldSent[label]) return;
+        signupFieldSent[label] = true;
+        track('click', 'signup_form', label);
+      } catch (e) { /* 計測の失敗で入力を妨げない */ }
+    }
+    fSignup.addEventListener('focusin', (ev) => trackFieldOnce('focus', ev));
+    fSignup.addEventListener('input', (ev) => {
+      trackFieldOnce('input', ev);
       if (signupFirstInputSent) return;
       signupFirstInputSent = true;
       track('click', 'signup_form', 'first_input');
     }, { capture: true });
+    const surveyDetails = fSignup.querySelector('details.survey');
+    if (surveyDetails) {
+      surveyDetails.addEventListener('toggle', () => {
+        if (surveyDetails.open && !signupFieldSent['open:survey']) {
+          signupFieldSent['open:survey'] = true;
+          track('click', 'signup_form', 'open:survey');
+        }
+      });
+    }
 
     // 実写風に見えるとの声があった絵文字(👁/🙈)をやめ、一般的な
     // パスワード表示切替でよく使われる線画アイコン(目/目に斜線)に統一。
@@ -641,8 +678,16 @@
           reportSignupConversion();
           location.href = safeNextUrl();
         }
-        else { se.textContent = d.error || '登録に失敗しました。'; }
+        else {
+          se.textContent = d.error || '登録に失敗しました。';
+          // 失敗の種類(サーバーが返す4桁のエラーコードだけ・メッセージや
+          // 入力内容は送らない)。コードが取れなければ'other'。
+          const code = String(d.code || r.headers.get('X-Error-Code') || '');
+          track('click', 'signup_form',
+            'fail:' + (/^[0-9]{4}$/.test(code) ? code : 'other'));
+        }
       } catch (_) { se.textContent = '通信エラーが発生しました。';
+        track('click', 'signup_form', 'fail:network');
       } finally { if (submitBtn) submitBtn.disabled = false; }
     });
   </script>

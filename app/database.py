@@ -700,6 +700,43 @@ CREATE TABLE IF NOT EXISTS logs.ad_spend_daily (
     PRIMARY KEY (date, source)
 );
 
+-- 日次スナップショット(2026-09-20・計測設計フェーズ2 3-F)。usage_events等の
+-- 生ログは保持期間(usage_eventsは90日)を過ぎると消えるため、人間(自分・
+-- ボットを除く)の日次集計値を別テーブルに恒久保存し、生ログをpruneしても
+-- 過去の推移が変わらないようにする。集計値だけを持ち、IP・guest_sid・
+-- user_id等の個人を特定できる値は一切保存しない。
+--   date    : JST暦日(YYYY-MM-DD)
+--   segment : 'all' / 'channel:<キー>' / 'device:<端末>' / 'page:<着地>' /
+--             'referrer:<ホスト>' / 'utm_source:<値>' / 'feature:<種別:名前>'
+--   metric  : 指標名(定義は app/services/growth_metrics.py の先頭コメント)
+-- 書き込みは scripts/snapshot_growth_daily.py(cron)と
+-- scripts/backfill_growth_daily.py のみ。1日分をまるごと入れ替える(冪等)。
+CREATE TABLE IF NOT EXISTS logs.growth_daily (
+    date        TEXT NOT NULL,
+    segment     TEXT NOT NULL DEFAULT 'all',
+    metric      TEXT NOT NULL,
+    value       REAL NOT NULL DEFAULT 0,
+    computed_at TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (date, segment, metric)
+);
+
+-- 登録日コホート×経過日ごとのアクティブ人数(2026-09-20・3-F)。
+--   cohort_date: 登録日(JST)   offset_days: 登録日からの経過日数(0=当日)
+--   span_days  : 1=その1日に活動した人数 / 7=offset_days〜+6日目のいずれか
+--                に活動した人数(W1=offset7・W4=offset28の継続率用)
+--   cohort_size: その登録日の登録人数(管理者/テスト/ゲストを除く)
+--   active_users: 期間内に活動した人数(重複なし)
+-- 人数だけを保存する(どのユーザーがいつ活動したかは残さない)。
+CREATE TABLE IF NOT EXISTS logs.growth_cohort_daily (
+    cohort_date  TEXT    NOT NULL,
+    offset_days  INTEGER NOT NULL,
+    span_days    INTEGER NOT NULL DEFAULT 1,
+    cohort_size  INTEGER NOT NULL DEFAULT 0,
+    active_users INTEGER NOT NULL DEFAULT 0,
+    computed_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (cohort_date, offset_days, span_days)
+);
+
 -- ゲーム機能第一弾「クロスワード」のプレイセッション(2026-09-03・
 -- テストユーザー+管理者限定公開)。puzzle_json にサーバー側の正解
 -- (グリッド寸法・セル配置・クリュー一覧)を持たせ、japaneseは含めない
