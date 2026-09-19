@@ -4,6 +4,8 @@ conversation role-play, writing feedback, and session start/end (§8-§14)."""
 from __future__ import annotations
 
 import json
+import threading
+import time
 from datetime import date
 
 from fastapi import APIRouter, File, Form, Response, UploadFile
@@ -426,6 +428,42 @@ def _is_free_mode(payload: ConversationIn) -> bool:
     return payload.grp == "自由会話"
 
 
+# アドバイス(coach)は別課金しない(ai._BUNDLED_FEATURES)ため、そのままだと
+# 「返答なしでcoachだけを繰り返し呼べば、課金もレート制限も受けずに
+# AIを使い続けられる」抜け穴になる(2026-09-19・実装後の自己レビューで発見)。
+# coachは「同じ利用者の直近の返答(reply)1回につき1回」に限る: replyが
+# 事前チェックを通った時点で権利を1つ発行し、coachがそれを消費する。
+# 権利が無いcoachは429。単一プロセス前提のメモリ内管理(ai._call_timesと
+# 同じ。本番はuvicornワーカー1)。クライアントは返答の最初のチャンクが
+# 届いてからcoachを開始する(=権利の発行が必ず先になる)。
+_COACH_CREDIT_TTL_SEC = 120.0
+_COACH_CREDIT_MAX = 5
+_coach_credits: dict[int, list[float]] = {}
+_coach_credit_lock = threading.Lock()
+
+
+def _grant_coach_credit(uid: int) -> None:
+    now = time.monotonic()
+    with _coach_credit_lock:
+        live = [t for t in _coach_credits.get(uid, [])
+                if now - t < _COACH_CREDIT_TTL_SEC]
+        live.append(now)
+        _coach_credits[uid] = live[-_COACH_CREDIT_MAX:]
+
+
+def _take_coach_credit(uid: int) -> bool:
+    now = time.monotonic()
+    with _coach_credit_lock:
+        live = [t for t in _coach_credits.get(uid, [])
+                if now - t < _COACH_CREDIT_TTL_SEC]
+        if not live:
+            _coach_credits[uid] = []
+            return False
+        live.pop(0)
+        _coach_credits[uid] = live
+        return True
+
+
 def _conversation_part(payload: ConversationIn) -> str:
     """このリクエストが担当する部分: "all"|"reply"|"coach"(2026-09-19・案B)。
     自由会話・未知の値は従来どおり"all"(1本で全部)。"coach"は学習者の発話
@@ -599,12 +637,20 @@ def conversation_stream(payload: ConversationIn):
     feature = "conversation_coach" if part == "coach" else "conversation"
     max_tokens = 700 if part == "all" else 400
 
+    from ..services.auth import current_user_id
+    uid = current_user_id()
+    if part == "coach" and not _take_coach_credit(uid):
+        return Response(
+            content="アドバイスは直前の返答に対してのみ作成できます。",
+            status_code=429, media_type="text/plain")
     precheck = ai.chat_stream_precheck(
         feature, rate_limit=(part != "coach"))
     if precheck:
         message, status = precheck
         return Response(content=message, status_code=status,
                         media_type="text/plain")
+    if part == "reply":
+        _grant_coach_credit(uid)
 
     def gen():
         # Log the learner's message (real production for level judging).

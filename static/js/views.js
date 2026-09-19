@@ -3278,25 +3278,36 @@ export async function conversation(root) {
       return { reply, historyText: reply, coachDone: Promise.resolve() };
     }
     const ctl = new AbortController();
-    const coachDone = api.stream(url, { ...body, part: "coach" },
-      (chunk) => { coach += chunk; paint(); }, { signal: ctl.signal })
-      .catch((e) => {
-        if (dead || (e && e.name === "AbortError")) return;
-        coach = "";   // 途中まで出ていたアドバイスは消し、失敗を静かに知らせる
-        paint();
-        const bubble = target.parentElement;
-        if (bubble) {
-          bubble.insertBefore(el(`<div class="muted coach-note"
-            style="font-size:12px">アドバイスを取得できませんでした</div>`),
-          bubble.querySelector(".row"));
-        }
-      });
+    let coachDone = Promise.resolve();
+    let coachStarted = false;
+    // アドバイスは返答の最初のチャンクが届いてから開始する: サーバーは返答の
+    // 事前チェック通過時にアドバイス1回分の権利を発行するため、この順序に
+    // すると権利が必ず先に存在する。返答が事前チェックで拒否された/失敗した
+    // ターンでは、アドバイスは最初から始まらない(無駄なAI呼び出しが無い)。
+    // それでも返答の生成と重なって並行実行される(返答の完了を待たない)。
+    const startCoach = () => {
+      if (coachStarted) return;
+      coachStarted = true;
+      coachDone = api.stream(url, { ...body, part: "coach" },
+        (chunk) => { coach += chunk; paint(); }, { signal: ctl.signal })
+        .catch((e) => {
+          if (dead || (e && e.name === "AbortError")) return;
+          coach = "";   // 途中まで出ていたアドバイスは消し、失敗を静かに知らせる
+          paint();
+          const bubble = target.parentElement;
+          if (bubble) {
+            bubble.insertBefore(el(`<div class="muted coach-note"
+              style="font-size:12px">アドバイスを取得できませんでした</div>`),
+            bubble.querySelector(".row"));
+          }
+        });
+    };
     try {
       await api.stream(url, { ...body, part: "reply" },
-        (chunk) => { reply += chunk; paint(); });
+        (chunk) => { reply += chunk; paint(); startCoach(); });
     } catch (e) {
       dead = true;
-      ctl.abort();    // 返答が無いターンのアドバイスは不要(無駄な課金を止める)
+      ctl.abort();    // 返答が途中で失敗したターンのアドバイスは不要
       throw e;
     }
     // 返答にコーチ部分が混ざってしまった場合に備え、履歴には返答部分だけ積む
