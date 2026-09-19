@@ -30,7 +30,7 @@
     "英会話(シーン会話・出張ロールプレイ)の返答とアドバイス(【コーチ】【例】)を別々のAI呼び出しに分けて並行実行し、返答を先に表示・読み上げるようにした(ハンズフリー含む・自由会話/会話開始は従来どおり1本)。streamのpartパラメータ(all/reply/coach)を追加。",
     "課金は1往復1回のまま: コーチ側はfeature=conversation_coachで原価のみai_usageに記録し残高から別控除しない(_BUNDLED_FEATURES)。分間レート制限の枠もコーチは消費しない。履歴には返答のみ積む。アドバイス失敗は返答に影響せず、返答失敗時は並行中のアドバイスを中断。",
     "デプロイ後の確認: 会話1往復で残高の減りが従来と同じ(luna想定¥1.0/往復)こと、ai_usageにconversation_coach行が付くこと。",
-    "成長ログ フェーズ1(Fable設計): 内部Cookie(ela_internal)/is_internal/bot_markによる自分・ボットの除外、流入元(referrerホスト・utm・gclid有無・landing_path・SEOページ着地)の記録、JS到達ビーコン(boot/app_ready/leave・value列・keepalive)、users.signup_guest_sid/landing_visits.user_id/login_log.guest_sid、ad_spend_daily+予算スケジュール(9/1から¥300・9/12から¥500・9/19から¥1,000/日)とCPA・数値目標(登録20/300・課金2/30)の表示、登録完了のgtagコンバージョン(ラベル空の間は無効)、index4本。管理画面: 登録ファネルにJS到達段・チャネル別内訳、訪問推移にJS到達系列。privacy.html改定は保留のまま同梱。",
+    "成長ログ フェーズ1(Fable設計): 内部Cookie(ela_internal・管理者/テストのログイン時のみ発行、?internal=1は廃止)/is_internal/bot_markによる自分・ボットの除外、流入元(referrerホスト・utm・gclid有無・landing_path・SEOページ着地)の記録、JS到達ビーコン(boot/app_ready/leave・value列・keepalive)、users.signup_guest_sid/landing_visits.user_id/login_log.guest_sid、ad_spend_daily+予算スケジュール(9/1から¥300・9/12から¥500・9/19から¥1,000/日)とCPA・数値目標(登録20/300・課金2/30)の表示、登録完了のgtagコンバージョン(ラベル空の間は無効)、index4本。管理画面: 登録ファネルにJS到達段・チャネル別内訳、訪問推移にJS到達系列。privacy.html改定は保留のまま同梱。 Fable敵対的レビュー(条件付き可)の指摘を反映済み: utm_content非保存・utm/referrerの文字種制限・SEO記録の長さ制限・SEOページのJS到達ビーコン・trackのIP別上限600/分等。",
     "デプロイ後の確認事項: core.dbにadmin_memos/admin_memo_tagsが作られていること、users/landing_visits/usage_eventsの件数が不変であること、会話1往復の残高の減りが従来と同じ(luna想定¥1.0)こと。"
    ]
   },

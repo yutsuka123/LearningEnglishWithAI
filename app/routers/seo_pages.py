@@ -171,6 +171,30 @@ def public_phrase_scenes(conn) -> dict[str, int]:
     }
 
 
+# JS到達ビーコン(2026-09-19・計測設計3-B・Fable敵対的レビューS4)。SEO/LLM
+# 経由の着地(/glossary等)にもindex.htmlと同じインラインbootを置き、「JSが
+# 実行された人間訪問」を数えられるようにする(無いと、これらの着地は構造的に
+# 人間訪問・JS到達が0になり、検索/LLM経由の効果測定が成立しない)。label='seo'。
+# 失敗しても表示には影響させない。
+_BOOT_BEACON = """<script>
+(function () {
+  try {
+    var body = JSON.stringify({ kind: 'boot', category: 'html', label: 'seo',
+      value: Math.round(performance.now()) });
+    var ok = false;
+    if (navigator.sendBeacon) {
+      ok = navigator.sendBeacon('/api/system/track',
+        new Blob([body], { type: 'application/json' }));
+    }
+    if (!ok && window.fetch) {
+      fetch('/api/system/track', { method: 'POST', body: body, keepalive: true,
+        headers: { 'Content-Type': 'application/json' } });
+    }
+  } catch (e) { /* 計測の失敗は無視 */ }
+})();
+</script>"""
+
+
 def _page(title: str, description: str, canonical: str, body: str) -> str:
     return f"""<!DOCTYPE html>
 <html lang="ja">
@@ -197,6 +221,7 @@ def _page(title: str, description: str, canonical: str, body: str) -> str:
 </style>
 </head>
 <body>
+{_BOOT_BEACON}
 <div class="wrap">
 <div class="card">
 {body}

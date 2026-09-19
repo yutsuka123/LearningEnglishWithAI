@@ -4,6 +4,10 @@
 // classicスクリプトとしてapp.js(type="module")より前に読み込むことで、
 // 他のスクリプトの実行前からハンドラを有効にする(index.html参照)。
 (function () {
+  // gclid等の広告クリックIDを含むクエリ文字列をエラー記録へ残さない
+  // (2026-09-19・Fable敵対的レビューS1)。パスのみ送る。
+  function _noQuery(u) { return String(u || "").split("?")[0].split("#")[0]; }
+
   function report(kind, message, stack, url, line, col) {
     try {
       fetch("/api/system/client-error", {
@@ -11,7 +15,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           kind, message: String(message || ""), stack: String(stack || ""),
-          url: String(url || location.href), line: line || 0, col: col || 0,
+          url: _noQuery(url || location.href), line: line || 0, col: col || 0,
         }),
       }).catch(() => {});
     } catch (e) { /* 報告自体の失敗はUIに影響させない */ }
@@ -30,6 +34,6 @@
     if (reason && reason.apiErrorLogged) return;
     const message = reason && reason.message ? reason.message : String(reason);
     const stack = reason && reason.stack ? reason.stack : "";
-    report("unhandledrejection", message, stack, location.href, 0, 0);
+    report("unhandledrejection", message, stack, _noQuery(location.href), 0, 0);
   });
 })();

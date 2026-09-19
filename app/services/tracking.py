@@ -80,6 +80,32 @@ def log_event(
 _CLIENT_ERROR_HITS: dict[str, list[float]] = {}
 _CLIENT_ERROR_CAP_PER_MIN = 20
 
+# /api/system/track(未認証の書き込みエンドポイント)のIP別上限
+# (2026-09-19・Fable敵対的レビューS9)。client-errorと同様に、1IPあたり
+# 1分間に一定数を超えた分は静かに破棄してログ洪水からDBを守る。通常の
+# 操作(数秒に1回程度のclick/page)では届かない値。学校/会社等の共有IPでも
+# 十分な余裕を見て600件/分。
+_TRACK_HITS: dict[str, list[float]] = {}
+_TRACK_CAP_PER_MIN = 600
+
+
+def track_rate_limited() -> bool:
+    """このIPのトラック送信が上限を超えていればTrue(呼び出し側は記録しない)。"""
+    ip = auth.current_ip() or "?"
+    now = _time.monotonic()
+    hits = [t for t in _TRACK_HITS.get(ip, []) if now - t < 60.0]
+    if len(hits) >= _TRACK_CAP_PER_MIN:
+        _TRACK_HITS[ip] = hits
+        return True
+    hits.append(now)
+    _TRACK_HITS[ip] = hits
+    if len(_TRACK_HITS) > 5000:   # 辞書の肥大化防止(古いIPを掃除)
+        for k in [k for k, v in _TRACK_HITS.items()
+                  if not v or now - v[-1] >= 60.0]:
+            _TRACK_HITS.pop(k, None)
+    return False
+
+
 
 def record_client_error(
     kind: str, message: str, stack: str = "", url: str = "",

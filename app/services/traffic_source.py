@@ -100,6 +100,19 @@ def _clean(value: str, limit: int) -> str:
     return _CTRL_RE.sub("", value or "").strip()[:limit]
 
 
+# 保存してよい文字種(2026-09-19・Fable敵対的レビューS1)。URLの`utm_*`や
+# Refererはユーザー(リンクを作る第三者)が自由に決められるため、メール
+# アドレス・自由文・タグ文字列がそのまま無期限に残らないよう、宣伝リンクの
+# 命名規則(ASCII英数字と`_.-`)に合うものだけを保存し、合わなければ空にする。
+_UTM_OK_RE = re.compile(r"[A-Za-z0-9_.\-]{1,64}")
+_HOST_OK_RE = re.compile(r"[a-z0-9.\-]{1,100}")
+
+
+def _clean_utm(value: str) -> str:
+    v = _clean(value, UTM_MAX_LEN)
+    return v if _UTM_OK_RE.fullmatch(v) else ""
+
+
 def referrer_host_of(referer: str) -> str:
     """Refererヘッダ値からホスト名だけを取り出す（パス/クエリは捨てる）。
     不正な値・空は空文字。"""
@@ -108,7 +121,8 @@ def referrer_host_of(referer: str) -> str:
         host = (parts.hostname or "").lower()
     except ValueError:
         return ""
-    return _clean(host, 100)
+    host = _clean(host, 100)
+    return host if _HOST_OK_RE.fullmatch(host) else ""
 
 
 def extract(referer: str, query: str) -> dict:
@@ -121,7 +135,10 @@ def extract(referer: str, query: str) -> dict:
     out = {"referrer_host": referrer_host_of(referer)}
     for k in UTM_KEYS:
         vals = qs.get(k) or [""]
-        out[k] = _clean(vals[0], UTM_MAX_LEN)
+        out[k] = _clean_utm(vals[0])
+    # utm_contentはどの集計・画面でも使わず、任意文字列(個人情報の混入)を
+    # 無期限保存するだけになるため保存しない(列は互換のため残し、常に空)。
+    out["utm_content"] = ""
     # 値は見ない・保存しない（キーが存在するかだけ）。
     out["has_gclid"] = 1 if any(k in qs for k in AD_CLICK_KEYS) else 0
     return out

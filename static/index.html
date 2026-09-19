@@ -70,8 +70,7 @@
        にはこれが届かない＝HTML着地との差が「JS未到達」。sendBeaconは
        ページ離脱時にも送れる(Content-Typeがtext/plainになる環境でも
        サーバー側で受けられる)。失敗しても画面には影響させない。
-       leave=ページを離れる/隠れた時の滞在ms(ページロード当たり複数行に
-       なりうるが値は累積msなので集計側はMAXを見る)。 -->
+       leave=ページを最初に離れた/隠れた時点の滞在ms(ページロードあたり1回)。 -->
   <script>
   (function () {
     function send(kind, category, label, value) {
@@ -92,12 +91,11 @@
       } catch (e) { /* 計測の失敗は無視 */ }
     }
     send('boot', 'html', 'index', Math.round(performance.now()));
-    var lastLeave = -Infinity;
+    var left = false;
     function leave(why) {
-      var now = performance.now();
-      if (now - lastLeave < 1000) return;  // hidden直後のpagehide等の二重送信防止
-      lastLeave = now;
-      send('leave', 'html', why, Math.round(now));
+      if (left) return;   // ページロードあたり1回(最初に隠れた/離れた時点)
+      left = true;
+      send('leave', 'html', why, Math.round(performance.now()));
     }
     document.addEventListener('visibilitychange', function () {
       if (document.visibilityState === 'hidden') leave('hidden');

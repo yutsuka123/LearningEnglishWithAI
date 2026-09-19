@@ -100,10 +100,28 @@ def _own_device_sids(conn) -> dict[str, dict[str, bool]]:
         "WHERE ue.guest_sid != '' AND (u.role = 'admin' OR u.is_test = 1) "
         "GROUP BY ue.guest_sid"
     ).fetchall()
-    return {
+    out = {
         r["sid"]: {"admin": bool(r["is_admin"]), "test": bool(r["is_test"])}
         for r in rows
     }
+    # ログインしただけで他の操作が無い端末も自分の端末に含める
+    # (login_log.guest_sid・2026-09-19 Fable敵対的レビューS7)。
+    try:
+        for r in conn.execute(
+            "SELECT l.guest_sid AS sid, "
+            " MAX(CASE WHEN u.role = 'admin' THEN 1 ELSE 0 END) AS is_admin, "
+            " MAX(u.is_test) AS is_test "
+            "FROM login_log l JOIN users u ON u.username = l.username "
+            "WHERE l.guest_sid != '' AND l.success = 1 "
+            "AND (u.role = 'admin' OR u.is_test = 1) "
+            "GROUP BY l.guest_sid"
+        ):
+            cur = out.setdefault(r["sid"], {"admin": False, "test": False})
+            cur["admin"] = cur["admin"] or bool(r["is_admin"])
+            cur["test"] = cur["test"] or bool(r["is_test"])
+    except Exception:
+        log.warning("login_logからの自分の端末判定に失敗", exc_info=True)
+    return out
 
 
 # usage_eventsのうち「操作」ではない計測ビーコン(JS到達boot・離脱leave・
@@ -1423,7 +1441,8 @@ def admin_registration_funnel(days: int = 30):
         engaged_set = guest_set(
             "usage_events",
             "(kind IN ('click','play','word_domain','phrase_scene') "
-            "OR (kind='page' AND category != 'welcome'))")
+            "OR (kind='page' AND category NOT IN "
+            "('welcome', 'login_page', 'about_page')))")
         signup_attempted_set = guest_set("landing_visits", "kind='signup'")
         signup_succeeded_set = guest_set(
             "landing_visits", "kind='signup' AND success=1")
@@ -2091,7 +2110,7 @@ async def track_event(request: Request):
         payload = TrackEventIn(**json.loads(raw.decode("utf-8", "replace")))
     except Exception:
         return {"ok": True}
-    if payload.kind in _CLIENT_TRACK_KINDS:
+    if payload.kind in _CLIENT_TRACK_KINDS and not tracking.track_rate_limited():
         # log_eventは同期のSQLite書き込みなのでイベントループを塞がない
         # ようスレッドプールで実行する(contextvarsは引き継がれる)。
         await run_in_threadpool(
@@ -3170,7 +3189,10 @@ def admin_ad_spend_upsert(payload: AdSpendIn):
     _require_admin()
     date = (payload.date or "").strip()
     try:
-        datetime.strptime(date, "%Y-%m-%d")
+        # '2026-9-1'のような非ISO表記も通るので、必ずISO(YYYY-MM-DD)に
+        # 正規化して保存する(そのまま保存するとpl-reportの日付比較で
+        # 永久に無視される・2026-09-19 Fable敵対的レビューS8)。
+        date = datetime.strptime(date, "%Y-%m-%d").date().isoformat()
     except ValueError:
         raise errors.http_error("7002", "日付はYYYY-MM-DDで指定してください。")
     if not (0 <= payload.jpy <= _AD_SPEND_MAX_JPY) or payload.jpy != payload.jpy:
@@ -3195,10 +3217,15 @@ def admin_ad_spend_upsert(payload: AdSpendIn):
 def admin_ad_spend_delete(date: str, source: str = "google_ads"):
     """入力済みの実額を取り消す(その日は予算(推定)に戻る)。"""
     _require_admin()
+    d = date.strip()
+    try:
+        d = datetime.strptime(d, "%Y-%m-%d").date().isoformat()
+    except ValueError:
+        pass
     with db() as conn:
         cur = conn.execute(
             "DELETE FROM ad_spend_daily WHERE date = ? AND source = ?",
-            (date.strip(), source.strip()),
+            (d, source.strip()),
         )
     return {"ok": True, "deleted": cur.rowcount}
 

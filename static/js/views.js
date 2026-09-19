@@ -4853,7 +4853,9 @@ export async function admin(root) {
           上の「未登録アクセス状況」(IP単位)を参照してください）。
           ボット・自分の端末(管理者/テストでログインした端末・内部
           Cookie)は除外しています。「JS到達」以降の流入元・表示ビーコンは
-          計測開始以降のデータのみです。</p>
+          計測開始以降のデータのみです。操作記録は約35日で古いものから削除
+          されるため、それより長い期間を選ぶと「JS到達」「人間訪問」などの
+          人数は実際より少なく出ます(訪問記録の方が長く残るため)。</p>
         <div class="row">
           <label>直近:
             <select id="regFunnelDays">
@@ -6573,7 +6575,7 @@ export async function admin(root) {
       </tr></thead><tbody>${res.ips.map((r) => `
         <tr>
           <td class="muted">${escapeHtml(r.ip)}
-            ${r.is_admin ? '<span class="badge-warn" title="管理者の既知IP(.envのADMIN_KNOWN_IPS)">👑管理者</span>' : ""}</td>
+            ${r.is_admin ? '<span class="badge-warn" title="管理者の既知IP(.envのADMIN_KNOWN_IPS)、または全ての行が自分の端末(内部Cookie)">👑管理者</span>' : ""}</td>
           <td>${r.total}</td>
           <td>${r.pages}</td>
           <td>${r.plays}</td>

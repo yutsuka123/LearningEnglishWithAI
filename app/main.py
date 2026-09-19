@@ -55,7 +55,13 @@ _LANDING_LOG_PATHS = {"/", "/static/about.html", "/login"}
 
 
 def _is_landing_log_path(path: str) -> bool:
-    return path in _LANDING_LOG_PATHS or traffic_source.is_seo_path(path)
+    if path in _LANDING_LOG_PATHS:
+        return True
+    # SEOページはスキャナーが存在しない長いパスを大量に叩いても永続行が
+    # 増えないよう、長さと深さを制限する(landing_visitsはprune無し・
+    # 2026-09-19 Fable敵対的レビューS3)。/glossary/<1セグメント>まで。
+    return (traffic_source.is_seo_path(path) and len(path) <= 120
+            and path.count("/") <= 2)
 
 
 # この秒数以上かかったリクエストはapp.logにWARNINGを残す(2026-09-05
@@ -209,17 +215,15 @@ async def _auth_context(request, call_next):
             gsid = secrets.token_urlsafe(16)
             new_gsid = True
     # 「自分(管理者/テスト)の端末」判定（2026-09-19・計測設計3-D）。内部
-    # Cookieがある、または新端末用の`?internal=1`(GETのみ)なら以後の
-    # usage_events/landing_visits/client_errorsにis_internal=1を立てて
-    # 分析から除外できるようにする。`?internal=1`は誰が付けても「その人の
-    # 訪問が分析から消えるだけ」で害は無い。管理者ログイン時のCookie発行は
-    # auth_routes.login、既にログイン済みの管理者/テストは下のセッション
-    # 復元後に（トップページ表示時に一度だけ）付与する。
+    # Cookieがあれば以後のusage_events/landing_visits/client_errorsに
+    # is_internal=1を立てて分析から除外できるようにする。Cookieの発行は
+    # 管理者/テストアカウントのログイン時(auth_routes.login)と、既にログイン
+    # 済みの管理者/テストがトップページを開いた時に一度だけ(下のセッション
+    # 復元後)に限る。当初あった`?internal=1`(未認証・全パスで誰でも付与)は、
+    # リンクを踏ませて来訪者を分析から消せる/攻撃者が自分を隠せる悪用が
+    # 可能なためFable敵対的レビューS2で廃止した。
     is_internal = request.cookies.get(auth_svc.INTERNAL_COOKIE) == "1"
     issue_internal_cookie = False
-    if (not is_internal and request.method == "GET"
-            and request.query_params.get("internal") == "1"):
-        is_internal = issue_internal_cookie = True
     uid = OWNER_USER_ID
     if multiuser:
         uid = None
@@ -274,7 +278,7 @@ async def _auth_context(request, call_next):
                             " is_internal) "
                             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "
                             "?, ?)",
-                            (client_ip, path, ua, gsid,
+                            (client_ip, path[:200], ua, gsid,
                              request.headers.get(
                                  "accept-language", "")[:100],
                              src["referrer_host"], src["utm_source"],
