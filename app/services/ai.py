@@ -311,6 +311,15 @@ _NO_SURCHARGE_FEATURES = {"tts", "stt"}
 # 続ける（_record_usage参照・profitability分析に必要なため）。
 _LUMP_SUM_FEATURES = {"crossword_hint", "crossword_hint_review"}
 
+# 別のfeatureの呼び出しに「同梱」して課金するfeature(2026-09-19・英会話案B)。
+# 原価はai_usageに記録し(無料枠の消費・収支分析に必要)、残高からの控除だけを
+# 呼び出し単位では行わない。英会話は「1往復=1回課金(+50銭も1回)」が
+# 2026-08-12のユーザー決定で、返答とアドバイス(コーチ+例)を2回のAI呼び出し
+# に分けても課金は1往復¥1.00のまま変えない(docs/COST_ESTIMATE.md §1注記)。
+# 分けた2本の両方をconversation扱いにすると上乗せと0.5円切上げが2回
+# かかり、1往復の課金が2倍になるため。
+_BUNDLED_FEATURES = {"conversation_coach"}
+
 
 def _compute_charge_jpy(cost_usd: float, rate: float, feature: str) -> float:
     import math
@@ -451,7 +460,8 @@ def _record_usage(
                         (model, prompt_tokens, output_tokens, cost, feature,
                          uid, ip),
                     )
-                    if feature not in _LUMP_SUM_FEATURES:
+                    if (feature not in _LUMP_SUM_FEATURES
+                            and feature not in _BUNDLED_FEATURES):
                         _maybe_deduct_balance(conn, uid, cost, feature, s)
                 return cost
             except sqlite3.OperationalError as exc:
@@ -599,7 +609,9 @@ def chat(
 STREAM_ERROR_MARKER = "§§STREAM_ERROR§§"
 
 
-def chat_stream_precheck(feature: str = "") -> tuple[str, int] | None:
+def chat_stream_precheck(
+    feature: str = "", *, rate_limit: bool = True,
+) -> tuple[str, int] | None:
     """ストリーム開始前に判定できる失敗(AI未設定/ガード拒否)があれば
     (メッセージ, HTTPステータス)を返す。無ければNone(続行してよい)。
 
@@ -613,7 +625,10 @@ def chat_stream_precheck(feature: str = "") -> tuple[str, int] | None:
     client, _settings = _client()
     if client is None:
         return ("AI機能は現在利用できません(APIキー未設定)。", 503)
-    refusal = _guard(feature)
+    # rate_limit=False: 1往復=2本のAI呼び出しに分けた英会話のうち、2本目
+    # (アドバイス)は分間レート制限の枠を消費しない(1往復=1枠のまま。
+    # 日次/月次の無料枠・サイト全体の上限は従来どおり判定する)。
+    refusal = _guard(feature, rate_limit=rate_limit)
     if refusal:
         return (refusal, 429)
     return None

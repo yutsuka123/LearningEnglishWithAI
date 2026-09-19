@@ -156,11 +156,15 @@ export const api = {
   track,
 
   // Streaming POST -> calls onChunk(textPiece) as data arrives.
-  async stream(path, body, onChunk) {
+  // opts.signal: AbortSignal。呼び出し元が意図して中断した場合(例: 会話の
+  // 返答が失敗したので並行していたアドバイス側を止める・2026-09-19)は
+  // AbortErrorをそのまま投げ、エラーとしては記録しない。
+  async stream(path, body, onChunk, opts = {}) {
     const res = await fetch(path, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
+      signal: opts.signal,
     });
     if (!res.ok) {
       // 2026-09-18修正: 従来はここでres.okを見ておらず、エラー応答の本文
@@ -241,6 +245,7 @@ export const api = {
         }
       }
     } catch (e) {
+      if (e && e.name === "AbortError") throw e;  // 意図した中断は記録しない
       // 2026-09-18追加(Fable2回目レビューで発見): マーカーが届く前に
       // 接続そのものが切れた場合(reader.read()自体が失敗)は、従来
       // ここが未捕捉のままerror-report.js経由にもならず、記録が一切

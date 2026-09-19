@@ -426,19 +426,65 @@ def _is_free_mode(payload: ConversationIn) -> bool:
     return payload.grp == "自由会話"
 
 
-def _conversation_prompts(payload: ConversationIn) -> tuple[str, str]:
+def _conversation_part(payload: ConversationIn) -> str:
+    """このリクエストが担当する部分: "all"|"reply"|"coach"(2026-09-19・案B)。
+    自由会話・未知の値は従来どおり"all"(1本で全部)。"coach"は学習者の発話
+    が無い会話開始(kickoff・先頭が"(")には作れないので拒否する。"""
+    if payload.part not in ("reply", "coach") or _is_free_mode(payload):
+        return "all"
+    if payload.part == "coach" and (
+        not payload.message.strip() or payload.message.startswith("(")
+    ):
+        raise errors.http_error("7002", "アドバイスを作れない入力です。")
+    return payload.part
+
+
+# 返答担当・コーチ担当に共通の「学習者・シーン」文(案B)。
+_REPLY_ONLY_NOTE = (
+    " 自然な英語で短めに返答してください(会話の続きだけを書く)。"
+    "添削・アドバイス・日本語の解説・【コーチ】【例】などの見出しは"
+    "別の担当が用意するので、**絶対に書かないでください**。"
+)
+_COACH_ONLY_NOTE = (
+    " 学習者の直前の発話について、必ず『【コーチ】』で書き始め、良い点と"
+    "直すべき点を日本語で1〜2行で述べてください。さらに最後の行に"
+    "『【例】<学習者が言える改善後の自然な英文>』を必ず1文付けてください"
+    "（この英文は読み上げ用）。会話の返事そのもの（相手役としての発言）は"
+    "書かないでください。"
+)
+
+
+def _conversation_prompts(
+    payload: ConversationIn, part: str = "all",
+) -> tuple[str, str]:
+    """part: "all"=従来の1本(返答+【コーチ】+【例】)/"reply"=返答のみ/
+    "coach"=【コーチ】+【例】のみ(案B・シーン会話と出張ロールプレイだけ。
+    自由会話は"all"のみ)。"""
     if payload.persona.strip():
         # B16: 出張準備の状況(役割/相手/心配なこと)から組み立てた人物像で
         # ロールプレイする。grp/topicの通常分岐には一切影響しない。
-        system = (
-            "あなたは英会話ロールプレイの相手役です。" + _LEVEL_NOTE +
-            f" 次の人物として一貫して振る舞ってください: {payload.persona}"
-            " 自然な英語で短めに返答し、次に【コーチ】として学習者の文の"
-            "良い点と直すべき点を日本語で1〜2行。"
-            " さらに最後の行に『【例】<学習者が言える改善後の自然な英文>』"
-            "を必ず1文付けてください（この英文は読み上げ用）。"
-            + _SAFETY_NOTE
-        )
+        if part == "reply":
+            system = (
+                "あなたは英会話ロールプレイの相手役です。" + _LEVEL_NOTE +
+                f" 次の人物として一貫して振る舞ってください: {payload.persona}"
+                + _REPLY_ONLY_NOTE + _SAFETY_NOTE
+            )
+        elif part == "coach":
+            system = (
+                "あなたは英会話コーチです。" + _LEVEL_NOTE +
+                "学習者は次の人物を相手にロールプレイの練習をしています: "
+                f"{payload.persona}" + _COACH_ONLY_NOTE + _SAFETY_NOTE
+            )
+        else:
+            system = (
+                "あなたは英会話ロールプレイの相手役です。" + _LEVEL_NOTE +
+                f" 次の人物として一貫して振る舞ってください: {payload.persona}"
+                " 自然な英語で短めに返答し、次に【コーチ】として学習者の文の"
+                "良い点と直すべき点を日本語で1〜2行。"
+                " さらに最後の行に『【例】<学習者が言える改善後の自然な英文>』"
+                "を必ず1文付けてください（この英文は読み上げ用）。"
+                + _SAFETY_NOTE
+            )
     elif _is_free_mode(payload):
         system = (
             "あなたは万能の英語学習チューターです。" + _LEVEL_NOTE +
@@ -458,15 +504,40 @@ def _conversation_prompts(payload: ConversationIn) -> tuple[str, str]:
             + _SAFETY_NOTE
         )
     else:
-        system = (
-            "あなたは親切な英会話パートナー兼コーチです。" + _LEVEL_NOTE +
-            f" シーン: {payload.grp} / {payload.topic}。"
-            " 自然な英語で短めに返答し、次に【コーチ】として学習者の文の"
-            "良い点と直すべき点を日本語で1〜2行。"
-            " さらに最後の行に『【例】<学習者が言える改善後の自然な英文>』"
-            "を必ず1文付けてください（この英文は読み上げ用）。"
-            + _SAFETY_NOTE
+        scene_line = f" シーン: {payload.grp} / {payload.topic}。"
+        if part == "reply":
+            system = (
+                "あなたは親切な英会話パートナーです。" + _LEVEL_NOTE +
+                scene_line + _REPLY_ONLY_NOTE + _SAFETY_NOTE
+            )
+        elif part == "coach":
+            system = (
+                "あなたは英会話コーチです。" + _LEVEL_NOTE +
+                scene_line + _COACH_ONLY_NOTE + _SAFETY_NOTE
+            )
+        else:
+            system = (
+                "あなたは親切な英会話パートナー兼コーチです。" + _LEVEL_NOTE +
+                scene_line +
+                " 自然な英語で短めに返答し、次に【コーチ】として学習者の文の"
+                "良い点と直すべき点を日本語で1〜2行。"
+                " さらに最後の行に『【例】<学習者が言える改善後の自然な英文>』"
+                "を必ず1文付けてください（この英文は読み上げ用）。"
+                + _SAFETY_NOTE
+            )
+    if part == "coach":
+        # コーチは学習者の直前の発話への添削なので、学習者コンテキスト全体
+        # (build_context・メモリ/復習語/学習履歴)は渡さず、直近3発話だけ
+        # 渡す(2本目の呼び出しの入力トークンを小さく保つ・案B)。
+        transcript = "\n".join(
+            f"{m.get('role')}: {m.get('content')}"
+            for m in payload.history[-3:]
         )
+        user = (
+            f"## これまでの会話(直近)\n{transcript}\n\n"
+            f"## 学習者の発話\n{payload.message}"
+        )
+        return system, user
     window = payload.history[-6:]
     transcript = "\n".join(
         f"{m.get('role')}: {m.get('content')}" for m in window
@@ -516,11 +587,20 @@ def conversation_stream(payload: ConversationIn):
     2026-09-18修正: ストリーム開始前に判定できる失敗(AI未設定/ガード拒否)
     は、通常のHTTPエラー応答として返す(以前はここも200でストリームを
     開始し、エラー文をAIの発言として返していた)。"""
-    system, user = _conversation_prompts(payload)
+    part = _conversation_part(payload)
+    system, user = _conversation_prompts(payload, part)
     mode = "free" if _is_free_mode(payload) else (payload.topic or payload.grp)
     model = _conversation_model(payload)
+    # 案B(2026-09-19): 返答(reply)とアドバイス(coach)を別リクエストで並行
+    # 実行する。coachは①featureを分けて原価だけ記録し別課金しない
+    # (ai._BUNDLED_FEATURES・1往復=1回課金を維持)、②分間レート制限の枠を
+    # 消費しない(1往復=1枠のまま)、③会話ログ(学習者の発話・AIの発言)は
+    # reply側だけが記録する(二重記録の防止・レベル判定はuser発話しか使わない)。
+    feature = "conversation_coach" if part == "coach" else "conversation"
+    max_tokens = 700 if part == "all" else 400
 
-    precheck = ai.chat_stream_precheck("conversation")
+    precheck = ai.chat_stream_precheck(
+        feature, rate_limit=(part != "coach"))
     if precheck:
         message, status = precheck
         return Response(content=message, status_code=status,
@@ -528,12 +608,13 @@ def conversation_stream(payload: ConversationIn):
 
     def gen():
         # Log the learner's message (real production for level judging).
-        if payload.message and not payload.message.startswith("("):
+        if (part != "coach" and payload.message
+                and not payload.message.startswith("(")):
             _log_conversation("user", payload.message, mode)
         full = []
         for chunk in ai.chat_stream(
             system, user, temperature=0.8,
-            max_tokens=700, feature="conversation", model=model,
+            max_tokens=max_tokens, feature=feature, model=model,
         ):
             full.append(chunk)
             yield chunk
@@ -543,7 +624,7 @@ def conversation_stream(payload: ConversationIn):
         # レビューでの指摘: 例外は正常なチャンクを何文字か返した**後**に
         # 起きることもある(例: OpenAI側が生成途中で切断)ため、先頭一致
         # (startswith)ではなく本文中のどこにあっても検出できるようにする。
-        if ai.STREAM_ERROR_MARKER not in joined:
+        if part != "coach" and ai.STREAM_ERROR_MARKER not in joined:
             _log_conversation("assistant", joined, mode)
 
     return StreamingResponse(gen(), media_type="text/plain; charset=utf-8")

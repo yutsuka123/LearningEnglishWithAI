@@ -72,6 +72,11 @@ class ConversationIn(BaseModel):
     # 2026-08-22: 応答速度優先チェックボックス。既定False(=通常モデル)。
     # Trueで会話専用の高速モデル(settings.conversation_model)を使う。
     fast: bool = False
+    # 2026-09-19(案B): 返答とアドバイス(コーチ+例)を別リクエストに分けて並行
+    # 実行する。"all"=従来どおり1本(既定・旧クライアント互換・自由会話)/
+    # "reply"=返答のみ/"coach"=【コーチ】と【例】のみ。シーン会話・出張
+    # ロールプレイ以外(自由会話)では常に"all"扱い(learn.py _conversation_part)。
+    part: str = "all"
 
 
 class TripPrepIn(BaseModel):

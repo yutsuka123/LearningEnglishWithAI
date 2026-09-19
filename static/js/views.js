@@ -3250,6 +3250,61 @@ export async function conversation(root) {
     if (tools) tools.remove();
   }
 
+  // 1往復ぶんのAI応答を取得して吹き出し(target)へ流し込む(2026-09-19・案B)。
+  // split=true(シーン会話/出張ロールプレイで学習者の発話がある時)は、
+  // 「返答」と「アドバイス(【コーチ】+【例】)」を別リクエストで**並行**に
+  // 取得し、返答が終わった時点でresolveする(=呼び出し元は先に読み上げ・
+  // 履歴保存へ進める)。アドバイスは遅れて同じ吹き出しの下に追記され、
+  // 失敗しても返答には影響しない。split=falseは従来どおり1本(自由会話・
+  // 会話開始)。課金(1往復1回)・レート制限の扱いはサーバー側
+  // (learn.py conversation_stream・ai._BUNDLED_FEATURES)を参照。
+  // 戻り値: { reply, historyText(履歴に積む本文=返答のみ), coachDone(Promise) }
+  async function streamTurn(body, target, { split }) {
+    const url = "/api/learn/conversation/stream";
+    let reply = "";
+    let coach = "";
+    let dead = false;   // 返答が失敗した後は吹き出しを書き換えない
+    const paint = () => {
+      if (dead) return;
+      const c = coach && !coach.includes("【コーチ")
+        ? "【コーチ】" + coach : coach;
+      target.textContent = c ? `${reply}\n\n${c}` : reply;
+      chat.scrollTop = chat.scrollHeight;
+    };
+    if (!split) {
+      try {
+        await api.stream(url, body, (chunk) => { reply += chunk; paint(); });
+      } catch (e) { dead = true; throw e; }
+      return { reply, historyText: reply, coachDone: Promise.resolve() };
+    }
+    const ctl = new AbortController();
+    const coachDone = api.stream(url, { ...body, part: "coach" },
+      (chunk) => { coach += chunk; paint(); }, { signal: ctl.signal })
+      .catch((e) => {
+        if (dead || (e && e.name === "AbortError")) return;
+        coach = "";   // 途中まで出ていたアドバイスは消し、失敗を静かに知らせる
+        paint();
+        const bubble = target.parentElement;
+        if (bubble) {
+          bubble.insertBefore(el(`<div class="muted coach-note"
+            style="font-size:12px">アドバイスを取得できませんでした</div>`),
+          bubble.querySelector(".row"));
+        }
+      });
+    try {
+      await api.stream(url, { ...body, part: "reply" },
+        (chunk) => { reply += chunk; paint(); });
+    } catch (e) {
+      dead = true;
+      ctl.abort();    // 返答が無いターンのアドバイスは不要(無駄な課金を止める)
+      throw e;
+    }
+    // 返答にコーチ部分が混ざってしまった場合に備え、履歴には返答部分だけ積む
+    // (次のターンのAIに、コーチ付きの形式を真似させないため)。
+    const historyText = reply.split("【コーチ")[0].trim() || reply;
+    return { reply, historyText, coachDone };
+  }
+
   // message can be a user turn, or an AI-initiated opener (kickoff=true).
   async function send(text, kickoff = false) {
     if (!kickoff) {
@@ -3266,13 +3321,14 @@ export async function conversation(root) {
     };
     const target = addMsg("ai", kickoff ? "…" : "");
     let full = "";
+    let turn = null;
     if (state.aiEnabled) {
       target.textContent = "";
       try {
-        await api.stream("/api/learn/conversation/stream", body, (chunk) => {
-          full += chunk; target.textContent = full;
-          chat.scrollTop = chat.scrollHeight;
+        turn = await streamTurn(body, target, {
+          split: !kickoff && s.grp !== "自由会話",
         });
+        full = turn.reply;
       } catch (e) {
         // 2026-09-18修正: 従来はここでエラーを検知しておらず、エラー
         // 応答の本文がそのままAIの発言として表示され、会話履歴に積まれ
@@ -3299,12 +3355,16 @@ export async function conversation(root) {
       full = "（AI未設定）設定でAPIキーを登録すると会話できます。";
       target.textContent = full;
     }
-    history.push({ role: "assistant", content: full });
+    history.push({
+      role: "assistant", content: turn ? turn.historyText : full,
+    });
     if (root.querySelector("#autoTts").checked && state.aiEnabled) {
       // 【コーチ】以降と日本語は読み上げない（英語部分のみ）。
       speech.speak(withSpeaker(englishOnly(full.split("【コーチ")[0])));
     }
     refreshCost();
+    // アドバイス(並行取得)が後から終わった分の費用表示も更新する。
+    if (turn) turn.coachDone.then(() => refreshCost());
     scheduleAutoSave();
   }
 
@@ -3394,14 +3454,14 @@ export async function conversation(root) {
     const s = scene();
     const target = addMsg("ai", "");
     let full = "";
+    let turn = null;
     try {
-      await api.stream("/api/learn/conversation/stream",
-        { grp: s.grp, topic: s.topic, history, persona: s.persona || "",
-          message: text, fast: root.querySelector("#fastMode").checked },
-        (chunk) => {
-          full += chunk; target.textContent = full;
-          chat.scrollTop = chat.scrollHeight;
-        });
+      // sendと同じく、返答とアドバイスを並行取得し返答だけを先に読み上げる。
+      turn = await streamTurn({
+        grp: s.grp, topic: s.topic, history, persona: s.persona || "",
+        message: text, fast: root.querySelector("#fastMode").checked,
+      }, target, { split: s.grp !== "自由会話" });
+      full = turn.reply;
     } catch (e) {
       // sendと同じ理由(2026-09-18修正)。従来はここでのエラーがそのまま
       // 「AIの発言」として画面表示・履歴保存され、さらに音声で読み上げ
@@ -3427,8 +3487,9 @@ export async function conversation(root) {
         { forceBrowser: true, lang: "ja-JP" });
       return;
     }
-    history.push({ role: "assistant", content: full });
+    history.push({ role: "assistant", content: turn.historyText });
     refreshCost();
+    turn.coachDone.then(() => refreshCost());
     scheduleAutoSave();
     await speech.speakAndWait(withSpeaker(englishOnly(full.split("【コーチ")[0])));
   }
