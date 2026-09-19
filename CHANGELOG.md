@@ -48,6 +48,38 @@ ver1.4.7が2026-09-19 03:00 JSTに本番デプロイ済み(デプロイログ・
   なし・メモ記録・管理タブ操作)を確認、非管理者が全メモAPIで403になる
   ことも確認済み。
 
+### 成長ログ フェーズ1(2026-09-19・Fable設計 docs/ANALYTICS_GROWTH_PLAN の3-D/3-A/3-B/3-M/3-C/3-K・デプロイ前のため1.4.8に同梱)
+
+ユーザー要望「ユーザー行動・登録者/訪問者を増やすためのログと分析の拡充」への
+対応(設計はFable、実装は隔離ブランチで行い、統合後に総合検証)。privacy.htmlの
+改定はオーナー判断でペンディングのまま同梱(docs/TODO.md参照)。
+
+- **自分とボットの除外(3-D)**: 管理者/テストアカウントのログインで内部Cookieを
+  発行し、`landing_visits`/`usage_events`/`client_errors`の`is_internal`に記録。
+  `landing_visits.bot_mark`にUA判定を保存。各分析の集計から除外(既存の
+  `_user_filter_sql`/`_own_device_sids`と整合)。「訪問」をJS到達あり or 同一
+  guest_sidで2回以上に再定義。
+- **流入元の記録(3-A)**: `referrer_host`(ホストのみ)・`utm_*`(許可キー・64字)・
+  `has_gclid`(**有無のみ。値は保存しない**)・`landing_path`。SEOページ
+  (/glossary等)への着地も記録。新規`app/services/traffic_source.py`
+  (チャネル分類・LLM/検索/SNSの判定リスト)。
+- **JS到達ビーコン(3-B)**: `boot`/`app_ready`/`leave`イベントと`usage_events.value`列。
+  `api.track`等に`keepalive:true`(遷移直前のCTAクリックの取りこぼし防止)。
+- **guest_sid↔user_idの紐付け(3-M)**: `users.signup_guest_sid`・
+  `landing_visits.user_id`(登録成功行)・`login_log.guest_sid`。
+- **広告費・コンバージョン(3-C)**: `logs.ad_spend_daily`と管理者専用API
+  (実額入力)。予算スケジュール(**2026-09-01から¥300/日・09-12から¥500/日・
+  09-19から¥1,000/日**、9/1より前は0円・旧月額定数は廃止)。実収支に
+  「実額/予算(推定)」の区別・CPA・数値目標(登録20/300・課金2/30)の達成率。
+  登録完了のgtagコンバージョンは`ADS_SIGNUP_CONVERSION_LABEL`が空の間は無効。
+- **インデックス(3-K)**: `idx_usage_events_guest`ほか4つ。IPの360日後
+  HMACハッシュ化・prune変更は未実装(TODO)。
+- **管理画面**: 「登録に至らない原因分析」に「JS到達」段・チャネル別/着地ページ別/
+  参照元/utm/SEO経由の内訳と初期表示msのKPI、訪問推移に「JS到達」系列。
+- 検証: 統合ツリー(.env無しの隔離worktree)で、HTTPレベル39項目・管理画面と回帰
+  (デスクトップ/スマホ)34項目・実ブラウザのビーコンが全て通過。旧スキーマ(データ
+  入り)のDBを新コードで起動し、件数不変・新列/index作成・管理API全て200を確認。
+
 ### 英会話の返答/アドバイス並行化(当初ver1.4.9として開発→デプロイ前のため1.4.8に統合・2026-09-19)
 
 ユーザー要望「英会話の返答をよりリアルタイムに。アドバイスと返答が一緒に
