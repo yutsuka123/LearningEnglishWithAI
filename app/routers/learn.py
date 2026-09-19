@@ -3,6 +3,7 @@ conversation role-play, writing feedback, and session start/end (§8-§14)."""
 
 from __future__ import annotations
 
+import hashlib
 import json
 import threading
 import time
@@ -431,37 +432,56 @@ def _is_free_mode(payload: ConversationIn) -> bool:
 # アドバイス(coach)は別課金しない(ai._BUNDLED_FEATURES)ため、そのままだと
 # 「返答なしでcoachだけを繰り返し呼べば、課金もレート制限も受けずに
 # AIを使い続けられる」抜け穴になる(2026-09-19・実装後の自己レビューで発見)。
-# coachは「同じ利用者の直近の返答(reply)1回につき1回」に限る: replyが
-# 事前チェックを通った時点で権利を1つ発行し、coachがそれを消費する。
-# 権利が無いcoachは429。単一プロセス前提のメモリ内管理(ai._call_timesと
-# 同じ。本番はuvicornワーカー1)。クライアントは返答の最初のチャンクが
-# 届いてからcoachを開始する(=権利の発行が必ず先になる)。
+# coachは「同じ利用者の直近の返答(reply)1回につき1回」に限る:
+#   ・権利はreplyが**最初のチャンクを返す直前**に発行する(事前チェック通過
+#     だけでは発行しない=最初のチャンク前に切断されたreplyは権利を残さない。
+#     Fableレビュー指摘)。クライアントは最初のチャンクを受け取ってから
+#     coachを開始するので、権利の発行は必ず先になる。
+#   ・権利は返答の内容キー(grp/topic/persona/学習者の発話/直近3発話の
+#     ハッシュ)に紐付ける。クライアントはreplyとcoachに同じbodyを送る
+#     ので互換性は保たれ、別の内容のcoachを無課金の汎用チャットに転用
+#     できない(Fableレビュー指摘)。
+#   ・上限5・120秒で失効。権利が無い/内容が違うcoachは429。
+# 単一プロセス前提のメモリ内管理(ai._call_timesと同じ。本番はuvicornワーカー1)。
 _COACH_CREDIT_TTL_SEC = 120.0
 _COACH_CREDIT_MAX = 5
-_coach_credits: dict[int, list[float]] = {}
+# coachに渡す1発話あたりの最大文字数。coachは別課金しないため、巨大な入力で
+# 原価を膨らませる増幅攻撃(履歴/messageに長大な文字列を送る)を防ぐ。
+_COACH_INPUT_MAX_CHARS = 400
+_coach_credits: dict[int, list[tuple[float, str]]] = {}
 _coach_credit_lock = threading.Lock()
 
 
-def _grant_coach_credit(uid: int) -> None:
+def _coach_key(payload: ConversationIn) -> str:
+    """replyとcoachが同じ発話を指すことを確かめるための内容キー。"""
+    hist = [str(m.get("content", "")) for m in payload.history[-3:]]
+    raw = json.dumps(
+        [payload.grp, payload.topic, payload.persona, payload.message, hist],
+        ensure_ascii=False)
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+
+
+def _grant_coach_credit(uid: int, key: str) -> None:
     now = time.monotonic()
     with _coach_credit_lock:
-        live = [t for t in _coach_credits.get(uid, [])
+        live = [(t, k) for t, k in _coach_credits.get(uid, [])
                 if now - t < _COACH_CREDIT_TTL_SEC]
-        live.append(now)
+        live.append((now, key))
         _coach_credits[uid] = live[-_COACH_CREDIT_MAX:]
 
 
-def _take_coach_credit(uid: int) -> bool:
+def _take_coach_credit(uid: int, key: str) -> bool:
     now = time.monotonic()
     with _coach_credit_lock:
-        live = [t for t in _coach_credits.get(uid, [])
+        live = [(t, k) for t, k in _coach_credits.get(uid, [])
                 if now - t < _COACH_CREDIT_TTL_SEC]
-        if not live:
-            _coach_credits[uid] = []
-            return False
-        live.pop(0)
+        for i, (_t, k) in enumerate(live):
+            if k == key:
+                del live[i]
+                _coach_credits[uid] = live
+                return True
         _coach_credits[uid] = live
-        return True
+        return False
 
 
 def _conversation_part(payload: ConversationIn) -> str:
@@ -567,13 +587,14 @@ def _conversation_prompts(
         # コーチは学習者の直前の発話への添削なので、学習者コンテキスト全体
         # (build_context・メモリ/復習語/学習履歴)は渡さず、直近3発話だけ
         # 渡す(2本目の呼び出しの入力トークンを小さく保つ・案B)。
+        clip = _COACH_INPUT_MAX_CHARS
         transcript = "\n".join(
-            f"{m.get('role')}: {m.get('content')}"
+            f"{m.get('role')}: {str(m.get('content', ''))[:clip]}"
             for m in payload.history[-3:]
         )
         user = (
             f"## これまでの会話(直近)\n{transcript}\n\n"
-            f"## 学習者の発話\n{payload.message}"
+            f"## 学習者の発話\n{payload.message[:clip]}"
         )
         return system, user
     window = payload.history[-6:]
@@ -639,7 +660,8 @@ def conversation_stream(payload: ConversationIn):
 
     from ..services.auth import current_user_id
     uid = current_user_id()
-    if part == "coach" and not _take_coach_credit(uid):
+    coach_key = _coach_key(payload)
+    if part == "coach" and not _take_coach_credit(uid, coach_key):
         return Response(
             content="アドバイスは直前の返答に対してのみ作成できます。",
             status_code=429, media_type="text/plain")
@@ -649,8 +671,6 @@ def conversation_stream(payload: ConversationIn):
         message, status = precheck
         return Response(content=message, status_code=status,
                         media_type="text/plain")
-    if part == "reply":
-        _grant_coach_credit(uid)
 
     def gen():
         # Log the learner's message (real production for level judging).
@@ -658,10 +678,16 @@ def conversation_stream(payload: ConversationIn):
                 and not payload.message.startswith("(")):
             _log_conversation("user", payload.message, mode)
         full = []
+        granted = False
         for chunk in ai.chat_stream(
             system, user, temperature=0.8,
             max_tokens=max_tokens, feature=feature, model=model,
         ):
+            # 最初の(エラーでない)チャンクを返す直前にcoachの権利を発行する。
+            if (part == "reply" and not granted
+                    and ai.STREAM_ERROR_MARKER not in chunk):
+                _grant_coach_credit(uid, coach_key)
+                granted = True
             full.append(chunk)
             yield chunk
         joined = "".join(full)

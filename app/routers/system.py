@@ -2536,9 +2536,17 @@ FIXED_MONTHLY_AD_COST_JPY = 3000.0
 def _cost_report_feature_bucket(feature: str) -> str:
     """crossword_hint/crossword_hint_reviewは1ゲーム単位でまとめて
     課金される(balance_ledgerのreason='crossword_game'は機能別に
-    分かれない)ため、原価側もcrossword一本にまとめて突き合わせる。"""
-    return "crossword" if (feature or "").startswith("crossword") else (
-        feature or "(不明)")
+    分かれない)ため、原価側もcrossword一本にまとめて突き合わせる。
+    同様に英会話のアドバイス(conversation_coach)は返答(conversation)の
+    課金に同梱しており単独では課金されない(ai._BUNDLED_FEATURES)ため、
+    原価もconversationにまとめる(別行にすると売上0の赤字行に見える・
+    2026-09-19)。"""
+    f = feature or "(不明)"
+    if f.startswith("crossword"):
+        return "crossword"
+    if f == "conversation_coach":
+        return "conversation"
+    return f
 
 
 def _cost_report_margin(cost_jpy: float, charged_jpy: float) -> dict:
