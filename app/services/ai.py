@@ -20,6 +20,7 @@ from typing import Iterator
 
 from ..config import load_settings, log
 from ..database import db
+from . import tts_hints
 from .errors import ERROR_CODES
 
 # ---------------------------------------------------------------------------
@@ -788,7 +789,10 @@ def synthesize_speech(
         voice = "alloy"
 
     instr = _tts_instructions(style)
-    cache = _tts_cache_path(settings.tts_model, voice, text[:4000], instr)
+    # 綴りが英単語と同じ日本語由来語(sake等)は、TTSに読み通りの綴りを渡す。
+    # 当てはまらないテキストでは入力が変わらない(=既存のtts_cacheキーも不変)。
+    speak = tts_hints.spoken_text(text[:4000])
+    cache = _tts_cache_path(settings.tts_model, voice, speak, instr)
     if cache.exists():
         return cache.read_bytes(), None  # cache hit → no API call, no cost
 
@@ -806,7 +810,7 @@ def synthesize_speech(
         resp = client.audio.speech.create(
             model=settings.tts_model,
             voice=voice,
-            input=text[:4000],
+            input=speak,
             response_format="mp3",
             **extra,
         )

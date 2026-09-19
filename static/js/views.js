@@ -4685,6 +4685,8 @@ export async function admin(root) {
     </tr>`;
   }).join("");
 
+  // メモ（管）の状態(サーバーの admin_memos.STATUSES と同じ並び・同じ名前)。
+  const AM_STATUSES = ["起票", "対応済み", "対応不要", "ペンディング", "クローズ"];
   const TABS = [
     ["user-manage", "👤 ユーザー別管理"],
     ["user-usage", "📊 ユーザー別使用状況"],
@@ -5185,12 +5187,16 @@ export async function admin(root) {
           同じ内容を <code>/api/admin-memos</code> または
           <code>admin_memos</code>・<code>admin_memo_tags</code>テーブルで
           検索・集計できます。</p>
+        <p class="muted">状態: <b>起票</b>(記録した直後) →
+          <b>対応済み</b>(直した) / <b>対応不要</b> / <b>ペンディング</b>(保留)
+          → <b>クローズ</b>(確認まで終わり)。各メモの状態欄から
+          どの状態へも変更できます。</p>
         <div class="row">
           <input id="amQ" placeholder="🔍 キーワード" style="width:180px" />
           <select id="amStatus">
             <option value="">状態: 全て</option>
-            <option value="未対応" selected>状態: 未対応</option>
-            <option value="対応済み">状態: 対応済み</option>
+            ${AM_STATUSES.map((s) => `<option value="${s}"${
+              s === "起票" ? " selected" : ""}>状態: ${s}</option>`).join("")}
           </select>
           <button type="button" class="btn ghost" id="amReload">再読込</button>
           <span class="muted" id="amCount"></span>
@@ -5341,6 +5347,12 @@ export async function admin(root) {
       word_detail: "単語詳細", phrase_detail: "フレーズ詳細",
       settings: "設定画面",
     };
+    // 状態ピルの色(既存の.pillの色を流用): 起票=橙(要対応) / 対応済み・
+    // クローズ=緑 / 対応不要・ペンディング=青。
+    const AM_PILL = {
+      "起票": "vague", "対応済み": "mastered", "クローズ": "mastered",
+      "対応不要": "info", "ペンディング": "info",
+    };
     const loadMemos = async () => {
       const q = new URLSearchParams({ limit: "200" });
       const kw = root.querySelector("#amQ").value.trim();
@@ -5356,6 +5368,14 @@ export async function admin(root) {
             + (st ? "?status=" + encodeURIComponent(st) : "")),
         ]);
         root.querySelector("#amCount").textContent = `${res.total}件`;
+        // 状態の選択肢に全体の件数を添える(絞り込みに関係なく全メモ分)。
+        const stSel = root.querySelector("#amStatus");
+        [...stSel.options].forEach((o) => {
+          if (o.value) {
+            o.textContent = `状態: ${o.value} (${
+              (res.status_counts || {})[o.value] ?? 0})`;
+          }
+        });
         amTagsBox.innerHTML = tg.tags.map((t) => `<button type="button"
           class="step-chip am-tag${amSelTags.has(t.tag) ? " active" : ""}"
           data-tag="${escapeHtml(t.tag)}">#${escapeHtml(t.tag)}
@@ -5368,8 +5388,8 @@ export async function admin(root) {
                 ・${AM_SRC[m.source] || "—"}${m.ref_english
                   ? ` ・<b>${escapeHtml(m.ref_english)}</b>
                     ${escapeHtml(m.ref_japanese)}` : ""}</span>
-              <span class="pill ${m.status === "対応済み"
-                ? "mastered" : "vague"}">${escapeHtml(m.status)}</span>
+              <span class="pill ${AM_PILL[m.status] || "info"}">${
+                escapeHtml(m.status)}</span>
             </div>
             <p style="white-space:pre-wrap; margin:6px 0">${
               escapeHtml(m.body)}</p>
@@ -5377,11 +5397,11 @@ export async function admin(root) {
               ${m.tags.map((t) => `<button type="button"
                 class="step-chip am-tag" data-tag="${escapeHtml(t)}">#${
                 escapeHtml(t)}</button>`).join("")}
-              <button type="button" class="btn ghost am-status"
-                data-id="${m.id}" data-next="${m.status === "対応済み"
-                  ? "未対応" : "対応済み"}"
-                style="padding:3px 8px">${m.status === "対応済み"
-                  ? "未対応に戻す" : "対応済みにする"}</button>
+              <label class="muted" style="margin-left:auto">状態:
+                <select class="am-status" data-id="${m.id}"
+                  style="padding:3px 6px">${AM_STATUSES.map((s) =>
+                    `<option${s === m.status ? " selected" : ""}>${s}</option>`
+                  ).join("")}</select></label>
             </div>
           </div>`).join("")
           : `<p class="muted">該当するメモはありません。</p>`;
@@ -5403,18 +5423,22 @@ export async function admin(root) {
           const t = tag.dataset.tag;
           if (amSelTags.has(t)) amSelTags.delete(t); else amSelTags.add(t);
           loadMemos();
-          return;
         }
-        const st = e.target.closest(".am-status");
+      });
+    // 状態の変更(各メモの状態セレクト)。
+    root.querySelector('.admin-sec[data-sec="memos"]')
+      .addEventListener("change", async (e) => {
+        const st = e.target.closest("select.am-status");
         if (!st) return;
         st.disabled = true;
         try {
           await api.put(`/api/admin-memos/${st.dataset.id}/status`,
-            { status: st.dataset.next });
+            { status: st.value });
           loadMemos();
         } catch (err) {
           st.disabled = false;
           toast("更新に失敗しました");
+          loadMemos();
         }
       });
     let memosLoaded = false;

@@ -8,8 +8,11 @@
 
 - 認可: 全エンドポイント管理者(role=admin)専用（サーバー側で強制。
   フロントのボタン非表示は表示上の案内にすぎない）。
-- 記録は追記のみ。本文の編集・削除は用意しない(ログだから)。対応状況
-  (未対応/対応済み)だけ後から更新できる。
+- 記録は追記のみ。本文の編集・削除は用意しない(ログだから)。状態だけ
+  後から更新できる。
+- 状態(2026-09-20〜): 起票(記録した直後) → 対応済み(直した) / 対応不要 /
+  ペンディング(保留) → クローズ(確認まで終わり)。どの状態からどの状態へも
+  移せる(戻す・やり直しも許す)。旧「未対応」は「起票」の別名として受け付ける。
 - 保存先は core.db（users等と同じ、日々書き込まれるライブデータ側）。
 """
 
@@ -29,7 +32,18 @@ router = APIRouter(prefix="/api/admin-memos", tags=["admin-memos"])
 
 SOURCES = {"word_detail", "phrase_detail", "settings"}
 REF_KINDS = {"word", "phrase"}
-STATUSES = ("未対応", "対応済み")
+STATUSES = ("起票", "対応済み", "対応不要", "ペンディング", "クローズ")
+DEFAULT_STATUS = "起票"
+# resolved_at(=決着した日時)を付ける状態。ペンディング/起票に戻したら消す。
+_DONE_STATUSES = ("対応済み", "対応不要", "クローズ")
+# 旧名の別名(AI/スクリプトが旧名で呼んでも動くように)。
+_LEGACY_STATUS = {"未対応": "起票"}
+
+
+def normalize_status(s: str) -> str:
+    """旧名を新名に読み替える。未知の値はそのまま返す(呼び出し側で弾く)。"""
+    s = (s or "").strip()
+    return _LEGACY_STATUS.get(s, s)
 
 # 画面ごとに必ず付ける自動タグ(「設定画面のメモだけ」等で絞り込めるように)。
 _AUTO_TAG_BY_SOURCE = {
@@ -95,10 +109,11 @@ def create_memo(payload: MemoIn):
         _require_admin(conn)
         cur = conn.execute(
             "INSERT INTO admin_memos (user_id, source, ref_kind, ref_id, "
-            " ref_english, ref_japanese, body) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            " ref_english, ref_japanese, body, status) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             (current_user_id(), source, ref_kind, ref_id,
              payload.ref_english.strip()[:200],
-             payload.ref_japanese.strip()[:200], body),
+             payload.ref_japanese.strip()[:200], body, DEFAULT_STATUS),
         )
         memo_id = cur.lastrowid
         conn.executemany(
@@ -121,8 +136,11 @@ def list_memos(
     """メモ一覧(新しい順)。絞り込みはすべてAND。
     - q: 本文・対象の英語/日本語に含まれるキーワード
     - tag: タグ(カンマ区切りで複数指定するとすべてを含むものだけ)
-    - status: 未対応 / 対応済み
+    - status: 起票 / 対応済み / 対応不要 / ペンディング / クローズ
+      (旧名「未対応」は起票として扱う)
+    返り値の`status_counts`は絞り込みに関係なく全メモの状態別件数。
     """
+    status = normalize_status(status)
     limit = max(1, min(limit, LIST_LIMIT_MAX))
     offset = max(0, offset)
     conds: list[str] = []
@@ -167,6 +185,9 @@ def list_memos(
             [*args, limit, offset],
         ).fetchall()
         memos = [dict(r) for r in rows]
+        by_status = {r["status"]: r["n"] for r in conn.execute(
+            "SELECT status, COUNT(*) AS n FROM admin_memos GROUP BY status")}
+        status_counts = {s: by_status.get(s, 0) for s in STATUSES}
         tags_by_memo: dict[int, list[str]] = {m["id"]: [] for m in memos}
         if memos:
             marks = ",".join("?" * len(memos))
@@ -178,12 +199,13 @@ def list_memos(
                 tags_by_memo[r["memo_id"]].append(r["tag"])
     for m in memos:
         m["tags"] = tags_by_memo[m["id"]]
-    return {"total": total, "memos": memos}
+    return {"total": total, "memos": memos, "status_counts": status_counts}
 
 
 @router.get("/tags")
 def tag_counts(status: str = ""):
     """タグ別の件数(多い順)。絞り込みUIのチップ表示・集計用。"""
+    status = normalize_status(status)
     conds = ""
     args: list = []
     if status in STATUSES:
@@ -206,18 +228,22 @@ class StatusIn(BaseModel):
 
 @router.put("/{memo_id}/status")
 def update_status(memo_id: int, payload: StatusIn):
-    """対応状況(未対応/対応済み)を更新する。本文・タグは変えられない。"""
-    if payload.status not in STATUSES:
+    """状態を更新する(5種類のどれへでも移せる)。本文・タグは変えられない。
+    resolved_atは対応済み/対応不要/クローズに**初めて入った時**に記録し、
+    その間の移動(対応済み→クローズ等)では変えず、起票/ペンディングに
+    戻したら消す。"""
+    status = normalize_status(payload.status)
+    if status not in STATUSES:
         raise errors.http_error("7002", "状態が正しくありません。")
     with db() as conn:
         _require_admin(conn)
         cur = conn.execute(
             "UPDATE admin_memos SET status = ?, "
-            " resolved_at = CASE WHEN ? = '対応済み' "
-            "   THEN datetime('now') ELSE NULL END "
+            " resolved_at = CASE WHEN ? IN (?, ?, ?) "
+            "   THEN COALESCE(resolved_at, datetime('now')) ELSE NULL END "
             "WHERE id = ?",
-            (payload.status, payload.status, memo_id),
+            (status, status, *_DONE_STATUSES, memo_id),
         )
         if cur.rowcount == 0:
             raise errors.http_error("7001", "メモが見つかりません。")
-    return {"ok": True, "id": memo_id, "status": payload.status}
+    return {"ok": True, "id": memo_id, "status": status}

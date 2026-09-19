@@ -185,14 +185,14 @@ if (typeof window !== "undefined" && window.addEventListener) {
 }
 
 // Play a TTS Blob on the single reused (and unlocked) audio element.
-async function playBlob(blob, rate) {
+async function playBlob(blob, rate, voice) {
   stopSpeaking();
   const a = audioElement();
   try { if (a._objUrl) URL.revokeObjectURL(a._objUrl); } catch (e) { /* ignore */ }
   a._objUrl = URL.createObjectURL(blob);
   a.onended = null; a.onerror = null;   // clear stale handlers (speakAndWait)
   a.src = a._objUrl;
-  a.playbackRate = rate || playbackRate;
+  a.playbackRate = effectiveRate(voice, rate);
   await a.play();
 }
 
@@ -246,7 +246,7 @@ export async function say(text, opts = {}) {
     }
     const blob = await res.blob();
     if (myToken !== playSeq) return; // 新しい再生要求が来ていた→古い音声は捨てる
-    await playBlob(blob, opts.rate);
+    await playBlob(blob, opts.rate, currentVoiceName);
     if (usageCb) usageCb();
   } catch (e) {
     // ここに来るのはネットワーク到達不能等、サーバー応答が得られない場合のみ。
@@ -277,11 +277,24 @@ export async function sayWithVoice(text, voice, opts = {}) {
     }
     const blob = await res.blob();
     if (myToken !== playSeq) return; // 新しい再生要求が来ていた→古い音声は捨てる
-    await playBlob(blob, opts.rate);
+    await playBlob(blob, opts.rate, voice);
     if (usageCb) usageCb();
   } catch (e) {
     if (myToken === playSeq) browserSpeak(text, opts); // ネットワーク到達不能等のみ
   }
+}
+
+// 声ごとの再生速度補正(2026-09-20)。男声(ash)は女声(nova)より発話が遅く
+// 聞こえる(実測: 前後の無音を除いた発話区間の長さの中央値がash/nova=1.14、
+// 単語1.17・例文1.09〜1.22・フレーズ1.14〜1.19)。音声ファイルは触らず、
+// 再生時だけ速さを掛けて体感をそろえる(音程は変わらない)。元に戻す/
+// 調整するときはこの値を変えるだけ(1にすれば補正なし)。
+const VOICE_RATE_FACTOR = { ash: 1.15 };
+function voiceFactor(voice) { return VOICE_RATE_FACTOR[voice] || 1; }
+let playingVoice = "";   // 最後に再生した声(再生速度ボタンで再計算するため)
+function effectiveRate(voice, rate) {
+  playingVoice = voice || "";
+  return (rate || playbackRate) * voiceFactor(voice);
 }
 
 // Global playback speed (再生速度ボタン用)。音程は変えず速さだけ変える。
@@ -290,7 +303,7 @@ export function getPlaybackRate() { return playbackRate; }
 export function setPlaybackRate(r) {
   playbackRate = r;
   localStorage.setItem("playbackRate", String(r));
-  if (audioEl) audioEl.playbackRate = r;
+  if (audioEl) audioEl.playbackRate = r * voiceFactor(playingVoice);
 }
 
 // Play by item 番号(ID): the server returns saved audio for free (no token)
@@ -331,7 +344,7 @@ export async function sayItem(
     }
     const blob = await res.blob();
     if (myToken !== playSeq) return; // 新しい再生要求が来ていた→古い音声は捨てる
-    await playBlob(blob, opts.rate);
+    await playBlob(blob, opts.rate, voice);
     if (usageCb) usageCb();
   } catch (e) {
     // ここに来るのはネットワーク到達不能等、サーバー応答が得られない場合のみ。
@@ -358,7 +371,7 @@ export async function sayMaterial(materialId, voice, opts = {}) {
     }
     const blob = await res.blob();
     if (myToken !== playSeq) return; // 新しい再生要求が来ていた→古い音声は捨てる
-    await playBlob(blob, opts.rate);
+    await playBlob(blob, opts.rate, voice);
     if (usageCb) usageCb();
   } catch (e) {
     // ネットワーク到達不能等。テキストは呼び出し側で保持していないため
@@ -414,7 +427,7 @@ export function sayItemAndWait(itemType, id, kind, voice, fallbackText, opts = {
         try { if (a._objUrl) URL.revokeObjectURL(a._objUrl); } catch (e) {}
         a._objUrl = URL.createObjectURL(blob);
         a.src = a._objUrl;
-        a.playbackRate = opts.rate || playbackRate;
+        a.playbackRate = effectiveRate(voice, opts.rate);
         a.onended = () => resolve();
         a.onerror = () => resolve();
         a.play();
@@ -443,7 +456,7 @@ export async function previewOpenAIVoice(voice, text) {
     }
     const blob = await res.blob();
     if (myToken !== playSeq) return { ok: true }; // 新しい要求が来ていた→捨てる
-    await playBlob(blob, 1);
+    await playBlob(blob, 1, voice);
     if (usageCb) usageCb();
     return { ok: true };
   } catch (e) {
@@ -556,7 +569,7 @@ export function speakAndWait(text, opts = {}) {
         try { if (a._objUrl) URL.revokeObjectURL(a._objUrl); } catch (e) {}
         a._objUrl = URL.createObjectURL(blob);
         a.src = a._objUrl;
-        a.playbackRate = opts.rate || playbackRate;
+        a.playbackRate = effectiveRate(currentVoiceName, opts.rate);
         a.onended = () => resolve();
         a.onerror = () => resolve();
         a.play();

@@ -569,9 +569,10 @@ CREATE TABLE IF NOT EXISTS admin_memos (
     ref_english  TEXT    NOT NULL DEFAULT '',
     ref_japanese TEXT    NOT NULL DEFAULT '',
     body         TEXT    NOT NULL,
-    status       TEXT    NOT NULL DEFAULT '未対応',  -- 未対応|対応済み
+    -- 起票|対応済み|対応不要|ペンディング|クローズ (旧「未対応」は起票へ移行済み)
+    status       TEXT    NOT NULL DEFAULT '起票',
     created_at   TEXT    NOT NULL DEFAULT (datetime('now')),  -- UTC
-    resolved_at  TEXT
+    resolved_at  TEXT    -- 対応済み/対応不要/クローズに初めて入った日時(UTC)
 );
 CREATE INDEX IF NOT EXISTS idx_admin_memos_ref
     ON admin_memos(ref_kind, ref_id);
@@ -1128,7 +1129,18 @@ def _migrate(conn: sqlite3.Connection) -> None:
     _add_col(conn, "crossword_sessions", "screen_fit",
              "screen_fit INTEGER NOT NULL DEFAULT 0")
     _migrate_analytics_2026_09_19(conn)
+    _migrate_admin_memo_status_2026_09_20(conn)
     _migrate_multiuser(conn)
+
+
+def _migrate_admin_memo_status_2026_09_20(conn: sqlite3.Connection) -> None:
+    """メモ（管）の状態を5種類(起票/対応済み/対応不要/ペンディング/
+    クローズ)にした際の移行。旧「未対応」は「起票」に読み替える。冪等
+    (該当行が無ければ何もしない)。既存テーブルのDEFAULT '未対応'は
+    SQLiteでは変えられないため、アプリ側が`status`を必ず明示して挿入する
+    (admin_memos.create_memo)。resolved_atは変えない。"""
+    conn.execute(
+        "UPDATE admin_memos SET status = '起票' WHERE status = '未対応'")
 
 
 def _migrate_analytics_2026_09_19(conn: sqlite3.Connection) -> None:
