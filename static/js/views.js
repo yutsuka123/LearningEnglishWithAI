@@ -4850,7 +4850,10 @@ export async function admin(root) {
           導入)を使い、訪問→「このアプリについて」確認→登録試行→登録完了
           の各段階の人数を集計。導入前のデータには付いていないため、
           この機能導入以降のデータからのみ正確になります（それ以前は
-          上の「未登録アクセス状況」(IP単位)を参照してください）。</p>
+          上の「未登録アクセス状況」(IP単位)を参照してください）。
+          ボット・自分の端末(管理者/テストでログインした端末・内部
+          Cookie)は除外しています。「JS到達」以降の流入元・表示ビーコンは
+          計測開始以降のデータのみです。</p>
         <div class="row">
           <label>直近:
             <select id="regFunnelDays">
@@ -5240,9 +5243,11 @@ export async function admin(root) {
           (為替換算)とサーバー代・広告費などの固定費(月額を集計期間で
           日割り)を差し引いた、本当の損益です。上の「コスト管理」は
           内部ポイント経済の粗利チェック(ポイント付与額とAI原価の
-          突き合わせ)であり、これとは別の指標です。固定費の金額は
-          app/routers/system.pyのFIXED_MONTHLY_*_JPYで管理していて、
-          金額が変わったら都度更新が必要です。</p>
+          突き合わせ)であり、これとは別の指標です。サーバー代の金額は
+          app/routers/system.pyのFIXED_MONTHLY_SERVER_COST_JPYで管理して
+          います。広告費は、下の「広告費の実額入力」で入れた日は実額、
+          入力の無い日は予算スケジュール(AD_DAILY_BUDGET_SCHEDULE)で
+          日割りした<b>予算(推定)</b>で計算します。</p>
         <div class="row" style="align-items:center">
           <label>集計期間:
             <select id="plReportDays">
@@ -5254,6 +5259,29 @@ export async function admin(root) {
           </label>
         </div>
         <div id="plReportWrap" class="mt"><p class="muted">読み込み中…</p></div>
+      </div>
+      <div class="card">
+        <h2>📣 広告費の実額入力</h2>
+        <p class="muted">Google広告の管理画面で確認した1日ごとの実際の
+          費用(円)を入力します(日付はJST・同じ日に入れ直すと上書き)。
+          入力した日は予算(推定)ではなくこの実額が使われ、上の実収支と
+          広告のCPAに反映されます。入力の無い日は予算スケジュールで
+          補われます。</p>
+        <div class="row" style="align-items:center; gap:8px; flex-wrap:wrap">
+          <label>日付 <input type="date" id="adSpendDate" /></label>
+          <label>広告 <select id="adSpendSource">
+            <option value="google_ads">Google広告</option>
+            <option value="other">その他</option>
+          </select></label>
+          <label>金額(円) <input type="number" id="adSpendJpy" min="0"
+            step="1" style="width:110px" /></label>
+          <label>メモ <input type="text" id="adSpendNote" maxlength="200"
+            style="width:160px" /></label>
+          <button class="btn" id="adSpendSave"
+            style="padding:4px 12px">登録</button>
+          <span id="adSpendMsg" class="muted"></span>
+        </div>
+        <div id="adSpendList" class="mt"><p class="muted">読み込み中…</p></div>
       </div>
     </div>
 
@@ -5721,7 +5749,15 @@ export async function admin(root) {
         <td>${escapeHtml(t.kind || "")}</td>
         <td>${escapeHtml(t.path || t.category || "")}</td>
         <td class="muted">${escapeHtml(t.label || "")}${
-          t.success != null ? `成否:${t.success ? "成功" : "失敗"}` : ""}</td>
+          t.value != null ? ` ${Math.round(t.value)}ms` : ""}${
+          t.success != null ? `成否:${t.success ? "成功" : "失敗"}` : ""}${
+          t.referrer_host ? ` ref:${escapeHtml(t.referrer_host)}` : ""}${
+          t.utm_source ? ` utm:${escapeHtml(
+            [t.utm_source, t.utm_medium, t.utm_campaign]
+              .filter(Boolean).join("/"))}` : ""}${
+          t.has_gclid ? " 広告クリック" : ""}${
+          t.is_internal ? " (自分の端末)" : ""}${
+          t.user_id ? ` user#${t.user_id}` : ""}</td>
       </tr>`).join("");
       wrapEl.innerHTML = rows
         ? `<table><thead><tr>
@@ -5762,6 +5798,81 @@ export async function admin(root) {
             ${s.rate_from_start}%（前段階比${s.rate_from_prev}%）</span>
         </div>`).join("");
       const botExcluded = res.bot_excluded || 0;
+      const internalExcluded = res.internal_excluded || 0;
+      // --- JS到達・人間訪問・流入元別内訳(2026-09-19・計測設計3-A/3-B/3-D) ---
+      const pct = (n, d) => (d ? `${(n / d * 100).toFixed(1)}%` : "—");
+      const ms = (v) => (v == null ? "—" : `${Math.round(v).toLocaleString()}ms`);
+      const jt = res.js_timing || {};
+      const visitedN = stages[0].count;
+      const jsKpiHtml = `
+        <h3 class="mt">JS到達・人間訪問（「91%が無操作」の内訳を分解する指標）</h3>
+        <div class="grid cols-4 mt">
+          <div class="stat"><div class="num">${res.human_visited ?? 0}</div>
+            <div class="lbl">人間訪問(基準)<br><span class="muted">JS到達 or
+              2回以上閲覧</span></div></div>
+          <div class="stat"><div class="num">${pct(res.js_reached ?? 0, visitedN)}</div>
+            <div class="lbl">JS到達率<br><span class="muted">${res.js_reached ?? 0}/${visitedN}</span></div></div>
+          <div class="stat"><div class="num">${pct(res.app_ready ?? 0, visitedN)}</div>
+            <div class="lbl">初期表示完了率<br><span class="muted">${res.app_ready ?? 0}/${visitedN}</span></div></div>
+          <div class="stat"><div class="num">${ms(jt.ready_ms_median)}</div>
+            <div class="lbl">初期表示までの中央値<br><span class="muted">90%点
+              ${ms(jt.ready_ms_p90)}</span></div></div>
+        </div>
+        <p class="muted" style="font-size:12px">
+          HTMLは届いたがJSが動かなかった/表示前に離脱した訪問は「訪問」と
+          「JS到達」の差です。JS到達の記録は計測開始後のデータのみ(それ以前の
+          期間は0になり、JS到達率・人間訪問は低く出ます)。HTML到達までの
+          中央値 ${ms(jt.html_ms_median)}。</p>`;
+      const chRows = (res.by_channel || []).map((c) => `<tr>
+        <td>${escapeHtml(c.label)}</td><td>${c.visited}</td>
+        <td>${c.human}</td>
+        <td>${c.js_reached}<span class="muted"> (${pct(c.js_reached, c.visited)})</span></td>
+        <td>${c.engaged}<span class="muted"> (${pct(c.engaged, c.visited)})</span></td>
+        <td>${c.signup_attempted}</td><td>${c.signup_succeeded}</td>
+      </tr>`).join("");
+      const lpRows = (res.by_landing || []).map((c) => `<tr>
+        <td>${escapeHtml(c.label)}</td><td>${c.visited}</td>
+        <td>${c.js_reached}</td><td>${c.engaged}</td>
+        <td>${c.signup_succeeded}</td>
+      </tr>`).join("");
+      const refRows = (res.top_referrers || []).map((r) => `<tr>
+        <td>${escapeHtml(r.host)}</td><td>${r.count}</td></tr>`).join("");
+      const utmRows = (res.utm_breakdown || []).map((r) => `<tr>
+        <td>${escapeHtml(r.label)}</td><td>${r.count}</td></tr>`).join("");
+      const seo = res.via_seo || {};
+      const sourceHtml = `
+        <h3 class="mt">流入元別の内訳（チャネル×人数・初回の訪問が基準）</h3>
+        <p class="muted" style="font-size:12px">
+          チャネル: 広告=広告クリックID(gclid等)付き/utm_medium=cpc、
+          生成AI=chatgpt.com等のreferrer、検索・SNS/記事=referrerホスト、
+          サイト内遷移=自ドメインのreferrer。referrerはホスト名のみ、広告
+          クリックIDは「付いていたか」だけを保存しています(値は保存
+          しません)。「流入元不明」は計測開始前の訪問です。
+          操作あり=ボタン押下・再生・ようこそ以外の画面遷移のいずれか。</p>
+        ${chRows
+          ? `<div style="overflow-x:auto"><table class="mt"><thead><tr>
+              <th>チャネル</th><th>訪問</th><th>人間訪問</th><th>JS到達</th>
+              <th>操作あり</th><th>登録試行</th><th>登録完了</th>
+              </tr></thead><tbody>${chRows}</tbody></table></div>`
+          : `<p class="muted">この期間の訪問はありません。</p>`}
+        <p class="muted" style="font-size:12px">
+          広告(gclid)付きの訪問者: ${res.ad_click_visitors ?? 0}人 /
+          SEOページ(用語集・フレーズ集・クロスワード紹介)に着地:
+          ${seo.seo_landed ?? 0}人のうちアプリ等へも遷移: ${seo.seo_then_app ?? 0}人</p>
+        ${lpRows
+          ? `<h3 class="mt">着地ページ別</h3>
+            <table class="mt"><thead><tr><th>着地ページ</th><th>訪問</th>
+              <th>JS到達</th><th>操作あり</th><th>登録完了</th></tr></thead>
+              <tbody>${lpRows}</tbody></table>` : ""}
+        ${refRows
+          ? `<details class="mt"><summary>参照元ホスト上位（初回訪問）</summary>
+              <table class="mt"><thead><tr><th>ホスト</th><th>人数</th></tr>
+              </thead><tbody>${refRows}</tbody></table></details>` : ""}
+        ${utmRows
+          ? `<details class="mt"><summary>utmパラメータ別（source / medium /
+              campaign）</summary><table class="mt"><thead><tr>
+              <th>utm</th><th>人数</th></tr></thead><tbody>${utmRows}</tbody>
+              </table></details>` : ""}`;
       const deviceBreakdown = res.device_breakdown || [];
       const deviceRows = deviceBreakdown.map((d) => `<tr>
         <td>${escapeHtml(d.device)}</td><td>${escapeHtml(d.browser)}</td>
@@ -5794,7 +5905,9 @@ export async function admin(root) {
       wrap.innerHTML = `${tilesHtml}${barsHtml}
         <p class="muted mt" style="font-size:12px">
           ⚙️ ボット・クローラー(curl等の機械的アクセス)と判定した
-          ${botExcluded}件は上記の集計から除外済みです。</p>
+          ${botExcluded}件、自分の端末(管理者/テストアカウント・内部Cookie)
+          ${internalExcluded}件は上記の集計から除外済みです。</p>
+        ${jsKpiHtml}${sourceHtml}
         <h3 class="mt">端末・ブラウザの内訳（「訪問」段階・人間判定分のみ）</h3>
         ${deviceBreakdown.length
           ? `<table class="mt"><thead><tr>
@@ -6156,7 +6269,8 @@ export async function admin(root) {
     const n = daily.length;
     const maxVal = Math.max(
       1, ...daily.map((d) =>
-        showBot ? Math.max(d.human_total, d.bot_total) : d.human_total));
+        Math.max(d.js_reached || 0,
+          showBot ? Math.max(d.human_total, d.bot_total) : d.human_total)));
     const magnitude = Math.pow(10, Math.floor(Math.log10(maxVal || 1)));
     const niceMax = [1, 2, 5, 10].map((s) => s * magnitude)
       .find((v) => maxVal <= v) || 10 * magnitude;
@@ -6181,6 +6295,7 @@ export async function admin(root) {
         font-size="10" fill="var(--muted)">${short}</text>`;
     }).join("");
 
+    const hasJs = daily.some((d) => (d.js_reached || 0) > 0);
     const linePath = (key) => daily.map((d, i) =>
       `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(d[key]).toFixed(1)}`)
       .join(" ");
@@ -6196,7 +6311,7 @@ export async function admin(root) {
     return `
       <svg viewBox="0 0 ${W} ${H}" class="visit-trend-svg" role="img"
         aria-label="訪問者数(人間${
-          showBot ? "/クローラー" : ""})の日別推移グラフ">
+          showBot ? "/クローラー" : ""}・JS到達)の日別推移グラフ">
         ${gridLines}
         ${xLabels}
         ${showBot ? `<path d="${linePath("bot_total")}" fill="none"
@@ -6205,6 +6320,9 @@ export async function admin(root) {
         <path d="${linePath("human_total")}" fill="none"
           stroke="var(--vt-human)" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" />
+        ${hasJs ? `<path d="${linePath("js_reached")}" fill="none"
+          stroke="var(--vt-js)" stroke-width="2" stroke-dasharray="5 3"
+          stroke-linecap="round" stroke-linejoin="round" />` : ""}
         ${showBot ? dots("bot_total", "vt-dot-bot") : ""}
         ${dots("human_total", "vt-dot-human")}
         ${last ? endLabel(last.human_total, -8) : ""}
@@ -6239,7 +6357,8 @@ export async function admin(root) {
       tip.style.top = `${e.clientY - rect.top - 10}px`;
       tip.innerHTML = `<b>${escapeHtml(d.date)}</b><br>
         🧑 人間: ${d.human_total}件(IP ${d.human_unique_ips})<br>
-        🤖 クローラー: ${d.bot_total}件(IP ${d.bot_unique_ips})`;
+        🤖 クローラー: ${d.bot_total}件(IP ${d.bot_unique_ips})<br>
+        ⚡ JS到達: ${d.js_reached ?? 0}人`;
     });
     svgEl.addEventListener("mouseleave", () => {
       tip.style.display = "none";
@@ -6253,11 +6372,14 @@ export async function admin(root) {
   // ユニークIP数は日をまたぐ重複排除ができない(バックエンドがIP集合では
   // なく件数しか返さない)ため、累積表示は延べ数のみに適用する。
   function toCumulativeVisits(daily) {
-    let h = 0, b = 0;
+    let h = 0, b = 0, j = 0;
     return daily.map((d) => {
       h += d.human_total;
       b += d.bot_total;
-      return { ...d, human_total: h, bot_total: b };
+      // JS到達の日別値は日ごとのユニーク人数(日をまたぐ重複排除は
+      // できない)ため、累積表示でも単純な累計にする(延べ人数の目安)。
+      j += (d.js_reached || 0);
+      return { ...d, human_total: h, bot_total: b, js_reached: j };
     });
   }
   async function loadVisitTrend() {
@@ -6289,29 +6411,34 @@ export async function admin(root) {
         <div class="lbl">クローラー(延べ)</div></div>
       <div class="stat"><div class="num">${s.bot_unique_ips ?? 0}</div>
         <div class="lbl">クローラー(ユニークIP)</div></div>
+      <div class="stat"><div class="num">${s.js_reached ?? 0}</div>
+        <div class="lbl">JS到達(ユニーク・計測開始後のみ)</div></div>
     </div>`;
     const legendHtml = `<div class="row mt visit-trend-legend">
       <span class="vt-legend-item"><span class="vt-swatch vt-dot-human">
         </span>人間</span>
       ${showBot ? `<span class="vt-legend-item">
         <span class="vt-swatch vt-dot-bot"></span>クローラー</span>` : ""}
+      <span class="vt-legend-item"><span class="vt-swatch vt-dot-js">
+        </span>JS到達(点線)</span>
     </div>`;
     const rowsHtml = daily.slice().reverse().map((d) => `<tr>
       <td class="muted">${escapeHtml(d.date)}</td>
       <td>${d.human_total}</td><td>${d.human_unique_ips}</td>
       <td>${d.bot_total}</td><td>${d.bot_unique_ips}</td>
+      <td>${d.js_reached ?? 0}</td>
     </tr>`).join("");
     wrap.innerHTML = `${summaryHtml}${legendHtml}
       <div class="visit-trend-wrap mt">
         ${buildVisitTrendSvg(daily, showBot)}
         <div class="vt-tooltip" style="display:none"></div>
       </div>
-      <table class="mt"><thead><tr>
+      <div style="overflow-x:auto"><table class="mt" style="min-width:440px"><thead><tr>
         <th>日付</th><th>人間(${cumulative ? "累積" : "延べ"})</th>
         <th>人間(IP)</th>
         <th>クローラー(${cumulative ? "累積" : "延べ"})</th>
-        <th>クローラー(IP)</th>
-      </tr></thead><tbody>${rowsHtml}</tbody></table>`;
+        <th>クローラー(IP)</th><th>JS到達</th>
+      </tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
     wireVisitTrendHover(wrap.querySelector(".visit-trend-wrap"), daily);
   }
   root.querySelectorAll(".visit-trend-range").forEach((b) => {
@@ -6975,6 +7102,46 @@ export async function admin(root) {
       const profitBadge = res.is_loss
         ? `<span class="badge-bad">赤字</span>`
         : `<span class="badge-ok">黒字</span>`;
+      const yen = (n) => `¥${Math.round(n).toLocaleString()}`;
+      const c = res.cost;
+      const ad = res.ads || {};
+      const goals = res.goals || {};
+      const near = goals.near || {};
+      const fin = goals.final || {};
+      const goalPct = (n, t) => (t ? Math.min(100, Math.round(n / t * 100)) : 0);
+      const goalHtml = `
+        <h3 class="mt">🎯 数値目標の達成状況（累計）</h3>
+        <table><thead><tr><th></th><th>現在</th><th>直近目標</th>
+          <th>最終目標</th></tr></thead><tbody>
+          <tr><td>登録者(管理者/テスト除く)</td><td>${goals.registrants ?? 0}人</td>
+            <td>${near.registrants ?? "-"}人
+              (${goalPct(goals.registrants ?? 0, near.registrants)}%)</td>
+            <td>${fin.registrants ?? "-"}人
+              (${goalPct(goals.registrants ?? 0, fin.registrants)}%)</td></tr>
+          <tr><td>課金した人</td><td>${goals.payers ?? 0}人</td>
+            <td>${near.payers ?? "-"}人
+              (${goalPct(goals.payers ?? 0, near.payers)}%)</td>
+            <td>${fin.payers ?? "-"}人
+              (${goalPct(goals.payers ?? 0, fin.payers)}%)</td></tr>
+        </tbody></table>`;
+      const adsHtml = `
+        <h3 class="mt">広告費の内訳（実額と予算(推定)）</h3>
+        <table><tbody>
+          <tr><td>実額（入力済み ${c.ads_actual_days ?? 0}日分）</td>
+            <td>${yen(c.ads_actual_jpy ?? 0)}</td></tr>
+          <tr><td>予算(推定)（入力の無い ${c.ads_estimated_days ?? 0}日分・
+            予算スケジュールで日割り）</td>
+            <td>${yen(c.ads_estimated_jpy ?? 0)}</td></tr>
+          <tr><td>広告(gclid付き)経由の訪問者 / 登録者（自前計測）</td>
+            <td>${ad.visitors ?? 0}人 / ${ad.signups ?? 0}人</td></tr>
+          <tr><td>登録あたり広告費(CPA・参考値)</td>
+            <td>${ad.cpa_jpy != null ? yen(ad.cpa_jpy) : "—"}</td></tr>
+        </tbody></table>
+        <p class="muted" style="font-size:12px">
+          予算スケジュール: ${(res.budget_schedule || []).map((b) =>
+            `${escapeHtml(b.from)}以降 ¥${b.jpy.toLocaleString()}/日`)
+            .join("、")}。CPAは実額が入力されるまで予算(推定)ベースの
+          参考値で、登録が少ないうちはぶれが大きい点に注意。</p>`;
       wrap.innerHTML = `
         <div class="grid cols-4 mt">
           <div class="stat"><div class="num">¥${res.revenue.total_jpy.toLocaleString()}</div>
@@ -6995,16 +7162,87 @@ export async function admin(root) {
         <table><tbody>
           <tr><td>AI原価(円換算)</td><td>¥${res.cost.ai_jpy.toLocaleString()}</td></tr>
           <tr><td>サーバー代(日割り)</td><td>¥${res.cost.server_jpy.toLocaleString()}</td></tr>
-          <tr><td>広告費(日割り)</td><td>¥${res.cost.ads_jpy.toLocaleString()}</td></tr>
-        </tbody></table>`;
+          <tr><td>広告費(実額+予算(推定))</td><td>¥${res.cost.ads_jpy.toLocaleString()}</td></tr>
+        </tbody></table>
+        ${adsHtml}${goalHtml}`;
     } catch (e) {
       wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
     }
   }
+  // --- 広告費の実額入力(2026-09-19・計測設計3-C) ---
+  function jstToday() {
+    // ブラウザのタイムゾーンによらずJSTの今日(YYYY-MM-DD)を得る。
+    return new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+  }
+  async function loadAdSpendList() {
+    const wrap = root.querySelector("#adSpendList");
+    if (!wrap) return;
+    try {
+      const res = await api.get("/api/system/admin/ad-spend?days=60");
+      const items = res.items || [];
+      if (!items.length) {
+        wrap.innerHTML = `<p class="muted">実額の入力はまだありません
+          (直近60日)。入力の無い日は予算(推定)で計算されます。</p>`;
+        return;
+      }
+      wrap.innerHTML = `<table><thead><tr><th>日付(JST)</th><th>広告</th>
+        <th>金額</th><th>メモ</th><th></th></tr></thead><tbody>${
+        items.map((it) => `<tr>
+          <td>${escapeHtml(it.date)}</td><td>${escapeHtml(it.source)}</td>
+          <td>¥${Math.round(it.jpy).toLocaleString()}</td>
+          <td class="muted">${escapeHtml(it.note || "")}</td>
+          <td><button class="btn ghost ad-spend-del"
+            data-date="${escapeHtml(it.date)}"
+            data-source="${escapeHtml(it.source)}"
+            style="padding:2px 8px">取消</button></td></tr>`).join("")
+      }</tbody></table>`;
+      wrap.querySelectorAll(".ad-spend-del").forEach((b) => {
+        b.addEventListener("click", async () => {
+          if (!confirm(`${b.dataset.date} の実額を取り消しますか？`
+            + "(その日は予算(推定)に戻ります)")) return;
+          try {
+            await api.del(`/api/system/admin/ad-spend?date=${
+              encodeURIComponent(b.dataset.date)}&source=${
+              encodeURIComponent(b.dataset.source)}`);
+            loadAdSpendList();
+            loadPLReport();
+          } catch (e) { toast(`取消に失敗: ${e.message}`); }
+        });
+      });
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  const adSpendDateEl = root.querySelector("#adSpendDate");
+  if (adSpendDateEl) adSpendDateEl.value = jstToday();
+  root.querySelector("#adSpendSave")?.addEventListener("click", async () => {
+    const msg = root.querySelector("#adSpendMsg");
+    const date = root.querySelector("#adSpendDate").value;
+    const jpy = root.querySelector("#adSpendJpy").value;
+    if (!date || jpy === "") {
+      msg.textContent = "日付と金額を入力してください。";
+      return;
+    }
+    try {
+      await api.post("/api/system/admin/ad-spend", {
+        date, jpy: Number(jpy),
+        source: root.querySelector("#adSpendSource").value,
+        note: root.querySelector("#adSpendNote").value,
+      });
+      msg.textContent = `${date} を登録しました。`;
+      root.querySelector("#adSpendJpy").value = "";
+      loadAdSpendList();
+      loadPLReport();
+    } catch (e) { msg.textContent = `登録に失敗: ${e.message}`; }
+  });
   let plReportLoaded = false;
   root.querySelector('.step-chip[data-sec="pl-report"]')
     ?.addEventListener("click", () => {
-      if (!plReportLoaded) { plReportLoaded = true; loadPLReport(); }
+      if (!plReportLoaded) {
+        plReportLoaded = true;
+        loadPLReport();
+        loadAdSpendList();
+      }
     });
   root.querySelector("#plReportDays")
     ?.addEventListener("change", loadPLReport);

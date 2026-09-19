@@ -620,7 +620,8 @@ CREATE TABLE IF NOT EXISTS base_orders (
 -- 正（2026-09-18更新・従来この一覧が古くなり実態と食い違っていたため、
 -- 「ログを一通り見直す」際はまずここを更新すること）。
 -- クライアントから送れるのは POST /api/system/track 経由の
--- 'page'/'click' のみ（app/routers/system.pyのtrack_event()で制限。
+-- 'page'/'click'/'boot'/'leave'（2026-09-19〜boot/leave追加）のみ
+-- （app/routers/system.pyのtrack_event()で制限。
 -- 'play'等はサーバー側で実際に処理が成功した時だけtracking.log_event()
 -- から直接書く設計＝クライアントが偽装できない）。
 --   page:        category=タブID(例 'vocab') / label=タブの日本語名
@@ -635,6 +636,14 @@ CREATE TABLE IF NOT EXISTS base_orders (
 --   play_error:  (2026-09-17〜) 再生ボタンは押されたが音声を返せなかった
 --                ケース。category=item_type、label='no_text:.../
 --                no_charge:.../synth_fail:...'(app/routers/learn.py)
+--   boot:        (2026-09-19〜) JS到達ビーコン。category='html'=ページの
+--                インラインscriptが実行された(label=index/login/about・
+--                value=そこまでのms)、category='app_ready'=SPAの初回go()
+--                (value=ページ開始からのms)。操作ではないので利用状況の
+--                件数集計からは除外して読む(app/routers/system.py
+--                _UE_ACTION_ONLY)。
+--   leave:       (2026-09-19〜) ページ離脱/非表示時のビーコン。
+--                label=hidden/pagehide・value=ページ開始からの滞在ms。
 --   word_domain: 単語の分野(words.domain)。category=分野名
 --   phrase_scene: フレーズのシーン(phrases.scene)。category=シーン名
 -- user_id は auth.current_user_id() をそのまま入れる（ゲストは疑似ユーザー
@@ -675,6 +684,20 @@ CREATE TABLE IF NOT EXISTS logs.client_errors (
 );
 CREATE INDEX IF NOT EXISTS logs.idx_client_errors_created
     ON client_errors(created_at);
+
+-- 広告費の実額(2026-09-19・計測設計フェーズ1 3-C)。管理画面「実収支」
+-- から手入力する(Ads APIは使わない)。日付はJST暦日(YYYY-MM-DD)。実額が
+-- ある日は実額、無い日は予算スケジュール(app/routers/system.pyの
+-- AD_DAILY_BUDGET_SCHEDULE)で日割りした推定値にフォールバックする。
+-- 追記・上書き専用(1日1ソース1行)の管理用テーブルで、prune対象外。
+CREATE TABLE IF NOT EXISTS logs.ad_spend_daily (
+    date       TEXT NOT NULL,
+    source     TEXT NOT NULL DEFAULT 'google_ads',
+    jpy        REAL NOT NULL DEFAULT 0,
+    note       TEXT DEFAULT '',
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (date, source)
+);
 
 -- ゲーム機能第一弾「クロスワード」のプレイセッション(2026-09-03・
 -- テストユーザー+管理者限定公開)。puzzle_json にサーバー側の正解
@@ -1104,7 +1127,66 @@ def _migrate(conn: sqlite3.Connection) -> None:
     # 独立した詰め方の選択肢。games.py NewGamePayload.screen_fit参照)。
     _add_col(conn, "crossword_sessions", "screen_fit",
              "screen_fit INTEGER NOT NULL DEFAULT 0")
+    _migrate_analytics_2026_09_19(conn)
     _migrate_multiuser(conn)
+
+
+def _migrate_analytics_2026_09_19(conn: sqlite3.Connection) -> None:
+    """ユーザー行動・成長のための計測設計フェーズ1(2026-09-19)で足す
+    列とインデックス。すべて冪等（_add_col / CREATE INDEX IF NOT EXISTS）。
+    既存行は列のDEFAULT(0/空文字)扱い＝旧データはis_internal=0・
+    bot_mark=0(未判定)・流入元なしとして読める。
+
+    - 3-D 自分とボットの除外: landing_visits/usage_events/client_errors
+      に is_internal(内部Cookie由来=自分の端末)、landing_visits に
+      bot_mark(visitor_kind.classify_uaの記録時の結果・0=印なし)。
+    - 3-A 流入元の帰属: landing_visits に referrer_host(ホスト名のみ)・
+      utm_*(許可キーのみ64字)・has_gclid(gclid/gbraid/wbraidの有無だけ・
+      値は保存しない)・landing_path。
+    - 3-B JS到達ビーコン: usage_events に value(ms等の数値)。
+    - 3-M guest_sid↔user_idの明示保存: users.signup_guest_sid、
+      landing_visits.user_id(kind='signup'かつ成功行のみ)、
+      login_log.guest_sid。
+    - 3-K インデックス: guest_sid起点のファネル系クエリ・期間絞り用。
+      (IPは360日経過後にHMACハッシュ化する方針。未実装・prune_logs.pyで
+      実装予定。usage_eventsの保持日数も未確定なのでここでは変更しない。)
+    """
+    for col, ddl in (
+        ("referrer_host", "referrer_host TEXT DEFAULT ''"),
+        ("utm_source", "utm_source TEXT DEFAULT ''"),
+        ("utm_medium", "utm_medium TEXT DEFAULT ''"),
+        ("utm_campaign", "utm_campaign TEXT DEFAULT ''"),
+        ("utm_content", "utm_content TEXT DEFAULT ''"),
+        ("has_gclid", "has_gclid INTEGER DEFAULT 0"),
+        ("landing_path", "landing_path TEXT DEFAULT ''"),
+        ("bot_mark", "bot_mark INTEGER DEFAULT 0"),
+        ("is_internal", "is_internal INTEGER DEFAULT 0"),
+        ("user_id", "user_id INTEGER"),
+    ):
+        _add_col(conn, "landing_visits", col, ddl)
+    _add_col(conn, "usage_events", "value", "value REAL")
+    _add_col(conn, "usage_events", "is_internal",
+             "is_internal INTEGER DEFAULT 0")
+    _add_col(conn, "client_errors", "is_internal",
+             "is_internal INTEGER DEFAULT 0")
+    # guest_sid列は作成時からCREATE TABLEにあるが、下のindexが列の存在を
+    # 前提にするため念のため冪等に確認する(旧スキーマ由来のDB対策)。
+    _add_col(conn, "client_errors", "guest_sid", "guest_sid TEXT DEFAULT ''")
+    _add_col(conn, "login_log", "guest_sid", "guest_sid TEXT DEFAULT ''")
+    _add_col(conn, "users", "signup_guest_sid",
+             "signup_guest_sid TEXT DEFAULT ''")
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS logs.idx_usage_events_guest "
+        "ON usage_events(guest_sid, created_at)")
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS logs.idx_landing_visits_guest "
+        "ON landing_visits(guest_sid)")
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS logs.idx_landing_visits_created "
+        "ON landing_visits(created_at)")
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS logs.idx_client_errors_guest "
+        "ON client_errors(guest_sid)")
 
 
 def _add_col(conn: sqlite3.Connection, table: str, col: str,

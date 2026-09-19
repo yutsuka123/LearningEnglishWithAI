@@ -376,6 +376,11 @@ let hasNavigatedOnce = false;
 let leaveHook = null;
 export function onLeaveView(fn) { leaveHook = fn; }
 
+// SPAの初期表示に到達したことを1回だけ送る(2026-09-19・計測設計3-B)。
+// index.htmlのインラインboot(HTML到達)との差で、初期API待ち(taxonomy/
+// my-usage等)にかかった時間と、その間の離脱が分かる。
+let appReadySent = false;
+
 export async function go(tab) {
   userNavigated = true;
   if (!ROUTES[tab]) tab = "dashboard";
@@ -413,6 +418,10 @@ export async function go(tab) {
   const myRoot = document.createElement("div");
   myRoot.innerHTML = '<p class="muted">読み込み中…</p>';
   view().replaceChildren(myRoot);
+  if (!appReadySent) {
+    appReadySent = true;
+    api.track("boot", "app_ready", "", Math.round(performance.now()));
+  }
   api.track("page", tab, TAB_LABELS[tab] || tab);
   try {
     await ROUTES[tab](myRoot);

@@ -49,6 +49,15 @@ _current_guest_sid: contextvars.ContextVar[str] = contextvars.ContextVar(
     "current_guest_sid", default=""
 )
 
+# 現在のリクエストが「自分(管理者/テスト)の端末」からか（2026-09-19・計測
+# 設計フェーズ1 3-D）。内部Cookie(INTERNAL_COOKIE)を持つリクエストで1。
+# usage_events/landing_visits/client_errorsのis_internal列に記録し、分析
+# 集計から自分の操作を確実に除外するために使う（IP変動・ログアウト後・
+# シークレットウィンドウ以外の未ログイン閲覧でも効く）。
+_current_is_internal: contextvars.ContextVar[int] = contextvars.ContextVar(
+    "current_is_internal", default=0
+)
+
 # 現在の呼び出しがWebリクエスト経由か（未設定＝CLI/バッチ実行）。
 # current_user_idはCLI実行時ownerにフォールバックするため、Web経由の
 # owner本人の利用と区別がつかなかった問題を解消する（§CLIスクリプトの
@@ -126,6 +135,18 @@ def reset_current_guest_sid(token: contextvars.Token) -> None:
 
 def current_guest_sid() -> str:
     return _current_guest_sid.get()
+
+
+def set_current_is_internal(flag: bool) -> contextvars.Token:
+    return _current_is_internal.set(1 if flag else 0)
+
+
+def reset_current_is_internal(token: contextvars.Token) -> None:
+    _current_is_internal.reset(token)
+
+
+def current_is_internal() -> int:
+    return _current_is_internal.get()
 
 
 def mark_web_request() -> contextvars.Token:
@@ -558,6 +579,15 @@ _SESSION_TTL = 60 * 60 * 24 * 30  # 30日
 GUEST_SID_COOKIE = "ela_gsid"
 GUEST_SID_TTL = 60 * 60 * 24 * 180  # 180日
 
+# 「自分(管理者/テストアカウント)の端末」の目印Cookie（2026-09-19・計測
+# 設計フェーズ1 3-D）。管理者/is_testアカウントのログイン成功時、または
+# 新端末用の`/?internal=1`で付与する(1年・HttpOnly・SameSite=Lax)。値は
+# 「1」だけで秘密情報ではない(誰が付けても自分の訪問が分析から消える
+# だけで無害)。ADMIN_KNOWN_IPS(手動保守・IP変動に弱い)と_own_device_sids
+# (その端末で一度でもログインした履歴が要る)の弱点を補う。
+INTERNAL_COOKIE = "ela_internal"
+INTERNAL_TTL = 60 * 60 * 24 * 365  # 1年
+
 
 def cookie_secure(request) -> bool:
     """本番HTTPSでは Secure Cookie を必須にする。COOKIE_SECURE=1 で強制、
@@ -666,15 +696,22 @@ def record_login_failure(username: str, ip: str) -> None:
 
 
 def record_login_event(
-    conn: sqlite3.Connection, username: str, ip: str, success: bool
+    conn: sqlite3.Connection, username: str, ip: str, success: bool,
+    guest_sid: Optional[str] = None,
 ) -> int:
     """login_logへの記録（管理画面のログイン履歴表示用・2026-08-13）。
     ロック判定自体は従来通りメモリ上のカウンタ(_LOGIN_FAILS等)で行う。
     戻り値は挿入したレコードのid（DNS逆引きホスト名を後から
-    update_login_hostname()で埋めるためのキー・2026-08-20）。"""
+    update_login_hostname()で埋めるためのキー・2026-08-20）。
+    2026-09-19: guest_sid(ゲストセッションCookie)も記録する（別端末から
+    の再訪を人単位に寄せるための明示的な結び付け・計測設計3-M）。省略
+    時は現在のリクエストのguest_sidを使う。"""
+    if guest_sid is None:
+        guest_sid = current_guest_sid()
     cur = conn.execute(
-        "INSERT INTO login_log (username, ip, success) VALUES (?, ?, ?)",
-        (username.strip(), ip, 1 if success else 0),
+        "INSERT INTO login_log (username, ip, success, guest_sid) "
+        "VALUES (?, ?, ?, ?)",
+        (username.strip(), ip, 1 if success else 0, guest_sid or ""),
     )
     return cur.lastrowid
 

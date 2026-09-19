@@ -28,6 +28,8 @@
      クローラー=橙、隣接ペアのΔE基準を両モードでPASS確認済み)。 */
   --vt-human: #3987e5;
   --vt-bot: #d95926;
+  /* JS到達(点線・2026-09-19): 人間/クローラーと形(点線)でも区別する。 */
+  --vt-js: #2fb68a;
 }
 
 /* ライトテーマ（既定はダークのまま。ユーザーが明示的に切り替えた時だけ適用。
@@ -47,6 +49,7 @@
   --danger: #d64545;
   --vt-human: #2a78d6;
   --vt-bot: #eb6834;
+  --vt-js: #14946a;
 }
 
 * { box-sizing: border-box; }
@@ -1024,6 +1027,7 @@ table.rtable .ops-cell .vague-btn { margin-left: 0; }
   border-radius: 50%; }
 .vt-dot-human { fill: var(--vt-human); background: var(--vt-human); }
 .vt-dot-bot { fill: var(--vt-bot); background: var(--vt-bot); }
+.vt-dot-js { fill: var(--vt-js); background: var(--vt-js); }
 .visit-trend-wrap { position: relative; }
 .visit-trend-svg { width: 100%; height: auto; display: block; }
 .vt-tooltip {

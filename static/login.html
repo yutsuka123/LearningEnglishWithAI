@@ -337,17 +337,41 @@
     // ページのため static/js/api.js は使わず、同じ /api/system/track を
     // 直接叩く（失敗しても画面操作を妨げないbest-effort。ゲストも記録
     // 対象になっている・system.pyのtrack_event参照）。
-    function track(kind, category, label) {
+    // 2026-09-19(計測設計3-B): keepalive:trueでページ遷移直前の送信も
+    // 中断されないようにし、valueにms等の数値を載せられるようにした。
+    function track(kind, category, label, value) {
       try {
         fetch('/api/system/track', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ kind, category, label }),
+          body: JSON.stringify({ kind, category, label, value }),
+          keepalive: true,
         });
       } catch (e) { /* ignore */ }
     }
+    // JS到達ビーコン(このページのJSが実行された印・index.htmlのbootと
+    // 同じ。label=どのページか)。
+    track('boot', 'html', 'login', Math.round(performance.now()));
     track('page', 'login_page',
       location.hash === '#signup' ? 'via_signup_hash' : 'direct');
+
+    // Google広告のコンバージョン(登録完了)計測(2026-09-19・計測設計3-C)。
+    // ラベルはオーナーがGoogle広告管理画面でコンバージョンアクション
+    // (ウェブサイト・「登録完了」)を作成した後に設定する(未確定のため空)。
+    // 空のあいだは何も送らない。拡張コンバージョン(メールアドレスの
+    // ハッシュ送信)は使わない方針。送信するのは「登録が完了した」という
+    // イベントのみ(個人を特定する値は渡さない)。
+    const ADS_SIGNUP_CONVERSION_LABEL = '';
+    function reportSignupConversion() {
+      try {
+        if (!ADS_SIGNUP_CONVERSION_LABEL) return;
+        if (typeof window.gtag !== 'function') return;
+        window.gtag('event', 'conversion', {
+          send_to: 'AW-17457232912/' + ADS_SIGNUP_CONVERSION_LABEL,
+          transport_type: 'beacon',
+        });
+      } catch (e) { /* 計測の失敗で登録後の遷移を妨げない */ }
+    }
 
     const fLogin = document.getElementById('f');
     const fSignup = document.getElementById('fSignup');
@@ -613,7 +637,10 @@
           }),
         });
         const d = await r.json();
-        if (d.ok) { location.href = safeNextUrl(); }
+        if (d.ok) {
+          reportSignupConversion();
+          location.href = safeNextUrl();
+        }
         else { se.textContent = d.error || '登録に失敗しました。'; }
       } catch (_) { se.textContent = '通信エラーが発生しました。';
       } finally { if (submitBtn) submitBtn.disabled = false; }
