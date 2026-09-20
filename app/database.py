@@ -1197,8 +1197,9 @@ def _migrate_analytics_2026_09_19(conn: sqlite3.Connection) -> None:
       landing_visits.user_id(kind='signup'かつ成功行のみ)、
       login_log.guest_sid。
     - 3-K インデックス: guest_sid起点のファネル系クエリ・期間絞り用。
-      (IPは360日経過後にHMACハッシュ化する方針。未実装・prune_logs.pyで
-      実装予定。usage_eventsの保持日数も未確定なのでここでは変更しない。)
+      (IPは360日経過後にHMACハッシュ化する→2026-09-21に実装済み:
+      services/ip_retention.py・毎日のscripts/prune_usage_events.pyから実行。
+      usage_eventsの保持は90日で確定。)
     """
     for col, ddl in (
         ("referrer_host", "referrer_host TEXT DEFAULT ''"),

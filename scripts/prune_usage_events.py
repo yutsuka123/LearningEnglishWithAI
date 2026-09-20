@@ -19,6 +19,12 @@ AI利用ログ・残高変更履歴等は無期限のまま・対象外）のた
 snapshot自体の不具合が長引いて容量が心配な緊急時だけ`--force`で
 スナップショットの結果に関わらず削除できる。
 
+**2026-09-21: 同じ実行の中で、取得から360日を過ぎたIPアドレスを復元できない
+変換値(HMAC)へ置き換える**(`app/services/ip_retention.py`・プライバシー
+ポリシー§9「IPアドレス・訪問/ログイン/エラーの記録: 約360日」)。行は消さず
+IP列だけ置き換える(ログイン履歴等の行は残り、生のIPだけが期限で消える)。
+usage_eventsの削除・スナップショットの成否とは独立に、毎回最初に行う。
+
 使い方(VPS上、eigo-appコンテナの中のpython3で実行を想定):
   docker exec eigo-app python3 scripts/prune_usage_events.py
   docker exec eigo-app python3 scripts/prune_usage_events.py --force  # 緊急時のみ
@@ -34,7 +40,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.database import db, init_db  # noqa: E402
-from app.services import growth_metrics  # noqa: E402
+from app.services import growth_metrics, ip_retention  # noqa: E402
 
 # 90日保持の方針(プライバシーポリシー記載と一致・2026-09-20に35日から変更)。
 # cronは毎日03:45に実行されるため、余裕を足さず90日ちょうどでよい。
@@ -52,6 +58,18 @@ def main(argv: list[str] | None = None,
     args = ap.parse_args(argv)
     now = now or datetime.now(timezone.utc)
     init_db()
+
+    # 0) 取得から360日を過ぎたIPアドレスを復元できない変換値へ置き換える
+    # (プライバシーポリシー§9・2026-09-21)。usage_eventsの削除やスナップ
+    # ショットの成否とは独立に行い、失敗しても以降の処理は続ける。
+    try:
+        with db() as conn:
+            res_ip = ip_retention.anonymize_old_ips(conn, now=now)
+        detail = "、".join(f"{k}:{v}" for k, v in res_ip.items() if v) or "対象なし"
+        print(f"IP保持期限({ip_retention.IP_KEEP_DAYS}日超): {detail}")
+    except Exception as e:
+        print(f"IP保持期限の処理に失敗: {type(e).__name__}: {e}",
+              file=sys.stderr)
 
     # 1) 削除の前に日次スナップショットを更新する。失敗したら削除しない。
     try:
