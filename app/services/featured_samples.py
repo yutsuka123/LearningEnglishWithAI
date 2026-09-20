@@ -87,6 +87,18 @@ def resolve_featured_word_ids(
     return [found[k] for k in FEATURED_WORDS if k in found]
 
 
+def resolve_featured_phrase_ids(
+    conn: sqlite3.Connection, allowed_ids: set[int],
+) -> list[int]:
+    """ミニフレーズ一覧の先頭に固定するフレーズ(=ショーケース・フレーズ)を
+    実行時にidへ解決して(指定順のまま)返す。`allowed_ids`(ゲスト無料再生できる
+    id集合)に入らないものは除外する。無料かどうかは`access_tiers`の判定に従う
+    だけで、ここで新たに無料にするフレーズは無い。"""
+    from . import access_tiers
+    return [i for i in access_tiers.showcase_phrase_id_list(conn)
+            if i in allowed_ids]
+
+
 def _text(value) -> str:
     return value.strip() if isinstance(value, str) else ""
 

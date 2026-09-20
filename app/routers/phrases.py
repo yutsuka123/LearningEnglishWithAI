@@ -136,6 +136,7 @@ def list_phrases(
     mastered: str | None = None,   # 'only' | 'hide' | None(=全部)
     deck_id: int | None = None,    # 自分のフレーズ帳で絞り込み(2026-08-09)
     free_range_only: bool = False,  # 🔊無料で再生できる範囲のみ(2026-08-11)
+    featured_first: bool = False,   # ショーケース・フレーズを先頭に固定(2026-09-20)
 ):
     from ..services.auth import current_user_allow_banned
     include_banned = include_banned and current_user_allow_banned()
@@ -228,12 +229,28 @@ def list_phrases(
         ).fetchall()
         free_ids = access_tiers.free_range_ids(
             conn, "phrase", guest=is_guest)
+        featured_ids: list[int] = []
         if billing:
             guest_ids = (free_ids if is_guest else
                          access_tiers.free_range_ids(
                              conn, "phrase", guest=True))
             rows = access_tiers.billing_order(
                 rows, guest_ids, free_ids, desc=desc)
+            # ショーケース・フレーズ(未登録・未課金の既定表示で先頭に固定する
+            # 1件・単語の「まずはここから」と同じ条件: 昇順のときだけ)。
+            if featured_first and not desc:
+                from ..services import featured_samples
+                featured_ids = featured_samples.resolve_featured_phrase_ids(
+                    conn, guest_ids)
+        if featured_ids:
+            by_id = {r["id"]: r for r in rows}
+            head = [by_id[i] for i in featured_ids if i in by_id]
+            head_ids = {r["id"] for r in head}
+            rows = head + [r for r in rows if r["id"] not in head_ids]
+            out = [_phrase_dict(r, free_ids, cfg) for r in rows]
+            for d in out[:len(head)]:
+                d["featured"] = True
+            return out
         return [_phrase_dict(r, free_ids, cfg) for r in rows]
 
 
