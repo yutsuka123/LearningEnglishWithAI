@@ -1326,15 +1326,18 @@ _FORM_LABEL_RE = re.compile(
 
 
 def _signup_form_breakdown(
-    form_events: dict[str, list[str]], succeeded: int,
+    form_events: dict[str, list[str]], succeeded_sids: set[str],
 ) -> dict:
     """登録フォームの到達/離脱内訳。form_events={guest_sid: 時系列のlabel}。
     - steps: 各段階に到達した人数(ユニークguest_sid)。
     - stalled: フォームに触れたが登録に至らなかった人が、最後に到達して
-      いた欄/段階(どこで止まったか)。
+      いた欄/段階(どこで止まったか)。**登録完了した端末(succeeded_sids)は
+      含めない**(含めると成功者の最後のイベント=送信が「送信後」に混ざる。
+      2026-09-20 Fable照査M1)。
     - errors: 検証エラー(invalid:*)・サーバー拒否(fail:*)の人数。
     登録完了はlanding_visitsの成功行が正で(呼び出し側から受け取る)、
     フォーム計測が始まる前に登録した人は各段階に入らない点に注意。"""
+    succeeded = len(succeeded_sids)
     guests = list(form_events.values())
     n_opened = sum(1 for ev in guests if "opened" in ev)
 
@@ -1356,7 +1359,9 @@ def _signup_form_breakdown(
                   "count": succeeded})
 
     stalled_counts: dict[str, int] = {}
-    for ev in guests:
+    for sid, ev in form_events.items():
+        if sid in succeeded_sids:
+            continue   # 登録に成功した人は「止まった人」ではない
         last = ev[-1]
         if last in ("opened", "first_input"):
             key = "no_field"
@@ -1763,7 +1768,7 @@ def admin_registration_funnel(days: int = 30):
         "ad_click_visitors": ad_click_guests,
         # 登録フォームの欄別の到達/離脱(2026-09-20・3-E)。
         "signup_form": _signup_form_breakdown(
-            form_events, len(signup_succeeded_set)),
+            form_events, signup_succeeded_set),
         # 用語集/フレーズ集/クロスワード紹介(SEOページ)に着地し、その後
         # アプリやその他のページにも来た人＝「SEOページ経由でアプリへ」。
         "via_seo": {
