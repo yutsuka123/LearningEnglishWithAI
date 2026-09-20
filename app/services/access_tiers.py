@@ -42,6 +42,35 @@ def _level_rank_case(column: str = "level") -> str:
     return f"(CASE {column} {whens} ELSE {len(LEVEL_ORDER) + 1} END)"
 
 
+# 一覧ルーターが「無料で聞ける順」ソートのSQLを組むために使う公開名
+# （ここ以外で同じCASE式を再実装しない＝無料範囲の判定と並びの基準を
+# 一致させるため・2026-09-20）。
+level_rank_case = _level_rank_case
+
+
+def billing_order(
+    rows: list, guest_ids: set[int], free_ids: set[int], *, desc: bool = False,
+) -> list:
+    """一覧を「無料で聞ける順」(課金別ソート・2026-09-20)に並べ替える。
+
+    並び = ①未登録ゲストが無料再生できる範囲(guest_ids) → ②ログイン無料の
+    範囲(free_idsのうち①を除く) → ③それ以外(有料範囲)。各グループ内の
+    並びは呼び出し側が渡した`rows`の順（レベル昇順→タイブレーク）を保つ
+    (sortedは安定ソート)。`desc=True`ならグループ順も含め全体を反転する。
+    無料範囲そのもの(どの語が①②か)はレベル昇順の上位N件という既存の
+    判定(`free_range_ids`)をそのまま使うので、再生可否の表示(🆓/🔒)と
+    必ず一致する。
+    """
+    def group(r) -> int:
+        i = r["id"]
+        if i in guest_ids:
+            return 0
+        return 1 if i in free_ids else 2
+
+    ordered = sorted(rows, key=group)
+    return ordered[::-1] if desc else ordered
+
+
 def _table_and_limit(
     item_type: str, *, guest: bool = False,
 ) -> tuple[str, int]:

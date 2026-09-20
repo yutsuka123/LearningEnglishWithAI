@@ -19,6 +19,10 @@ export const state = {
   // 「本来ゲストの人がログイン導線を失う」よりずっと軽微。
   multiuser: true,
   isGuest: true,
+  // 英単語/ミニフレーズ一覧の既定ソートを「無料で聞ける順」にするか
+  // (2026-09-20)。判定はサーバー(auth.uses_free_first_list_sort)。未確認の
+  // 間はfalse=従来の既定(課金者・管理者・テスターに影響を与えない側)。
+  freeFirstSort: false,
   taxonomy: { news_fields: [], accents: [], models: [] },
   // B16: 出張・旅行準備の「ロールプレイを始める」から一時的にセットされる
   // 人物像。会話タブがこれを見て、シーン選択の代わりにpersonaで会話する。
@@ -233,17 +237,23 @@ function initTheme() {
 function applyFontSize(size) {
   if (size) document.documentElement.dataset.fontSize = size;
   else delete document.documentElement.dataset.fontSize;
-  const sel = document.getElementById("fontSize");
-  if (sel) sel.value = size;
+  // トップバーの選択と、スマホのようこそ画面用にメニュー内へ置いたコピー
+  // (#fontSizeNav・2026-09-20)の両方を同じ値に揃える。
+  for (const id of ["fontSize", "fontSizeNav"]) {
+    const sel = document.getElementById(id);
+    if (sel) sel.value = size;
+  }
 }
 
 function initFontSize() {
   applyFontSize(localStorage.getItem("fontSize") || "");
-  document.getElementById("fontSize")?.addEventListener("change", (e) => {
-    const v = e.target.value;
-    localStorage.setItem("fontSize", v);
-    applyFontSize(v);
-  });
+  for (const id of ["fontSize", "fontSizeNav"]) {
+    document.getElementById(id)?.addEventListener("change", (e) => {
+      const v = e.target.value;
+      localStorage.setItem("fontSize", v);
+      applyFontSize(v);
+    });
+  }
 }
 
 // トップバーの残高(pt)表示をクリックしたらチャージ画面へ誘導する
@@ -480,6 +490,7 @@ export async function refreshCost() {
     // hasAiBalanceは「今使える残高があるか」の近似値で、チャージ済みだが
     // 残高を使い切った課金ユーザーはfalseになってしまうため代用不可)。
     state.isChargedTier = !!u.is_charged_or_admin;
+    state.freeFirstSort = !!u.default_list_sort_free_first;
     if (!isAdmin) {
       // 非管理者(ゲスト・無課金/課金の一般ユーザー)は/api/system/settings
       // を読めない(api_key_masked等を含むため管理者専用・2026-08-12)。
@@ -673,7 +684,7 @@ function initClickTracking() {
       guestStudyClicks++;
       if (guestStudyClicks >= 5) {
         guestNudgeShown = true;
-        toast("💡 学習の記録は保存されていません。ログイン(無料・30秒)で失われなくなります");
+        toast("💡 学習の記録は保存されていません。ログイン(無料・1分)で失われなくなります");
       }
     }
   });

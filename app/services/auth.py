@@ -544,6 +544,45 @@ def is_charged_or_admin(conn: sqlite3.Connection, user_id: int) -> bool:
     return user_tier(conn, user_id) == "charged"
 
 
+def uses_free_first_list_sort(conn: sqlite3.Connection, user_id: int) -> bool:
+    """英単語/ミニフレーズ一覧の**既定の並び**を「無料で聞ける順」(課金別
+    ソート)にする対象か(2026-09-20)。
+
+    対象 = 未登録ゲスト、およびログイン済みでも課金していない一般ユーザー。
+    先頭が難解語で🔒だらけだと第一印象が悪い、という照査を受けた変更で、
+    **課金者・管理者・テスターの既定は従来のまま**にする(誤判定で既存の
+    使い勝手を変えないため、迷う境界は「対象外(=従来の既定を維持)」側に
+    倒す)。
+
+    対象外(=False)になる条件:
+      * 管理者(role='admin')
+      * テストアカウント(users.is_test=1)
+      * PayPayテスト許可リスト(PAYPAY_TEST_ALLOWED_USERNAMES)のアカウント
+      * 課金者: `is_charged_or_admin`(残高>0 か チャージキー償還履歴あり)
+      * 上記に加え、PayPay直接決済で付与済み(paypay_payments.credited_at)。
+        PayPay決済はcharge_keysを経由せずbalance_jpyへ加算するため、残高を
+        使い切った既払いユーザーは`user_tier`だけでは未課金に見えてしまう
+      * ユーザー行が見つからない(想定外)
+    """
+    if is_guest_user_id(conn, user_id):
+        return True
+    u = get_user(conn, user_id)
+    if not u:
+        return False
+    if u.get("role") == "admin" or u.get("is_test"):
+        return False
+    from . import paypay  # 循環import回避のため関数内でimport
+    if paypay.is_test_allowed(u.get("username", "")):
+        return False
+    if is_charged_or_admin(conn, user_id):
+        return False
+    paid = conn.execute(
+        "SELECT 1 FROM paypay_payments WHERE user_id = ? "
+        "AND credited_at IS NOT NULL LIMIT 1", (user_id,),
+    ).fetchone()
+    return paid is None
+
+
 def multiuser_enabled() -> bool:
     """MULTIUSER=1 のときだけログインを要求（既定はローカル単一ユーザー）。"""
     return os.getenv("MULTIUSER", "0").strip().lower() in ("1", "true", "yes")

@@ -273,33 +273,43 @@ export async function welcome(root) {
     .filter(([tab]) => !WELCOME_HIDDEN_FEATURE_TABS.has(tab))
     .map(([, label]) => `<span class="pill">${escapeHtml(label)}</span>`)
     .join("");
+  // 文言の方針(2026-09-20・トップ照査の反映): 課金形態から入らず「何が
+  // できるか→誰向けか→料金」の順にする。広告の主キーワードは汎用の
+  // 「英語学習」なので、基礎語彙・日常会話・TOEICレベルの入口と、このアプリ
+  // ならではのニッチ分野の両方を一言で伝える。事実に裏付けのある表現のみ
+  // (景表法配慮): 「語源・豆知識などの解説」は本番のほぼ全語(99.6%)に解説
+  // があり、語源は93%・豆知識は89%の語にあること(全語ではないので「など」
+  // で限定)、「無料」は閲覧と無料範囲の音声(access_tiers)、
+  // 「¥800〜」は最小チャージ額(fulfillment.PRICE_TABLE)に基づく。「広告なし」
+  // 等は書かない。
+  // 日本語の文中でテンプレートリテラルを改行すると空白が表示されてしまう
+  // (例: 「ニッチな 分野」)ため、長い文は文字列連結で組み立てる。
+  const heroTitle = "基礎語彙から専門用語・料理・妖怪まで学べる"
+    + "英語学習アプリ";
+  const heroLead = "日常会話・TOEICレベルの基礎から、無線・天文・料理などの"
+    + "ニッチな分野まで。語源・豆知識などの解説と、AIの自然な英語音声で"
+    + "学べます。";
+  const heroPrice = "🐾 個人開発。閲覧と一部の音声は無料。AI機能や追加の音声は"
+    + "前払い¥800〜（月額なし・使わない月は0円）";
   root.innerHTML = `
     <div class="welcome-hero">
       <div class="card welcome-card">
         <div class="welcome-emoji">🐱 nyangailab</div>
-        <h1 class="mt">月額サブスクなし。ニッチな語彙まで詳しく学べる
-          英語学習アプリ</h1>
-        <p class="muted" style="max-width:480px; margin:0 auto 18px">
-          妖怪・絶滅種などマニアックな分野から専門用語まで、語源・豆知識
-          つきの詳しい解説とAIのネイティブ音声で学べます。使った分だけの
-          前払いチャージ制。</p>
-        <div class="row welcome-pills">
-          <span class="pill info">💰 サブスクなし・使った分だけ</span>
-          <span class="pill mastered">🦉 専門用語からニッチな語彙まで</span>
-          <span class="pill vague">📖 語源・豆知識つきの詳しい解説</span>
-        </div>
-        <p class="muted" style="font-size:13px">
-          例: 物理・天文・法律・医療・料理・アニメ・
-          「失礼にならない言い方」・名言 など</p>
-        <div class="row" style="justify-content:center; gap:12px">
+        <h1 class="mt">${heroTitle}</h1>
+        <p class="muted welcome-lead">${heroLead}</p>
+        <div class="row welcome-cta-row">
           <a class="btn welcome-cta" href="/login#signup">
-            👉 30秒で無料登録 →</a>
+            👉 1分で無料登録 →</a>
           <button class="btn ghost" id="welcomeTryBtn">
             登録せず単語を見る</button>
         </div>
-        <p class="muted" style="font-size:13px; margin:8px 0 0">
+        <p class="muted welcome-note">
           カード不要・お名前はニックネームでOK</p>
-        <p class="muted mt">
+        <p class="muted welcome-price">${heroPrice}</p>
+
+        <div class="welcome-sample" id="welcomeSample" hidden></div>
+
+        <p class="muted mt welcome-more">
           <a href="/static/about.html">詳しい説明・料金の目安を見る →</a></p>
 
         <p class="welcome-scroll-label" style="margin-top:28px"
@@ -312,6 +322,38 @@ export async function welcome(root) {
     </div>`;
   root.querySelector("#welcomeTryBtn")
     ?.addEventListener("click", () => go("vocab"));
+
+  // 「本物の1語サンプル」(2026-09-20): 未登録ゲストが無料で再生できる語を
+  // 1つ、既存の解説データ(語源/豆知識の一文)と一緒に見せ、登録前に
+  // アプリ自体を体験してもらう。語の選定・解決はサーバー側
+  // (featured_samples.resolve_hero_word)。条件を満たす語が無ければ何も出さず、
+  // 解説が無い語は行ごと出さない(捏造しない)。画像・動画・動きは足さない。
+  api.get("/api/words/hero-sample").then((r) => {
+    const w = r && r.word;
+    const box = root.querySelector("#welcomeSample");
+    if (!w || !box) return;
+    box.innerHTML = `
+      <div class="welcome-sample-label">👂 登録なしで、まず1語聞いてみる</div>
+      <div class="welcome-sample-main">
+        <div class="welcome-sample-play"></div>
+        <div class="welcome-sample-word">
+          <b class="welcome-sample-en">${escapeHtml(w.english)}</b>
+          <span class="welcome-sample-ja">${escapeHtml(w.japanese || "")}</span>
+          <span class="pill">${escapeHtml(w.domain || "")}</span>
+        </div>
+      </div>
+      <p class="welcome-sample-note"><b>${escapeHtml(w.note_label)}:</b>
+        ${escapeHtml(w.note)}</p>`;
+    const play = voiceButtonsItem(
+      "word", w.id, "word", () => w.english, () => "std", true);
+    // 全ボタン共通のクリック計測とは別に、トップの1語サンプル由来の再生で
+    // あることが分かるよう1件残す(再生自体はサーバー側がplayとして記録)。
+    play.addEventListener("click", () =>
+      api.track("click", "welcome", "hero_sample_play:" + w.english));
+    box.querySelector(".welcome-sample-play").append(play, el(
+      `<div class="welcome-sample-cap">男声 / 女声</div>`));
+    box.hidden = false;
+  }).catch(() => { /* サンプルが出せなくてもトップは通常表示 */ });
 
   // ここから先は非同期(fire-and-forget)。ユーザーが既に別タブへ移動して
   // rootの中身が差し替わっていた場合はquerySelectorがnullを返すだけなので
@@ -751,6 +793,15 @@ function voiceButtonsItem(itemType, id, kind, fallback, getMode, isFreeRange) {
   m.addEventListener("click", () => play(MALE_VOICE));
   f.addEventListener("click", () => play(FEMALE_VOICE));
   return cell;
+}
+
+// 一覧の見出し行(2026-09-20)。未登録・未課金の既定表示で、先頭に固定した
+// 厳選語と、その後の「無料で聞ける順」の一覧を区切る。
+const FEATURED_HEAD =
+  "✨ まずはここから — 無料で聞ける、基礎からニッチ分野までの代表的な語";
+function listGroupHead(cols, text) {
+  return el(`<tr class="lgh-row"><td class="lgh" colspan="${cols}">
+    ${escapeHtml(text)}</td></tr>`);
 }
 
 // --- ページネーション（1ページ20件 標準）---------------------------------
@@ -2278,6 +2329,7 @@ export async function vocab(root) {
           <option value="level">並び替え: レベル</option>
           <option value="domain">並び替え: 分野</option>
           <option value="recent">並び替え: 最近の学習</option>
+          <option value="billing">並び替え: 無料で聞ける順</option>
         </select>
         <button class="btn ghost" id="fDir"
           title="昇順/降順を切替">昇順 ▲</button>
@@ -2307,6 +2359,11 @@ export async function vocab(root) {
       <div id="pager" class="mt"></div>
     </div>`;
 
+  // 未登録・未課金は既定を「無料で聞ける順」にする(2026-09-20・お試し導線の
+  // 着地改善)。課金者・管理者・テスターは従来の既定(習熟度)のまま。判定は
+  // サーバー(state.freeFirstSort←/api/system/my-usage)。手動で選び直した
+  // 並びはこの後の変更イベントでそのまま尊重される。
+  if (state.freeFirstSort) root.querySelector("#fSort").value = "billing";
   const rowsBody = root.querySelector("#rows");
   // 件数表示は専用spanだけを書き換える。h1ごとtextContentで上書きすると
   // 見出し内のⓘヘルプアイコンが最初の描画で消えてしまうため(2026-09-19修正)。
@@ -2331,8 +2388,20 @@ export async function vocab(root) {
 
   const renderTable = (words) => {
     rowsBody.innerHTML = "";
+    // 厳選語(featured)が先頭に固定されているときだけ見出し行を挟む。
+    // キーワード検索中は絞り込み結果なので出さない。
+    const groups = !kw.value.trim() && words.some((w) => w.featured);
+    let prevFeatured = null;
     words.forEach((w) => {
-      const tr = el(`<tr>
+      if (groups) {
+        if (w.featured && prevFeatured === null) {
+          rowsBody.appendChild(listGroupHead(9, FEATURED_HEAD));
+        } else if (!w.featured && prevFeatured === true) {
+          rowsBody.appendChild(listGroupHead(9, "そのほかの単語（無料で聞ける順）"));
+        }
+      }
+      prevFeatured = !!w.featured;
+      const tr = el(`<tr${w.featured ? ' class="featured-row"' : ""}>
         <td></td>
         <td data-label="英語">${escapeHtml(w.english)}</td>
         <td data-label="日本語">${escapeHtml(w.japanese)}</td>
@@ -2414,6 +2483,14 @@ export async function vocab(root) {
     }
     const deckSel = root.querySelector("#fDeck");
     if (deckSel && deckSel.value) q.set("deck_id", deckSel.value);
+    // 「まずはここから」の厳選語を先頭に固定するのは、未登録・未課金
+    // (state.freeFirstSort)が「無料で聞ける順」・昇順で絞り込み・検索なしの
+    // ときだけ(何か絞ったときに無関係な語が混ざらないように。課金者・
+    // 管理者・テスターが手動でこの並びを選んだ場合も固定しない)。
+    if (state.freeFirstSort && q.get("sort") === "billing"
+        && !q.has("desc") && ![...q.keys()].some((k) => k !== "sort")) {
+      q.set("featured_first", "true");
+    }
     const words = await api.get("/api/words?" + q.toString());
     if (seq !== loadSeq) return; // 自分より新しい問い合わせが発行済み→破棄
     baseWords = words;
@@ -2466,12 +2543,16 @@ export async function vocab(root) {
 
 export async function phrases(root) {
   const sb = bannedParam(showBanned());
+  // 未登録・未課金は既定の並びを「無料で聞ける順」にする(2026-09-20・
+  // 英単語一覧と同じ。判定はサーバー)。最初の一覧取得にも同じ並びを渡す。
+  const listQs = [sb, state.freeFirstSort ? "sort=billing" : ""]
+    .filter(Boolean).join("&");
   // 5本とも互いに依存が無いため並列実行する(2026-09-07・以前は直列5回で
   // 表示までの待ち時間が積み上がっていた)。
   const [sceneData, pfacets, list, myDecks, usP] = await Promise.all([
     api.get("/api/phrases/scenes" + (sb ? "?" + sb : "")),
     api.get("/api/phrases/facets"),
-    api.get("/api/phrases" + (sb ? "?" + sb : "")),
+    api.get("/api/phrases" + (listQs ? "?" + listQs : "")),
     api.get("/api/phrase-decks").catch(() => []),
     // ゲストは/api/system/user-settingsを読めない(要ログイン)ため、既定
     // フィルター無し(={})として扱う(2026-08-11・ゲスト実装で発見)。
@@ -2537,6 +2618,7 @@ export async function phrases(root) {
           <option value="scene">並び替え: シーン</option>
           <option value="recent">並び替え: 最近の学習</option>
           <option value="added">並び替え: 登録順(ペア対応)</option>
+          <option value="billing">並び替え: 無料で聞ける順</option>
         </select>
         <button class="btn ghost" id="fDir"
           title="昇順/降順を切替">昇順 ▲</button>
@@ -2560,6 +2642,7 @@ export async function phrases(root) {
       <div id="pager" class="mt"></div>
     </div>`;
 
+  if (state.freeFirstSort) root.querySelector("#fSort").value = "billing";
   // 件数表示は専用spanだけを書き換える(英単語画面と同じ理由・2026-09-19)。
   const title = root.querySelector("#pageTitleText");
   const kw = root.querySelector("#kw");

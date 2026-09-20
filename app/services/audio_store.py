@@ -95,6 +95,32 @@ def get(
     return None
 
 
+def has(
+    conn: sqlite3.Connection,
+    item_type: str,
+    item_id: int,
+    kind: str,
+    voice: str,
+    text: str,
+) -> bool:
+    """保存済み音声があるか（`get`と同じ判定だが中身を読まない）。
+    トップの「1語サンプル」のように、再生ボタンを押した時に**必ず生成コスト
+    ゼロで鳴る**語だけを選びたい用途向け(2026-09-20)。"""
+    thash = text_hash(text)
+    mode = load_settings().audio_storage
+    if mode in ("file", "hybrid"):
+        if _file_path(item_type, item_id, kind, voice, thash).exists():
+            return True
+    if mode in ("db", "hybrid"):
+        row = conn.execute(
+            "SELECT 1 FROM audio_blobs WHERE item_type = ? AND item_id = ? "
+            "AND kind = ? AND voice = ? AND text_hash = ?",
+            (item_type, item_id, kind, voice, thash),
+        ).fetchone()
+        return row is not None
+    return False
+
+
 def put(
     conn: sqlite3.Connection,
     item_type: str,

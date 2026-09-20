@@ -156,6 +156,13 @@ def list_phrases(
     # シーンで、mastery=0が並ぶ初回表示時にアルファベット順だとペアが
     # ばらばらになってしまうため(2026-08-04ユーザー指摘)。
     order = f"{col} {direction}, id ASC"
+    from ..services import access_tiers
+    # 「無料で聞ける順」(課金別・2026-09-20): レベル昇順→登録順(id)に並べ、
+    # 無料範囲3グループへの振り分けと降順反転は後段で行う。タイブレークを
+    # 英語アルファベット順にしないのは上のペア構成の理由(2026-08-04)と同じ。
+    billing = sort == "billing"
+    if billing:
+        order = f"{access_tiers.level_rank_case()} ASC, id ASC"
     conds, params = [], []
     if scene:
         # カンマ区切りで複数シーン指定可（チェックボックスでの複数選択に
@@ -185,7 +192,6 @@ def list_phrases(
         # ここで緩めると、禁止用語チェックを入れていなくてもレベルが
         # 「範囲外」の禁止用語が表示されてしまうため(2026-08-17修正)。
         conds.append("COALESCE(scene, '') NOT LIKE '禁止%'")
-    from ..services import access_tiers
     from ..services.auth import current_user_id, is_guest_user_id
     from ..services.progress import user_items_subquery
     src = user_items_subquery("phrases")  # 先頭 ? = user_id
@@ -222,6 +228,12 @@ def list_phrases(
         ).fetchall()
         free_ids = access_tiers.free_range_ids(
             conn, "phrase", guest=is_guest)
+        if billing:
+            guest_ids = (free_ids if is_guest else
+                         access_tiers.free_range_ids(
+                             conn, "phrase", guest=True))
+            rows = access_tiers.billing_order(
+                rows, guest_ids, free_ids, desc=desc)
         return [_phrase_dict(r, free_ids, cfg) for r in rows]
 
 

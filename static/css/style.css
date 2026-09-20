@@ -179,8 +179,26 @@ a.nav-item { display: block; text-decoration: none; box-sizing: border-box; }
    ブランド・テーマ切替・文字サイズ・ログイン導線は残す。 */
 body.tab-welcome .topbar-right label.toggle,
 body.tab-welcome #usageBalance,
+body.tab-welcome #usageBalanceInfo,
 body.tab-welcome #aiState, body.tab-welcome #appVer {
   display: none;
+}
+
+/* スマホのようこそ画面ではトップバーを1段に収める(2026-09-20・照査の
+   反映): 2段目に押し出されていた文字サイズ選択をトップバーから隠して
+   メニュー内(#navFontSizeWrap)へ移し、ブランドのサブタイトルも省く
+   (ヒーローに同じ名前が出るため)。他のタブ・広い画面では従来どおり。 */
+.nav-fontsize { display: none; }
+@media (max-width: 760px) {
+  body.tab-welcome .topbar { padding: 8px 12px; flex-wrap: nowrap; }
+  body.tab-welcome .topbar-brand-sub,
+  body.tab-welcome #fontSize { display: none; }
+  body.tab-welcome .topbar-right { flex-wrap: nowrap; gap: 8px; }
+  body.tab-welcome .topbar-left { gap: 8px; min-width: 0; }
+  body.tab-welcome .nav-fontsize {
+    display: block; margin: 0 4px 10px; color: var(--muted); font-size: 13px;
+  }
+  body.tab-welcome .nav-fontsize select { margin-left: 6px; }
 }
 
 .toggle { color: var(--muted); font-size: 13px; }
@@ -524,6 +542,28 @@ th { color: var(--muted); font-weight: 600; }
   table.rtable:not(.rtable-words) td:nth-child(6) { width: 77px; } /* 習熟度 */
 }
 
+/* 一覧の見出し行と厳選語の目印(2026-09-20)。未登録・未課金の既定表示で
+   先頭に固定する「まずはここから」の語と、その後の一覧を区切る。表(PC)は
+   通常の行、スマホのカード型ではカードの外に置く見出しとして表示する。
+   .rtable系の既存ルールより詳細度を上げて上書きしている。 */
+table.rtable tbody tr.lgh-row td.lgh {
+  text-align: left; padding: 12px 4px 6px; width: auto;
+  font-weight: 700; font-size: 14px; color: var(--accent);
+  border-bottom: 1px solid var(--accent);
+}
+table.rtable tbody tr.featured-row td:first-child {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+@media (max-width: 760px) {
+  table.rtable tbody tr.lgh-row {
+    display: block; margin: 4px 0 8px; padding: 0;
+    background: none; border: none; border-radius: 0;
+  }
+  table.rtable tbody tr.lgh-row td.lgh { display: block; }
+  table.rtable tbody tr.featured-row { border-color: var(--accent); }
+  table.rtable tbody tr.featured-row td:first-child { box-shadow: none; }
+}
+
 .pill {
   display: inline-block; padding: 2px 9px; border-radius: 12px;
   font-size: 12px; background: var(--panel-2); color: var(--muted);
@@ -658,8 +698,37 @@ th { color: var(--muted); font-weight: 600; }
   background: linear-gradient(160deg, var(--panel) 0%, var(--panel-2) 100%);
 }
 .welcome-emoji { font-size: 22px; font-weight: 700; }
-.welcome-pills { justify-content: center; margin: 18px 0 22px; }
-.welcome-pills .pill { padding: 4px 12px; font-size: 13px; }
+/* リード・CTA・注記・料金の一行説明(2026-09-20・トップ照査の反映)。
+   3つのバッジは廃止しリードと料金の一行に統合した(スマホで主CTAが
+   ファーストビューに入るように縦の行数を減らすため)。 */
+/* 見出しは行の長さを揃えて折り返す(1語だけの行を避ける)。日本語の文節での
+   折り返し(auto-phrase)は対応ブラウザのみ有効で、非対応なら通常どおり。 */
+.welcome-card h1 { text-wrap: balance; word-break: auto-phrase; }
+.welcome-lead, .welcome-price { word-break: auto-phrase; }
+.welcome-lead { max-width: 480px; margin: 0 auto 16px; text-wrap: pretty; }
+.welcome-cta-row { justify-content: center; gap: 12px; }
+.welcome-note { font-size: 13px; margin: 8px 0 0; }
+.welcome-price {
+  font-size: 13px; line-height: 1.6; max-width: 480px; margin: 10px auto 0;
+}
+/* 本物の1語サンプル(2026-09-20)。静かで軽く(画像・動画・動きは無し)、
+   アプリの実物(無料再生ボタン・分野・語源)をそのまま見せる。 */
+.welcome-sample {
+  max-width: 480px; margin: 18px auto 0; padding: 12px 14px;
+  border: 1px solid var(--line); border-radius: 10px;
+  background: var(--panel); text-align: left;
+}
+.welcome-sample[hidden] { display: none; }
+.welcome-sample-label { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.welcome-sample-main { display: flex; align-items: center; gap: 12px; }
+.welcome-sample-play { flex: 0 0 auto; display: flex; flex-direction: column;
+  gap: 4px; }
+.welcome-sample-word { min-width: 0; display: flex; flex-wrap: wrap;
+  align-items: baseline; gap: 4px 8px; }
+.welcome-sample-en { font-size: 18px; }
+.welcome-sample-ja { color: var(--muted); font-size: 14px; }
+.welcome-sample-note { margin: 8px 0 0; font-size: 13px; line-height: 1.6; }
+.welcome-sample-cap { font-size: 11px; color: var(--muted); text-align: center; }
 /* 主CTA(登録ボタン)がピル(バッジ)や副ボタンに埋もれず一目でクリック対象と
    分かるよう強調する(2026-08-24ユーザー指摘: 「他もボタンに見える」)。 */
 .welcome-cta {
@@ -668,7 +737,14 @@ th { color: var(--muted); font-weight: 600; }
 }
 @media (max-width: 640px) {
   .welcome-hero { min-height: 0; }
-  .welcome-pills { flex-direction: column; align-items: stretch; }
+  /* スマホのファーストビュー圧縮(2026-09-20): 主CTAが390×664・375×553
+     (iPhone SE実効高)でも見える位置に来るよう、カードの余白・見出しを
+     詰める。 */
+  .welcome-card { padding: 16px 14px; }
+  .welcome-card h1 { font-size: 20px; line-height: 1.4; }
+  .welcome-emoji { font-size: 18px; }
+  .welcome-lead { font-size: 14px; line-height: 1.6; margin-bottom: 12px; }
+  .welcome-cta { padding: 12px 22px; font-size: 16px; }
 }
 /* 収録語彙分野/機能の一覧(2026-08-24)。場所を取らずに「多さ」を見せたい
    というユーザー要望のため、横スクロール(スワイプ)の帯として実装したが、

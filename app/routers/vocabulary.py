@@ -166,6 +166,7 @@ def list_words(
     mastered: str | None = None,   # 'only' | 'hide' | None(=全部)
     deck_id: int | None = None,    # 自分の単語帳で絞り込み(2026-08-09)
     free_range_only: bool = False,  # 🔊無料で再生できる範囲のみ(2026-08-11)
+    featured_first: bool = False,   # 厳選語を先頭に固定(2026-09-20)
 ):
     from ..services.auth import (
         current_user_allow_banned, current_user_id, is_guest_user_id,
@@ -184,9 +185,16 @@ def list_words(
     }.get(sort, "mastery")
     direction = "DESC" if desc else "ASC"
     order = f"{col} {direction}, english COLLATE NOCASE ASC"
+    from ..services import access_tiers, featured_samples
+    # 「無料で聞ける順」(課金別・2026-09-20): SQL側ではレベル昇順→英語
+    # アルファベット順(同綴りはid順)に並べ、無料範囲3グループへの振り分けと
+    # 降順反転は後段(access_tiers.billing_order)で行う。
+    billing = sort == "billing"
+    if billing:
+        order = (f"{access_tiers.level_rank_case()} ASC, "
+                 "english COLLATE NOCASE ASC, id ASC")
     from ..services.progress import user_items_subquery
     src = user_items_subquery("words")  # 先頭の ? = user_id
-    from ..services import access_tiers
     with db() as conn:
         uid = current_user_id()
         cfg = _current_mastery_cfg(conn)
@@ -219,7 +227,39 @@ def list_words(
             [uid, *params],
         ).fetchall()
         free_ids = access_tiers.free_range_ids(conn, "word", guest=is_guest)
+        featured_ids: list[int] = []
+        if billing:
+            guest_ids = (free_ids if is_guest else
+                         access_tiers.free_range_ids(conn, "word", guest=True))
+            rows = access_tiers.billing_order(
+                rows, guest_ids, free_ids, desc=desc)
+            # 厳選語は無料範囲(ゲスト)の語だけ・昇順のときだけ先頭に固定する
+            # (降順は「有料範囲から」と反転して見せたい意図なので固定しない)。
+            if featured_first and not desc:
+                featured_ids = featured_samples.resolve_featured_word_ids(
+                    conn, guest_ids)
+        if featured_ids:
+            by_id = {r["id"]: r for r in rows}
+            head = [by_id[i] for i in featured_ids if i in by_id]
+            head_ids = {r["id"] for r in head}
+            rows = head + [r for r in rows if r["id"] not in head_ids]
+            out = [_word_dict(r, free_ids, cfg) for r in rows]
+            for d in out[:len(head)]:
+                d["featured"] = True
+            return out
         return [_word_dict(r, free_ids, cfg) for r in rows]
+
+
+@router.get("/hero-sample")
+def hero_sample():
+    """トップ(ようこそ画面)の「本物の1語サンプル」用(2026-09-20)。
+    未登録ゲストが無料で再生できる語を1つ、語源/豆知識の1行つきで返す
+    (`featured_samples.resolve_hero_word`)。条件を満たす語が無ければ
+    `{"word": null}`（フロントは何も出さない）。認証不要・個人情報なし。"""
+    from ..services import access_tiers, featured_samples
+    with db() as conn:
+        guest_ids = access_tiers.free_range_ids(conn, "word", guest=True)
+        return {"word": featured_samples.resolve_hero_word(conn, guest_ids)}
 
 
 @router.get("/facets")

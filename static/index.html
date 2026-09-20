@@ -25,15 +25,25 @@
     "url": "https://study.nyangailab.com/",
     "applicationCategory": "EducationalApplication",
     "operatingSystem": "Web",
-    "description": "サブスク疲れの人向け、月額不要・前払い制のAI英語学習アプリ。日常会話の基礎語彙から専門用語・マイナーな英単語・マニアックな分野まで、AI活用で価格を抑えて自然な音声つきで学べる。現在無料体験公開中。",
+    "description": "サブスク疲れの人向け、月額不要・前払い制のAI英語学習アプリ。日常会話の基礎語彙から専門用語・マイナーな英単語・マニアックな分野まで、AI活用で価格を抑えて自然な音声つきで学べる。登録なしで無料体験できる。",
     "keywords": "nyangailab, にゃんがいらぼ, 英語学習, サブスク疲れ, サブスクなし, 前払い, 都度課金, 廉価, 無料体験, 専門用語, マイナー英語",
-    "dateModified": "2026-09-07",
-    "offers": {
-      "@type": "Offer",
-      "priceCurrency": "JPY",
-      "price": "0",
-      "description": "無料体験公開中（一部機能は将来的に都度課金の前払いチャージ制を予定）"
-    }
+    "dateModified": "2026-09-20",
+    "offers": [
+      {
+        "@type": "Offer",
+        "name": "無料（登録なしで利用可）",
+        "priceCurrency": "JPY",
+        "price": "0",
+        "description": "単語・フレーズの閲覧と、無料範囲の音声再生は登録なしで無料"
+      },
+      {
+        "@type": "Offer",
+        "name": "前払いチャージ（従量制・月額なし）",
+        "priceCurrency": "JPY",
+        "price": "800",
+        "description": "AI英会話・教材生成などのAI機能や、無料範囲を超える音声再生は前払いチャージ（¥800から・PayPay等）で利用。使った分だけ消費され、月額料金はなし"
+      }
+    ]
   }
   </script>
   <script type="application/ld+json">
@@ -113,6 +123,18 @@
         <button id="sidebarPin" class="sidebar-pin"
           title="左メニューを固定表示（自動で畳まれないようにする）">📌</button>
       </div>
+      <!-- 文字の大きさ(スマホのようこそ画面専用のコピー・2026-09-20)。
+           スマホのトップバーを1段に収めるため、ようこそ画面ではトップバーの
+           文字サイズ選択を隠し、その代わりにメニュー内に出す(他の画面幅・
+           他のタブでは非表示で、従来どおりトップバーの選択を使う)。 -->
+      <label class="nav-fontsize" id="navFontSizeWrap">文字の大きさ
+        <select id="fontSizeNav" title="文字の大きさ">
+          <option value="small">小</option>
+          <option value="">中</option>
+          <option value="large">大</option>
+          <option value="xlarge">特大</option>
+        </select>
+      </label>
       <nav id="nav"></nav>
       <!-- メンテナンス予定のお知らせ（2026-08-22導入・2026-08-23メニュー内へ
            移動）。スマホでは本文を圧迫するとの指摘を受け、常時表示の

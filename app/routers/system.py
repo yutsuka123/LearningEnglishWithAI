@@ -500,7 +500,8 @@ def my_usage():
     from ..database import db
     from ..services import ai
     from ..services.auth import (
-        current_user_id, get_user, is_guest_user_id, is_charged_or_admin)
+        current_user_id, get_user, is_guest_user_id, is_charged_or_admin,
+        uses_free_first_list_sort)
 
     from ..config import APP_VERSION
     from ..services import paypay
@@ -525,6 +526,10 @@ def my_usage():
         # 相当の表示になっていた)。ブロック内で計算して変数に保持する。
         can_paypay_charge = paypay.can_charge(
             conn, uid, u.get("username", ""), u.get("role", ""), is_guest)
+        # 英単語/ミニフレーズ一覧の既定ソートを「無料で聞ける順」にする
+        # 対象か(2026-09-20)。判定はサーバー側に一本化し、フロントは
+        # この値に従うだけにする(auth.uses_free_first_list_sort参照)。
+        free_first_sort = uses_free_first_list_sort(conn, uid)
     rate = s.usd_jpy_rate
     # 実効上限(USD)：_user_guardと同じロジック(個別設定→既定=旧ユーザーの
     # みEmail未設定なら¥150/日、それ以外0円)を使う。以前はここだけ別計算
@@ -573,6 +578,9 @@ def my_usage():
         # `paypay.can_charge`を呼ぶため、表示可否と実際の可否がズレない)。
         # ゲスト(未登録)は常にFalse。
         "can_paypay_charge": can_paypay_charge,
+        # 一覧の既定ソート(2026-09-20)。true=「無料で聞ける順」を既定に
+        # する(未登録・未課金)。課金者/管理者/テスターはfalse=従来の既定。
+        "default_list_sort_free_first": free_first_sort,
     }
 
 
