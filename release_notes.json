@@ -15,6 +15,21 @@
  ],
  "versions": [
   {
+   "version": "ver1.4.12",
+   "date": "2026-09-20",
+   "title": "トップページに機能紹介の動画を追加",
+   "public": [
+    "トップページに、アプリの使い方を紹介する短い動画を追加しました（押すと再生・音が流れます）。"
+   ],
+   "admin": [
+    "未登録ゲストのトップ(ようこそ画面)の「1語サンプル」と「収録語彙分野一覧」の間に「動画で見る」ギャラリーを追加。ポスター画像(9:16)を出しておき、押すとその場で<video controls playsinline>に入れ替えて再生(自サーバー配信・自動再生なし・音あり・「🔊 音が流れます」表示)。縦に並べ、同時再生は1本だけ(別の動画を押すと再生中のものはポスターに戻る)。終了後に「この機能を試す」(tryTabへgo())と「もう一度見る」を表示。読み込み失敗時は「動画を再生できませんでした」+ポスターに戻すボタン。",
+    "動画の一覧は static/js/video-gallery.js の VIDEOS 配列(name/title/desc/src/poster/sound/tryTab/tryLabel)で持つ。本数を増やしても本体コードは触らない(mp4とポスターを static/video/ に置いて配列に1件足すだけ)。今は phrase_polite(失礼にならないお願いの英語・19.6秒・1.5MB)の1本。素材は scripts/videos の生成パイプラインで作る(videos-pilot ブランチ由来)。",
+    "初期表示に影響しない作り: welcome()は場所取りの空コンテナ(#welcomeVideos)を置くだけで、1語サンプルの取得後にIntersectionObserverで監視し、画面に入ったときだけ video-gallery.js を動的import。折り下(スマホの多くの画面高)ではJS・ポスターとも読み込まない。描画前は出来上がりとほぼ同じ高さの空白を確保し(style.css .vg-slot:empty::before)、読み込み時に下の一覧が押し下げられる画面のずれを防ぐ。読み込み失敗・IntersectionObserver無し・VIDEOSが空のときは空白も畳んで何も出さない。",
+    "配信: /static/video/ 配下(mp4・ポスターjpg)だけ Cache-Control: public, max-age=31536000, immutable(app/main.pyのミドルウェア)。URLは ?v= で版付けする(差し替え・撮り直したら上げる)。ETag・Range(206)・304は従来どおり。他の /static/ は従来どおり no-cache, must-revalidate。",
+    "計測: 既存の api.track(kind=click)の枠で、category=welcome・label=video:<name>:<event> を送る(サーバーの許可リスト _CLIENT_TRACK_KINDS は変更なし)。event = play(押下)/p25/p50/ended(=100%到達・終了)/try(「試す」押下)/replay/error。label が video: で始まるので他のclickと区別できる(LIKE 'video:%')。送信失敗は再生を妨げない。なお全ボタン共通のclick計測(initClickTracking)にも押下が別途記録される(ポスターは label=vg-poster・「試す」は遷移先タブのcategory側に記録される)ため、clickの総数には動画の押下が重複して入る点に注意。"
+   ]
+  },
+  {
    "version": "ver1.4.11",
    "date": "2026-09-20",
    "title": "トップページ・一覧の見た目と説明文の改善",

@@ -363,7 +363,13 @@ async def _auth_context(request, call_next):
             secure=auth_svc.cookie_secure(request),
         )
     path = request.url.path
-    if path == "/" or path.startswith("/static"):
+    if path.startswith("/static/video/"):
+        # 機能紹介動画・ポスター(2026-09-20)。数MBあり毎回の再検証(304)も
+        # 無駄なので1年キャッシュ。URLは差し替えのたびに?v=で版付けする前提
+        # (static/js/video-gallery.jsのVIDEOS)。ETag・Range(206)はそのまま。
+        response.headers["Cache-Control"] = (
+            "public, max-age=31536000, immutable")
+    elif path == "/" or path.startswith("/static"):
         response.headers["Cache-Control"] = "no-cache, must-revalidate"
     return response
 

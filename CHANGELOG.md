@@ -8,6 +8,50 @@
 （例: 1.1.0→1.1.1）。ユーザーから別途指示があった場合のみ上位の桁を
 上げる。
 
+## ver1.4.12 (2026-09-20作成・本番デプロイ待ち・ブランチ`ver1.4.12`・ver1.4.11の上に積んだ)
+
+オーナー承認済み「未登録トップへの動画ギャラリー埋め込み」(照査:
+docs/TOP_PAGE_REVIEW_2026-09-20.md §3 の案B=ポスター+クリック再生・自サーバー配信)。
+動画素材とその生成パイプライン(`scripts/videos/`・`static/video/`)は
+ブランチ`videos-pilot`(commit `6d0883b`)から取り込み。本番へは未反映。
+
+- **動画ギャラリー(`static/js/video-gallery.js`・新規)**: ゲストのトップ
+  (`views.js`の`welcome()`)の「1語サンプル」「詳しい説明」リンクの後・
+  「収録語彙分野一覧」の前に「🎬 動画で見る(各約20秒・押すと再生)」を表示。
+  動画ごとのカード=9:16のポスター画像(`<img loading="lazy" decoding="async">`・
+  最大幅360px中央)+中央の大きな▶+「🔊 音が流れます」バッジ(右上)+題と
+  1行説明。縦に並べる(グリッド/横スワイプ/入れ子スクロールなし)。ポスター全体が
+  押せる`<button>`(`aria-label="<題>を再生(音が流れます)"`・キーボード可)。
+  押すと`<video controls playsinline preload="auto">`に入れ替えてその場で
+  `play()`(押下の中で呼ぶので音ありで再生できる)。同時再生は1本だけ(別の動画を
+  押すと再生中のものはポスターに戻る)。1語サンプルの再生音・ブラウザ合成音は
+  再生開始時に止める。終了後は「この機能を試す →」(`tryTab`へ`go()`)と
+  「もう一度見る」。読み込み失敗は「動画を再生できませんでした」+「ポスターに
+  戻す」。アニメーション・自動再生なし。
+- **動画の一覧はデータ**: `VIDEOS`配列(`name`/`title`/`desc`/`src`/`poster`/
+  `sound`/`tryTab`/`tryLabel`)。本数を増やしても本体コードは触らない。今は
+  `phrase_polite`(失礼にならないお願いの英語)の1本。手順は`video-gallery.js`
+  冒頭コメントと`scripts/videos/README.md`。
+- **初期表示に影響しない作り**: `welcome()`は空のコンテナ`#welcomeVideos`を
+  置き、1語サンプルの取得後に`IntersectionObserver`で監視、画面に入ったときだけ
+  `import("./video-gallery.js")`で読み込む(初期JSに含まれない。折り下では
+  JS・ポスターとも読み込まない)。描画前は出来上がりとほぼ同じ高さの空白を確保
+  (`.vg-slot:empty::before`・実測で3px差)し、読み込み時に下の一覧が押し下げ
+  られる画面のずれ(CLS)を防ぐ。読み込み失敗・`IntersectionObserver`無し・
+  `VIDEOS`が空のときは空白も畳んで何も出さない。
+- **配信キャッシュ**: `app/main.py`のミドルウェアで`/static/video/`配下
+  (mp4・ポスターjpg)だけ`Cache-Control: public, max-age=31536000, immutable`。
+  URLは`?v=`で版付けする(差し替えたら上げる)。ETag・Range(206)・304は従来
+  どおり。他の`/static/`は従来どおりno-cache, must-revalidate。
+- **計測**: 既存の`api.track(kind=click)`の枠で`category=welcome`・
+  `label=video:<name>:<event>`を送る(サーバーの許可リスト`_CLIENT_TRACK_KINDS`は
+  変更なし)。event=`play`(押下)/`p25`/`p50`/`ended`(=100%到達・終了)/`try`/
+  `replay`/`error`。`LIKE 'video:%'`で他のclickと区別できる。全ボタン共通の
+  click計測にも別途記録される(ポスターは`vg-poster`・「試す」は遷移先タブの
+  categoryで記録)ので、clickの総数には動画の押下が重複して入る。
+- CSSは`static/css/style.css`末尾に`.vg-`接頭辞で追加(既存ルールは変更なし・
+  テーマ変数使用・アニメーションなし)。
+
 ## ver1.4.11 (2026-09-20作成・本番デプロイ待ち・ブランチ`ver1.4.11`・commit `4148983`・`01375d8`・ver1.4.10の上に積んだ)
 
 オーナー承認済み「未登録ゲストのトップページとお試し導線の改善」

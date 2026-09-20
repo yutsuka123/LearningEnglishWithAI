@@ -263,6 +263,28 @@ const WELCOME_HIDDEN_FEATURE_TABS = new Set([
   "welcome", "dashboard", "admin", "settings", "history", "release",
 ]);
 
+// 動画ギャラリー(video-gallery.js)を、コンテナが画面に近づいたときにだけ
+// 動的importして描画する(2026-09-20)。トップの初期JS・転送量・LCPに含めない
+// ため。IntersectionObserverが無い環境・読み込み失敗・動画0本のときは何も出さず
+// (場所取り用の空白も畳む)、他の表示に影響しない(壊れたUIを出さない)。
+// コンテナは描画前も、出来上がりとほぼ同じ高さの空白を確保している
+// (style.cssの.vg-slot:empty::before)。読み込み時に下の「収録語彙分野一覧」が
+// 押し下げられて画面がガクッと動く(CLS)のを防ぐため。
+function mountVideoGalleryLazily(box) {
+  if (!box) return;
+  const giveUp = () => box.classList.add("vg-empty");   // 場所取りを畳む
+  if (typeof IntersectionObserver === "undefined") { giveUp(); return; }
+  const io = new IntersectionObserver((entries) => {
+    if (!entries.some((e) => e.isIntersecting)) return;
+    io.disconnect();
+    if (!box.isConnected) return;   // 既に別タブへ移動していた
+    import("./video-gallery.js")
+      .then((m) => { if (!m.renderVideoGallery(box)) giveUp(); })
+      .catch(giveUp);
+  }, { rootMargin: "0px" });   // 余白を取らない=折り下では何も読み込まない
+  io.observe(box);
+}
+
 export async function welcome(root) {
   // facetsは本体表示に必須ではない「収録語彙分野一覧」の飾りチップにしか
   // 使わないため、これを待たずに先にヒーロー本体(見出し・CTA)を描画する
@@ -312,6 +334,8 @@ export async function welcome(root) {
         <p class="muted mt welcome-more">
           <a href="/static/about.html">詳しい説明・料金の目安を見る →</a></p>
 
+        <div class="vg-slot" id="welcomeVideos"></div>
+
         <p class="welcome-scroll-label" style="margin-top:28px"
           id="welcomeDomainLabel">収録語彙分野一覧（読み込み中…）</p>
         <div class="row welcome-scroll-row" id="welcomeDomainChips"></div>
@@ -353,7 +377,10 @@ export async function welcome(root) {
     box.querySelector(".welcome-sample-play").append(play, el(
       `<div class="welcome-sample-cap">男声 / 女声</div>`));
     box.hidden = false;
-  }).catch(() => { /* サンプルが出せなくてもトップは通常表示 */ });
+  }).catch(() => { /* サンプルが出せなくてもトップは通常表示 */ })
+    // 動画ギャラリーは1語サンプルの挿入で位置が動いた後に判定する(前だと
+    // 折り下なのに画面内と誤判定して初期表示で読み込んでしまう)。
+    .finally(() => mountVideoGalleryLazily(root.querySelector("#welcomeVideos")));
 
   // ここから先は非同期(fire-and-forget)。ユーザーが既に別タブへ移動して
   // rootの中身が差し替わっていた場合はquerySelectorがnullを返すだけなので
