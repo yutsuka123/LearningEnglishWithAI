@@ -71,7 +71,8 @@ STAGE_HTML = """<!doctype html>
   #cap em { font-style:normal; color:#ffd166; }
   /* 音が鳴っている間だけ出る「🔊 AI音声」バッジ(音を出さずに見る人にも
      音声が再生されていることが伝わるように。実際の再生イベントに連動) */
-  #snd { position:absolute; right:12px; top:12px; z-index:5; padding:6px 13px;
+  #snd { position:absolute; right:12px; bottom:%(BAND)dpx; margin-bottom:10px;
+    z-index:5; padding:6px 13px;
     border-radius:999px; background:rgba(11,16,23,.88);
     border:1.5px solid #4da3ff; color:#fff; font-size:15px; font-weight:800;
     letter-spacing:.02em; opacity:0; transition:opacity .35s ease;
@@ -86,6 +87,12 @@ STAGE_HTML = """<!doctype html>
   @keyframes rip { 0%% { opacity:0; transform:scale(.55); }
     22%% { opacity:1; transform:scale(1); }
     100%% { opacity:0; transform:scale(1.2); } }
+  /* スワイプ中の指の表示(円が指に付いて動く) */
+  #finger { position:absolute; width:64px; height:64px; margin:-32px 0 0 -32px;
+    border-radius:50%%; border:3px solid rgba(255,255,255,.95);
+    background:rgba(255,255,255,.28); box-shadow:0 0 0 2px rgba(0,0,0,.28);
+    opacity:0; pointer-events:none; transition:opacity .25s ease; }
+  #finger.on { opacity:1; }
   /* エンドカード(最後の締め) */
   #end { position:absolute; inset:0; display:flex; flex-direction:column;
     align-items:center; justify-content:center; text-align:center;
@@ -104,6 +111,7 @@ STAGE_HTML = """<!doctype html>
   <div id="cap"></div>
   <div id="snd">🔊 AI音声</div>
   <div id="rips"></div>
+  <div id="finger"></div>
   <div id="end"></div>
 </div>
 </body></html>
@@ -183,6 +191,22 @@ INIT_JS = r"""
     requestAnimationFrame(step);
   });
 
+  // ---- アプリ側フレームだけ: scrollIntoView({behavior:'smooth'}) をゆっくりに --
+  // (アプリ本来の滑らかスクロールは0.3秒ほどで速く、動画では急な動きに見える。
+  //  見た目の到達位置は同じで、時間だけ1.1秒に延ばす)
+  if (window.top !== window) {
+    const origSIV = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = function (opts) {
+      if (opts && typeof opts === 'object' && opts.behavior === 'smooth'
+          && (opts.block === 'start' || !opts.block)) {
+        const y = this.getBoundingClientRect().top + window.scrollY;
+        window.__vidScroll(null, Math.max(0, y), 1100);
+        return;
+      }
+      return origSIV.apply(this, arguments);
+    };
+  }
+
   // ---- アプリ側フレームだけ: 撮影用に不要なヘッダ要素を隠す ------------------
   if (window.top !== window) {
     const css = (window.__vidHideCss || '');
@@ -233,11 +257,12 @@ class Recording:
 class Stage:
     def __init__(self, base_url: str, *, width: int = 390, height: int = 693,
                  band: int = 108, dsf: int = 2,
-                 hide: list[str] | None = None):
+                 hide: list[str] | None = None, extra_css: str = ""):
         self.base = base_url.rstrip("/")
         self.W, self.H, self.BAND, self.DSF = width, height, band, dsf
         self.APPH = height - band
         self.hide = list(DEFAULT_HIDE if hide is None else hide)
+        self.extra_css = extra_css   # アプリ側フレームに足す撮影用CSS(余白調整等)
         self.pw = None
         self.browser = None
         self.ctx = None
@@ -291,8 +316,13 @@ class Stage:
                     pos=o.get("pos") or 0.0))
 
         await self.ctx.expose_binding("__vidAudio", on_audio)
-        hide_css = ", ".join(self.hide) + " { display:none !important; }" \
-            if self.hide else ""
+        # -webkit-tap-highlight-color: Chromiumのモバイルエミュレーションは
+        # タップした要素を一瞬シアン色に塗る(実機のiOS Safariでは出ない)。
+        # 点滅に見えるので撮影側で消す。
+        hide_css = ((", ".join(self.hide) + " { display:none !important; }")
+                    if self.hide else "") \
+            + " * { -webkit-tap-highlight-color: transparent !important; }" \
+            + self.extra_css
         await self.ctx.add_init_script(
             "window.__vidHideCss = " + json.dumps(hide_css) + ";")
         await self.ctx.add_init_script(INIT_JS)
@@ -400,6 +430,54 @@ class Stage:
         t = time.time() - self.t0
         self.taps.append(t)
         return t
+
+    async def type_text(self, selector: str, text: str, *,
+                        per_char: float = 0.24, nth: int = 0) -> None:
+        """入力欄をタップして(円を出す)、1文字ずつ入力する。"""
+        await self.tap(selector, nth)
+        await asyncio.sleep(0.25)
+        await self.page.keyboard.type(text, delay=int(per_char * 1000))
+
+    async def swipe(self, selector: str, dx: float, dy: float, *,
+                    duration: float = 0.5, nth: int = 0) -> float:
+        """要素の中心からスワイプ(CDPのタッチイベント)。指の円が動く。
+        戻り値=指を離した時刻(動画の秒)。"""
+        r = await self.rect(selector, nth)
+        x0, y0 = r["x"] + r["w"] / 2, r["y"] + r["h"] / 2
+        await self.page.evaluate(
+            """([x, y]) => { const f = document.getElementById('finger');
+              f.style.left = x + 'px'; f.style.top = y + 'px';
+              f.classList.add('on'); }""", [x0, y0])
+        await asyncio.sleep(0.35)
+        cdp = await self.ctx.new_cdp_session(self.page)
+        await cdp.send("Input.dispatchTouchEvent", {
+            "type": "touchStart", "touchPoints": [{"x": x0, "y": y0}]})
+        steps = 12
+        for i in range(1, steps + 1):
+            x, y = x0 + dx * i / steps, y0 + dy * i / steps
+            await cdp.send("Input.dispatchTouchEvent", {
+                "type": "touchMove", "touchPoints": [{"x": x, "y": y}]})
+            await self.page.evaluate(
+                """([x, y]) => { const f = document.getElementById('finger');
+                  f.style.left = x + 'px'; f.style.top = y + 'px'; }""", [x, y])
+            await asyncio.sleep(duration / steps)
+        await cdp.send("Input.dispatchTouchEvent", {
+            "type": "touchEnd", "touchPoints": []})
+        t = time.time() - self.t0
+        self.taps.append(t)
+        await self.page.evaluate(
+            "() => document.getElementById('finger').classList.remove('on')")
+        return t
+
+    async def mark(self, selector_js_predicate: str, name: str) -> None:
+        """要素に data-vid を付けて、以後 [data-vid="name"] で指せるようにする。
+        predicate は JS 式(関数本体・要素を返す)。"""
+        ok = await self.app.evaluate(
+            f"""(name) => {{ const e = (() => {{ {selector_js_predicate} }})();
+                 if (!e) return false; e.setAttribute('data-vid', name);
+                 return true; }}""", name)
+        if not ok:
+            raise RuntimeError(f"要素を特定できません: {name}")
 
     # ---- 録画 ---------------------------------------------------------------
     async def start_recording(self) -> None:

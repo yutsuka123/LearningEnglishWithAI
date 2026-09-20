@@ -36,7 +36,7 @@ from lib.stage import Stage              # noqa: E402
 
 # 作成順(ここに足す)。各モジュールは NAME/TITLE/DURATION と
 # prepare()/perform()/poster_body() を持つ(scenarios/phrase_polite.py 参照)。
-SCENARIOS = ["phrase_polite"]
+SCENARIOS = ["flash_word", "phrase_polite", "crossword"]
 
 VIDEO_DIR = REPO_ROOT / "static" / "video"
 POSTER_DIR = VIDEO_DIR / "posters"
@@ -46,7 +46,8 @@ async def build_one(mod, app: AppServer, args) -> dict:
     name = mod.NAME
     print(f"\n=== {name}: {mod.TITLE} ===", flush=True)
     ctx = {"data_dir": app.data_dir}
-    stage = Stage(app.url)
+    stage = Stage(app.url, hide=getattr(mod, "HIDE", None),
+                  extra_css=getattr(mod, "EXTRA_CSS", ""))
     if args.poster_only:   # 撮影・エンコードを省き、ポスターだけ作り直す
         try:
             await stage.open()
@@ -94,7 +95,8 @@ async def build_one(mod, app: AppServer, args) -> dict:
     if args.frames_dir:
         d = Path(args.frames_dir) / name
         n = len(ver.dump_frames(out_mp4, d, every=1.0))
-        print(f"  確認用フレーム{n}枚 -> {d}")
+        sheet = ver.contact_sheet(d, d / "sheet.png")
+        print(f"  確認用フレーム{n}枚 -> {d}(一覧: {sheet})")
     _report(name, result, problems)
     return {"name": name, "ok": not problems, "result": result}
 
