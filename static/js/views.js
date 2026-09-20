@@ -300,7 +300,7 @@ export async function welcome(root) {
         <div class="row welcome-cta-row">
           <a class="btn welcome-cta" href="/login#signup">
             👉 1分で無料登録 →</a>
-          <button class="btn ghost" id="welcomeTryBtn">
+          <button class="btn ghost welcome-try" id="welcomeTryBtn">
             登録せず単語を見る</button>
         </div>
         <p class="muted welcome-note">
@@ -799,6 +799,8 @@ function voiceButtonsItem(itemType, id, kind, fallback, getMode, isFreeRange) {
 // 厳選語と、その後の「無料で聞ける順」の一覧を区切る。
 const FEATURED_HEAD =
   "✨ まずはここから — 無料で聞ける、基礎からニッチ分野までの代表的な語";
+const PHRASE_FEATURED_HEAD =
+  "✨ まずはここから — 無料で聞ける、ていねいな言い方の一例";
 function listGroupHead(cols, text) {
   return el(`<tr class="lgh-row"><td class="lgh" colspan="${cols}">
     ${escapeHtml(text)}</td></tr>`);
@@ -2595,8 +2597,13 @@ export async function phrases(root) {
   const savedSort = loadSavedSort("phrase_sort", PHRASE_SORTS);
   const initSort = savedSort ? savedSort.sort
     : (state.freeFirstSort ? "billing" : "");
+  // ショーケース・フレーズ(先頭に固定する1件)は、未登録・未課金の
+  // 「無料で聞ける順・昇順」で絞り込みが無いときだけ(英単語の厳選語と同じ条件)。
+  const pinFeatured = state.freeFirstSort && initSort === "billing"
+    && !(savedSort && savedSort.desc) && !sb;
   const listQs = [sb, initSort ? "sort=" + initSort : "",
-    savedSort && savedSort.desc ? "desc=true" : ""]
+    savedSort && savedSort.desc ? "desc=true" : "",
+    pinFeatured ? "featured_first=true" : ""]
     .filter(Boolean).join("&");
   // 5本とも互いに依存が無いため並列実行する(2026-09-07・以前は直列5回で
   // 表示までの待ち時間が積み上がっていた)。
@@ -2712,17 +2719,33 @@ export async function phrases(root) {
     const { slice, page, pages } = pageSlice(curList, pPage, size);
     pPage = page;
     title.textContent = `ミニフレーズ (${curList.length})`;
-    renderRows(slice);
+    // このページの直前のフレーズ(ページ境目で見出しを出すため・英単語と同じ)。
+    const start = size === "all" ? 0 : page * (parseInt(size, 10) || 20);
+    renderRows(slice, start > 0 ? curList[start - 1] : null);
     pagerEl.innerHTML = "";
     pagerEl.appendChild(pagerBar(curList.length, page, pages,
       () => { pPage = page - 1; paint(); },
       () => { pPage = page + 1; paint(); }));
   };
 
-  const renderRows = (items) => {
+  const renderRows = (items, before = null) => {
     const rows = root.querySelector("#rows"); rows.innerHTML = "";
+    // 先頭に固定したショーケース・フレーズがあるときだけ見出し行を挟む
+    // (キーワード検索中は絞り込み結果なので出さない)。
+    const groups = !kw.value.trim()
+      && (items.some((x) => x.featured) || !!(before && before.featured));
+    let prevFeatured = before ? !!before.featured : null;
     items.forEach((p) => {
-      const tr = el(`<tr>
+      if (groups) {
+        if (p.featured && prevFeatured === null) {
+          rows.appendChild(listGroupHead(7, PHRASE_FEATURED_HEAD));
+        } else if (!p.featured && prevFeatured === true) {
+          rows.appendChild(listGroupHead(7,
+            "そのほかのフレーズ（無料で聞ける順）"));
+        }
+      }
+      prevFeatured = !!p.featured;
+      const tr = el(`<tr${p.featured ? ' class="featured-row"' : ""}>
         <td></td>
         <td data-label="英語">${escapeHtml(p.english)}</td>
         <td data-label="日本語">${escapeHtml(p.japanese)}</td>
@@ -2796,6 +2819,11 @@ export async function phrases(root) {
     }
     const deckSel = root.querySelector("#fDeck");
     if (deckSel && deckSel.value) q.set("deck_id", deckSel.value);
+    // ショーケース・フレーズの先頭固定(英単語の厳選語と同じ条件)。
+    if (state.freeFirstSort && q.get("sort") === "billing"
+        && !q.has("desc") && ![...q.keys()].some((k) => k !== "sort")) {
+      q.set("featured_first", "true");
+    }
     const items = await api.get("/api/phrases?" + q.toString());
     if (seq !== loadSeq) return; // 自分より新しい問い合わせが発行済み→破棄
     baseList = items;

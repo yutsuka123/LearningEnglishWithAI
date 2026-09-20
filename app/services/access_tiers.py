@@ -15,7 +15,8 @@
 返すので、再生課金(`charge_playback_if_needed`)・🆓/🔒表示・「🔊再生できる
 ものだけ」・課金別ソートは常に同じ結果になる。範囲の件数(①1,000語・②2,000語)
 自体は変えず、ショーケース語は**上乗せ**(範囲内の語を押し出さない)。それ
-以外の語の課金・🔒は変わらない。
+以外の語の課金・🔒は変わらない。同じ流儀でフレーズにも**ショーケース・
+フレーズ**(`SHOWCASE_PHRASES`・上限`MAX_SHOWCASE_PHRASES`件)を持つ(2026-09-20)。
 
 **2026-08-11の方針転換**: 一覧・検索・詳細は①②とも無料範囲に関わらず
 常時無料公開に変更（ニッチ分野の広さを隠さないため）。この無料範囲は
@@ -60,6 +61,23 @@ if len(SHOWCASE_WORDS) > MAX_SHOWCASE_WORDS:
     raise RuntimeError(
         f"SHOWCASE_WORDSは{MAX_SHOWCASE_WORDS}語まで(オーナー決定)。"
         "増やす場合はオーナー確認の上でMAX_SHOWCASE_WORDSを見直すこと。")
+# ショーケース・フレーズ(2026-09-20・オーナー決定): 「直訳だと失礼に響く→丁寧な
+# 言い方」ペアの場面は全てレベル600でゲスト無料範囲(750件)の外=ゲストは全て🔒
+# のため、丁寧な側から**1件だけ**を無料再生にして登録前に体験してもらう。
+# (英語表記, シーン)で指定し実行時にDBから解決(曖昧/未解決は黙って飛ばす)。
+# **増やすときは必ずオーナー確認**。上限を超えるとimport時に失敗する。
+# 選定(本番の読み取り調査): ゲスト/ログイン無料範囲の外・男女の音声が保存済み
+# (各40KB超)・detailにニュアンスあり・禁止シーンでない・(英語,シーン)が一意。
+# ペア相手(直訳側)の`No.`は🔒のまま。
+SHOWCASE_PHRASES: list[tuple[str, str]] = [
+    ("I'm afraid that won't be possible.",
+     "直訳で失礼に響く表現→丁寧な言い方(1)"),
+]
+MAX_SHOWCASE_PHRASES = 3
+if len(SHOWCASE_PHRASES) > MAX_SHOWCASE_PHRASES:
+    raise RuntimeError(
+        f"SHOWCASE_PHRASESは{MAX_SHOWCASE_PHRASES}件まで(オーナー決定)。"
+        "増やす場合はオーナー確認の上でMAX_SHOWCASE_PHRASESを見直すこと。")
 _BANNED_DOMAIN = "禁止用語"   # app/routers/vocabulary.pyのBANNED_DOMAINと同値
 _showcase_warned: set[tuple[str, str]] = set()   # 警告は語ごとに1回だけ
 
@@ -118,45 +136,67 @@ def _table_and_limit(
     return "words", (GUEST_WORDS_LIMIT if guest else FREE_WORDS_LIMIT)
 
 
-def showcase_word_ids(conn: sqlite3.Connection) -> set[int]:
-    """`SHOWCASE_WORDS`を実行時にword idへ解決して返す。(英語表記,分野)が
-    ちょうど1件に決まらない語(未解決=削除・改名／曖昧=同じ組が複数)は
-    **黙って飛ばし**、語ごとに1回だけ警告ログを出す。禁止用語ドメインの
-    語は対象にしない。"""
-    english = sorted({e for e, _ in SHOWCASE_WORDS})
+def _resolve_showcase(
+    conn: sqlite3.Connection, table: str, col: str,
+    pairs: list[tuple[str, str]], banned_sql: str, noun: str,
+) -> list[int]:
+    """(英語表記, 分野/シーン)の一覧を実行時にidへ解決して(指定順のまま)返す。
+    ちょうど1件に決まらない組(未解決=削除・改名／曖昧=同じ組が複数)は
+    **黙って飛ばし**、組ごとに1回だけ警告ログを出す。禁止の分野/シーンは
+    対象にしない。"""
+    english = sorted({e for e, _ in pairs})
     ph = ",".join("?" * len(english))
     rows = conn.execute(
-        f"SELECT id, english, domain FROM words WHERE english IN ({ph}) "
-        "AND COALESCE(domain, '') <> ?",
-        [*english, _BANNED_DOMAIN],
+        f"SELECT id, english, {col} AS grp FROM {table} "
+        f"WHERE english IN ({ph}) AND {banned_sql}", english,
     ).fetchall()
     found: dict[tuple[str, str], list[int]] = {}
     for r in rows:
-        found.setdefault((r["english"], r["domain"]), []).append(r["id"])
-    ids: set[int] = set()
-    for key in SHOWCASE_WORDS:
+        found.setdefault((r["english"], r["grp"]), []).append(r["id"])
+    ids: list[int] = []
+    for key in pairs:
         hit = found.get(key, [])
         if len(hit) == 1:
-            ids.add(hit[0])
+            ids.append(hit[0])
         elif key not in _showcase_warned:
             _showcase_warned.add(key)
             log.warning(
-                "ショーケース語を解決できないため無料再生の対象外にします: "
-                "%s / %s (該当%d件)", key[0], key[1], len(hit))
+                "%sを解決できないため無料再生の対象外にします: "
+                "%s / %s (該当%d件)", noun, key[0], key[1], len(hit))
     return ids
 
 
+def showcase_word_ids(conn: sqlite3.Connection) -> set[int]:
+    """`SHOWCASE_WORDS`を実行時にword idへ解決して返す(解決できない語・
+    禁止用語ドメインの語は黙って飛ばす。`_resolve_showcase`参照)。"""
+    return set(_resolve_showcase(
+        conn, "words", "domain", SHOWCASE_WORDS,
+        f"COALESCE(domain, '') <> '{_BANNED_DOMAIN}'", "ショーケース語"))
+
+
+def showcase_phrase_id_list(conn: sqlite3.Connection) -> list[int]:
+    """`SHOWCASE_PHRASES`をphrase idへ解決して(指定順のまま)返す(解決
+    できないフレーズ・禁止シーンは黙って飛ばす)。ミニフレーズ一覧の
+    先頭固定にも使う。"""
+    return _resolve_showcase(
+        conn, "phrases", "scene", SHOWCASE_PHRASES,
+        "COALESCE(scene, '') NOT LIKE '禁止%'", "ショーケース・フレーズ")
+
+
 def _showcase_ids_for(conn: sqlite3.Connection, item_type: str) -> set[int]:
-    """無料範囲に上乗せするid(単語のみ。フレーズにショーケース語は無い)。"""
-    return showcase_word_ids(conn) if item_type == "word" else set()
+    """無料範囲に上乗せするid(単語=ショーケース語、フレーズ=ショーケース・
+    フレーズ)。"""
+    if item_type == "word":
+        return showcase_word_ids(conn)
+    return set(showcase_phrase_id_list(conn))
 
 
 def free_range_id_filter(
     conn: sqlite3.Connection, item_type: str, *, guest: bool = False,
 ) -> tuple[str, list]:
     """一覧クエリに足せる「無料範囲内のみ」のWHERE断片とパラメータを返す
-    （🔊再生できるものだけ表示フィルター用・2026-08-11）。ショーケース語
-    (単語のみ)は範囲に上乗せして含める(2026-09-20)。"""
+    （🔊再生できるものだけ表示フィルター用・2026-08-11）。ショーケース語・
+    フレーズは範囲に上乗せして含める(2026-09-20)。"""
     table, limit = _table_and_limit(item_type, guest=guest)
     rank_expr = _level_rank_case()
     clause = (
@@ -179,7 +219,7 @@ def free_range_ids(
     """`free_range_id_filter`と同じ判定を、リクエスト単位で1回のSELECTだけ
     実行してidの集合として返す（一覧/quiz応答の各行に`is_free_range`を
     付与する用途。行ごとにランク計算するのを避けるため・2026-08-12）。
-    ショーケース語(単語のみ)は範囲に上乗せして含める(2026-09-20)。"""
+    ショーケース語・フレーズは範囲に上乗せして含める(2026-09-20)。"""
     table, limit = _table_and_limit(item_type, guest=guest)
     rank_expr = _level_rank_case()
     rows = conn.execute(

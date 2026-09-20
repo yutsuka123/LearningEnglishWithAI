@@ -550,6 +550,7 @@ table.rtable tbody tr.lgh-row td.lgh {
   text-align: left; padding: 12px 4px 6px; width: auto;
   font-weight: 700; font-size: 14px; color: var(--accent);
   border-bottom: 1px solid var(--accent);
+  word-break: auto-phrase; text-wrap: balance;   /* 見出しの語の途中折れを避ける */
 }
 table.rtable tbody tr.featured-row td:first-child {
   box-shadow: inset 3px 0 0 var(--accent);
@@ -735,6 +736,44 @@ table.rtable tbody tr.featured-row td:first-child {
   font-size: 17px; font-weight: 700; padding: 14px 30px;
   box-shadow: 0 4px 18px rgba(77, 163, 255, .4);
 }
+/* 副ボタン「登録せず単語を見る」(2026-09-20・オーナー要望): 従来は暗い背景に薄い
+   灰色の枠だけ(.btn.ghost)で押せる印象が弱かったため、縁を2pxの緑にして
+   ボタンだと一目で分かるようにする。主CTA(青の塗りつぶし)と区別しつつ並べて
+   自然な「主=青の塗り／副=緑の縁取り」。.welcome-card配下に限定し、他画面の
+   .btn.ghostは変えない。文字色はライトテーマで緑(--accent-2)だとコントラスト
+   不足(約3.3:1)になり、縁も薄い背景(グラデーション終端)では3:1を割るため、
+   ライトだけ縁・文字とも濃い緑にする(縁≒4.2:1・文字≒6.3:1)。 */
+.welcome-card .btn.welcome-try {
+  --try: var(--accent-2);
+  --try-text: var(--accent-2);
+  border: 2px solid var(--try);
+  color: var(--try-text);
+  background: rgba(54, 201, 141, .10);
+  background: color-mix(in srgb, var(--try) 10%, transparent);
+  font-size: 15px; font-weight: 700;
+  min-height: 44px; padding: 9px 20px;
+  filter: none;
+  transition: background-color .15s ease, box-shadow .15s ease;
+}
+:root[data-theme="light"] .welcome-card .btn.welcome-try {
+  --try: #15875c;
+  --try-text: #0d6b47;
+  background: rgba(21, 135, 92, .10);
+  background: color-mix(in srgb, var(--try) 10%, transparent);
+}
+.welcome-card .btn.welcome-try:hover {
+  background: rgba(54, 201, 141, .20);
+  background: color-mix(in srgb, var(--try) 20%, transparent);
+}
+.welcome-card .btn.welcome-try:active {
+  background: rgba(54, 201, 141, .30);
+  background: color-mix(in srgb, var(--try) 30%, transparent);
+}
+/* キーボード操作のフォーカスリング(マウス/タップでは出さない)。 */
+.welcome-card .btn.welcome-try:focus-visible {
+  outline: 3px solid var(--try);
+  outline-offset: 3px;
+}
 @media (max-width: 640px) {
   .welcome-hero { min-height: 0; }
   /* スマホのファーストビュー圧縮(2026-09-20): 主CTAが390×664・375×553
@@ -912,6 +951,19 @@ table.rtable .ops-cell .vague-btn { margin-left: 0; }
   position: sticky; top: -20px; z-index: 2;
   margin: -20px -20px 12px; padding: 16px 20px 10px;
   background: var(--panel);
+}
+
+/* 詳細ポップアップ(フレーズ/単語)の日本語本文を、語の途中で折らず文節の切れ目で
+   折り返す(2026-09-20)。スマホ幅で「…丁寧な依頼表/現。」のように語の途中で
+   折れて行末に1〜2文字だけ残ることがあった(データは正しく折り返しの問題)。
+   word-break:auto-phraseは日本語を文節単位で折る(対応ブラウザのみ・非対応は
+   通常の折り返しにフォールバック)、text-wrap:prettyは最終行の孤立(1〜2文字)
+   を避ける。ポップアップ内の本文要素(段落・箇条・例文の行)に限定し、表・
+   ボタン・入力欄・コードには適用しない(折り返し位置の変更だけでレイアウトは
+   変えない)。white-space等の既存指定は触らない。 */
+.modal-body p, .modal-body li, .modal-body .row > div {
+  word-break: auto-phrase;
+  text-wrap: pretty;
 }
 
 /* 単語詳細内の類義語/対義語/派生語ジャンプ（DB登録済みの語のみリンク化） */
