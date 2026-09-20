@@ -56,16 +56,27 @@ def audio_sizes(audio_dir: Path, item_type: str, item_id: int, text: str,
     return out
 
 
-def require_guest_playable_phrase(data_dir: Path, english: str) -> dict:
-    """フレーズ(英文一致)が ①ゲスト無料範囲内 ②詳細あり ③男声/女声の
+def require_guest_playable_phrase(
+        data_dir: Path, english: str, scene: str | None = None) -> dict:
+    """フレーズ(英文一致。同じ英文が複数シーンにあるときは scene も指定)が
+    ①ゲスト無料範囲内(ショーケース・フレーズを含む) ②詳細あり ③男声/女声の
     保存音声が8KB以上 を満たすか確認し、情報を返す。満たさなければ例外。"""
     conn = open_content(data_dir)
     try:
-        row = conn.execute(
-            "SELECT id, english, japanese, level, scene, detail "
-            "FROM phrases WHERE english = ?", (english,)).fetchone()
-        if row is None:
-            raise RuntimeError(f"フレーズが見つかりません: {english}")
+        if scene is None:
+            rows = conn.execute(
+                "SELECT id, english, japanese, level, scene, detail "
+                "FROM phrases WHERE english = ?", (english,)).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT id, english, japanese, level, scene, detail "
+                "FROM phrases WHERE english = ? AND scene = ?",
+                (english, scene)).fetchall()
+        if len(rows) != 1:
+            raise RuntimeError(
+                f"フレーズを1件に特定できません(該当{len(rows)}件): "
+                f"{english} / {scene}")
+        row = rows[0]
         free = access_tiers.is_free_range(
             conn, "phrase", row["id"], guest=True)
     finally:
@@ -83,3 +94,34 @@ def require_guest_playable_phrase(data_dir: Path, english: str) -> dict:
     return {"id": row["id"], "english": row["english"],
             "japanese": row["japanese"], "level": row["level"],
             "scene": row["scene"], "audio": sizes}
+
+
+def require_guest_playable_word(
+        data_dir: Path, word_id: int, kinds=("word",)) -> dict:
+    """単語(id)が ①ゲスト無料範囲内 ②指定種別(word/example)の男声・女声の
+    保存音声が8KB以上 を満たすか確認する。満たさなければ例外。"""
+    conn = open_content(data_dir)
+    try:
+        row = conn.execute(
+            "SELECT id, english, japanese, example FROM words WHERE id = ?",
+            (word_id,)).fetchone()
+        if row is None:
+            raise RuntimeError(f"単語が見つかりません: id={word_id}")
+        free = access_tiers.is_free_range(
+            conn, "word", word_id, guest=True)
+    finally:
+        conn.close()
+    if not free:
+        raise RuntimeError(
+            f"ゲストの無料範囲外です(🔒になる): id={word_id} {row['english']}")
+    sizes = {}
+    for k in kinds:
+        text = row["example"] if k == "example" else row["english"]
+        sizes.update(audio_sizes(
+            data_dir / "audio", "word", word_id, text or "", kinds=(k,)))
+    bad = {k: v for k, v in sizes.items() if v < MIN_AUDIO_BYTES}
+    if bad:
+        raise RuntimeError(
+            f"音声が無い/8KB未満です: id={word_id} {row['english']} {bad}")
+    return {"id": word_id, "english": row["english"],
+            "japanese": row["japanese"], "audio": sizes}

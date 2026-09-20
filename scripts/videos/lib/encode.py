@@ -19,6 +19,7 @@ import subprocess
 from pathlib import Path
 
 from .stage import AudioEvent, Recording
+from .verify import loudness
 
 MIN_AUDIO_BYTES = 8 * 1024   # これ未満の音声は不良(0.36秒の無内容音)の疑い
 
@@ -136,6 +137,22 @@ def _build_audio(rec: Recording, work: Path, out_wav: Path,
           f"offset={js['target_offset']}:linear=true")
     run(["ffmpeg", "-y", "-v", "error", "-i", str(raw), "-af", af,
          "-ar", "44100", "-ac", "1", str(out_wav)])
+    # 短い/ピークの高い音声だと linear loudnorm がTP上限で目標に届かない
+    # ことがある(単語1語だけの音声など)。目標から0.7LU以上外れたら、軽い
+    # コンプレッサでピークを均し→ゲイン→リミッタで合わせ直す(音声の自然さを
+    # 損なわない範囲・ratio 3程度)。
+    got = loudness(out_wav)
+    if got and got["lufs"] is not None and abs(got["lufs"] - target_lufs) > 0.7:
+        comp = work / "audio_comp.wav"
+        run(["ffmpeg", "-y", "-v", "error", "-i", str(raw), "-af",
+             "acompressor=threshold=-28dB:ratio=3:attack=4:release=90",
+             "-ar", "44100", "-ac", "1", str(comp)])
+        base = loudness(comp)["lufs"]
+        gain = target_lufs - base
+        lim = 10 ** (tp / 20)
+        run(["ffmpeg", "-y", "-v", "error", "-i", str(comp), "-af",
+             f"volume={gain:.2f}dB,alimiter=limit={lim:.3f}:attack=3:"
+             "release=50:level=0", "-ar", "44100", "-ac", "1", str(out_wav)])
     return used
 
 

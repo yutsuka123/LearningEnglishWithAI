@@ -25,14 +25,34 @@ import { escapeHtml, go } from "./app.js";
 //   tryLabel : その導線ボタンの文言
 export const VIDEOS = [
   {
+    name: "flash_word",
+    title: "フラッシュ単語",
+    desc: "カードをめくって、単語と例文の音声を聞く。スワイプで採点",
+    src: "/static/video/flash_word.mp4?v=1",
+    poster: "/static/video/posters/flash_word.jpg?v=1",
+    sound: true,
+    tryTab: "flashcard",
+    tryLabel: "フラッシュ単語を試す →",
+  },
+  {
     name: "phrase_polite",
-    title: "失礼にならない お願いの英語",
-    desc: "丁寧に頼むときの言い方と、使い分けのコツ",
-    src: "/static/video/phrase_polite.mp4?v=1",
-    poster: "/static/video/posters/phrase_polite.jpg?v=1",
+    title: "そっけない“No.”を上品に",
+    desc: "「残念ながら」の一言で断りがやわらかくなる言い方と、その使い分け",
+    src: "/static/video/phrase_polite.mp4?v=2",
+    poster: "/static/video/posters/phrase_polite.jpg?v=2",
     sound: true,
     tryTab: "phrases",
     tryLabel: "ミニフレーズを試す →",
+  },
+  {
+    name: "crossword",
+    title: "猫のマスの英単語クロスワード",
+    desc: "例文ヒントと発音ヒントで単語を当てる。サンプルは登録なしで遊べる",
+    src: "/static/video/crossword.mp4?v=1",
+    poster: "/static/video/posters/crossword.jpg?v=1",
+    sound: true,
+    tryTab: "games",
+    tryLabel: "クロスワードを試す →",
   },
 ];
 

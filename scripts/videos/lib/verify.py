@@ -103,6 +103,17 @@ def dump_frames(path: Path, outdir: Path, every: float = 1.0,
     return sorted(outdir.glob("f_*.png"))
 
 
+def contact_sheet(frames_dir: Path, out: Path, cols: int = 7,
+                  thumb_w: int = 270) -> Path:
+    """dump_frames の出力を1枚のタイル画像にまとめる(目視確認用)。"""
+    n = len(list(frames_dir.glob("f_*.png")))
+    rows = max(1, -(-n // cols))
+    _run(["ffmpeg", "-y", "-v", "error", "-framerate", "1", "-i",
+          str(frames_dir / "f_%03d.png"), "-vf",
+          f"scale={thumb_w}:-1,tile={cols}x{rows}", "-frames:v", "1", str(out)])
+    return out
+
+
 def check(video: Path, poster: Path | None) -> tuple[dict, list[str]]:
     """(情報, 問題点リスト)。問題点が空なら合格。"""
     L = LIMITS
