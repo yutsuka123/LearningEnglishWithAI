@@ -67,6 +67,10 @@ def main(argv: list[str] | None = None,
             res_ip = ip_retention.anonymize_old_ips(conn, now=now)
         detail = "、".join(f"{k}:{v}" for k, v in res_ip.items() if v) or "対象なし"
         print(f"IP保持期限({ip_retention.IP_KEEP_DAYS}日超): {detail}")
+    except ip_retention.NoKeyError as e:
+        print(f"IP保持期限の処理をスキップ(変換の鍵が取れません: {e})。"
+              "環境変数SESSION_SECRETのあるコンテナ内で実行してください。",
+              file=sys.stderr)
     except Exception as e:
         print(f"IP保持期限の処理に失敗: {type(e).__name__}: {e}",
               file=sys.stderr)

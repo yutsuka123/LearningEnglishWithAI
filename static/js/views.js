@@ -6119,8 +6119,9 @@ export async function admin(root) {
       const jsN = res.js_reached ?? 0;
       const secFmt = (x) => {
         if (x == null) return "—";
-        if (x >= 60) return `${Math.floor(x / 60)}分${Math.round(x % 60)}秒`;
-        return `${x}秒`;
+        if (x < 60) return `${x}秒`;
+        const t = Math.round(x);   // 先に丸める(119.6秒が「1分60秒」にならないように)
+        return `${Math.floor(t / 60)}分${t % 60}秒`;
       };
       const tbTile = (n, title, hint) => `
         <div class="stat"><div class="num">${n ?? 0}</div>

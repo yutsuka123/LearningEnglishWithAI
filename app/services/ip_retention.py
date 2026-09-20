@@ -5,9 +5,9 @@
 
 設計:
 - **鍵付きHMAC**にする。IPv4は約43億通りしかなく、鍵の無いSHA-256は総当たりで
-  元に戻せる(=匿名化にならない)ため。鍵は`get_session_secret`から用途別に派生
+  元に戻せる(=匿名化にならない)ため。鍵はセッション鍵(環境変数SESSION_SECRET→app_state)から用途別に派生
   させる(セッション鍵そのものはハッシュ計算に使わない)。鍵が取れなければ何も
-  しない(鍵なしでハッシュ化することはしない)。
+  しない(`NoKeyError`・鍵なしでハッシュ化することも、鍵を新規生成することもしない)。
 - 変換値は`h:`+16進20桁。`h:`で始まる値は処理済みとして再処理しない(冪等)。
   同じIPは同じ変換値になるので、期限後も「何種類のIPか」の集計はできる。
   セッション鍵を変えると以後の変換値は変わる(過去分との突き合わせは不可)。
@@ -24,10 +24,9 @@ from __future__ import annotations
 import hashlib
 import hmac
 import ipaddress
+import os
 import sqlite3
 from datetime import datetime, timedelta
-
-from .auth import get_session_secret
 
 IP_KEEP_DAYS = 360
 HASH_PREFIX = "h:"
@@ -53,9 +52,32 @@ def _is_ip(value: str) -> bool:
         return False
 
 
+class NoKeyError(RuntimeError):
+    """IP変換の鍵の元(セッション鍵)が取れない。この場合は何も書き換えない。"""
+
+
 def derive_key(conn: sqlite3.Connection) -> bytes:
-    """IP変換専用の鍵(セッション鍵から用途別に派生)。"""
-    base = get_session_secret(conn)
+    """IP変換専用の鍵(セッション鍵から用途別に派生)。
+
+    `auth.get_session_secret`は鍵が無いと新規生成してapp_stateへ保存して
+    しまう(セッション鍵の初期化用の動作)。ここで使うと、環境変数
+    SESSION_SECRETの無い実行環境(ホスト側での直接実行など)で別の鍵が
+    黙って作られ、「同じIP=同じ変換値」が崩れる。そのため自前で読むだけに
+    して、無ければ`NoKeyError`(=何も書き換えない)にする。
+    優先順位はget_session_secretと同じ: 環境変数 → app_state。"""
+    env = os.getenv("SESSION_SECRET", "").strip()
+    if env:
+        base = env.encode("utf-8")
+    else:
+        row = conn.execute(
+            "SELECT value FROM app_state WHERE key = 'session_secret'"
+        ).fetchone()
+        try:
+            base = bytes.fromhex(row[0]) if row and row[0] else b""
+        except ValueError:
+            base = b""
+        if not base:
+            raise NoKeyError("SESSION_SECRETもapp_stateのsession_secretも無い")
     return hmac.new(base, b"ip-retention-v1", hashlib.sha256).digest()
 
 
@@ -70,7 +92,8 @@ def anonymize_old_ips(
 ) -> dict[str, int]:
     """期限(now-keep_days)より古い行のIPを変換し、テーブルごとの変換行数を
     返す(dry_run=Trueなら書き込まず、変換対象の行数を返す)。
-    位置情報キャッシュは`ip_geo_cache`キーに削除件数(dry_runなら対象件数)。"""
+    位置情報キャッシュは`ip_geo_cache`キーに削除件数(dry_runなら対象件数)。
+    鍵が取れないときは何も書き換えず`NoKeyError`を送出する。"""
     cutoff = (now - timedelta(days=keep_days)).strftime("%Y-%m-%d %H:%M:%S")
     key = derive_key(conn)
     out: dict[str, int] = {}
