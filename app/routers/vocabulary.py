@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter
+from fastapi.responses import JSONResponse
 
 from ..services import errors
 from pydantic import BaseModel
@@ -40,7 +41,13 @@ def _word_dict(
 ) -> dict:
     d = dict(row)
     # detail(JSON)は一覧では送らず、有無フラグだけ返す（応答を軽く保つ）。
-    d["has_detail"] = bool((d.pop("detail", "") or "").strip())
+    # 一覧APIはSQL側で作った`has_detail`を渡してくる(detail本体を読まない)。
+    if "has_detail" in d:
+        # popして付け直す=旧コード(detailをpopして末尾にhas_detailを足す)と
+        # JSONのキー順まで同一にするため。
+        d["has_detail"] = bool(d.pop("has_detail"))
+    else:
+        d["has_detail"] = bool((d.pop("detail", "") or "").strip())
     d["selection_priority"] = selection_weight(d["mastery"], cfg.mastered_threshold)
     d["mastered"] = d["mastery"] >= cfg.mastered_threshold
     d["perfect"] = bool(d.get("perfect", 0))
@@ -57,6 +64,15 @@ def _word_dict(
     if free_ids is not None:
         d["is_free_range"] = d["id"] in free_ids
     return d
+
+
+def _json_list(rows: list[dict]) -> JSONResponse:
+    """一覧(全語・約9MB)をそのままJSONにして返す(2026-09-21)。
+    素の辞書のlistを返すと、FastAPIが`jsonable_encoder`で全要素を再帰的に
+    なめ直してから直列化する。中身はもう素のJSON型(int/str/bool/None)だけ
+    なので、この工程は出力を変えずに時間だけ食う(本番VPSで約1.1秒・
+    全体の半分強)。JSONResponseを直接返せば同じバイト列が直接作られる。"""
+    return JSONResponse(content=rows)
 
 
 BANNED_DOMAIN = "禁止用語"
@@ -194,7 +210,8 @@ def list_words(
         order = (f"{access_tiers.level_rank_case()} ASC, "
                  "english COLLATE NOCASE ASC, id ASC")
     from ..services.progress import user_items_subquery
-    src = user_items_subquery("words")  # 先頭の ? = user_id
+    # 一覧はdetail本体を読まない(has_detailフラグのみ・2026-09-21)。
+    src = user_items_subquery("words", with_detail=False)  # 先頭の ? = user_id
     with db() as conn:
         uid = current_user_id()
         cfg = _current_mastery_cfg(conn)
@@ -246,8 +263,8 @@ def list_words(
             out = [_word_dict(r, free_ids, cfg) for r in rows]
             for d in out[:len(head)]:
                 d["featured"] = True
-            return out
-        return [_word_dict(r, free_ids, cfg) for r in rows]
+            return _json_list(out)
+        return _json_list([_word_dict(r, free_ids, cfg) for r in rows])
 
 
 @router.get("/hero-sample")

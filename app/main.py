@@ -400,6 +400,19 @@ def health():
     return {"status": "ok"}
 
 
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    """ブラウザが自動で取りに来る`/favicon.ico`(2026-09-21)。従来はルートが
+    無く、訪問のたびに404になっていた(実害は無いがログにノイズが出る)。
+    中身は小さく縮めたブランドロゴ(PNG)。ブラウザはPNGをfaviconとして
+    受け付けるので、.icoへの変換は不要。"""
+    return FileResponse(
+        str(paths.static_dir / "img" / "favicon-64.png"),
+        media_type="image/png",
+        headers={"Cache-Control": "public, max-age=604800"},
+    )
+
+
 @app.get("/robots.txt")
 def robots_txt():
     """クロール範囲を公開ページのみに明示的に絞る（2026-08-11・機密情報

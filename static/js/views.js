@@ -33,6 +33,41 @@ const QUIZ_GRADING_HINT =
   + "❌不正解は習熟度に記録され、✅覚えたは満点付近まで加点します。"
   + "🚫ノーカウントは記録も集計もしません。同じ語を両方向とも正解すると"
   + "ボーナスが付くことがあります。";
+// 絞り込み・並び替えの使い方(2026-09-21・ユーザー要望「ⓘでフィルターのかけ方を
+// 詳しく解説」)。改行はポップオーバー側(pre-line)で保たれる。挙動の根拠:
+// 検索=読み込み済みの結果内(クライアント側)/複数分野=OR/大分類は分野未指定の
+// ときだけ有効(app/routers/vocabulary.py `_word_filter`)。
+const WORD_FILTER_HELP = [
+  "【絞り込み・並び替えの使い方】",
+  "🔍 検索：英語か日本語の一部を入力すると、いま表示中の一覧のなかから、その文字を含む語だけに絞ります。",
+  "📁 大分類・分野：大分類を選ぶと、その中の分野すべてが対象になります。「全て ▾」を押すと分野を個別に複数選べます(選んだ分野のどれかに当てはまる語が出ます)。分野を個別に選んだときは、大分類よりそちらが優先されます。",
+  "📶 Lv 下限〜上限：TOEICの目安レベルで範囲を指定します。下限だけ・上限だけでも使えます。",
+  "🔊 再生できるものだけ：いまの状態で音声を無料で再生できる語だけに絞ります。",
+  "🗂️ 単語帳：自分の単語帳に入れた語だけを表示します(ログイン後・単語帳を作っている場合)。",
+  "↕ 並び替え：習熟度・正答率・英語A→Z・レベル・分野・最近の学習・無料で聞ける順から選べます。右の「昇順/降順」ボタンで逆順になります。",
+  "✅ 覚えた：「含む/隠す/のみ」。覚えた語を除いて復習したいときは「隠す」を選びます。",
+  "🐢 速度・件数：音声の再生速度と、1ページに表示する件数を変えられます。",
+  "複数の条件は、すべてを満たす語に絞り込まれます。選択肢に出す分野そのものを減らしたいときは、設定の「表示する分野・シーン」で変更できます。",
+].join("\n");
+const PHRASE_FILTER_HELP = [
+  "【絞り込み・並び替えの使い方】",
+  "🔍 検索：英語か日本語の一部を入力すると、いま表示中の一覧のなかから、その文字を含むフレーズだけに絞ります。",
+  "📁 大分類・シーン：大分類を選ぶと、その中のシーンすべてが対象になります。「全て ▾」を押すとシーンを個別に複数選べます(選んだシーンのどれかに当てはまるフレーズが出ます)。シーンを個別に選んだときは、大分類よりそちらが優先されます。",
+  "📶 Lv 下限〜上限：TOEICの目安レベルで範囲を指定します。下限だけ・上限だけでも使えます。",
+  "🔊 再生できるものだけ：いまの状態で音声を無料で再生できるフレーズだけに絞ります。",
+  "🗂️ フレーズ帳：自分のフレーズ帳に入れたものだけを表示します(ログイン後・フレーズ帳を作っている場合)。",
+  "↕ 並び替え：習熟度・正答率・英語A→Z・シーン・最近の学習・登録順・無料で聞ける順から選べます。「登録順」は、登録した順に並べるので、「失礼に響く言い方→ていねいな言い方」のように対になっているフレーズが続けて見られます。右の「昇順/降順」ボタンで逆順になります。",
+  "✅ 覚えた：「含む/隠す/のみ」。覚えたフレーズを除いて復習したいときは「隠す」を選びます。",
+  "複数の条件は、すべてを満たすフレーズに絞り込まれます。選択肢に出すシーンそのものを減らしたいときは、設定の「表示する分野・シーン」で変更できます。",
+].join("\n");
+const VISIBLE_DOMAINS_HELP = [
+  "【表示する分野・シーンについて】",
+  "チェックを外した分野(英単語)・シーン(フレーズ)は、英単語・ミニフレーズなどの画面の「絞り込みの選択肢」に出なくなります。興味のない分野で選択肢が長くなるのを防げます。",
+  "データは消えません。あとからチェックを入れ直せば、いつでも選択肢に戻ります。",
+  "選択肢から消えるだけなので、分野を「全て」にして一覧を見るときは、チェックを外した分野の語も一覧には含まれます。特定の分野だけを見たいときは、絞り込みで分野を選んでください。",
+  "チェックを変えたあとは、このカードの「保存」を押すまで反映されません。",
+  "「全てON/全てOFF/デフォルトに戻す」で英単語・フレーズ全体を一括で切り替えられ、各グループの一括ボタンで大分類ごとに切り替えられます。",
+].join("\n");
 const MASTERY_LEGEND_HINT =
   "習熟度バーは覚え具合(pt)を表します。赤=0pt・黄=1〜20pt・緑=21〜50pt・"
   + "青=51pt以上。表示は△うろ覚え→○覚えた→◎卒業の順に進みます。"
@@ -344,8 +379,14 @@ export async function welcome(root) {
         <div class="row welcome-scroll-row">${featureChips}</div>
       </div>
     </div>`;
-  root.querySelector("#welcomeTryBtn")
-    ?.addEventListener("click", () => go("vocab"));
+  // 管理画面の集計用に、文言が変わっても数え漏れない安定キーを送る(全ボタン
+  // 共通のクリック計測(ボタン文言)とは別・2026-09-21)。
+  root.querySelector("#welcomeTryBtn")?.addEventListener("click", () => {
+    api.track("click", "welcome", "cta:try_without_signup");
+    go("vocab");
+  });
+  root.querySelector(".welcome-cta")?.addEventListener("click", () =>
+    api.track("click", "welcome", "cta:signup"));
 
   // 「本物の1語サンプル」(2026-09-20): 未登録ゲストが無料で再生できる語を
   // 1つ、既存の解説データ(語源/豆知識の一文)と一緒に見せ、登録前に
@@ -2347,7 +2388,7 @@ export async function vocab(root) {
     <div class="card">
       <details class="log-group" id="vocabFilters"
         ${window.innerWidth <= 760 ? "" : "open"}>
-      <summary>🔍 絞り込み・並び替え</summary>
+      <summary>🔍 絞り込み・並び替え ${infoIcon("help-filter-words", WORD_FILTER_HELP)}</summary>
       <div class="row mt">
         <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:140px" />
         <select id="fCategory" title="大分類"><option value="">全カテゴリ</option>
@@ -2672,7 +2713,7 @@ export async function phrases(root) {
     <div class="card">
       <details class="log-group" id="phraseFilters"
         ${window.innerWidth <= 760 ? "" : "open"}>
-      <summary>🔍 絞り込み・並び替え</summary>
+      <summary>🔍 絞り込み・並び替え ${infoIcon("help-filter-phrases", PHRASE_FILTER_HELP)}</summary>
       <div class="row mt">
         <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:140px" />
         <span class="muted">Lv</span>
@@ -6070,6 +6111,75 @@ export async function admin(root) {
           「JS到達」の差です。JS到達の記録は計測開始後のデータのみ(それ以前の
           期間は0になり、JS到達率・人間訪問は低く出ます)。HTML到達までの
           中央値 ${ms(jt.html_ms_median)}。</p>`;
+      // --- トップページでの行動・滞在時間(2026-09-21・ユーザー要望) ---
+      const tb = res.top_behavior || {};
+      const tbVideo = tb.video || {};
+      const tbOther = tb.other_page || {};
+      const tbDwell = tb.dwell || {};
+      const jsN = res.js_reached ?? 0;
+      const secFmt = (x) => {
+        if (x == null) return "—";
+        if (x >= 60) return `${Math.floor(x / 60)}分${Math.round(x % 60)}秒`;
+        return `${x}秒`;
+      };
+      const tbTile = (n, title, hint) => `
+        <div class="stat"><div class="num">${n ?? 0}</div>
+          <div class="lbl">${title}<br><span class="muted">${
+            jsN ? `JS到達${jsN}人中 ${pct(n ?? 0, jsN)}` : hint}</span></div>
+        </div>`;
+      const videoRows = (tbVideo.by_video || []).map((r) => `<tr>
+        <td>${escapeHtml(r.title)}</td><td>${r.play}</td><td>${r.p25}</td>
+        <td>${r.p50}</td><td>${r.ended}</td><td>${r.try}</td>
+        <td>${r.replay}</td><td>${r.error}</td></tr>`).join("");
+      const pageRows = (tbOther.by_page || []).map((r) => `<tr>
+        <td>${escapeHtml(r.label)}</td><td>${r.count}</td></tr>`).join("");
+      const dwellRow = (label, d) => `<tr><td>${label}</td><td>${d.n}</td>
+        <td>${secFmt(d.min)}</td><td>${secFmt(d.p25)}</td>
+        <td><b>${secFmt(d.median)}</b></td><td>${secFmt(d.mean)}</td>
+        <td>${secFmt(d.p75)}</td><td>${secFmt(d.p90)}</td>
+        <td>${secFmt(d.max)}</td></tr>`;
+      const behaviorHtml = `
+        <h3 class="mt">トップページでの行動・離脱までの時間</h3>
+        <div class="grid cols-4 mt">
+          ${tbTile(tbVideo.played, "動画を再生した人", "")}
+          ${tbTile(tbOther.opened, "別の画面を開いた人", "")}
+          ${tbTile(tb.try_without_signup, "「登録せず単語を見る」を押した人", "")}
+          ${tbTile(tb.signup_cta, "「無料登録」ボタンを押した人", "")}
+        </div>
+        <p class="muted" style="font-size:12px">${[
+          "人数は訪問した人(ボット・自分の端末を除く)のユニーク数です。",
+          "動画・上記ボタンの記録は ver1.4.12 の公開(2026-09-21)以降のデータのみ、",
+          "離脱までの時間は2026-09-19以降のみで、それ以前の期間は0になります。",
+          "「別の画面」はようこそ画面以外(このアプリについて・ログイン/登録ページ・",
+          "各機能の画面)の表示です。"].join("")}</p>
+        ${videoRows
+          ? `<h3 class="mt">動画別（何を見たか・人数）</h3>
+            <div style="overflow-x:auto"><table class="mt"
+              style="min-width:560px"><thead><tr>
+              <th>動画</th><th>再生を押した</th><th>25%まで</th>
+              <th>50%まで</th><th>最後まで</th><th>「試す」を押した</th>
+              <th>もう一度見た</th><th>再生エラー</th></tr></thead>
+              <tbody>${videoRows}</tbody></table></div>`
+          : `<p class="muted">この期間に動画を再生した人はいません。</p>`}
+        ${pageRows
+          ? `<details class="mt"><summary>開いた別の画面（人数・上位）</summary>
+              <table class="mt"><thead><tr><th>画面</th><th>人数</th></tr>
+              </thead><tbody>${pageRows}</tbody></table></details>` : ""}
+        <h3 class="mt">離脱までの推定時間（秒・ページを開いてからの滞在）</h3>
+        <div style="overflow-x:auto"><table class="mt"
+          style="min-width:560px"><thead><tr>
+          <th></th><th>件数</th><th>最小</th><th>25%点</th><th>中央値</th>
+          <th>平均</th><th>75%点</th><th>90%点</th><th>最大</th></tr></thead>
+          <tbody>${dwellRow("全体", tbDwell.all || { n: 0 })}
+          ${dwellRow("何か操作した人", tbDwell.engaged || { n: 0 })}
+          ${dwellRow("操作せず離れた人", tbDwell.not_engaged || { n: 0 })}
+          </tbody></table></div>
+        <p class="muted" style="font-size:12px">${[
+          "「離脱」=ページを開いてから最初に画面を離れた(別のタブ/アプリへ切り替える・",
+          "閉じる)時点までの経過時間の推定で、ページを開いた1回につき1件です",
+          "(人数ではなく読み込み回数)。切り替えて戻る人もいるため実際の利用時間とは",
+          "一致しません。タブを開いたまま放置すると最大値・平均が極端に長くなるので、",
+          "目安は<b>中央値</b>です。"].join("")}</p>`;
       const chRows = (res.by_channel || []).map((c) => `<tr>
         <td>${escapeHtml(c.label)}</td><td>${c.visited}</td>
         <td>${c.human}</td>
@@ -6204,7 +6314,7 @@ export async function admin(root) {
           ⚙️ ボット・クローラー(curl等の機械的アクセス)と判定した
           ${botExcluded}件、自分の端末(管理者/テストアカウント・内部Cookie)
           ${internalExcluded}件は上記の集計から除外済みです。</p>
-        ${jsKpiHtml}${sourceHtml}
+        ${jsKpiHtml}${behaviorHtml}${sourceHtml}
         <h3 class="mt">端末・ブラウザの内訳（「訪問」段階・人間判定分のみ）</h3>
         ${deviceBreakdown.length
           ? `<table class="mt"><thead><tr>
@@ -7943,7 +8053,7 @@ export async function settings(root) {
         <a href="/static/terms.html" target="_blank">利用規約・免責事項</a></p>
     </div>
     <div class="card">
-      <h2>表示する分野・シーン</h2>
+      <h2>表示する分野・シーン ${infoIcon("help-visible-domains", VISIBLE_DOMAINS_HELP)}</h2>
       <p class="muted">興味のない分野・シーンのチェックを外すと、英単語/
         フレーズ画面のフィルター候補から消えます（データ自体は削除され
         ません・いつでも再表示できます）。<b>チェックの変更はこのカードの

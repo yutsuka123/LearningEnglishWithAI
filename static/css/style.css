@@ -656,6 +656,11 @@ table.rtable tbody tr.featured-row td:first-child {
   box-shadow: 0 6px 20px rgba(0, 0, 0, .35);
   font-size: 13px; color: var(--text); line-height: 1.5;
 }
+.hint-popover-text { white-space: pre-line; }
+/* 使い方の解説など長文用(2026-09-21): 幅広にし、画面を超える分は中でスクロール */
+.hint-popover.wide {
+  width: min(420px, calc(100vw - 16px)); max-height: 70vh; overflow-y: auto;
+}
 .hint-popover-actions {
   display: flex; justify-content: space-between; gap: 8px; margin-top: 8px;
 }

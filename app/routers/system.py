@@ -1325,6 +1325,111 @@ _FORM_LABEL_RE = re.compile(
     r"|fail:(\d{4}|network|other)")
 
 
+# --- トップページでの行動・滞在時間(2026-09-21・ユーザー要望) ---------------
+# 動画を見た/何を見たか・別の画面を開いた・「登録せず単語を見る」「無料登録」を
+# 押した・離脱(最初に画面を離れる)までの時間。新しい計測は足さず、既存の
+# usage_events(click/welcome・page・leave/html)から集計する。動画は
+# video-gallery.jsが`video:<名前>:<イベント>`で、CTAはwelcome画面が
+# 安定キー`cta:*`(+従来のボタン文言)で送る。
+_VIDEO_LABEL_RE = re.compile(
+    r"video:([a-z0-9_]+):(play|p25|p50|ended|try|replay|error)")
+_VIDEO_EVENTS = ("play", "p25", "p50", "ended", "try", "replay", "error")
+# 動画名→表示名(static/js/video-gallery.jsのVIDEOSのtitleと揃える。
+# 未登録の名前は名前のまま出す)。
+_VIDEO_TITLES = {
+    "flash_word": "フラッシュ単語",
+    "phrase_polite": "そっけない“No.”を上品に",
+    "crossword": "猫のマスの英単語クロスワード",
+}
+# 別の画面を開いた先の表示名(usage_events.category→表示名)。
+_PAGE_DEST_LABELS = {
+    "about_page": "このアプリについて", "login_page": "ログイン/登録ページ",
+    "vocab": "英単語", "word_detail": "単語の詳細", "flashcard": "フラッシュ単語",
+    "deck": "単語帳", "phrases": "ミニフレーズ", "phrase_detail": "フレーズの詳細",
+    "flashphrase": "フラッシュフレーズ", "phrasedeck": "フレーズ帳",
+    "quiz": "クイズ", "reading": "リーディング", "writing": "ライティング",
+    "conversation": "英会話", "listening": "リスニング", "assess": "判定・教材",
+    "history": "学習履歴", "games": "ゲーム", "settings": "設定・チャージ",
+    "release": "バージョン情報", "dashboard": "ダッシュボード",
+}
+
+
+def _dwell_stats(ms_values: list[float]) -> dict:
+    """滞在時間(ミリ秒の一覧)→秒での最小/25%/中央値/平均/75%/90%/最大。"""
+    v = sorted(x / 1000 for x in ms_values if x is not None and x >= 0)
+    if not v:
+        return {"n": 0, "min": None, "p25": None, "median": None,
+                "mean": None, "p75": None, "p90": None, "max": None}
+    return {
+        "n": len(v), "min": round(v[0], 1), "p25": _percentile(v, 0.25),
+        "median": _median(v), "mean": round(sum(v) / len(v), 1),
+        "p75": _percentile(v, 0.75), "p90": _percentile(v, 0.9),
+        "max": round(v[-1], 1),
+    }
+
+
+def _top_page_behavior(rows, visited: set[str], engaged: set[str]) -> dict:
+    """トップページ周辺の行動を人数(guest_sidのユニーク数)で集計する。
+    rows=(guest_sid, kind, category, label, value)。訪問した人(visited)
+    のイベントだけを数える。滞在時間は「ページを開いてから最初に画面を
+    離れる(別タブ/アプリへの切替・閉じる)まで」で、ページ読み込み1回に
+    つき1件(leave/htmlビーコン)。人数ではなく読み込み回数の分布。"""
+    video: dict[str, dict[str, set[str]]] = {}
+    video_played: set[str] = set()
+    try_guests: set[str] = set()
+    signup_cta: set[str] = set()
+    pages: dict[str, set[str]] = {}
+    dwell_all: list[float] = []
+    dwell_engaged: list[float] = []
+    dwell_bounced: list[float] = []
+    for r in rows:
+        g, kind, cat = r["guest_sid"], r["kind"], r["category"] or ""
+        if g not in visited:
+            continue
+        label = r["label"] or ""
+        if kind == "click" and cat == "welcome":
+            m = _VIDEO_LABEL_RE.fullmatch(label)
+            if m:
+                video.setdefault(m.group(1), {}).setdefault(
+                    m.group(2), set()).add(g)
+                if m.group(2) == "play":
+                    video_played.add(g)
+            elif (label == "cta:try_without_signup"
+                  or "登録せず単語を見る" in label or "ログインなし" in label):
+                try_guests.add(g)
+            elif label == "cta:signup" or "無料登録" in label:
+                signup_cta.add(g)
+        elif kind == "page" and cat and cat != "welcome":
+            pages.setdefault(cat, set()).add(g)
+        elif kind == "leave" and cat == "html" and r["value"] is not None:
+            dwell_all.append(r["value"])
+            (dwell_engaged if g in engaged else dwell_bounced).append(
+                r["value"])
+    other_opened: set[str] = set().union(*pages.values()) if pages else set()
+    by_video = []
+    for name, ev in video.items():
+        row = {"name": name, "title": _VIDEO_TITLES.get(name, name)}
+        for e in _VIDEO_EVENTS:
+            row[e] = len(ev.get(e, ()))
+        by_video.append(row)
+    by_video.sort(key=lambda x: (-x["play"], x["name"]))
+    by_page = sorted(
+        [{"key": k, "label": _PAGE_DEST_LABELS.get(k, k), "count": len(gs)}
+         for k, gs in pages.items()],
+        key=lambda x: (-x["count"], x["key"]))[:12]
+    return {
+        "video": {"played": len(video_played), "by_video": by_video},
+        "try_without_signup": len(try_guests),
+        "signup_cta": len(signup_cta),
+        "other_page": {"opened": len(other_opened), "by_page": by_page},
+        "dwell": {
+            "all": _dwell_stats(dwell_all),
+            "engaged": _dwell_stats(dwell_engaged),
+            "not_engaged": _dwell_stats(dwell_bounced),
+        },
+    }
+
+
 def _signup_form_breakdown(
     form_events: dict[str, list[str]], succeeded_sids: set[str],
 ) -> dict:
@@ -1635,6 +1740,14 @@ def admin_registration_funnel(days: int = 30):
         ).fetchall():
             if _FORM_LABEL_RE.fullmatch(r["label"] or ""):
                 form_events.setdefault(r["guest_sid"], []).append(r["label"])
+        # トップページでの行動・滞在時間の元データ(2026-09-21)。
+        behavior_rows = conn.execute(
+            "SELECT guest_sid, kind, category, label, value FROM usage_events "
+            "WHERE guest_sid != '' AND ("
+            "(kind='click' AND category='welcome') OR kind='page' "
+            "OR (kind='leave' AND category='html')) "
+            f"AND created_at >= datetime('now', ?){excl}", (since,),
+        ).fetchall()
     # guest_sidごとに最後のイベントだけ残す(created_at昇順で走査して
     # 上書きしていくため、最後に残った値が最新になる)。
     last_event: dict[str, dict] = {}
@@ -1769,6 +1882,9 @@ def admin_registration_funnel(days: int = 30):
         # 登録フォームの欄別の到達/離脱(2026-09-20・3-E)。
         "signup_form": _signup_form_breakdown(
             form_events, signup_succeeded_set),
+        # トップページでの行動・滞在時間(2026-09-21・ユーザー要望)。
+        "top_behavior": _top_page_behavior(
+            behavior_rows, visited_set, engaged_set),
         # 用語集/フレーズ集/クロスワード紹介(SEOページ)に着地し、その後
         # アプリやその他のページにも来た人＝「SEOページ経由でアプリへ」。
         "via_seo": {

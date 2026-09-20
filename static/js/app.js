@@ -645,6 +645,8 @@ function showHintPopover(icon) {
     </div>
   </div>`);
   pop.querySelector(".hint-popover-text").textContent = text;
+  // 使い方の解説など長い文(2026-09-21)は幅広で出す。改行はCSS(pre-line)で保つ。
+  if (text.length > 140) pop.classList.add("wide");
   document.body.appendChild(pop);
   const r = icon.getBoundingClientRect();
   const top = r.bottom + window.scrollY + 6;
@@ -665,7 +667,13 @@ function initHintIcons() {
   document.addEventListener("click", (e) => {
     if (e.target.closest(".hint-popover")) return;
     const icon = e.target.closest(".info-icon");
-    if (icon) { showHintPopover(icon); return; }
+    if (icon) {
+      // <summary>の中に置いたⓘ(絞り込みの見出し横など)は、押しても
+      // <details>の開閉が起きないようにする。
+      if (icon.closest("summary")) e.preventDefault();
+      showHintPopover(icon);
+      return;
+    }
     closeHintPopover();
   });
   document.addEventListener("keydown", (e) => {

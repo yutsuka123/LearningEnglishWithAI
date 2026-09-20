@@ -7,6 +7,7 @@ per-direction accuracy, and a forgetting-curve schedule.
 from __future__ import annotations
 
 from fastapi import APIRouter
+from fastapi.responses import JSONResponse
 
 from ..services import errors
 from pydantic import BaseModel, Field
@@ -105,8 +106,14 @@ def _phrase_dict(
 ) -> dict:
     d = dict(row)
     # detail(JSON)は一覧では送らず、有無フラグだけ返す（応答を軽く保つ、
-    # 単語(words)と同じ扱い）。
-    d["has_detail"] = bool((d.pop("detail", "") or "").strip())
+    # 単語(words)と同じ扱い）。一覧APIはSQL側で作った`has_detail`を渡して
+    # くる(detail本体を読まない・2026-09-21)。
+    if "has_detail" in d:
+        # popして付け直す=旧コード(detailをpopして末尾にhas_detailを足す)と
+        # JSONのキー順まで同一にするため。
+        d["has_detail"] = bool(d.pop("has_detail"))
+    else:
+        d["has_detail"] = bool((d.pop("detail", "") or "").strip())
     d["selection_priority"] = selection_weight(d["mastery"], cfg.mastered_threshold)
     d["mastered"] = d["mastery"] >= cfg.mastered_threshold
     d["perfect"] = bool(d.get("perfect", 0))
@@ -195,7 +202,8 @@ def list_phrases(
         conds.append("COALESCE(scene, '') NOT LIKE '禁止%'")
     from ..services.auth import current_user_id, is_guest_user_id
     from ..services.progress import user_items_subquery
-    src = user_items_subquery("phrases")  # 先頭 ? = user_id
+    # 一覧はdetail本体を読まない(has_detailフラグのみ・2026-09-21)。
+    src = user_items_subquery("phrases", with_detail=False)  # 先頭 ? = user_id
     with db() as conn:
         uid = current_user_id()
         cfg = _current_mastery_cfg(conn)
@@ -250,8 +258,11 @@ def list_phrases(
             out = [_phrase_dict(r, free_ids, cfg) for r in rows]
             for d in out[:len(head)]:
                 d["featured"] = True
-            return out
-        return [_phrase_dict(r, free_ids, cfg) for r in rows]
+            return JSONResponse(content=out)
+        # 素の辞書のlistを返すとFastAPIのjsonable_encoderが全要素をなめ直す分だけ
+        # 遅い(単語一覧と同じ理由・2026-09-21)。JSONResponseで同じ出力を直接作る。
+        return JSONResponse(
+            content=[_phrase_dict(r, free_ids, cfg) for r in rows])
 
 
 @router.get("/facets")

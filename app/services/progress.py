@@ -33,14 +33,26 @@ def progress_table(table: str) -> tuple[str, str]:
     return _MAP[table]
 
 
-def user_items_subquery(table: str) -> str:
+def user_items_subquery(table: str, *, with_detail: bool = True) -> str:
     """コンテンツ×当該userの進捗をマージしたサブクエリ文字列を返す。
     1つの `?`(=user_id) を取る。``FROM <subquery> AS t`` で使う。
-    返す行は本体のコンテンツ列＋進捗列(mastery等・既定0)を持つ。"""
+    返す行は本体のコンテンツ列＋進捗列(mastery等・既定0)を持つ。
+
+    with_detail=False(2026-09-21・一覧API用): detail(JSON・語彙で約15MB)
+    を読まず、代わりに有無フラグ`has_detail`(0/1)だけを返す。一覧は
+    detail本体を捨てて有無だけ返す仕様なのに、全語分のdetailを毎回
+    読み出していたため。CAST(... AS BLOB)にするのは、TEXTのままだと
+    length()が中身を読んで文字数を数えるのに対し、BLOBならヘッダの
+    長さだけで済むため。空でない=1という判定は従来の
+    `bool((detail or "").strip())`と、本番の全行で一致することを確認済み。"""
+    d_w = ("w.detail" if with_detail else
+           "(length(CAST(w.detail AS BLOB)) > 0) AS has_detail")
+    d_p = ("ph.detail" if with_detail else
+           "(length(CAST(ph.detail AS BLOB)) > 0) AS has_detail")
     if table == "words":
         return (
             "(SELECT w.id, w.english, w.japanese, w.part_of_speech, "
-            " w.example, w.level, w.domain, w.detail, w.created_at, "
+            f" w.example, w.level, w.domain, {d_w}, w.created_at, "
             " COALESCE(p.mastery,0) AS mastery, p.last_studied AS last_studied, "
             " COALESCE(p.times_asked,0) AS times_asked, "
             " COALESCE(p.times_correct,0) AS times_correct, "
@@ -58,7 +70,7 @@ def user_items_subquery(table: str) -> str:
     if table == "phrases":
         return (
             "(SELECT ph.id, ph.english, ph.japanese, ph.scene, ph.level, "
-            " ph.detail, "
+            f" {d_p}, "
             " COALESCE(p.mastery,0) AS mastery, p.last_studied AS last_studied, "
             " COALESCE(p.study_count,0) AS study_count, "
             " COALESCE(p.times_asked,0) AS times_asked, "

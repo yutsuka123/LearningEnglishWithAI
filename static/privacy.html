@@ -18,6 +18,8 @@
     gtag('js', new Date());
     gtag('config', 'AW-17457232912');
   </script>
+  <link rel="icon" type="image/png" sizes="64x64" href="/static/img/favicon-64.png" />
+  <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png" />
 </head>
 <body>
   <div class="pagebar">
@@ -63,7 +65,7 @@
         <li><strong>決済・チャージ情報</strong>：チャージ残高（pt）、
           チャージキーの利用履歴。<strong>クレジットカード番号等の決済情報
           そのものは本サービスでは取得・保持しません</strong>（決済は下記
-          BASE等の決済窓口で処理されます）。</li>
+          BASE・PayPay等の決済窓口で処理されます）。</li>
         <li><strong>技術情報・利用状況</strong>：IPアドレス、ブラウザ・端末の
           情報、アクセス日時、参照元（どのページ・サイトから来たか）のURL、
           アクセスしたページや操作の種類とその時刻、画面の表示にかかった
@@ -108,11 +110,17 @@
 
       <h2>5. 決済情報の取扱い</h2>
       <p>チャージ（前払いポイント）の購入は、決済窓口である
-        <strong>BASE株式会社（BASE）</strong>およびその提携決済事業者を
-        通じて行われます。クレジットカード情報等の決済情報は各決済事業者が
-        取得・管理し、本サービスはこれを取得しません。購入者の氏名・
-        メールアドレス等、注文に付随する情報を、キー発送・注文管理・
+        <strong>BASE株式会社（BASE）</strong>およびその提携決済事業者、
+        または<strong>PayPay株式会社（PayPay）</strong>を通じて行われます。
+        クレジットカード情報やPayPayの残高・口座情報等の決済情報は各決済
+        事業者が取得・管理し、本サービスはこれを取得しません。購入者の氏名・
+        メールアドレス等、注文に付随する情報（BASE）を、キー発送・注文管理・
         お問い合わせ対応のために取得・利用する場合があります。</p>
+      <p>PayPayでお支払いいただく際、本サービスからPayPayへ、注文を識別する
+        番号・金額・商品名（「pt購入」等）・お支払い後に戻るページのURLを
+        送信します（氏名・メールアドレス等は送信しません）。お支払いの
+        結果（成功・失敗・金額）はPayPayから受け取り、チャージ残高の
+        反映と入金の確認に使います。</p>
 
       <h2>6. Cookie等の利用</h2>
       <p>次の目的でCookie（およびこれに類する仕組み）を使用します。</p>
@@ -142,8 +150,12 @@
           target="_blank" rel="noopener">Googleのサービスを利用するサイトや
           アプリからのデータ使用</a>／<a href="https://policies.google.com/privacy"
           target="_blank" rel="noopener">Googleプライバシーポリシー</a>。
-          広告のパーソナライズは、Googleの<a href="https://adssettings.google.com/"
-          target="_blank" rel="noopener">広告設定</a>で変更できます。</li>
+          Googleによる広告のパーソナライズ（関心に基づく広告表示）は、
+          利用者ご自身がGoogleの<a href="https://adssettings.google.com/"
+          target="_blank" rel="noopener">広告設定</a>でオフにできます
+          （Googleアカウントにログインしていない場合の設定は、そのブラウザ
+          ごとに保存されます）。なお、この設定は広告の表示方法を変えるもの
+          であり、上記の情報の送信そのものを止めるものではありません。</li>
       </ul>
       <p>上記のほか、AI機能の利用時のOpenAIへの送信は3項、決済窓口への
         情報は5項に記載のとおりです。</p>
@@ -206,7 +218,7 @@
         特定商取引法に基づく表記</a>に記載の連絡先、またはアプリ内の
         お問い合わせよりご連絡ください。</p>
 
-      <p class="date">制定日：2026年8月9日　最終改定日：2026年9月20日</p>
+      <p class="date">制定日：2026年8月9日　最終改定日：2026年9月21日</p>
 
       <a class="back" href="/login">← ログイン画面に戻る</a>
     </div>
