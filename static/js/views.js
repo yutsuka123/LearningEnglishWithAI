@@ -804,6 +804,33 @@ function listGroupHead(cols, text) {
     ${escapeHtml(text)}</td></tr>`);
 }
 
+// 一覧の並び(項目+昇順/降順)を画面ごとに端末(localStorage)へ記憶し、次に
+// 開いたとき復元する(2026-09-20・オーナー決定)。保存が無い/使えない/不正な
+// 値のときは既定(未登録・未課金=無料で聞ける順、それ以外=従来)に戻るだけで、
+// 画面は常に正しく動く。localStorageは無効化・容量超過・プライベート
+// ウィンドウ等で例外になりうるので、読み書きは必ずtry/catchで囲む。
+// 許可する項目は各画面の<select id="fSort">のoption値と同じ(増減したら合わせる)。
+const WORD_SORTS = ["mastery", "accuracy", "english", "level", "domain",
+  "recent", "billing"];
+const PHRASE_SORTS = ["mastery", "accuracy", "english", "scene", "recent",
+  "added", "billing"];
+function loadSavedSort(key, allowed) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const o = JSON.parse(raw);
+    if (o && typeof o === "object" && allowed.includes(o.sort)) {
+      return { sort: o.sort, desc: o.desc === true };
+    }
+  } catch (e) { /* 使えない・壊れている→既定に戻す */ }
+  return null;
+}
+function saveSort(key, sort, desc) {
+  try {
+    localStorage.setItem(key, JSON.stringify({ sort, desc: !!desc }));
+  } catch (e) { /* 保存できなくても画面は動く */ }
+}
+
 // --- ページネーション（1ページ20件 標準）---------------------------------
 // 2026-09-07: 英単語・フレーズ一覧の初期表示速度改善のため既定を50→20に
 // 変更(ユーザー指示)。1ページの描画件数を減らし体感速度を上げる狙い。
@@ -2364,6 +2391,16 @@ export async function vocab(root) {
   // サーバー(state.freeFirstSort←/api/system/my-usage)。手動で選び直した
   // 並びはこの後の変更イベントでそのまま尊重される。
   if (state.freeFirstSort) root.querySelector("#fSort").value = "billing";
+  // 前回手動で選んだ並びがあれば、既定より優先して復元する(2026-09-20)。
+  const savedSort = loadSavedSort("vocab_sort", WORD_SORTS);
+  if (savedSort) {
+    root.querySelector("#fSort").value = savedSort.sort;
+    if (savedSort.desc) {
+      const dirBtn = root.querySelector("#fDir");
+      dirBtn.dataset.desc = "1";
+      dirBtn.textContent = "降順 ▼";
+    }
+  }
   const rowsBody = root.querySelector("#rows");
   // 件数表示は専用spanだけを書き換える。h1ごとtextContentで上書きすると
   // 見出し内のⓘヘルプアイコンが最初の描画で消えてしまうため(2026-09-19修正)。
@@ -2379,19 +2416,23 @@ export async function vocab(root) {
     const { slice, page, pages } = pageSlice(curWords, wPage, size);
     wPage = page;
     title.textContent = `英単語 (${curWords.length})`;
-    renderTable(slice);
+    // このページの直前の語(ページ境目で厳選語→そのほかに切り替わる場合に
+    // 見出しを出すため)。
+    const start = size === "all" ? 0 : page * (parseInt(size, 10) || 20);
+    renderTable(slice, start > 0 ? curWords[start - 1] : null);
     pagerEl.innerHTML = "";
     pagerEl.appendChild(pagerBar(curWords.length, page, pages,
       () => { wPage = page - 1; paint(); },
       () => { wPage = page + 1; paint(); }));
   };
 
-  const renderTable = (words) => {
+  const renderTable = (words, before = null) => {
     rowsBody.innerHTML = "";
     // 厳選語(featured)が先頭に固定されているときだけ見出し行を挟む。
     // キーワード検索中は絞り込み結果なので出さない。
-    const groups = !kw.value.trim() && words.some((w) => w.featured);
-    let prevFeatured = null;
+    const groups = !kw.value.trim()
+      && (words.some((w) => w.featured) || !!(before && before.featured));
+    let prevFeatured = before ? !!before.featured : null;
     words.forEach((w) => {
       if (groups) {
         if (w.featured && prevFeatured === null) {
@@ -2497,12 +2538,16 @@ export async function vocab(root) {
     applyKeyword();
   };
   const fDir = root.querySelector("#fDir");
+  const rememberSort = () => saveSort("vocab_sort",
+    root.querySelector("#fSort").value, fDir.dataset.desc === "1");
   fDir.addEventListener("click", () => {
     const d = fDir.dataset.desc === "1" ? "0" : "1";
     fDir.dataset.desc = d;
     fDir.textContent = d === "1" ? "降順 ▼" : "昇順 ▲";
+    rememberSort();
     load();
   });
+  root.querySelector("#fSort").addEventListener("change", rememberSort);
   ["#fLevelMin", "#fLevelMax", "#fOutRange", "#fFreeOnly", "#fSort",
    "#fMastered"].forEach((id) =>
     root.querySelector(id)?.addEventListener("change", load));
@@ -2545,7 +2590,13 @@ export async function phrases(root) {
   const sb = bannedParam(showBanned());
   // 未登録・未課金は既定の並びを「無料で聞ける順」にする(2026-09-20・
   // 英単語一覧と同じ。判定はサーバー)。最初の一覧取得にも同じ並びを渡す。
-  const listQs = [sb, state.freeFirstSort ? "sort=billing" : ""]
+  // 前回手動で選んだ並びがあれば既定より優先する(2026-09-20・保存は
+  // loadSavedSort/saveSort参照)。最初の一覧取得にもその並びを渡す。
+  const savedSort = loadSavedSort("phrase_sort", PHRASE_SORTS);
+  const initSort = savedSort ? savedSort.sort
+    : (state.freeFirstSort ? "billing" : "");
+  const listQs = [sb, initSort ? "sort=" + initSort : "",
+    savedSort && savedSort.desc ? "desc=true" : ""]
     .filter(Boolean).join("&");
   // 5本とも互いに依存が無いため並列実行する(2026-09-07・以前は直列5回で
   // 表示までの待ち時間が積み上がっていた)。
@@ -2642,7 +2693,12 @@ export async function phrases(root) {
       <div id="pager" class="mt"></div>
     </div>`;
 
-  if (state.freeFirstSort) root.querySelector("#fSort").value = "billing";
+  if (initSort) root.querySelector("#fSort").value = initSort;
+  if (savedSort && savedSort.desc) {
+    const dirBtn = root.querySelector("#fDir");
+    dirBtn.dataset.desc = "1";
+    dirBtn.textContent = "降順 ▼";
+  }
   // 件数表示は専用spanだけを書き換える(英単語画面と同じ理由・2026-09-19)。
   const title = root.querySelector("#pageTitleText");
   const kw = root.querySelector("#kw");
@@ -2746,10 +2802,13 @@ export async function phrases(root) {
     applyKeyword();
   };
   const fDir = root.querySelector("#fDir");
+  const rememberSort = () => saveSort("phrase_sort",
+    root.querySelector("#fSort").value, fDir.dataset.desc === "1");
   fDir.addEventListener("click", () => {
     const d = fDir.dataset.desc === "1" ? "0" : "1";
     fDir.dataset.desc = d;
     fDir.textContent = d === "1" ? "降順 ▼" : "昇順 ▲";
+    rememberSort();
     load();
   });
   // シーンチェックボックス（複数選択可）。大分類を選ぶと候補が絞り込まれる。
@@ -2764,6 +2823,7 @@ export async function phrases(root) {
     sceneDropdown.refreshLabel();
     load();
   });
+  root.querySelector("#fSort").addEventListener("change", rememberSort);
   root.querySelector("#fSort").addEventListener("change", load);
   root.querySelector("#fMastered").addEventListener("change", load);
   ["#fLevelMin", "#fLevelMax", "#fOutRange", "#fFreeOnly"].forEach((id) =>

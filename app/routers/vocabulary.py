@@ -217,7 +217,7 @@ def list_words(
             params = params + [deck_id]
         if free_range_only:
             fr_clause, fr_params = access_tiers.free_range_id_filter(
-                "word", guest=is_guest,
+                conn, "word", guest=is_guest,
             )
             where = where + [fr_clause]
             params = params + fr_params
@@ -513,7 +513,7 @@ def quiz(
             params = params + [deck_id]
         if free_range_only:
             fr_clause, fr_params = access_tiers.free_range_id_filter(
-                "word", guest=is_guest,
+                conn, "word", guest=is_guest,
             )
             where = where + [fr_clause]
             params = params + fr_params
