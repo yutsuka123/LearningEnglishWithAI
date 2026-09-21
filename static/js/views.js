@@ -324,7 +324,7 @@ function mountVideoGalleryLazily(box) {
 // 「そもそも主ボタン/サンプル/動画に気づかれていない」を区別して、ようこそ画面から
 // 次へ進まない原因を分析するため。送るのは次の種類の名前だけ(1人1ページ表示に
 // つき各1回まで・入力内容や位置の座標は送らない):
-//   seen:<部品>   その部品が画面に入った(cta/sample/more/videos/domains/features)
+//   seen:<部品>   その部品が画面に入った(cta/shots/sample/more/videos/domains/features)
 //   scroll:first  実際にスクロールした(40px超)
 //   depth:<n>     ようこそカードの何%まで画面に入ったか(25/50/75/100)
 //   os:/theme:    OSの配色設定(dark/light)と実際に表示したテーマ
@@ -366,6 +366,7 @@ function trackWelcomeView(root) {
     io.observe(el);
   };
   watch(root.querySelector(".welcome-cta-row"), "cta");
+  watch(root.querySelector("#welcomeShots"), "shots");
   watch(root.querySelector(".welcome-more"), "more");
   watch(root.querySelector("#welcomeVideos"), "videos", 0.05);
   watch(root.querySelector("#welcomeDomainLabel"), "domains");
@@ -413,24 +414,42 @@ export async function welcome(root) {
     .filter(([tab]) => !WELCOME_HIDDEN_FEATURE_TABS.has(tab))
     .map(([, label]) => `<span class="pill">${escapeHtml(label)}</span>`)
     .join("");
-  // 文言の方針(2026-09-20・トップ照査の反映): 課金形態から入らず「何が
-  // できるか→誰向けか→料金」の順にする。広告の主キーワードは汎用の
-  // 「英語学習」なので、基礎語彙・日常会話・TOEICレベルの入口と、このアプリ
-  // ならではのニッチ分野の両方を一言で伝える。事実に裏付けのある表現のみ
-  // (景表法配慮): 「語源・豆知識などの解説」は本番のほぼ全語(99.6%)に解説
-  // があり、語源は93%・豆知識は89%の語にあること(全語ではないので「など」
-  // で限定)、「無料」は閲覧と無料範囲の音声(access_tiers)、
-  // 「¥800〜」は最小チャージ額(fulfillment.PRICE_TABLE)に基づく。「広告なし」
-  // 等は書かない。
+  // 文言の方針(2026-09-22・オーナー方針「英語学習で来た人にも、ニッチ・専門用語が
+  // 好きな人にも見てもらう。ただし書きすぎると読まれない」): ファーストビューの文字は
+  // 「一言のフック(見出し)+一行の補足+ボタン+ハードルを下げる一行」だけにし、
+  // 語源・豆知識(うんちく)や目玉機能は文章ではなく実物(下のサンプル・動画サムネイル)で
+  // 見せる。事実の裏付け(景表法配慮・公開する主張は検証可能なものだけ):
+  //   - 妖怪=フレーズ場面「妖怪・日本の伝承の英語」/無線=単語「アマチュア無線・無線通信」等/
+  //     歴史=「歴史（一般）」等/名言=「名言・名台詞」等が本番に収録されている(2026-09-22確認)。
+  //   - 「音声の無料枠が2倍」=未登録は単語1,000語+フレーズ750件・無料登録は2,000語+1,500件
+  //     (app/services/access_tiers.py)。「メールだけ・カード不要・ニックネームOK」=登録フォーム
+  //     の実仕様(メール・パスワード・呼び名が必須。呼び名は仮名可・カード情報は取得しない)。
+  //     ※「名前不要」とは書かない(呼び名は必須のため)。登録しても学習記録は保存されない
+  //     (課金者のみ)ので「記録が残る」とも書かない。
+  //   - 「語源・豆知識などの解説」は本番のほぼ全語(99.6%)に解説があり、語源は93%・豆知識は89%の
+  //     語にあること(全語ではないので「など」で限定)、「¥800〜」は最小チャージ額
+  //     (fulfillment.PRICE_TABLE)に基づく。「広告なし」等は書かない。
   // 日本語の文中でテンプレートリテラルを改行すると空白が表示されてしまう
   // (例: 「ニッチな 分野」)ため、長い文は文字列連結で組み立てる。
-  const heroTitle = "基礎語彙から専門用語・料理・妖怪まで学べる"
+  const heroTitle = "基礎から、妖怪・無線・歴史・名言まで学べる"
     + "英語学習アプリ";
-  const heroLead = "日常会話・TOEICレベルの基礎から、無線・天文・料理などの"
-    + "ニッチな分野まで。語源・豆知識などの解説と、AIの自然な英語音声で"
-    + "学べます。";
-  const heroPrice = "🐾 個人開発。閲覧と一部の音声は無料。AI機能や追加の音声は"
-    + "前払い¥800〜（月額なし・使わない月は0円）";
+  const heroLead = "日常会話・TOEICの基礎から専門用語まで。"
+    + "語源・豆知識つき、AIの自然な音声で。";
+  const heroPrice = "🐾 個人開発。閲覧と一部の音声は無料、AI機能などは"
+    + "前払い¥800〜（月額なし）";
+  // 目玉機能の動画サムネイル(video-gallery.jsのVIDEOSのnameと揃える・軽量な専用画像)。
+  const SHOTS = [
+    ["flash_word", "フラッシュ単語"],
+    ["phrase_polite", "丁寧な言い方"],
+    ["crossword", "クロスワード"],
+  ];
+  const shotsHtml = SHOTS.map(([name, label]) => `
+    <button type="button" class="welcome-shot" data-name="${name}"
+      aria-label="${escapeHtml(label)}の動画を見る">
+      <img src="/static/video/posters/thumb_${name}.jpg?v=1" alt=""
+        width="200" height="356" decoding="async" />
+      <span class="welcome-shot-cap">${escapeHtml(label)}</span>
+    </button>`).join("");
   root.innerHTML = `
     <div class="welcome-hero">
       <div class="card welcome-card">
@@ -439,16 +458,22 @@ export async function welcome(root) {
         <p class="muted welcome-lead">${heroLead}</p>
         <div class="row welcome-cta-row">
           <a class="btn welcome-cta" href="/login#signup">
-            👉 1分で無料登録 →</a>
+            1分で無料登録 →</a>
           <button class="btn ghost welcome-try" id="welcomeTryBtn">
             登録せず単語を見る</button>
         </div>
         <p class="muted welcome-note">
-          カード不要・お名前はニックネームでOK</p>
-        <p class="muted welcome-price">${heroPrice}</p>
+          メールだけ・カード不要・ニックネームOK<br>
+          <b>登録すると、音声の無料枠が2倍に</b></p>
+
+        <div class="welcome-shots" id="welcomeShots">
+          <div class="welcome-shots-label">🎬 こんなことができます（タップで動画）</div>
+          <div class="welcome-shots-row">${shotsHtml}</div>
+        </div>
 
         <div class="welcome-sample" id="welcomeSample" hidden></div>
 
+        <p class="muted welcome-price">${heroPrice}</p>
         <p class="muted mt welcome-more">
           <a href="/static/about.html">詳しい説明・料金の目安を見る →</a></p>
 
@@ -463,6 +488,29 @@ export async function welcome(root) {
       </div>
     </div>`;
   const view = trackWelcomeView(root);
+  // 目玉サムネイル: 押すと下の動画欄の該当カードまで移動して強調する(自動再生は
+  // しない=音が急に出ないように。再生はカードのポスターを押してもらう)。動画欄は
+  // 画面に近づいた時に遅延読み込みされるので、できるまで少し待つ。
+  root.querySelectorAll(".welcome-shot").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const name = btn.dataset.name;
+      api.track("click", "welcome", "shot:" + name);
+      const box = root.querySelector("#welcomeVideos");
+      if (!box) return;
+      box.scrollIntoView({ behavior: "smooth", block: "start" });
+      let tries = 0;
+      const timer = setInterval(() => {
+        const card = box.querySelector(`.vg-card[data-name="${name}"]`);
+        if (card || ++tries > 20 || !root.isConnected) {
+          clearInterval(timer);
+          if (!card) return;
+          card.scrollIntoView({ behavior: "smooth", block: "center" });
+          card.classList.add("vg-flash");
+          setTimeout(() => card.classList.remove("vg-flash"), 1800);
+        }
+      }, 150);
+    });
+  });
   // 管理画面の集計用に、文言が変わっても数え漏れない安定キーを送る(全ボタン
   // 共通のクリック計測(ボタン文言)とは別・2026-09-21)。
   root.querySelector("#welcomeTryBtn")?.addEventListener("click", () => {
@@ -483,24 +531,23 @@ export async function welcome(root) {
     if (!w || !box) return;
     box.innerHTML = `
       <div class="welcome-sample-label">👂 登録なしで、まず1語聞いてみる</div>
-      <div class="welcome-sample-main">
-        <div class="welcome-sample-play"></div>
-        <div class="welcome-sample-word">
-          <b class="welcome-sample-en">${escapeHtml(w.english)}</b>
-          <span class="welcome-sample-ja">${escapeHtml(w.japanese || "")}</span>
-          <span class="pill">${escapeHtml(w.domain || "")}</span>
-        </div>
+      <div class="welcome-sample-word">
+        <b class="welcome-sample-en">${escapeHtml(w.english)}</b>
+        <span class="welcome-sample-ja">${escapeHtml(w.japanese || "")}</span>
+        <span class="pill">${escapeHtml(w.domain || "")}</span>
       </div>
+      <div class="welcome-sample-play"></div>
       <p class="welcome-sample-note"><b>${escapeHtml(w.note_label)}:</b>
         ${escapeHtml(w.note)}</p>`;
+    // 押す場所が分かるよう「▶ 男声/女声」のラベル付きにする(従来は🆓の絵文字だけで
+    // 再生ボタンに見えなかった・2026-09-22)。
     const play = voiceButtonsItem(
-      "word", w.id, "word", () => w.english, () => "std", true);
+      "word", w.id, "word", () => w.english, () => "std", true, true);
     // 全ボタン共通のクリック計測とは別に、トップの1語サンプル由来の再生で
     // あることが分かるよう1件残す(再生自体はサーバー側がplayとして記録)。
     play.addEventListener("click", () =>
       api.track("click", "welcome", "hero_sample_play:" + w.english));
-    box.querySelector(".welcome-sample-play").append(play, el(
-      `<div class="welcome-sample-cap">男声 / 女声</div>`));
+    box.querySelector(".welcome-sample-play").append(play);
     box.hidden = false;
     view.watch(box, "sample");
   }).catch(() => { /* サンプルが出せなくてもトップは通常表示 */ })
@@ -925,7 +972,8 @@ function opsBreak() {
   return el(`<span class="ops-break"></span>`);
 }
 
-function voiceButtonsItem(itemType, id, kind, fallback, getMode, isFreeRange) {
+function voiceButtonsItem(itemType, id, kind, fallback, getMode, isFreeRange,
+  labelled = false) {
   const locked = isFreeRange === false && !state.hasAiBalance;
   const free = isFreeRange === true;
   const icon = locked ? "🔒" : (free ? "🆓" : "🔊");
@@ -934,11 +982,15 @@ function voiceButtonsItem(itemType, id, kind, fallback, getMode, isFreeRange) {
   const freeNote = free ? "・🆓誰でも無料で再生できます" : "";
   const iconHtml = free
     ? `<span class="free-icon-glyph">${icon}</span>` : icon;
-  const cell = el(`<div class="voice-cell">
+  // labelled=true: 文字付き(「▶ 男声」)。ようこそ画面の1語サンプル用で、他の画面は従来の
+  // アイコンのみ。
+  const mHtml = labelled ? "▶ 男声" : iconHtml;
+  const fHtml = labelled ? "▶ 女声" : iconHtml;
+  const cell = el(`<div class="voice-cell${labelled ? " voice-cell-labelled" : ""}">
     <button class="btn voice-m" title="男性の声 (ash)${lockNote}${freeNote}">${
-      iconHtml}</button>
+      mHtml}</button>
     <button class="btn voice-f" title="女性の声 (nova)${lockNote}${freeNote}">${
-      iconHtml}</button></div>`);
+      fHtml}</button></div>`);
   const [m, f] = cell.querySelectorAll("button");
   const play = (voice) => speech.sayItem(
     itemType, id, kind, voice, fallback(),

@@ -1349,12 +1349,13 @@ _VIDEO_EVENT_TEXT = {
 # kind='click'で送ると「何か操作した人」「最後に触れた画面」の既存集計に
 # 混ざって分析が歪むため。boot/leaveは各集計が操作から除外している)。
 _WELCOME_SEEN_NAMES = {
-    "cta": "主ボタン(無料登録・登録せず単語を見る)", "sample": "1語サンプル",
+    "cta": "主ボタン(無料登録・登録せず単語を見る)",
+    "shots": "目玉の動画サムネイル", "sample": "1語サンプル",
     "more": "「詳しい説明」リンク", "videos": "動画欄",
     "domains": "収録語彙分野一覧", "features": "収録機能一覧",
 }
 _WELCOME_LABEL_RE = re.compile(
-    r"seen:(cta|sample|more|videos|domains|features)|scroll:first"
+    r"seen:(cta|shots|sample|more|videos|domains|features)|scroll:first"
     r"|depth:(25|50|75|100)|os:(dark|light)|theme:(dark|light)")
 # 動画名→表示名(static/js/video-gallery.jsのVIDEOSのtitleと揃える。
 # 未登録の名前は名前のまま出す)。
@@ -1409,6 +1410,9 @@ def _describe_event(kind: str, category: str, label: str, value) -> str:
             return "「無料登録」ボタンを押した"
         if label.startswith("hero_sample_play:"):
             return "1語サンプルを再生した"
+        if label.startswith("shot:"):
+            name = label.split(":", 1)[1]
+            return f"動画サムネイル『{_VIDEO_TITLES.get(name, name)}』を押した"
     elif kind == "boot" and category == "welcome_view":
         m = _WELCOME_LABEL_RE.fullmatch(label)
         if m:
@@ -1475,6 +1479,7 @@ def _top_page_behavior(rows, visited: set[str], engaged: set[str],
     try_guests: set[str] = set()
     signup_cta: set[str] = set()
     hero_played: set[str] = set()
+    shot_tapped: set[str] = set()
     pages: dict[str, set[str]] = {}
     welcome_viewers: set[str] = set()
     seen: dict[str, set[str]] = {k: set() for k in _WELCOME_SEEN_NAMES}
@@ -1508,6 +1513,8 @@ def _top_page_behavior(rows, visited: set[str], engaged: set[str],
                 signup_cta.add(g)
             elif label.startswith("hero_sample_play:"):
                 hero_played.add(g)
+            elif label.startswith("shot:"):
+                shot_tapped.add(g)
         elif kind == "boot" and cat == "welcome_view":
             m = _WELCOME_LABEL_RE.fullmatch(label)
             if m:
@@ -1558,6 +1565,8 @@ def _top_page_behavior(rows, visited: set[str], engaged: set[str],
         step("viewed", "ようこそ画面を表示", wv),
         step("scrolled", "実際にスクロールした", scrolled),
         step("seen_cta", "主ボタンが画面に入った", seen["cta"]),
+        step("seen_shots", "目玉の動画サムネイルが画面に入った", seen["shots"]),
+        step("shot_tapped", "動画サムネイルを押した", shot_tapped),
         step("seen_sample", "1語サンプルが画面に入った", seen["sample"]),
         step("hero_played", "1語サンプルを再生した", hero_played),
         step("seen_videos", "動画欄が画面に入った", seen["videos"]),
@@ -1569,6 +1578,8 @@ def _top_page_behavior(rows, visited: set[str], engaged: set[str],
     cohort_defs = [
         ("scrolled", "スクロールした人", scrolled),
         ("seen_cta", "主ボタンが画面に入った人", seen["cta"]),
+        ("seen_shots", "動画サムネイルが見えた人", seen["shots"]),
+        ("shot_tapped", "動画サムネイルを押した人", shot_tapped),
         ("seen_sample", "1語サンプルが見えた人", seen["sample"]),
         ("hero_played", "1語サンプルを再生した人", hero_played),
         ("seen_videos", "動画欄が見えた人", seen["videos"]),
