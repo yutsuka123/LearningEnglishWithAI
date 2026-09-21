@@ -1332,8 +1332,30 @@ _FORM_LABEL_RE = re.compile(
 # video-gallery.jsが`video:<名前>:<イベント>`で、CTAはwelcome画面が
 # 安定キー`cta:*`(+従来のボタン文言)で送る。
 _VIDEO_LABEL_RE = re.compile(
-    r"video:([a-z0-9_]+):(play|p25|p50|ended|try|replay|error)")
-_VIDEO_EVENTS = ("play", "p25", "p50", "ended", "try", "replay", "error")
+    r"video:([a-z0-9_]+):(play|p25|p50|p75|ended|pause|try|replay|error)")
+_VIDEO_EVENTS = ("play", "p25", "p50", "p75", "ended", "pause", "try",
+                 "replay", "error")
+_VIDEO_EVENT_TEXT = {
+    "play": "を再生した", "p25": "を25%まで再生", "p50": "を50%まで再生",
+    "p75": "を75%まで再生", "ended": "を最後まで再生",
+    "pause": "を途中で一時停止", "try": "の「試す」を押した",
+    "replay": "をもう一度再生", "error": "の再生でエラー",
+}
+# ようこそ画面の「どこまで見られたか」の計測(2026-09-22・views.jsの
+# trackWelcomeView)。seen:<部品>=その部品が画面に入った・scroll:first=
+# 実際にスクロールした・depth:<n>=カード全体の何%まで画面に入ったか・
+# os:/theme:=OSの配色設定と実際の表示テーマ(初期テーマの判断材料)。
+# **kind='boot'・category='welcome_view'で送る**(=操作ではない受動的な計測。
+# kind='click'で送ると「何か操作した人」「最後に触れた画面」の既存集計に
+# 混ざって分析が歪むため。boot/leaveは各集計が操作から除外している)。
+_WELCOME_SEEN_NAMES = {
+    "cta": "主ボタン(無料登録・登録せず単語を見る)", "sample": "1語サンプル",
+    "more": "「詳しい説明」リンク", "videos": "動画欄",
+    "domains": "収録語彙分野一覧", "features": "収録機能一覧",
+}
+_WELCOME_LABEL_RE = re.compile(
+    r"seen:(cta|sample|more|videos|domains|features)|scroll:first"
+    r"|depth:(25|50|75|100)|os:(dark|light)|theme:(dark|light)")
 # 動画名→表示名(static/js/video-gallery.jsのVIDEOSのtitleと揃える。
 # 未登録の名前は名前のまま出す)。
 _VIDEO_TITLES = {
@@ -1368,20 +1390,102 @@ def _dwell_stats(ms_values: list[float]) -> dict:
     }
 
 
-def _top_page_behavior(rows, visited: set[str], engaged: set[str]) -> dict:
+def _describe_event(kind: str, category: str, label: str, value) -> str:
+    """1人ぶんの行動ログ(管理画面のドリルダウン)で、記録の生のlabelを
+    日本語の説明にする(2026-09-22)。分からないものは空文字(画面は
+    従来どおりの生の表示のまま)。"""
+    category, label = category or "", label or ""
+    if kind == "click" and category == "welcome":
+        m = _VIDEO_LABEL_RE.fullmatch(label)
+        if m:
+            title = _VIDEO_TITLES.get(m.group(1), m.group(1))
+            text = _VIDEO_EVENT_TEXT[m.group(2)]
+            if m.group(2) == "pause" and value is not None:
+                text += f"({value / 1000:.0f}秒地点)"
+            return f"動画『{title}』{text}"
+        if label == "cta:try_without_signup":
+            return "「登録せず単語を見る」を押した"
+        if label == "cta:signup":
+            return "「無料登録」ボタンを押した"
+        if label.startswith("hero_sample_play:"):
+            return "1語サンプルを再生した"
+    elif kind == "boot" and category == "welcome_view":
+        m = _WELCOME_LABEL_RE.fullmatch(label)
+        if m:
+            if label.startswith("seen:"):
+                return f"{_WELCOME_SEEN_NAMES[m.group(1)]}が画面に入った"
+            if label == "scroll:first":
+                return "実際にスクロールした"
+            if label.startswith("depth:"):
+                return f"ようこそ画面の{m.group(2)}%まで画面に入った"
+            if label.startswith("os:"):
+                return "OSの配色設定=" + (
+                    "ダーク" if m.group(3) == "dark" else "ライト")
+            return "表示したテーマ=" + (
+                "ダーク" if m.group(4) == "dark" else "ライト")
+    elif kind == "boot" and category == "html":
+        return "ページのJSが動いた"
+    elif kind == "boot" and category == "app_ready":
+        return "アプリの初期表示が完了"
+    elif kind == "leave" and category == "html":
+        if value is not None:
+            return f"画面を離れた/隠した(開いてから{value / 1000:.1f}秒)"
+        return "画面を離れた/隠した"
+    elif kind == "page":
+        if category == "welcome":
+            return "ようこそ画面を表示"
+        dest = _PAGE_DEST_LABELS.get(category)
+        if dest:
+            return f"「{dest}」を表示"
+    return ""
+
+
+# ようこそ画面の滞在の段階(秒)。最後は「それ以上」。
+_DWELL_EDGES = (2, 5, 10, 30, 60)
+_DWELL_LABELS = ["2秒未満", "5秒未満", "10秒未満", "30秒未満", "1分未満",
+                 "1分以上"]
+_MOBILE_DEVICES = ("iPhone", "Android", "iPad")
+
+
+def _dwell_bucket_index(ms: float) -> int:
+    s = ms / 1000
+    for i, e in enumerate(_DWELL_EDGES):
+        if s < e:
+            return i
+    return len(_DWELL_EDGES)
+
+
+def _top_page_behavior(rows, visited: set[str], engaged: set[str],
+                       ua_by_guest: dict[str, str] | None = None) -> dict:
     """トップページ周辺の行動を人数(guest_sidのユニーク数)で集計する。
-    rows=(guest_sid, kind, category, label, value)。訪問した人(visited)
-    のイベントだけを数える。滞在時間は「ページを開いてから最初に画面を
-    離れる(別タブ/アプリへの切替・閉じる)まで」で、ページ読み込み1回に
-    つき1件(leave/htmlビーコン)。人数ではなく読み込み回数の分布。"""
+    rows=(guest_sid, kind, category, label, value)をid昇順で。訪問した人
+    (visited)のイベントだけを数える。滞在時間は「ページを開いてから最初に
+    画面を離れる(別タブ/アプリへの切替・閉じる)まで」で、ページ読み込み1回に
+    つき1件(leave/htmlビーコン)。人数ではなく読み込み回数の分布。
+
+    2026-09-22追加: ようこそ画面を見た人(page/welcome)を母数に、どこまで
+    見られたか(スクロール・各部品が画面に入ったか)・次の画面へ進んだか・
+    行動別の進み方・離脱の速さ・端末別・OS設定と表示テーマ別を返す
+    (「ようこそ画面から次へ進まない原因」の分析用)。seen/scroll/depth/
+    os/themeの記録はこの版の公開以降のデータのみ。"""
+    ua_by_guest = ua_by_guest or {}
     video: dict[str, dict[str, set[str]]] = {}
     video_played: set[str] = set()
+    video_try: set[str] = set()
     try_guests: set[str] = set()
     signup_cta: set[str] = set()
+    hero_played: set[str] = set()
     pages: dict[str, set[str]] = {}
+    welcome_viewers: set[str] = set()
+    seen: dict[str, set[str]] = {k: set() for k in _WELCOME_SEEN_NAMES}
+    depth: dict[int, set[str]] = {d: set() for d in (25, 50, 75, 100)}
+    scrolled: set[str] = set()
+    os_pref: dict[str, str] = {}
+    theme_shown: dict[str, str] = {}
     dwell_all: list[float] = []
     dwell_engaged: list[float] = []
     dwell_bounced: list[float] = []
+    first_leave: dict[str, float] = {}
     for r in rows:
         g, kind, cat = r["guest_sid"], r["kind"], r["category"] or ""
         if g not in visited:
@@ -1394,17 +1498,38 @@ def _top_page_behavior(rows, visited: set[str], engaged: set[str]) -> dict:
                     m.group(2), set()).add(g)
                 if m.group(2) == "play":
                     video_played.add(g)
-            elif (label == "cta:try_without_signup"
-                  or "登録せず単語を見る" in label or "ログインなし" in label):
+                elif m.group(2) == "try":
+                    video_try.add(g)
+                continue
+            if (label == "cta:try_without_signup"
+                    or "登録せず単語を見る" in label or "ログインなし" in label):
                 try_guests.add(g)
             elif label == "cta:signup" or "無料登録" in label:
                 signup_cta.add(g)
-        elif kind == "page" and cat and cat != "welcome":
+            elif label.startswith("hero_sample_play:"):
+                hero_played.add(g)
+        elif kind == "boot" and cat == "welcome_view":
+            m = _WELCOME_LABEL_RE.fullmatch(label)
+            if m:
+                if label.startswith("seen:"):
+                    seen[m.group(1)].add(g)
+                elif label == "scroll:first":
+                    scrolled.add(g)
+                elif label.startswith("depth:"):
+                    depth[int(m.group(2))].add(g)
+                elif label.startswith("os:"):
+                    os_pref.setdefault(g, m.group(3))
+                elif label.startswith("theme:"):
+                    theme_shown.setdefault(g, m.group(4))
+        elif kind == "page" and cat == "welcome":
+            welcome_viewers.add(g)
+        elif kind == "page" and cat:
             pages.setdefault(cat, set()).add(g)
         elif kind == "leave" and cat == "html" and r["value"] is not None:
             dwell_all.append(r["value"])
             (dwell_engaged if g in engaged else dwell_bounced).append(
                 r["value"])
+            first_leave.setdefault(g, r["value"])
     other_opened: set[str] = set().union(*pages.values()) if pages else set()
     by_video = []
     for name, ev in video.items():
@@ -1417,6 +1542,104 @@ def _top_page_behavior(rows, visited: set[str], engaged: set[str]) -> dict:
         [{"key": k, "label": _PAGE_DEST_LABELS.get(k, k), "count": len(gs)}
          for k, gs in pages.items()],
         key=lambda x: (-x["count"], x["key"]))[:12]
+
+    # --- ようこそ画面を見た人を母数にした「次へ進んだか」の分析 ---
+    wv = welcome_viewers
+    # 次の画面へ進んだ人=登録/「登録せず見る」を押した・動画の「試す」・
+    # 別の画面(このアプリについて/ログイン登録ページ/各機能)を開いた。
+    advanced = (other_opened | try_guests | signup_cta | video_try) & wv
+
+    def step(key: str, label: str, who: set[str]) -> dict:
+        n = len(who & wv)
+        return {"key": key, "label": label, "count": n,
+                "rate": round(n / len(wv) * 100, 1) if wv else 0.0}
+
+    steps = [
+        step("viewed", "ようこそ画面を表示", wv),
+        step("scrolled", "実際にスクロールした", scrolled),
+        step("seen_cta", "主ボタンが画面に入った", seen["cta"]),
+        step("seen_sample", "1語サンプルが画面に入った", seen["sample"]),
+        step("hero_played", "1語サンプルを再生した", hero_played),
+        step("seen_videos", "動画欄が画面に入った", seen["videos"]),
+        step("video_played", "動画を再生した", video_played),
+        step("depth_100", "最後(分野・機能一覧)まで見た", depth[100]),
+        step("engaged", "何か操作した(ボタン・再生・別画面)", engaged),
+        step("advanced", "次の画面へ進んだ(登録・体験・別画面)", advanced),
+    ]
+    cohort_defs = [
+        ("scrolled", "スクロールした人", scrolled),
+        ("seen_cta", "主ボタンが画面に入った人", seen["cta"]),
+        ("seen_sample", "1語サンプルが見えた人", seen["sample"]),
+        ("hero_played", "1語サンプルを再生した人", hero_played),
+        ("seen_videos", "動画欄が見えた人", seen["videos"]),
+        ("video_played", "動画を再生した人", video_played),
+        ("depth_100", "最後まで見た人", depth[100]),
+    ]
+    cohorts = []
+    for key, label, who in cohort_defs:
+        grp = who & wv
+        cohorts.append({
+            "key": key, "label": label, "n": len(grp),
+            "advanced": len(grp & advanced),
+            "rate": (round(len(grp & advanced) / len(grp) * 100, 1)
+                     if grp else None)})
+    rest = wv - scrolled - hero_played - video_played
+    cohorts.append({
+        "key": "passive", "label": "スクロールも再生もしなかった人",
+        "n": len(rest), "advanced": len(rest & advanced),
+        "rate": (round(len(rest & advanced) / len(rest) * 100, 1)
+                 if rest else None)})
+
+    def dwell_hist(values: list[float]) -> list[int]:
+        h = [0] * len(_DWELL_LABELS)
+        for v in values:
+            h[_dwell_bucket_index(v)] += 1
+        return h
+
+    # 端末/ブラウザ別(ようこそ画面を見た人)。first_leave=最初の読み込みで
+    # 最初に画面を離れるまで。アプリ内ブラウザ(Yahoo!/Googleアプリ等)は
+    # ブラウザ名に出る。
+    dev_rows: dict[tuple[str, str], dict] = {}
+    mobile_n = 0
+    for g in wv:
+        device, browser = ua_parse.parse_ua(ua_by_guest.get(g, ""))
+        mobile_n += device in _MOBILE_DEVICES
+        d = dev_rows.setdefault((device, browser), {
+            "device": device, "browser": browser, "viewed": 0,
+            "advanced": 0, "leave_ms": []})
+        d["viewed"] += 1
+        d["advanced"] += g in advanced
+        if g in first_leave:
+            d["leave_ms"].append(first_leave[g])
+    by_device = []
+    for d in sorted(dev_rows.values(), key=lambda x: -x["viewed"])[:10]:
+        leave = d.pop("leave_ms")
+        d["first_leave_median_s"] = (
+            _median([x / 1000 for x in leave]) if leave else None)
+        d["quick_leave"] = sum(1 for x in leave if x < 5000)
+        d["leave_n"] = len(leave)
+        by_device.append(d)
+
+    # OSの配色設定×実際に表示したテーマ別(初期テーマの判断材料)。
+    theme_groups: dict[tuple[str, str], dict] = {}
+    for g in wv:
+        o, t = os_pref.get(g), theme_shown.get(g)
+        if not o or not t:
+            continue
+        grp = theme_groups.setdefault((o, t), {
+            "os": o, "shown": t, "n": 0, "advanced": 0, "leave_ms": []})
+        grp["n"] += 1
+        grp["advanced"] += g in advanced
+        if g in first_leave:
+            grp["leave_ms"].append(first_leave[g])
+    by_theme = []
+    for grp in sorted(theme_groups.values(),
+                      key=lambda x: (x["os"], x["shown"])):
+        leave = grp.pop("leave_ms")
+        grp["first_leave_median_s"] = (
+            _median([x / 1000 for x in leave]) if leave else None)
+        by_theme.append(grp)
+
     return {
         "video": {"played": len(video_played), "by_video": by_video},
         "try_without_signup": len(try_guests),
@@ -1427,6 +1650,19 @@ def _top_page_behavior(rows, visited: set[str], engaged: set[str]) -> dict:
             "engaged": _dwell_stats(dwell_engaged),
             "not_engaged": _dwell_stats(dwell_bounced),
         },
+        # --- 2026-09-22追加 ---
+        "journey": {
+            "viewed": len(wv), "mobile": mobile_n, "steps": steps,
+            "cohorts": cohorts,
+            "seen_recorded": sum(len(v) for v in seen.values()) > 0,
+        },
+        "dwell_hist": {
+            "labels": _DWELL_LABELS,
+            "engaged": dwell_hist(dwell_engaged),
+            "not_engaged": dwell_hist(dwell_bounced),
+        },
+        "by_device": by_device,
+        "by_theme": by_theme,
     }
 
 
@@ -1745,8 +1981,10 @@ def admin_registration_funnel(days: int = 30):
             "SELECT guest_sid, kind, category, label, value FROM usage_events "
             "WHERE guest_sid != '' AND ("
             "(kind='click' AND category='welcome') OR kind='page' "
+            "OR (kind='boot' AND category='welcome_view') "
             "OR (kind='leave' AND category='html')) "
-            f"AND created_at >= datetime('now', ?){excl}", (since,),
+            f"AND created_at >= datetime('now', ?){excl} ORDER BY id",
+            (since,),
         ).fetchall()
     # guest_sidごとに最後のイベントだけ残す(created_at昇順で走査して
     # 上書きしていくため、最後に残った値が最新になる)。
@@ -1884,7 +2122,7 @@ def admin_registration_funnel(days: int = 30):
             form_events, signup_succeeded_set),
         # トップページでの行動・滞在時間(2026-09-21・ユーザー要望)。
         "top_behavior": _top_page_behavior(
-            behavior_rows, visited_set, engaged_set),
+            behavior_rows, visited_set, engaged_set, ua_by_guest),
         # 用語集/フレーズ集/クロスワード紹介(SEOページ)に着地し、その後
         # アプリやその他のページにも来た人＝「SEOページ経由でアプリへ」。
         "via_seo": {
@@ -1919,6 +2157,10 @@ def admin_registration_funnel_guest(guest_sid: str):
         [dict(r) for r in lv] + [dict(r) for r in ue],
         key=lambda r: r["created_at"],
     )
+    for t in timeline:
+        if t["src"] == "usage_events":
+            t["desc"] = _describe_event(
+                t["kind"], t["category"], t["label"], t["value"])
     return {"guest_sid": guest_sid, "timeline": timeline}
 
 

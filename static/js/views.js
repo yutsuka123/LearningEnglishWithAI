@@ -320,6 +320,89 @@ function mountVideoGalleryLazily(box) {
   io.observe(box);
 }
 
+// ようこそ画面が「どこまで見られたか」の計測(2026-09-22)。「見て興味なし」と
+// 「そもそも主ボタン/サンプル/動画に気づかれていない」を区別して、ようこそ画面から
+// 次へ進まない原因を分析するため。送るのは次の種類の名前だけ(1人1ページ表示に
+// つき各1回まで・入力内容や位置の座標は送らない):
+//   seen:<部品>   その部品が画面に入った(cta/sample/more/videos/domains/features)
+//   scroll:first  実際にスクロールした(40px超)
+//   depth:<n>     ようこそカードの何%まで画面に入ったか(25/50/75/100)
+//   os:/theme:    OSの配色設定(dark/light)と実際に表示したテーマ
+// kind="boot"・category="welcome_view"で送る(=操作ではない受動的な計測。
+// kind="click"だと管理画面の「何か操作した人」に混ざるため・server側
+// _WELCOME_LABEL_RE参照)。失敗しても画面には影響させない(api.trackはbest-effort)。
+function trackWelcomeView(root) {
+  const sent = new Set();
+  const send = (label) => {
+    // 別タブへ移動した後(rootが画面から外れた後)は何も送らない。
+    if (sent.has(label) || !root.isConnected) return;
+    sent.add(label);
+    api.track("boot", "welcome_view", label);
+  };
+  try {
+    const osDark = window.matchMedia
+      && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    send(osDark ? "os:dark" : "os:light");
+    send(document.documentElement.dataset.theme === "light"
+      ? "theme:light" : "theme:dark");
+  } catch (e) { /* 計測失敗は無視 */ }
+
+  // 部品が画面に入ったか。縦に長い部品(動画欄)は半分に届かないことがあるので
+  // 部品ごとに必要な割合を持つ。
+  const need = new Map();   // element -> [key, 必要な表示割合]
+  const io = typeof IntersectionObserver === "undefined" ? null
+    : new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        const it = need.get(e.target);
+        if (!it || e.intersectionRatio < it[1]) return;
+        send("seen:" + it[0]);
+        io.unobserve(e.target);
+        need.delete(e.target);
+      });
+    }, { threshold: [0.05, 0.5] });
+  const watch = (el, key, ratio = 0.5) => {
+    if (!io || !el) return;
+    need.set(el, [key, ratio]);
+    io.observe(el);
+  };
+  watch(root.querySelector(".welcome-cta-row"), "cta");
+  watch(root.querySelector(".welcome-more"), "more");
+  watch(root.querySelector("#welcomeVideos"), "videos", 0.05);
+  watch(root.querySelector("#welcomeDomainLabel"), "domains");
+  watch(root.querySelector("#welcomeFeatureLabel"), "features");
+
+  // スクロール量。どのスクロール枠でも同じ意味になるよう、ようこそカードの
+  // 上端・高さと画面の高さから「カードの何%まで画面に入ったか」を出す。
+  const card = root.querySelector(".welcome-card");
+  const startY = window.scrollY;
+  let ticking = false;
+  const measure = () => {
+    if (!root.isConnected || !card) return;
+    if (Math.abs(window.scrollY - startY) > 40) send("scroll:first");
+    const r = card.getBoundingClientRect();
+    if (r.height <= 0) return;
+    const seenRatio = (window.innerHeight - r.top) / r.height;
+    [25, 50, 75, 100].forEach((d) => {
+      if (seenRatio >= (d === 100 ? 0.98 : d / 100)) send("depth:" + d);
+    });
+  };
+  const onScroll = () => {
+    if (!root.isConnected) {
+      window.removeEventListener("scroll", onScroll);
+      return;
+    }
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { ticking = false; measure(); });
+  };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  // 最初の1画面ぶん(スクロールしなくても見えている量)。サンプル・一覧が
+  // 差し込まれて高さが落ち着いてから測る(早すぎるとカードが低く見えて
+  // 「最後まで見た」と誤判定するため)。
+  setTimeout(measure, 2000);
+  return { watch };
+}
+
 export async function welcome(root) {
   // facetsは本体表示に必須ではない「収録語彙分野一覧」の飾りチップにしか
   // 使わないため、これを待たずに先にヒーロー本体(見出し・CTA)を描画する
@@ -375,10 +458,11 @@ export async function welcome(root) {
           id="welcomeDomainLabel">収録語彙分野一覧（読み込み中…）</p>
         <div class="row welcome-scroll-row" id="welcomeDomainChips"></div>
 
-        <p class="welcome-scroll-label">収録機能一覧</p>
+        <p class="welcome-scroll-label" id="welcomeFeatureLabel">収録機能一覧</p>
         <div class="row welcome-scroll-row">${featureChips}</div>
       </div>
     </div>`;
+  const view = trackWelcomeView(root);
   // 管理画面の集計用に、文言が変わっても数え漏れない安定キーを送る(全ボタン
   // 共通のクリック計測(ボタン文言)とは別・2026-09-21)。
   root.querySelector("#welcomeTryBtn")?.addEventListener("click", () => {
@@ -418,6 +502,7 @@ export async function welcome(root) {
     box.querySelector(".welcome-sample-play").append(play, el(
       `<div class="welcome-sample-cap">男声 / 女声</div>`));
     box.hidden = false;
+    view.watch(box, "sample");
   }).catch(() => { /* サンプルが出せなくてもトップは通常表示 */ })
     // 動画ギャラリーは1語サンプルの挿入で位置が動いた後に判定する(前だと
     // 折り下なのに画面内と誤判定して初期表示で読み込んでしまう)。
@@ -6036,6 +6121,7 @@ export async function admin(root) {
         <td class="muted">${escapeHtml(t.src)}</td>
         <td>${escapeHtml(t.kind || "")}</td>
         <td>${escapeHtml(t.path || t.category || "")}</td>
+        <td>${escapeHtml(t.desc || "")}</td>
         <td class="muted">${escapeHtml(t.label || "")}${
           t.value != null ? ` ${Math.round(t.value)}ms` : ""}${
           t.success != null ? `成否:${t.success ? "成功" : "失敗"}` : ""}${
@@ -6049,7 +6135,7 @@ export async function admin(root) {
       </tr>`).join("");
       wrapEl.innerHTML = rows
         ? `<table><thead><tr>
-            <th>日時</th><th>種別</th><th>kind</th><th>画面/分野</th><th>備考</th>
+            <th>日時</th><th>種別</th><th>kind</th><th>画面/分野</th><th>内容</th><th>備考</th>
           </tr></thead><tbody>${rows}</tbody></table>`
         : `<p class="muted">行動ログがありません。</p>`;
     } catch (e) {
@@ -6130,7 +6216,8 @@ export async function admin(root) {
         </div>`;
       const videoRows = (tbVideo.by_video || []).map((r) => `<tr>
         <td>${escapeHtml(r.title)}</td><td>${r.play}</td><td>${r.p25}</td>
-        <td>${r.p50}</td><td>${r.ended}</td><td>${r.try}</td>
+        <td>${r.p50}</td><td>${r.p75 ?? 0}</td><td>${r.ended}</td>
+        <td>${r.pause ?? 0}</td><td>${r.try}</td>
         <td>${r.replay}</td><td>${r.error}</td></tr>`).join("");
       const pageRows = (tbOther.by_page || []).map((r) => `<tr>
         <td>${escapeHtml(r.label)}</td><td>${r.count}</td></tr>`).join("");
@@ -6139,7 +6226,80 @@ export async function admin(root) {
         <td><b>${secFmt(d.median)}</b></td><td>${secFmt(d.mean)}</td>
         <td>${secFmt(d.p75)}</td><td>${secFmt(d.p90)}</td>
         <td>${secFmt(d.max)}</td></tr>`;
-      const behaviorHtml = `
+      // --- ようこそ画面から次へ進まない原因の分析(2026-09-22) ---
+      const jr = tb.journey || {};
+      const jrSteps = jr.steps || [];
+      const jrRecorded = !!jr.seen_recorded;
+      const barCell = (rate) => `<td style="min-width:90px">
+        <div style="background:var(--panel-2); border-radius:3px; height:8px;
+          overflow:hidden"><div style="width:${Math.min(100, rate || 0)}%;
+          background:var(--accent); height:100%"></div></div></td>`;
+      const stepRows = jrSteps.map((st) => `<tr>
+        <td>${escapeHtml(st.label)}</td><td>${st.count}</td>
+        <td class="muted">${st.rate}%</td>${barCell(st.rate)}</tr>`).join("");
+      const cohortRows = (jr.cohorts || []).map((c) => `<tr>
+        <td>${escapeHtml(c.label)}</td><td>${c.n}</td><td>${c.advanced}</td>
+        <td><b>${c.rate == null ? "—" : c.rate + "%"}</b></td></tr>`).join("");
+      const dh = tb.dwell_hist || { labels: [], engaged: [], not_engaged: [] };
+      const dhSum = (a) => a.reduce((x, y) => x + y, 0);
+      const dhCell = (a, i) => {
+        const t = dhSum(a);
+        return `<td>${a[i] ?? 0}<span class="muted"> (${
+          t ? Math.round((a[i] ?? 0) / t * 100) : 0}%)</span></td>`;
+      };
+      const dhRows = [["操作せず離れた", dh.not_engaged],
+        ["何か操作した", dh.engaged]].map(([lbl, a]) => `<tr>
+        <td>${lbl}<span class="muted"> (${dhSum(a)}件)</span></td>${
+          (dh.labels || []).map((_, i) => dhCell(a, i)).join("")}</tr>`)
+        .join("");
+      const devRows = (tb.by_device || []).map((d) => `<tr>
+        <td>${escapeHtml(d.device)} / ${escapeHtml(d.browser)}</td>
+        <td>${d.viewed}</td><td>${d.advanced}</td>
+        <td>${d.leave_n ? `${d.quick_leave}/${d.leave_n}` : "—"}</td>
+        <td>${secFmt(d.first_leave_median_s)}</td></tr>`).join("");
+      const themeRows = (tb.by_theme || []).map((t) => `<tr>
+        <td>${t.os === "dark" ? "ダーク" : "ライト"}</td>
+        <td>${t.shown === "dark" ? "ダーク" : "ライト"}${
+          t.os !== t.shown ? ' <span class="muted">(OSと不一致)</span>' : ""}</td>
+        <td>${t.n}</td><td>${t.advanced}</td>
+        <td>${secFmt(t.first_leave_median_s)}</td></tr>`).join("");
+      const journeyHtml = `
+        <h3 class="mt">ようこそ画面から次へ進まない原因の分析</h3>
+        <p class="muted" style="font-size:12px">${[
+          "母数=ようこそ画面を表示した人(ボット・自分の端末を除く)。",
+          "「画面に入った」「スクロール」「最後まで」の記録は ver1.4.14 の公開以降のデータのみです",
+          "(それ以前の期間は0になります)。「次の画面へ進んだ」は、無料登録/登録せず単語を見る/",
+          "動画の「試す」を押した、または別の画面(このアプリについて・ログイン/登録ページ・各機能)を開いた人です。"
+        ].join("")}</p>
+        ${jr.viewed
+          ? `<p class="muted" style="font-size:12px">ようこそ画面を見た人 ${jr.viewed}人
+              (うちスマホ/タブレット ${jr.mobile}人)</p>
+            ${jrRecorded ? "" : `<p class="muted" style="font-size:12px">
+              この期間には「画面に入った・スクロール」の記録がまだありません。</p>`}
+            <div style="overflow-x:auto"><table class="mt"><thead><tr>
+              <th>段階</th><th>人数</th><th>表示した人比</th><th></th></tr></thead>
+              <tbody>${stepRows}</tbody></table></div>
+            <h3 class="mt" style="font-size:14px">どの行動をした人が次へ進んだか</h3>
+            <div style="overflow-x:auto"><table class="mt"><thead><tr>
+              <th>行動</th><th>人数</th><th>次の画面へ進んだ</th><th>進んだ割合</th>
+              </tr></thead><tbody>${cohortRows}</tbody></table></div>
+            <h3 class="mt" style="font-size:14px">最初に画面を離れるまでの時間の分布（読み込み回数）</h3>
+            <div style="overflow-x:auto"><table class="mt"><thead><tr><th></th>${
+              (dh.labels || []).map((l) => `<th>${l}</th>`).join("")}</tr></thead>
+              <tbody>${dhRows}</tbody></table></div>
+            <h3 class="mt" style="font-size:14px">端末/ブラウザ別（上位）</h3>
+            <div style="overflow-x:auto"><table class="mt"><thead><tr>
+              <th>端末 / ブラウザ</th><th>人数</th><th>次へ進んだ</th>
+              <th>5秒未満で離れた</th><th>離れるまでの中央値</th></tr></thead>
+              <tbody>${devRows}</tbody></table></div>
+            ${themeRows
+              ? `<h3 class="mt" style="font-size:14px">OSの配色設定と表示したテーマ別（初期テーマの判断材料）</h3>
+                <div style="overflow-x:auto"><table class="mt"><thead><tr>
+                  <th>OSの設定</th><th>表示したテーマ</th><th>人数</th>
+                  <th>次へ進んだ</th><th>離れるまでの中央値</th></tr></thead>
+                  <tbody>${themeRows}</tbody></table></div>` : ""}`
+          : `<p class="muted">この期間にようこそ画面を表示した記録はありません。</p>`}`;
+      const behaviorHtml = `${journeyHtml}
         <h3 class="mt">トップページでの行動・離脱までの時間</h3>
         <div class="grid cols-4 mt">
           ${tbTile(tbVideo.played, "動画を再生した人", "")}
@@ -6156,9 +6316,10 @@ export async function admin(root) {
         ${videoRows
           ? `<h3 class="mt">動画別（何を見たか・人数）</h3>
             <div style="overflow-x:auto"><table class="mt"
-              style="min-width:560px"><thead><tr>
+              style="min-width:680px"><thead><tr>
               <th>動画</th><th>再生を押した</th><th>25%まで</th>
-              <th>50%まで</th><th>最後まで</th><th>「試す」を押した</th>
+              <th>50%まで</th><th>75%まで</th><th>最後まで</th>
+              <th>途中で止めた</th><th>「試す」を押した</th>
               <th>もう一度見た</th><th>再生エラー</th></tr></thead>
               <tbody>${videoRows}</tbody></table></div>`
           : `<p class="muted">この期間に動画を再生した人はいません。</p>`}

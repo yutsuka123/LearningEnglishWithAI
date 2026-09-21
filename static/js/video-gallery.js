@@ -59,11 +59,12 @@ export const VIDEOS = [
 // 計測: 既存のapi.track(kind=click)の枠で送る。サーバーの許可リスト
 // (_CLIENT_TRACK_KINDS)は広げず、categoryは「今いる画面」(トップ=welcome)、
 // labelを "video:<name>:<event>" にする。"video:" で始まるので他のclickと
-// 区別しやすい(LIKE 'video:%')。event = play(押下)/p25/p50/ended(=100%到達・
-// 終了)/try(「試す」押下)/replay/error。送信失敗は再生を妨げない(best-effort)。
+// 区別しやすい(LIKE 'video:%')。event = play(押下)/p25/p50/p75/ended(=100%到達・
+// 終了)/pause(途中で一時停止・valueに停止した位置のms・1本の再生につき1回)/
+// try(「試す」押下)/replay/error。送信失敗は再生を妨げない(best-effort)。
 const TRACK_CATEGORY = "welcome";
-function track(name, event) {
-  try { api.track("click", TRACK_CATEGORY, `video:${name}:${event}`); }
+function track(name, event, value) {
+  try { api.track("click", TRACK_CATEGORY, `video:${name}:${event}`, value); }
   catch (e) { /* 計測失敗は無視 */ }
 }
 
@@ -132,8 +133,12 @@ function createController(root, videos) {
     stage.replaceChildren(video);
     active = { card, video, v };
 
-    let reached25 = false, reached50 = false;
-    const resetProgress = () => { reached25 = false; reached50 = false; };
+    let reached25 = false, reached50 = false, reached75 = false;
+    let pausedSent = false;
+    const resetProgress = () => {
+      reached25 = false; reached50 = false; reached75 = false;
+      pausedSent = false;
+    };
 
     video.addEventListener("timeupdate", () => {
       const d = video.duration;
@@ -141,10 +146,21 @@ function createController(root, videos) {
       const r = video.currentTime / d;
       if (!reached25 && r >= 0.25) { reached25 = true; track(v.name, "p25"); }
       if (!reached50 && r >= 0.5) { reached50 = true; track(v.name, "p50"); }
+      if (!reached75 && r >= 0.75) { reached75 = true; track(v.name, "p75"); }
     });
 
     // ポスターに戻した(=このvideoを捨てた)後に遅れて届いたイベントは無視する。
     const isCurrent = () => active && active.video === video;
+
+    // 途中で止めた位置(終わりに近い/終了による停止は数えない)。ポスターに戻す
+    // ときのpause()は、その時点でisCurrent()が偽なので数えない。
+    video.addEventListener("pause", () => {
+      if (!isCurrent() || pausedSent || video.ended || video.seeking) return;
+      const d = video.duration;
+      if (!d || !isFinite(d) || video.currentTime >= d - 0.3) return;
+      pausedSent = true;
+      track(v.name, "pause", Math.round(video.currentTime * 1000));
+    });
 
     // 終了後に「もう一度見る」または動画のコントロールから再生し直したら、
     // 終了の重ね表示を消して25/50%の到達判定をやり直す。
