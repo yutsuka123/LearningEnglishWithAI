@@ -362,6 +362,13 @@ async def _auth_context(request, call_next):
             httponly=True, samesite="lax", path="/",
             secure=auth_svc.cookie_secure(request),
         )
+    # クリックジャッキング対策(2026-09-21・セキュリティ自己点検): 他サイトの
+    # <iframe>への埋め込みを禁止する。自サイトはiframeを使っていない。Cookieは
+    # 既にSameSite=laxで他サイトの枠内ではログイン状態にならないが、多層防御と
+    # して明示する。CSPはframe-ancestorsだけ(スクリプト等の読み込みは制限しない)。
+    response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+    response.headers.setdefault(
+        "Content-Security-Policy", "frame-ancestors 'self'")
     path = request.url.path
     if path.startswith("/static/video/"):
         # 機能紹介動画・ポスター(2026-09-20)。数MBあり毎回の再検証(304)も
