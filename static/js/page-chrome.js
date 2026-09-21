@@ -40,13 +40,36 @@
     if (sel) sel.value = size;
   }
 
+  // テーマ(2026-09-22〜): 保存された選択(ボタンで切替)があればそれ、無ければ端末
+  // (OS/ブラウザ)の配色設定に合わせる(ライト設定ならライト・判定できない時はダーク)。
+  function savedTheme() {
+    const t = safeGetItem('theme');
+    return t === 'light' || t === 'dark' ? t : null;
+  }
+  function resolveTheme() {
+    const saved = savedTheme();
+    if (saved) return saved;
+    try {
+      return window.matchMedia('(prefers-color-scheme: light)').matches
+        ? 'light' : 'dark';
+    } catch (_) { return 'dark'; }
+  }
+
   // テーマだけは<head>内でこのファイルが読まれた時点(body描画前)に
   // 即適用し、ライト設定の人に一瞬ダークが見える問題(FOUC)を防ぐ。
-  applyTheme(safeGetItem('theme') || 'dark');
+  applyTheme(resolveTheme());
 
   // ボタン/セレクトはbody側の要素なので、DOM構築後に配線する。
   document.addEventListener('DOMContentLoaded', function () {
-    applyTheme(safeGetItem('theme') || 'dark');
+    applyTheme(resolveTheme());
+    try {
+      const mq = window.matchMedia('(prefers-color-scheme: light)');
+      const onChange = function () {
+        if (!savedTheme()) applyTheme(resolveTheme());
+      };
+      if (mq.addEventListener) mq.addEventListener('change', onChange);
+      else if (mq.addListener) mq.addListener(onChange);
+    } catch (_) { /* 追従できなくても動作に影響なし */ }
     applyFontSize(safeGetItem('fontSize') || '');
     document.getElementById('themeToggle')
       ?.addEventListener('click', function () {

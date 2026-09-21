@@ -3,6 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    /* 初期テーマ(描画前に決めてちらつきを防ぐ・2026-09-22): 保存された選択(ボタンで切替)が
+       あればそれ、無ければ端末(OS/ブラウザ)の配色設定に合わせる(ライト設定ならライト・
+       それ以外や判定できない時はダーク=従来どおり)。app.js/page-chrome.js/login.htmlの
+       resolveThemeと同じ規則。 */
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('theme'); } catch (e) { /* 使えない環境 */ }
+      if (t !== 'light' && t !== 'dark') {
+        try {
+          t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        } catch (e) { t = 'dark'; }
+      }
+      if (t === 'light') document.documentElement.dataset.theme = 'light';
+    })();
+  </script>
   <title>サブスク疲れに前払い制の安いAI英語学習アプリ「nyangailab」｜無料体験あり</title>
   <meta name="description" content="サブスク疲れなら前払い制へ。nyangailabは月額サブスクなし・使った分だけ払う廉価なAI英語学習アプリです。日常会話の基礎語彙から専門用語・マイナーな英単語・マニアックな分野まで、AI活用で価格を抑えて自然な音声つきで学べます。ログイン不要の無料体験あり。" />
   <meta name="keywords" content="nyangailab, にゃんがいらぼ, 英語学習アプリ, AI英語学習, サブスク疲れ, サブスクなし, サブスク不要, 前払い, 都度課金, 廉価, 安い英語アプリ, 無料体験, 専門用語, マイナー英語, マニアックな英語学習, ニッチ単語, TOEIC 単語" />

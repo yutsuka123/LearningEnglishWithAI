@@ -50,10 +50,18 @@
     // 使う。読み取りに失敗しても(iOS Safariのプライバシー設定等)このページ
     // 自体は動く必要があるためtry/catchで包む(static/login.htmlと同じ
     // 教訓・2026-09-01)。
-    try {
-      const theme = localStorage.getItem('theme');
-      if (theme === 'light') document.documentElement.dataset.theme = 'light';
-    } catch (_) { /* ignore */ }
+    // 2026-09-22〜: 保存された選択があればそれ、無ければ端末の配色設定(ライト設定なら
+    // ライト)に合わせる(static/js/app.jsのresolveThemeと同じ規則。ここだけ別だと、
+    // ライト設定の端末でトップは明るく決済画面だけ暗くなるため)。
+    let theme = null;
+    try { theme = localStorage.getItem('theme'); } catch (_) { /* ignore */ }
+    if (theme !== 'light' && theme !== 'dark') {
+      try {
+        theme = window.matchMedia('(prefers-color-scheme: light)').matches
+          ? 'light' : 'dark';
+      } catch (_) { theme = 'dark'; }
+    }
+    if (theme === 'light') document.documentElement.dataset.theme = 'light';
 
     const out = document.getElementById('out');
     const params = new URLSearchParams(location.search);

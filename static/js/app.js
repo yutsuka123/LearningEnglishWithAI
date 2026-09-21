@@ -204,7 +204,9 @@ function toggleSidebar() {
 }
 
 // ---------------------------------------------------------------------------
-// ダーク/ライト表示テーマ（既定はダーク。切替はlocalStorageに記憶）。
+// ダーク/ライト表示テーマ（2026-09-22〜: 保存された選択があればそれ、無ければ端末
+// (OS/ブラウザ)の配色設定に合わせる。判定できない時はダーク=従来どおり。ボタンで
+// 切り替えると選択が保存され、以後は端末の設定に追従しない）。
 // ---------------------------------------------------------------------------
 
 function applyTheme(theme) {
@@ -218,12 +220,37 @@ function applyTheme(theme) {
   }
 }
 
+// 保存された選択("light"/"dark")。無い・不正・localStorageが使えない時はnull。
+function savedTheme() {
+  try {
+    const t = localStorage.getItem("theme");
+    return t === "light" || t === "dark" ? t : null;
+  } catch (e) { return null; }
+}
+
+function resolveTheme() {
+  const saved = savedTheme();
+  if (saved) return saved;
+  try {
+    return window.matchMedia("(prefers-color-scheme: light)").matches
+      ? "light" : "dark";
+  } catch (e) { return "dark"; }
+}
+
 function initTheme() {
-  applyTheme(localStorage.getItem("theme") || "dark");
+  applyTheme(resolveTheme());
+  // 端末の設定が変わったとき(夜になって自動でダークへ等)は、保存された選択が
+  // 無い場合だけ追従する。
+  try {
+    const mq = window.matchMedia("(prefers-color-scheme: light)");
+    const onChange = () => { if (!savedTheme()) applyTheme(resolveTheme()); };
+    if (mq.addEventListener) mq.addEventListener("change", onChange);
+    else if (mq.addListener) mq.addListener(onChange);
+  } catch (e) { /* 追従できなくても動作に影響なし */ }
   document.getElementById("themeToggle")?.addEventListener("click", () => {
     const next = document.documentElement.dataset.theme === "light"
       ? "dark" : "light";
-    localStorage.setItem("theme", next);
+    try { localStorage.setItem("theme", next); } catch (e) { /* 保存できない環境 */ }
     applyTheme(next);
   });
 }
