@@ -443,7 +443,7 @@ export async function welcome(root) {
   // 幅がある)・フレーズ7,646件(/api/phrases)・分野234(/api/words/facets)。**実数より小さく
   // 切り捨てて表示し、「以上」を付ける**(語彙は増える一方なので過大表示にならない・公開する
   // 数字は検証可能に)。語彙が大きく増えたらこの3つの数字を見直すこと。
-  const heroCounts = "16,000語・7,500フレーズ・230分野以上を収録";
+  const heroCounts = "16,000語・7,500フレーズ・230分野以上";
   // 目玉機能の動画サムネイル(video-gallery.jsのVIDEOSのnameと揃える・軽量な専用画像)。
   const SHOTS = [
     ["flash_word", "フラッシュ単語"],
