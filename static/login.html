@@ -100,6 +100,11 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
+    // 広告のパーソナライズ(リマーケティング)には使わせない。広告の効果測定(コンバージョン)は
+    // 従来どおり。プライバシーポリシー§7の利用目的「広告の効果測定」と実態を一致させる
+    // (2026-09-21オーナー判断「A: 使わない」・Google公式: 「コンバージョン トラッキングは無効にならない」)。
+    // 将来リマーケティングを使う場合は、この行を外し、§7に利用目的を追記すること。
+    gtag('set', 'allow_ad_personalization_signals', false);
     gtag('config', 'AW-17457232912');
   </script>
   <link rel="icon" type="image/png" sizes="64x64" href="/static/img/favicon-64.png" />
