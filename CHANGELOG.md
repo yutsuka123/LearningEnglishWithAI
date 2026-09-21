@@ -45,6 +45,8 @@ prune cron(03:45)でusage_events 0件削除+growth_daily 41日分保存を確認
 - **残っているゲストの記録の掃除スクリプト**(`scripts/cleanup_guest_progress.py`・新規): 既定はdry-run・`--execute`で
   core.dbのバックアップ(`core.pre_guest_cleanup_<日時>.db`)→ゲスト疑似ユーザー分だけ削除→主要テーブルの件数が
   想定どおりか確認(想定外ならロールバック)。隔離DBで検証(他ユーザーの行は不変・2回目は「対象なし」)。
+  `--progress-only`=全ゲストに見えていた進捗(user_*_progress・本番44行)だけを消し、出題履歴(word_attempts等・35行)は残す
+  (オーナー承認の範囲に合わせた)。本番の実行はClaude Codeの安全装置にブロックされたため**オーナーの端末で実行する**(docs/TODO.md参照)。
 - **重い公開API(`/api/words`・`/api/phrases`)のDoS増幅対策**: ①これらのGETだけIP別の厳しい上限=**毎分120回**
   (`HEAVY_RATE_LIMIT_PER_MIN`・0で無効・携帯回線/学校など共有IPの多人数を巻き込みにくい水準・超過は429・
   `/api/words/facets`等の軽いAPIは対象外)。IPを大量に変える攻撃でdictが膨らまないよう掃除も入れた。
