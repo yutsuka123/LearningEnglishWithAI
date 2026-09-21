@@ -286,6 +286,10 @@ h2 { font-size: 17px; margin: 22px 0 10px; }
 .topbar-brand-sub {
   font-weight: 600; color: var(--text); font-size: 14px;
 }
+/* ロゴ(猫の博士のアイコン・2026-09-22): 左上のブランド表示の絵文字(📘)の代わり。 */
+.topbar-brand { align-items: center; }
+.topbar-logo { width: 28px; height: 28px; border-radius: 7px; flex: none;
+  align-self: center; }
 /* 広い/中間幅の画面で左ペインを畳んだ時も同じ理由でブランド表示が
    消えてしまうため、その間だけトップバー側に出す(2026-08-30)。 */
 body.sidebar-collapsed .topbar-brand { display: inline-flex; font-size: 15px; }
@@ -704,7 +708,13 @@ table.rtable tbody tr.featured-row td:first-child {
   text-align: center; padding: 36px 28px;
   background: linear-gradient(160deg, var(--panel) 0%, var(--panel-2) 100%);
 }
-.welcome-emoji { font-size: 22px; font-weight: 700; }
+.welcome-emoji { font-size: 22px; font-weight: 700; display: flex;
+  align-items: center; justify-content: center; gap: 8px; }
+.welcome-logo { width: 32px; height: 32px; border-radius: 8px; flex: none; }
+/* トップバーにロゴ+名前が出る幅(スマホ・左ペインを畳んだ時)では、カード内の
+   「ロゴ+名前」は重複するので消して、縦の場所を空ける(最初の1画面を有効に使う)。 */
+@media (max-width: 760px) { .welcome-emoji { display: none; } }
+body.sidebar-collapsed .welcome-emoji { display: none; }
 /* リード・CTA・注記・料金の一行説明(2026-09-20・トップ照査の反映)。
    3つのバッジは廃止しリードと料金の一行に統合した(スマホで主CTAが
    ファーストビューに入るように縦の行数を減らすため)。 */

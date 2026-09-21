@@ -453,7 +453,7 @@ export async function welcome(root) {
   root.innerHTML = `
     <div class="welcome-hero">
       <div class="card welcome-card">
-        <div class="welcome-emoji">🐱 nyangailab</div>
+        <div class="welcome-emoji"><img class="welcome-logo" src="/static/img/nyangailab_icon_96.png?v=1" alt="" width="32" height="32" decoding="async" /> nyangailab</div>
         <h1 class="mt">${heroTitle}</h1>
         <p class="muted welcome-lead">${heroLead}</p>
         <div class="row welcome-cta-row">
