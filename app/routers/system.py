@@ -1150,7 +1150,24 @@ def admin_anon_access(days: int = 30, limit: int = 500):
             " MAX(CASE WHEN kind='page' AND category='word_detail' "
             "     THEN 1 ELSE 0 END) AS viewed_word, "
             " MAX(CASE WHEN kind='play' AND category='word' "
-            "     THEN 1 ELSE 0 END) AS tried_audio "
+            "     THEN 1 ELSE 0 END) AS tried_audio, "
+            # 2026-09-22(ユーザー要望「こんなことができます(サムネイル)をタップしたか・
+            # 動画再生・1語聞いてみるを押したかも見たい」): ようこそ画面の操作を
+            # IP単位の明細にも出す。ラベルはviews.js/video-gallery.jsが送る安定キー
+            # (shot:<動画名>・video:<動画名>:play・hero_sample_play:<語>・cta:*)。
+            " MAX(CASE WHEN kind='click' AND category='welcome' "
+            "     AND label LIKE 'shot:%' THEN 1 ELSE 0 END) AS shot_tapped, "
+            " MAX(CASE WHEN kind='click' AND category='welcome' "
+            "     AND label LIKE 'video:%:play' THEN 1 ELSE 0 END) "
+            "     AS video_played, "
+            " MAX(CASE WHEN kind='click' AND category='welcome' "
+            "     AND label LIKE 'hero_sample_play:%' THEN 1 ELSE 0 END) "
+            "     AS hero_played, "
+            " MAX(CASE WHEN kind='click' AND category='welcome' "
+            "     AND label = 'cta:signup' THEN 1 ELSE 0 END) AS cta_signup, "
+            " MAX(CASE WHEN kind='click' AND category='welcome' "
+            "     AND label = 'cta:try_without_signup' THEN 1 ELSE 0 END) "
+            "     AS cta_try "
             "FROM usage_events "
             "WHERE created_at >= datetime('now', ?) AND ip != '' "
             "GROUP BY ip",
@@ -1202,6 +1219,9 @@ def admin_anon_access(days: int = 30, limit: int = 500):
         usage = usage_map.get(d["ip"], {})
         d["viewed_word"] = usage.get("viewed_word", 0)
         d["tried_audio"] = usage.get("tried_audio", 0)
+        for k in ("shot_tapped", "video_played", "hero_played",
+                  "cta_signup", "cta_try"):
+            d[k] = usage.get(k, 0)
         mark_counts[d["mark"]] += 1
         mark_visits[d["mark"]] += d["visit_count"] or 0
         items.append(d)

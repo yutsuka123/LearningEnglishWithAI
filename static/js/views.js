@@ -6063,6 +6063,10 @@ export async function admin(root) {
       if (k === "lang") return primaryLang(r);
       if (k === "viewed_word") return r.viewed_word ? 1 : 0;
       if (k === "tried_audio") return r.tried_audio ? 1 : 0;
+      if (k === "shot_tapped" || k === "video_played" || k === "hero_played") {
+        return r[k] ? 1 : 0;
+      }
+      if (k === "cta") return (r.cta_signup ? 1 : 0) + (r.cta_try ? 1 : 0);
       return r[k];
     };
     rows.sort((a, b) => {
@@ -6077,11 +6081,20 @@ export async function admin(root) {
       ["device", "端末"], ["browser", "ブラウザ"], ["lang", "言語設定"],
       ["first_seen", "初回"], ["last_seen", "最終"], ["visit_count", "回数"],
       ["viewed_word", "単語ページ閲覧"], ["tried_audio", "音声再生"],
+      // ようこそ画面の操作(2026-09-22): 目玉サムネイルを押したか・動画を再生したか・
+      // 1語サンプルを再生したか・登録/体験ボタンを押したか。
+      ["shot_tapped", "サムネ押下"], ["video_played", "動画再生"],
+      ["hero_played", "1語聞いた"], ["cta", "登録・体験ボタン"],
       ["viewed_about", "説明書閲覧"], ["signup", "登録試行"],
     ];
+    // 列幅(2026-09-22・オーナー要望「接続元組織・端末・ブラウザは6文字幅・IPは8文字幅で
+    // 折り返して、表全体が見えるように」): 折り返し前提の固定幅。
+    const NARROW = {
+      ip: "anon-w-ip", org: "anon-w6", device: "anon-w6", browser: "anon-w6",
+    };
     const head = COLS.map(([k, label]) => {
       const arrow = anonSort.key === k ? (anonSort.asc ? " ▲" : " ▼") : "";
-      return `<th class="anon-sort" data-key="${k}"
+      return `<th class="anon-sort ${NARROW[k] || ""}" data-key="${k}"
         style="cursor:pointer;user-select:none"
         title="クリックで並べ替え">${label}${arrow}</th>`;
     }).join("");
@@ -6089,14 +6102,14 @@ export async function admin(root) {
       / 期間内 ${(anonData.items || []).length} 件</p>
       <table><thead><tr>${head}</tr></thead><tbody>${rows.map((r) => `
       <tr>
-        <td class="muted">${escapeHtml(r.ip)}${
+        <td class="muted anon-w-ip">${escapeHtml(r.ip)}${
           r.mark
             ? ` <sup title="${escapeHtml(ANON_MARKS[r.mark])}: ${
               escapeHtml(r.mark_reason || "")}">※${r.mark}</sup>` : ""}</td>
         <td class="muted">${escapeHtml(place(r))}</td>
-        <td class="muted">${escapeHtml(r.org || r.hostname || "—")}</td>
-        <td class="muted">${escapeHtml(r.device || "—")}</td>
-        <td class="muted">${escapeHtml(r.browser || "—")}</td>
+        <td class="muted anon-w6">${escapeHtml(r.org || r.hostname || "—")}</td>
+        <td class="muted anon-w6">${escapeHtml(r.device || "—")}</td>
+        <td class="muted anon-w6">${escapeHtml(r.browser || "—")}</td>
         <td class="muted" title="${escapeHtml(r.accept_language || "")}">
           ${escapeHtml(primaryLang(r) || "—")}</td>
         <td class="muted">${fmtDate(r.first_seen)}</td>
@@ -6106,6 +6119,15 @@ export async function admin(root) {
           ? '<span class="badge-ok">見た</span>' : "—"}</td>
         <td>${r.tried_audio
           ? '<span class="badge-ok">再生した</span>' : "—"}</td>
+        <td>${r.shot_tapped
+          ? '<span class="badge-ok">押した</span>' : "—"}</td>
+        <td>${r.video_played
+          ? '<span class="badge-ok">再生した</span>' : "—"}</td>
+        <td>${r.hero_played
+          ? '<span class="badge-ok">聞いた</span>' : "—"}</td>
+        <td>${[r.cta_signup ? "登録" : "", r.cta_try ? "体験" : ""]
+          .filter(Boolean).map((t) => `<span class="badge-ok">${t}</span>`)
+          .join(" ") || "—"}</td>
         <td>${r.viewed_about
           ? '<span class="badge-ok">見た</span>' : "—"}</td>
         <td>${r.signup_attempted
