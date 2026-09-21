@@ -715,6 +715,23 @@ TTS_VOICES = [
 # billed by tokens; we approximate from text length for the usage display.
 _TTS_USD_PER_1K_CHARS = 0.015
 
+# 不良音声ガード(2026-09-21)。TTSは稀に「シュド」のような無内容の短い音(0.36秒・
+# mp3で5,760Bちょうど等)を返す。2026-09-20に本番の139本がこれで、ゲスト無料範囲の
+# 基本語29語も含まれていた。手元の単語音声51,242本で実測すると、正常な音声は1〜2文字の
+# 語でも11,520B以上・8KB未満は7本(0.014%)だけで、その大半も不良と見られる。
+# 3文字以上のテキストで8KB未満なら不良とみなして再試行し、それでも直らなければ
+# 「失敗」を返す(キャッシュしない・呼び出し側=バッチ生成スクリプトも作らない)。
+# 1〜2文字("a"・"I"等)は元々短いので対象外。
+_MIN_SPEECH_BYTES = 8192
+_MIN_GUARD_CHARS = 3
+_MAX_TTS_ATTEMPTS = 3
+
+
+def _looks_broken(audio: bytes, spoken: str) -> bool:
+    """TTSが返したmp3が、無内容の短い音(不良)と思われるか。"""
+    return (len(spoken.strip()) >= _MIN_GUARD_CHARS
+            and len(audio) < _MIN_SPEECH_BYTES)
+
 
 # 読み上げの話し方プリセット（gpt-4o-mini-tts の品質を安定させる）。
 #   learn  … 学習用。落ち着いた一定ペース・やや遅め・明瞭（指示なしだと文の
@@ -807,23 +824,38 @@ def synthesize_speech(
         extra["instructions"] = instr
     t0 = time.monotonic()
     try:
-        resp = client.audio.speech.create(
-            model=settings.tts_model,
-            voice=voice,
-            input=speak,
-            response_format="mp3",
-            **extra,
-        )
-        audio = resp.read() if hasattr(resp, "read") else resp.content
+        attempts = 0
+        audio = b""
+        while attempts < _MAX_TTS_ATTEMPTS:
+            attempts += 1
+            resp = client.audio.speech.create(
+                model=settings.tts_model,
+                voice=voice,
+                input=speak,
+                response_format="mp3",
+                **extra,
+            )
+            audio = resp.read() if hasattr(resp, "read") else resp.content
+            if not _looks_broken(audio, speak):
+                break
+            log.warning(
+                "TTS 不良音声を検出 (%dB・試行%d/%d・voice=%s model=%s・"
+                "文字数%d)", len(audio), attempts, _MAX_TTS_ATTEMPTS, voice,
+                settings.tts_model, len(speak))
         elapsed = time.monotonic() - t0
         if elapsed >= _SLOW_CALL_SEC:
             log.warning("TTS 低速 (voice=%s model=%s elapsed=%.1fs)",
                         voice, settings.tts_model, elapsed)
-        try:
-            cache.write_bytes(audio)
-        except Exception:  # caching is best-effort
-            pass
+        broken = _looks_broken(audio, speak)
+        if not broken:
+            try:
+                cache.write_bytes(audio)
+            except Exception:  # caching is best-effort
+                pass
+        # 実際にAPIを呼んだ回数分の費用は記録する(運営側の実コスト)が、利用者の
+        # チャージ残高から引くのは1回分だけ(不良の再試行は提供側の都合のため)。
         cost = len(text) / 1000 * _TTS_USD_PER_1K_CHARS
+        logged_cost = cost * attempts
         from .auth import current_ip, current_user_id
         uid = current_user_id()
         with db() as conn:
@@ -831,7 +863,7 @@ def synthesize_speech(
                 "INSERT INTO ai_usage "
                 "(model, prompt_tokens, output_tokens, cost_usd, feature, "
                 " user_id, ip) VALUES (?, 0, 0, ?, ?, ?, ?)",
-                (settings.tts_model, cost, feature, uid, current_ip()),
+                (settings.tts_model, logged_cost, feature, uid, current_ip()),
             )
             # 2026-08-12修正: 以前はここでチャージ残高を消費しておらず、
             # 無料枠を使い切った後もTTSだけ無制限に無料で使えてしまう
@@ -844,8 +876,15 @@ def synthesize_speech(
             # あった。free_rangeはガード免除だけでなく課金免除も意味する
             # べきなのでスキップする(単語/フレーズ・公開サンプルいずれも
             # 「課金ユーザーでも無料」という設計のため)。
-            if not free_range:
+            if not free_range and not broken:
                 _maybe_deduct_balance(conn, uid, cost, feature, settings)
+        if broken:
+            # 再試行しても直らなかった(=ほぼ起きない)。不良音声を返さず・
+            # キャッシュも作らない。利用者は再度押せば新しく生成される。
+            log.error("TTS 不良音声が%d回続いたため失敗として返します "
+                      "(voice=%s model=%s・最終%dB)", attempts, voice,
+                      settings.tts_model, len(audio))
+            return None, ERROR_CODES["8001"][0]
         return audio, None
     except Exception as exc:
         elapsed = time.monotonic() - t0
