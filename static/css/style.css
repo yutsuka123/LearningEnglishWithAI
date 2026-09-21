@@ -707,7 +707,7 @@ table.rtable tbody tr.featured-row td:first-child {
 /* ヘッダー(2026-09-22・オーナー案「見出しの横にアイコン」): 猫の博士のアイコン(左)+
    名前と見出し(右)を横に並べ、従来の「🐱 nyangailab」の1行を無くして縦の場所を空ける。 */
 .welcome-head { display: flex; align-items: center; gap: 12px;
-  max-width: 480px; margin: 0 auto; text-align: left; }
+  max-width: 480px; margin: 0 auto 12px; text-align: left; }
 .welcome-logo { width: 64px; height: 64px; border-radius: 14px; flex: none; }
 .welcome-head-text { min-width: 0; }
 .welcome-brand { font-size: 13px; font-weight: 700; color: var(--accent);
