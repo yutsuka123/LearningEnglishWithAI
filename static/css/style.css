@@ -713,6 +713,9 @@ table.rtable tbody tr.featured-row td:first-child {
 .welcome-brand { font-size: 13px; font-weight: 700; color: var(--accent);
   margin-bottom: 2px; }
 .welcome-head h1 { margin: 0; }
+/* 収録数の一行(2026-09-22): 補足文のすぐ下・小さく・控えめに(書きすぎると読まれない)。 */
+.welcome-counts { margin: -6px auto 14px; font-size: 13px; font-weight: 700;
+  color: var(--accent-2); }
 /* リード・CTA・注記・料金の一行説明(2026-09-20・トップ照査の反映)。
    3つのバッジは廃止しリードと料金の一行に統合した(スマホで主CTAが
    ファーストビューに入るように縦の行数を減らすため)。 */

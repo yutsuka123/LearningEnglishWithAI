@@ -437,6 +437,13 @@ export async function welcome(root) {
     + "語源・豆知識つき、AIの自然な音声で。";
   const heroPrice = "🐾 個人開発。閲覧と一部の音声は無料、AI機能などは"
     + "前払い¥800〜（月額なし）";
+  // 収録数(2026-09-22・オーナー案「収録語数・フレーズ数・分野数を書いてもいいかも」)。
+  // 根拠=2026-09-22の本番のゲスト表示: 単語16,420語(/api/words の一覧のid数。/api/words/stats
+  // の16,510は禁止用語を含む・facetsの分野別合計16,517は複数分野タグの重複を含む=数え方で
+  // 幅がある)・フレーズ7,646件(/api/phrases)・分野234(/api/words/facets)。**実数より小さく
+  // 切り捨てて表示し、「以上」を付ける**(語彙は増える一方なので過大表示にならない・公開する
+  // 数字は検証可能に)。語彙が大きく増えたらこの3つの数字を見直すこと。
+  const heroCounts = "16,000語・7,500フレーズ・230分野以上を収録";
   // 目玉機能の動画サムネイル(video-gallery.jsのVIDEOSのnameと揃える・軽量な専用画像)。
   const SHOTS = [
     ["flash_word", "フラッシュ単語"],
@@ -462,6 +469,7 @@ export async function welcome(root) {
           </div>
         </div>
         <p class="muted welcome-lead">${heroLead}</p>
+        <p class="welcome-counts">📚 ${heroCounts}</p>
         <div class="row welcome-cta-row">
           <a class="btn welcome-cta" href="/login#signup">
             1分で無料登録 →</a>
