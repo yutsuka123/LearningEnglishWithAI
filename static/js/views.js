@@ -453,8 +453,14 @@ export async function welcome(root) {
   root.innerHTML = `
     <div class="welcome-hero">
       <div class="card welcome-card">
-        <div class="welcome-emoji"><img class="welcome-logo" src="/static/img/nyangailab_icon_96.png?v=1" alt="" width="32" height="32" decoding="async" /> nyangailab</div>
-        <h1 class="mt">${heroTitle}</h1>
+        <div class="welcome-head">
+          <img class="welcome-logo" src="/static/img/nyangailab_icon_128.png?v=1"
+            alt="nyangailab" width="64" height="64" decoding="async" />
+          <div class="welcome-head-text">
+            <div class="welcome-brand">nyangailab</div>
+            <h1>${heroTitle}</h1>
+          </div>
+        </div>
         <p class="muted welcome-lead">${heroLead}</p>
         <div class="row welcome-cta-row">
           <a class="btn welcome-cta" href="/login#signup">

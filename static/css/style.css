@@ -286,10 +286,6 @@ h2 { font-size: 17px; margin: 22px 0 10px; }
 .topbar-brand-sub {
   font-weight: 600; color: var(--text); font-size: 14px;
 }
-/* ロゴ(猫の博士のアイコン・2026-09-22): 左上のブランド表示の絵文字(📘)の代わり。 */
-.topbar-brand { align-items: center; }
-.topbar-logo { width: 28px; height: 28px; border-radius: 7px; flex: none;
-  align-self: center; }
 /* 広い/中間幅の画面で左ペインを畳んだ時も同じ理由でブランド表示が
    消えてしまうため、その間だけトップバー側に出す(2026-08-30)。 */
 body.sidebar-collapsed .topbar-brand { display: inline-flex; font-size: 15px; }
@@ -708,13 +704,15 @@ table.rtable tbody tr.featured-row td:first-child {
   text-align: center; padding: 36px 28px;
   background: linear-gradient(160deg, var(--panel) 0%, var(--panel-2) 100%);
 }
-.welcome-emoji { font-size: 22px; font-weight: 700; display: flex;
-  align-items: center; justify-content: center; gap: 8px; }
-.welcome-logo { width: 32px; height: 32px; border-radius: 8px; flex: none; }
-/* トップバーにロゴ+名前が出る幅(スマホ・左ペインを畳んだ時)では、カード内の
-   「ロゴ+名前」は重複するので消して、縦の場所を空ける(最初の1画面を有効に使う)。 */
-@media (max-width: 760px) { .welcome-emoji { display: none; } }
-body.sidebar-collapsed .welcome-emoji { display: none; }
+/* ヘッダー(2026-09-22・オーナー案「見出しの横にアイコン」): 猫の博士のアイコン(左)+
+   名前と見出し(右)を横に並べ、従来の「🐱 nyangailab」の1行を無くして縦の場所を空ける。 */
+.welcome-head { display: flex; align-items: center; gap: 12px;
+  max-width: 480px; margin: 0 auto; text-align: left; }
+.welcome-logo { width: 64px; height: 64px; border-radius: 14px; flex: none; }
+.welcome-head-text { min-width: 0; }
+.welcome-brand { font-size: 13px; font-weight: 700; color: var(--accent);
+  margin-bottom: 2px; }
+.welcome-head h1 { margin: 0; }
 /* リード・CTA・注記・料金の一行説明(2026-09-20・トップ照査の反映)。
    3つのバッジは廃止しリードと料金の一行に統合した(スマホで主CTAが
    ファーストビューに入るように縦の行数を減らすため)。 */
@@ -797,7 +795,9 @@ body.sidebar-collapsed .welcome-emoji { display: none; }
      詰める。 */
   .welcome-card { padding: 16px 14px; }
   .welcome-card h1 { font-size: 20px; line-height: 1.4; }
-  .welcome-emoji { font-size: 18px; }
+  .welcome-logo { width: 56px; height: 56px; border-radius: 12px; }
+  .welcome-head { gap: 10px; }
+  .welcome-card .welcome-head h1 { font-size: 19px; line-height: 1.35; }
   .welcome-lead { font-size: 14px; line-height: 1.6; margin-bottom: 12px; }
   .welcome-cta { padding: 12px 22px; font-size: 16px; }
 }
