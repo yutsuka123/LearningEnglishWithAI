@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from ..services import errors
 from pydantic import BaseModel
@@ -188,6 +188,30 @@ def list_words(
         current_user_allow_banned, current_user_id, is_guest_user_id,
     )
     include_banned = include_banned and current_user_allow_banned()
+    # 未登録ゲストの一覧は全員共通の内容(学習記録を保存しないため)なので、正規化した
+    # パラメータをキーに応答を短時間キャッシュする(重い公開APIのDoS増幅対策・
+    # 2026-09-21・`services/guest_list_cache.py`)。登録ユーザーには使わない。
+    from ..services import guest_list_cache
+    cache_key = None
+    if deck_id is None:
+        with db() as _c:
+            _guest = is_guest_user_id(_c, current_user_id())
+        if _guest:
+            cache_key = guest_list_cache.make_key(
+                "words", sort=sort, desc=desc, domain=domain,
+                category=category, level=level, level_min=level_min,
+                level_max=level_max, out_of_range=out_of_range,
+                mastered=mastered, free_range_only=free_range_only,
+                featured_first=featured_first)
+            hit = guest_list_cache.get(cache_key)
+            if hit is not None:
+                return Response(content=hit, media_type="application/json")
+
+    def _done(resp: JSONResponse) -> JSONResponse:
+        if cache_key is not None:
+            guest_list_cache.put(cache_key, resp.body)
+        return resp
+
     col = {
         "mastery": "mastery",
         "english": "english COLLATE NOCASE",
@@ -263,8 +287,8 @@ def list_words(
             out = [_word_dict(r, free_ids, cfg) for r in rows]
             for d in out[:len(head)]:
                 d["featured"] = True
-            return _json_list(out)
-        return _json_list([_word_dict(r, free_ids, cfg) for r in rows])
+            return _done(_json_list(out))
+        return _done(_json_list([_word_dict(r, free_ids, cfg) for r in rows]))
 
 
 @router.get("/hero-sample")

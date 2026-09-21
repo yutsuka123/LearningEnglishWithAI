@@ -862,6 +862,36 @@ def ip_rate_limited(ip: str) -> bool:
     return False
 
 
+# 重い公開GET(全語/全フレーズの一覧・応答が約9MB)用の、より厳しいIP別上限
+# (2026-09-21・セキュリティ自己点検で判明したDoS増幅への対策)。ログイン不要で毎回
+# 約9MBのJSONを組み立てるため、汎用の上限(本番300回/分)では1つのIPが連打すると
+# アプリが飽和しうる。携帯回線・学校など1つのIPを多人数で共有する場合を巻き込まない
+# よう既定は毎分120回。env HEAVY_RATE_LIMIT_PER_MIN で調整(0=無効)。
+HEAVY_GET_PATHS = ("/api/words", "/api/phrases")
+_HEAVY_HITS: dict[str, list[float]] = {}
+
+
+def heavy_ip_rate_limited(ip: str) -> bool:
+    cap_s = os.getenv("HEAVY_RATE_LIMIT_PER_MIN", "120").strip()
+    try:
+        cap = int(cap_s)
+    except ValueError:
+        cap = 120
+    if cap <= 0:
+        return False
+    if len(_HEAVY_HITS) > 20000:
+        # 直近60秒に記録が無いIPのキーを捨てる(IPを大量に変える攻撃対策)。
+        now = _time.monotonic()
+        for k in [k for k, v in _HEAVY_HITS.items()
+                  if not v or now - v[-1] >= 60.0]:
+            del _HEAVY_HITS[k]
+    hits = _recent(_HEAVY_HITS, ip or "?", 60.0)
+    if len(hits) >= cap:
+        return True
+    hits.append(_time.monotonic())
+    return False
+
+
 def parse_session_token(
     secret: bytes, token: str, now: int
 ) -> Optional[tuple[int, int]]:

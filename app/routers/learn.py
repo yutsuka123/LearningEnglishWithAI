@@ -388,7 +388,14 @@ def _own_or_public_material(conn, material_id: int, uid: int) -> None:
 
 def _material_set_mastery(conn, material_id: int, mastery: int) -> None:
     """教材の習得度を per-user に UPSERT（教材本文は共有・履歴だけuser別）。"""
-    from ..services.auth import current_user_id
+    from ..services.auth import current_user_id, is_guest_user_id
+    # 2026-09-21(オーナー承認・セキュリティ自己点検): 未登録ゲストは全員が同じ疑似
+    # ユーザー(__guest__)を共有するため、学習記録を書くと他のゲストに見えてしまう
+    # (本番に残っていた単語41件・フレーズ3件の原因)。ゲストの学習記録は保存しない
+    # (画面の「学習の記録は保存されていません」の案内どおり)。応答の値は従来どおり
+    # 計算して返すので、そのページの間は画面に反映される(再読み込みで消える)。
+    if is_guest_user_id(conn, current_user_id()):
+        return
     conn.execute(
         "INSERT INTO user_material_progress "
         "(user_id, material_id, mastery, last_studied) "

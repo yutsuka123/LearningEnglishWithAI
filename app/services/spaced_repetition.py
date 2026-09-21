@@ -314,11 +314,18 @@ def record_attempt(
     counting = 1 if result == "correct" else 0
     today = date.today().isoformat()
 
-    conn.execute(
-        f"INSERT INTO {attempts_table} ({id_column}, direction, correct, "
-        "user_id) VALUES (?, ?, ?, ?)",
-        (item_id, direction, counting, user_id),
-    )
+    # 2026-09-21(オーナー承認・セキュリティ自己点検): 未登録ゲストは全員が同じ疑似
+    # ユーザー(__guest__)を共有するため、出題結果を書くと他のゲストに見えてしまう
+    # (本番に残っていた単語41件・フレーズ3件の原因)。ゲストの学習記録は保存しない
+    # (画面の「学習の記録は保存されていません」の案内どおり)。応答の値は従来どおり
+    # 計算して返すので、そのページの間は画面に反映される(再読み込みで消える)。
+    from .auth import is_guest_user_id
+    if not is_guest_user_id(conn, user_id):
+        conn.execute(
+            f"INSERT INTO {attempts_table} ({id_column}, direction, correct, "
+            "user_id) VALUES (?, ?, ?, ?)",
+            (item_id, direction, counting, user_id),
+        )
 
     cur = P.get_progress(conn, user_id, table, item_id)
     if result == "correct":

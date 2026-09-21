@@ -201,6 +201,12 @@ async def _auth_context(request, call_next):
         return JSONResponse(
             {"ok": False, "error": "リクエストが多すぎます。少し待って"
              "ください。"}, status_code=429)
+    if (request.method == "GET"
+            and request.url.path in auth_svc.HEAVY_GET_PATHS
+            and auth_svc.heavy_ip_rate_limited(client_ip)):
+        return JSONResponse(
+            {"ok": False, "error": "リクエストが多すぎます。少し待って"
+             "ください。"}, status_code=429)
     multiuser = auth_svc.multiuser_enabled()
     # 未ログイン訪問者を1人ずつ区別するための匿名セッションID
     # (2026-08-30・登録に至らない原因分析の常設化用)。ログイン有無に

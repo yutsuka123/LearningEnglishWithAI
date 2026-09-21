@@ -7,7 +7,7 @@ per-direction accuracy, and a forgetting-curve schedule.
 from __future__ import annotations
 
 from fastapi import APIRouter
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from ..services import errors
 from pydantic import BaseModel, Field
@@ -147,6 +147,29 @@ def list_phrases(
 ):
     from ..services.auth import current_user_allow_banned
     include_banned = include_banned and current_user_allow_banned()
+    # 未登録ゲストの一覧は全員共通の内容なので短時間キャッシュする(単語一覧と同じ理由・
+    # 2026-09-21・`services/guest_list_cache.py`)。登録ユーザーには使わない。
+    from ..services import guest_list_cache
+    from ..services.auth import current_user_id as _cur_uid, is_guest_user_id as _is_guest_uid
+    cache_key = None
+    if deck_id is None:
+        with db() as _c:
+            _guest = _is_guest_uid(_c, _cur_uid())
+        if _guest:
+            cache_key = guest_list_cache.make_key(
+                "phrases", scene=scene, category=category, sort=sort,
+                desc=desc, level_min=level_min, level_max=level_max,
+                out_of_range=out_of_range, mastered=mastered,
+                free_range_only=free_range_only, featured_first=featured_first)
+            hit = guest_list_cache.get(cache_key)
+            if hit is not None:
+                return Response(content=hit, media_type="application/json")
+
+    def _done(resp: JSONResponse) -> JSONResponse:
+        if cache_key is not None:
+            guest_list_cache.put(cache_key, resp.body)
+        return resp
+
     col = {
         "mastery": "mastery",
         "english": "english COLLATE NOCASE",
@@ -258,11 +281,11 @@ def list_phrases(
             out = [_phrase_dict(r, free_ids, cfg) for r in rows]
             for d in out[:len(head)]:
                 d["featured"] = True
-            return JSONResponse(content=out)
+            return _done(JSONResponse(content=out))
         # 素の辞書のlistを返すとFastAPIのjsonable_encoderが全要素をなめ直す分だけ
         # 遅い(単語一覧と同じ理由・2026-09-21)。JSONResponseで同じ出力を直接作る。
-        return JSONResponse(
-            content=[_phrase_dict(r, free_ids, cfg) for r in rows])
+        return _done(JSONResponse(
+            content=[_phrase_dict(r, free_ids, cfg) for r in rows]))
 
 
 @router.get("/facets")
