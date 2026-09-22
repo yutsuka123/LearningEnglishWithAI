@@ -10081,7 +10081,7 @@ async function cwRenderSamples(root) {
     ? tx("games.statusGuest", { remain: Math.max(limit - played, 0), limit })
     : tx("games.statusFree", { remain: Math.max(limit - played, 0), limit });
   const levelText = (s) => (s.level_min || s.level_max)
-    ? `TOEIC ${s.level_min || tx("games.noLowerBound")}　${s.level_max || tx("games.noUpperBound")}` : "";
+    ? `TOEIC ${s.level_min || tx("games.noLowerBound")}〜${s.level_max || tx("games.noUpperBound")}` : "";
   const card = (s) => `<div class="card cw-sample-card" data-sample="${s.id}"
       style="cursor:${s.guest_locked ? "default" : "pointer"}">
     <h3>${escapeHtml(s.title)}${
