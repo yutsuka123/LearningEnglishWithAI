@@ -1,16 +1,19 @@
 // SPA外の独立ページ(about/terms/privacy/tokushoho/login)共通の
-// テーマ(ダーク/ライト)・文字サイズ切替(2026-09-05・opus照査提案)。
+// テーマ(ダーク/ライト)・文字サイズ・言語切替(2026-09-05・opus照査提案。
+// 言語切替は2026-09-23追加)。
 // static/js/app.jsのapplyTheme/applyFontSizeと同じロジックで、
-// localStorageの"theme"/"fontSize"キーもSPA本体と共有する
+// localStorageの"theme"/"fontSize"/"lang"キーもSPA本体と共有する
 // (ログイン前後で設定が引き継がれる)。
 //
 // 使い方: <head>内でこのファイルを<script defer>ではなく、テーマ確定を
-// 描画前に行うため同期<script>で読み込む(FOUC対策)。呼び出し側は
-// <body>内に以下を用意しておく:
+// 描画前に行うため同期<script>で読み込む(FOUC対策・i18n.js/i18n_dict.jsを
+// このファイルより先に読み込むこと)。呼び出し側は<body>内に以下を用意:
 //   <div class="pagebar">
 //     <select id="fontSize">...</select>
+//     <select class="i18n-lang-select"></select>
 //     <button type="button" id="themeToggle">🌙</button>
 //   </div>
+// 本文の翻訳対象要素には data-i18n="key" 等を付ける(詳細はi18n.js参照)。
 (function () {
   // iOS Safariの「すべてのCookieをブロック」等でlocalStorageが
   // SecurityErrorを投げることがある。同期scriptの先頭のため、無防備だと
@@ -84,5 +87,13 @@
         safeSetItem('fontSize', v);
         applyFontSize(v);
       });
+    // 言語切替(2026-09-23): i18n.js/i18n_dict.jsがこのファイルより先に
+    // 読み込まれていれば window.I18N が使える。翻訳自体はi18n.jsの
+    // initLangSwitchers/translateDomが行う(このファイルはウィジェットの
+    // 存在確認だけ)。
+    if (window.I18N) {
+      window.I18N.initLangSwitchers();
+      window.I18N.translateDom(document);
+    }
   });
 })();

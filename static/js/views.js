@@ -6,7 +6,7 @@ import { quizRunner } from "./quiz.js";
 import {
   el, md, escapeHtml, toast, state, go, refreshCost, refreshAiState,
   showBanned, setShowBanned, testBanned, setTestBanned, onLeaveView,
-  fmtDateJST, refreshMaintenanceBanner, TABS, infoIcon,
+  fmtDateJST, refreshMaintenanceBanner, TABS, infoIcon, tx, tabLabel,
 } from "./app.js";
 
 // 禁止用語クエリ: include_banned を付ける/付けないを返す小ヘルパー。
@@ -17,13 +17,15 @@ const bannedParam = (on) => (on ? "include_banned=true" : "");
 // 分かりにくいという指摘(2026-08-30)を受け、太字化+ⓘヒントアイコンを追加
 // (app.jsのinfoIcon参照。クリック/タップでポップオーバー表示、
 // 「今後表示しない」でユーザーごとに恒久的に消せる)。
-function freeOnlyToggle(id, kindLabel) {
-  return `<label class="toggle" title="無料で🔊再生できる${kindLabel}だけに
-      絞り込む（未ログイン/ログイン無料ユーザー向け）">
+function freeOnlyToggle(id, kind) {
+  // kind: "word" | "phrase"（2026-09-23多言語化・以前は呼び出し側が
+  // 日本語文言("単語"/"フレーズ"等)を直接渡していた）。
+  const kindKey = kind === "phrase" ? "filter.kindPhrase" : "filter.kindWord";
+  return `<label class="toggle" title="${escapeHtml(
+      tx("filter.freeOnlyTitle", { kind: tx(kindKey) }))}">
     <input type="checkbox" id="${id}" />
-    <b style="font-size:15px">🔊再生できるものだけ</b></label>
-    ${infoIcon("free-only-filter",
-      "登録すると再生できる数が増えます。さらに課金すると全て再生できます。")}`;
+    <b style="font-size:15px">${tx("filter.freeOnlyLabel")}</b></label>
+    ${infoIcon("free-only-filter", tx("filter.freeOnlyHelp"))}`;
 }
 
 // ⓘヒント文言のうち複数画面で同じ内容を使うもの(2026-09-19・ヘルプ拡充)。
@@ -412,7 +414,7 @@ export async function welcome(root) {
   // いた)。取得でき次第、非同期にチップ部分だけ差し込む。
   const featureChips = TABS
     .filter(([tab]) => !WELCOME_HIDDEN_FEATURE_TABS.has(tab))
-    .map(([, label]) => `<span class="pill">${escapeHtml(label)}</span>`)
+    .map((entry) => `<span class="pill">${escapeHtml(tabLabel(entry))}</span>`)
     .join("");
   // 文言の方針(2026-09-22・オーナー方針「英語学習で来た人にも、ニッチ・専門用語が
   // 好きな人にも見てもらう。ただし書きすぎると読まれない」): ファーストビューの文字は
@@ -430,32 +432,32 @@ export async function welcome(root) {
   //     語にあること(全語ではないので「など」で限定)、「¥800〜」は最小チャージ額
   //     (fulfillment.PRICE_TABLE)に基づく。「広告なし」等は書かない。
   // 日本語の文中でテンプレートリテラルを改行すると空白が表示されてしまう
-  // (例: 「ニッチな 分野」)ため、長い文は文字列連結で組み立てる。
-  const heroTitle = "基礎から、妖怪・無線・歴史・名言まで学べる"
-    + "英語学習アプリ";
-  const heroLead = "日常会話・TOEICの基礎から専門用語まで。"
-    + "語源・豆知識つき、AIの自然な音声で。";
-  const heroPrice = "🐾 個人開発。閲覧と一部の音声は無料、AI機能などは"
-    + "前払い¥800〜（月額なし）";
+  // (例: 「ニッチな 分野」)ため、長い文は文字列連結で組み立てる(tx()の
+  // 訳文側も同じ理由で改行を入れない)。多言語化(2026-09-23)で全てtx()経由に
+  // した(キーの根拠となる事実確認済みの日本語文言は元コメント参照)。
+  const heroTitle = tx("welcome.heroTitle");
+  const heroLead = tx("welcome.heroLead");
+  const heroPrice = tx("welcome.heroPrice");
   // 収録数(2026-09-22・オーナー案「収録語数・フレーズ数・分野数を書いてもいいかも」)。
   // 根拠=2026-09-22の本番のゲスト表示: 単語16,420語(/api/words の一覧のid数。/api/words/stats
   // の16,510は禁止用語を含む・facetsの分野別合計16,517は複数分野タグの重複を含む=数え方で
   // 幅がある)・フレーズ7,646件(/api/phrases)・分野234(/api/words/facets)。**実数より小さく
   // 切り捨てて表示し、「以上」を付ける**(語彙は増える一方なので過大表示にならない・公開する
-  // 数字は検証可能に)。語彙が大きく増えたらこの3つの数字を見直すこと。
-  const heroCounts = "16,000語・7,500フレーズ・230分野以上";
+  // 数字は検証可能に)。語彙が大きく増えたらこの3つの数字(words/phrases/domains)を見直すこと。
+  const heroCounts = tx("welcome.heroCounts",
+    { words: "16,000", phrases: "7,500", domains: "230" });
   // 目玉機能の動画サムネイル(video-gallery.jsのVIDEOSのnameと揃える・軽量な専用画像)。
   const SHOTS = [
-    ["flash_word", "フラッシュ単語"],
-    ["phrase_polite", "丁寧な言い方"],
-    ["crossword", "クロスワード"],
+    ["flash_word", "welcome.shot.flashWord"],
+    ["phrase_polite", "welcome.shot.phrasePolite"],
+    ["crossword", "welcome.shot.crossword"],
   ];
-  const shotsHtml = SHOTS.map(([name, label]) => `
+  const shotsHtml = SHOTS.map(([name, key]) => `
     <button type="button" class="welcome-shot" data-name="${name}"
-      aria-label="${escapeHtml(label)}の動画を見る">
+      aria-label="${escapeHtml(tx("welcome.shot.watchAria", { label: tx(key) }))}">
       <img src="/static/video/posters/thumb_${name}.jpg?v=1" alt=""
         width="200" height="356" decoding="async" />
-      <span class="welcome-shot-cap">${escapeHtml(label)}</span>
+      <span class="welcome-shot-cap">${escapeHtml(tx(key))}</span>
     </button>`).join("");
   root.innerHTML = `
     <div class="welcome-hero">
@@ -472,16 +474,16 @@ export async function welcome(root) {
         <p class="welcome-counts">📚 ${heroCounts}</p>
         <div class="row welcome-cta-row">
           <a class="btn welcome-cta" href="/login#signup">
-            1分で無料登録 →</a>
+            ${tx("welcome.ctaSignup")}</a>
           <button class="btn ghost welcome-try" id="welcomeTryBtn">
-            登録せず単語を見る</button>
+            ${tx("welcome.ctaTry")}</button>
         </div>
         <p class="muted welcome-note">
-          メールだけ・カード不要・ニックネームOK<br>
-          <b>登録すると、音声の無料枠が2倍に</b></p>
+          ${tx("welcome.noteLine1")}<br>
+          <b>${tx("welcome.noteLine2")}</b></p>
 
         <div class="welcome-shots" id="welcomeShots">
-          <div class="welcome-shots-label">🎬 こんなことができます（タップで動画）</div>
+          <div class="welcome-shots-label">🎬 ${tx("welcome.shotsLabel")}</div>
           <div class="welcome-shots-row">${shotsHtml}</div>
         </div>
 
@@ -489,15 +491,15 @@ export async function welcome(root) {
 
         <p class="muted welcome-price">${heroPrice}</p>
         <p class="muted mt welcome-more">
-          <a href="/static/about.html">詳しい説明・料金の目安を見る →</a></p>
+          <a href="/static/about.html">${tx("welcome.moreLink")}</a></p>
 
         <div class="vg-slot" id="welcomeVideos"></div>
 
         <p class="welcome-scroll-label" style="margin-top:28px"
-          id="welcomeDomainLabel">収録語彙分野一覧（読み込み中…）</p>
+          id="welcomeDomainLabel">${tx("welcome.domainLabelLoading")}</p>
         <div class="row welcome-scroll-row" id="welcomeDomainChips"></div>
 
-        <p class="welcome-scroll-label" id="welcomeFeatureLabel">収録機能一覧</p>
+        <p class="welcome-scroll-label" id="welcomeFeatureLabel">${tx("welcome.featureLabel")}</p>
         <div class="row welcome-scroll-row">${featureChips}</div>
       </div>
     </div>`;
@@ -544,7 +546,7 @@ export async function welcome(root) {
     const box = root.querySelector("#welcomeSample");
     if (!w || !box) return;
     box.innerHTML = `
-      <div class="welcome-sample-label">👂 登録なしで、まず1語聞いてみる</div>
+      <div class="welcome-sample-label">👂 ${tx("welcome.sampleLabel")}</div>
       <div class="welcome-sample-word">
         <b class="welcome-sample-en">${escapeHtml(w.english)}</b>
         <span class="welcome-sample-ja">${escapeHtml(w.japanese || "")}</span>
@@ -578,8 +580,7 @@ export async function welcome(root) {
     const label = root.querySelector("#welcomeDomainLabel");
     const chips = root.querySelector("#welcomeDomainChips");
     if (label) {
-      label.textContent =
-        `収録語彙分野一覧（${domains.length}分野・枠内スクロールで見られます）`;
+      label.textContent = tx("welcome.domainLabel", { count: domains.length });
     }
     if (chips) {
       chips.innerHTML = domains.map((d) =>
@@ -1021,10 +1022,8 @@ function voiceButtonsItem(itemType, id, kind, fallback, getMode, isFreeRange,
 
 // 一覧の見出し行(2026-09-20)。未登録・未課金の既定表示で、先頭に固定した
 // 厳選語と、その後の「無料で聞ける順」の一覧を区切る。
-const FEATURED_HEAD =
-  "✨ まずはここから — 無料で聞ける、基礎からニッチ分野までの代表的な語";
-const PHRASE_FEATURED_HEAD =
-  "✨ まずはここから — 無料で聞ける、ていねいな言い方の一例";
+const FEATURED_HEAD = () => tx("list.featuredHeadWord");
+const PHRASE_FEATURED_HEAD = () => tx("list.featuredHeadPhrase");
 function listGroupHead(cols, text) {
   return el(`<tr class="lgh-row"><td class="lgh" colspan="${cols}">
     ${escapeHtml(text)}</td></tr>`);
@@ -1063,12 +1062,12 @@ function saveSort(key, sort, desc) {
 
 // 表示件数セレクト（20/50/100/500/全件、既定20）。value は数値 or 'all'。
 function pageSizeSelect(id) {
-  return `<select id="${id}" title="1ページの表示件数">
-    <option value="20" selected>20件/ページ</option>
-    <option value="50">50件/ページ</option>
-    <option value="100">100件/ページ</option>
-    <option value="500">500件/ページ</option>
-    <option value="all">全件</option></select>`;
+  return `<select id="${id}" title="${escapeHtml(tx("filter.pageSizeTitle"))}">
+    <option value="20" selected>${tx("filter.pageSize", { n: 20 })}</option>
+    <option value="50">${tx("filter.pageSize", { n: 50 })}</option>
+    <option value="100">${tx("filter.pageSize", { n: 100 })}</option>
+    <option value="500">${tx("filter.pageSize", { n: 500 })}</option>
+    <option value="all">${tx("filter.pageSizeAll")}</option></select>`;
 }
 
 // list を page/size で切り出す。size='all' は全件。
@@ -1083,10 +1082,10 @@ function pageSlice(list, page, size) {
 // 前/次ページのバーを作る。
 function pagerBar(total, page, pages, onPrev, onNext) {
   const bar = el(`<div class="row pager"></div>`);
-  const prev = el(`<button class="btn ghost">← 前</button>`);
-  const next = el(`<button class="btn ghost">次 →</button>`);
+  const prev = el(`<button class="btn ghost">${tx("filter.prevPage")}</button>`);
+  const next = el(`<button class="btn ghost">${tx("filter.nextPage")}</button>`);
   const info = el(`<span class="muted">${pages > 1
-    ? page + 1 + " / " + pages + " ページ ・ " : ""}全 ${total} 件</span>`);
+    ? tx("filter.pageOf", { page: page + 1, pages }) + " ・ " : ""}${tx("filter.totalCount", { n: total })}</span>`);
   prev.disabled = page <= 0;
   next.disabled = page >= pages - 1;
   prev.addEventListener("click", onPrev);
@@ -1103,10 +1102,10 @@ function pagerBar(total, page, pages, onPrev, onNext) {
 // 指摘があったのは、そもそも選択肢が無かったため）。
 function speedSelect(id, withNative = true) {
   const nat = withNative
-    ? `<option value="native">速度: ネイティブ</option>` : "";
-  return `<select id="${id}" title="再生速度">
-    <option value="std">速度: 標準(学習)</option>
-    <option value="slow">速度: ゆっくり</option>${nat}</select>`;
+    ? `<option value="native">${tx("filter.speedNative")}</option>` : "";
+  return `<select id="${id}" title="${escapeHtml(tx("filter.speedTitle"))}">
+    <option value="std">${tx("filter.speedStd")}</option>
+    <option value="slow">${tx("filter.speedSlow")}</option>${nat}</select>`;
 }
 
 // 習熟度バー: 色＋サイズで段階を表す（全長は従来の約半分）。
@@ -1122,12 +1121,12 @@ function masteryCell(item) {
   else if (m <= 50) { color = "#36c98d"; w = 100; }
   else { color = "#3b82f6"; w = 100; cls = " blue"; }
   const badge = item.perfect
-    ? `<span class="pill mastered" title="完全に覚えた(忘却曲線の対象外)">
-        ◎卒業</span>`
+    ? `<span class="pill mastered" title="${escapeHtml(tx("mastery.perfectTitle"))}">
+        ◎${tx("mastery.perfect")}</span>`
     : item.mastered
-      ? `<span class="pill mastered">○覚えた</span>`
+      ? `<span class="pill mastered">○${tx("mastery.known")}</span>`
       : item.vague
-        ? `<span class="pill vague">△うろ覚え</span>` : "";
+        ? `<span class="pill vague">△${tx("mastery.vague")}</span>` : "";
   return `<div class="mbar${cls}">
     <span style="width:${w}%;background:${color}"></span></div>
     <small class="muted">${m}</small> ${badge}`;
@@ -1137,10 +1136,10 @@ function masteryCell(item) {
 function knownButton(base, item, onChange) {
   const btn = el(`<button class="btn blue"></button>`);
   const paint = () => {
-    btn.textContent = item.mastered ? "戻す" : "覚えた";
+    btn.textContent = item.mastered ? tx("mastery.undo") : tx("mastery.known");
     btn.title = item.mastered
-      ? "覚えた状態を解除（「覚えた」の基準の少し手前に戻す）"
-      : "覚えた（満点付近まで加点・出題を抑制。加点量は詳細設定で調整可）";
+      ? tx("mastery.undoTitle")
+      : tx("mastery.knownTitle");
   };
   paint();
   btn.addEventListener("click", async () => {
@@ -1152,7 +1151,7 @@ function knownButton(base, item, onChange) {
       item.perfect = !!r.perfect;
       paint();
       if (onChange) onChange();
-    } catch (e) { toast("更新に失敗しました"); }
+    } catch (e) { toast(tx("common.updateFailed")); }
   });
   return btn;
 }
@@ -1161,7 +1160,7 @@ function knownButton(base, item, onChange) {
 // 調整可)。base は /api/words or /api/phrases。
 function vagueButton(base, item, onChange) {
   const btn = el(`<button class="btn vague-btn"
-    title="うろ覚え（少し加点。加点量は詳細設定で調整可）">うろ覚え</button>`);
+    title="${escapeHtml(tx("mastery.vagueTitle"))}">${tx("mastery.vague")}</button>`);
   btn.addEventListener("click", async () => {
     try {
       const before = item.mastery;
@@ -1170,8 +1169,8 @@ function vagueButton(base, item, onChange) {
       item.mastered = r.mastered;
       item.perfect = !!r.perfect;
       if (onChange) onChange();
-      toast(`うろ覚え +${r.mastery - before}`);
-    } catch (e) { toast("更新に失敗しました"); }
+      toast(tx("mastery.vagueToast", { n: r.mastery - before }));
+    } catch (e) { toast(tx("common.updateFailed")); }
   });
   return btn;
 }
@@ -1182,9 +1181,8 @@ function vagueButton(base, item, onChange) {
 // 無し・「クリア」してから「覚えた」を押せば通常の覚えた状態に戻せる)。
 // base は /api/words or /api/phrases。
 function perfectButton(base, item, onChange) {
-  const btn = el(`<button class="btn good" title="満点で固定する
-    （以後、忘却曲線で自然に減らなくなります。解除したいときは
-    「クリア」を押してください）">卒業</button>`);
+  const btn = el(`<button class="btn good" title="${escapeHtml(
+    tx("mastery.perfectBtnTitle"))}">${tx("mastery.perfect")}</button>`);
   btn.addEventListener("click", async () => {
     try {
       const r = await api.post(`${base}/${item.id}/perfect`,
@@ -1193,7 +1191,7 @@ function perfectButton(base, item, onChange) {
       item.mastered = r.mastered;
       item.perfect = r.perfect;
       if (onChange) onChange();
-    } catch (e) { toast("更新に失敗しました"); }
+    } catch (e) { toast(tx("common.updateFailed")); }
   });
   return btn;
 }
@@ -1202,13 +1200,13 @@ function perfectButton(base, item, onChange) {
 // base は /api/words or /api/phrases。
 function clearButton(base, item, onChange) {
   const btn = el(`<button class="btn ghost"
-    title="習熟度を0ptにリセットします">クリア</button>`);
+    title="${escapeHtml(tx("mastery.clearTitle"))}">${tx("mastery.clear")}</button>`);
   const paint = () => {
     btn.style.display = item.mastery >= 1 ? "" : "none";
   };
   paint();
   btn.addEventListener("click", async () => {
-    if (!confirm(`「${item.english}」の習熟度を0ptにリセットしますか？`)) {
+    if (!confirm(tx("mastery.clearConfirm", { name: item.english }))) {
       return;
     }
     try {
@@ -1219,8 +1217,8 @@ function clearButton(base, item, onChange) {
       item.perfect = false;
       paint();
       if (onChange) onChange();
-      toast("クリアしました");
-    } catch (e) { toast("更新に失敗しました"); }
+      toast(tx("mastery.clearedToast"));
+    } catch (e) { toast(tx("common.updateFailed")); }
   });
   return { btn, paint };
 }
@@ -2026,7 +2024,7 @@ export async function flashcard(root) {
           ※ONにすると音量にご注意ください</span>
       </div>
       <div class="row mt">
-        ${freeOnlyToggle("fcFreeOnly", "単語")}
+        ${freeOnlyToggle("fcFreeOnly", "word")}
       </div>
       <div class="row mt">
         <button class="btn" id="fcStart">▶ 開始</button>
@@ -2096,7 +2094,7 @@ export async function flashcard(root) {
     "fcDomainPanel", () => {
       const cat = root.querySelector("#fcCategory").value;
       return cat ? { [cat]: domainGroups[cat] || [] } : domainGroups;
-    }, selectedDomains, () => refreshFcCount(), "分野");
+    }, selectedDomains, () => refreshFcCount(), "list.colDomain");
   root.querySelector("#fcCategory").addEventListener("change", () => {
     selectedDomains.clear();
     fcDomainDropdown.renderPanel();
@@ -2284,7 +2282,7 @@ export async function flashPhrase(root) {
           ※ONにすると音量にご注意ください</span>
       </div>
       <div class="row mt">
-        ${freeOnlyToggle("fpFreeOnly", "フレーズ")}
+        ${freeOnlyToggle("fpFreeOnly", "phrase")}
       </div>
       <div class="row mt">
         <button class="btn" id="fpStart">▶ 開始</button>
@@ -2348,7 +2346,7 @@ export async function flashPhrase(root) {
     "fpScenePanel", () => {
       const cat = root.querySelector("#fpCategory").value;
       return cat ? { [cat]: sceneGroups[cat] || [] } : sceneGroups;
-    }, selectedScenes, () => refreshFpCount(), "シーン");
+    }, selectedScenes, () => refreshFpCount(), "list.colScene");
   root.querySelector("#fpCategory").addEventListener("change", () => {
     selectedScenes.clear();
     fpSceneDropdown.renderPanel();
@@ -2442,12 +2440,14 @@ export async function flashPhrase(root) {
 // グループ分けされたチェックボックス一覧を開く。`selected`(Set)を直接
 // ミューテートするので、呼び出し側はそのSetをフィルタ条件の組み立てに使う。
 function initCheckDropdown(root, btnId, panelId, groupsGetter, selected,
-  onChange, label) {
+  onChange, labelKey) {
   const btn = root.querySelector(`#${btnId}`);
   const panel = root.querySelector(`#${panelId}`);
   const refreshLabel = () => {
+    const label = tx(labelKey);
     btn.textContent = selected.size
-      ? `${label}: ${selected.size}件選択中 ▾` : `${label}: 全て ▾`;
+      ? tx("filter.dropdownSelected", { label, n: selected.size })
+      : tx("filter.dropdownAll", { label });
   };
   const renderPanel = () => {
     const groups = groupsGetter();
@@ -2462,9 +2462,9 @@ function initCheckDropdown(root, btnId, panelId, groupsGetter, selected,
     const btnRow = (allItems.length > 1 && (!allSelected || selected.size))
       ? `<div class="cd-clear-row">
           ${allSelected ? "" : `<button type="button" class="btn ghost"
-            id="${panelId}_all">すべて選択（${allItems.length}件）</button>`}
+            id="${panelId}_all">${tx("filter.selectAllN", { n: allItems.length })}</button>`}
           ${selected.size ? `<button type="button" class="btn ghost"
-            id="${panelId}_clear">選択をクリア（${selected.size}件）
+            id="${panelId}_clear">${tx("filter.clearSelectionN", { n: selected.size })}
             </button>` : ""}
         </div>` : "";
     panel.innerHTML = btnRow + Object.entries(groups).map(([g, items]) => `
@@ -2534,80 +2534,71 @@ export async function vocab(root) {
   const dfwActive = !!(dfw.category || dfw.level_min || dfw.level_max
     || dfw.mastered);
   root.innerHTML = `
-    <h1 id="pageTitle"><span id="pageTitleText">英単語</span> ${infoIcon("help-vocab",
-      "分野・レベルで絞り込んで単語を一覧表示します。ログインなしでも" +
-      "閲覧・一部再生はできますが、習熟度の記録や単語帳への追加には" +
-      "ログインが必要です。音声再生は無料範囲を超えると課金(チャージ)" +
-      "が必要になる場合があります。")}</h1>
-    ${dfwActive ? `<p class="muted">⚙️ 設定の既定フィルターを適用中です。
-      この画面でその場変更もできます。</p>` : ""}
+    <h1 id="pageTitle"><span id="pageTitleText">${tx("nav.vocab")}</span> ${infoIcon("help-vocab",
+      tx("vocabList.helpText"))}</h1>
+    ${dfwActive ? `<p class="muted">⚙️ ${tx("filter.defaultFilterActive")}</p>` : ""}
     <div class="card">
       <details class="log-group" id="vocabFilters"
         ${window.innerWidth <= 760 ? "" : "open"}>
-      <summary>🔍 絞り込み・並び替え ${infoIcon("help-filter-words", WORD_FILTER_HELP)}</summary>
+      <summary>🔍 ${tx("filter.summary")} ${infoIcon("help-filter-words", WORD_FILTER_HELP)}</summary>
       <div class="row mt">
-        <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:140px" />
-        <select id="fCategory" title="大分類"><option value="">全カテゴリ</option>
+        <input id="kw" placeholder="${escapeHtml(tx("filter.searchPlaceholderWord"))}" style="width:140px" />
+        <select id="fCategory" title="${escapeHtml(tx("filter.categoryTitle"))}"><option value="">${tx("filter.allCategories")}</option>
           ${Object.keys(domainGroups).map((c) =>
             `<option>${escapeHtml(c)}</option>`).join("")}</select>
         <span class="cdrop">
-          <button type="button" class="btn ghost" id="fDomainBtn">全て ▾</button>
+          <button type="button" class="btn ghost" id="fDomainBtn">${tx("filter.allDropdown")}</button>
           <div class="cdrop-panel" id="fDomainPanel"></div>
         </span>
         <span class="muted">Lv</span>
-        <select id="fLevelMin" title="レベル下限"><option value="">下限</option>
+        <select id="fLevelMin" title="${escapeHtml(tx("filter.levelMinTitle"))}"><option value="">${tx("filter.lowerBound")}</option>
           ${(facets.range_levels || facets.levels).map((l) =>
             `<option>${escapeHtml(l)}</option>`).join("")}</select>
         <span class="muted">〜</span>
-        <select id="fLevelMax" title="レベル上限"><option value="">上限</option>
+        <select id="fLevelMax" title="${escapeHtml(tx("filter.levelMaxTitle"))}"><option value="">${tx("filter.upperBound")}</option>
           ${(facets.range_levels || facets.levels).map((l) =>
             `<option>${escapeHtml(l)}</option>`).join("")}</select>
         ${state.isAdmin ? `<label class="toggle"
-          title="TOEIC範囲外(このアプリでの判定)の語も表示する">
-          <input type="checkbox" id="fOutRange" /> 範囲外</label>
-          ${infoIcon("out-of-range-filter",
-            "ここでの「範囲外」は、TOEICの300〜990のレベル帯に対応しないと"
-            + "このアプリが判定した語を指します。オンにすると、そうした語も"
-            + "一覧に含めて表示します。")}` : ""}
-        ${freeOnlyToggle("fFreeOnly", "語")}
-        ${myDecks.length ? `<select id="fDeck" title="単語帳で絞り込み">
-          <option value="">単語帳: 全て</option>
+          title="${escapeHtml(tx("filter.outOfRangeTitle"))}">
+          <input type="checkbox" id="fOutRange" /> ${tx("filter.outOfRange")}</label>
+          ${infoIcon("out-of-range-filter", tx("filter.outOfRangeHelp"))}` : ""}
+        ${freeOnlyToggle("fFreeOnly", "word")}
+        ${myDecks.length ? `<select id="fDeck" title="${escapeHtml(tx("filter.deckFilterTitle"))}">
+          <option value="">${tx("filter.deckAll")}</option>
           ${myDecks.map((d) =>
             `<option value="${d.id}">📘 ${escapeHtml(d.name)}</option>`)
             .join("")}</select>` : ""}
         <select id="fSort">
-          <option value="mastery">並び替え: 習熟度 ↑</option>
-          <option value="accuracy">並び替え: 正答率 ↓</option>
-          <option value="english">並び替え: 英語 A→Z</option>
-          <option value="level">並び替え: レベル</option>
-          <option value="domain">並び替え: 分野</option>
-          <option value="recent">並び替え: 最近の学習</option>
-          <option value="billing">並び替え: 無料で聞ける順</option>
+          <option value="mastery">${tx("filter.sortMastery")}</option>
+          <option value="accuracy">${tx("filter.sortAccuracy")}</option>
+          <option value="english">${tx("filter.sortEnglish")}</option>
+          <option value="level">${tx("filter.sortLevel")}</option>
+          <option value="domain">${tx("filter.sortDomain")}</option>
+          <option value="recent">${tx("filter.sortRecent")}</option>
+          <option value="billing">${tx("filter.sortBilling")}</option>
         </select>
         <button class="btn ghost" id="fDir"
-          title="昇順/降順を切替">昇順 ▲</button>
-        <select id="fMastered" title="覚えた語の表示">
-          <option value="">覚えた: 含む</option>
-          <option value="hide">覚えた: 隠す</option>
-          <option value="only">覚えた: のみ</option>
+          title="${escapeHtml(tx("filter.dirToggleTitle"))}">${tx("filter.ascending")}</button>
+        <select id="fMastered" title="${escapeHtml(tx("filter.masteredFilterTitle"))}">
+          <option value="">${tx("filter.masteredInclude")}</option>
+          <option value="hide">${tx("filter.masteredHide")}</option>
+          <option value="only">${tx("filter.masteredOnly")}</option>
         </select>
         ${infoIcon("mastery-legend", MASTERY_LEGEND_HINT)}
         ${speedSelect("wSpeed")}
         ${pageSizeSelect("wPage")}
         ${state.isAdmin ? `<label class="toggle"
-          title="禁止用語(注意喚起)を一覧に表示">
+          title="${escapeHtml(tx("filter.showBannedTitle"))}">
           <input type="checkbox" id="showBanned"
           ${showBanned() ? "checked" : ""} />
-          🔞 禁止用語も表示</label>` : ""}
+          🔞 ${tx("filter.showBanned")}</label>` : ""}
       </div>
       </details>
       <table class="mt rtable rtable-words"><thead><tr>
-        <th>再生${infoIcon("voice-icon-legend",
-          "🆓誰でも無料で再生できます。🔊ログイン/チャージ等で再生できます。"
-          + "🔒現在の状態では再生できません(ログインまたはチャージが必要な"
-          + "場合があります)。")}</th><th>英語</th><th>日本語</th><th>詳細</th>
+        <th>${tx("list.colPlay")}${infoIcon("voice-icon-legend", tx("list.voiceIconHelp"))}</th>
+        <th>${tx("list.colEnglish")}</th><th>${tx("list.colJapanese")}</th><th>${tx("list.colDetail")}</th>
         <th>Lv</th>
-        <th>分野</th><th>習熟度</th><th>正答率</th><th>操作</th></tr></thead>
+        <th>${tx("list.colDomain")}</th><th>${tx("list.colMastery")}</th><th>${tx("list.colAccuracy")}</th><th>${tx("list.colActions")}</th></tr></thead>
         <tbody id="rows"></tbody></table>
       <div id="pager" class="mt"></div>
     </div>`;
@@ -2624,7 +2615,7 @@ export async function vocab(root) {
     if (savedSort.desc) {
       const dirBtn = root.querySelector("#fDir");
       dirBtn.dataset.desc = "1";
-      dirBtn.textContent = "降順 ▼";
+      dirBtn.textContent = tx("filter.descending");
     }
   }
   const rowsBody = root.querySelector("#rows");
@@ -2641,7 +2632,7 @@ export async function vocab(root) {
     const size = root.querySelector("#wPage").value;
     const { slice, page, pages } = pageSlice(curWords, wPage, size);
     wPage = page;
-    title.textContent = `英単語 (${curWords.length})`;
+    title.textContent = `${tx("nav.vocab")} (${curWords.length})`;
     // このページの直前の語(ページ境目で厳選語→そのほかに切り替わる場合に
     // 見出しを出すため)。
     const start = size === "all" ? 0 : page * (parseInt(size, 10) || 20);
@@ -2662,23 +2653,23 @@ export async function vocab(root) {
     words.forEach((w) => {
       if (groups) {
         if (w.featured && prevFeatured === null) {
-          rowsBody.appendChild(listGroupHead(9, FEATURED_HEAD));
+          rowsBody.appendChild(listGroupHead(9, FEATURED_HEAD()));
         } else if (!w.featured && prevFeatured === true) {
-          rowsBody.appendChild(listGroupHead(9, "そのほかの単語（無料で聞ける順）"));
+          rowsBody.appendChild(listGroupHead(9, tx("list.otherWords")));
         }
       }
       prevFeatured = !!w.featured;
       const tr = el(`<tr${w.featured ? ' class="featured-row"' : ""}>
         <td></td>
-        <td data-label="英語">${escapeHtml(w.english)}</td>
-        <td data-label="日本語">${escapeHtml(w.japanese)}</td>
+        <td data-label="${escapeHtml(tx("list.colEnglish"))}">${escapeHtml(w.english)}</td>
+        <td data-label="${escapeHtml(tx("list.colJapanese"))}">${escapeHtml(w.japanese)}</td>
         <td><div class="detail-cell"></div></td>
         <td class="muted pair2" data-label="Lv">${w.level || ""}</td>
-        <td class="pair2" data-label="分野">${w.domain
+        <td class="pair2" data-label="${escapeHtml(tx("list.colDomain"))}">${w.domain
           ? `<span class="pill">${escapeHtml(w.domain)}</span>` : ""}</td>
         <td class="pair2" style="min-width:80px" data-mc="1"
-          data-label="習熟度">${masteryCell(w)}</td>
-        <td class="pair2" data-label="正答率">${w.accuracy == null
+          data-label="${escapeHtml(tx("list.colMastery"))}">${masteryCell(w)}</td>
+        <td class="pair2" data-label="${escapeHtml(tx("list.colAccuracy"))}">${w.accuracy == null
           ? "—" : w.accuracy + "%"}</td>
         <td><div class="ops-cell"></div></td>
       </tr>`);
@@ -2690,7 +2681,7 @@ export async function vocab(root) {
       const mc = tr.querySelector("[data-mc]");
       // 「詳細」は押し間違い防止のため他の操作ボタンから離し、日本語列の
       // すぐ横に専用列として表示する(2026-09-09ユーザー要望)。
-      const ex = el(`<button class="btn good">詳細</button>`);
+      const ex = el(`<button class="btn good">${tx("list.detail")}</button>`);
       ex.addEventListener("click", () => showWordDetail(w));
       tr.querySelector(".detail-cell").appendChild(ex);
       let onChange = () => {};
@@ -2769,7 +2760,7 @@ export async function vocab(root) {
   fDir.addEventListener("click", () => {
     const d = fDir.dataset.desc === "1" ? "0" : "1";
     fDir.dataset.desc = d;
-    fDir.textContent = d === "1" ? "降順 ▼" : "昇順 ▲";
+    fDir.textContent = d === "1" ? tx("filter.descending") : tx("filter.ascending");
     rememberSort();
     load();
   });
@@ -2785,7 +2776,7 @@ export async function vocab(root) {
     () => {
       const cat = root.querySelector("#fCategory").value;
       return cat ? { [cat]: domainGroups[cat] || [] } : domainGroups;
-    }, selectedDomains, load, "分野");
+    }, selectedDomains, load, "list.colDomain");
   root.querySelector("#fCategory").addEventListener("change", () => {
     selectedDomains.clear();
     domainDropdown.renderPanel();
@@ -2846,68 +2837,62 @@ export async function phrases(root) {
   const dfpActive = !!(dfp.category || dfp.level_min || dfp.level_max
     || dfp.mastered);
   root.innerHTML = `
-    <h1 id="pageTitle"><span id="pageTitleText">ミニフレーズ (${list.length})</span> ${infoIcon(
-      "help-phrases", "シーン別の実用フレーズ一覧です。音声再生・フレーズ" +
-      "帳への追加ができます。フレーズ帳の作成・保存にはログインが必要" +
-      "です。")}</h1>
-    ${dfpActive ? `<p class="muted">⚙️ 設定の既定フィルターを適用中です。
-      この画面でその場変更もできます。</p>` : ""}
+    <h1 id="pageTitle"><span id="pageTitleText">${tx("nav.phrases")} (${list.length})</span> ${infoIcon(
+      "help-phrases", tx("phraseList.helpText"))}</h1>
+    ${dfpActive ? `<p class="muted">⚙️ ${tx("filter.defaultFilterActive")}</p>` : ""}
     <div class="row">
-      <select id="sceneCategory" title="大分類"><option value="">全カテゴリ</option>
+      <select id="sceneCategory" title="${escapeHtml(tx("filter.categoryTitle"))}"><option value="">${tx("filter.allCategories")}</option>
         ${Object.keys(sceneGroups).map((c) =>
           `<option>${escapeHtml(c)}</option>`).join("")}</select>
       <span class="cdrop">
-        <button type="button" class="btn ghost" id="fSceneBtn">全て ▾</button>
+        <button type="button" class="btn ghost" id="fSceneBtn">${tx("filter.allDropdown")}</button>
         <div class="cdrop-panel" id="fScenePanel"></div>
       </span>
       ${state.isAdmin ? `<label class="toggle"
-        title="禁止用語(注意喚起)を一覧に表示">
+        title="${escapeHtml(tx("filter.showBannedTitle"))}">
         <input type="checkbox" id="showBanned"
         ${showBanned() ? "checked" : ""} />
-        🔞 禁止用語も表示</label>` : ""}
+        🔞 ${tx("filter.showBanned")}</label>` : ""}
     </div>
     <div class="card">
       <details class="log-group" id="phraseFilters"
         ${window.innerWidth <= 760 ? "" : "open"}>
-      <summary>🔍 絞り込み・並び替え ${infoIcon("help-filter-phrases", PHRASE_FILTER_HELP)}</summary>
+      <summary>🔍 ${tx("filter.summary")} ${infoIcon("help-filter-phrases", PHRASE_FILTER_HELP)}</summary>
       <div class="row mt">
-        <input id="kw" placeholder="🔍 英語・日本語で検索" style="width:140px" />
+        <input id="kw" placeholder="${escapeHtml(tx("filter.searchPlaceholderPhrase"))}" style="width:140px" />
         <span class="muted">Lv</span>
-        <select id="fLevelMin" title="レベル下限"><option value="">下限</option>
+        <select id="fLevelMin" title="${escapeHtml(tx("filter.levelMinTitle"))}"><option value="">${tx("filter.lowerBound")}</option>
           ${(pfacets.range_levels || []).map((l) =>
             `<option>${escapeHtml(l)}</option>`).join("")}</select>
         <span class="muted">〜</span>
-        <select id="fLevelMax" title="レベル上限"><option value="">上限</option>
+        <select id="fLevelMax" title="${escapeHtml(tx("filter.levelMaxTitle"))}"><option value="">${tx("filter.upperBound")}</option>
           ${(pfacets.range_levels || []).map((l) =>
             `<option>${escapeHtml(l)}</option>`).join("")}</select>
         ${state.isAdmin ? `<label class="toggle"
-          title="TOEIC範囲外(このアプリでの判定)のフレーズも表示する">
-          <input type="checkbox" id="fOutRange" /> 範囲外</label>
-          ${infoIcon("out-of-range-filter",
-            "ここでの「範囲外」は、TOEICの300〜990のレベル帯に対応しないと"
-            + "このアプリが判定したフレーズを指します。オンにすると、"
-            + "そうしたフレーズも一覧に含めて表示します。")}` : ""}
-        ${freeOnlyToggle("fFreeOnly", "フレーズ")}
-        ${myDecks.length ? `<select id="fDeck" title="フレーズ帳で絞り込み">
-          <option value="">フレーズ帳: 全て</option>
+          title="${escapeHtml(tx("filter.outOfRangeTitle"))}">
+          <input type="checkbox" id="fOutRange" /> ${tx("filter.outOfRange")}</label>
+          ${infoIcon("out-of-range-filter", tx("filter.outOfRangeHelpPhrase"))}` : ""}
+        ${freeOnlyToggle("fFreeOnly", "phrase")}
+        ${myDecks.length ? `<select id="fDeck" title="${escapeHtml(tx("filter.phraseDeckFilterTitle"))}">
+          <option value="">${tx("filter.phraseDeckAll")}</option>
           ${myDecks.map((d) =>
             `<option value="${d.id}">🗂️ ${escapeHtml(d.name)}</option>`)
             .join("")}</select>` : ""}
         <select id="fSort">
-          <option value="mastery">並び替え: 習熟度 ↑</option>
-          <option value="accuracy">並び替え: 正答率 ↓</option>
-          <option value="english">並び替え: 英語 A→Z</option>
-          <option value="scene">並び替え: シーン</option>
-          <option value="recent">並び替え: 最近の学習</option>
-          <option value="added">並び替え: 登録順(ペア対応)</option>
-          <option value="billing">並び替え: 無料で聞ける順</option>
+          <option value="mastery">${tx("filter.sortMastery")}</option>
+          <option value="accuracy">${tx("filter.sortAccuracy")}</option>
+          <option value="english">${tx("filter.sortEnglish")}</option>
+          <option value="scene">${tx("filter.sortScene")}</option>
+          <option value="recent">${tx("filter.sortRecent")}</option>
+          <option value="added">${tx("filter.sortAdded")}</option>
+          <option value="billing">${tx("filter.sortBilling")}</option>
         </select>
         <button class="btn ghost" id="fDir"
-          title="昇順/降順を切替">昇順 ▲</button>
-        <select id="fMastered" title="覚えたフレーズの表示">
-          <option value="">覚えた: 含む</option>
-          <option value="hide">覚えた: 隠す</option>
-          <option value="only">覚えた: のみ</option>
+          title="${escapeHtml(tx("filter.dirToggleTitle"))}">${tx("filter.ascending")}</button>
+        <select id="fMastered" title="${escapeHtml(tx("filter.masteredPhraseFilterTitle"))}">
+          <option value="">${tx("filter.masteredInclude")}</option>
+          <option value="hide">${tx("filter.masteredHide")}</option>
+          <option value="only">${tx("filter.masteredOnly")}</option>
         </select>
         ${infoIcon("mastery-legend", MASTERY_LEGEND_HINT)}
         ${speedSelect("pSpeed")}
@@ -2915,11 +2900,9 @@ export async function phrases(root) {
       </div>
       </details>
       <table class="mt rtable"><thead><tr>
-        <th>再生${infoIcon("voice-icon-legend",
-          "🆓誰でも無料で再生できます。🔊ログイン/チャージ等で再生できます。"
-          + "🔒現在の状態では再生できません(ログインまたはチャージが必要な"
-          + "場合があります)。")}</th><th>英語</th><th>日本語</th><th>詳細</th>
-        <th>シーン</th><th>習熟度</th><th>操作</th></tr></thead>
+        <th>${tx("list.colPlay")}${infoIcon("voice-icon-legend", tx("list.voiceIconHelp"))}</th>
+        <th>${tx("list.colEnglish")}</th><th>${tx("list.colJapanese")}</th><th>${tx("list.colDetail")}</th>
+        <th>${tx("list.colScene")}</th><th>${tx("list.colMastery")}</th><th>${tx("list.colActions")}</th></tr></thead>
         <tbody id="rows"></tbody></table>
       <div id="pager" class="mt"></div>
     </div>`;
@@ -2928,7 +2911,7 @@ export async function phrases(root) {
   if (savedSort && savedSort.desc) {
     const dirBtn = root.querySelector("#fDir");
     dirBtn.dataset.desc = "1";
-    dirBtn.textContent = "降順 ▼";
+    dirBtn.textContent = tx("filter.descending");
   }
   // 件数表示は専用spanだけを書き換える(英単語画面と同じ理由・2026-09-19)。
   const title = root.querySelector("#pageTitleText");
@@ -2942,7 +2925,7 @@ export async function phrases(root) {
     const size = root.querySelector("#pPage").value;
     const { slice, page, pages } = pageSlice(curList, pPage, size);
     pPage = page;
-    title.textContent = `ミニフレーズ (${curList.length})`;
+    title.textContent = `${tx("nav.phrases")} (${curList.length})`;
     // このページの直前のフレーズ(ページ境目で見出しを出すため・英単語と同じ)。
     const start = size === "all" ? 0 : page * (parseInt(size, 10) || 20);
     renderRows(slice, start > 0 ? curList[start - 1] : null);
@@ -2962,21 +2945,21 @@ export async function phrases(root) {
     items.forEach((p) => {
       if (groups) {
         if (p.featured && prevFeatured === null) {
-          rows.appendChild(listGroupHead(7, PHRASE_FEATURED_HEAD));
+          rows.appendChild(listGroupHead(7, PHRASE_FEATURED_HEAD()));
         } else if (!p.featured && prevFeatured === true) {
           rows.appendChild(listGroupHead(7,
-            "そのほかのフレーズ（無料で聞ける順）"));
+            tx("list.otherPhrases")));
         }
       }
       prevFeatured = !!p.featured;
       const tr = el(`<tr${p.featured ? ' class="featured-row"' : ""}>
         <td></td>
-        <td data-label="英語">${escapeHtml(p.english)}</td>
-        <td data-label="日本語">${escapeHtml(p.japanese)}</td>
+        <td data-label="${escapeHtml(tx("list.colEnglish"))}">${escapeHtml(p.english)}</td>
+        <td data-label="${escapeHtml(tx("list.colJapanese"))}">${escapeHtml(p.japanese)}</td>
         <td><div class="detail-cell"></div></td>
-        <td data-label="シーン"><span class="pill">
+        <td data-label="${escapeHtml(tx("list.colScene"))}"><span class="pill">
           ${escapeHtml(p.scene || "")}</span></td>
-        <td data-mc="1" data-label="習熟度">${masteryCell(p)}</td>
+        <td data-mc="1" data-label="${escapeHtml(tx("list.colMastery"))}">${masteryCell(p)}</td>
         <td><div class="ops-cell"></div></td>
       </tr>`);
       tr.firstElementChild.appendChild(voiceButtonsItem(
@@ -2984,7 +2967,7 @@ export async function phrases(root) {
         () => root.querySelector("#pSpeed").value, p.is_free_range));
       const ops = tr.querySelector("td:last-child .ops-cell");
       const mc = tr.querySelector("[data-mc]");
-      const det = el(`<button class="btn good">詳細</button>`);
+      const det = el(`<button class="btn good">${tx("list.detail")}</button>`);
       det.addEventListener("click", () => showPhraseDetail(p));
       tr.querySelector(".detail-cell").appendChild(det);
       let onChange = () => {};
@@ -3059,7 +3042,7 @@ export async function phrases(root) {
   fDir.addEventListener("click", () => {
     const d = fDir.dataset.desc === "1" ? "0" : "1";
     fDir.dataset.desc = d;
-    fDir.textContent = d === "1" ? "降順 ▼" : "昇順 ▲";
+    fDir.textContent = d === "1" ? tx("filter.descending") : tx("filter.ascending");
     rememberSort();
     load();
   });
@@ -3068,7 +3051,7 @@ export async function phrases(root) {
     () => {
       const cat = root.querySelector("#sceneCategory").value;
       return cat ? { [cat]: sceneGroups[cat] || [] } : sceneGroups;
-    }, selectedScenes, load, "シーン");
+    }, selectedScenes, load, "list.colScene");
   root.querySelector("#sceneCategory").addEventListener("change", () => {
     selectedScenes.clear();
     sceneDropdown.renderPanel();
@@ -10514,7 +10497,7 @@ async function cwRenderSetup(root, preset) {
     "cwDomainPanel", () => {
       const cat = root.querySelector("#cwCategory").value;
       return cat ? { [cat]: domainGroups[cat] || [] } : domainGroups;
-    }, selectedDomains, updateDomainCountWarn, "分野");
+    }, selectedDomains, updateDomainCountWarn, "list.colDomain");
   root.querySelector("#cwCategory").addEventListener("change", () => {
     selectedDomains.clear();
     cwDomainDropdown.renderPanel();

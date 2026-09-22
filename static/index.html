@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- 多言語化エンジン(2026-09-23〜)。documentElement.langの早期確定と、
+       このあとのapp.js/views.jsからのtx()呼び出しのために先に読み込む。 -->
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/i18n_dict.js"></script>
   <script>
     /* 初期テーマ(描画前に決めてちらつきを防ぐ・2026-09-22): 保存された選択(ボタンで切替)が
        あればそれ、無ければ端末(OS/ブラウザ)の配色設定に合わせる(ライト設定ならライト・
@@ -172,7 +176,7 @@
         <div class="topbar-left">
           <button id="navToggle" class="nav-toggle" title="メニュー">☰</button>
           <span class="topbar-brand">📘 nyangailab
-            <span class="topbar-brand-sub">英語学習アプリ</span></span>
+            <span class="topbar-brand-sub" data-i18n="topbar.tagline">英語学習アプリ</span></span>
         </div>
         <div class="topbar-right">
           <label class="toggle" id="inputModeWrap">
@@ -193,11 +197,12 @@
             <option value="large">文字: 大</option>
             <option value="xlarge">文字: 特大</option>
           </select>
+          <select class="i18n-lang-select" id="langSwitch" title="Language"></select>
           <button class="btn ghost" id="themeToggle" title="表示テーマ切替"
             style="padding:4px 10px">🌙</button>
-          <button class="btn ghost" id="logoutBtn"
+          <button class="btn ghost" id="logoutBtn" data-i18n="nav.logout"
             style="display:none;padding:4px 10px">ログアウト</button>
-          <a class="btn" id="loginBtn" href="/login"
+          <a class="btn" id="loginBtn" href="/login" data-i18n="nav.loginRegister"
             style="padding:4px 10px">ログイン/登録</a>
         </div>
       </header>

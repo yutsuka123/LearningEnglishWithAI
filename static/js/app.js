@@ -3,6 +3,16 @@ import * as speech from "./speech.js";
 import { quizRunner } from "./quiz.js";
 import * as views from "./views.js";
 
+// 多言語化(2026-09-23): 実体はstatic/js/i18n.js(通常script・index.html等の
+// <head>で先に同期読み込み済み)。ES module側はここから`tx`(翻訳関数)を
+// 再エクスポートして使う。名前を`t`ではなく`tx`にしているのは、このコード
+// ベースで`t`が(タイムスタンプ・<tr>要素等の)ローカル変数名として既に
+// 多用されており、短い`t`だと export した関数を意図せず覆い隠す(shadowing)
+// 事故が起きやすいため。i18n.js未読み込み(想定外)でもkeyをそのまま返して
+// 壊れないようにする。
+export const tx = (key, vars) =>
+  (window.I18N ? window.I18N.t(key, vars) : key);
+
 // ---------------------------------------------------------------------------
 // Global state
 // ---------------------------------------------------------------------------
@@ -29,35 +39,43 @@ export const state = {
   tripPrepPersona: null,
 };
 
+// 各要素=[タブキー, 絵文字, 翻訳キー]（2026-09-23多言語化・従来は絵文字+日本語
+// ラベルの1本の文字列だったが、言語切替に対応するため絵文字と翻訳キーに
+// 分離した。表示ラベルはtabLabel()で組み立てる）。
 export const TABS = [
-  ["welcome", "🏠 ようこそ"],   // 未ログインのみ表示（boot で挿入判定）
-  ["dashboard", "🏠 ダッシュボード"],
+  ["welcome", "🏠", "nav.welcome"],   // 未ログインのみ表示（boot で挿入判定）
+  ["dashboard", "🏠", "nav.dashboard"],
   // 2026-08-09: ユーザー指示により当面非表示（機能・ルートは温存、再表示は
   // この2行のコメントアウトを外すだけでよい）。
-  // ["daily", "⏱️ デイリー(10分)"],
-  ["vocab", "🔤 英単語"],
-  ["flashcard", "🃏 フラッシュ単語"],
-  ["deck", "🗂️ 単語帳"],
-  ["phrases", "💬 ミニフレーズ"],
-  ["flashphrase", "🃏 フラッシュフレーズ"],
-  ["phrasedeck", "🗂️ フレーズ帳"],
-  ["quiz", "📝 クイズ"],
-  ["reading", "📖 リーディング"],
-  ["writing", "✍️ ライティング"],
-  ["conversation", "🗣️ 英会話"],
-  ["listening", "🎧 リスニング"],
-  // ["tripprep", "🧳 出張・旅行準備"],
-  ["assess", "🎯 判定・教材"],
-  ["history", "📚 学習履歴"],
-  ["games", "🎮 ゲーム"],   // 2026-09-05〜一般公開（誰でも表示）
-  ["settings", "⚙️ 設定・チャージ"],
+  // ["daily", "⏱️", "nav.daily"],
+  ["vocab", "🔤", "nav.vocab"],
+  ["flashcard", "🃏", "nav.flashcard"],
+  ["deck", "🗂️", "nav.deck"],
+  ["phrases", "💬", "nav.phrases"],
+  ["flashphrase", "🃏", "nav.flashphrase"],
+  ["phrasedeck", "🗂️", "nav.phrasedeck"],
+  ["quiz", "📝", "nav.quiz"],
+  ["reading", "📖", "nav.reading"],
+  ["writing", "✍️", "nav.writing"],
+  ["conversation", "🗣️", "nav.conversation"],
+  ["listening", "🎧", "nav.listening"],
+  // ["tripprep", "🧳", "nav.tripprep"],
+  ["assess", "🎯", "nav.assess"],
+  ["history", "📚", "nav.history"],
+  ["games", "🎮", "nav.games"],   // 2026-09-05〜一般公開（誰でも表示）
+  ["settings", "⚙️", "nav.settings"],
   // バージョン情報（更新履歴・メンテナンス予定）。未ログインでも見られる
   // ようにする（2026-08-22ユーザー要望）。
-  ["release", "🆕 バージョン情報"],
-  ["admin", "👑 管理者情報"],   // 管理者のみ表示（boot で非adminは隠す）
+  ["release", "🆕", "nav.release"],
+  ["admin", "👑", "nav.admin"],   // 管理者のみ表示（boot で非adminは隠す）
 ];
 
-const TAB_LABELS = Object.fromEntries(TABS);
+// 現在の言語での表示ラベル(絵文字+翻訳文)。
+export function tabLabel([, emoji, key]) { return `${emoji} ${tx(key)}`; }
+
+// 分析用の内部ラベル(常に日本語固定・admin画面のログ表示と揃える)。
+const TAB_LABELS = Object.fromEntries(TABS.map(([tab, emoji, key]) =>
+  [tab, `${emoji} ${(window.I18N && window.I18N.DICT.ja[key]) || key}`]));
 
 // ---------------------------------------------------------------------------
 // Small DOM / util helpers (shared, exported for view modules)
@@ -252,6 +270,25 @@ function initTheme() {
       ? "dark" : "light";
     try { localStorage.setItem("theme", next); } catch (e) { /* 保存できない環境 */ }
     applyTheme(next);
+  });
+}
+
+// ---------------------------------------------------------------------------
+// 言語切替（2026-09-23〜: 保存された選択があればそれ、無ければ端末の言語
+// 設定に合わせる。判定できない/対応外なら日本語。手動切替は必ず残す。
+// テーマ切替と同じ設計。実体はstatic/js/i18n.js）。
+// ---------------------------------------------------------------------------
+
+function initLang() {
+  if (!window.I18N) return;
+  window.I18N.initLangSwitchers();
+  window.I18N.translateDom(document);
+  // 切替時: サイドバーのナビ(boot時に一度だけ組み立てる方式なので手動で
+  // 再構築)と、いま開いている画面を再描画する(既存のタブ再読み込みと
+  // 同じ仕組みを流用。views側の文字列もtx()を通していれば自動で切り替わる)。
+  window.I18N.onChange(() => {
+    buildNav();
+    go(currentTab);
   });
 }
 
@@ -742,8 +779,54 @@ const GUEST_HIDDEN_TABS = new Set([
   "deck", "phrasedeck", "assess", "history", "settings",
 ]);
 
+// サイドバーのナビ本体を組み立てる（管理者タブ・ゲスト非公開タブは、隠す
+// のではなくそもそも挿入しない）。boot()時と、言語切替時(2026-09-23〜)の
+// 両方から呼べるよう関数化した(以前はboot()内に展開していた)。
+function buildNav() {
+  const nav = document.getElementById("nav");
+  if (!nav) return;
+  nav.replaceChildren();
+  TABS.forEach((entry) => {
+    const [tab] = entry;
+    if (tab === "admin" && !state.isAdmin) return;
+    if (tab === "games" && !state.canUseGames) return;
+    if (tab === "welcome" && !state.isGuest) return;
+    if (state.isGuest && GUEST_HIDDEN_TABS.has(tab)) return;
+    const b = el(
+      `<button class="nav-item" data-tab="${tab}">${tabLabel(entry)}</button>`);
+    b.classList.toggle("active", tab === currentTab);
+    b.addEventListener("click", () => go(tab));
+    nav.appendChild(b);
+  });
+  // メニューに常時表示する「このアプリについて」（別タブで開く外部ページ）。
+  // トップバー右のバージョン表記からも行けるが分かりにくいため
+  // (2026-08-11ユーザー指摘)、メニュー本体にも入れる。
+  nav.appendChild(el(
+    `<a class="nav-item" href="/static/about.html">📄 ${tx("nav.about")}</a>`,
+  ));
+  // ログイン/ログアウトもサイドバー(ハンバーガーメニュー)に常設する。
+  // トップバー右側は項目数が多くスマホ縦画面で折り返し/はみ出しが起き
+  // やすいため、テーマ(ライト/ダーク)によらずどの画面幅でも確実に
+  // たどり着ける経路をサイドバーにも用意する(2026-08-19ユーザー要望)。
+  // 表示条件はトップバーのログイン/ログアウトボタンと同じ
+  // (マルチユーザー時のみ・ゲストはログインのみ、ログイン済みはログアウトのみ)。
+  if (state.multiuser) {
+    if (state.isGuest) {
+      nav.appendChild(el(
+        `<a class="nav-item" href="/login">🔑 ${tx("nav.loginRegister")}</a>`,
+      ));
+    } else {
+      const navLogout = el(
+        `<button class="nav-item">🚪 ${tx("nav.logout")}</button>`);
+      navLogout.addEventListener("click", doLogout);
+      nav.appendChild(navLogout);
+    }
+  }
+}
+
 async function boot() {
   initTheme();
+  initLang();
   initFontSize();
 
   // taxonomyとmy-usage(refreshCost)は互いに依存が無いため並列実行する
@@ -775,42 +858,7 @@ async function boot() {
     await refreshAiState();   // sets speech aiEnabled
   }
 
-  // Build nav（管理者タブ・ゲスト非公開タブは、隠すのではなくそもそも
-  // 挿入しない）。
-  const nav = document.getElementById("nav");
-  TABS.forEach(([tab, label]) => {
-    if (tab === "admin" && !state.isAdmin) return;
-    if (tab === "games" && !state.canUseGames) return;
-    if (tab === "welcome" && !state.isGuest) return;
-    if (state.isGuest && GUEST_HIDDEN_TABS.has(tab)) return;
-    const b = el(`<button class="nav-item" data-tab="${tab}">${label}</button>`);
-    b.addEventListener("click", () => go(tab));
-    nav.appendChild(b);
-  });
-  // メニューに常時表示する「このアプリについて」（別タブで開く外部ページ）。
-  // トップバー右のバージョン表記からも行けるが分かりにくいため
-  // (2026-08-11ユーザー指摘)、メニュー本体にも入れる。
-  nav.appendChild(el(
-    '<a class="nav-item" href="/static/about.html">'
-    + "📄 このアプリについて</a>",
-  ));
-  // ログイン/ログアウトもサイドバー(ハンバーガーメニュー)に常設する。
-  // トップバー右側は項目数が多くスマホ縦画面で折り返し/はみ出しが起き
-  // やすいため、テーマ(ライト/ダーク)によらずどの画面幅でも確実に
-  // たどり着ける経路をサイドバーにも用意する(2026-08-19ユーザー要望)。
-  // 表示条件はトップバーのログイン/ログアウトボタンと同じ
-  // (マルチユーザー時のみ・ゲストはログインのみ、ログイン済みはログアウトのみ)。
-  if (state.multiuser) {
-    if (state.isGuest) {
-      nav.appendChild(el(
-        '<a class="nav-item" href="/login">🔑 ログイン/登録</a>',
-      ));
-    } else {
-      const navLogout = el('<button class="nav-item">🚪 ログアウト</button>');
-      navLogout.addEventListener("click", doLogout);
-      nav.appendChild(navLogout);
-    }
-  }
+  buildNav();
 
   // ハンバーガー: スマホはオフキャンバス開閉、それ以外は折りたたみ開閉。
   document.getElementById("navToggle")
