@@ -623,17 +623,18 @@ export async function dashboard(root) {
   // 数値として見えてしまっていた不具合の修正・APIがNoneを返すようにした側)。
   // カタログの全件数(w.total等)はユーザー非依存なので対象外(従来通り)。
   const n0 = (v) => (v == null ? "—" : v);
-  const toeic = (p.toeic_estimate == null) ? "未判定" : p.toeic_estimate;
+  const toeic = (p.toeic_estimate == null) ? tx("dashboard.toeicUnknown") : p.toeic_estimate;
   // 一般ユーザーには費用額を見せない（管理者のみ）。残高があれば残高を表示。
-  let costNum = "—", costLbl = "今日のAI費用";
+  let costNum = "—", costLbl = tx("dashboard.aiCostToday");
   if (isAdmin && mu) { costNum = "¥" + mu.today_jpy; }
   else if (mu && mu.balance_jpy != null) {
-    costNum = Math.round(mu.balance_jpy) + "pt"; costLbl = "チャージ残高";
+    costNum = Math.round(mu.balance_jpy) + "pt"; costLbl = tx("dashboard.chargeBalance");
   }
   const w = p.words;
   const areaLabels = {
-    conversation: "英会話", reading: "リーディング", writing: "ライティング",
-    literature: "文学", listening: "リスニング",
+    conversation: tx("nav.conversation"), reading: tx("nav.reading"),
+    writing: tx("nav.writing"), literature: tx("dashboard.areaLiterature"),
+    listening: tx("nav.listening"),
   };
   const areaCards = Object.entries(p.areas).map(([k, v]) => `
     <div class="card">
@@ -658,81 +659,77 @@ export async function dashboard(root) {
   };
 
   root.innerHTML = `
-    <h1>ダッシュボード ${infoIcon("help-dashboard",
-      "今の学習状況を一覧で確認する画面です。「TOEIC換算」は学習データ" +
-      "からの目安で、実際のスコアを保証するものではありません。" +
-      "「平均習熟度」は単語+フレーズの習熟度ptの平均、「習得数」は" +
-      "「覚えた」の基準(既定100pt)以上の数、「うろ覚え」はその手前の数" +
-      "です。ログインすると学習するたびに更新されます。")}</h1>
-    <p class="sub">今日の学習を始めましょう。1回 約10分でOK。</p>
+    <h1>${tx("nav.dashboard")} ${infoIcon("help-dashboard", tx("dashboard.helpText"))}</h1>
+    <p class="sub">${tx("dashboard.startToday")}</p>
 
     <div class="grid cols-3 stats-wrap">
       <div class="card stat">
         <div class="num">${toeic}</div>
-        <div class="lbl">TOEIC換算(目安)</div></div>
+        <div class="lbl">${tx("dashboard.toeicEstimate")}</div></div>
       <div class="card stat">
         <div class="num">${n0(p.overall_avg_mastery)}</div>
-        <div class="lbl">平均習熟度(単語+フレーズ)</div></div>
+        <div class="lbl">${tx("dashboard.avgMasteryBoth")}</div></div>
       <div class="card stat">
         <div class="num">${costNum}</div>
         <div class="lbl">${costLbl}</div></div>
     </div>
 
     <div class="card">
-      <h2>単語の状況</h2>
+      <h2>${tx("dashboard.wordStatus")}</h2>
       <div class="grid cols-3 stats-wrap">
         <div class="stat"><div class="num">${w.total}</div>
-          <div class="lbl">全件数</div></div>
+          <div class="lbl">${tx("dashboard.totalCount")}</div></div>
         <div class="stat"><div class="num">${n0(w.studied)}</div>
-          <div class="lbl">学習数(出題済み)</div></div>
+          <div class="lbl">${tx("dashboard.studiedCount")}</div></div>
         <div class="stat"><div class="num">${n0(w.mastered)}</div>
-          <div class="lbl">習得数(100+)</div></div>
+          <div class="lbl">${tx("dashboard.masteredCount")}</div></div>
         <div class="stat"><div class="num">${n0(w.vague)}</div>
-          <div class="lbl">うろ覚え(40-79)</div></div>
+          <div class="lbl">${tx("dashboard.vagueCount")}</div></div>
         <div class="stat"><div class="num">${n0(w.avg_mastery)}</div>
-          <div class="lbl">平均習熟度</div></div>
+          <div class="lbl">${tx("dashboard.avgMastery")}</div></div>
         <div class="stat"><div class="num">${p.phrases.total}</div>
-          <div class="lbl">フレーズ全件</div></div>
+          <div class="lbl">${tx("dashboard.phraseTotalCount")}</div></div>
       </div>
-      <p class="muted mt">※全件数は単語を追加すると増えます。TOEIC換算は学習データに
-        基づくあくまで目安です。実際のTOEICテストのスコアとの対応を
-        保証するものではありません。</p>
+      <p class="muted mt">${tx("dashboard.totalCountNote")}</p>
     </div>
 
     ${state.isGuest ? `<div class="card">
-      <h2>📁 単語帳・フレーズ帳</h2>
-      <p class="muted">🔒 ログインすると使えます（自分専用の単語帳・
-        フレーズ帳を作って学習できます）。</p>
+      <h2>📁 ${tx("dashboard.decksTitle")}</h2>
+      <p class="muted">🔒 ${tx("dashboard.decksLoginRequired")}</p>
     </div>` : (deckSummary || phraseDeckSummary) ? `<div class="card">
-      <h2>単語帳の状況</h2>
+      <h2>${tx("dashboard.wordDeckStatus")}</h2>
       <div class="row" style="justify-content:space-between">
-        <span class="muted">単語帳 全体(${deckSummary ? deckSummary.deck_count : 0}個・
-          ${deckSummary ? deckSummary.mastered : 0}/${deckSummary ? deckSummary.total : 0}語)</span>
+        <span class="muted">${tx("dashboard.wordDeckOverall", {
+          count: deckSummary ? deckSummary.deck_count : 0,
+          mastered: deckSummary ? deckSummary.mastered : 0,
+          total: deckSummary ? deckSummary.total : 0,
+        })}</span>
         <b>${deckSummary ? deckSummary.pct : 0}%</b>
       </div>
       <div class="bar mt"><span style="width:${deckSummary ? deckSummary.pct : 0}%"></span></div>
       ${myWordDecks.map((d) => deckRow(d, "📘")).join("")}
       <div class="row mt">
-        <button class="btn ghost" id="goDeck">単語帳を作成・編集</button>
+        <button class="btn ghost" id="goDeck">${tx("dashboard.editWordDecks")}</button>
       </div>
     </div>
     <div class="card">
-      <h2>フレーズ帳の状況</h2>
+      <h2>${tx("dashboard.phraseDeckStatus")}</h2>
       <div class="row" style="justify-content:space-between">
-        <span class="muted">フレーズ帳 全体(${phraseDeckSummary ? phraseDeckSummary.deck_count : 0}個・
-          ${phraseDeckSummary ? phraseDeckSummary.mastered : 0}/${phraseDeckSummary ? phraseDeckSummary.total : 0}件)</span>
+        <span class="muted">${tx("dashboard.phraseDeckOverall", {
+          count: phraseDeckSummary ? phraseDeckSummary.deck_count : 0,
+          mastered: phraseDeckSummary ? phraseDeckSummary.mastered : 0,
+          total: phraseDeckSummary ? phraseDeckSummary.total : 0,
+        })}</span>
         <b>${phraseDeckSummary ? phraseDeckSummary.pct : 0}%</b>
       </div>
       <div class="bar mt"><span style="width:${phraseDeckSummary ? phraseDeckSummary.pct : 0}%"></span></div>
       ${myPhraseDecks.map((d) => deckRow(d, "🗂️")).join("")}
       <div class="row mt">
-        <button class="btn ghost" id="goPhraseDeck">フレーズ帳を作成・編集</button>
+        <button class="btn ghost" id="goPhraseDeck">${tx("dashboard.editPhraseDecks")}</button>
       </div>
     </div>` : ""}
 
-    <h2>項目別の習熟度 ${infoIcon("dash-areas",
-      "英会話・リーディング・ライティング・リスニングなど、領域ごとの" +
-      "習熟度の平均です。その領域を学習して記録が増えると伸びます。")}</h2>
+    <h2>${tx("dashboard.areaMasteryTitle")} ${infoIcon("dash-areas", tx("dashboard.areaMasteryHelp"))}</h2>
     <div class="grid cols-2">${areaCards}</div>`;
   root.querySelector("#goDeck")?.addEventListener("click", () => go("deck"));
   root.querySelector("#goPhraseDeck")?.addEventListener("click",
@@ -4805,17 +4802,19 @@ function releaseEntryHtml(v, isAdmin, showHeading) {
 }
 
 export async function release(root) {
-  root.innerHTML = `<h1>バージョン情報 ${infoIcon("help-release",
-      "アプリの更新内容とメンテナンス予定のお知らせを確認できます。" +
-      "最新版が先頭に表示され、過去の分は「更新履歴」から見られます。")}</h1>
-    <p class="sub">更新内容とメンテナンス予定のお知らせ。</p>
-    <div id="relBody"><p class="muted">読み込み中…</p></div>`;
+  // 2026-09-23多言語化: このページは画面の固定文言のみ対応(当面は日本語+
+  // 英語。オーナー判断「履歴本文(release_notes.jsonのpublic/admin)は
+  // 分量が多いため日本語のまま」)。中国語(簡体字/繁体字)の辞書エントリは
+  // 未整備のため、tx()は自動的に日本語へフォールバックする。
+  root.innerHTML = `<h1>${tx("release.title")} ${infoIcon("help-release", tx("release.helpText"))}</h1>
+    <p class="sub">${tx("release.subtitle")}</p>
+    <div id="relBody"><p class="muted">${tx("common.loading")}</p></div>`;
   const body = root.querySelector("#relBody");
   let res;
   try {
     res = await api.get("/api/system/release-notes");
   } catch (e) {
-    body.innerHTML = `<p class="muted">取得できませんでした: ${
+    body.innerHTML = `<p class="muted">${tx("common.fetchFailed")}: ${
       escapeHtml(e.message)}</p>`;
     return;
   }
@@ -4827,17 +4826,17 @@ export async function release(root) {
   let html = "";
   // --- メンテナンス予定 ---
   html += `<div class="card" id="relMaint">
-    <h2>🗓️ メンテナンス予定</h2>
-    <p class="muted">読み込み中…</p></div>`;
+    <h2>🗓️ ${tx("release.maintenanceSchedule")}</h2>
+    <p class="muted">${tx("common.loading")}</p></div>`;
   // --- 最新バージョン ---
   html += `<div class="card">
-    <h2>最新バージョン <span class="muted">${
+    <h2>${tx("release.latestVersion")} <span class="muted">${
       escapeHtml(res.current || "")}</span></h2>
     ${latest
       ? `<p class="muted" style="margin:0 0 8px">${escapeHtml(latest.version)}
           ・${escapeHtml(latest.date || "")}</p>`
         + releaseEntryHtml(latest, isAdmin, false)
-      : `<p class="muted">情報がありません。</p>`}
+      : `<p class="muted">${tx("release.noInfo")}</p>`}
     ${isAdmin
       ? `<p class="muted" style="font-size:.9em">
           <span class="rel-public">赤文字</span>＝一般ユーザーにも表示される
@@ -4846,7 +4845,7 @@ export async function release(root) {
   // --- 履歴 ---
   if (rest.length) {
     html += `<div class="card"><details>
-      <summary>これまでの更新履歴（${rest.length}件）</summary>
+      <summary>${tx("release.pastUpdates", { n: rest.length })}</summary>
       <div class="mt">${rest.map((v) =>
         releaseEntryHtml(v, isAdmin, true)).join("")}</div>
     </details></div>`;
@@ -4857,29 +4856,30 @@ export async function release(root) {
   const mbox = body.querySelector("#relMaint");
   try {
     const m = await api.get("/api/system/maintenance");
-    const WD = ["月", "火", "水", "木", "金", "土", "日"];
+    const WD = [tx("release.wdMon"), tx("release.wdTue"), tx("release.wdWed"),
+      tx("release.wdThu"), tx("release.wdFri"), tx("release.wdSat"), tx("release.wdSun")];
     const notice = (m.notice && m.notice.show)
       ? `<p><strong>${escapeHtml(m.notice.text)}</strong></p>` : "";
     const regular = m.regular_enabled
-      ? `毎週${WD[m.regular_weekday] || "月"}曜 ${
-        escapeHtml(m.regular_start)}〜${escapeHtml(m.regular_end)}（日本時間）`
-      : "設定なし";
+      ? tx("release.weeklyAt", {
+          wd: WD[m.regular_weekday] || tx("release.wdMon"),
+          start: escapeHtml(m.regular_start), end: escapeHtml(m.regular_end),
+        })
+      : tx("release.notConfigured");
     const adhoc = (m.adhoc_enabled && m.adhoc_start)
       ? `${escapeHtml(m.adhoc_start)}〜${escapeHtml(m.adhoc_end || "")}`
         + (m.adhoc_note ? `（${escapeHtml(m.adhoc_note)}）` : "")
-      : "予定なし";
-    mbox.innerHTML = `<h2>🗓️ メンテナンス予定</h2>
+      : tx("release.noneScheduled");
+    mbox.innerHTML = `<h2>🗓️ ${tx("release.maintenanceSchedule")}</h2>
       ${notice}
-      <p>定期メンテナンス: <strong>${regular}</strong><br>
-      臨時メンテナンス: <strong>${adhoc}</strong></p>
-      <p class="muted" style="font-size:.9em">
-        メンテナンス中は数分程度つながりにくくなることがあります。
-        （現在の日本時間 ${escapeHtml(m.now_jst || "")}）</p>
+      <p>${tx("release.regularMaintenance")}: <strong>${regular}</strong><br>
+      ${tx("release.adhocMaintenance")}: <strong>${adhoc}</strong></p>
+      <p class="muted" style="font-size:.9em">${tx("release.maintenanceNote", { now: escapeHtml(m.now_jst || "") })}</p>
       ${isAdmin ? maintenanceEditorHtml(m) : ""}`;
     if (isAdmin) wireMaintenanceEditor(mbox);
   } catch (e) {
-    mbox.innerHTML = `<h2>🗓️ メンテナンス予定</h2>
-      <p class="muted">取得できませんでした。</p>`;
+    mbox.innerHTML = `<h2>🗓️ ${tx("release.maintenanceSchedule")}</h2>
+      <p class="muted">${tx("common.fetchFailed")}</p>`;
   }
 }
 
@@ -9790,14 +9790,16 @@ const DEFAULT_WORD_COUNT = 10;
 // ないことが「得点減なし」を意味する)。得点に影響する場合だけ
 // 「(-10%)」等、影響の内容がわかる表記にする(「答えを見る」は既に
 // 「0点」という実際の結果を表示済みなのでそのまま)。
-const CW_HINT_LABELS = {
-  audio: ["🔊 発音を聞く", "-10%"],
-  first_letter: ["🔤 先頭文字", "-10%"],
-  last_letter: ["🔡 末尾文字", "-10%"],
-  japanese: ["🔎 日本語訳を見る", "-30%"],
-  english: ["📖 英語ヒント(例文)", "-20%"],
-  reveal: ["🔓 答えを見る", "0点"],
-};
+// 2026-09-23多言語化: 呼び出し時に評価するため関数化(以前はモジュール
+// 読み込み時に固定した定数だった)。
+const cwHintLabels = () => ({
+  audio: [`🔊 ${tx("games.hintAudio")}`, "-10%"],
+  first_letter: [`🔤 ${tx("games.hintFirstLetter")}`, "-10%"],
+  last_letter: [`🔡 ${tx("games.hintLastLetter")}`, "-10%"],
+  japanese: [`🔎 ${tx("games.hintJapanese")}`, "-30%"],
+  english: [`📖 ${tx("games.hintEnglish")}`, "-20%"],
+  reveal: [`🔓 ${tx("games.hintReveal")}`, tx("games.hintRevealCost")],
+});
 
 // 直近2件の設定(分野/単語帳選択に加え、語数・クリューモード・難易度等
 // 設定一式)を覚えておき、設定画面を開いたときに前回の設定をそのまま
@@ -9908,46 +9910,39 @@ async function cwRenderHub(root) {
   // ユーザー要望「クリアしたものも再開可能」)。保存(ピン留め)は課金
   // ユーザー限定(上限は無料1件/課金10件・_enforce_session_cap参照)。
   root.innerHTML = `
-    <h1>🎮 ゲーム ${infoIcon("help-games",
-      "単語を使ったミニゲームで遊びながら学べる機能です。" +
-      "分野・単語帳から出題範囲を選んで挑戦できます。")}</h1>
+    <h1>🎮 ${tx("games.title")} ${infoIcon("help-games", tx("games.helpText"))}</h1>
     <div class="grid cols-3 mt">
       <div class="card" id="cwCardStart"
         style="cursor:pointer;border-color:var(--accent);border-width:2px">
-        <h2>✏️ クロスワード作成${state.isGuest
-          ? ` <span class="pill vague">🔒 要登録+課金</span>`
+        <h2>✏️ ${tx("games.createTitle")}${state.isGuest
+          ? ` <span class="pill vague">🔒 ${tx("games.needSignupCharge")}</span>`
           : (!state.isChargedTier
-            ? ` <span class="pill vague">🔒 要課金</span>` : "")}</h2>
-        <p class="muted">分野・単語帳から単語を選んで自由に出題。${
+            ? ` <span class="pill vague">🔒 ${tx("games.needCharge")}</span>` : "")}</h2>
+        <p class="muted">${tx("games.createDesc")}${
           state.isGuest
-            ? "ゲストの方は登録(無料)に加えて課金が必要です。"
+            ? " " + tx("games.createDescGuest")
           : (!state.isChargedTier
-            ? "作成のたびにAI利用料が発生するため、課金ユーザー限定です。"
+            ? " " + tx("games.createDescFree")
             : "")}</p>
       </div>
       <div class="card" id="cwCardSamples" style="cursor:pointer">
-        <h2>🧩 サンプルクロスワード</h2>
-        <p class="muted">あらかじめ用意した固定のパズルで手軽に挑戦。
-          ログイン不要(ゲストは5個まで)。</p>
+        <h2>🧩 ${tx("games.samplesTitle")}</h2>
+        <p class="muted">${tx("games.samplesDesc")}</p>
       </div>
       <div class="card" id="cwCardRanking" style="cursor:pointer">
-        <h2>🏆 ランキング</h2>
-        <p class="muted">自分で作ったクロスワードの合計スコアで、他の
-          課金ユーザーと比較できます。</p>
+        <h2>🏆 ${tx("games.rankingTitle")}</h2>
+        <p class="muted">${tx("games.rankingDesc")}</p>
       </div>
     </div>
     ${sessions.length ? `<div class="card mt">
-      <h3>再開できるゲーム</h3>
-      <p class="muted">保存できるのは無料範囲で直近1件・課金ユーザーは
-        直近10件まで(古いものから自動的に消えます)。「保存」に
-        チェックすると、それ以降も消えずに残ります(課金ユーザー限定・
-        保存できるのは最大50件までです)。</p>
+      <h3>${tx("games.resumableTitle")}</h3>
+      <p class="muted">${tx("games.resumableDesc")}</p>
       <table class="mt"><thead><tr>
-        <th>対象</th><th>状態</th><th>語数</th><th>スコア</th><th>日時</th>
-        <th>保存</th><th></th>
+        <th>${tx("games.colTarget")}</th><th>${tx("games.colStatus")}</th><th>${tx("games.colWordCount")}</th><th>${tx("games.colScore")}</th><th>${tx("games.colDateTime")}</th>
+        <th>${tx("games.colSave")}</th><th></th>
       </tr></thead><tbody>${sessions.map((s) => `<tr>
         <td>${escapeHtml(s.source_label || s.source_ref)}</td>
-        <td class="muted">${s.status === "completed" ? "完了" : "進行中"}</td>
+        <td class="muted">${s.status === "completed" ? tx("games.statusCompleted") : tx("games.statusInProgress")}</td>
         <td>${s.word_count ?? "-"}</td>
         <td>${s.score}</td>
         <td class="muted">${escapeHtml(s.created_at)}</td>
@@ -9955,8 +9950,8 @@ async function cwRenderHub(root) {
           ${s.pinned ? "checked" : ""}/></label></td>
         <td>
           <button class="btn ghost" data-resume="${s.id}">${
-            s.status === "completed" ? "見る" : "続きから"}</button>
-          <button class="btn ghost" data-restart="${s.id}">最初から</button>
+            s.status === "completed" ? tx("games.viewBtn") : tx("games.continueBtn")}</button>
+          <button class="btn ghost" data-restart="${s.id}">${tx("games.restartBtn")}</button>
         </td>
       </tr>`).join("")}</tbody></table>
     </div>` : ""}
@@ -9984,7 +9979,7 @@ async function cwRenderHub(root) {
           { screen_aspect: window.innerWidth / window.innerHeight });
         cwRenderPlay(root, session.session_id, session);
       } catch (e) {
-        toast(e.message || "作り直しに失敗しました。");
+        toast(e.message || tx("games.restartFailed"));
         b.disabled = false;
       }
     });
@@ -9997,7 +9992,7 @@ async function cwRenderHub(root) {
           { pinned: wanted });
       } catch (e) {
         cb.checked = !wanted;
-        toast(e.message || "保存の切り替えに失敗しました。");
+        toast(e.message || tx("games.pinToggleFailed"));
       }
     });
   });
@@ -10070,60 +10065,55 @@ async function cwRenderRanking(root, period) {
 // 一般ユーザーはまだ辿り着けない(2026-09-05ユーザー指示「開放は説明書
 // 等と一緒にするので、実装は本番通り・導線だけ隠す」)。
 async function cwRenderSamples(root) {
-  root.innerHTML = `<p class="muted">読み込み中…</p>`;
+  root.innerHTML = `<p class="muted">${tx("common.loading")}</p>`;
   let data;
   try {
     data = await api.get("/api/games/crossword/samples");
   } catch (e) {
-    root.innerHTML = `<div class="card">読み込みに失敗しました: ${
+    root.innerHTML = `<div class="card">${tx("common.loadFailed")}: ${
       escapeHtml(e.message || "")}</div>`;
     return;
   }
   const { samples, play_limit: limit, played_count: played, tier } = data;
   const statusText = tier === "charged"
-    ? "全部のサンプルが遊べます。保存(ピン留め)は10件まで。"
+    ? tx("games.statusCharged")
     : tier === "guest"
-    ? `ゲストとして遊べます(残り${Math.max(limit - played, 0)}/${limit}個)。` +
-      "登録者限定のサンプルは、ログイン(無料)すると遊べるようになります。"
-    : `無料会員として遊べます(残り${Math.max(limit - played, 0)}/${limit}個)。` +
-      "保存(ピン留め)は5件まで。チャージすると保存が10件までになります。";
+    ? tx("games.statusGuest", { remain: Math.max(limit - played, 0), limit })
+    : tx("games.statusFree", { remain: Math.max(limit - played, 0), limit });
   const levelText = (s) => (s.level_min || s.level_max)
-    ? `TOEIC ${s.level_min || "下限なし"}〜${s.level_max || "上限なし"}` : "";
+    ? `TOEIC ${s.level_min || tx("games.noLowerBound")}　${s.level_max || tx("games.noUpperBound")}` : "";
   const card = (s) => `<div class="card cw-sample-card" data-sample="${s.id}"
       style="cursor:${s.guest_locked ? "default" : "pointer"}">
     <h3>${escapeHtml(s.title)}${
-      s.guest_locked ? ` <span class="pill vague">🔒 登録した方のみ</span>` : ""
+      s.guest_locked ? ` <span class="pill vague">🔒 ${tx("games.registeredOnly")}</span>` : ""
     }${
-      s.already_played ? ` <span class="pill vague">プレイ済み</span>` : ""
+      s.already_played ? ` <span class="pill vague">${tx("games.alreadyPlayed")}</span>` : ""
     }</h3>
     <p class="muted">${escapeHtml(s.description || "")}</p>
-    <p class="muted">${s.word_count}語${
+    <p class="muted">${tx("games.wordCountN", { n: s.word_count })}${
       levelText(s) ? ` ・ ${escapeHtml(levelText(s))}` : ""}</p>
     <p>${(s.domains || "").split(",").filter(Boolean).map((d) =>
       `<span class="pill">${escapeHtml(d)}</span>`).join(" ")}</p>
     <button type="button" class="btn ${s.guest_locked ? "ghost" : "primary"} mt"
       ${s.guest_locked ? "disabled" : ""}>${
-      s.guest_locked ? "🔒 登録した方のみ"
-        : s.already_played ? "🔁 もう一度プレイ" : "▶️ プレイする"}</button>
+      s.guest_locked ? "🔒 " + tx("games.registeredOnly")
+        : s.already_played ? "🔁 " + tx("games.playAgain") : "▶️ " + tx("games.play")}</button>
   </div>`;
   root.innerHTML = `
     <div class="row">
       <button type="button" class="btn ghost" id="cwSamplesBack">
-        ← ゲームメニューに戻る</button>
+        ${tx("games.backToMenu")}</button>
     </div>
-    <h1>🧩 サンプルクロスワード ${infoIcon("help-cw-samples",
-      "あらかじめ用意した固定のクロスワードです。誰でも(ログイン不要で"
-      + "も)遊べます。同じサンプルの再プレイは何度でも無料です。")}</h1>
+    <h1>🧩 ${tx("games.samplesTitle")} ${infoIcon("help-cw-samples", tx("games.samplesHelpText"))}</h1>
     <p class="muted">${statusText}</p>
     <div class="row" style="align-items:center">
       <label class="toggle"><input type="checkbox" id="cwSampleBlockCat"/>
-        未解答マスを猫にする</label>
-      <span class="muted">(既定はオン。猫にしたくなければ
-        チェックを外してください)</span>
+        ${tx("games.catOverlayLabel")}</label>
+      <span class="muted">${tx("games.catOverlayNote")}</span>
     </div>
     ${samples.length ? `<div class="grid cols-3 mt">
       ${samples.map(card).join("")}
-    </div>` : `<p class="muted">現在サンプルはありません。</p>`}
+    </div>` : `<p class="muted">${tx("games.noSamples")}</p>`}
   `;
   root.querySelector("#cwSamplesBack")
     .addEventListener("click", () => cwRenderHub(root));
@@ -10142,7 +10132,7 @@ async function cwRenderSamples(root) {
           `/api/games/crossword/samples/${elm.dataset.sample}/start`, {});
         cwRenderPlay(root, session.session_id, session);
       } catch (e) {
-        toast(e.message || "開始できませんでした。");
+        toast(e.message || tx("games.startFailed"));
         btn.disabled = false;
       }
     });
@@ -10860,7 +10850,7 @@ async function cwRenderPlay(root, sessionId, initialState) {
       // (2026-09-05ユーザー要望・一覧の🔎はスマホで押しにくかったため)。
       return `<div class="cw-clue-item${isSel ? " cw-clue-selected" : ""}"
         data-num="${c.number}" data-dir="${c.direction}">
-        ${c.number}. (${c.length}文字)${jaText}${langBtn} ${mark}</div>`;
+        ${c.number}. (${tx("games.lengthChars", { n: c.length })})${jaText}${langBtn} ${mark}</div>`;
     };
     const across = session.clues.filter((c) => c.direction === "across");
     const down = session.clues.filter((c) => c.direction === "down");
@@ -10884,9 +10874,9 @@ async function cwRenderPlay(root, sessionId, initialState) {
       const curText = freeText(cur);
       detailHtml = `
         <div class="card mt" id="cwDetailCard">
-          <div><b>クリュー ${cur.number}
-            (${cur.direction === "across" ? "ヨコ" : "タテ"})</b>
-            ・${cur.length}文字
+          <div><b>${tx("games.clueLabel")} ${cur.number}
+            (${cur.direction === "across" ? tx("games.across") : tx("games.down")})</b>
+            ・${tx("games.lengthChars", { n: cur.length })}
             ${curText ? ` — ${escapeHtml(curText)}` : ""}
             ${session.clue_mode === "always_both" ? `<button
               type="button" class="btn ghost" id="cwJaEnToggle"
@@ -10896,25 +10886,24 @@ async function cwRenderPlay(root, sessionId, initialState) {
           ${hintHtml}
           <div class="row mt">
             <input type="text" id="cwAnswerInput" ${done ? "disabled" : ""}
-              placeholder="英単語を入力" style="text-transform:uppercase"
+              placeholder="${escapeHtml(tx("games.answerPlaceholder"))}" style="text-transform:uppercase"
               autocomplete="off" autocorrect="off" autocapitalize="off"
               spellcheck="false"/>
             <button class="btn primary" id="cwSubmit"
-              ${done ? "disabled" : ""}>答える</button>
+              ${done ? "disabled" : ""}>${tx("games.answerBtn")}</button>
           </div>
           ${done ? "" : `
           <p class="muted" style="font-size:11px;margin:6px 0 0"
-            >※追加ヒントを使うと、このクリューの獲得スコアが減ることが
-            あります。</p>
+            >${tx("games.hintCostNote")}</p>
           <div class="row mt" id="cwHintButtons">
             ${hints.map((h) => {
-              const [label, costLabel] = CW_HINT_LABELS[h];
+              const [label, costLabel] = cwHintLabels()[h];
               const used = cur.hints_used.includes(h);
               return `<button class="btn ghost" data-hint="${h}"
                 >${label}${costLabel ? ` (${costLabel})` : ""}${
                   used ? " ✓" : ""}</button>`;
             }).join("")}
-            <button class="btn ghost" id="cwGiveup">🏳️ ギブアップ</button>
+            <button class="btn ghost" id="cwGiveup">🏳️ ${tx("games.giveUp")}</button>
           </div>`}
           ${(done && cur.word_info) ? `<div class="row mt cw-word-tools"
             id="cwWordTools"></div>` : ""}
@@ -10925,38 +10914,36 @@ async function cwRenderPlay(root, sessionId, initialState) {
     root.innerHTML = `
       <div class="row">
         <button type="button" class="btn ghost" id="cwBack2">${
-          isSample ? "← サンプル一覧に戻る" : "← ゲーム一覧に戻る"}</button>
+          isSample ? tx("games.backToSamples") : tx("games.backToGameList")}</button>
         ${isSample ? "" : `<button type="button" class="btn ghost"
-          id="cwBackToSetup">🔄 新しいクロスワードを作る</button>`}
+          id="cwBackToSetup">🔄 ${tx("games.makeNewCrossword")}</button>`}
       </div>
       <div class="row mt" style="justify-content:space-between">
-        <h1>🧩 クロスワード</h1>
+        <h1>🧩 ${tx("games.crossword")}</h1>
         <div class="row" style="align-items:center">
-          <div class="pill cw-score">スコア: ${session.score}</div>
+          <div class="pill cw-score">${tx("games.scoreLabel")}: ${session.score}</div>
           ${session.status === "in_progress" ? `<button type="button"
-            class="btn ghost" id="cwGiveupAll">🔓 全部答えを見る</button>`
+            class="btn ghost" id="cwGiveupAll">🔓 ${tx("games.revealAll")}</button>`
             : ""}
         </div>
       </div>
       ${session.notice ? `<div class="pill vague mt">
         ℹ️ ${escapeHtml(session.notice)}</div>` : ""}
       ${Object.values(session.revealed_cells).includes("_") ? `<p
-        class="muted" style="font-size:12px">※ マス目の「_」は複数の単語
-        から成る答えの区切りです。回答するときはそこにスペースを
-        入れて入力してください(例: MILKY WAY)。</p>` : ""}
+        class="muted" style="font-size:12px">${tx("games.underscoreNote")}</p>` : ""}
       ${detailHtml}
       <div class="cw-board mt">
         <div class="cw-board-grid">${gridHtml}</div>
         <div class="cw-board-clues">
-          <b>ヨコ</b>
+          <b>${tx("games.across")}</b>
           ${across.map(clueRow).join("")}
-          <b class="mt" style="display:block">タテ</b>
+          <b class="mt" style="display:block">${tx("games.down")}</b>
           ${down.map(clueRow).join("")}
         </div>
       </div>
       ${session.status === "completed"
-        ? `<div class="card mt"><h2>🎉 クリア！</h2>
-           <p>最終スコア: ${session.score}</p></div>` : ""}
+        ? `<div class="card mt"><h2>🎉 ${tx("games.clearedTitle")}</h2>
+           <p>${tx("games.finalScore")}: ${session.score}</p></div>` : ""}
     `;
 
     root.querySelector("#cwBack2")
@@ -10980,8 +10967,7 @@ async function cwRenderPlay(root, sessionId, initialState) {
       });
     });
     root.querySelector("#cwGiveupAll")?.addEventListener("click", async () => {
-      if (!confirm("全クリューの答えを表示します(未正解分は0点になりま" +
-        "す)。よろしいですか？")) return;
+      if (!confirm(tx("games.revealAllConfirm"))) return;
       session = await api.post(
         `/api/games/crossword/${sessionId}/giveup-all`, {});
       hintDisplay = null;
@@ -11046,17 +11032,18 @@ async function cwRenderPlay(root, sessionId, initialState) {
           session = res;
           if (res.correct) {
             hintDisplay = null;
-            toast("正解！");
+            toast(tx("games.correctToast"));
           } else if (res.forced_reveal) {
-            hintDisplay = "不正解が続いたため、答えを開示しました(0点)。";
+            hintDisplay = tx("games.forcedRevealMsg");
           } else {
             const pct = res.match_ratio != null
-              ? `一致率${Math.round(res.match_ratio * 100)}%・` : "";
-            hintDisplay = `不正解です。${pct}残り試行${res.attempts_left}回`;
+              ? tx("games.matchRatio", { pct: Math.round(res.match_ratio * 100) }) : "";
+            hintDisplay = tx("games.incorrectMsg",
+              { pct, attempts: res.attempts_left });
           }
           render();
         } catch (e) {
-          toast(e.message || "エラーが発生しました。");
+          toast(e.message || tx("common.errorOccurred"));
         }
       };
       submit.addEventListener("click", doSubmit);
@@ -11077,20 +11064,20 @@ async function cwRenderPlay(root, sessionId, initialState) {
           if (res.hint_type === "audio") {
             speech.sayItem("word", res.word_id, "word", MALE_VOICE, "",
               speedOpts("std"));
-            hintDisplay = "🔊 発音を再生しました。";
+            hintDisplay = tx("games.hintPlayedAudio");
           } else if (res.hint_type === "first_letter"
             || res.hint_type === "last_letter") {
-            hintDisplay = `文字: ${res.letter}`;
+            hintDisplay = tx("games.hintLetter", { letter: res.letter });
           } else if (res.hint_type === "japanese") {
-            hintDisplay = `意味: ${res.japanese}`;
+            hintDisplay = tx("games.hintMeaning", { text: res.japanese });
           } else if (res.hint_type === "english") {
-            hintDisplay = `例文: ${res.example}`;
+            hintDisplay = tx("games.hintExample", { text: res.example });
           } else if (res.hint_type === "reveal") {
-            hintDisplay = `答え: ${res.answer}`;
+            hintDisplay = tx("games.hintAnswer", { text: res.answer });
           }
           render();
         } catch (e) {
-          toast(e.message || "ヒントを取得できませんでした。");
+          toast(e.message || tx("games.hintFailed"));
         }
       });
     });
@@ -11104,7 +11091,7 @@ async function cwRenderPlay(root, sessionId, initialState) {
         hintDisplay = null;
         render();
       } catch (e) {
-        toast(e.message || "エラーが発生しました。");
+        toast(e.message || tx("common.errorOccurred"));
       }
     });
   }
