@@ -3193,26 +3193,26 @@ function materialView(title, sub, area, fields, histAreas, help) {
       <div class="card">
         <div class="row">
           <select id="field">${fields.map((f) =>
-            `<option>${f}</option>`).join("")}</select>
+            `<option value="${escapeHtml(f)}">${escapeHtml(fieldLabelKey(f) ? tx(fieldLabelKey(f)) : f)}</option>`).join("")}</select>
           ${diffSelect("fdiff")}
           ${lengthSelect("flen")}
-          <label class="toggle" title="内容理解問題を表示(常に生成・保存)">
-            <input type="checkbox" id="showQ" checked /> 内容理解問題</label>
+          <label class="toggle" title="${escapeHtml(tx("material.comprehensionTitle"))}">
+            <input type="checkbox" id="showQ" checked /> ${tx("material.comprehensionLabel")}</label>
           ${infoIcon("comprehension-questions", COMPREHENSION_Q_HINT)}
-          <input id="inst" placeholder="追加指示(任意)" style="width:160px" />
+          <input id="inst" placeholder="${escapeHtml(tx("material.instructionPlaceholder"))}" style="width:160px" />
           <button class="btn" id="gen"
             ${(state.aiEnabled && !aiGateDisabled()) ? "" : "disabled"}>${
-            aiGateLabel("生成")}</button>
+            aiGateLabel(tx("material.generate"))}</button>
           <button class="btn ghost" id="histBtn"
             ${state.isGuest ? "disabled" : ""}>${
-            state.isGuest ? "🔒 履歴(要ログイン)" : "📚 履歴"}</button>
+            state.isGuest ? "🔒 " + tx("material.historyLoginRequired") : "📚 " + tx("material.history")}</button>
         </div>
       </div>
       <div id="histPanel" class="card" style="display:none"></div>
       <div class="card"><div id="out" class="md">
-        左上で分野を選んで「生成」を押してください。</div></div>`;
+        ${tx("material.selectFieldPrompt")}</div></div>`;
     placeSampleCard(root, sampleMaterialsCard(area,
-      "📖 サンプルを見る", "サンプルがまだありません。"));
+      "📖 " + tx("material.viewSamples"), tx("material.noSamplesYet")));
     // 内容理解問題トグル: OFFなら表示・読み上げから問題部分を除く（保存はフル）。
     const disp = (b) =>
       root.querySelector("#showQ").checked ? b : stripQuestions(b);
@@ -3233,8 +3233,10 @@ function materialView(title, sub, area, fields, histAreas, help) {
     });
     root.querySelector("#gen").addEventListener("click", async () => {
       const out = root.querySelector("#out");
-      out.textContent = "生成中…";
+      out.textContent = tx("material.generating");
       // 文学/ニュースのトピックは適切な生成プロンプト(area)に振り分け。
+      // field(送信値)は翻訳しても日本語のまま(<option value>で固定)なので
+      // この判定は言語に関わらず従来通り機能する。
       const field = root.querySelector("#field").value;
       let genArea = area;
       if (field.startsWith("文学(")) genArea = "literature";
@@ -3244,17 +3246,32 @@ function materialView(title, sub, area, fields, histAreas, help) {
         const r = await api.post("/api/learn/generate", {
           area: genArea, field,
           difficulty: root.querySelector("#fdiff").value,
-          instruction: (len ? `本文は${len}作成。` : "")
+          instruction: (len ? tx("material.bodyLengthInstr", { len }) : "")
             + root.querySelector("#inst").value,
         });
         if (!r.ok) { out.textContent = r.error; return; }
         showInto(r.body);   // disp() で問題トグルを反映
         refreshCost();
-      } catch (e) { out.textContent = "生成にはログインが必要です。" +
+      } catch (e) { out.textContent = tx("material.generateNeedsLogin") +
         "（" + e.message + "）"; }
     });
   };
 }
+
+// AI教材の「分野」選択肢(リーディング等)の表示訳。送信するvalue(field)は
+// 生成ロジックが日本語プレフィックス判定(文学(.../ニュース(...)に依存する
+// ため変えられない。表示ラベルだけ辞書で切り替える(未登録の値=ニュースの
+// 動的分野名等はそのまま表示、2026-09-23多言語化)。
+const FIELD_LABEL_KEYS = {
+  "一般": "material.field.general", "新聞": "material.field.newspaper",
+  "雑誌": "material.field.magazine", "ビジネスメール": "material.field.businessEmail",
+  "技術文書": "material.field.techDoc", "API仕様書": "material.field.apiSpec",
+  "エラーメッセージ": "material.field.errorMessage", "歴史": "material.field.history",
+  "文化": "material.field.culture",
+  "文学(シェイクスピア)": "material.field.litShakespeare",
+  "文学(英文学)": "material.field.litEnglish", "文学(古典)": "material.field.litClassic",
+};
+function fieldLabelKey(f) { return FIELD_LABEL_KEYS[f] || null; }
 
 // リーディングに「文学」「ニュース」も統合（独立タブは廃止）。
 export const reading = (root) => materialView(
