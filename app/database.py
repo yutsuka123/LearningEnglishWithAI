@@ -586,6 +586,23 @@ CREATE TABLE IF NOT EXISTS admin_memo_tags (
 CREATE INDEX IF NOT EXISTS idx_admin_memo_tags_tag
     ON admin_memo_tags(tag);
 
+-- 退会(アカウント削除)の申請ログ(2026-09-23・オーナー要望「設定に退会を
+-- 設けましょう。退会理由を選択肢で聞く、自由記入欄を設ける」)。
+-- 退会実行時、usersの行自体は残すが個人情報を匿名化する(username/
+-- display_name/email/password_hashを消しis_active=0にする。決済記録
+-- (paypay_payments/balance_ledger)は法令上の保存義務があるため残す
+-- =プライバシーポリシー§9)。username_at_withdrawalは匿名化前のusernameの
+-- スナップショット(管理者が退会理由を後から見るとき、誰の退会か分かる
+-- ように)。reasonsは選択肢のkeyをカンマ区切りで保存(複数選択可)。
+CREATE TABLE IF NOT EXISTS account_withdrawals (
+    id                     INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id                INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    username_at_withdrawal TEXT    NOT NULL DEFAULT '',
+    reasons                TEXT    NOT NULL DEFAULT '',
+    detail                 TEXT    NOT NULL DEFAULT '',
+    created_at             TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
 -- BASE API連携のOAuthトークン保管（2026-08-18・注文自動検知用）。
 -- 単一ショップ運用のため1行のみ想定(id=1固定)。平文で保持するが本テーブルは
 -- 管理者専用API/内部処理からしか読めない(通常のuser向けAPIには一切露出しない)。

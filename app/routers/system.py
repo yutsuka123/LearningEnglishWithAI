@@ -310,15 +310,22 @@ def usage():
 
 @router.get("/progress")
 def progress():
-    """項目別の習熟度サマリ + TOEIC換算(目安)。per-user。"""
+    """項目別の習熟度サマリ + TOEIC換算(目安)。per-user。
+
+    ゲスト(疑似ユーザー`__guest__`)は全訪問者で1行を共有しているため、
+    習熟度・TOEIC換算等の「個人の学習成果」はNoneで返す(フロントは「—」
+    表示。2026-09-23発覚: ゲストでもこの共有行に残っていた実績が数値として
+    見えてしまい、オーナー自身の実績と誤認された。全件数(カタログの総数、
+    誰が見ても同じ)はゲストでも意味があるのでそのまま返す)。"""
     from ..database import db
-    from ..services.auth import current_user_id
+    from ..services.auth import current_user_id, is_guest_user_id
     from ..services.metrics import toeic_estimate, word_buckets
     from ..services.spaced_repetition import mastery_config_from_settings
 
     from ..services.auth import get_user_settings
     uid = current_user_id()
     with db() as conn:
+        is_guest = is_guest_user_id(conn, uid)
         us = get_user_settings(conn, uid)
         cfg = mastery_config_from_settings(us)
         words = word_buckets(conn, "words", user_id=uid, cfg=cfg)
@@ -341,13 +348,27 @@ def progress():
         ).fetchone()
 
     areas = {
-        r["area"]: {"count": r["n"], "avg_mastery": round(r["avg"], 1)}
+        r["area"]: {
+            "count": r["n"],
+            "avg_mastery": None if is_guest else round(r["avg"], 1),
+        }
         for r in area_rows
     }
     areas["listening"] = {
         "count": listening["n"],
-        "avg_mastery": round(listening["avg"], 1),
+        "avg_mastery": None if is_guest else round(listening["avg"], 1),
     }
+    if is_guest:
+        # totalだけ残し(カタログの総数=誰にとっても同じ値)、個人の実績は
+        # 全てNoneにする(共有の疑似ユーザー行の値をそのまま出さない)。
+        words = {**words, "studied": None, "mastered": None,
+                 "vague": None, "avg_mastery": None}
+        phrases = {**phrases, "studied": None, "mastered": None,
+                   "vague": None, "avg_mastery": None}
+        return {
+            "words": words, "phrases": phrases, "areas": areas,
+            "toeic_estimate": None, "overall_avg_mastery": None,
+        }
     # 単語＋フレーズを合算してTOEIC目安を算出。
     total = words["total"] + phrases["total"]
     mastered = words["mastered"] + phrases["mastered"]

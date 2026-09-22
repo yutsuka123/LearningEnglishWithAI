@@ -617,6 +617,11 @@ export async function dashboard(root) {
       decksRes.value;
   } // 未ログイン等で失敗しても致命的ではない
   const isAdmin = mu && mu.role === "admin";
+  // 習熟度・TOEIC換算等は登録後にユーザーごとに貯まる実績なので、未ログイン
+  // (ゲスト)は「—」表示にする(2026-09-23・共有の疑似ユーザー行の残留実績が
+  // 数値として見えてしまっていた不具合の修正・APIがNoneを返すようにした側)。
+  // カタログの全件数(w.total等)はユーザー非依存なので対象外(従来通り)。
+  const n0 = (v) => (v == null ? "—" : v);
   const toeic = (p.toeic_estimate == null) ? "未判定" : p.toeic_estimate;
   // 一般ユーザーには費用額を見せない（管理者のみ）。残高があれば残高を表示。
   let costNum = "—", costLbl = "今日のAI費用";
@@ -633,8 +638,8 @@ export async function dashboard(root) {
     <div class="card">
       <div class="row" style="justify-content:space-between">
         <b>${areaLabels[k] || k}</b>
-        <span class="muted">${v.avg_mastery} / 100</span></div>
-      <div class="bar mt"><span style="width:${Math.min(100, v.avg_mastery)}%">
+        <span class="muted">${n0(v.avg_mastery)} / 100</span></div>
+      <div class="bar mt"><span style="width:${Math.min(100, v.avg_mastery || 0)}%">
         </span></div>
     </div>`).join("");
   // 2026-08-09: 単語帳/フレーズ帳の達成率はドリルダウンせず、デッキ別に
@@ -665,7 +670,7 @@ export async function dashboard(root) {
         <div class="num">${toeic}</div>
         <div class="lbl">TOEIC換算(目安)</div></div>
       <div class="card stat">
-        <div class="num">${p.overall_avg_mastery}</div>
+        <div class="num">${n0(p.overall_avg_mastery)}</div>
         <div class="lbl">平均習熟度(単語+フレーズ)</div></div>
       <div class="card stat">
         <div class="num">${costNum}</div>
@@ -677,13 +682,13 @@ export async function dashboard(root) {
       <div class="grid cols-3 stats-wrap">
         <div class="stat"><div class="num">${w.total}</div>
           <div class="lbl">全件数</div></div>
-        <div class="stat"><div class="num">${w.studied}</div>
+        <div class="stat"><div class="num">${n0(w.studied)}</div>
           <div class="lbl">学習数(出題済み)</div></div>
-        <div class="stat"><div class="num">${w.mastered}</div>
+        <div class="stat"><div class="num">${n0(w.mastered)}</div>
           <div class="lbl">習得数(100+)</div></div>
-        <div class="stat"><div class="num">${w.vague}</div>
+        <div class="stat"><div class="num">${n0(w.vague)}</div>
           <div class="lbl">うろ覚え(40-79)</div></div>
-        <div class="stat"><div class="num">${w.avg_mastery}</div>
+        <div class="stat"><div class="num">${n0(w.avg_mastery)}</div>
           <div class="lbl">平均習熟度</div></div>
         <div class="stat"><div class="num">${p.phrases.total}</div>
           <div class="lbl">フレーズ全件</div></div>
@@ -5336,6 +5341,15 @@ export async function admin(root) {
         <div id="chargeKeyLogWrap" class="mt"><p class="muted">未読み込み</p></div>
       </details>
 
+      <details class="log-group" id="logWithdrawalDetails">
+        <summary>🚪 退会理由（直近200件・無期限保持）</summary>
+        <p class="muted mt">設定画面の「退会」から本人が選んだ理由と自由
+          記入です。退会時に学習データは削除・個人情報は匿名化しています
+          （username列は退会前のログイン用メールアドレスではなく匿名化後の
+          値です）。</p>
+        <div id="withdrawalLogWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
+
       <details class="log-group" id="logErrorDetails">
         <summary>🐛 エラーログ（data/app.log）</summary>
         <div class="row mt">
@@ -6754,6 +6768,32 @@ export async function admin(root) {
     }
   }
 
+  async function loadWithdrawalLog() {
+    const wrap = root.querySelector("#withdrawalLogWrap");
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    try {
+      const res = await api.get("/api/auth/withdrawals");
+      const rows = res.withdrawals || [];
+      const labels = res.reason_labels || {};
+      if (!rows.length) {
+        wrap.innerHTML = `<p class="muted">まだありません。</p>`;
+        return;
+      }
+      wrap.innerHTML = `<table><thead><tr>
+        <th>日時(JST)</th><th>退会時のユーザー</th><th>理由</th><th>自由記入</th>
+        </tr></thead><tbody>${rows.map((r) => `
+        <tr>
+          <td class="muted">${fmtDate(r.created_at)}</td>
+          <td class="muted">${escapeHtml(r.username_at_withdrawal || "—")}</td>
+          <td>${(r.reasons || "").split(",").filter(Boolean)
+            .map((k) => escapeHtml(labels[k] || k)).join("、") || "—"}</td>
+          <td>${escapeHtml(r.detail || "—")}</td>
+        </tr>`).join("")}</tbody></table>`;
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+
   // app.logの行頭タイムスタンプ("YYYY-MM-DD HH:MM:SS,mmm")はサーバー
   // (コンテナ)のシステム時刻=UTCで書かれている。行の他の書式には触れず、
   // 行頭だけJSTに変換して表示する(2026-08-19・ユーザー指摘: 他のログと
@@ -7703,6 +7743,7 @@ export async function admin(root) {
     ["#logVisitTrendDetails", loadVisitTrend],
     ["#logGrowthDailyDetails", loadGrowthDaily],
     ["#logChargeKeyDetails", loadChargeKeyLog],
+    ["#logWithdrawalDetails", loadWithdrawalLog],
     ["#logErrorDetails", loadErrorLog],
     ["#logClientErrorDetails", loadClientErrorLog],
     ["#logAccessDetails", loadAccessLog],
@@ -8438,6 +8479,32 @@ export async function settings(root) {
       <button class="btn bad" id="logoutAllBtn">全端末からログアウト</button>
       <span class="muted mt" id="logoutAllOut"></span>
     </div>
+    <div class="card" id="withdrawCard" style="display:none">
+      <h2>🚪 退会</h2>
+      <p class="muted">アカウントを削除します。学習履歴・単語帳・フレーズ帳・
+        AI会話ログは削除され、登録メールアドレス等の個人情報も消去します
+        （元に戻せません）。差し支えなければ理由を教えてください
+        （任意・今後の改善に使わせていただきます）。</p>
+      <div id="withdrawReasons" class="mt">${[
+        ["not_enough_features", "使いたい機能が足りなかった"],
+        ["hard_to_use", "操作が分かりにくかった"],
+        ["bugs", "表示・音声などの不具合があった"],
+        ["achieved_goal", "目的の学習を達成できた"],
+        ["switching", "他のサービス・教材に移る"],
+        ["price", "料金が合わなかった"],
+        ["not_using", "最近あまり使わなくなった"],
+        ["other", "その他"],
+      ].map(([k, label]) => `
+        <label class="toggle" style="display:block">
+          <input type="checkbox" class="wd-reason" value="${k}" /> ${escapeHtml(label)}
+        </label>`).join("")}</div>
+      <textarea id="wd_detail" class="mt" style="min-height:60px"
+        placeholder="自由記入(任意)"></textarea>
+      <div class="row mt">
+        <button class="btn bad" id="wd_submit">退会する</button>
+        <span class="muted" id="wd_out"></span>
+      </div>
+    </div>
     <div class="card admin-only" id="openaiCard">
       <h2>OpenAI</h2>
       <div class="row">
@@ -8795,6 +8862,13 @@ export async function settings(root) {
     if (mu && mu.multiuser && securityCard) {
       securityCard.style.display = "";
     }
+    // 退会カード: securityCardと同条件(multiuser時のみ)に加えて、管理者は
+    // 隠す(サーバー側もadmin roleの退会を拒否する・唯一の管理者が誤って
+    // 退会し管理画面に誰も入れなくなる事故を防ぐ多重防御・2026-09-23)。
+    const withdrawCard = root.querySelector("#withdrawCard");
+    if (mu && mu.multiuser && mu.role !== "admin" && withdrawCard) {
+      withdrawCard.style.display = "";
+    }
   })();
 
   const pfSave = root.querySelector("#pf_save");
@@ -8881,6 +8955,31 @@ export async function settings(root) {
       + "再ログインが必要になります。よろしいですか？")) return;
     try { await api.post("/api/auth/logout-all-devices"); }
     catch (_) { /* */ }
+    location.href = "/login";
+  });
+
+  const wdSubmit = root.querySelector("#wd_submit");
+  if (wdSubmit) wdSubmit.addEventListener("click", async () => {
+    const out = root.querySelector("#wd_out");
+    const reasons = [...root.querySelectorAll(".wd-reason:checked")]
+      .map((el) => el.value);
+    const detail = root.querySelector("#wd_detail").value.trim();
+    if (!reasons.length && !detail) {
+      out.textContent = "理由を選択するか、自由記入欄にご記入ください。";
+      return;
+    }
+    if (!confirm("本当に退会しますか？学習履歴・単語帳・フレーズ帳・AI会話"
+      + "ログはすべて削除され、元に戻せません。")) return;
+    if (!confirm("最終確認です。この操作は取り消せません。退会してよろし"
+      + "いですか？")) return;
+    out.textContent = "処理中…";
+    try {
+      await api.post("/api/auth/withdraw", { reasons, detail });
+    } catch (e) {
+      out.textContent = "退会できませんでした: " + e.message;
+      return;
+    }
+    alert("退会が完了しました。ご利用ありがとうございました。");
     location.href = "/login";
   });
 

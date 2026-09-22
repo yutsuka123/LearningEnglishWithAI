@@ -7,6 +7,7 @@ MULTIUSER=1 のときに使う。ローカル単一ユーザー（既定）で�
 
 from __future__ import annotations
 
+import secrets
 import time
 
 from fastapi import APIRouter, BackgroundTasks, Request, Response
@@ -281,6 +282,126 @@ def logout_all_devices():
     resp = JSONResponse({"ok": True})
     resp.delete_cookie(auth.SESSION_COOKIE, path="/")
     return resp
+
+
+# 退会(アカウント削除)の理由の選択肢(2026-09-23・オーナー要望「設定に
+# 退会を設けましょう。退会理由を選択肢で聞く、自由記入欄を設ける」)。
+# key はDB(account_withdrawals.reasons、カンマ区切り複数可)・
+# 管理画面の集計に使うので、一度公開したら安易に変えない
+# (inquiries.KINDSと同じ方針)。
+WITHDRAW_REASONS = {
+    "not_enough_features": "使いたい機能が足りなかった",
+    "hard_to_use": "操作が分かりにくかった",
+    "bugs": "表示・音声などの不具合があった",
+    "achieved_goal": "目的の学習を達成できた",
+    "switching": "他のサービス・教材に移る",
+    "price": "料金が合わなかった",
+    "not_using": "最近あまり使わなくなった",
+    "other": "その他",
+}
+
+# 退会時に削除する「学習データ」テーブル(user_id列で自分の行を特定できる
+# もの)。決済記録(paypay_payments/balance_ledger)・AI利用ログ(ai_usage、
+# 課金の裏付けとして決済記録と同様に扱う)は対象外(プライバシーポリシー
+# §9「法令上保存が必要なものを除き」・2026-09-23オーナー確認)。
+_WITHDRAW_PERSONAL_TABLES = (
+    "user_word_progress", "user_phrase_progress", "user_material_progress",
+    "user_category_progress", "user_listening_progress",
+    "user_settings_backups", "user_settings",
+    "word_attempts", "phrase_attempts", "study_sessions",
+    "conversation_log", "deck_progress", "crossword_sessions",
+    "crossword_sample_plays",
+)
+
+
+class WithdrawIn(BaseModel):
+    reasons: list[str] = []
+    detail: str = ""
+
+
+@router.post("/withdraw")
+def withdraw(payload: WithdrawIn):
+    """自己サービスの退会(アカウント削除・2026-09-23・オーナー要望「登録は
+    あるが登録を解除がない」への対応)。ログイン中の本人のみ実行できる。
+
+    usersの行自体は削除しない(paypay_payments/balance_ledgerがuser_idを
+    NOT NULLで参照しており、法令上の保存義務があるため=CLAUDE.md/
+    プライバシーポリシー§9)。代わりに個人を特定できる列(username=登録
+    メールアドレス・display_name・email・password_hash)を匿名化し
+    is_active=0にしてログイン不可にする。学習データ(進捗・単語帳・AI会話
+    ログ等)は削除する。理由(選択式+自由記入)はaccount_withdrawalsに
+    記録し、オーナーが後から離脱理由を分析できるようにする。"""
+    uid = auth.current_user_id()
+    reasons = [r for r in payload.reasons if r in WITHDRAW_REASONS]
+    detail = payload.detail.strip()[:1000]
+    if not reasons and not detail:
+        return error_response(
+            "7002", "退会理由を1つ以上選択するか、自由記入欄にご記入くだ"
+            "さい。")
+    with db() as conn:
+        if auth.is_guest_user_id(conn, uid):
+            return error_response("2003", "要ログイン")
+        u = auth.get_user(conn, uid)
+        if not u or not u.get("is_active"):
+            return error_response("2003", "要ログイン")
+        if u.get("role") == "admin":
+            # 唯一の管理者が誤ってセルフサービスで退会し、管理画面に誰も
+            # 入れなくなる事故を避ける(多重防御・想定される利用者は一般
+            # ユーザーのみ)。管理者の退会はお問い合わせ経由の手動対応。
+            return error_response(
+                "7002", "管理者アカウントはこの画面から退会できません。"
+                "お問い合わせからご連絡ください。")
+        conn.execute(
+            "INSERT INTO account_withdrawals "
+            "(user_id, username_at_withdrawal, reasons, detail) "
+            "VALUES (?, ?, ?, ?)",
+            (uid, u["username"], ",".join(reasons), detail),
+        )
+        for tbl in _WITHDRAW_PERSONAL_TABLES:
+            conn.execute(f"DELETE FROM {tbl} WHERE user_id = ?", (uid,))
+        # 自作の単語帳/フレーズ帳(配下のdeck_words/deck_progress等は
+        # ON DELETE CASCADEで自動的に削除される)。
+        conn.execute("DELETE FROM decks WHERE user_id = ?", (uid,))
+        conn.execute("DELETE FROM phrase_decks WHERE user_id = ?", (uid,))
+        # AI生成教材(materials)は他ユーザーも閲覧できる共有コンテンツの
+        # ことがあるため削除せず、作成者としての紐付けだけ外す。
+        conn.execute(
+            "UPDATE materials SET user_id = NULL WHERE user_id = ?", (uid,))
+        anon_username = f"withdrawn_{uid}_{secrets.token_hex(4)}"
+        conn.execute(
+            "UPDATE users SET username = ?, display_name = '', "
+            " email = '', password_hash = '', is_active = 0 WHERE id = ?",
+            (anon_username, uid),
+        )
+        auth.bump_session_epoch(conn, uid)
+    resp = JSONResponse({"ok": True})
+    resp.delete_cookie(auth.SESSION_COOKIE, path="/")
+    return resp
+
+
+def _require_admin(conn) -> None:
+    me_row = auth.get_user(conn, auth.current_user_id())
+    if not me_row or me_row.get("role") != "admin":
+        from ..services import errors
+        raise errors.http_error("2004", "管理者のみ閲覧できます。")
+
+
+@router.get("/withdrawals")
+def list_withdrawals(limit: int = 200):
+    """管理者専用: 退会理由の一覧(新しい順)。離脱理由の分析用
+    (2026-09-23)。reasonsはWITHDRAW_REASONSのkeyのカンマ区切りなので、
+    フロント側でラベルに変換する。"""
+    limit = max(1, min(limit, 500))
+    with db() as conn:
+        _require_admin(conn)
+        rows = conn.execute(
+            "SELECT id, username_at_withdrawal, reasons, detail, created_at "
+            "FROM account_withdrawals ORDER BY id DESC LIMIT ?", (limit,),
+        ).fetchall()
+    return {
+        "reason_labels": WITHDRAW_REASONS,
+        "withdrawals": [dict(r) for r in rows],
+    }
 
 
 @router.get("/me")
