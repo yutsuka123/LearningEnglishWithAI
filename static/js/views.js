@@ -30,11 +30,7 @@ function freeOnlyToggle(id, kind) {
 
 // ⓘヒント文言のうち複数画面で同じ内容を使うもの(2026-09-19・ヘルプ拡充)。
 // 各画面のhintIdを共通にしてあるので、「今後表示しない」は全画面で共通に効く。
-const QUIZ_GRADING_HINT =
-  "答えを見たあと、自動判定を確認して採点します。⭕正解・🤔うろ覚え・"
-  + "❌不正解は習熟度に記録され、✅覚えたは満点付近まで加点します。"
-  + "🚫ノーカウントは記録も集計もしません。同じ語を両方向とも正解すると"
-  + "ボーナスが付くことがあります。";
+const QUIZ_GRADING_HINT = () => tx("quiz.gradingHint");
 // 絞り込み・並び替えの使い方(2026-09-21・ユーザー要望「ⓘでフィルターのかけ方を
 // 詳しく解説」)。改行はポップオーバー側(pre-line)で保たれる。挙動の根拠:
 // 検索=読み込み済みの結果内(クライアント側)/複数分野=OR/大分類は分野未指定の
@@ -3089,24 +3085,20 @@ export async function quiz(root) {
     .catch(() => ({ settings: {} }))).settings || {};
   const hideMasteredDefault = !!us.hide_mastered;
   root.innerHTML = `
-    <h1>クイズ ${infoIcon("help-quiz",
-      "英単語またはフレーズから10問をランダムに出題します。同じ語を" +
-      "「英→日」「日→英」の両方向で出題し、答えは文字入力か音声で" +
-      "回答します(右上の「入力」で切替)。ログインすると結果が習熟度に" +
-      "記録されます。")}</h1>
-    <p class="sub">10問ランダム出題。英単語・フレーズどちらも両方向で出題します。</p>
+    <h1>${tx("quiz.title")} ${infoIcon("help-quiz", tx("quiz.helpText"))}</h1>
+    <p class="sub">${tx("quiz.subtitle")}</p>
     <div class="card">
       <div class="row">
-        <b>🔤 英単語クイズ</b>
-        <button class="btn" id="quizWord">クイズ開始 (10語)</button>
-        ${infoIcon("quiz-grading", QUIZ_GRADING_HINT)}
+        <b>🔤 ${tx("quiz.wordCardTitle")}</b>
+        <button class="btn" id="quizWord">${tx("quiz.startWordBtn")}</button>
+        ${infoIcon("quiz-grading", QUIZ_GRADING_HINT())}
       </div>
     </div>
     <div class="card">
       <div class="row">
-        <b>💬 フレーズクイズ</b>
-        <button class="btn" id="quizPhrase">クイズ開始 (10フレーズ)</button>
-        ${infoIcon("quiz-grading", QUIZ_GRADING_HINT)}
+        <b>💬 ${tx("quiz.phraseCardTitle")}</b>
+        <button class="btn" id="quizPhrase">${tx("quiz.startPhraseBtn")}</button>
+        ${infoIcon("quiz-grading", QUIZ_GRADING_HINT())}
       </div>
     </div>`;
 
@@ -3114,11 +3106,11 @@ export async function quiz(root) {
     const tb = testBanned() ? "&include_banned=true" : "";
     const mb = hideMasteredDefault ? "&mastered=hide" : "";
     const items = await api.get("/api/words/quiz?limit=10" + tb + mb);
-    root.innerHTML = `<h1>単語クイズ</h1>`;
+    root.innerHTML = `<h1>${tx("quiz.wordQuizHeading")}</h1>`;
     const holder = el(`<div></div>`); root.appendChild(holder);
     quizRunner({ container: holder, items, kind: "word", appState: state,
       onDone: () => {
-        const b = el(`<button class="btn mt">クイズに戻る</button>`);
+        const b = el(`<button class="btn mt">${tx("quiz.backToQuizBtn")}</button>`);
         b.addEventListener("click", () => go("quiz")); holder.appendChild(b);
       } });
   });
@@ -3126,11 +3118,11 @@ export async function quiz(root) {
     const tb = testBanned() ? "&include_banned=true" : "";
     const mb = hideMasteredDefault ? "&mastered=hide" : "";
     const items = await api.get("/api/phrases/quiz?limit=10" + tb + mb);
-    root.innerHTML = `<h1>フレーズクイズ</h1>`;
+    root.innerHTML = `<h1>${tx("quiz.phraseQuizHeading")}</h1>`;
     const holder = el(`<div></div>`); root.appendChild(holder);
     quizRunner({ container: holder, items, kind: "phrase", appState: state,
       onDone: () => {
-        const b = el(`<button class="btn mt">クイズに戻る</button>`);
+        const b = el(`<button class="btn mt">${tx("quiz.backToQuizBtn")}</button>`);
         b.addEventListener("click", () => go("quiz")); holder.appendChild(b);
       } });
   });
