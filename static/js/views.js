@@ -8260,53 +8260,43 @@ export async function settings(root) {
       `<option ${l === cur ? "selected" : ""}>${escapeHtml(l)}</option>`)
       .join("");
   root.innerHTML = `
-    <h1>設定 <span class="muted" id="roleBadge"></span> ${infoIcon(
-      "help-settings",
-      "プロフィール・チャージ・表示する分野やシーン・既定フィルター・" +
-      "詳細設定(習熟度の基準など)・AIの声・お問い合わせをまとめた画面です。" +
-      "分野・シーンや既定フィルターなどは、各カードの「保存」ボタンを" +
-      "押すまで反映されません。")}</h1>
-    <p class="sub">学習者プロフィールと音声・AIの設定。</p>
+    <h1>${tx("settings.title")} <span class="muted" id="roleBadge"></span> ${infoIcon(
+      "help-settings", tx("settings.helpText"))}</h1>
+    <p class="sub">${tx("settings.subtitle")}</p>
     <div id="adminMemoSlot"></div>
     <div class="card">
-      <h2>プロフィール</h2>
+      <h2>${tx("settings.profileTitle")}</h2>
       <div class="row">
-        <label class="toggle">呼んでほしい名前</label>
-        <input id="pf_nick" placeholder="例: ゆうた" style="width:200px" />
+        <label class="toggle">${tx("settings.nicknameLabel")}</label>
+        <input id="pf_nick" placeholder="${escapeHtml(tx("settings.nicknamePlaceholder"))}" style="width:200px" />
       </div>
       <div class="row mt">
-        <label class="toggle">TOEIC自己申告(任意)</label>
+        <label class="toggle">${tx("settings.toeicSelfLabel")}</label>
         <input id="pf_toeic" type="number" min="0" max="990" step="5"
-          placeholder="例: 550" style="width:120px" />
-        <button class="btn good" id="pf_save">保存</button>
+          placeholder="${escapeHtml(tx("settings.toeicPlaceholder"))}" style="width:120px" />
+        <button class="btn good" id="pf_save">${tx("common.save")}</button>
       </div>
-      <p class="muted">TOEICは出題題材のレベルの手がかりにします（学習が進むと
-        実績も加味）。名前はAIが会話で呼びかける際に使います。</p>
+      <p class="muted">${tx("settings.profileNote")}</p>
     </div>
     <div class="card">
-      <h2>🛟 設定のバックアップ</h2>
-      <p class="muted">設定を保存するたび、直前の内容を自動で残します
-        （直近3件まで）。誤操作等で設定がおかしくなったら、ここから
-        戻せます。</p>
+      <h2>🛟 ${tx("settings.backupTitle")}</h2>
+      <p class="muted">${tx("settings.backupNote")}</p>
       <div id="settingsBackupWrap" class="mt">
-        <p class="muted">読み込み中…</p>
+        <p class="muted">${tx("common.loading")}</p>
       </div>
     </div>
     <div class="card" id="chargeCard" style="display:none">
-      <h2>💳 チャージ</h2>
-      <p>現在の残高: <b id="ptBalance">-</b> pt</p>
+      <h2>💳 ${tx("settings.chargeTitle")}</h2>
+      <p>${tx("settings.currentBalance")}: <b id="ptBalance">-</b> pt</p>
       ${state.canPaypayCharge ? `
       <div id="paypayChargeBlock" class="mt">
-        <h3 style="margin-bottom:4px">① PayPayで購入(即時反映)</h3>
-        <p class="muted" style="margin-top:0">支払いが完了すると、キーの
-          発行・入力なしでそのまま残高に反映されます。</p>
+        <h3 style="margin-bottom:4px">${tx("settings.paypayBuyTitle")}</h3>
+        <p class="muted" style="margin-top:0">${tx("settings.paypayBuyNote")}</p>
         <div class="row">
-          <button class="btn good" id="pp_pay_800">¥800で購入</button>
-          <button class="btn good" id="pp_pay_8000">¥8000で購入</button>
+          <button class="btn good" id="pp_pay_800">${tx("settings.buyFor", { price: "800" })}</button>
+          <button class="btn good" id="pp_pay_8000">${tx("settings.buyFor", { price: "8000" })}</button>
         </div>
-        <p class="muted" style="margin:4px 0 0;font-size:12px">
-          ¥800→800pt付与 / ¥8000→<b>8,800pt付与(+10%お得)</b>
-          （BASEでの購入と同じ付与数です）</p>
+        <p class="muted" style="margin:4px 0 0;font-size:12px">${tx("settings.paypayPtNote")}</p>
         <p class="muted mt" id="pp_out"></p>
         ${state.showPaypayDevTools ? `
         <details class="mt">
@@ -8325,7 +8315,7 @@ export async function settings(root) {
         ` : ""}
       </div>
       <hr class="mt" />
-      <h3 style="margin-bottom:4px">② BASEで購入してキーを入力</h3>
+      <h3 style="margin-bottom:4px">${tx("settings.baseBuyTitle")}</h3>
       ` : ""}
       <div class="row">
         <input id="ck_key" name="charge_key" type="text"
@@ -8333,57 +8323,48 @@ export async function settings(root) {
           autocorrect="off" spellcheck="false" data-lpignore="true"
           data-1p-ignore="true"
           placeholder="XXXX-XXXXXXX-X-XXXX" style="width:220px" />
-        <button class="btn good" id="ck_redeem">チャージする</button>
+        <button class="btn good" id="ck_redeem">${tx("settings.chargeSubmit")}</button>
       </div>
       <p class="muted mt" id="ck_out"></p>
-      <p class="muted">BASE等で購入したチャージキーを入力すると、
-        pt（1pt=1円）が残高に加算されます。AI英会話・reading・listening
-        等の生成でこの残高が消費されます（単語/フレーズのクイズは無料）。
-        消費ペースは為替やAI提供元のAPI価格改定により変動することが
-        あります。
-        <a href="/static/terms.html" target="_blank">利用規約・免責事項</a></p>
+      <p class="muted">${tx("settings.chargeKeyNote")}
+        <a href="/static/terms.html" target="_blank">${tx("terms.title")}</a></p>
     </div>
     <div class="card">
-      <h2>表示する分野・シーン ${infoIcon("help-visible-domains", VISIBLE_DOMAINS_HELP)}</h2>
-      <p class="muted">興味のない分野・シーンのチェックを外すと、英単語/
-        フレーズ画面のフィルター候補から消えます（データ自体は削除され
-        ません・いつでも再表示できます）。<b>チェックの変更はこのカードの
-        「保存」を押すまで反映されません。</b></p>
+      <h2>${tx("settings.visibleDomainsTitle")} ${infoIcon("help-visible-domains", VISIBLE_DOMAINS_HELP)}</h2>
+      <p class="muted">${tx("settings.visibleDomainsNote1")}
+        <b>${tx("settings.visibleDomainsNote2")}</b></p>
       <details class="fset-section fset-section-w mt">
-        <summary><h3 style="display:inline">🔤 英単語の分野</h3></summary>
+        <summary><h3 style="display:inline">🔤 ${tx("settings.wordDomainsTitle")}</h3></summary>
         <div class="row mt">
-          <button type="button" class="btn ghost" id="fset_w_all1">全てON</button>
-          <button type="button" class="btn ghost" id="fset_w_all0">全てOFF</button>
-          <button type="button" class="btn ghost" id="fset_w_reset">デフォルトに戻す</button>
+          <button type="button" class="btn ghost" id="fset_w_all1">${tx("settings.allOn")}</button>
+          <button type="button" class="btn ghost" id="fset_w_all0">${tx("settings.allOff")}</button>
+          <button type="button" class="btn ghost" id="fset_w_reset">${tx("settings.fsetResetDefault")}</button>
         </div>
         <div class="fset-wrap mt" id="fset_words">
           ${fsetGroupsHtml(domainGroups, hiddenDomains, "w")}
         </div>
       </details>
       <details class="fset-section fset-section-p mt">
-        <summary><h3 style="display:inline">💬 フレーズのシーン</h3></summary>
+        <summary><h3 style="display:inline">💬 ${tx("settings.phraseScenesTitle")}</h3></summary>
         <div class="row mt">
-          <button type="button" class="btn ghost" id="fset_p_all1">全てON</button>
-          <button type="button" class="btn ghost" id="fset_p_all0">全てOFF</button>
-          <button type="button" class="btn ghost" id="fset_p_reset">デフォルトに戻す</button>
+          <button type="button" class="btn ghost" id="fset_p_all1">${tx("settings.allOn")}</button>
+          <button type="button" class="btn ghost" id="fset_p_all0">${tx("settings.allOff")}</button>
+          <button type="button" class="btn ghost" id="fset_p_reset">${tx("settings.fsetResetDefault")}</button>
         </div>
         <div class="fset-wrap mt" id="fset_phrases">
           ${fsetGroupsHtml(sceneGroups, hiddenScenes, "p")}
         </div>
       </details>
-      <button class="btn good mt" id="fset_save">保存</button>
+      <button class="btn good mt" id="fset_save">${tx("common.save")}</button>
       <span class="muted mt" id="fset_out"></span>
     </div>
     <div class="card">
-      <h2>既定フィルター</h2>
-      <p class="muted">英単語・フレーズの画面を開いたときに自動で適用される
-        フィルターです。開いた後にその場でフィルターを変更することも
-        今まで通りできます（その場の変更はここでは保存されません。
-        既定を変えたいときはこのカードで「保存」してください）。</p>
-      <h3 class="mt">英単語</h3>
+      <h2>${tx("settings.defaultFilterTitle")}</h2>
+      <p class="muted">${tx("settings.defaultFilterNote")}</p>
+      <h3 class="mt">${tx("nav.vocab")}</h3>
       <div class="row">
         <select id="dfWCategory">
-          <option value="">大分類: 指定なし</option>
+          <option value="">${tx("settings.categoryUnspecified")}</option>
           ${Object.keys(domainGroups).map((c) =>
             `<option ${c === dfw.category ? "selected" : ""}>
               ${escapeHtml(c)}</option>`).join("")}
@@ -8392,17 +8373,17 @@ export async function settings(root) {
         <span class="muted">〜</span>
         <select id="dfWLvMax">${lvOptsHtml(wLevels, dfw.level_max)}</select>
         <select id="dfWMastered">
-          <option value="">覚えた: 含む</option>
+          <option value="">${tx("filter.masteredInclude")}</option>
           <option value="hide" ${dfw.mastered === "hide" ? "selected" : ""}>
-            覚えた: 隠す</option>
+            ${tx("filter.masteredHide")}</option>
           <option value="only" ${dfw.mastered === "only" ? "selected" : ""}>
-            覚えた: のみ</option>
+            ${tx("filter.masteredOnly")}</option>
         </select>
       </div>
-      <h3 class="mt">フレーズ</h3>
+      <h3 class="mt">${tx("nav.phrases")}</h3>
       <div class="row">
         <select id="dfPCategory">
-          <option value="">大分類: 指定なし</option>
+          <option value="">${tx("settings.categoryUnspecified")}</option>
           ${Object.keys(sceneGroups).map((c) =>
             `<option ${c === dfp.category ? "selected" : ""}>
               ${escapeHtml(c)}</option>`).join("")}
@@ -8411,97 +8392,79 @@ export async function settings(root) {
         <span class="muted">〜</span>
         <select id="dfPLvMax">${lvOptsHtml(pLevels, dfp.level_max)}</select>
         <select id="dfPMastered">
-          <option value="">覚えた: 含む</option>
+          <option value="">${tx("filter.masteredInclude")}</option>
           <option value="hide" ${dfp.mastered === "hide" ? "selected" : ""}>
-            覚えた: 隠す</option>
+            ${tx("filter.masteredHide")}</option>
           <option value="only" ${dfp.mastered === "only" ? "selected" : ""}>
-            覚えた: のみ</option>
+            ${tx("filter.masteredOnly")}</option>
         </select>
       </div>
       <div class="row mt">
-        <button class="btn good" id="df_save">保存</button>
-        <button class="btn ghost" id="df_clear">既定を使わない(クリア)</button>
+        <button class="btn good" id="df_save">${tx("common.save")}</button>
+        <button class="btn ghost" id="df_clear">${tx("settings.clearDefaultFilter")}</button>
         <span class="muted" id="df_out"></span>
       </div>
     </div>
     <div class="card">
-      <h2>詳細設定</h2>
+      <h2>${tx("settings.advancedTitle")}</h2>
       <label><input type="checkbox" id="advHideMastered" />
-        「覚えた」判定の語彙・フレーズはクイズ/フラッシュカードに出題しない
-        （忘却曲線オフ）</label>
-      <p class="muted">オンにすると、単語帳/フレーズ帳一覧の「覚えた」ボタンで
-        満点にした項目は、クイズ・フラッシュカードに二度と出てこなくなります。
-        また出題したくなったら、一覧画面でその項目の「戻す」ボタンを押すと
-        個別に復活します。</p>
+        ${tx("settings.hideMasteredLabel")}</label>
+      <p class="muted">${tx("settings.hideMasteredNote")}</p>
       <div class="row mt">
-        <button class="btn good" id="adv_save">保存</button>
+        <button class="btn good" id="adv_save">${tx("common.save")}</button>
         <span class="muted" id="adv_out"></span>
       </div>
 
       <hr class="mt" />
-      <h3>🧠 習熟度(mastery)・忘却曲線の設定 ${infoIcon("mastery-settings",
-        "忘却曲線とは、時間が経つと習熟度ptが少しずつ自動で減っていく仕組み" +
-        "です。復習しないと「覚えた」から外れていきます。「卒業」にした" +
-        "項目は減りません。減らす量を0にするとオフにできます。")}</h3>
-      <p class="muted">単語・フレーズの習熟度は0〜満点のpt(ポイント)で管理し、
-        設定したpt以上を「覚えた」と判定します。「覚えた」「うろ覚え」
-        ボタンでの加点量、時間経過で自然に減っていく忘却曲線の強さも
-        ここで調整できます。ここでの変更は単語帳・フレーズ帳・
-        フラッシュカードなど、アカウント全体の学習機能に共通で反映されます
-        （単語帳/フレーズ帳ごとには設定しません）。数値は保存時に安全な
-        範囲へ自動調整されます。</p>
+      <h3>🧠 ${tx("settings.masteryConfigTitle")} ${infoIcon("mastery-settings", tx("settings.masteryConfigHelp"))}</h3>
+      <p class="muted">${tx("settings.masteryConfigNote")}</p>
       <div class="grid cols-2 mt">
-        <label>満点(上限pt・100〜300): <input id="advMasteryMax"
+        <label>${tx("settings.maxPointsLabel")} <input id="advMasteryMax"
           type="number" min="100" max="300" style="width:80px" /></label>
-        <label>「覚えた」と判定するpt: <input id="advMasteredThreshold"
+        <label>${tx("settings.masteredThresholdLabel")} <input id="advMasteredThreshold"
           type="number" min="10" style="width:80px" /></label>
-        <label>「覚えた」ボタンでの加点(pt): <input id="advKnownBonus"
+        <label>${tx("settings.knownBonusLabel")} <input id="advKnownBonus"
           type="number" min="1" max="300" style="width:80px" /></label>
-        <label>「うろ覚え」ボタンでの加点(pt): <input id="advVagueBonus"
+        <label>${tx("settings.vagueBonusLabel")} <input id="advVagueBonus"
           type="number" min="1" max="300" style="width:80px" /></label>
       </div>
-      <p class="mt">忘却曲線: <input id="advDecayAmount" type="number"
-          min="0" max="100" style="width:70px" />pt を
+      <p class="mt">${tx("settings.decayPrefix")}<input id="advDecayAmount" type="number"
+          min="0" max="100" style="width:70px" />${tx("settings.decayMiddle")}
         <input id="advDecayIntervalDays" type="number" min="1" max="90"
-          style="width:70px" />日ごとに自動で減らす
-        （0にすると忘却曲線をオフにできます）</p>
+          style="width:70px" />${tx("settings.decaySuffix")}
+        ${tx("settings.decayNote")}</p>
       <div class="row mt">
-        <button class="btn good" id="advMasterySave">保存</button>
-        <button class="btn ghost" id="advMasteryReset">既定値に戻す</button>
+        <button class="btn good" id="advMasterySave">${tx("common.save")}</button>
+        <button class="btn ghost" id="advMasteryReset">${tx("settings.resetToDefault")}</button>
         <span class="muted" id="advMasteryOut"></span>
       </div>
     </div>
     <div class="card" id="securityCard" style="display:none">
-      <h2>🔒 セキュリティ</h2>
-      <p class="muted">端末を共有した後や、身に覚えのないログイン状態に
-        気づいたときは、全端末から一括でログアウトできます
-        （このボタンを押した端末も再ログインが必要になります）。</p>
-      <button class="btn bad" id="logoutAllBtn">全端末からログアウト</button>
+      <h2>🔒 ${tx("settings.securityTitle")}</h2>
+      <p class="muted">${tx("settings.securityNote")}</p>
+      <button class="btn bad" id="logoutAllBtn">${tx("settings.logoutAllBtn")}</button>
       <span class="muted mt" id="logoutAllOut"></span>
     </div>
     <div class="card" id="withdrawCard" style="display:none">
-      <h2>🚪 退会</h2>
-      <p class="muted">アカウントを削除します。学習履歴・単語帳・フレーズ帳・
-        AI会話ログは削除され、登録メールアドレス等の個人情報も消去します
-        （元に戻せません）。差し支えなければ理由を教えてください
-        （任意・今後の改善に使わせていただきます）。</p>
+      <h2>🚪 ${tx("settings.withdrawTitle")}</h2>
+      <p class="muted">${tx("settings.withdrawDesc")}</p>
       <div id="withdrawReasons" class="mt">${[
-        ["not_enough_features", "使いたい機能が足りなかった"],
-        ["hard_to_use", "操作が分かりにくかった"],
-        ["bugs", "表示・音声などの不具合があった"],
-        ["achieved_goal", "目的の学習を達成できた"],
-        ["switching", "他のサービス・教材に移る"],
-        ["price", "料金が合わなかった"],
-        ["not_using", "最近あまり使わなくなった"],
-        ["other", "その他"],
-      ].map(([k, label]) => `
+        ["not_enough_features", "settings.withdrawReasonNotEnoughFeatures"],
+        ["hard_to_use", "settings.withdrawReasonHardToUse"],
+        ["bugs", "settings.withdrawReasonBugs"],
+        ["achieved_goal", "settings.withdrawReasonAchievedGoal"],
+        ["switching", "settings.withdrawReasonSwitching"],
+        ["price", "settings.withdrawReasonPrice"],
+        ["not_using", "settings.withdrawReasonNotUsing"],
+        ["other", "settings.withdrawReasonOther"],
+      ].map(([k, key]) => `
         <label class="toggle" style="display:block">
-          <input type="checkbox" class="wd-reason" value="${k}" /> ${escapeHtml(label)}
+          <input type="checkbox" class="wd-reason" value="${k}" /> ${escapeHtml(tx(key))}
         </label>`).join("")}</div>
       <textarea id="wd_detail" class="mt" style="min-height:60px"
-        placeholder="自由記入(任意)"></textarea>
+        placeholder="${escapeHtml(tx("settings.withdrawDetailPlaceholder"))}"></textarea>
       <div class="row mt">
-        <button class="btn bad" id="wd_submit">退会する</button>
+        <button class="btn bad" id="wd_submit">${tx("settings.withdrawSubmit")}</button>
         <span class="muted" id="wd_out"></span>
       </div>
     </div>
@@ -8525,47 +8488,51 @@ export async function settings(root) {
         （git管理ファイルには保存しません）。</p>
     </div>
     <div class="card">
-      <h2>お問い合わせ・ご要望</h2>
-      <p class="muted">不具合報告・追加してほしい語彙/機能など、お気軽に
-        送信してください（個人開発のため対応は手動・ベストエフォートです）。</p>
+      <h2>${tx("settings.inquiryTitle")}</h2>
+      <p class="muted">${tx("settings.inquiryNote")}</p>
       <div class="row">
         <select id="iq_kind">
-          ${["要望", "お問い合わせ", "ログインできない", "技術的トラブル",
-             "課金トラブル", "機能に関する要望",
-             "訳・音声の間違えに関する報告", "応援メッセージ", "感想",
-             "その他"].map((k) => `<option>${escapeHtml(k)}</option>`)
-             .join("")}
+          ${[
+            ["要望", "settings.iqKindRequest"],
+            ["お問い合わせ", "settings.iqKindContact"],
+            ["ログインできない", "settings.iqKindLoginIssue"],
+            ["技術的トラブル", "settings.iqKindTechIssue"],
+            ["課金トラブル", "settings.iqKindBillingIssue"],
+            ["機能に関する要望", "settings.iqKindFeatureRequest"],
+            ["訳・音声の間違えに関する報告", "settings.iqKindTranslationAudioIssue"],
+            ["応援メッセージ", "settings.iqKindCheer"],
+            ["感想", "settings.iqKindImpression"],
+            ["その他", "settings.iqKindOther"],
+          ].map(([v, key]) =>
+            `<option value="${v}">${escapeHtml(tx(key))}</option>`).join("")}
         </select>
-        <input id="iq_name" placeholder="お名前(任意)" style="width:140px" />
-        <input id="iq_email" placeholder="メール(必須・返信先)"
+        <input id="iq_name" placeholder="${escapeHtml(tx("settings.inquiryNamePlaceholder"))}" style="width:140px" />
+        <input id="iq_email" placeholder="${escapeHtml(tx("settings.inquiryEmailPlaceholder"))}"
           style="width:220px" />
       </div>
       <textarea id="iq_content" class="mt" style="min-height:80px"
-        placeholder="内容を入力してください"></textarea>
+        placeholder="${escapeHtml(tx("settings.inquiryContentPlaceholder"))}"></textarea>
       <div class="row mt">
-        <button class="btn good" id="iq_send">送信</button>
+        <button class="btn good" id="iq_send">${tx("settings.inquirySubmit")}</button>
         <span class="muted" id="iq_out"></span>
       </div>
     </div>
     <div class="card">
-      <h2>ℹ️ このアプリについて</h2>
-      <p class="muted">バージョン ${escapeHtml(s.version || "")}
-        （個人開発・ベストエフォート対応）。</p>
-      <p><a href="/static/about.html">このアプリについて
-        （まとめページ）</a></p>
-      <p><a href="/static/terms.html" target="_blank">利用規約・免責事項</a></p>
-      <p><a href="/tokushoho" target="_blank">特定商取引法に基づく表記</a>
+      <h2>ℹ️ ${tx("settings.aboutTitle")}</h2>
+      <p class="muted">${tx("settings.aboutVersionNote", { version: escapeHtml(s.version || "") })}</p>
+      <p><a href="/static/about.html">${tx("settings.aboutLinkPage")}</a></p>
+      <p><a href="/static/terms.html" target="_blank">${tx("terms.title")}</a></p>
+      <p><a href="/tokushoho" target="_blank">${tx("tokushoho.title")}</a>
         ${s.tokushoho_ready ? "" : `<span class="muted">
-        （現在たたき台・記入中です）</span>`}</p>
-      <p class="muted">取扱説明書・使い方ガイドは準備中です。ご不明な点は
-        上の「お問い合わせ・ご要望」からお気軽にどうぞ。</p>
+        ${tx("settings.aboutTokushohoDraftNote")}</span>`}</p>
+      <p class="muted">${tx("settings.aboutManualNote")}</p>
     </div>
     <div class="card">
-      <h2>音声入力</h2>
+      <h2>${tx("settings.voiceInputTitle")}</h2>
       <label class="toggle">
         <input type="checkbox" id="autoSubmit"
           ${speech.isVoiceAutoSubmit() ? "checked" : ""} />
-        録音停止したら自動で判定/送信する（OFFなら内容を確認してから送信）</label>
+        ${tx("settings.voiceInputAutoSubmit")}</label>
     </div>
     <div class="card admin-only">
       <h2>🔞 禁止用語（注意喚起）</h2>
@@ -8581,17 +8548,15 @@ export async function settings(root) {
       <p class="muted mt">※ 和製英語・発音注意（安全な学習項目）は常に表示されます。</p>
     </div>
     <div class="card">
-      <h2>AIの声（読み上げ）</h2>
+      <h2>${tx("settings.aiVoiceTitle")}</h2>
       <label class="toggle">
         <input type="checkbox" id="natural" ${speech.isNatural() ? "checked" : ""} />
-        自然な声(AI / ChatGPT相当)を使う（OFFでブラウザ標準の声）</label>
-      <p class="muted mt">使いたい声をON/OFF。学習回ごとに有効な声から
-        ランダムで選ばれ、画面に名前が出ます。</p>
+        ${tx("settings.aiVoiceNatural")}</label>
+      <p class="muted mt">${tx("settings.aiVoiceHelp")}</p>
       <div class="voice-list" id="voices"></div>
       <p id="voiceErr" class="muted" style="color:var(--warn)"></p>
-      <button class="btn secondary mt" id="testVoice">🔊 ランダムな声でテスト</button>
-      <p class="muted">自然な声にはOpenAIの利用枠（課金/クレジット）が必要です。
-        失敗時は自動でブラウザ標準の声に切り替わります。</p>
+      <button class="btn secondary mt" id="testVoice">🔊 ${tx("settings.aiVoiceTestBtn")}</button>
+      <p class="muted">${tx("settings.aiVoiceCreditNote")}</p>
     </div>
     <div class="card admin-only" id="vocabAddCard">
       <h2>語彙の追加・インポート</h2>
@@ -8687,9 +8652,9 @@ export async function settings(root) {
   sq("#iq_send").addEventListener("click", async () => {
     const content = sq("#iq_content").value.trim();
     const email = sq("#iq_email").value.trim();
-    if (!content) { toast("内容を入力してください"); return; }
+    if (!content) { toast(tx("settings.inquiryContentRequired")); return; }
     if (!email || !email.includes("@") || !email.split("@").pop().includes(".")) {
-      toast("メールアドレス（返信先）を入力してください"); return;
+      toast(tx("settings.inquiryEmailRequired")); return;
     }
     try {
       await api.post("/api/inquiries", {
@@ -8698,10 +8663,10 @@ export async function settings(root) {
         email,
         content,
       });
-      sq("#iq_out").textContent = "送信しました。ありがとうございます！";
+      sq("#iq_out").textContent = tx("settings.inquirySentThanks");
       sq("#iq_content").value = "";
       sq("#iq_name").value = ""; sq("#iq_email").value = "";
-    } catch (e) { sq("#iq_out").textContent = "送信失敗: " + e.message; }
+    } catch (e) { sq("#iq_out").textContent = tx("settings.sendFailedPrefix") + e.message; }
   });
 
   // --- 表示する分野・シーン（チェックボックス、保存を押すまで反映しない）---
@@ -8744,9 +8709,9 @@ export async function settings(root) {
     settings.hidden_domains = hidden_domains;
     settings.hidden_scenes = hidden_scenes;
     await api.put("/api/system/user-settings", { settings });
-    root.querySelector("#fset_out").textContent =
-      `保存しました（非表示: 分野${hidden_domains.length}件 / `
-      + `シーン${hidden_scenes.length}件）`;
+    root.querySelector("#fset_out").textContent = tx("settings.visibleDomainsSaved", {
+      domains: hidden_domains.length, scenes: hidden_scenes.length,
+    });
   });
 
   // 単語/フレーズの既定フィルター（2026-08-08・2026-08-04要望のB10）。
@@ -8767,7 +8732,7 @@ export async function settings(root) {
     settings.default_word_filters = readDefaultFilters("W");
     settings.default_phrase_filters = readDefaultFilters("P");
     await api.put("/api/system/user-settings", { settings });
-    root.querySelector("#df_out").textContent = "保存しました";
+    root.querySelector("#df_out").textContent = tx("common.saved");
   });
   root.querySelector("#df_clear").addEventListener("click", async () => {
     ["#dfWCategory", "#dfPCategory"].forEach((s) => {
@@ -8786,7 +8751,7 @@ export async function settings(root) {
     settings.default_word_filters = {};
     settings.default_phrase_filters = {};
     await api.put("/api/system/user-settings", { settings });
-    root.querySelector("#df_out").textContent = "既定フィルターをクリアしました";
+    root.querySelector("#df_out").textContent = tx("settings.defaultFilterCleared");
   });
 
   const saveBtn = root.querySelector("#save");
@@ -8882,7 +8847,7 @@ export async function settings(root) {
     const t = parseInt(root.querySelector("#pf_toeic").value, 10);
     settings.toeic_self = Number.isFinite(t) ? t : null;
     await api.put("/api/system/user-settings", { settings });
-    toast("プロフィールを保存しました");
+    toast(tx("settings.profileSaved"));
   });
 
   const advSave = root.querySelector("#adv_save");
@@ -8894,7 +8859,7 @@ export async function settings(root) {
     settings.hide_mastered =
       root.querySelector("#advHideMastered").checked;
     await api.put("/api/system/user-settings", { settings });
-    root.querySelector("#adv_out").textContent = "保存しました";
+    root.querySelector("#adv_out").textContent = tx("common.saved");
   });
 
   const advMasterySave = root.querySelector("#advMasterySave");
@@ -8915,19 +8880,17 @@ export async function settings(root) {
     // 「覚えた」の加点が「覚えた」判定の基準を下回ると、ボタンを押しても
     // 基準に届かない本末転倒になるため警告(保存自体は妨げない・2026-08-18)。
     if (settings.known_bonus < settings.mastered_threshold) {
-      out.textContent = "保存しました。ただし「覚えたボタンでの加点」が"
-        + "「覚えたと判定するpt」を下回っているため、「覚えた」を押しても"
-        + "「覚えた」判定にならない場合があります。ご注意ください。";
+      out.textContent = tx("settings.masterySavedBonusWarning");
       out.style.color = "var(--danger, #e5534b)";
     } else {
-      out.textContent = "保存しました（値は安全な範囲に自動調整されます）";
+      out.textContent = tx("settings.masterySavedAdjustedNote");
       out.style.color = "";
     }
   });
 
   const advMasteryReset = root.querySelector("#advMasteryReset");
   if (advMasteryReset) advMasteryReset.addEventListener("click", async () => {
-    if (!confirm("習熟度・忘却曲線の設定を既定値に戻しますか？")) return;
+    if (!confirm(tx("settings.masteryResetConfirm"))) return;
     const settings = {};
     try { Object.assign(settings,
       (await api.get("/api/system/user-settings")).settings || {}); }
@@ -8946,13 +8909,12 @@ export async function settings(root) {
       MASTERY_DEFAULTS.decay_amount;
     root.querySelector("#advDecayIntervalDays").value =
       MASTERY_DEFAULTS.decay_interval_days;
-    root.querySelector("#advMasteryOut").textContent = "既定値に戻しました";
+    root.querySelector("#advMasteryOut").textContent = tx("settings.resetDone");
   });
 
   const logoutAllBtn = root.querySelector("#logoutAllBtn");
   if (logoutAllBtn) logoutAllBtn.addEventListener("click", async () => {
-    if (!confirm("全端末からログアウトします。この端末も含めて"
-      + "再ログインが必要になります。よろしいですか？")) return;
+    if (!confirm(tx("settings.logoutAllConfirm"))) return;
     try { await api.post("/api/auth/logout-all-devices"); }
     catch (_) { /* */ }
     location.href = "/login";
@@ -8965,21 +8927,19 @@ export async function settings(root) {
       .map((el) => el.value);
     const detail = root.querySelector("#wd_detail").value.trim();
     if (!reasons.length && !detail) {
-      out.textContent = "理由を選択するか、自由記入欄にご記入ください。";
+      out.textContent = tx("settings.withdrawNeedReason");
       return;
     }
-    if (!confirm("本当に退会しますか？学習履歴・単語帳・フレーズ帳・AI会話"
-      + "ログはすべて削除され、元に戻せません。")) return;
-    if (!confirm("最終確認です。この操作は取り消せません。退会してよろし"
-      + "いですか？")) return;
-    out.textContent = "処理中…";
+    if (!confirm(tx("settings.withdrawConfirm1"))) return;
+    if (!confirm(tx("settings.withdrawConfirm2"))) return;
+    out.textContent = tx("settings.withdrawProcessing");
     try {
       await api.post("/api/auth/withdraw", { reasons, detail });
     } catch (e) {
-      out.textContent = "退会できませんでした: " + e.message;
+      out.textContent = tx("settings.withdrawFailedPrefix") + e.message;
       return;
     }
-    alert("退会が完了しました。ご利用ありがとうございました。");
+    alert(tx("settings.withdrawDone"));
     location.href = "/login";
   });
 
@@ -8988,18 +8948,17 @@ export async function settings(root) {
     const keyInput = root.querySelector("#ck_key");
     const out = root.querySelector("#ck_out");
     const key = keyInput.value.trim();
-    if (!key) { toast("チャージキーを入力してください"); return; }
+    if (!key) { toast(tx("settings.chargeKeyRequired")); return; }
     out.textContent = "";
     try {
       const r = await api.post("/api/billing/redeem", { key });
-      out.textContent = `チャージしました。現在の残高: `
-        + `${Math.round(r.balance_jpy)} pt`;
+      out.textContent = tx("settings.chargeRedeemed", { balance: Math.round(r.balance_jpy) });
       const bal = root.querySelector("#ptBalance");
       if (bal) bal.textContent = Math.round(r.balance_jpy);
       keyInput.value = "";
-      toast("チャージが完了しました");
+      toast(tx("settings.chargeCompleted"));
       refreshCost();
-    } catch (e) { out.textContent = "失敗: " + e.message; }
+    } catch (e) { out.textContent = tx("common.failedPrefix") + e.message; }
   });
 
   // PayPayでの即時チャージ(管理者テスト中・2026-09-02)。作成後は
@@ -9009,13 +8968,13 @@ export async function settings(root) {
   const ppOut = root.querySelector("#pp_out");
   const startPayPayCharge = async (amountJpy) => {
     if (!ppOut) return;
-    ppOut.textContent = "処理を開始しています…";
+    ppOut.textContent = tx("settings.paypayStarting");
     try {
       const d = await api.post("/api/paypay/create", { amount_jpy: amountJpy });
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
       location.href = (isMobile && d.deeplink) ? d.deeplink : d.url;
     } catch (e) {
-      ppOut.textContent = "失敗: " + e.message;
+      ppOut.textContent = tx("common.failedPrefix") + e.message;
     }
   };
   const pp800 = root.querySelector("#pp_pay_800");
@@ -9144,12 +9103,13 @@ export async function settings(root) {
   }
 
   // Friendly descriptions for the OpenAI voices.
-  const VOICE_DESC = {
-    alloy: "中性的・クリア", ash: "落ち着いた男性的", ballad: "表情豊か",
-    coral: "明るい女性的", echo: "穏やかな男性的", fable: "物語的",
-    nova: "明るい女性的", onyx: "低め・男性的", sage: "落ち着いた",
-    shimmer: "やわらかい女性的",
-  };
+  const VOICE_DESC = () => ({
+    alloy: tx("settings.voiceDescAlloy"), ash: tx("settings.voiceDescAsh"),
+    ballad: tx("settings.voiceDescBallad"), coral: tx("settings.voiceDescCoral"),
+    echo: tx("settings.voiceDescEcho"), fable: tx("settings.voiceDescFable"),
+    nova: tx("settings.voiceDescNova"), onyx: tx("settings.voiceDescOnyx"),
+    sage: tx("settings.voiceDescSage"), shimmer: tx("settings.voiceDescShimmer"),
+  });
   const TEST_LINE = "Hi! This is your study voice for today.";
 
   const renderVoices = () => {
@@ -9161,7 +9121,7 @@ export async function settings(root) {
           <input type="checkbox" ${speech.isOpenAIVoiceEnabled(name)
             ? "checked" : ""} />
           <span class="name">${name}</span>
-          <span class="lang">${VOICE_DESC[name] || ""}</span>
+          <span class="lang">${VOICE_DESC()[name] || ""}</span>
           <button class="btn ghost">▶</button></div>`);
         row.querySelector("input").addEventListener("change", (e) =>
           speech.setOpenAIVoiceEnabled(name, e.target.checked));
@@ -9169,7 +9129,8 @@ export async function settings(root) {
           const r = await speech.previewOpenAIVoice(name, TEST_LINE);
           if (!r.ok) {
             const errBox = root.querySelector("#voiceErr");
-            errBox.textContent = "音声エラー: " + (r.error || "不明");
+            errBox.textContent = tx("settings.voicePreviewErrorPrefix")
+              + (r.error || tx("settings.voicePreviewErrorUnknown"));
             console.error("TTS preview failed:", r.error);
           }
         });
@@ -9180,8 +9141,7 @@ export async function settings(root) {
     // Browser voices (fallback / when natural is off).
     const voices = speech.getEnglishVoices();
     if (!voices.length) {
-      box.innerHTML = `<p class="muted">利用可能な音声が見つかりません。
-        （AIキー設定＋「自然な声」ONを推奨）</p>`;
+      box.innerHTML = `<p class="muted">${tx("settings.noVoicesAvailable")}</p>`;
       return;
     }
     voices.forEach((v) => {
@@ -9203,7 +9163,7 @@ export async function settings(root) {
   }
   root.querySelector("#autoSubmit").addEventListener("change", (e) => {
     speech.setVoiceAutoSubmit(e.target.checked);
-    toast(e.target.checked ? "音声→自動判定 ON" : "音声→確認してから送信");
+    toast(e.target.checked ? tx("settings.voiceAutoSubmitOn") : tx("settings.voiceAutoSubmitOff"));
   });
   root.querySelector("#banShow").addEventListener("change", (e) => {
     setShowBanned(e.target.checked);
@@ -9220,7 +9180,7 @@ export async function settings(root) {
   });
   root.querySelector("#testVoice").addEventListener("click", () => {
     const name = speech.pickRoundVoice();
-    toast("声: " + (name || "なし"));
+    toast(tx("settings.voiceTestPrefix") + (name || tx("settings.voiceTestNone")));
     speech.speak(TEST_LINE);
   });
 
@@ -9228,40 +9188,37 @@ export async function settings(root) {
   async function loadSettingsBackups() {
     const wrap = root.querySelector("#settingsBackupWrap");
     if (!wrap) return;
-    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    wrap.innerHTML = `<p class="muted">${tx("common.loading")}</p>`;
     try {
       const res = await api.get("/api/system/user-settings/backups");
       if (!res.backups.length) {
-        wrap.innerHTML = `<p class="muted">まだバックアップはありません
-          （設定を保存すると次回から残ります）。</p>`;
+        wrap.innerHTML = `<p class="muted">${tx("settings.backupNoneYet")}</p>`;
         return;
       }
       wrap.innerHTML = `<ul class="links">${res.backups.map((b) => `
         <li style="justify-content:space-between; display:flex;
           align-items:center; gap:10px">
-          <span>${fmtDateJST(b.created_at)} 時点の設定</span>
+          <span>${tx("settings.backupAtTime", { time: fmtDateJST(b.created_at) })}</span>
           <button class="btn ghost restore-settings-btn" data-id="${b.id}"
-            style="padding:3px 10px">この内容に戻す</button>
+            style="padding:3px 10px">${tx("settings.backupRestoreBtn")}</button>
         </li>`).join("")}</ul>`;
       wrap.querySelectorAll(".restore-settings-btn").forEach((btn) => {
         btn.addEventListener("click", async () => {
-          if (!confirm("表示中の設定を、選んだ時点の内容に戻します。"
-            + "（今の内容も自動でバックアップされるので、やり直せます）"
-            + "よろしいですか？")) return;
+          if (!confirm(tx("settings.backupRestoreConfirm"))) return;
           btn.disabled = true;
           try {
             await api.post("/api/system/user-settings/restore",
               { backup_id: parseInt(btn.dataset.id, 10) });
-            toast("設定を復元しました。画面を再読み込みします。");
+            toast(tx("settings.backupRestored"));
             go("settings");
           } catch (e) {
-            toast("復元に失敗: " + e.message);
+            toast(tx("settings.backupRestoreFailedPrefix") + e.message);
             btn.disabled = false;
           }
         });
       });
     } catch (e) {
-      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+      wrap.innerHTML = `<p class="muted">${tx("settings.backupFetchFailedPrefix")}${escapeHtml(e.message)}</p>`;
     }
   }
   loadSettingsBackups();
