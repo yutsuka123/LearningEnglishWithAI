@@ -35,54 +35,41 @@ const QUIZ_GRADING_HINT = () => tx("quiz.gradingHint");
 // 詳しく解説」)。改行はポップオーバー側(pre-line)で保たれる。挙動の根拠:
 // 検索=読み込み済みの結果内(クライアント側)/複数分野=OR/大分類は分野未指定の
 // ときだけ有効(app/routers/vocabulary.py `_word_filter`)。
-const WORD_FILTER_HELP = [
-  "【絞り込み・並び替えの使い方】",
-  "🔍 検索：英語か日本語の一部を入力すると、いま表示中の一覧のなかから、その文字を含む語だけに絞ります。",
-  "📁 大分類・分野：大分類を選ぶと、その中の分野すべてが対象になります。「全て ▾」を押すと分野を個別に複数選べます(選んだ分野のどれかに当てはまる語が出ます)。分野を個別に選んだときは、大分類よりそちらが優先されます。",
-  "📶 Lv 下限〜上限：TOEICの目安レベルで範囲を指定します。下限だけ・上限だけでも使えます。",
-  "🔊 再生できるものだけ：いまの状態で音声を無料で再生できる語だけに絞ります。",
-  "🗂️ 単語帳：自分の単語帳に入れた語だけを表示します(ログイン後・単語帳を作っている場合)。",
-  "↕ 並び替え：習熟度・正答率・英語A→Z・レベル・分野・最近の学習・無料で聞ける順から選べます。右の「昇順/降順」ボタンで逆順になります。",
-  "✅ 覚えた：「含む/隠す/のみ」。覚えた語を除いて復習したいときは「隠す」を選びます。",
-  "🐢 速度・件数：音声の再生速度と、1ページに表示する件数を変えられます。",
-  "複数の条件は、すべてを満たす語に絞り込まれます。選択肢に出す分野そのものを減らしたいときは、設定の「表示する分野・シーン」で変更できます。",
+const WORD_FILTER_HELP = () => [
+  tx("help.wordFilter.heading"),
+  tx("help.wordFilter.search"),
+  tx("help.wordFilter.domain"),
+  tx("help.wordFilter.level"),
+  tx("help.wordFilter.playable"),
+  tx("help.wordFilter.deck"),
+  tx("help.wordFilter.sort"),
+  tx("help.wordFilter.mastered"),
+  tx("help.wordFilter.speedCount"),
+  tx("help.wordFilter.footer"),
 ].join("\n");
-const PHRASE_FILTER_HELP = [
-  "【絞り込み・並び替えの使い方】",
-  "🔍 検索：英語か日本語の一部を入力すると、いま表示中の一覧のなかから、その文字を含むフレーズだけに絞ります。",
-  "📁 大分類・シーン：大分類を選ぶと、その中のシーンすべてが対象になります。「全て ▾」を押すとシーンを個別に複数選べます(選んだシーンのどれかに当てはまるフレーズが出ます)。シーンを個別に選んだときは、大分類よりそちらが優先されます。",
-  "📶 Lv 下限〜上限：TOEICの目安レベルで範囲を指定します。下限だけ・上限だけでも使えます。",
-  "🔊 再生できるものだけ：いまの状態で音声を無料で再生できるフレーズだけに絞ります。",
-  "🗂️ フレーズ帳：自分のフレーズ帳に入れたものだけを表示します(ログイン後・フレーズ帳を作っている場合)。",
-  "↕ 並び替え：習熟度・正答率・英語A→Z・シーン・最近の学習・登録順・無料で聞ける順から選べます。「登録順」は、登録した順に並べるので、「失礼に響く言い方→ていねいな言い方」のように対になっているフレーズが続けて見られます。右の「昇順/降順」ボタンで逆順になります。",
-  "✅ 覚えた：「含む/隠す/のみ」。覚えたフレーズを除いて復習したいときは「隠す」を選びます。",
-  "複数の条件は、すべてを満たすフレーズに絞り込まれます。選択肢に出すシーンそのものを減らしたいときは、設定の「表示する分野・シーン」で変更できます。",
+const PHRASE_FILTER_HELP = () => [
+  tx("help.phraseFilter.heading"),
+  tx("help.phraseFilter.search"),
+  tx("help.phraseFilter.scene"),
+  tx("help.phraseFilter.level"),
+  tx("help.phraseFilter.playable"),
+  tx("help.phraseFilter.deck"),
+  tx("help.phraseFilter.sort"),
+  tx("help.phraseFilter.mastered"),
+  tx("help.phraseFilter.footer"),
 ].join("\n");
-const VISIBLE_DOMAINS_HELP = [
-  "【表示する分野・シーンについて】",
-  "チェックを外した分野(英単語)・シーン(フレーズ)は、英単語・ミニフレーズなどの画面の「絞り込みの選択肢」に出なくなります。興味のない分野で選択肢が長くなるのを防げます。",
-  "データは消えません。あとからチェックを入れ直せば、いつでも選択肢に戻ります。",
-  "選択肢から消えるだけなので、分野を「全て」にして一覧を見るときは、チェックを外した分野の語も一覧には含まれます。特定の分野だけを見たいときは、絞り込みで分野を選んでください。",
-  "チェックを変えたあとは、このカードの「保存」を押すまで反映されません。",
-  "「全てON/全てOFF/デフォルトに戻す」で英単語・フレーズ全体を一括で切り替えられ、各グループの一括ボタンで大分類ごとに切り替えられます。",
+const VISIBLE_DOMAINS_HELP = () => [
+  tx("help.visibleDomains.heading"),
+  tx("help.visibleDomains.hide"),
+  tx("help.visibleDomains.noDelete"),
+  tx("help.visibleDomains.stillInAll"),
+  tx("help.visibleDomains.saveNeeded"),
+  tx("help.visibleDomains.bulkButtons"),
 ].join("\n");
-const MASTERY_LEGEND_HINT =
-  "習熟度バーは覚え具合(pt)を表します。赤=0pt・黄=1〜20pt・緑=21〜50pt・"
-  + "青=51pt以上。表示は△うろ覚え→○覚えた→◎卒業の順に進みます。"
-  + "ボタン: うろ覚え=少し加点／覚えた=満点付近まで加点(もう一度押すと"
-  + "「戻す」)／卒業=満点で固定し、以後は時間が経っても減りません／"
-  + "クリア=0ptに戻す。加点量や「覚えた」の基準は設定の詳細設定で"
-  + "変えられます。";
+const MASTERY_LEGEND_HINT = () => tx("help.masteryLegend");
 const MASTERED_FILTER_HINT = () => tx("filter.masteredFilterHint");
-const DECK_PROGRESS_HINT =
-  "「習得済み」は、習熟度が「覚えた」の基準pt(既定100pt)以上になった"
-  + "数です。達成率=習得済み÷全体で、フラッシュやクイズで正解する・"
-  + "「覚えた」「卒業」を押すと上がります。基準は設定の詳細設定で"
-  + "変えられます。";
-const COMPREHENSION_Q_HINT =
-  "長文やスクリプトの内容を確認する理解問題です。OFFにすると問題の部分を"
-  + "表示と読み上げから外します(問題は常に生成・保存されるので、あとで"
-  + "ONにすれば見られます)。";
+const DECK_PROGRESS_HINT = () => tx("help.deckProgress");
+const COMPREHENSION_Q_HINT = () => tx("help.comprehensionQuestions");
 
 // 管理画面の各種集計フィルタ（2026-08-20ユーザー要望）。既定は管理者
 // 自身/メール未登録の招待ユーザー/テストユーザーを除外(=実際の一般
@@ -2514,7 +2501,7 @@ export async function vocab(root) {
     <div class="card">
       <details class="log-group" id="vocabFilters"
         ${window.innerWidth <= 760 ? "" : "open"}>
-      <summary>🔍 ${tx("filter.summary")} ${infoIcon("help-filter-words", WORD_FILTER_HELP)}</summary>
+      <summary>🔍 ${tx("filter.summary")} ${infoIcon("help-filter-words", WORD_FILTER_HELP())}</summary>
       <div class="row mt">
         <input id="kw" placeholder="${escapeHtml(tx("filter.searchPlaceholderWord"))}" style="width:140px" />
         <select id="fCategory" title="${escapeHtml(tx("filter.categoryTitle"))}"><option value="">${tx("filter.allCategories")}</option>
@@ -2558,7 +2545,7 @@ export async function vocab(root) {
           <option value="hide">${tx("filter.masteredHide")}</option>
           <option value="only">${tx("filter.masteredOnly")}</option>
         </select>
-        ${infoIcon("mastery-legend", MASTERY_LEGEND_HINT)}
+        ${infoIcon("mastery-legend", MASTERY_LEGEND_HINT())}
         ${speedSelect("wSpeed")}
         ${pageSizeSelect("wPage")}
         ${state.isAdmin ? `<label class="toggle"
@@ -2831,7 +2818,7 @@ export async function phrases(root) {
     <div class="card">
       <details class="log-group" id="phraseFilters"
         ${window.innerWidth <= 760 ? "" : "open"}>
-      <summary>🔍 ${tx("filter.summary")} ${infoIcon("help-filter-phrases", PHRASE_FILTER_HELP)}</summary>
+      <summary>🔍 ${tx("filter.summary")} ${infoIcon("help-filter-phrases", PHRASE_FILTER_HELP())}</summary>
       <div class="row mt">
         <input id="kw" placeholder="${escapeHtml(tx("filter.searchPlaceholderPhrase"))}" style="width:140px" />
         <span class="muted">Lv</span>
@@ -2868,7 +2855,7 @@ export async function phrases(root) {
           <option value="hide">${tx("filter.masteredHide")}</option>
           <option value="only">${tx("filter.masteredOnly")}</option>
         </select>
-        ${infoIcon("mastery-legend", MASTERY_LEGEND_HINT)}
+        ${infoIcon("mastery-legend", MASTERY_LEGEND_HINT())}
         ${speedSelect("pSpeed")}
         ${pageSizeSelect("pPage")}
       </div>
@@ -3171,7 +3158,7 @@ function materialView(title, sub, area, fields, histAreas, help) {
           ${lengthSelect("flen")}
           <label class="toggle" title="${escapeHtml(tx("material.comprehensionTitle"))}">
             <input type="checkbox" id="showQ" checked /> ${tx("material.comprehensionLabel")}</label>
-          ${infoIcon("comprehension-questions", COMPREHENSION_Q_HINT)}
+          ${infoIcon("comprehension-questions", COMPREHENSION_Q_HINT())}
           <input id="inst" placeholder="${escapeHtml(tx("material.instructionPlaceholder"))}" style="width:160px" />
           <button class="btn" id="gen"
             ${(state.aiEnabled && !aiGateDisabled()) ? "" : "disabled"}>${
@@ -3316,10 +3303,7 @@ function sampleMaterialsCard(area, cardTitle, emptyLabel) {
 
 export async function writing(root) {
   root.innerHTML = `
-    <h1>ライティング ${infoIcon("help-writing",
-      "お題に対して英文を書き、AIが添削・フィードバックします。ゲスト" +
-      "でもサンプル教材は試せますが、AIによる自由な添削にはログインと" +
-      "AI利用の残高が必要です。")}</h1>
+    <h1>${tx("nav.writing")} ${infoIcon("help-writing", tx("writing.helpText"))}</h1>
     ${sampleGateBanner()}
     <p class="sub">英文を書く(または話す)とAIが添削します。音声応答可。</p>
     ${aiBadgeNote()}
@@ -3366,10 +3350,7 @@ export async function conversation(root) {
   if (pref) speech.setVoice(pref); else speech.pickRoundVoice();
   const vlist = speech.listOpenAIVoices();
   root.innerHTML = `
-    <h1>英会話 ${infoIcon("help-conversation",
-      "AIと英語で会話練習ができます。シーン・レベルを選んでやり取りし、" +
-      "終了後にフィードバックを受け取れます。AIとの会話にはログインと" +
-      "AI利用の残高が必要です。")}</h1>
+    <h1>${tx("nav.conversation")} ${infoIcon("help-conversation", tx("conversation.helpText"))}</h1>
     ${sampleGateBanner()}
     <p class="sub">AIの声:
       <select id="voiceSel">${vlist.map((v) =>
@@ -3389,11 +3370,7 @@ export async function conversation(root) {
     <div class="card" id="hfCard">
       <div class="row">
         <b>🎙️ ハンズフリー会話</b>
-        ${infoIcon("conv-handsfree",
-          "ボタンを押さずに話しかけるだけで会話が進むモードです。声の切れ目"
-          + "(無音)を音量で判定して、AIが自動で応答します。使い終わったら"
-          + "「終了」を押してください(つけっぱなしは利用料がかかり続けます。"
-          + "無音や最大時間での自動終了はあくまで保険です)。")}
+        ${infoIcon("conv-handsfree", tx("conversation.handsfreeHelp"))}
         <button class="btn good" id="hfStart"
           ${aiGateDisabled() ? "disabled" : ""}>${
           aiGateDisabled() ? aiGateLabel("開始") : "▶ 開始"}</button>
@@ -3443,11 +3420,8 @@ export async function conversation(root) {
         <label class="toggle"><input type="checkbox" id="speakSpeaker" />
           話者名を読み上げる（AI）</label>
         <label class="toggle"><input type="checkbox" id="fastMode" />
-          ⚡ 応答を高速化（試験運用）</label>
-        ${infoIcon("conv-fast-mode",
-          "ONにすると、会話専用の応答が速いモデルを使います。試験運用のため、"
-          + "返答の内容が通常と少し変わる場合があります。OFFなら通常の"
-          + "モデルのままです。")}
+          ⚡ ${tx("conversation.fastModeLabel")}</label>
+        ${infoIcon("conv-fast-mode", tx("conversation.fastModeHelp"))}
         <button class="btn secondary" id="start"
           ${aiGateDisabled() ? "disabled" : ""}>${
           aiGateLabel("AIから始める")}</button>
@@ -4048,10 +4022,7 @@ export async function conversation(root) {
 export async function listening(root) {
   const topics = await api.get("/api/listening");
   root.innerHTML = `
-    <h1>リスニング ${infoIcon("help-listening",
-      "AIがスクリプトを生成して読み上げ、聞き取れたかを記録します。" +
-      "題材ジャンル・話者アクセント・速度を選べます。「聞き流し」は" +
-      "英文/日本語訳を隠して繰り返し再生するモードです。")}</h1>
+    <h1>${tx("nav.listening")} ${infoIcon("help-listening", tx("listening.helpText"))}</h1>
     ${sampleGateBanner()}
     <p class="sub">スクリプトを生成して読み上げ、理解度を記録します。</p>
     ${aiBadgeNote()}
@@ -4081,7 +4052,7 @@ export async function listening(root) {
         </label>
         <label class="toggle" title="内容理解問題を表示(常に生成・保存)">
           <input type="checkbox" id="showQ" checked /> 内容理解問題</label>
-        ${infoIcon("comprehension-questions", COMPREHENSION_Q_HINT)}
+        ${infoIcon("comprehension-questions", COMPREHENSION_Q_HINT())}
         <button class="btn" id="gen"
           ${(state.aiEnabled && !aiGateDisabled()) ? "" : "disabled"}>${
           aiGateLabel("スクリプト生成")}
@@ -4093,11 +4064,7 @@ export async function listening(root) {
       <div class="row mt" style="border-top:1px solid var(--panel-2);
         padding-top:8px">
         <b>🎧 聞き流し</b>
-        ${infoIcon("listening-passive",
-          "スクリプトを1文ずつ連続で読み上げるモードです(スクリプトが未生成の"
-          + "ときは、約2分ぶんを自動で生成します)。英文・日本語訳の表示は"
-          + "切り替えられ、「繰り返し」で最初から何度も再生します。画面を"
-          + "離れると止まります。")}
+        ${infoIcon("listening-passive", tx("listening.passiveHelp"))}
         <button class="btn secondary" id="plStart">▶ 開始(約2分)</button>
         <button class="btn bad" id="plStop" style="display:none">⏹ 停止</button>
         <label class="toggle"><input type="checkbox" id="plEn" checked />
@@ -4114,10 +4081,7 @@ export async function listening(root) {
       <div class="row mt">
         <label class="toggle">理解度
           <input type="range" id="comp" min="0" max="100" value="50" /></label>
-        ${infoIcon("listening-comprehension",
-          "聞き取れた度合いを0〜100で自己評価して「記録」します。苦手だった"
-          + "点も一緒に残せます。記録すると、上の題材の選択肢に"
-          + "「(理解度○○)」と表示されます。")}
+        ${infoIcon("listening-comprehension", tx("listening.comprehensionHelp"))}
         <input id="weak" placeholder="苦手だった点" style="width:240px" />
         <button class="btn good" id="save">記録</button>
       </div>
@@ -4545,18 +4509,11 @@ export async function assess(root) {
   const p = await api.get("/api/system/progress");
   const w = p.words;
   root.innerHTML = `
-    <h1>判定・教材作成 ${infoIcon("help-assess",
-      "実力の判定と、苦手に合わせた教材の追加をまとめた画面です。" +
-      "「レベル判定」はこれまでの学習データをもとにAIが実力を分析し、" +
-      "「追加教材を作成」はAIが単語/フレーズを生成して追加します。" +
-      "どちらもAIを使うため、AI利用の残高(pt)が必要です。")}</h1>
-    <p class="sub">好きなタイミングで実力を判定し、苦手に合わせて教材を追加できます。</p>
+    <h1>${tx("nav.assess")} ${infoIcon("help-assess", tx("assess.helpText"))}</h1>
+    <p class="sub">${tx("assess.subtitle")}</p>
 
     <div class="card">
-      <h2>🎯 レベル判定 ${infoIcon("assess-level",
-        "判定結果は「判定をmemoryに保存」を押すと、学習履歴画面の" +
-        "「学習プロフィール」に残せます。保存した内容は、以後AIが会話や" +
-        "教材作成で参考にします。")}</h2>
+      <h2>🎯 ${tx("assess.levelTitle")} ${infoIcon("assess-level", tx("assess.levelHelp"))}</h2>
       <div class="grid cols-3">
         <div class="stat"><div class="num">${
           p.toeic_estimate == null ? "未判定" : p.toeic_estimate}</div>
@@ -4577,10 +4534,7 @@ export async function assess(root) {
     </div>
 
     <div class="card">
-      <h2>📚 追加教材を作成 ${infoIcon("assess-generate",
-        "テーマ・苦手分野(任意)を入れると、それに沿った単語/フレーズを" +
-        "AIが作ります。件数は10/20/30から選べ、すでに登録済みのものは" +
-        "自動でスキップします。高品質モデルで生成します。")}</h2>
+      <h2>📚 ${tx("assess.generateTitle")} ${infoIcon("assess-generate", tx("assess.generateHelp"))}</h2>
       <p class="muted">AIが今のレベル・苦手に合わせて単語/フレーズを生成し、
         そのままDBに追加します（重複は自動でスキップ）。</p>
       <div class="row">
@@ -4646,13 +4600,8 @@ export async function history(root) {
     api.get("/api/system/memory"),
   ]);
   root.innerHTML = `
-    <h1>学習履歴 ${infoIcon("help-history",
-      "学習の記録を残す・見返す画面です。①「セッション終了→記録」に" +
-      "今日の学習内容や苦手を書いて保存します(AIに要約も頼めます)。" +
-      "②「学習プロフィール」に方針・目標・苦手を書くと、AIが会話や" +
-      "教材作成で参考にします。③「学習ログ」には学習内容が自動で" +
-      "記録されます。")}</h1>
-    <p class="sub">学習の記録・メモリ・セッション終了処理。</p>
+    <h1>${tx("nav.history")} ${infoIcon("help-history", tx("history.helpText"))}</h1>
+    <p class="sub">${tx("history.subtitle")}</p>
     <div class="card">
       <h2>セッション終了 → 記録</h2>
       <div class="grid cols-2">
@@ -8303,7 +8252,7 @@ export async function settings(root) {
         <a href="/static/terms.html" target="_blank">${tx("terms.title")}</a></p>
     </div>
     <div class="card">
-      <h2>${tx("settings.visibleDomainsTitle")} ${infoIcon("help-visible-domains", VISIBLE_DOMAINS_HELP)}</h2>
+      <h2>${tx("settings.visibleDomainsTitle")} ${infoIcon("help-visible-domains", VISIBLE_DOMAINS_HELP())}</h2>
       <p class="muted">${tx("settings.visibleDomainsNote1")}
         <b>${tx("settings.visibleDomainsNote2")}</b></p>
       <details class="fset-section fset-section-w mt">
@@ -9206,16 +9155,13 @@ export async function decks(root) {
     api.get("/api/decks/summary"),
   ]);
   root.innerHTML = `
-    <h1>単語帳 ${infoIcon("help-deck",
-      "自分だけの単語リストを作って学習・出題に使えます。ログインが" +
-      "必要で、無料範囲では1個・100語まで、チャージ済みなら個数・語数" +
-      "とも無制限です。")}</h1>
+    <h1>${tx("nav.deck")} ${infoIcon("help-deck", tx("deck.helpText"))}</h1>
     <p class="sub">分野・レベルから自分用の単語帳(デッキ)を作って学習。
       出題方向や忘却曲線・「覚えた」の基準は設定画面の詳細設定で
       アカウント共通に調整できます。
       無料範囲では1個・100語まで、チャージ済みなら個数・件数とも無制限です。</p>
     <div class="card">
-      <h2>単語帳 全体の達成率 ${infoIcon("deck-progress", DECK_PROGRESS_HINT)}</h2>
+      <h2>単語帳 全体の達成率 ${infoIcon("deck-progress", DECK_PROGRESS_HINT())}</h2>
       <div class="row" style="justify-content:space-between">
         <span class="muted">${summary.deck_count}個の単語帳・
           全${summary.total}語のうち${summary.mastered}語が習得済み</span>
@@ -9464,16 +9410,13 @@ export async function phraseDecks(root) {
     api.get("/api/phrase-decks/summary"),
   ]);
   root.innerHTML = `
-    <h1>フレーズ帳 ${infoIcon("help-phrasedeck",
-      "自分だけのフレーズリストを作って学習・出題に使えます。ログインが" +
-      "必要で、無料範囲では1個・100件まで、チャージ済みなら個数・件数" +
-      "とも無制限です。")}</h1>
+    <h1>${tx("nav.phrasedeck")} ${infoIcon("help-phrasedeck", tx("phrasedeck.helpText"))}</h1>
     <p class="sub">シーン・レベルから自分用のフレーズ帳(デッキ)を作って学習。
       出題方向や忘却曲線・「覚えた」の基準は設定画面の詳細設定で
       アカウント共通に調整できます。
       無料範囲では1個・100件まで、チャージ済みなら個数・件数とも無制限です。</p>
     <div class="card">
-      <h2>フレーズ帳 全体の達成率 ${infoIcon("deck-progress", DECK_PROGRESS_HINT)}</h2>
+      <h2>フレーズ帳 全体の達成率 ${infoIcon("deck-progress", DECK_PROGRESS_HINT())}</h2>
       <div class="row" style="justify-content:space-between">
         <span class="muted">${summary.deck_count}個のフレーズ帳・
           全${summary.total}件のうち${summary.mastered}件が習得済み</span>
@@ -9970,10 +9913,7 @@ async function cwRenderRanking(root, period) {
       <button type="button" class="btn ghost" id="cwRankingBack">
         ← ゲームメニューに戻る</button>
     </div>
-    <h1 class="mt">🏆 クロスワード ランキング ${infoIcon("help-cw-ranking",
-      "自分で作ったクロスワードの合計スコアのランキングです。集計対象は"
-      + "課金ユーザーのみ、サンプルクロスワードのスコアは対象外です。"
-      + "他の方の名前は表示されません(ユーザー名の頭文字のみ)。")}</h1>
+    <h1 class="mt">🏆 ${tx("games.rankingTitle")} ${infoIcon("help-cw-ranking", tx("games.rankingHelpText"))}</h1>
     <div class="sample-gate-banner">
       ⚠️ このランキングは<b>課金ユーザーのみ</b>が集計対象です。また
       <b>サンプルクロスワードのスコアは対象外</b>で、「✏️ クロスワード
@@ -10189,11 +10129,7 @@ async function cwRenderSetup(root, preset) {
   root.innerHTML = `
     <button type="button" class="btn ghost" id="cwBack">
       ← ゲーム一覧に戻る</button>
-    <h1 class="mt">🧩 クロスワード - 設定 ${infoIcon("help-cw-setup",
-      "分野または単語帳から単語を選び、AIがクロスワードを作ります。語数・" +
-      "盤面の詰め方・回答の難易度・ヒントの出し方を選べます。作成のたびに" +
-      "AI利用料が発生するため課金ユーザー限定です。最近使った設定は" +
-      "「この設定で作る」で再利用できます。")}</h1>
+    <h1 class="mt">🧩 ${tx("games.crossword")} - ${tx("flashcard.settingsBtn")} ${infoIcon("help-cw-setup", tx("games.cwSetupHelpText"))}</h1>
     ${state.isGuest ? `<div class="sample-gate-banner">
       ⚠️ この機能(自分で作る)はご登録(無料)に加えて課金が必要です
       (作成のたびにAI利用料が実際に発生するため)。

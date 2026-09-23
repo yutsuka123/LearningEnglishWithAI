@@ -148,18 +148,18 @@
       <div class="brand">
         <span>📘 English<br />Learning AI</span>
         <button id="sidebarPin" class="sidebar-pin"
-          title="左メニューを固定表示（自動で畳まれないようにする）">📌</button>
+          data-i18n-title="topbar.sidebarPinTitle" title="左メニューを固定表示（自動で畳まれないようにする）">📌</button>
       </div>
       <!-- 文字の大きさ(スマホのようこそ画面専用のコピー・2026-09-20)。
            スマホのトップバーを1段に収めるため、ようこそ画面ではトップバーの
            文字サイズ選択を隠し、その代わりにメニュー内に出す(他の画面幅・
            他のタブでは非表示で、従来どおりトップバーの選択を使う)。 -->
-      <label class="nav-fontsize" id="navFontSizeWrap">文字の大きさ
-        <select id="fontSizeNav" title="文字の大きさ">
-          <option value="small">小</option>
-          <option value="">中</option>
-          <option value="large">大</option>
-          <option value="xlarge">特大</option>
+      <label class="nav-fontsize" id="navFontSizeWrap"><span data-i18n="fontSize.title">文字の大きさ</span>
+        <select id="fontSizeNav" data-i18n-title="fontSize.title" title="文字の大きさ">
+          <option value="small" data-i18n="fontSize.small">小</option>
+          <option value="" data-i18n="fontSize.medium">中</option>
+          <option value="large" data-i18n="fontSize.large">大</option>
+          <option value="xlarge" data-i18n="fontSize.xlarge">特大</option>
         </select>
       </label>
       <nav id="nav"></nav>
@@ -174,7 +174,7 @@
     <main class="main">
       <header class="topbar">
         <div class="topbar-left">
-          <button id="navToggle" class="nav-toggle" title="メニュー">☰</button>
+          <button id="navToggle" class="nav-toggle" data-i18n-title="topbar.menuTitle" title="メニュー">☰</button>
           <span class="topbar-brand">📘 nyangailab
             <span class="topbar-brand-sub" data-i18n="topbar.tagline">英語学習アプリ</span></span>
         </div>
@@ -190,15 +190,15 @@
           <span id="usageBalanceInfo"></span>
           <span class="ai-state" id="aiState"></span>
           <a class="app-ver" id="appVer" href="/static/about.html"
-            title="このアプリについて"></a>
-          <select id="fontSize" title="文字の大きさ">
-            <option value="small">文字: 小</option>
-            <option value="">文字: 中</option>
-            <option value="large">文字: 大</option>
-            <option value="xlarge">文字: 特大</option>
+            data-i18n-title="nav.about" title="このアプリについて"></a>
+          <select id="fontSize" data-i18n-title="fontSize.title" title="文字の大きさ">
+            <option value="small" data-i18n="fontSize.optSmall">文字: 小</option>
+            <option value="" data-i18n="fontSize.optMedium">文字: 中</option>
+            <option value="large" data-i18n="fontSize.optLarge">文字: 大</option>
+            <option value="xlarge" data-i18n="fontSize.optXlarge">文字: 特大</option>
           </select>
           <select class="i18n-lang-select" id="langSwitch" title="Language"></select>
-          <button class="btn ghost" id="themeToggle" title="表示テーマ切替"
+          <button class="btn ghost" id="themeToggle" data-i18n-title="topbar.themeToggleTitle" title="表示テーマ切替"
             style="padding:4px 10px">🌙</button>
           <button class="btn ghost" id="logoutBtn" data-i18n="nav.logout"
             style="display:none;padding:4px 10px">ログアウト</button>

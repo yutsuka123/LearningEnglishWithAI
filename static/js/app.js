@@ -201,8 +201,8 @@ function setSidebarPinned(on) {
   if (btn) {
     btn.classList.toggle("active", on);
     btn.title = on
-      ? "固定表示中（クリックで解除）"
-      : "左メニューを固定表示（自動で畳まれないようにする）";
+      ? tx("topbar.sidebarPinnedTitle")
+      : tx("topbar.sidebarPinTitle");
   }
   if (on) setSidebarCollapsed(false); // 固定するなら必ず開いた状態にする
 }
@@ -329,16 +329,15 @@ function initBalanceClick() {
   const balEl = document.getElementById("usageBalance");
   if (!balEl) return;
   balEl.style.cursor = "pointer";
-  balEl.title = "クリックでチャージ画面へ";
+  balEl.title = tx("topbar.balanceClickTitle");
   balEl.addEventListener("click", () => {
     if (state.isGuest) {
-      if (confirm("チャージにはログインが必要です。ログイン画面へ" +
-          "移動しますか？")) {
+      if (confirm(tx("topbar.chargeNeedsLoginConfirm"))) {
         location.href = "/login";
       }
       return;
     }
-    if (confirm("チャージしますか？")) go("settings");
+    if (confirm(tx("topbar.chargeConfirm"))) go("settings");
   });
 }
 
@@ -382,7 +381,7 @@ export async function refreshMaintenanceBanner() {
     text.textContent = n.text;
     const close = document.createElement("button");
     close.className = "maint-close";
-    close.title = "このお知らせを閉じる";
+    close.title = tx("topbar.closeNoticeTitle");
     close.textContent = "✕";
     close.addEventListener("click", () => {
       localStorage.setItem("maintDismissed", n.text);
@@ -490,7 +489,7 @@ export async function go(tab) {
   // (2026-08-05発見)。ラッパーを毎回差し替えることで、古い呼び出しが
   // 書き込む先は表示から切り離された(=無害な)自分専用のdivになる。
   const myRoot = document.createElement("div");
-  myRoot.innerHTML = '<p class="muted">読み込み中…</p>';
+  myRoot.innerHTML = `<p class="muted">${tx("common.loading")}</p>`;
   view().replaceChildren(myRoot);
   if (!appReadySent) {
     appReadySent = true;
@@ -500,7 +499,7 @@ export async function go(tab) {
   try {
     await ROUTES[tab](myRoot);
   } catch (e) {
-    myRoot.innerHTML = `<div class="card">エラー: ${escapeHtml(e.message)}</div>`;
+    myRoot.innerHTML = `<div class="card">${tx("common.errorPrefix")}${escapeHtml(e.message)}</div>`;
   }
 }
 
@@ -564,19 +563,19 @@ export async function refreshCost() {
       speech.setAiEnabled(u.ai_enabled);
       const node = document.getElementById("aiState");
       if (node) {
-        node.textContent = u.ai_enabled ? "" : "⚠️ AI未設定";
+        node.textContent = u.ai_enabled ? "" : "⚠️ " + tx("topbar.aiNotConfigured");
         node.className = "ai-state " + (u.ai_enabled ? "ai-on" : "ai-off");
       }
     }
     const balEl = document.getElementById("usageBalance");
     if (balEl) {
       const remain = Math.max(0, Math.round(u.remaining_jpy || 0));
-      balEl.textContent = `残り${remain}pt`;
+      balEl.textContent = tx("topbar.remainingPt", { remain });
       balEl.style.color = _usageColor(remain);
       balEl.title = u.balance_jpy != null
-        ? `AI利用の残り目安: ${remain}pt（チャージ残高 ` +
-          `${Math.round(u.balance_jpy)}pt 含む）`
-        : `AI利用の残り目安: ${remain}pt`;
+        ? tx("topbar.remainingTitleWithBalance",
+          { remain, balance: Math.round(u.balance_jpy) })
+        : tx("topbar.remainingTitle", { remain });
     }
     const ver = document.getElementById("appVer");
     if (ver) ver.textContent = u.version || "";
@@ -585,7 +584,7 @@ export async function refreshCost() {
     const lo = document.getElementById("logoutBtn");
     if (lo) {
       lo.style.display = (u.multiuser && !state.isGuest) ? "" : "none";
-      lo.title = u.username ? `${u.username} としてログイン中` : "";
+      lo.title = u.username ? tx("topbar.loggedInAs", { username: u.username }) : "";
     }
     const li = document.getElementById("loginBtn");
     if (li) li.style.display = (u.multiuser && state.isGuest) ? "" : "none";
@@ -593,7 +592,7 @@ export async function refreshCost() {
 }
 
 async function doLogout() {
-  if (!confirm("本当にログアウトしますか？")) return;
+  if (!confirm(tx("topbar.logoutConfirm"))) return;
   try { await api.post("/api/auth/logout"); } catch (_) { /* */ }
   // 共有端末で前のアカウントの選択履歴(分野名・単語帳名等)が次の
   // ログイン先に見えてしまわないようにする(2026-09-05fable監査指摘・
@@ -615,7 +614,7 @@ export async function refreshAiState() {
     speech.setAiEnabled(s.ai_enabled);
     const node = document.getElementById("aiState");
     // モデル名は非表示。未設定のときだけ警告を出す。
-    node.textContent = s.ai_enabled ? "" : "⚠️ AI未設定";
+    node.textContent = s.ai_enabled ? "" : "⚠️ " + tx("topbar.aiNotConfigured");
     node.className = "ai-state " + (s.ai_enabled ? "ai-on" : "ai-off");
   } catch (e) { /* ignore */ }
 }
@@ -704,8 +703,8 @@ function showHintPopover(icon) {
   const pop = el(`<div class="hint-popover">
     <div class="hint-popover-text"></div>
     <div class="hint-popover-actions">
-      <button type="button" class="hint-dismiss">今後表示しない</button>
-      <button type="button" class="hint-close">閉じる</button>
+      <button type="button" class="hint-dismiss">${tx("topbar.hintDismiss")}</button>
+      <button type="button" class="hint-close">${tx("topbar.hintClose")}</button>
     </div>
   </div>`);
   pop.querySelector(".hint-popover-text").textContent = text;
@@ -756,7 +755,7 @@ function initClickTracking() {
       guestStudyClicks++;
       if (guestStudyClicks >= 5) {
         guestNudgeShown = true;
-        toast("💡 学習の記録は保存されていません。ログイン(無料・1分)で失われなくなります");
+        toast("💡 " + tx("topbar.guestNudge"));
       }
     }
   });
@@ -847,10 +846,7 @@ async function boot() {
   // づらいという指摘(2026-08-30)を受けⓘヒントを追加。
   const balInfo = document.getElementById("usageBalanceInfo");
   if (balInfo) {
-    balInfo.innerHTML = infoIcon("usage-balance-pt",
-      "pt(ポイント)はAI機能(音声再生・英会話・添削等)に使える残高の単位"
-      + "です。未登録は0ptですが、無料登録すると毎日一定量が使えるように"
-      + "なり、チャージ(有料)するとさらに増えます。");
+    balInfo.innerHTML = infoIcon("usage-balance-pt", tx("topbar.ptHelpText"));
   }
   if (state.isAdmin) {
     // 非管理者は/api/system/settingsを読めない(2026-08-12・管理者専用化)。

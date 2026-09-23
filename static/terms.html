@@ -29,14 +29,14 @@
 </head>
 <body>
   <div class="pagebar">
-    <select id="fontSize" title="文字の大きさ">
-      <option value="">文字: 中</option>
-      <option value="small">文字: 小</option>
-      <option value="large">文字: 大</option>
-      <option value="xlarge">文字: 特大</option>
+    <select id="fontSize" data-i18n-title="fontSize.title" title="文字の大きさ">
+      <option value="" data-i18n="fontSize.optMedium">文字: 中</option>
+      <option value="small" data-i18n="fontSize.optSmall">文字: 小</option>
+      <option value="large" data-i18n="fontSize.optLarge">文字: 大</option>
+      <option value="xlarge" data-i18n="fontSize.optXlarge">文字: 特大</option>
     </select>
     <select class="i18n-lang-select" title="Language"></select>
-    <button type="button" id="themeToggle" title="ダーク/ライト切替">🌙</button>
+    <button type="button" id="themeToggle" data-i18n-title="topbar.themeToggleTitleStatic" title="ダーク/ライト切替">🌙</button>
   </div>
   <div class="wrap">
     <div class="card">
