@@ -286,9 +286,17 @@ function initLang() {
   // 切替時: サイドバーのナビ(boot時に一度だけ組み立てる方式なので手動で
   // 再構築)と、いま開いている画面を再描画する(既存のタブ再読み込みと
   // 同じ仕組みを流用。views側の文字列もtx()を通していれば自動で切り替わる)。
+  // #view の外側にあるトップバー要素(残高表示・そのⓘヘルプ・AI状態・
+  // メンテナンス予告)はboot()時に一度だけ文字列を書き込む方式なので、
+  // go(currentTab)だけでは切り替わらない(2026-09-23発見・「残りOpt」が
+  // 言語切替後も日本語のまま残っていた不具合)。該当のrefresh系を明示的に
+  // 呼び直して追従させる。
   window.I18N.onChange(() => {
     buildNav();
     go(currentTab);
+    refreshCost();
+    if (state.isAdmin) refreshAiState();
+    refreshMaintenanceBanner();
   });
 }
 
