@@ -279,6 +279,16 @@ function initTheme() {
 // テーマ切替と同じ設計。実体はstatic/js/i18n.js）。
 // ---------------------------------------------------------------------------
 
+// pt残高は未登録/無課金でも0ptのまま常に表示され、何の数字か分かり
+// づらいという指摘(2026-08-30)を受けⓘヒントを追加。boot()と言語切替の
+// 両方から呼べるよう独立関数にしている(2026-09-23・下記initLang参照)。
+function refreshUsageBalanceInfo() {
+  const balInfo = document.getElementById("usageBalanceInfo");
+  if (balInfo) {
+    balInfo.innerHTML = infoIcon("usage-balance-pt", tx("topbar.ptHelpText"));
+  }
+}
+
 function initLang() {
   if (!window.I18N) return;
   window.I18N.initLangSwitchers();
@@ -295,6 +305,7 @@ function initLang() {
     buildNav();
     go(currentTab);
     refreshCost();
+    refreshUsageBalanceInfo();
     if (state.isAdmin) refreshAiState();
     refreshMaintenanceBanner();
   });
@@ -850,12 +861,7 @@ async function boot() {
   // 見えてちらつく問題があったため・2026-08-12ユーザー指摘）。
   await Promise.all([taxonomyPromise, refreshCost()]); // sets state.isAdmin / state.multiuser / state.isGuest
   await loadDismissedHints(); // isGuestが決まった後(保存先の出し分けに必要)
-  // pt残高は未登録/無課金でも0ptのまま常に表示され、何の数字か分かり
-  // づらいという指摘(2026-08-30)を受けⓘヒントを追加。
-  const balInfo = document.getElementById("usageBalanceInfo");
-  if (balInfo) {
-    balInfo.innerHTML = infoIcon("usage-balance-pt", tx("topbar.ptHelpText"));
-  }
+  refreshUsageBalanceInfo();
   if (state.isAdmin) {
     // 非管理者は/api/system/settingsを読めない(2026-08-12・管理者専用化)。
     // AI有効状態はrefreshCost()内でmy-usage経由により既に取得済み。
