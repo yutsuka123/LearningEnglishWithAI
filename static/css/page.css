@@ -128,3 +128,27 @@ ul.links a:hover { background: var(--line); }
 details.manual-collapse { margin: 8px 0; }
 details.manual-collapse > summary { cursor: pointer; font-weight: 600;
   color: var(--text); padding: 4px 0; }
+
+/* about.htmlのヒーロー画像(2026-09-23「文字が多い」対策・カード上端に
+   フチなしで馴染ませるため、カードのpadding分だけ負のマージンで広げる)。 */
+.hero-img { display: block; width: calc(100% + 64px); height: auto;
+  margin: -28px -32px 20px; border-radius: var(--radius) var(--radius) 0 0; }
+
+/* 開発者メッセージのアイコン(同・アイコン画像で文章を区切る)。 */
+.dev-row { display: flex; gap: 14px; align-items: flex-start; margin-top: 8px; }
+.dev-avatar { flex: none; width: 56px; height: 56px; border-radius: 50%;
+  border: 2px solid var(--line); }
+.dev-row p { margin: 0; }
+
+/* FAQ/困ったときはのアコーディオン化(同・長文を折りたたんで見やすく。
+   情報自体は削らずクリックで展開できる形にする)。 */
+details.faq-item { margin: 0 0 14px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--line); }
+details.faq-item:last-child { margin-bottom: 0; padding-bottom: 0;
+  border-bottom: none; }
+details.faq-item > summary { cursor: pointer; font-weight: 600;
+  font-size: 14px; color: var(--text); padding: 2px 0; }
+details.faq-item > summary:hover { color: var(--accent); }
+details.faq-item[open] > summary { margin-bottom: 8px; }
+details.faq-item > summary::marker,
+details.faq-item > summary::-webkit-details-marker { color: var(--accent); }

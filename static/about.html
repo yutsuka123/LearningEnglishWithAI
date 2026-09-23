@@ -95,6 +95,8 @@
   </div>
   <div class="wrap">
     <div class="card" id="overview">
+      <img class="hero-img" src="/static/img/nyangailab_header_hero.jpg"
+        width="960" height="540" alt="nyangai labのイラスト：白衣を着た猫がAI英語学習アプリの教材（単語・フレーズ）を実験室で作っている様子" />
       <h1>🐱 nyangailab</h1>
       <p class="sub" data-i18n="about.sub">前払いチャージ制（使った分だけ）で、ニッチな語彙まで
         学べるAI英語学習アプリ</p>
@@ -138,26 +140,30 @@
       </ul>
 
       <h3 data-i18n="about.devTitle">🐾 開発者より</h3>
-      <p data-i18n="about.devMessage">「サブスク疲れ」の私自身が、月額課金なしで英語学習を続けたくて
-        趣味で作り始めたのがこのアプリです。今のAIの力を借りることで、
-        一人ではとても揃えられなかった幅広い分野・語彙数を収録できました。
-        AIも日々レベルアップしていきますが、AIが間違えたり苦手だったり
-        する部分は、開発者である私自身が目で見て確認・修正しています。
-        まだ至らない点もあるアプリですが、よろしければ一度お試し
-        いただけると嬉しいです。</p>
+      <div class="dev-row">
+        <img class="dev-avatar" src="/static/img/nyangailab_icon_128.png"
+          width="56" height="56" alt="nyangai labのアイコン(白衣を着た猫)" />
+        <p data-i18n="about.devMessage">「サブスク疲れ」の私自身が、月額課金なしで英語学習を続けたくて
+          趣味で作り始めたのがこのアプリです。今のAIの力を借りることで、
+          一人ではとても揃えられなかった幅広い分野・語彙数を収録できました。
+          AIも日々レベルアップしていきますが、AIが間違えたり苦手だったり
+          する部分は、開発者である私自身が目で見て確認・修正しています。
+          まだ至らない点もあるアプリですが、よろしければ一度お試し
+          いただけると嬉しいです。</p>
+      </div>
     </div>
 
     <div class="card" id="toc">
       <h2 data-i18n="about.tocTitle">📋 目次</h2>
       <ol class="toc-list">
-        <li><a href="#signup" data-i18n="about.toc.signup">登録するには？</a></li>
-        <li><a href="#charge" data-i18n="about.toc.charge">課金して使うには？</a></li>
-        <li><a href="#tiers" data-i18n="about.toc.tiers">ログイン前後・無課金/課金でできることの違い（詳細）</a></li>
-        <li><a href="#quickstart" data-i18n="about.toc.quickstart">かんたん使い方ガイド</a></li>
-        <li><a href="#legal" data-i18n="about.toc.legal">利用規約・特定商取引法など</a></li>
-        <li><a href="#manual" data-i18n="about.toc.manual">詳しい取扱説明書・使い方ガイド</a></li>
-        <li><a href="#faq" data-i18n="about.toc.faq">よくある質問</a></li>
-        <li><a href="#trouble" data-i18n="about.toc.trouble">困ったときは</a></li>
+        <li>📝 <a href="#signup" data-i18n="about.toc.signup">登録するには？</a></li>
+        <li>💳 <a href="#charge" data-i18n="about.toc.charge">課金して使うには？</a></li>
+        <li>🔓 <a href="#tiers" data-i18n="about.toc.tiers">ログイン前後・無課金/課金でできることの違い（詳細）</a></li>
+        <li>🚀 <a href="#quickstart" data-i18n="about.toc.quickstart">かんたん使い方ガイド</a></li>
+        <li>📄 <a href="#legal" data-i18n="about.toc.legal">利用規約・特定商取引法など</a></li>
+        <li>📘 <a href="#manual" data-i18n="about.toc.manual">詳しい取扱説明書・使い方ガイド</a></li>
+        <li>❓ <a href="#faq" data-i18n="about.toc.faq">よくある質問</a></li>
+        <li>🔧 <a href="#trouble" data-i18n="about.toc.trouble">困ったときは</a></li>
       </ol>
       <p class="muted mt" data-i18n="about.tocNote">このページの残りの節（登録の手順・課金方法・FAQ等の詳細）は現在日本語のみです。</p>
     </div>
@@ -270,7 +276,8 @@
           </ul>
         </div>
       </div>
-      <p class="muted">以下は各段階の詳しい説明です。</p>
+      <details class="manual-collapse">
+      <summary>各段階の詳しい説明を開く</summary>
 
       <div class="manual-item">
         <h3>🔊🆓🔒 単語・フレーズ一覧の再生アイコンの意味</h3>
@@ -341,6 +348,7 @@
           詳しくは<a href="/static/terms.html">利用規約・免責事項</a>を
           ご確認ください。</p>
       </div>
+      </details>
     </div>
 
     <div class="card" id="quickstart">
@@ -565,37 +573,37 @@
     <div class="card" id="faq">
       <h2>❓ ご利用の前に（よくある質問）</h2>
       <p class="totoc"><a href="#toc">▲ 目次へ戻る</a></p>
-      <div class="manual-item">
-        <h3>登録するといいことは？</h3>
+      <details class="faq-item">
+        <summary>登録するといいことは？</summary>
         <p>覚えた単語がずっと積み上がり（習熟度・忘却曲線に基づく復習
           間隔を記録）、次に開いたときもそこから続けられます。単語帳・
           フレーズ帳も作れるようになり、発音の無料再生範囲も広がります。
           登録は無料で、1分ほどで完了します。</p>
-      </div>
-      <div class="manual-item">
-        <h3>登録しないとどうなる？</h3>
+      </details>
+      <details class="faq-item">
+        <summary>登録しないとどうなる？</summary>
         <p>単語・フレーズの閲覧やサンプル教材は、登録しなくても
           お試しいただけます。ただし学習記録が保存されないため、
           訪れるたびにリセットされた状態になります。単語帳・フレーズ帳の
           作成もできません。まずは登録なしで雰囲気を確かめてから、
           気に入ったら登録していただく形でも問題ありません。</p>
-      </div>
-      <div class="manual-item">
-        <h3>実名での登録は必要ですか？</h3>
+      </details>
+      <details class="faq-item">
+        <summary>実名での登録は必要ですか？</summary>
         <p><b>必要ありません。</b>「呼んでほしいお名前」はニックネームで
           構いません。チャージキーの発行などご連絡の際の宛名として
           使うだけで、本名確認等は一切行っていません。</p>
-      </div>
-      <div class="manual-item">
-        <h3>課金（チャージ）するといいことは？</h3>
+      </details>
+      <details class="faq-item">
+        <summary>課金（チャージ）するといいことは？</summary>
         <p>発音の音声再生が収録すべての単語・フレーズで聞けるように
           なるほか、AI英会話・リーディング/リスニング教材の生成・
           ライティング添削などが使えるようになります。単語帳・フレーズ帳の
           個数・語数の上限もなくなります。月額サブスクではなく前払い
           チャージ制なので、使わなければ追加の費用は発生しません。</p>
-      </div>
-      <div class="manual-item">
-        <h3>クレジットカード情報や決済の管理はどうなっていますか？</h3>
+      </details>
+      <details class="faq-item">
+        <summary>クレジットカード情報や決済の管理はどうなっていますか？</summary>
         <p>クレジットカード番号等の決済情報は、開発者（私）側では
           一切保持・管理していません。決済方法は2通りあります。</p>
         <p>① 「<a href="https://thebase.in/"
@@ -608,23 +616,23 @@
         <p>いずれの方法でも、開発者が受け取るのは決済完了後の結果通知の
           みで、カード番号やPayPayアカウントの詳細に触れることは
           ありません。</p>
-      </div>
-      <div class="manual-item">
-        <h3>個人開発とのことですが、止まったりしませんか？</h3>
+      </details>
+      <details class="faq-item">
+        <summary>個人開発とのことですが、止まったりしませんか？</summary>
         <p>不具合対応やメンテナンスのため、予告なく一時的にご利用
           いただけなくなる場合があります。ご了承のうえお使いください。</p>
-      </div>
-      <div class="manual-item">
-        <h3>教材はAIが作っているのですか？</h3>
+      </details>
+      <details class="faq-item">
+        <summary>教材はAIが作っているのですか？</summary>
         <p>はい。単語・フレーズ・例文等のコンテンツ、読み上げ音声、
           音声入力の認識（発音判定等）は、OpenAIが提供するAIモデルを
           用いて作成・生成しています。内容の確認には努めていますが、
           まれに不自然な表現や誤りが生じる可能性があります。詳しくは
           <a href="/static/terms.html">利用規約・免責事項</a>を
           ご覧ください。</p>
-      </div>
-      <div class="manual-item">
-        <h3>PayPay直接決済とBASE、どちらで購入すればいいですか？</h3>
+      </details>
+      <details class="faq-item">
+        <summary>PayPay直接決済とBASE、どちらで購入すればいいですか？</summary>
         <p>PayPayでの直接決済（①）は、支払いが完了すると同時に
           キーの発行・入力なしでそのまま残高に反映されるのが特長です
           （対応する決済手段はPayPayのみ）。すぐにチャージしたい方に
@@ -634,15 +642,15 @@
           を設定画面で入力する一手間と、キー発行までの多少のお時間が
           必要です。PayPay以外の決済手段をご希望の方はこちらをお使い
           ください。</p>
-      </div>
+      </details>
     </div>
 
     <div class="card" id="trouble">
       <h2>🔧 困ったときは</h2>
       <p class="totoc"><a href="#toc">▲ 目次へ戻る</a></p>
 
-      <div class="manual-item" id="trouble-signup">
-        <h3>新規登録ができない</h3>
+      <details class="faq-item" id="trouble-signup">
+        <summary>新規登録ができない</summary>
         <ul>
           <li>メールアドレスの形式が正しいか確認してください
             （例: example@mail.com）。</li>
@@ -662,10 +670,10 @@
           <li>短時間に何度も送信すると、一時的に登録を制限する場合が
             あります。少し時間をおいてから再度お試しください。</li>
         </ul>
-      </div>
+      </details>
 
-      <div class="manual-item" id="trouble-login">
-        <h3>ログインできない</h3>
+      <details class="faq-item" id="trouble-login">
+        <summary>ログインできない</summary>
         <ul>
           <li>メールアドレス（初期からご利用の方はユーザー名）と
             パスワードが正しいか確認してください。</li>
@@ -675,10 +683,10 @@
           <li>短時間に何度も失敗すると、一時的にログインを制限する場合が
             あります。少し時間をおいてから再度お試しください。</li>
         </ul>
-      </div>
+      </details>
 
-      <div class="manual-item" id="trouble-charge">
-        <h3>チャージキーが使えない・届かない</h3>
+      <details class="faq-item" id="trouble-charge">
+        <summary>チャージキーが使えない・届かない</summary>
         <ul>
           <li>キーは大文字・小文字や記号を含め、届いたとおり正確に
             入力してください（コピー＆ペーストがおすすめです）。</li>
@@ -689,10 +697,10 @@
             場合は、ご購入時のメールアドレスと登録メールアドレスが
             一致しているかご確認のうえ、上記連絡先までご連絡ください。</li>
         </ul>
-      </div>
+      </details>
 
-      <div class="manual-item" id="trouble-mic">
-        <h3>マイクが使えない（ハンズフリー会話・録音）</h3>
+      <details class="faq-item" id="trouble-mic">
+        <summary>マイクが使えない（ハンズフリー会話・録音）</summary>
         <p>「マイクの使用が許可されていません」と表示される場合、多くは
           ブラウザまたはOSの側でこのサイトのマイク使用がブロックされて
           います。以下の該当箇所をご確認のうえ、ページを再読み込みして
@@ -729,10 +737,10 @@
         </ul>
         <p class="muted">上記はブラウザ・OSのバージョンによって画面や
           手順が異なる場合があります。あらかじめご了承ください。</p>
-      </div>
+      </details>
 
-      <div class="manual-item" id="manual-pricing">
-        <h3>💰 ポイントの目安（800ptでどのくらい使える？）</h3>
+      <details class="faq-item" id="manual-pricing">
+        <summary>💰 ポイントの目安（800ptでどのくらい使える？）</summary>
         <p>チャージしたポイント(pt)は、AI英会話・教材の読み上げ・添削・
           クロスワードのAIヒントなどに使うたびに少しずつ消費されます。
           内容の長さによって消費量は変わりますが、目安は次のとおりです
@@ -770,7 +778,7 @@
           再利用できAIを呼び出す必要が無かった場合でも、最低0.25ptを
           消費します（データベースの保存・スコア管理など、AI以外の運用
           コストぶんとしてご了承ください）。</p>
-      </div>
+      </details>
 
       <p class="muted mt">ご不明な点は、ログイン後の設定画面にある
         「お問い合わせ・ご要望」よりお気軽にご連絡ください。</p>
@@ -781,6 +789,21 @@
 
   <script>
     (function () {
+      // #trouble-mic等のハッシュリンク(static/js/views.jsのマイク権限
+      // エラー案内から直接リンクされている)で開いたときに、折りたたみ
+      // 済みのdetailsでも中身が見えるようにする(最新ブラウザは標準で
+      // 自動展開するが、念のためのフォールバック)。
+      function openTargetDetails() {
+        if (!location.hash) return;
+        var el = document.getElementById(location.hash.slice(1));
+        while (el) {
+          if (el.tagName === 'DETAILS') el.open = true;
+          el = el.parentElement;
+        }
+      }
+      openTargetDetails();
+      window.addEventListener('hashchange', openTargetDetails);
+
       // バージョン/リリース日はCHANGELOG.mdに連動（/api/system/my-usage
       // 経由。手動転記だと更新漏れが起きるため・2026-08-12）。
       fetch("/api/system/my-usage")
