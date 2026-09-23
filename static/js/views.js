@@ -123,9 +123,9 @@ function micErrorMessage(e) {
 function chkAllClearHtml(targetId) {
   return `<div class="row" style="gap:6px; margin:2px 0 4px">
     <button type="button" class="btn ghost chk-all-btn" data-target="${targetId}"
-      style="padding:2px 8px; font-size:12px">すべてチェック</button>
+      style="padding:2px 8px; font-size:12px">${tx("common.checkAllBtn")}</button>
     <button type="button" class="btn ghost chk-clear-btn" data-target="${targetId}"
-      style="padding:2px 8px; font-size:12px">選択済み全クリア</button>
+      style="padding:2px 8px; font-size:12px">${tx("common.clearSelectedBtn")}</button>
   </div>`;
 }
 function wireChkAllClear(scope) {
@@ -9156,50 +9156,46 @@ export async function decks(root) {
   ]);
   root.innerHTML = `
     <h1>${tx("nav.deck")} ${infoIcon("help-deck", tx("deck.helpText"))}</h1>
-    <p class="sub">分野・レベルから自分用の単語帳(デッキ)を作って学習。
-      出題方向や忘却曲線・「覚えた」の基準は設定画面の詳細設定で
-      アカウント共通に調整できます。
-      無料範囲では1個・100語まで、チャージ済みなら個数・件数とも無制限です。</p>
+    <p class="sub">${tx("deck.intro")}</p>
     <div class="card">
-      <h2>単語帳 全体の達成率 ${infoIcon("deck-progress", DECK_PROGRESS_HINT())}</h2>
+      <h2>${tx("deck.progressTitle")} ${infoIcon("deck-progress", DECK_PROGRESS_HINT())}</h2>
       <div class="row" style="justify-content:space-between">
-        <span class="muted">${summary.deck_count}個の単語帳・
-          全${summary.total}語のうち${summary.mastered}語が習得済み</span>
+        <span class="muted">${tx("deck.progressSummary", {
+          count: summary.deck_count, total: summary.total, mastered: summary.mastered,
+        })}</span>
         <b>${summary.pct}%</b>
       </div>
       <div class="bar mt"><span style="width:${summary.pct}%"></span></div>
     </div>
     <div class="card">
-      <h2>新しい単語帳を作る</h2>
-      <input id="dname" placeholder="単語帳の名前" style="width:240px" />
+      <h2>${tx("deck.createTitle")}</h2>
+      <input id="dname" placeholder="${escapeHtml(tx("deck.namePlaceholder"))}" style="width:240px" />
       <div class="row mt" style="align-items:flex-start">
-        <div><div class="muted">分野(複数チェック可)</div>
+        <div><div class="muted">${tx("deck.domainsLabel")}</div>
           ${chkAllClearHtml("ddomains")}
           <div id="ddomains" class="chkbox">${facets.domains.map((d) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(d)}"
               /> ${escapeHtml(d)}</label>`).join("")}</div></div>
-        <div><div class="muted">レベル(複数チェック可)</div>
+        <div><div class="muted">${tx("deck.levelsLabel")}</div>
           ${chkAllClearHtml("dlevels")}
           <div id="dlevels" class="chkbox">${facets.levels.map((l) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(l)}"
               /> ${escapeHtml(l)}</label>`).join("")}</div></div>
       </div>
       <div class="row mt">
-        <label>件数(お任せ): <input id="dlimit" type="number" value="50"
+        <label>${tx("deck.limitLabel")}<input id="dlimit" type="number" value="50"
           style="width:80px" min="1" /></label>
         <label class="toggle"><input type="checkbox" id="dlimitAll" />
-          全件</label>
+          ${tx("deck.limitAll")}</label>
       </div>
       <div class="row mt">
         ${state.isAdmin ? `<label class="toggle">
           <input type="checkbox" id="dbanned" />
-          🔞 禁止用語も含める</label>` : ""}
-        <button class="btn good" id="dcreate">作成</button>
+          ${tx("deck.includeBanned")}</label>` : ""}
+        <button class="btn good" id="dcreate">${tx("deck.createBtn")}</button>
         <span id="dcreateOut" class="muted"></span>
       </div>
-      <p class="muted mt">分野・レベルを選ばなければ全体から、件数ぶんランダムに
-        「お任せ」で作ります（「全件」を選ぶと件数を無視して該当する
-        すべての単語を追加します）。</p>
+      <p class="muted mt">${tx("deck.createHelp")}</p>
     </div>
     <div id="deckList" class="mt"></div>`;
   wireChkAllClear(root);
@@ -9213,9 +9209,9 @@ export async function decks(root) {
 
   const renderList = (decksArr) => {
     const box = root.querySelector("#deckList");
-    box.innerHTML = `<h2>マイ単語帳 (${decksArr.length})</h2>`;
+    box.innerHTML = `<h2>${tx("deck.myListTitle", { count: decksArr.length })}</h2>`;
     if (!decksArr.length) {
-      box.appendChild(el(`<p class="muted">まだ単語帳がありません。</p>`));
+      box.appendChild(el(`<p class="muted">${tx("deck.noneYet")}</p>`));
       return;
     }
     decksArr.forEach((d) => {
@@ -9223,17 +9219,19 @@ export async function decks(root) {
       const card = el(`<div class="card">
         <div class="row" style="justify-content:space-between">
           <b>${escapeHtml(d.name)}</b>
-          <span class="muted">${d.mastered}/${d.total} 習得 (${pct}%)</span></div>
+          <span class="muted">${tx("deck.masteredStat", {
+            mastered: d.mastered, total: d.total, pct,
+          })}</span></div>
         <div class="bar mt"><span style="width:${pct}%"></span></div>
         <div class="row mt">
-          <button class="btn ghost" data-act="edit">✏️ 編集</button>
+          <button class="btn ghost" data-act="edit">${tx("deck.editBtn")}</button>
           <button class="btn ghost del-btn" data-act="del"
-            title="削除">🗑️</button></div></div>`);
+            title="${escapeHtml(tx("deck.deleteTitle"))}">🗑️</button></div></div>`);
       card.querySelector('[data-act="edit"]')
         .addEventListener("click", () => editDeck(d));
       card.querySelector('[data-act="del"]').addEventListener("click",
         async () => {
-          if (!confirm(`「${d.name}」を削除しますか？`)) return;
+          if (!confirm(tx("deck.deleteConfirm", { name: d.name }))) return;
           await api.del("/api/decks/" + d.id);
           go("deck");
         });
@@ -9245,31 +9243,29 @@ export async function decks(root) {
   root.querySelector("#dcreate").addEventListener("click", async () => {
     const name = root.querySelector("#dname").value.trim();
     const out = root.querySelector("#dcreateOut");
-    out.textContent = "作成中…";
+    out.textContent = tx("deck.creating");
     try {
       const limitAll = root.querySelector("#dlimitAll").checked;
       const d = await api.post("/api/decks", {
-        name: name || "新しい単語帳",
+        name: name || tx("deck.defaultName"),
         domains: sels("#ddomains"),
         levels: sels("#dlevels"),
         include_banned: !!root.querySelector("#dbanned")?.checked,
         limit: limitAll ? null
           : (parseInt(root.querySelector("#dlimit").value, 10) || null),
       });
-      out.textContent = `作成: ${d.name} (${d.total}語)`;
+      out.textContent = tx("deck.createdResult", { name: d.name, total: d.total });
       go("deck");
-    } catch (e) { out.textContent = "失敗: " + e.message; }
+    } catch (e) { out.textContent = tx("common.failedPrefix") + e.message; }
   });
 
   function editDeck(d) {
-    openModal("編集: " + d.name, (body) => {
+    openModal(tx("deck.editModalTitle", { name: d.name }), (body) => {
       body.appendChild(el(`<div class="row">
-        <label>名前: <input id="en" value="${escapeHtml(d.name)}"
+        <label>${tx("deck.nameLabel")}<input id="en" value="${escapeHtml(d.name)}"
           style="width:200px" /></label></div>`));
-      body.appendChild(el(`<p class="muted mt">出題方向・忘却曲線・
-        「覚えた」の基準はデッキごとではなく、設定画面の詳細設定で
-        アカウント共通に調整します。</p>`));
-      const save = el(`<button class="btn good mt">保存</button>`);
+      body.appendChild(el(`<p class="muted mt">${tx("deck.editHelp")}</p>`));
+      const save = el(`<button class="btn good mt">${tx("common.save")}</button>`);
       save.addEventListener("click", async () => {
         await api.put("/api/decks/" + d.id, {
           name: body.querySelector("#en").value.trim() || d.name,
@@ -9279,14 +9275,14 @@ export async function decks(root) {
       body.appendChild(save);
 
       body.appendChild(el(`<hr class="mt" />`));
-      body.appendChild(el(`<h3>🎯 分野・レベルで一括追加</h3>`));
+      body.appendChild(el(`<h3>${tx("deck.bulkAddTitle")}</h3>`));
       body.appendChild(el(`<div class="row" style="align-items:flex-start">
-        <div><div class="muted">分野(複数チェック可)</div>
+        <div><div class="muted">${tx("deck.domainsLabel")}</div>
           ${chkAllClearHtml("addDomains")}
           <div id="addDomains" class="chkbox">${facets.domains.map((c) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(c)}"
               /> ${escapeHtml(c)}</label>`).join("")}</div></div>
-        <div><div class="muted">レベル(複数チェック可)</div>
+        <div><div class="muted">${tx("deck.levelsLabel")}</div>
           ${chkAllClearHtml("addLevels")}
           <div id="addLevels" class="chkbox">${facets.levels.map((l) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(l)}"
@@ -9294,20 +9290,20 @@ export async function decks(root) {
       </div>`));
       wireChkAllClear(body);
       const bulkAddBtn = el(
-        `<button class="btn good mt">選択した分野・レベルを全て追加</button>`);
+        `<button class="btn good mt">${tx("deck.bulkAddBtn")}</button>`);
       const bulkAddOut = el(`<span class="muted mt"></span>`);
       body.appendChild(bulkAddBtn);
       body.appendChild(bulkAddOut);
 
       body.appendChild(el(`<hr class="mt" />`));
-      body.appendChild(el(`<h3>🔍 単語を検索して個別に追加</h3>`));
+      body.appendChild(el(`<h3>${tx("deck.searchTitle")}</h3>`));
       body.appendChild(el(`<input id="addSearch"
-        placeholder="英語・日本語で検索（3文字以上）" style="width:260px" />`));
+        placeholder="${escapeHtml(tx("deck.searchPlaceholder"))}" style="width:260px" />`));
       const addResults = el(`<div id="addResults" class="mt"></div>`);
       body.appendChild(addResults);
 
       body.appendChild(el(`<hr class="mt" />`));
-      body.appendChild(el(`<h3>収録中の単語 (<span id="wcount">…</span>)</h3>`));
+      body.appendChild(el(`<h3>${tx("deck.membersTitle")} (<span id="wcount">…</span>)</h3>`));
       const wlist = el(`<div id="wlist" class="mt"></div>`);
       body.appendChild(wlist);
 
@@ -9318,7 +9314,7 @@ export async function decks(root) {
         body.querySelector("#wcount").textContent = words.length;
         wlist.innerHTML = "";
         if (!words.length) {
-          wlist.appendChild(el(`<p class="muted">単語がありません。</p>`));
+          wlist.appendChild(el(`<p class="muted">${tx("deck.noWordsYet")}</p>`));
           return;
         }
         words.forEach((w) => {
@@ -9326,10 +9322,10 @@ export async function decks(root) {
             style="justify-content:space-between;padding:4px 0">
             <span>${escapeHtml(w.english)}
               <span class="muted">${escapeHtml(w.japanese || "")}</span></span>
-            <button class="btn ghost del-btn" title="単語帳から外す">🗑️</button>
+            <button class="btn ghost del-btn" title="${escapeHtml(tx("deck.removeFromDeckTitle"))}">🗑️</button>
             </div>`);
           row.querySelector("button").addEventListener("click", async () => {
-            if (!confirm(`「${w.english}」を単語帳から外しますか？`)) return;
+            if (!confirm(tx("deck.removeConfirm", { name: w.english }))) return;
             await api.del(`/api/decks/${d.id}/words/${w.id}`);
             loadWords();
           });
@@ -9343,17 +9339,16 @@ export async function decks(root) {
         const levels = [...body.querySelectorAll("#addLevels input:checked")]
           .map((o) => o.value);
         if (!domains.length && !levels.length) {
-          bulkAddOut.textContent = "分野かレベルを1つ以上選んでください。";
+          bulkAddOut.textContent = tx("deck.selectDomainOrLevel");
           return;
         }
-        bulkAddOut.textContent = "追加中…";
+        bulkAddOut.textContent = tx("deck.addingInProgress");
         try {
           const res = await api.post(`/api/decks/${d.id}/words`,
             { domains, levels });
-          bulkAddOut.textContent = `現在 ${res.total}語（無料範囲では` +
-            `合計100語まで）。`;
+          bulkAddOut.textContent = tx("deck.bulkAddResult", { total: res.total });
           loadWords();
-        } catch (e) { bulkAddOut.textContent = "失敗: " + e.message; }
+        } catch (e) { bulkAddOut.textContent = tx("common.failedPrefix") + e.message; }
       });
 
       const addSearchInput = body.querySelector("#addSearch");
@@ -9363,7 +9358,7 @@ export async function decks(root) {
         addResults.innerHTML = "";
         if (term.length < 3) return;
         if (!allWordsCache) {
-          addResults.appendChild(el(`<p class="muted">検索中…</p>`));
+          addResults.appendChild(el(`<p class="muted">${tx("deck.searching")}</p>`));
           allWordsCache = await api.get("/api/words");
           addResults.innerHTML = "";
         }
@@ -9372,7 +9367,7 @@ export async function decks(root) {
           w.english.toLowerCase().includes(t)
           || (w.japanese || "").toLowerCase().includes(t)).slice(0, 30);
         if (!matches.length) {
-          addResults.appendChild(el(`<p class="muted">見つかりません。</p>`));
+          addResults.appendChild(el(`<p class="muted">${tx("deck.foundNone")}</p>`));
           return;
         }
         matches.forEach((w) => {
@@ -9383,7 +9378,7 @@ export async function decks(root) {
               <span class="muted">${escapeHtml(w.japanese || "")}</span></span>
             <button class="btn ${inDeck ? "ghost" : "good"}" ${
               inDeck ? "disabled" : ""}>${
-              inDeck ? "追加済み" : "➕ 追加"}</button></div>`);
+              inDeck ? tx("deck.addedLabel") : tx("deck.addBtn")}</button></div>`);
           if (!inDeck) {
             row.querySelector("button").addEventListener("click", async () => {
               await api.post(`/api/decks/${d.id}/words`,
@@ -9411,50 +9406,46 @@ export async function phraseDecks(root) {
   ]);
   root.innerHTML = `
     <h1>${tx("nav.phrasedeck")} ${infoIcon("help-phrasedeck", tx("phrasedeck.helpText"))}</h1>
-    <p class="sub">シーン・レベルから自分用のフレーズ帳(デッキ)を作って学習。
-      出題方向や忘却曲線・「覚えた」の基準は設定画面の詳細設定で
-      アカウント共通に調整できます。
-      無料範囲では1個・100件まで、チャージ済みなら個数・件数とも無制限です。</p>
+    <p class="sub">${tx("phrasedeck.intro")}</p>
     <div class="card">
-      <h2>フレーズ帳 全体の達成率 ${infoIcon("deck-progress", DECK_PROGRESS_HINT())}</h2>
+      <h2>${tx("phrasedeck.progressTitle")} ${infoIcon("deck-progress", DECK_PROGRESS_HINT())}</h2>
       <div class="row" style="justify-content:space-between">
-        <span class="muted">${summary.deck_count}個のフレーズ帳・
-          全${summary.total}件のうち${summary.mastered}件が習得済み</span>
+        <span class="muted">${tx("phrasedeck.progressSummary", {
+          count: summary.deck_count, total: summary.total, mastered: summary.mastered,
+        })}</span>
         <b>${summary.pct}%</b>
       </div>
       <div class="bar mt"><span style="width:${summary.pct}%"></span></div>
     </div>
     <div class="card">
-      <h2>新しいフレーズ帳を作る</h2>
-      <input id="pdname" placeholder="フレーズ帳の名前" style="width:240px" />
+      <h2>${tx("phrasedeck.createTitle")}</h2>
+      <input id="pdname" placeholder="${escapeHtml(tx("phrasedeck.namePlaceholder"))}" style="width:240px" />
       <div class="row mt" style="align-items:flex-start">
-        <div><div class="muted">シーン(複数チェック可)</div>
+        <div><div class="muted">${tx("phrasedeck.scenesLabel")}</div>
           ${chkAllClearHtml("pdscenes")}
           <div id="pdscenes" class="chkbox">${sceneFacets.scenes.map((s) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(s)}"
               /> ${escapeHtml(s)}</label>`).join("")}</div></div>
-        <div><div class="muted">レベル(複数チェック可)</div>
+        <div><div class="muted">${tx("phrasedeck.levelsLabel")}</div>
           ${chkAllClearHtml("pdlevels")}
           <div id="pdlevels" class="chkbox">${levelFacets.range_levels.map((l) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(l)}"
               /> ${escapeHtml(l)}</label>`).join("")}</div></div>
       </div>
       <div class="row mt">
-        <label>件数(お任せ): <input id="pdlimit" type="number" value="50"
+        <label>${tx("phrasedeck.limitLabel")}<input id="pdlimit" type="number" value="50"
           style="width:80px" min="1" /></label>
         <label class="toggle"><input type="checkbox" id="pdlimitAll" />
-          全件</label>
+          ${tx("phrasedeck.limitAll")}</label>
       </div>
       <div class="row mt">
         ${state.isAdmin ? `<label class="toggle">
           <input type="checkbox" id="pdbanned" />
-          🔞 禁止用語も含める</label>` : ""}
-        <button class="btn good" id="pdcreate">作成</button>
+          ${tx("phrasedeck.includeBanned")}</label>` : ""}
+        <button class="btn good" id="pdcreate">${tx("phrasedeck.createBtn")}</button>
         <span id="pdcreateOut" class="muted"></span>
       </div>
-      <p class="muted mt">シーン・レベルを選ばなければ全体から、件数ぶんランダムに
-        「お任せ」で作ります（「全件」を選ぶと件数を無視して該当する
-        すべてのフレーズを追加します）。</p>
+      <p class="muted mt">${tx("phrasedeck.createHelp")}</p>
     </div>
     <div id="phraseDeckList" class="mt"></div>`;
   wireChkAllClear(root);
@@ -9468,9 +9459,9 @@ export async function phraseDecks(root) {
 
   const renderList = (decksArr) => {
     const box = root.querySelector("#phraseDeckList");
-    box.innerHTML = `<h2>マイフレーズ帳 (${decksArr.length})</h2>`;
+    box.innerHTML = `<h2>${tx("phrasedeck.myListTitle", { count: decksArr.length })}</h2>`;
     if (!decksArr.length) {
-      box.appendChild(el(`<p class="muted">まだフレーズ帳がありません。</p>`));
+      box.appendChild(el(`<p class="muted">${tx("phrasedeck.noneYet")}</p>`));
       return;
     }
     decksArr.forEach((d) => {
@@ -9478,17 +9469,19 @@ export async function phraseDecks(root) {
       const card = el(`<div class="card">
         <div class="row" style="justify-content:space-between">
           <b>${escapeHtml(d.name)}</b>
-          <span class="muted">${d.mastered}/${d.total} 習得 (${pct}%)</span></div>
+          <span class="muted">${tx("phrasedeck.masteredStat", {
+            mastered: d.mastered, total: d.total, pct,
+          })}</span></div>
         <div class="bar mt"><span style="width:${pct}%"></span></div>
         <div class="row mt">
-          <button class="btn ghost" data-act="edit">✏️ 編集</button>
+          <button class="btn ghost" data-act="edit">${tx("phrasedeck.editBtn")}</button>
           <button class="btn ghost del-btn" data-act="del"
-            title="削除">🗑️</button></div></div>`);
+            title="${escapeHtml(tx("phrasedeck.deleteTitle"))}">🗑️</button></div></div>`);
       card.querySelector('[data-act="edit"]')
         .addEventListener("click", () => editDeck(d));
       card.querySelector('[data-act="del"]').addEventListener("click",
         async () => {
-          if (!confirm(`「${d.name}」を削除しますか？`)) return;
+          if (!confirm(tx("phrasedeck.deleteConfirm", { name: d.name }))) return;
           await api.del("/api/phrase-decks/" + d.id);
           go("phrasedeck");
         });
@@ -9500,31 +9493,29 @@ export async function phraseDecks(root) {
   root.querySelector("#pdcreate").addEventListener("click", async () => {
     const name = root.querySelector("#pdname").value.trim();
     const out = root.querySelector("#pdcreateOut");
-    out.textContent = "作成中…";
+    out.textContent = tx("phrasedeck.creating");
     try {
       const limitAll = root.querySelector("#pdlimitAll").checked;
       const d = await api.post("/api/phrase-decks", {
-        name: name || "新しいフレーズ帳",
+        name: name || tx("phrasedeck.defaultName"),
         scenes: sels("#pdscenes"),
         levels: sels("#pdlevels"),
         include_banned: !!root.querySelector("#pdbanned")?.checked,
         limit: limitAll ? null
           : (parseInt(root.querySelector("#pdlimit").value, 10) || null),
       });
-      out.textContent = `作成: ${d.name} (${d.total}件)`;
+      out.textContent = tx("phrasedeck.createdResult", { name: d.name, total: d.total });
       go("phrasedeck");
-    } catch (e) { out.textContent = "失敗: " + e.message; }
+    } catch (e) { out.textContent = tx("common.failedPrefix") + e.message; }
   });
 
   function editDeck(d) {
-    openModal("編集: " + d.name, (body) => {
+    openModal(tx("phrasedeck.editModalTitle", { name: d.name }), (body) => {
       body.appendChild(el(`<div class="row">
-        <label>名前: <input id="pen" value="${escapeHtml(d.name)}"
+        <label>${tx("phrasedeck.nameLabel")}<input id="pen" value="${escapeHtml(d.name)}"
           style="width:200px" /></label></div>`));
-      body.appendChild(el(`<p class="muted mt">出題方向・忘却曲線・
-        「覚えた」の基準はデッキごとではなく、設定画面の詳細設定で
-        アカウント共通に調整します。</p>`));
-      const save = el(`<button class="btn good mt">保存</button>`);
+      body.appendChild(el(`<p class="muted mt">${tx("phrasedeck.editHelp")}</p>`));
+      const save = el(`<button class="btn good mt">${tx("common.save")}</button>`);
       save.addEventListener("click", async () => {
         await api.put("/api/phrase-decks/" + d.id, {
           name: body.querySelector("#pen").value.trim() || d.name,
@@ -9534,14 +9525,14 @@ export async function phraseDecks(root) {
       body.appendChild(save);
 
       body.appendChild(el(`<hr class="mt" />`));
-      body.appendChild(el(`<h3>🎯 シーン・レベルで一括追加</h3>`));
+      body.appendChild(el(`<h3>${tx("phrasedeck.bulkAddTitle")}</h3>`));
       body.appendChild(el(`<div class="row" style="align-items:flex-start">
-        <div><div class="muted">シーン(複数チェック可)</div>
+        <div><div class="muted">${tx("phrasedeck.scenesLabel")}</div>
           ${chkAllClearHtml("paddScenes")}
           <div id="paddScenes" class="chkbox">${sceneFacets.scenes.map((s) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(s)}"
               /> ${escapeHtml(s)}</label>`).join("")}</div></div>
-        <div><div class="muted">レベル(複数チェック可)</div>
+        <div><div class="muted">${tx("phrasedeck.levelsLabel")}</div>
           ${chkAllClearHtml("paddLevels")}
           <div id="paddLevels" class="chkbox">${levelFacets.range_levels.map((l) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(l)}"
@@ -9549,20 +9540,20 @@ export async function phraseDecks(root) {
       </div>`));
       wireChkAllClear(body);
       const pBulkAddBtn = el(
-        `<button class="btn good mt">選択したシーン・レベルを全て追加</button>`);
+        `<button class="btn good mt">${tx("phrasedeck.bulkAddBtn")}</button>`);
       const pBulkAddOut = el(`<span class="muted mt"></span>`);
       body.appendChild(pBulkAddBtn);
       body.appendChild(pBulkAddOut);
 
       body.appendChild(el(`<hr class="mt" />`));
-      body.appendChild(el(`<h3>🔍 フレーズを検索して個別に追加</h3>`));
+      body.appendChild(el(`<h3>${tx("phrasedeck.searchTitle")}</h3>`));
       body.appendChild(el(`<input id="paddSearch"
-        placeholder="英語・日本語で検索（3文字以上）" style="width:260px" />`));
+        placeholder="${escapeHtml(tx("phrasedeck.searchPlaceholder"))}" style="width:260px" />`));
       const paddResults = el(`<div id="paddResults" class="mt"></div>`);
       body.appendChild(paddResults);
 
       body.appendChild(el(`<hr class="mt" />`));
-      body.appendChild(el(`<h3>収録中のフレーズ (<span id="pcount">…</span>)</h3>`));
+      body.appendChild(el(`<h3>${tx("phrasedeck.membersTitle")} (<span id="pcount">…</span>)</h3>`));
       const plist = el(`<div id="plist" class="mt"></div>`);
       body.appendChild(plist);
 
@@ -9573,7 +9564,7 @@ export async function phraseDecks(root) {
         body.querySelector("#pcount").textContent = items.length;
         plist.innerHTML = "";
         if (!items.length) {
-          plist.appendChild(el(`<p class="muted">フレーズがありません。</p>`));
+          plist.appendChild(el(`<p class="muted">${tx("phrasedeck.noPhrasesYet")}</p>`));
           return;
         }
         items.forEach((p) => {
@@ -9581,10 +9572,10 @@ export async function phraseDecks(root) {
             style="justify-content:space-between;padding:4px 0">
             <span>${escapeHtml(p.english)}
               <span class="muted">${escapeHtml(p.japanese || "")}</span></span>
-            <button class="btn ghost del-btn" title="フレーズ帳から外す">🗑️</button>
+            <button class="btn ghost del-btn" title="${escapeHtml(tx("phrasedeck.removeFromDeckTitle"))}">🗑️</button>
             </div>`);
           row.querySelector("button").addEventListener("click", async () => {
-            if (!confirm(`「${p.english}」をフレーズ帳から外しますか？`)) return;
+            if (!confirm(tx("phrasedeck.removeConfirm", { name: p.english }))) return;
             await api.del(`/api/phrase-decks/${d.id}/phrases/${p.id}`);
             loadPhrases();
           });
@@ -9598,17 +9589,16 @@ export async function phraseDecks(root) {
         const levels = [...body.querySelectorAll("#paddLevels input:checked")]
           .map((o) => o.value);
         if (!scenes.length && !levels.length) {
-          pBulkAddOut.textContent = "シーンかレベルを1つ以上選んでください。";
+          pBulkAddOut.textContent = tx("phrasedeck.selectSceneOrLevel");
           return;
         }
-        pBulkAddOut.textContent = "追加中…";
+        pBulkAddOut.textContent = tx("phrasedeck.addingInProgress");
         try {
           const res = await api.post(`/api/phrase-decks/${d.id}/phrases`,
             { scenes, levels });
-          pBulkAddOut.textContent = `現在 ${res.total}件（無料範囲では` +
-            `合計100件まで）。`;
+          pBulkAddOut.textContent = tx("phrasedeck.bulkAddResult", { total: res.total });
           loadPhrases();
-        } catch (e) { pBulkAddOut.textContent = "失敗: " + e.message; }
+        } catch (e) { pBulkAddOut.textContent = tx("common.failedPrefix") + e.message; }
       });
 
       const paddSearchInput = body.querySelector("#paddSearch");
@@ -9618,7 +9608,7 @@ export async function phraseDecks(root) {
         paddResults.innerHTML = "";
         if (term.length < 3) return;
         if (!allPhrasesCache) {
-          paddResults.appendChild(el(`<p class="muted">検索中…</p>`));
+          paddResults.appendChild(el(`<p class="muted">${tx("phrasedeck.searching")}</p>`));
           allPhrasesCache = await api.get("/api/phrases");
           paddResults.innerHTML = "";
         }
@@ -9627,7 +9617,7 @@ export async function phraseDecks(root) {
           p.english.toLowerCase().includes(t)
           || (p.japanese || "").toLowerCase().includes(t)).slice(0, 30);
         if (!matches.length) {
-          paddResults.appendChild(el(`<p class="muted">見つかりません。</p>`));
+          paddResults.appendChild(el(`<p class="muted">${tx("phrasedeck.foundNone")}</p>`));
           return;
         }
         matches.forEach((p) => {
@@ -9638,7 +9628,7 @@ export async function phraseDecks(root) {
               <span class="muted">${escapeHtml(p.japanese || "")}</span></span>
             <button class="btn ${inDeck ? "ghost" : "good"}" ${
               inDeck ? "disabled" : ""}>${
-              inDeck ? "追加済み" : "➕ 追加"}</button></div>`);
+              inDeck ? tx("phrasedeck.addedLabel") : tx("phrasedeck.addBtn")}</button></div>`);
           if (!inDeck) {
             row.querySelector("button").addEventListener("click", async () => {
               await api.post(`/api/phrase-decks/${d.id}/phrases`,
