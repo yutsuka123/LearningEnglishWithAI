@@ -73,10 +73,7 @@ const MASTERY_LEGEND_HINT =
   + "「戻す」)／卒業=満点で固定し、以後は時間が経っても減りません／"
   + "クリア=0ptに戻す。加点量や「覚えた」の基準は設定の詳細設定で"
   + "変えられます。";
-const MASTERED_FILTER_HINT =
-  "「覚えた」と判定された項目(習熟度が基準ptに達したもの)の扱いです。"
-  + "含む=すべて出題、隠す=覚えた項目を除いて出題、のみ=覚えた項目だけを"
-  + "復習用に出題します。基準は設定の詳細設定で変えられます。";
+const MASTERED_FILTER_HINT = () => tx("filter.masteredFilterHint");
 const DECK_PROGRESS_HINT =
   "「習得済み」は、習熟度が「覚えた」の基準pt(既定100pt)以上になった"
   + "数です。達成率=習得済み÷全体で、フラッシュやクイズで正解する・"
@@ -990,19 +987,18 @@ function voiceButtonsItem(itemType, id, kind, fallback, getMode, isFreeRange,
   const locked = isFreeRange === false && !state.hasAiBalance;
   const free = isFreeRange === true;
   const icon = locked ? "🔒" : (free ? "🆓" : "🔊");
-  const lockNote = locked
-    ? "・🔒無料範囲外（ログインすると再生できる場合があります）" : "";
-  const freeNote = free ? "・🆓誰でも無料で再生できます" : "";
+  const lockNote = locked ? "・" + tx("voice.lockedNote") : "";
+  const freeNote = free ? "・" + tx("voice.freeNote") : "";
   const iconHtml = free
     ? `<span class="free-icon-glyph">${icon}</span>` : icon;
   // labelled=true: 文字付き(「▶ 男声」)。ようこそ画面の1語サンプル用で、他の画面は従来の
   // アイコンのみ。
-  const mHtml = labelled ? "▶ 男声" : iconHtml;
-  const fHtml = labelled ? "▶ 女声" : iconHtml;
+  const mHtml = labelled ? "▶ " + tx("voice.maleLabel") : iconHtml;
+  const fHtml = labelled ? "▶ " + tx("voice.femaleLabel") : iconHtml;
   const cell = el(`<div class="voice-cell${labelled ? " voice-cell-labelled" : ""}">
-    <button class="btn voice-m" title="男性の声 (ash)${lockNote}${freeNote}">${
+    <button class="btn voice-m" title="${tx("voice.maleTitle")}${lockNote}${freeNote}">${
       mHtml}</button>
-    <button class="btn voice-f" title="女性の声 (nova)${lockNote}${freeNote}">${
+    <button class="btn voice-f" title="${tx("voice.femaleTitle")}${lockNote}${freeNote}">${
       fHtml}</button></div>`);
   const [m, f] = cell.querySelectorAll("button");
   const play = (voice) => speech.sayItem(
@@ -1277,17 +1273,17 @@ function openModal(title, buildBody, onClose) {
 // ユーザー要望: 音声無料範囲外の語が出題されて🔒でガッカリする事態を
 // 避けたい)。戻り値: true=無料のみ/false=全部含める/null=キャンセル
 // (✕・Esc・背景クリックで閉じた場合。呼び出し元は開始自体を中断する)。
-function askFreeRangeChoice(kindLabel) {
+function askFreeRangeChoice(kindKey) {
+  const kind = tx(kindKey);
   return new Promise((resolve) => {
     let resolved = false;
     const settle = (v) => { if (!resolved) { resolved = true; resolve(v); } };
-    const close = openModal(`🔊 出題範囲を選択`, (body) => {
+    const close = openModal(`🔊 ${tx("flashcard.freeRangeTitle")}`, (body) => {
       body.innerHTML = `
-        <p class="muted">音声無料範囲外の${kindLabel}も出題に含めますか？
-          （範囲外は🔒で再生だけできません、表示・採点は変わりません）</p>
+        <p class="muted">${tx("flashcard.freeRangeQuestion", { kind })}</p>
         <div class="row mt" style="flex-direction:column; gap:8px">
-          <button class="btn" id="frcFreeOnly">🔊 無料で聴ける${kindLabel}のみ</button>
-          <button class="btn ghost" id="frcAll">📚 聴けない${kindLabel}も含める</button>
+          <button class="btn" id="frcFreeOnly">🔊 ${tx("flashcard.freeRangeOnlyBtn", { kind })}</button>
+          <button class="btn ghost" id="frcAll">📚 ${tx("flashcard.freeRangeAllBtn", { kind })}</button>
         </div>`;
       body.querySelector("#frcFreeOnly").addEventListener("click", () => {
         settle(true); close();
@@ -1723,8 +1719,8 @@ function runFlashcards(stage, initialQueue, opts) {
     if (!d || card() !== c) return;             // 先に進んでいたら無視
     const ipa = stage.querySelector("#fcIpa");
     const exja = stage.querySelector("#fcExJa");
-    if (ipa && d.pronunciation) ipa.textContent = "発音 " + d.pronunciation;
-    if (exja && d.example_ja) exja.textContent = "訳: " + d.example_ja;
+    if (ipa && d.pronunciation) ipa.textContent = tx("flashcard.pronunciationPrefix") + d.pronunciation;
+    if (exja && d.example_ja) exja.textContent = tx("quiz.translationLabel") + d.example_ja;
   }
 
   function applyGrade(c, action) {
@@ -1748,7 +1744,7 @@ function runFlashcards(stage, initialQueue, opts) {
         // 2026-09-18修正: quiz.jsのmarkKnown/recordと同じ理由で、
         // 失敗が完全に無言だと採点未保存にユーザーが気づけないため
         // トーストを出す(それでも次のカードへは進む)。
-        toast("⚠️ 記録に失敗しました(採点は保存されていません)");
+        toast("⚠️ " + tx("quiz.recordFailed"));
       }
     })();
   }
@@ -1772,8 +1768,9 @@ function runFlashcards(stage, initialQueue, opts) {
       // 採点時の手応え強化(2026-09-15・UIレビュー指摘: 反応が進捗の
       // 数字が増えるだけで薄かった)。カードが飛んでいく間だけ大きな
       // ラベルを重ねて表示する(次の描画までの150ms限定なので短く軽い)。
-      const badgeText = { known: "⬆ 覚えた", wrong: "⬇ できない",
-        vague: "➡ うろ覚え" }[action];
+      const badgeText = { known: tx("flashcard.knownBtnLabel"),
+        wrong: tx("flashcard.wrongBtnLabel"),
+        vague: tx("flashcard.vagueBtnLabel") }[action];
       const badgeCls = { known: "good", wrong: "bad", vague: "vague" }[action];
       cardEl.appendChild(
         el(`<div class="fc-grade-badge ${badgeCls}">${badgeText}</div>`));
@@ -1783,7 +1780,7 @@ function runFlashcards(stage, initialQueue, opts) {
   }
 
   async function undo() {
-    if (!history.length) { toast("これ以上戻れません"); return; }
+    if (!history.length) { toast(tx("flashcard.cantUndoMore")); return; }
     stopAudio();                              // スワイプしたら即停止
     const { index, snapshot, action } = history.pop();
     if (action === "known") counts.known = Math.max(0, counts.known - 1);
@@ -1798,17 +1795,17 @@ function runFlashcards(stage, initialQueue, opts) {
       catch (_) { /* ignore */ }
     }
     pos = index; revealed = true; render();
-    toast("1つ戻りました（採点やり直し）");
+    toast(tx("flashcard.undoneToast"));
   }
 
   async function fetchMore() {
-    stage.innerHTML = `<p class="muted">読み込み中…</p>`;
+    stage.innerHTML = `<p class="muted">${tx("common.loading")}</p>`;
     let more;
     try { more = await api.get(`${apiBase}/quiz?` + qs); }
-    catch (_) { stage.innerHTML = `<div class="card">取得に失敗しました</div>`; return; }
+    catch (_) { stage.innerHTML = `<div class="card">${tx("common.fetchFailed")}</div>`; return; }
     if (!more.length) {
-      stage.innerHTML = `<div class="card">対象の${
-        kind === "phrase" ? "フレーズ" : "単語"}がありません。</div>`; return;
+      stage.innerHTML = `<div class="card">${tx("flashcard.noItemsForFilter",
+        { kind: kind === "phrase" ? tx("common.phraseNoun") : tx("common.wordNoun") })}</div>`; return;
     }
     queue = more; pos = 0; revealed = false; history.length = 0;
     render();
@@ -1816,12 +1813,12 @@ function runFlashcards(stage, initialQueue, opts) {
 
   function renderDone() {
     stage.innerHTML = `<div class="card fc-done">
-      <h2 style="margin-top:0">お疲れさまでした 🎉</h2>
-      <p>覚えた <b>${counts.known}</b> ・ うろ覚え <b>${counts.vague}</b>
-        ・ できない <b>${counts.wrong}</b> ・ スキップ <b>${counts.skip}</b></p>
+      <h2 style="margin-top:0">${tx("flashcard.doneTitle")} 🎉</h2>
+      <p>${tx("flashcard.doneStats", { known: counts.known, vague: counts.vague,
+        wrong: counts.wrong, skip: counts.skip })}</p>
       <div class="row">
-        <button class="btn" id="fcMore">▶ もっと続ける</button>
-        <button class="btn ghost" id="fcBack">設定に戻る</button>
+        <button class="btn" id="fcMore">▶ ${tx("flashcard.moreBtn")}</button>
+        <button class="btn ghost" id="fcBack">${tx("flashcard.backToSetupBtn")}</button>
       </div></div>`;
     stage.querySelector("#fcMore").addEventListener("click", fetchMore);
     stage.querySelector("#fcBack").addEventListener("click",
@@ -1834,12 +1831,12 @@ function runFlashcards(stage, initialQueue, opts) {
     const qText = dir === "en2ja" ? c.english : c.japanese;
     const aText = dir === "en2ja" ? c.japanese : c.english;
     stage.innerHTML = `<div class="fc-wrap">
-      <div class="fc-progress muted">${pos + 1} / ${queue.length}
-        ・ 覚${counts.known} うろ${counts.vague} ✗${counts.wrong}
-        スキップ${counts.skip}</div>
+      <div class="fc-progress muted">${tx("flashcard.progressLine", { pos: pos + 1,
+        total: queue.length, known: counts.known, vague: counts.vague,
+        wrong: counts.wrong, skip: counts.skip })}</div>
       <div class="fc-card${revealed ? " flip" : ""}" id="fcCard">
         <div class="fc-q">${escapeHtml(qText)}</div>
-        <div class="fc-side muted">${dir === "en2ja" ? "英→日" : "日→英"}</div>
+        <div class="fc-side muted">${dir === "en2ja" ? tx("flashcard.dirShortEnJa") : tx("flashcard.dirShortJaEn")}</div>
         <div class="fc-a">
           <div class="fc-ans">${escapeHtml(aText)}</div>
           <div class="fc-ipa muted" id="fcIpa"></div>
@@ -1847,10 +1844,9 @@ function runFlashcards(stage, initialQueue, opts) {
             ? escapeHtml(c.example) : ""}</div>
           <div class="fc-exja muted" id="fcExJa"></div>
         </div>
-        <div class="fc-hint muted">タップで答え</div>
+        <div class="fc-hint muted">${tx("flashcard.tapHint")}</div>
       </div>
-      <div class="fc-legend muted">⬆ 覚えた ・ ⬇ できない ・ ➡ うろ覚え
-        ・ ⬅ 戻る ／ カードをタップで答え</div>
+      <div class="fc-legend muted">${tx("flashcard.legend")}</div>
       <div class="row fc-tools"></div>
       <div class="row fc-actions"></div>
     </div>`;
@@ -1871,20 +1867,20 @@ function runFlashcards(stage, initialQueue, opts) {
     const tools = stage.querySelector(".fc-tools");
     tools.appendChild(voiceButtonsItem(
       kind, c.id, "word", () => c.english, () => speed, c.is_free_range));
-    const exBtn = el(`<button class="btn ghost">🔊 例文</button>`);
+    const exBtn = el(`<button class="btn ghost">🔊 ${tx("flashcard.exampleBtn")}</button>`);
     exBtn.disabled = !c.example;
     exBtn.addEventListener("click", () => { if (c.example) {
       stopAudio();
       speech.sayItem(kind, c.id, "example", voice, c.example,
         speedOpts(speed));
     } });
-    const detBtn = el(`<button class="btn ghost">📖 詳細</button>`);
+    const detBtn = el(`<button class="btn ghost">📖 ${tx("flashcard.detailBtn")}</button>`);
     detBtn.addEventListener("click",
       () => (kind === "phrase" ? showPhraseDetail(c) : showWordDetail(c)));
     // セッション途中でフィルタを変更したくなっても、従来は全カードを
     // めくり終えるかメニューを再クリックするしかなかった(2026-09-15
     // ユーザー指摘)。プレイ中いつでも設定画面へ戻れるボタンを追加。
-    const settingsBtn = el(`<button class="btn ghost">⚙️ 設定</button>`);
+    const settingsBtn = el(`<button class="btn ghost">⚙️ ${tx("flashcard.settingsBtn")}</button>`);
     settingsBtn.addEventListener("click",
       () => go(kind === "phrase" ? "flashphrase" : "flashcard"));
     tools.append(exBtn, detBtn, settingsBtn);
@@ -1896,11 +1892,11 @@ function runFlashcards(stage, initialQueue, opts) {
       return b;
     };
     actions.append(
-      mk("ghost", "⬅ 戻る", undo),
-      mk("ghost", "⏭ 次へ（飛ばす）", () => grade("skip")),
-      mk("danger", "⬇ できない", () => grade("wrong")),
-      mk("vague-btn", "➡ うろ覚え", () => grade("vague")),
-      mk("good", "⬆ 覚えた", () => grade("known")),
+      mk("ghost", tx("flashcard.undoBtnLabel"), undo),
+      mk("ghost", tx("flashcard.skipBtnLabel"), () => grade("skip")),
+      mk("danger", tx("flashcard.wrongBtnLabel"), () => grade("wrong")),
+      mk("vague-btn", tx("flashcard.vagueBtnLabel"), () => grade("vague")),
+      mk("good", tx("flashcard.knownBtnLabel"), () => grade("known")),
     );
     if (revealed) reveal(c); else readFront(c);
   }
@@ -1950,11 +1946,11 @@ export async function flashcard(root) {
   const dfwActive = !!(dfw.category || dfw.level_min || dfw.level_max
     || dfw.mastered);
   const domainGroups = facets.domain_groups || {};
-  const deckOpts = ['<option value="">-- 単語帳を使わない(分野・レベルで選ぶ) --</option>']
+  const deckOpts = [`<option value="">${tx("flashcard.deckNoneOption")}</option>`]
     .concat(deckList.map((d) =>
-      `<option value="${d.id}">${escapeHtml(d.name)}（${d.total}語）</option>`))
+      `<option value="${d.id}">${escapeHtml(d.name)}（${d.total}${tx("filter.kindWord")}）</option>`))
     .join("");
-  const catOpts = ['<option value="">全カテゴリ</option>']
+  const catOpts = [`<option value="">${tx("flashcard.allCategories")}</option>`]
     .concat(Object.keys(domainGroups).map((c) =>
       `<option>${escapeHtml(c)}</option>`))
     .join("");
@@ -1962,69 +1958,62 @@ export async function flashcard(root) {
     .map((l) => `<option>${escapeHtml(l)}</option>`).join("");
   const voiceOpts = speech.listOpenAIVoices().map((vn) => {
     const g = speech.voiceGender(vn);
-    return `<option value="${vn}">声: ${vn}${g ? "（" + g + "）" : ""}</option>`;
+    return `<option value="${vn}">${tx("settings.voiceTestPrefix")}${vn}${g ? "（" + g + "）" : ""}</option>`;
   }).join("");
 
   root.innerHTML = `
-    <h1>🃏 フラッシュ単語 ${infoIcon("help-flashcard",
-      "単語カードを次々にめくって答え合わせする高速学習モードです。" +
-      "分野・レベル・自分の単語帳から出題範囲を選べます。ログインすると" +
-      "習熟度が記録され、覚えた語の出題を抑制できます。")}</h1>
-    ${dfwActive ? `<p class="muted">⚙️ 設定の既定フィルターを適用中です。
-      この画面でその場変更もできます。</p>` : ""}
+    <h1>🃏 ${tx("flashcard.title")} ${infoIcon("help-flashcard", tx("flashcard.helpText"))}</h1>
+    ${dfwActive ? `<p class="muted">⚙️ ${tx("flashcard.defaultFilterActive")}</p>` : ""}
     <div class="card" id="fcSetup">
-      <p class="muted">単語帳をどんどんめくる高速学習。カードをタップで答え、
-        スワイプ（または下のボタン）で採点します。</p>
+      <p class="muted">${tx("flashcard.intro")}</p>
       <div class="row">
         <select id="fcDir">
-          <option value="en2ja">英和（英→日）</option>
-          <option value="ja2en">和英（日→英）</option>
+          <option value="en2ja">${tx("flashcard.dirEnJa")}</option>
+          <option value="ja2en">${tx("flashcard.dirJaEn")}</option>
         </select>
-        <select id="fcCategory" title="大分類">${catOpts}</select>
+        <select id="fcCategory" title="${tx("flashcard.categoryTitleAttr")}">${catOpts}</select>
         <span class="cdrop">
-          <button type="button" class="btn ghost" id="fcDomainBtn">分野: 全て ▾</button>
+          <button type="button" class="btn ghost" id="fcDomainBtn">${tx("filter.dropdownAll", { label: tx("list.colDomain") })}</button>
           <div class="cdrop-panel" id="fcDomainPanel"></div>
         </span>
       </div>
       ${deckList.length ? `<div class="row mt">
-        <select id="fcDeck" title="自分の単語帳から選んでフラッシュする
-          （選ぶと分野・レベルの絞り込みと併用できます）">${deckOpts}</select>
+        <select id="fcDeck" title="${escapeHtml(tx("flashcard.deckSelectTitle"))}">${deckOpts}</select>
       </div>` : ""}
       <div class="row mt">
-        <span class="muted">レベル</span>
+        <span class="muted">${tx("flashcard.levelLabel")}</span>
         <select id="fcLvMin">${lvOpts}</select>
         <span class="muted">〜</span>
         <select id="fcLvMax">${lvOpts}</select>
         <select id="fcMastered">
-          <option value="">覚えた: 含む</option>
-          <option value="hide">覚えた: 隠す</option>
-          <option value="only">覚えた: のみ</option>
+          <option value="">${tx("filter.masteredInclude")}</option>
+          <option value="hide">${tx("filter.masteredHide")}</option>
+          <option value="only">${tx("filter.masteredOnly")}</option>
         </select>
-        ${infoIcon("mastered-filter", MASTERED_FILTER_HINT)}
+        ${infoIcon("mastered-filter", MASTERED_FILTER_HINT())}
       </div>
       <div class="row mt">
         <select id="fcSize">
-          <option value="20">20枚</option>
-          <option value="50">50枚</option>
-          <option value="100">100枚</option>
+          <option value="20">${tx("flashcard.sizeOption", { n: 20 })}</option>
+          <option value="50">${tx("flashcard.sizeOption", { n: 50 })}</option>
+          <option value="100">${tx("flashcard.sizeOption", { n: 100 })}</option>
         </select>
         ${speedSelect("fcSpeed")}
-        <select id="fcVoice" title="読み上げの声（自然な声ONのとき）">
+        <select id="fcVoice" title="${tx("flashcard.voiceSelectTitle")}">
           ${voiceOpts}</select>
         <label class="toggle"><input type="checkbox" id="fcAuto"/>
-          <b>答え表示で自動的に音声を再生する</b></label>
+          <b>${tx("flashcard.autoPlayLabel")}</b></label>
         <span style="color:var(--danger); font-weight:700;">
-          ※ONにすると音量にご注意ください</span>
+          ${tx("flashcard.volumeWarning")}</span>
       </div>
       <div class="row mt">
         ${freeOnlyToggle("fcFreeOnly", "word")}
       </div>
       <div class="row mt">
-        <button class="btn" id="fcStart">▶ 開始</button>
+        <button class="btn" id="fcStart">▶ ${tx("flashcard.startBtn")}</button>
         <span class="muted" id="fcCount"></span>
       </div>
-      <p class="muted fc-kbd-hint">PCキー操作: ↑覚えた ↓できない →うろ覚え
-        ←戻る ／ Space・Enterで反転 ／ Sでスキップ</p>
+      <p class="muted fc-kbd-hint">${tx("flashcard.kbdHint")}</p>
     </div>
     <div id="fcStage"></div>`;
 
@@ -2061,7 +2050,7 @@ export async function flashcard(root) {
     const q = new URLSearchParams({ count: "true", ...fcFilterParams() });
     try {
       const r = await api.get("/api/words/quiz?" + q.toString());
-      if (my === fcCountSeq) el2.textContent = `該当 ${r.count}語`;
+      if (my === fcCountSeq) el2.textContent = tx("flashcard.matchCount", { n: r.count });
     } catch (_) { if (my === fcCountSeq) el2.textContent = ""; }
   };
   setVal("#fcDir", localStorage.getItem("fc_dir") || "en2ja");
@@ -2139,7 +2128,7 @@ export async function flashcard(root) {
     if (state.isChargedTier) {
       root.querySelector("#fcFreeOnly").checked = false;
     } else {
-      const choice = await askFreeRangeChoice("単語");
+      const choice = await askFreeRangeChoice("common.wordNoun");
       if (choice === null) return;
       root.querySelector("#fcFreeOnly").checked = choice;
     }
@@ -2166,15 +2155,14 @@ export async function flashcard(root) {
     const qs = q.toString();
 
     const stage = root.querySelector("#fcStage");
-    stage.innerHTML = `<p class="muted">読み込み中…</p>`;
+    stage.innerHTML = `<p class="muted">${tx("common.loading")}</p>`;
     let queue;
     try { queue = await api.get("/api/words/quiz?" + qs); }
     catch (_) {
-      stage.innerHTML = `<div class="card">取得に失敗しました</div>`; return;
+      stage.innerHTML = `<div class="card">${tx("common.fetchFailed")}</div>`; return;
     }
     if (!queue.length) {
-      stage.innerHTML = `<div class="card">該当する単語がありません。
-        フィルタを緩めてください。</div>`;
+      stage.innerHTML = `<div class="card">${tx("flashcard.noWordsMatch")}</div>`;
       return;
     }
     // 開始したら設定パネルを畳んでカードだけに集中できるようにする
@@ -2208,12 +2196,12 @@ export async function flashPhrase(root) {
   const dfp = us.default_phrase_filters || {};
   const dfpActive = !!(dfp.category || dfp.level_min || dfp.level_max
     || dfp.mastered);
-  const deckOpts = ['<option value="">-- フレーズ帳を使わない(シーン・レベルで選ぶ) --</option>']
+  const deckOpts = [`<option value="">${tx("flashphrase.deckNoneOption")}</option>`]
     .concat(deckList.map((d) =>
-      `<option value="${d.id}">${escapeHtml(d.name)}（${d.total}件）</option>`))
+      `<option value="${d.id}">${escapeHtml(d.name)}（${d.total}${tx("filter.kindItem")}）</option>`))
     .join("");
   const sceneGroups = sceneFacets.scene_groups || {};
-  const catOpts = ['<option value="">全カテゴリ</option>']
+  const catOpts = [`<option value="">${tx("flashcard.allCategories")}</option>`]
     .concat(Object.keys(sceneGroups).map((c) =>
       `<option>${escapeHtml(c)}</option>`))
     .join("");
@@ -2221,68 +2209,62 @@ export async function flashPhrase(root) {
     .map((l) => `<option>${escapeHtml(l)}</option>`).join("");
   const voiceOpts = speech.listOpenAIVoices().map((vn) => {
     const g = speech.voiceGender(vn);
-    return `<option value="${vn}">声: ${vn}${g ? "（" + g + "）" : ""}</option>`;
+    return `<option value="${vn}">${tx("settings.voiceTestPrefix")}${vn}${g ? "（" + g + "）" : ""}</option>`;
   }).join("");
 
   root.innerHTML = `
-    <h1>🃏 フラッシュフレーズ ${infoIcon("help-flashphrase",
-      "実用フレーズをカード形式で次々に答え合わせする高速学習モードです。" +
-      "シーン・レベル・自分のフレーズ帳から出題範囲を選べます。")}</h1>
-    ${dfpActive ? `<p class="muted">⚙️ 設定の既定フィルターを適用中です。
-      この画面でその場変更もできます。</p>` : ""}
+    <h1>🃏 ${tx("flashphrase.title")} ${infoIcon("help-flashphrase", tx("flashphrase.helpText"))}</h1>
+    ${dfpActive ? `<p class="muted">⚙️ ${tx("flashcard.defaultFilterActive")}</p>` : ""}
     <div class="card" id="fpSetup">
-      <p class="muted">フレーズ帳をどんどんめくる高速学習。カードをタップで答え、
-        スワイプ（または下のボタン）で採点します。</p>
+      <p class="muted">${tx("flashphrase.intro")}</p>
       <div class="row">
         <select id="fpDir">
-          <option value="en2ja">英和（英→日）</option>
-          <option value="ja2en">和英（日→英）</option>
+          <option value="en2ja">${tx("flashcard.dirEnJa")}</option>
+          <option value="ja2en">${tx("flashcard.dirJaEn")}</option>
         </select>
-        <select id="fpCategory" title="大分類">${catOpts}</select>
+        <select id="fpCategory" title="${tx("flashcard.categoryTitleAttr")}">${catOpts}</select>
         <span class="cdrop">
-          <button type="button" class="btn ghost" id="fpSceneBtn">シーン: 全て ▾</button>
+          <button type="button" class="btn ghost" id="fpSceneBtn">${tx("filter.dropdownAll", { label: tx("list.colScene") })}</button>
           <div class="cdrop-panel" id="fpScenePanel"></div>
         </span>
       </div>
       ${deckList.length ? `<div class="row mt">
-        <select id="fpDeck" title="自分のフレーズ帳から選んでフラッシュする
-          （選ぶとシーン・レベルの絞り込みと併用できます）">${deckOpts}</select>
+        <select id="fpDeck" title="${escapeHtml(tx("flashphrase.deckSelectTitle"))}">${deckOpts}</select>
       </div>` : ""}
       <div class="row mt">
-        <span class="muted">レベル</span>
+        <span class="muted">${tx("flashcard.levelLabel")}</span>
         <select id="fpLvMin">${lvOpts}</select>
         <span class="muted">〜</span>
         <select id="fpLvMax">${lvOpts}</select>
         <select id="fpMastered">
-          <option value="">覚えた: 含む</option>
-          <option value="hide">覚えた: 隠す</option>
-          <option value="only">覚えた: のみ</option>
+          <option value="">${tx("filter.masteredInclude")}</option>
+          <option value="hide">${tx("filter.masteredHide")}</option>
+          <option value="only">${tx("filter.masteredOnly")}</option>
         </select>
-        ${infoIcon("mastered-filter", MASTERED_FILTER_HINT)}
+        ${infoIcon("mastered-filter", MASTERED_FILTER_HINT())}
       </div>
       <div class="row mt">
         <select id="fpSize">
-          <option value="20">20枚</option>
-          <option value="50">50枚</option>
-          <option value="100">100枚</option>
+          <option value="20">${tx("flashcard.sizeOption", { n: 20 })}</option>
+          <option value="50">${tx("flashcard.sizeOption", { n: 50 })}</option>
+          <option value="100">${tx("flashcard.sizeOption", { n: 100 })}</option>
         </select>
         ${speedSelect("fpSpeed")}
-        <select id="fpVoice" title="読み上げの声（自然な声ONのとき）">
+        <select id="fpVoice" title="${tx("flashcard.voiceSelectTitle")}">
           ${voiceOpts}</select>
         <label class="toggle"><input type="checkbox" id="fpAuto"/>
-          <b>答え表示で自動的に音声を再生する</b></label>
+          <b>${tx("flashcard.autoPlayLabel")}</b></label>
         <span style="color:var(--danger); font-weight:700;">
-          ※ONにすると音量にご注意ください</span>
+          ${tx("flashcard.volumeWarning")}</span>
       </div>
       <div class="row mt">
         ${freeOnlyToggle("fpFreeOnly", "phrase")}
       </div>
       <div class="row mt">
-        <button class="btn" id="fpStart">▶ 開始</button>
+        <button class="btn" id="fpStart">▶ ${tx("flashcard.startBtn")}</button>
         <span class="muted" id="fpCount"></span>
       </div>
-      <p class="muted fc-kbd-hint">PCキー操作: ↑覚えた ↓できない →うろ覚え
-        ←戻る ／ Space・Enterで反転 ／ Sでスキップ</p>
+      <p class="muted fc-kbd-hint">${tx("flashcard.kbdHint")}</p>
     </div>
     <div id="fpStage"></div>`;
 
@@ -2317,7 +2299,7 @@ export async function flashPhrase(root) {
     const q = new URLSearchParams({ count: "true", ...fpFilterParams() });
     try {
       const r = await api.get("/api/phrases/quiz?" + q.toString());
-      if (my === fpCountSeq) el2.textContent = `該当 ${r.count}件`;
+      if (my === fpCountSeq) el2.textContent = tx("flashphrase.matchCount", { n: r.count });
     } catch (_) { if (my === fpCountSeq) el2.textContent = ""; }
   };
   setVal("#fpDir", localStorage.getItem("fp_dir") || "en2ja");
@@ -2383,7 +2365,7 @@ export async function flashPhrase(root) {
     if (state.isChargedTier) {
       root.querySelector("#fpFreeOnly").checked = false;
     } else {
-      const choice = await askFreeRangeChoice("フレーズ");
+      const choice = await askFreeRangeChoice("common.phraseNoun");
       if (choice === null) return;
       root.querySelector("#fpFreeOnly").checked = choice;
     }
@@ -2410,15 +2392,14 @@ export async function flashPhrase(root) {
     const qs = q.toString();
 
     const stage = root.querySelector("#fpStage");
-    stage.innerHTML = `<p class="muted">読み込み中…</p>`;
+    stage.innerHTML = `<p class="muted">${tx("common.loading")}</p>`;
     let queue;
     try { queue = await api.get("/api/phrases/quiz?" + qs); }
     catch (_) {
-      stage.innerHTML = `<div class="card">取得に失敗しました</div>`; return;
+      stage.innerHTML = `<div class="card">${tx("common.fetchFailed")}</div>`; return;
     }
     if (!queue.length) {
-      stage.innerHTML = `<div class="card">該当するフレーズがありません。
-        フィルタを緩めてください。</div>`;
+      stage.innerHTML = `<div class="card">${tx("flashphrase.noPhrasesMatch")}</div>`;
       return;
     }
     // 開始したら設定パネルを畳む(flashcard()と同じ・2026-09-15対応)。
