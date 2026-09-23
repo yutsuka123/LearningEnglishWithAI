@@ -8,6 +8,11 @@
 
 const synth = window.speechSynthesis;
 
+// index.html/app.jsの読み込み順により、このモジュール評価時にはwindow.I18Nが
+// 既にセットアップ済みのはず(app.js/quiz.jsと同じtx定義。循環import回避のため
+// ここでも同じ1行を定義)。
+const tx = (key, vars) => (window.I18N ? window.I18N.t(key, vars) : key);
+
 // --- state ------------------------------------------------------------------
 
 let aiEnabled = false;
@@ -111,11 +116,17 @@ export function pickRoundVoice() {
 export function currentVoice() { return currentVoiceName; }
 
 // OpenAI音声のおおよその性別（UI表示用）。
-const VOICE_GENDER = {
-  alloy: "中性", ash: "男声", ballad: "男声", coral: "女声", echo: "男声",
-  fable: "男声", nova: "女声", onyx: "男声", sage: "女声", shimmer: "女声",
+const VOICE_GENDER_KEY = {
+  alloy: "voice.genderNeutral", ash: "voice.genderMale",
+  ballad: "voice.genderMale", coral: "voice.genderFemale",
+  echo: "voice.genderMale", fable: "voice.genderMale",
+  nova: "voice.genderFemale", onyx: "voice.genderMale",
+  sage: "voice.genderFemale", shimmer: "voice.genderFemale",
 };
-export function voiceGender(name) { return VOICE_GENDER[name] || ""; }
+export function voiceGender(name) {
+  const key = VOICE_GENDER_KEY[name];
+  return key ? tx(key) : "";
+}
 
 // 会話で使う声を明示選択して記憶（localStorage）。以後はこの声で読み上げる。
 export function setVoice(name) {
@@ -240,7 +251,7 @@ export async function say(text, opts = {}) {
       // Reading/Listening/英会話/Writingがしわがれ声になっていた不具合対応)。
       if (myToken === playSeq && paymentRequiredCb) {
         const msg = await res.text().catch(() => "");
-        paymentRequiredCb(msg || "この音声は今は再生できません。");
+        paymentRequiredCb(msg || tx("voice.playbackUnavailable"));
       }
       return;
     }
@@ -271,7 +282,7 @@ export async function sayWithVoice(text, voice, opts = {}) {
       // say()と同じ方針: 意図的な拒否ではブラウザ音声へ逃げない(2026-08-13)。
       if (myToken === playSeq && paymentRequiredCb) {
         const msg = await res.text().catch(() => "");
-        paymentRequiredCb(msg || "この音声は今は再生できません。");
+        paymentRequiredCb(msg || tx("voice.playbackUnavailable"));
       }
       return;
     }
@@ -338,7 +349,7 @@ export async function sayItem(
         // （2026-08-11: 「ログインすると聴けます」固定だと、ログイン済み
         // ユーザーの要チャージのケースまで誤って「要ログイン」と案内して
         // しまい苦情の原因になるため）。
-        paymentRequiredCb(msg || "この音声は今は再生できません。");
+        paymentRequiredCb(msg || tx("voice.playbackUnavailable"));
       }
       return;
     }
@@ -365,7 +376,7 @@ export async function sayMaterial(materialId, voice, opts = {}) {
     if (!res.ok) {
       if (paymentRequiredCb) {
         const msg = await res.text().catch(() => "");
-        paymentRequiredCb(msg || "この音声は今は再生できません。");
+        paymentRequiredCb(msg || tx("voice.playbackUnavailable"));
       }
       return;
     }
@@ -413,7 +424,7 @@ export function sayItemAndWait(itemType, id, kind, voice, fallbackText, opts = {
             // （2026-08-11: 「ログインすると聴けます」固定だと、ログイン済み
             // ユーザーの要チャージのケースまで誤って「要ログイン」と案内して
             // しまい苦情の原因になるため）。
-            paymentRequiredCb(msg || "この音声は今は再生できません。");
+            paymentRequiredCb(msg || tx("voice.playbackUnavailable"));
           }
           const err = new Error("payment required");
           err.paymentRequired = true;
@@ -493,7 +504,7 @@ export function aiSttSupported() {
 }
 
 export async function createAIRecorder(language = "") {
-  if (!aiSttSupported()) throw new Error("録音に未対応のブラウザです");
+  if (!aiSttSupported()) throw new Error(tx("voice.recordingUnsupported"));
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   const chunks = [];
   const mr = new MediaRecorder(stream);
@@ -556,7 +567,7 @@ export function speakAndWait(text, opts = {}) {
         // 終える(sayItem/say()と同じ方針・2026-08-13)。
         if (paymentRequiredCb) {
           const msg = await r.text().catch(() => "");
-          paymentRequiredCb(msg || "この音声は今は再生できません。");
+          paymentRequiredCb(msg || tx("voice.playbackUnavailable"));
         }
         resolve();
         return null;
@@ -611,7 +622,7 @@ export async function createVADSession(opts = {}) {
   // (既定15分・2026-08-18)。0/未指定で上限なし。
   const maxSessionMs = opts.maxSessionMs || 0;
   const manual = !!opts.manual;                       // 手動発話終了モード
-  if (!vadSupported()) throw new Error("ハンズフリーに未対応のブラウザです");
+  if (!vadSupported()) throw new Error(tx("voice.handsfreeUnsupported"));
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   const AC = window.AudioContext || window.webkitAudioContext;
   const ac = new AC();
@@ -715,7 +726,7 @@ export async function createVADSession(opts = {}) {
 // Toggle-style recorder: start() begins continuous recording, stop() ends it
 // and resolves with the recognized text. Robust against onend not firing.
 export function createRecorder(lang = "en-US") {
-  if (!SR) throw new Error("音声認識に未対応のブラウザです");
+  if (!SR) throw new Error(tx("voice.recognitionUnsupported"));
   abortListening(); // release any previous session first
   const rec = new SR();
   activeRec = rec;

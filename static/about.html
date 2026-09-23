@@ -63,6 +63,8 @@
   }
   </script>
   <link rel="stylesheet" href="/static/css/page.css" />
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/i18n_dict.js"></script>
   <script src="/static/js/page-chrome.js"></script>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17457232912"></script>
@@ -82,60 +84,61 @@
 </head>
 <body>
   <div class="pagebar">
-    <select id="fontSize" title="文字の大きさ">
-      <option value="">文字: 中</option>
-      <option value="small">文字: 小</option>
-      <option value="large">文字: 大</option>
-      <option value="xlarge">文字: 特大</option>
+    <select id="fontSize" data-i18n-title="fontSize.title" title="文字の大きさ">
+      <option value="" data-i18n="fontSize.optMedium">文字: 中</option>
+      <option value="small" data-i18n="fontSize.optSmall">文字: 小</option>
+      <option value="large" data-i18n="fontSize.optLarge">文字: 大</option>
+      <option value="xlarge" data-i18n="fontSize.optXlarge">文字: 特大</option>
     </select>
-    <button type="button" id="themeToggle" title="ダーク/ライト切替">🌙</button>
+    <select class="i18n-lang-select" title="Language"></select>
+    <button type="button" id="themeToggle" data-i18n-title="topbar.themeToggleTitleStatic" title="ダーク/ライト切替">🌙</button>
   </div>
   <div class="wrap">
     <div class="card" id="overview">
       <h1>🐱 nyangailab</h1>
-      <p class="sub">前払いチャージ制（使った分だけ）で、ニッチな語彙まで
+      <p class="sub" data-i18n="about.sub">前払いチャージ制（使った分だけ）で、ニッチな語彙まで
         学べるAI英語学習アプリ</p>
-      <p class="sub">バージョン: <span id="verNum">—</span>
-        （リリース日: <span id="verDate">—</span>）</p>
+      <p class="sub"><span data-i18n="about.versionLabel">バージョン</span>: <span id="verNum">—</span>
+        （<span data-i18n="about.releaseDateLabel">リリース日</span>: <span id="verDate">—</span>）</p>
 
-      <p>使った分だけ払う前払いチャージ制です。使わない月は<b>0円</b>。
+      <p data-i18n-html="about.payAsYouGo">使った分だけ払う前払いチャージ制です。使わない月は<b>0円</b>。
         登録しなくても、単語・フレーズを今すぐ見られます。</p>
 
       <a class="cta" href="/login#signup"
-        data-track="about_cta:hero_signup">無料で登録する →</a>
+        data-track="about_cta:hero_signup" data-i18n="about.ctaSignup">無料で登録する →</a>
       <div class="legal-row">
         <a class="cta-legal" href="/"
-          data-track="about_cta:hero_open_app">まずアプリを見てみる →</a>
+          data-track="about_cta:hero_open_app" data-i18n="about.ctaOpenApp">まずアプリを見てみる →</a>
       </div>
 
       <ul class="teaser">
-        <li>💰 <b>月額固定費なし。</b> 前払いチャージ（¥800から）を使った
+        <li data-i18n-html="about.teaser1">💰 <b>月額固定費なし。</b> 前払いチャージ（¥800から）を使った
           分だけ消費します。放置しても課金されません。</li>
-        <li>🦉 <b>理学・工学・AI用語から、動植物・文学・芸術・口語表現、
+        <li data-i18n-html="about.teaser2">🦉 <b>理学・工学・AI用語から、動植物・文学・芸術・口語表現、
           アニメやゲームなどのエンタメまで。</b> 一般的な単語帳アプリが
           扱わないニッチな分野も、語源・豆知識つきの詳しい解説で
           学べます。</li>
-        <li>🔊 <b>AIの自然な音声つき。</b> 単語・例文・教材の読み上げに
+        <li data-i18n-html="about.teaser3">🔊 <b>AIの自然な音声つき。</b> 単語・例文・教材の読み上げに
           対応。同じ音声は聞き直しても追加課金されません。</li>
       </ul>
 
-      <h3>他の英語学習アプリとの違い</h3>
+      <h3 data-i18n="about.diffTitle">他の英語学習アプリとの違い</h3>
       <ul class="quick-list">
-        <li><b>サブスク疲れの人向け</b>：月額課金ではなく、前払いした
+        <li data-i18n-html="about.diff1"><b>サブスク疲れの人向け</b>：月額課金ではなく、前払いした
           残高から使った分だけ引かれます。解約手続きも不要です。</li>
-        <li><b>収録分野が広い</b>：一般的な語彙だけでなく、物理・天文・
+        <li data-i18n-html="about.diff2"><b>収録分野が広い</b>：一般的な語彙だけでなく、物理・天文・
           法律・医療・料理・アニメ・失礼にならない言い方・名言など
           幅広い分野、単語16,000語以上・フレーズ7,000件以上を収録。</li>
-        <li><b>1語ごとの解説が詳しい</b>：意味・例文だけでなく、語源・
+        <li data-i18n-html="about.diff3"><b>1語ごとの解説が詳しい</b>：意味・例文だけでなく、語源・
           派生語・類義語・豆知識まで確認できます。</li>
-        <li><b>登録前に中身を全部見られる</b>：単語・フレーズの一覧と
+        <li data-i18n-html="about.diff4"><b>登録前に中身を全部見られる</b>：単語・フレーズの一覧と
           詳細は、ログインなしで全分野無料で読めます。</li>
-        <li><b>メール確認のステップがありません</b>：登録するとその場で
+        <li data-i18n-html="about.diff5"><b>メール確認のステップがありません</b>：登録するとその場で
           すぐ使い始められます。</li>
       </ul>
 
-      <h3>🐾 開発者より</h3>
-      <p>「サブスク疲れ」の私自身が、月額課金なしで英語学習を続けたくて
+      <h3 data-i18n="about.devTitle">🐾 開発者より</h3>
+      <p data-i18n="about.devMessage">「サブスク疲れ」の私自身が、月額課金なしで英語学習を続けたくて
         趣味で作り始めたのがこのアプリです。今のAIの力を借りることで、
         一人ではとても揃えられなかった幅広い分野・語彙数を収録できました。
         AIも日々レベルアップしていきますが、AIが間違えたり苦手だったり
@@ -145,17 +148,18 @@
     </div>
 
     <div class="card" id="toc">
-      <h2>📋 目次</h2>
+      <h2 data-i18n="about.tocTitle">📋 目次</h2>
       <ol class="toc-list">
-        <li><a href="#signup">登録するには？</a></li>
-        <li><a href="#charge">課金して使うには？</a></li>
-        <li><a href="#tiers">ログイン前後・無課金/課金でできることの違い（詳細）</a></li>
-        <li><a href="#quickstart">かんたん使い方ガイド</a></li>
-        <li><a href="#legal">利用規約・特定商取引法など</a></li>
-        <li><a href="#manual">詳しい取扱説明書・使い方ガイド</a></li>
-        <li><a href="#faq">よくある質問</a></li>
-        <li><a href="#trouble">困ったときは</a></li>
+        <li><a href="#signup" data-i18n="about.toc.signup">登録するには？</a></li>
+        <li><a href="#charge" data-i18n="about.toc.charge">課金して使うには？</a></li>
+        <li><a href="#tiers" data-i18n="about.toc.tiers">ログイン前後・無課金/課金でできることの違い（詳細）</a></li>
+        <li><a href="#quickstart" data-i18n="about.toc.quickstart">かんたん使い方ガイド</a></li>
+        <li><a href="#legal" data-i18n="about.toc.legal">利用規約・特定商取引法など</a></li>
+        <li><a href="#manual" data-i18n="about.toc.manual">詳しい取扱説明書・使い方ガイド</a></li>
+        <li><a href="#faq" data-i18n="about.toc.faq">よくある質問</a></li>
+        <li><a href="#trouble" data-i18n="about.toc.trouble">困ったときは</a></li>
       </ol>
+      <p class="muted mt" data-i18n="about.tocNote">このページの残りの節（登録の手順・課金方法・FAQ等の詳細）は現在日本語のみです。</p>
     </div>
 
     <div class="card" id="signup">

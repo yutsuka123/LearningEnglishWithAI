@@ -9,6 +9,11 @@
 import { api } from "./api.js";
 import * as speech from "./speech.js";
 
+// index.html/app.jsの読み込み順により、このモジュール評価時にはwindow.I18Nが
+// 既にセットアップ済みのはず(app.jsのtxと同じ定義。app.jsからのimportは
+// app.js⇔quiz.jsの循環参照になるためここでも同じ1行を定義)。
+const tx = (key, vars) => (window.I18N ? window.I18N.t(key, vars) : key);
+
 function el(html) {
   const t = document.createElement("template");
   t.innerHTML = html.trim();
@@ -79,12 +84,12 @@ export function quizRunner(config) {
     const counted = queue.length - skippedCount;
     const pct = counted ? Math.round((correctCount / counted) * 100) : 0;
     const skipNote = skippedCount
-      ? `<p class="muted">ノーカウント ${skippedCount} 問</p>` : "";
+      ? `<p class="muted">${tx("quiz.noCountNote", { n: skippedCount })}</p>` : "";
     container.appendChild(el(`
       <div class="card quiz-card">
-        <h2>おつかれさまでした！</h2>
+        <h2>${tx("quiz.doneTitle")}</h2>
         <p class="num" style="font-size:34px;color:var(--accent-2)">${pct}%</p>
-        <p class="muted">${correctCount} / ${counted} 正解</p>
+        <p class="muted">${tx("quiz.correctOfCount", { correct: correctCount, counted })}</p>
         ${skipNote}
       </div>`));
     if (onDone) {
@@ -98,7 +103,7 @@ export function quizRunner(config) {
     const { item, direction } = queue[idx];
     const isEn2ja = direction === "en2ja";
     const prompt = isEn2ja ? item.english : item.japanese;
-    const dirLabel = isEn2ja ? "英語 → 日本語" : "日本語 → 英語";
+    const dirLabel = isEn2ja ? tx("quiz.dirEnToJa") : tx("quiz.dirJaToEn");
     const answerLang = isEn2ja ? "ja-JP" : "en-US";
 
     container.innerHTML = "";
@@ -106,12 +111,12 @@ export function quizRunner(config) {
       <div class="card quiz-card">
         <div class="row" style="justify-content:space-between">
           <span class="pill">${idx + 1} / ${queue.length}</span>
-          <span class="now-voice">🔊 声: <b>${voiceName || "なし"}</b></span>
+          <span class="now-voice">🔊 ${tx("settings.voiceTestPrefix")}<b>${voiceName || tx("settings.voiceTestNone")}</b></span>
         </div>
         <div class="quiz-dir">${dirLabel}</div>
         <div class="quiz-prompt">${prompt}</div>
         <div class="row center" style="justify-content:center">
-          <button class="btn ghost" id="hear">🔊 英語を聞く</button>
+          <button class="btn ghost" id="hear">🔊 ${tx("quiz.hearEnglishBtn")}</button>
         </div>
         <div id="answerArea" class="mt"></div>
       </div>`);
@@ -128,9 +133,9 @@ export function quizRunner(config) {
 
   function renderAnswerInput(area, item, direction, lang) {
     const voiceMode = appState.inputMode === "voice";
-    const inp = el(`<input id="ans" placeholder="答えを入力" style="width:50%" />`);
-    const ok = el(`<button class="btn">✓ 回答</button>`);
-    const dk = el(`<button class="btn ghost">🤔 わからない</button>`);
+    const inp = el(`<input id="ans" placeholder="${tx("quiz.answerPlaceholder")}" style="width:50%" />`);
+    const ok = el(`<button class="btn">✓ ${tx("quiz.answerBtn")}</button>`);
+    const dk = el(`<button class="btn ghost">🤔 ${tx("quiz.dontKnowBtn")}</button>`);
     const row = el(`<div class="row center" style="justify-content:center"></div>`);
     const submit = () => reveal(area, item, direction, inp.value);
     ok.addEventListener("click", submit);
@@ -141,25 +146,25 @@ export function quizRunner(config) {
       // Toggle recording: ON=録音開始, OFF=認識して回答。
       let recorder = null;
       let recording = false;
-      const mic = el(`<button class="btn good">🎤 録音開始</button>`);
+      const mic = el(`<button class="btn good">🎤 ${tx("quiz.recordStartBtn")}</button>`);
       mic.addEventListener("click", async () => {
         if (!recording) {
           try {
             recorder = speech.createRecorder(lang);
             recorder.start();
             recording = true;
-            mic.textContent = "⏹ 停止して回答";
+            mic.textContent = "⏹ " + tx("quiz.recordStopBtn");
             mic.classList.remove("good"); mic.classList.add("bad");
           } catch (e) { area.appendChild(el(`<p class="muted">${e.message}</p>`)); }
         } else {
           recording = false;
-          mic.disabled = true; mic.textContent = "認識中…";
+          mic.disabled = true; mic.textContent = tx("quiz.recognizing");
           const text = await recorder.stop();
           inp.value = text;
           if (speech.isVoiceAutoSubmit()) {
             reveal(area, item, direction, text); // 即判定
           } else {
-            mic.disabled = false; mic.textContent = "🎤 録音開始";
+            mic.disabled = false; mic.textContent = "🎤 " + tx("quiz.recordStartBtn");
             mic.classList.remove("bad"); mic.classList.add("good");
             inp.focus();
           }
@@ -177,20 +182,20 @@ export function quizRunner(config) {
     const auto = autoJudge(direction, answer, item);
     const correctText = direction === "ja2en" ? item.english : item.japanese;
     area.innerHTML = `
-      <p class="muted">あなたの答え: ${answer || "（なし）"}</p>
-      <p class="quiz-answer">正解: ${correctText}</p>
+      <p class="muted">${tx("quiz.yourAnswer")}${answer || tx("quiz.noneAnswer")}</p>
+      <p class="quiz-answer">${tx("quiz.correctAnswerLabel")}${correctText}</p>
       <p class="muted">${item.english} — ${item.japanese}</p>
       <div id="exArea" class="mt"></div>
-      <p>${auto ? "✅ 自動判定: 正解" : "❌ 自動判定: 不正解"}（必要なら修正）</p>
+      <p>${auto ? "✅ " + tx("quiz.autoJudgeCorrect") : "❌ " + tx("quiz.autoJudgeWrong")}${tx("quiz.autoJudgeNote")}</p>
       <div class="row center" style="justify-content:center"></div>`;
     speech.speak(item.english);
     renderExample(area.querySelector("#exArea"), item);
     const row = area.querySelector(".row");
-    const ok = el(`<button class="btn good">⭕ 正解</button>`);
-    const vague = el(`<button class="btn" style="background:var(--warn);color:#3a2600">🤔 うろ覚え</button>`);
-    const ng = el(`<button class="btn bad">❌ 不正解</button>`);
-    const known = el(`<button class="btn" style="background:var(--accent-2);color:#fff">✅ 覚えた</button>`);
-    const skip = el(`<button class="btn ghost">🚫 ノーカウント</button>`);
+    const ok = el(`<button class="btn good">⭕ ${tx("quiz.correctBtn")}</button>`);
+    const vague = el(`<button class="btn" style="background:var(--warn);color:#3a2600">🤔 ${tx("quiz.vagueBtn")}</button>`);
+    const ng = el(`<button class="btn bad">❌ ${tx("quiz.wrongBtn")}</button>`);
+    const known = el(`<button class="btn" style="background:var(--accent-2);color:#fff">✅ ${tx("quiz.knownBtn")}</button>`);
+    const skip = el(`<button class="btn ghost">🚫 ${tx("quiz.noCountBtn")}</button>`);
     ok.addEventListener("click", () => record(item, direction, "correct"));
     vague.addEventListener("click", () => record(item, direction, "vague"));
     ng.addEventListener("click", () => record(item, direction, "wrong"));
@@ -204,11 +209,11 @@ export function quizRunner(config) {
     const phrase = (item.example || "").trim();
     box.innerHTML = "";
     const line = el(`<p class="muted">${phrase
-      ? "例文: " + phrase : "（例文なし）"}</p>`);
+      ? tx("quiz.exampleLabel") + phrase : tx("quiz.noExample")}</p>`);
     const tools = el(`<div class="row center" style="justify-content:center"></div>`);
-    const say = el(`<button class="btn ghost">🔊 例文を聞く</button>`);
-    const jp = el(`<button class="btn ghost">🌐 例文の訳</button>`);
-    const gen = el(`<button class="btn ghost">📝 例文を作る</button>`);
+    const say = el(`<button class="btn ghost">🔊 ${tx("quiz.hearExampleBtn")}</button>`);
+    const jp = el(`<button class="btn ghost">🌐 ${tx("quiz.exampleTranslationBtn")}</button>`);
+    const gen = el(`<button class="btn ghost">📝 ${tx("quiz.makeExampleBtn")}</button>`);
     const tr = el(`<p class="muted"></p>`);
 
     const speakable = () => line.dataset.en || phrase;
@@ -217,25 +222,27 @@ export function quizRunner(config) {
     });
     jp.addEventListener("click", async () => {
       const t = speakable(); if (!t) return;
-      tr.textContent = "翻訳中…";
+      tr.textContent = tx("quiz.translating");
       try {
         const r = await api.post("/api/learn/translate", { text: t });
-        tr.textContent = r.ok ? "訳: " + r.text : (r.error || "失敗");
-      } catch (e) { tr.textContent = "失敗"; }
+        tr.textContent = r.ok
+          ? tx("quiz.translationLabel") + r.text
+          : (r.error || tx("quiz.translationFailed"));
+      } catch (e) { tr.textContent = tx("quiz.translationFailed"); }
     });
     gen.addEventListener("click", async () => {
-      line.textContent = "例文を生成中…";
+      line.textContent = tx("quiz.generatingExample");
       try {
         const r = await api.post("/api/learn/example",
           { word: item.english });
         if (r.ok && r.english) {
-          line.textContent = "例文: " + r.english;
+          line.textContent = tx("quiz.exampleLabel") + r.english;
           line.dataset.en = r.english;
-          if (r.japanese) tr.textContent = "訳: " + r.japanese;
+          if (r.japanese) tr.textContent = tx("quiz.translationLabel") + r.japanese;
           tools.append(say, jp);
           gen.remove();
-        } else { line.textContent = r.error || "生成失敗"; }
-      } catch (e) { line.textContent = "生成失敗"; }
+        } else { line.textContent = r.error || tx("quiz.exampleGenFailed"); }
+      } catch (e) { line.textContent = tx("quiz.exampleGenFailed"); }
     });
 
     box.append(line);
@@ -252,7 +259,7 @@ export function quizRunner(config) {
       correctCount++;
       const t = document.getElementById("toast");
       if (t) {
-        t.textContent = "✅ 覚えたに登録 (満点)";
+        t.textContent = "✅ " + tx("quiz.knownRegistered");
         t.classList.add("show");
         setTimeout(() => t.classList.remove("show"), 1500);
       }
@@ -262,7 +269,7 @@ export function quizRunner(config) {
       // (ユーザー要望「その他のそうさも離脱を防ぐ重要な情報」への対応で
       // 監査した際に発見)。保存されなかったことが分かるようにする。
       const t = document.getElementById("toast");
-      if (t) { t.textContent = "⚠️ 記録に失敗しました(採点は保存されていません)";
+      if (t) { t.textContent = "⚠️ " + tx("quiz.recordFailed");
         t.classList.add("show");
         setTimeout(() => t.classList.remove("show"), 2200); }
     }
@@ -278,13 +285,13 @@ export function quizRunner(config) {
       if (correct) correctCount++;
       if (r && r.bonus_awarded) {
         const t = document.getElementById("toast");
-        if (t) { t.textContent = "🎉 両方向クリア +5"; t.classList.add("show");
+        if (t) { t.textContent = "🎉 " + tx("quiz.bothDirectionsBonus"); t.classList.add("show");
           setTimeout(() => t.classList.remove("show"), 1500); }
       }
     } catch (e) {
       // markKnownと同じ理由(2026-09-18修正)。
       const t = document.getElementById("toast");
-      if (t) { t.textContent = "⚠️ 記録に失敗しました(採点は保存されていません)";
+      if (t) { t.textContent = "⚠️ " + tx("quiz.recordFailed");
         t.classList.add("show");
         setTimeout(() => t.classList.remove("show"), 2200); }
     }

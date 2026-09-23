@@ -3,6 +3,16 @@ import * as speech from "./speech.js";
 import { quizRunner } from "./quiz.js";
 import * as views from "./views.js";
 
+// 多言語化(2026-09-23): 実体はstatic/js/i18n.js(通常script・index.html等の
+// <head>で先に同期読み込み済み)。ES module側はここから`tx`(翻訳関数)を
+// 再エクスポートして使う。名前を`t`ではなく`tx`にしているのは、このコード
+// ベースで`t`が(タイムスタンプ・<tr>要素等の)ローカル変数名として既に
+// 多用されており、短い`t`だと export した関数を意図せず覆い隠す(shadowing)
+// 事故が起きやすいため。i18n.js未読み込み(想定外)でもkeyをそのまま返して
+// 壊れないようにする。
+export const tx = (key, vars) =>
+  (window.I18N ? window.I18N.t(key, vars) : key);
+
 // ---------------------------------------------------------------------------
 // Global state
 // ---------------------------------------------------------------------------
@@ -29,35 +39,43 @@ export const state = {
   tripPrepPersona: null,
 };
 
+// 各要素=[タブキー, 絵文字, 翻訳キー]（2026-09-23多言語化・従来は絵文字+日本語
+// ラベルの1本の文字列だったが、言語切替に対応するため絵文字と翻訳キーに
+// 分離した。表示ラベルはtabLabel()で組み立てる）。
 export const TABS = [
-  ["welcome", "🏠 ようこそ"],   // 未ログインのみ表示（boot で挿入判定）
-  ["dashboard", "🏠 ダッシュボード"],
+  ["welcome", "🏠", "nav.welcome"],   // 未ログインのみ表示（boot で挿入判定）
+  ["dashboard", "🏠", "nav.dashboard"],
   // 2026-08-09: ユーザー指示により当面非表示（機能・ルートは温存、再表示は
   // この2行のコメントアウトを外すだけでよい）。
-  // ["daily", "⏱️ デイリー(10分)"],
-  ["vocab", "🔤 英単語"],
-  ["flashcard", "🃏 フラッシュ単語"],
-  ["deck", "🗂️ 単語帳"],
-  ["phrases", "💬 ミニフレーズ"],
-  ["flashphrase", "🃏 フラッシュフレーズ"],
-  ["phrasedeck", "🗂️ フレーズ帳"],
-  ["quiz", "📝 クイズ"],
-  ["reading", "📖 リーディング"],
-  ["writing", "✍️ ライティング"],
-  ["conversation", "🗣️ 英会話"],
-  ["listening", "🎧 リスニング"],
-  // ["tripprep", "🧳 出張・旅行準備"],
-  ["assess", "🎯 判定・教材"],
-  ["history", "📚 学習履歴"],
-  ["games", "🎮 ゲーム"],   // 2026-09-05〜一般公開（誰でも表示）
-  ["settings", "⚙️ 設定・チャージ"],
+  // ["daily", "⏱️", "nav.daily"],
+  ["vocab", "🔤", "nav.vocab"],
+  ["flashcard", "🃏", "nav.flashcard"],
+  ["deck", "🗂️", "nav.deck"],
+  ["phrases", "💬", "nav.phrases"],
+  ["flashphrase", "🃏", "nav.flashphrase"],
+  ["phrasedeck", "🗂️", "nav.phrasedeck"],
+  ["quiz", "📝", "nav.quiz"],
+  ["reading", "📖", "nav.reading"],
+  ["writing", "✍️", "nav.writing"],
+  ["conversation", "🗣️", "nav.conversation"],
+  ["listening", "🎧", "nav.listening"],
+  // ["tripprep", "🧳", "nav.tripprep"],
+  ["assess", "🎯", "nav.assess"],
+  ["history", "📚", "nav.history"],
+  ["games", "🎮", "nav.games"],   // 2026-09-05〜一般公開（誰でも表示）
+  ["settings", "⚙️", "nav.settings"],
   // バージョン情報（更新履歴・メンテナンス予定）。未ログインでも見られる
   // ようにする（2026-08-22ユーザー要望）。
-  ["release", "🆕 バージョン情報"],
-  ["admin", "👑 管理者情報"],   // 管理者のみ表示（boot で非adminは隠す）
+  ["release", "🆕", "nav.release"],
+  ["admin", "👑", "nav.admin"],   // 管理者のみ表示（boot で非adminは隠す）
 ];
 
-const TAB_LABELS = Object.fromEntries(TABS);
+// 現在の言語での表示ラベル(絵文字+翻訳文)。
+export function tabLabel([, emoji, key]) { return `${emoji} ${tx(key)}`; }
+
+// 分析用の内部ラベル(常に日本語固定・admin画面のログ表示と揃える)。
+const TAB_LABELS = Object.fromEntries(TABS.map(([tab, emoji, key]) =>
+  [tab, `${emoji} ${(window.I18N && window.I18N.DICT.ja[key]) || key}`]));
 
 // ---------------------------------------------------------------------------
 // Small DOM / util helpers (shared, exported for view modules)
@@ -183,8 +201,8 @@ function setSidebarPinned(on) {
   if (btn) {
     btn.classList.toggle("active", on);
     btn.title = on
-      ? "固定表示中（クリックで解除）"
-      : "左メニューを固定表示（自動で畳まれないようにする）";
+      ? tx("topbar.sidebarPinnedTitle")
+      : tx("topbar.sidebarPinTitle");
   }
   if (on) setSidebarCollapsed(false); // 固定するなら必ず開いた状態にする
 }
@@ -256,6 +274,44 @@ function initTheme() {
 }
 
 // ---------------------------------------------------------------------------
+// 言語切替（2026-09-23〜: 保存された選択があればそれ、無ければ端末の言語
+// 設定に合わせる。判定できない/対応外なら日本語。手動切替は必ず残す。
+// テーマ切替と同じ設計。実体はstatic/js/i18n.js）。
+// ---------------------------------------------------------------------------
+
+// pt残高は未登録/無課金でも0ptのまま常に表示され、何の数字か分かり
+// づらいという指摘(2026-08-30)を受けⓘヒントを追加。boot()と言語切替の
+// 両方から呼べるよう独立関数にしている(2026-09-23・下記initLang参照)。
+function refreshUsageBalanceInfo() {
+  const balInfo = document.getElementById("usageBalanceInfo");
+  if (balInfo) {
+    balInfo.innerHTML = infoIcon("usage-balance-pt", tx("topbar.ptHelpText"));
+  }
+}
+
+function initLang() {
+  if (!window.I18N) return;
+  window.I18N.initLangSwitchers();
+  window.I18N.translateDom(document);
+  // 切替時: サイドバーのナビ(boot時に一度だけ組み立てる方式なので手動で
+  // 再構築)と、いま開いている画面を再描画する(既存のタブ再読み込みと
+  // 同じ仕組みを流用。views側の文字列もtx()を通していれば自動で切り替わる)。
+  // #view の外側にあるトップバー要素(残高表示・そのⓘヘルプ・AI状態・
+  // メンテナンス予告)はboot()時に一度だけ文字列を書き込む方式なので、
+  // go(currentTab)だけでは切り替わらない(2026-09-23発見・「残りOpt」が
+  // 言語切替後も日本語のまま残っていた不具合)。該当のrefresh系を明示的に
+  // 呼び直して追従させる。
+  window.I18N.onChange(() => {
+    buildNav();
+    go(currentTab);
+    refreshCost();
+    refreshUsageBalanceInfo();
+    if (state.isAdmin) refreshAiState();
+    refreshMaintenanceBanner();
+  });
+}
+
+// ---------------------------------------------------------------------------
 // 文字の大きさ（小/中/大/特大。既定は中。未ログインでも使える設定にしたい
 // という要望のためtopbarに常設、settings画面(要ログイン)には置かない
 // ・2026-08-12）。
@@ -292,16 +348,15 @@ function initBalanceClick() {
   const balEl = document.getElementById("usageBalance");
   if (!balEl) return;
   balEl.style.cursor = "pointer";
-  balEl.title = "クリックでチャージ画面へ";
+  balEl.title = tx("topbar.balanceClickTitle");
   balEl.addEventListener("click", () => {
     if (state.isGuest) {
-      if (confirm("チャージにはログインが必要です。ログイン画面へ" +
-          "移動しますか？")) {
+      if (confirm(tx("topbar.chargeNeedsLoginConfirm"))) {
         location.href = "/login";
       }
       return;
     }
-    if (confirm("チャージしますか？")) go("settings");
+    if (confirm(tx("topbar.chargeConfirm"))) go("settings");
   });
 }
 
@@ -345,7 +400,7 @@ export async function refreshMaintenanceBanner() {
     text.textContent = n.text;
     const close = document.createElement("button");
     close.className = "maint-close";
-    close.title = "このお知らせを閉じる";
+    close.title = tx("topbar.closeNoticeTitle");
     close.textContent = "✕";
     close.addEventListener("click", () => {
       localStorage.setItem("maintDismissed", n.text);
@@ -453,7 +508,7 @@ export async function go(tab) {
   // (2026-08-05発見)。ラッパーを毎回差し替えることで、古い呼び出しが
   // 書き込む先は表示から切り離された(=無害な)自分専用のdivになる。
   const myRoot = document.createElement("div");
-  myRoot.innerHTML = '<p class="muted">読み込み中…</p>';
+  myRoot.innerHTML = `<p class="muted">${tx("common.loading")}</p>`;
   view().replaceChildren(myRoot);
   if (!appReadySent) {
     appReadySent = true;
@@ -463,7 +518,7 @@ export async function go(tab) {
   try {
     await ROUTES[tab](myRoot);
   } catch (e) {
-    myRoot.innerHTML = `<div class="card">エラー: ${escapeHtml(e.message)}</div>`;
+    myRoot.innerHTML = `<div class="card">${tx("common.errorPrefix")}${escapeHtml(e.message)}</div>`;
   }
 }
 
@@ -527,19 +582,19 @@ export async function refreshCost() {
       speech.setAiEnabled(u.ai_enabled);
       const node = document.getElementById("aiState");
       if (node) {
-        node.textContent = u.ai_enabled ? "" : "⚠️ AI未設定";
+        node.textContent = u.ai_enabled ? "" : "⚠️ " + tx("topbar.aiNotConfigured");
         node.className = "ai-state " + (u.ai_enabled ? "ai-on" : "ai-off");
       }
     }
     const balEl = document.getElementById("usageBalance");
     if (balEl) {
       const remain = Math.max(0, Math.round(u.remaining_jpy || 0));
-      balEl.textContent = `残り${remain}pt`;
+      balEl.textContent = tx("topbar.remainingPt", { remain });
       balEl.style.color = _usageColor(remain);
       balEl.title = u.balance_jpy != null
-        ? `AI利用の残り目安: ${remain}pt（チャージ残高 ` +
-          `${Math.round(u.balance_jpy)}pt 含む）`
-        : `AI利用の残り目安: ${remain}pt`;
+        ? tx("topbar.remainingTitleWithBalance",
+          { remain, balance: Math.round(u.balance_jpy) })
+        : tx("topbar.remainingTitle", { remain });
     }
     const ver = document.getElementById("appVer");
     if (ver) ver.textContent = u.version || "";
@@ -548,7 +603,7 @@ export async function refreshCost() {
     const lo = document.getElementById("logoutBtn");
     if (lo) {
       lo.style.display = (u.multiuser && !state.isGuest) ? "" : "none";
-      lo.title = u.username ? `${u.username} としてログイン中` : "";
+      lo.title = u.username ? tx("topbar.loggedInAs", { username: u.username }) : "";
     }
     const li = document.getElementById("loginBtn");
     if (li) li.style.display = (u.multiuser && state.isGuest) ? "" : "none";
@@ -556,7 +611,7 @@ export async function refreshCost() {
 }
 
 async function doLogout() {
-  if (!confirm("本当にログアウトしますか？")) return;
+  if (!confirm(tx("topbar.logoutConfirm"))) return;
   try { await api.post("/api/auth/logout"); } catch (_) { /* */ }
   // 共有端末で前のアカウントの選択履歴(分野名・単語帳名等)が次の
   // ログイン先に見えてしまわないようにする(2026-09-05fable監査指摘・
@@ -578,7 +633,7 @@ export async function refreshAiState() {
     speech.setAiEnabled(s.ai_enabled);
     const node = document.getElementById("aiState");
     // モデル名は非表示。未設定のときだけ警告を出す。
-    node.textContent = s.ai_enabled ? "" : "⚠️ AI未設定";
+    node.textContent = s.ai_enabled ? "" : "⚠️ " + tx("topbar.aiNotConfigured");
     node.className = "ai-state " + (s.ai_enabled ? "ai-on" : "ai-off");
   } catch (e) { /* ignore */ }
 }
@@ -667,8 +722,8 @@ function showHintPopover(icon) {
   const pop = el(`<div class="hint-popover">
     <div class="hint-popover-text"></div>
     <div class="hint-popover-actions">
-      <button type="button" class="hint-dismiss">今後表示しない</button>
-      <button type="button" class="hint-close">閉じる</button>
+      <button type="button" class="hint-dismiss">${tx("topbar.hintDismiss")}</button>
+      <button type="button" class="hint-close">${tx("topbar.hintClose")}</button>
     </div>
   </div>`);
   pop.querySelector(".hint-popover-text").textContent = text;
@@ -719,7 +774,7 @@ function initClickTracking() {
       guestStudyClicks++;
       if (guestStudyClicks >= 5) {
         guestNudgeShown = true;
-        toast("💡 学習の記録は保存されていません。ログイン(無料・1分)で失われなくなります");
+        toast("💡 " + tx("topbar.guestNudge"));
       }
     }
   });
@@ -742,8 +797,54 @@ const GUEST_HIDDEN_TABS = new Set([
   "deck", "phrasedeck", "assess", "history", "settings",
 ]);
 
+// サイドバーのナビ本体を組み立てる（管理者タブ・ゲスト非公開タブは、隠す
+// のではなくそもそも挿入しない）。boot()時と、言語切替時(2026-09-23〜)の
+// 両方から呼べるよう関数化した(以前はboot()内に展開していた)。
+function buildNav() {
+  const nav = document.getElementById("nav");
+  if (!nav) return;
+  nav.replaceChildren();
+  TABS.forEach((entry) => {
+    const [tab] = entry;
+    if (tab === "admin" && !state.isAdmin) return;
+    if (tab === "games" && !state.canUseGames) return;
+    if (tab === "welcome" && !state.isGuest) return;
+    if (state.isGuest && GUEST_HIDDEN_TABS.has(tab)) return;
+    const b = el(
+      `<button class="nav-item" data-tab="${tab}">${tabLabel(entry)}</button>`);
+    b.classList.toggle("active", tab === currentTab);
+    b.addEventListener("click", () => go(tab));
+    nav.appendChild(b);
+  });
+  // メニューに常時表示する「このアプリについて」（別タブで開く外部ページ）。
+  // トップバー右のバージョン表記からも行けるが分かりにくいため
+  // (2026-08-11ユーザー指摘)、メニュー本体にも入れる。
+  nav.appendChild(el(
+    `<a class="nav-item" href="/static/about.html">📄 ${tx("nav.about")}</a>`,
+  ));
+  // ログイン/ログアウトもサイドバー(ハンバーガーメニュー)に常設する。
+  // トップバー右側は項目数が多くスマホ縦画面で折り返し/はみ出しが起き
+  // やすいため、テーマ(ライト/ダーク)によらずどの画面幅でも確実に
+  // たどり着ける経路をサイドバーにも用意する(2026-08-19ユーザー要望)。
+  // 表示条件はトップバーのログイン/ログアウトボタンと同じ
+  // (マルチユーザー時のみ・ゲストはログインのみ、ログイン済みはログアウトのみ)。
+  if (state.multiuser) {
+    if (state.isGuest) {
+      nav.appendChild(el(
+        `<a class="nav-item" href="/login">🔑 ${tx("nav.loginRegister")}</a>`,
+      ));
+    } else {
+      const navLogout = el(
+        `<button class="nav-item">🚪 ${tx("nav.logout")}</button>`);
+      navLogout.addEventListener("click", doLogout);
+      nav.appendChild(navLogout);
+    }
+  }
+}
+
 async function boot() {
   initTheme();
+  initLang();
   initFontSize();
 
   // taxonomyとmy-usage(refreshCost)は互いに依存が無いため並列実行する
@@ -760,57 +861,14 @@ async function boot() {
   // 見えてちらつく問題があったため・2026-08-12ユーザー指摘）。
   await Promise.all([taxonomyPromise, refreshCost()]); // sets state.isAdmin / state.multiuser / state.isGuest
   await loadDismissedHints(); // isGuestが決まった後(保存先の出し分けに必要)
-  // pt残高は未登録/無課金でも0ptのまま常に表示され、何の数字か分かり
-  // づらいという指摘(2026-08-30)を受けⓘヒントを追加。
-  const balInfo = document.getElementById("usageBalanceInfo");
-  if (balInfo) {
-    balInfo.innerHTML = infoIcon("usage-balance-pt",
-      "pt(ポイント)はAI機能(音声再生・英会話・添削等)に使える残高の単位"
-      + "です。未登録は0ptですが、無料登録すると毎日一定量が使えるように"
-      + "なり、チャージ(有料)するとさらに増えます。");
-  }
+  refreshUsageBalanceInfo();
   if (state.isAdmin) {
     // 非管理者は/api/system/settingsを読めない(2026-08-12・管理者専用化)。
     // AI有効状態はrefreshCost()内でmy-usage経由により既に取得済み。
     await refreshAiState();   // sets speech aiEnabled
   }
 
-  // Build nav（管理者タブ・ゲスト非公開タブは、隠すのではなくそもそも
-  // 挿入しない）。
-  const nav = document.getElementById("nav");
-  TABS.forEach(([tab, label]) => {
-    if (tab === "admin" && !state.isAdmin) return;
-    if (tab === "games" && !state.canUseGames) return;
-    if (tab === "welcome" && !state.isGuest) return;
-    if (state.isGuest && GUEST_HIDDEN_TABS.has(tab)) return;
-    const b = el(`<button class="nav-item" data-tab="${tab}">${label}</button>`);
-    b.addEventListener("click", () => go(tab));
-    nav.appendChild(b);
-  });
-  // メニューに常時表示する「このアプリについて」（別タブで開く外部ページ）。
-  // トップバー右のバージョン表記からも行けるが分かりにくいため
-  // (2026-08-11ユーザー指摘)、メニュー本体にも入れる。
-  nav.appendChild(el(
-    '<a class="nav-item" href="/static/about.html">'
-    + "📄 このアプリについて</a>",
-  ));
-  // ログイン/ログアウトもサイドバー(ハンバーガーメニュー)に常設する。
-  // トップバー右側は項目数が多くスマホ縦画面で折り返し/はみ出しが起き
-  // やすいため、テーマ(ライト/ダーク)によらずどの画面幅でも確実に
-  // たどり着ける経路をサイドバーにも用意する(2026-08-19ユーザー要望)。
-  // 表示条件はトップバーのログイン/ログアウトボタンと同じ
-  // (マルチユーザー時のみ・ゲストはログインのみ、ログイン済みはログアウトのみ)。
-  if (state.multiuser) {
-    if (state.isGuest) {
-      nav.appendChild(el(
-        '<a class="nav-item" href="/login">🔑 ログイン/登録</a>',
-      ));
-    } else {
-      const navLogout = el('<button class="nav-item">🚪 ログアウト</button>');
-      navLogout.addEventListener("click", doLogout);
-      nav.appendChild(navLogout);
-    }
-  }
+  buildNav();
 
   // ハンバーガー: スマホはオフキャンバス開閉、それ以外は折りたたみ開閉。
   document.getElementById("navToggle")

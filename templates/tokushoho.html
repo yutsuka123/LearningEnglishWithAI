@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>特定商取引法に基づく表記｜nyangailab</title>
   <link rel="stylesheet" href="/static/css/page.css" />
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/i18n_dict.js"></script>
   <script src="/static/js/page-chrome.js"></script>
   <style>
     th { white-space: nowrap; }
@@ -12,36 +14,37 @@
 </head>
 <body>
   <div class="pagebar">
-    <select id="fontSize" title="文字の大きさ">
-      <option value="">文字: 中</option>
-      <option value="small">文字: 小</option>
-      <option value="large">文字: 大</option>
-      <option value="xlarge">文字: 特大</option>
+    <select id="fontSize" data-i18n-title="fontSize.title" title="文字の大きさ">
+      <option value="" data-i18n="fontSize.optMedium">文字: 中</option>
+      <option value="small" data-i18n="fontSize.optSmall">文字: 小</option>
+      <option value="large" data-i18n="fontSize.optLarge">文字: 大</option>
+      <option value="xlarge" data-i18n="fontSize.optXlarge">文字: 特大</option>
     </select>
-    <button type="button" id="themeToggle" title="ダーク/ライト切替">🌙</button>
+    <select class="i18n-lang-select" title="Language"></select>
+    <button type="button" id="themeToggle" data-i18n-title="topbar.themeToggleTitleStatic" title="ダーク/ライト切替">🌙</button>
   </div>
   <div class="wrap">
     <div class="card">
-      <h1>🐱 特定商取引法に基づく表記</h1>
-      <p class="sub">nyangailab（チャージ残高のご購入）に関する表記です。</p>
+      <h1>🐱 <span data-i18n="tokushoho.title">特定商取引法に基づく表記</span></h1>
+      <p class="sub" data-i18n="tokushoho.sub">nyangailab（チャージ残高のご購入）に関する表記です。</p>
 
       {{DRAFT_BANNER}}
 
       <table>
-        <tr><th>販売事業者</th>{{NAME_CELL}}</tr>
-        <tr><th>運営統括責任者</th>{{SUPERVISOR_CELL}}</tr>
-        <tr><th>所在地</th>{{ADDRESS_CELL}}</tr>
-        <tr><th>電話番号</th>{{PHONE_CELL}}</tr>
-        <tr><th>メールアドレス</th>{{EMAIL_CELL}}</tr>
-        <tr><th>販売価格</th>
-          <td>チャージパック ¥800（800pt付与）/ ¥8,000（8,800pt付与）の
+        <tr><th data-i18n="tokushoho.seller">販売事業者</th>{{NAME_CELL}}</tr>
+        <tr><th data-i18n="tokushoho.supervisor">運営統括責任者</th>{{SUPERVISOR_CELL}}</tr>
+        <tr><th data-i18n="tokushoho.address">所在地</th>{{ADDRESS_CELL}}</tr>
+        <tr><th data-i18n="tokushoho.phone">電話番号</th>{{PHONE_CELL}}</tr>
+        <tr><th data-i18n="tokushoho.email">メールアドレス</th>{{EMAIL_CELL}}</tr>
+        <tr><th data-i18n="tokushoho.priceLabel">販売価格</th>
+          <td data-i18n="tokushoho.priceValue">チャージパック ¥800（800pt付与）/ ¥8,000（8,800pt付与）の
             2種類。価格はすべて税込表示です。価格は予告なく改定する
             場合があります。</td></tr>
-        <tr><th>販売価格以外の必要料金</th>
-          <td>特になし（決済手数料は事業者負担）。通信料はお客様のご負担
+        <tr><th data-i18n="tokushoho.extraFeeLabel">販売価格以外の必要料金</th>
+          <td data-i18n="tokushoho.extraFeeValue">特になし（決済手数料は事業者負担）。通信料はお客様のご負担
             となります。</td></tr>
-        <tr><th>お支払方法</th>
-          <td>①アプリ内「PayPayで購入」ボタンからのPayPay直接決済
+        <tr><th data-i18n="tokushoho.paymentMethodLabel">お支払方法</th>
+          <td data-i18n="tokushoho.paymentMethodValue">①アプリ内「PayPayで購入」ボタンからのPayPay直接決済
             （PayPay公式APIを通じた決済。決済手段はPayPayのみ）、または
             ②決済窓口であるBASEを通じて、クレジットカード／PayPay／
             コンビニ・Pay-easy／キャリア決済／銀行振込／Amazon Pay／
@@ -49,18 +52,18 @@
             ②の決済手段は決済窓口であるBASEのサービス内容に準じるため、
             BASE側の仕様変更により予告なく変更・追加・終了となる場合が
             あります。最新の対応状況はBASEの案内をご確認ください。</td></tr>
-        <tr><th>お支払時期</th>
-          <td>いずれの方法も、ご注文（お申し込み）時に決済されます。
+        <tr><th data-i18n="tokushoho.paymentTimingLabel">お支払時期</th>
+          <td data-i18n="tokushoho.paymentTimingValue">いずれの方法も、ご注文（お申し込み）時に決済されます。
             ②BASE経由の場合、決済処理自体は決済窓口であるBASEのサービス
             に準じます。</td></tr>
-        <tr><th>商品の引渡し時期</th>
-          <td>①PayPay直接決済は、決済完了と同時に即時、チャージ残高へ
+        <tr><th data-i18n="tokushoho.deliveryLabel">商品の引渡し時期</th>
+          <td data-i18n="tokushoho.deliveryValue">①PayPay直接決済は、決済完了と同時に即時、チャージ残高へ
             反映されます（キーの発行・入力は不要です）。②BASE経由の
             場合は、決済確認後、目安として1週間以内に、BASEの取引
             メッセージまたはメールでチャージキーをお送りします
             （個人運営のため即時発行を保証するものではありません）。</td></tr>
-        <tr><th>返品・キャンセルについて</th>
-          <td>本サービスはデジタルコンテンツ（前払いチャージ残高）の
+        <tr><th data-i18n="tokushoho.returnsLabel">返品・キャンセルについて</th>
+          <td data-i18n-html="tokushoho.returnsValue">本サービスはデジタルコンテンツ（前払いチャージ残高）の
             性質上、決済完了後の返品・返金は原則お受けできません。
             <strong>ご購入前に、無料の範囲（未ログイン・ログイン無課金
             いずれでもお試しいただけます）でアプリの操作感や、ご利用の
@@ -71,8 +74,8 @@
             ません）。詳細は
             <a href="/static/terms.html" target="_blank">利用規約・免責事項</a>
             をご確認ください。</td></tr>
-        <tr><th>動作環境</th>
-          <td>最新版のGoogle Chrome等、Web Speech API
+        <tr><th data-i18n="tokushoho.envLabel">動作環境</th>
+          <td data-i18n="tokushoho.envValue">最新版のGoogle Chrome等、Web Speech API
             （音声合成・音声認識）に対応したモダンブラウザでの利用を
             想定しています。ご利用端末・ブラウザの設定によっては一部
             機能（マイク使用等）が動作しない場合があります。動作環境の
@@ -80,7 +83,7 @@
             場合があります。</td></tr>
       </table>
 
-      <a class="back" href="/login">← ログイン画面に戻る</a>
+      <a class="back" href="/login" data-i18n="privacy.backLink">← ログイン画面に戻る</a>
     </div>
   </div>
 </body>
