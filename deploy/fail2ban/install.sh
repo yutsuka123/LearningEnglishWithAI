@@ -86,8 +86,12 @@ echo "  OK"
 echo "== 6/7 フィルターが実ログに何行マッチするか(fail2ban-regex・読み取りのみ)"
 for f in probe loginflood loginfail ratelimited; do
   printf '  eigo-%-12s ' "$f"
-  fail2ban-regex "$LOGDIR/study.log" "$F2B/filter.d/eigo-$f.conf" 2>&1 | grep -E '^Lines:' | sed 's/^Lines: //'
+  out="$(fail2ban-regex "$LOGDIR/study.log" "$F2B/filter.d/eigo-$f.conf" 2>&1 || true)"
+  echo "$out" | grep -E '^Lines:' | sed 's/^Lines: //' | tr -d '\n'
+  # 日時("ts":{EPOCH})を全行で解釈できているか(0だと、判定が時間窓に入らず何も検知しない)
+  echo "  / 日時の解釈: $(echo "$out" | grep -E '"ts":\{EPOCH\}' | grep -oE '\[[0-9]+\]' | head -1 | tr -d '[]')行"
 done
+echo "  ※日時の解釈が0行なら、fail2banがCaddyの\"ts\"を読めていません(その場合は導入を中止してください)"
 
 echo "== 7/7 fail2banに反映(reload)"
 fail2ban-client reload >/dev/null
