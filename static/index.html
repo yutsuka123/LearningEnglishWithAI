@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- 非対応ブラウザ向けの案内(2026-09-26)。ES5のみ・他のスクリプトより前に置く。 -->
+  <script src="/static/js/compat-guard.js" data-app="1"></script>
   <!-- 多言語化エンジン(2026-09-23〜)。documentElement.langの早期確定と、
        このあとのapp.js/views.jsからのtx()呼び出しのために先に読み込む。 -->
   <script src="/static/js/i18n.js"></script>

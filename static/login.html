@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- 非対応ブラウザ向けの案内(2026-09-26)。ES5のみ・他のスクリプトより前に置く。 -->
+  <script src="/static/js/compat-guard.js"></script>
   <script>
     /* 初期テーマ(描画前に決めてちらつきを防ぐ・2026-09-22): 保存された選択(ボタンで切替)が
        あればそれ、無ければ端末(OS/ブラウザ)の配色設定に合わせる(ライト設定ならライト・

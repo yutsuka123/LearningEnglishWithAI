@@ -79,6 +79,27 @@ th { width: 34%; color: var(--text); font-weight: 600; }
   font-size: 15px; border: 1px solid var(--line); border-radius: 6px;
   background: var(--panel); color: var(--text); cursor: pointer; }
 
+/* ページ左上のメニュー(☰)。about.htmlは長いページで、トップへ戻る導線が
+   最下部にしかなかった(2026-09-24 メモ（管）#4「このアプリについてにも
+   ハンバーガーメニューがあった方が戻りやすい」)。右上の.pagebarと同じ見た目。
+   閉じている間は[hidden]で非表示(JS無効でも本文は読める・目次は本文にある)。 */
+.pagemenu { position: fixed; top: 12px; left: 12px; z-index: 11; }
+.pagemenu > button { width: auto; margin: 0; padding: 5px 10px;
+  font-size: 15px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--panel); color: var(--text); cursor: pointer; }
+.pagemenu-panel { position: absolute; top: 40px; left: 0; min-width: 230px;
+  max-width: calc(100vw - 24px); max-height: calc(100vh - 70px);
+  overflow-y: auto; padding: 6px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 10px;
+  box-shadow: 0 6px 24px var(--shadow); }
+.pagemenu-panel[hidden] { display: none; }
+.pagemenu-panel a { display: block; padding: 9px 12px; border-radius: 6px;
+  color: var(--text); text-decoration: none; font-size: 14px; }
+.pagemenu-panel a:hover, .pagemenu-panel a:focus-visible {
+  background: var(--panel-2); color: var(--accent); }
+.pagemenu-panel .pagemenu-sep { margin: 6px 4px; border: 0;
+  border-top: 1px solid var(--line); }
+
 /* about.html固有(元の直書きCSSから移設。他ページでは未使用)。 */
 ul.links { list-style: none; margin: 8px 0; padding: 0; }
 ul.links li { margin: 10px 0; }
@@ -152,3 +173,10 @@ details.faq-item > summary:hover { color: var(--accent); }
 details.faq-item[open] > summary { margin-bottom: 8px; }
 details.faq-item > summary::marker,
 details.faq-item > summary::-webkit-details-marker { color: var(--accent); }
+/* summary内に見出し(h3)を入れる場合、そのままではChrome/Safariでマーカーと
+   別行になってしまうため、summaryと同じ行に収める(2026-09-23 Fable照査で
+   指摘・スクリーンリーダーの見出しジャンプ/SEOの文書構造を維持するため)。 */
+details.faq-item > summary > h3 { display: inline; margin: 0; font-size: inherit; }
+/* マイク案内内のchrome://...等、長い改行不可の文字列がスマホ幅で
+   横あふれするのを防ぐ(2026-09-23 Fable照査で指摘)。 */
+details.faq-item code { overflow-wrap: anywhere; }

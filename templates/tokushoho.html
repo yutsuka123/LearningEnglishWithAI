@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- 非対応ブラウザ向けの案内(2026-09-26)。ES5のみ・他のスクリプトより前に置く。 -->
+  <script src="/static/js/compat-guard.js"></script>
   <title>特定商取引法に基づく表記｜nyangailab</title>
   <link rel="stylesheet" href="/static/css/page.css" />
   <script src="/static/js/i18n.js"></script>
@@ -10,6 +12,8 @@
   <script src="/static/js/page-chrome.js"></script>
   <style>
     th { white-space: nowrap; }
+    /* 狭い画面では見出し列も折り返す(英語表示の長い見出し等で表が画面幅を超えて横スクロールになるため・2026-09-26) */
+    @media (max-width: 600px) { th { white-space: normal; } }
   </style>
 </head>
 <body>

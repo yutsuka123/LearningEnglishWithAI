@@ -159,8 +159,9 @@ def list_phrases(
             cache_key = guest_list_cache.make_key(
                 "phrases", scene=scene, category=category, sort=sort,
                 desc=desc, level_min=level_min, level_max=level_max,
-                out_of_range=out_of_range, mastered=mastered,
-                free_range_only=free_range_only, featured_first=featured_first)
+                out_of_range=out_of_range, include_banned=include_banned,
+                mastered=mastered, free_range_only=free_range_only,
+                featured_first=featured_first)
             hit = guest_list_cache.get(cache_key)
             if hit is not None:
                 return Response(content=hit, media_type="application/json")

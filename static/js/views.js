@@ -2710,7 +2710,15 @@ export async function vocab(root) {
         && !q.has("desc") && ![...q.keys()].some((k) => k !== "sort")) {
       q.set("featured_first", "true");
     }
-    const words = await api.get("/api/words?" + q.toString());
+    let words;
+    try {
+      words = await api.get("/api/words?" + q.toString());
+    } catch (e) {
+      // 短時間に連打して429になった等で読み込めなかったとき、画面が無反応に見えないよう案内する
+      // (2026-09-26・宿題LOW-4)。古い問い合わせの失敗は無視(自分より新しい問い合わせが発行済み)。
+      if (seq === loadSeq) toast(tx("list.loadFailed"), 5000);
+      return;
+    }
     if (seq !== loadSeq) return; // 自分より新しい問い合わせが発行済み→破棄
     baseWords = words;
     applyKeyword();
@@ -2992,7 +3000,14 @@ export async function phrases(root) {
         && !q.has("desc") && ![...q.keys()].some((k) => k !== "sort")) {
       q.set("featured_first", "true");
     }
-    const items = await api.get("/api/phrases?" + q.toString());
+    let items;
+    try {
+      items = await api.get("/api/phrases?" + q.toString());
+    } catch (e) {
+      // 単語一覧と同じ(2026-09-26・宿題LOW-4)。
+      if (seq === loadSeq) toast(tx("list.loadFailed"), 5000);
+      return;
+    }
     if (seq !== loadSeq) return; // 自分より新しい問い合わせが発行済み→破棄
     baseList = items;
     applyKeyword();
