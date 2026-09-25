@@ -201,6 +201,7 @@ def list_words(
                 "words", sort=sort, desc=desc, domain=domain,
                 category=category, level=level, level_min=level_min,
                 level_max=level_max, out_of_range=out_of_range,
+                include_banned=include_banned,
                 mastered=mastered, free_range_only=free_range_only,
                 featured_first=featured_first)
             hit = guest_list_cache.get(cache_key)
