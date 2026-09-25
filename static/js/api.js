@@ -72,6 +72,13 @@ function _reportBodyError(method, path, errorText) {
 // (2026-09-18・stream()のマーカー検出で使う)。
 const STREAM_ERROR_MARKER = "§§STREAM_ERROR§§";
 
+// 現在の表示言語の文言(2026-09-26多言語化)。i18n.jsが未読込の環境では
+// 従来どおり日本語の既定文を返す。
+function _tt(key, fallback) {
+  try { return window.I18N ? window.I18N.t(key) : fallback; }
+  catch (_) { return fallback; }
+}
+
 function _streamError(path, message) {
   if (!_NO_REPORT_PATHS.has(path)) {
     try {
@@ -120,7 +127,7 @@ async function req(method, path, body, extraOpts) {
     // Fable2回目レビュー指摘)。開発者向けにconsole.errorへは生本文を
     // 残しつつ、画面に出す文言は汎用のものにする。
     const msg = parseFailed
-      ? "通信エラーが発生しました。しばらくしてから再度お試しください。"
+      ? _tt("api.networkError", "通信エラーが発生しました。しばらくしてから再度お試しください。")
       : ((data && (data.detail || data.error)) || res.statusText);
     const text2 = typeof msg === "string" ? msg : JSON.stringify(msg);
     // サーバー側が付与する4桁エラーコード(X-Error-Codeヘッダ)。問い合わせ
@@ -237,7 +244,7 @@ export const api = {
             }
           }
           throw _streamError(path, rest
-            || "エラーが発生しました。もう一度お試しください。");
+            || _tt("api.streamError", "エラーが発生しました。もう一度お試しください。"));
         }
         if (combined.length > markerLen - 1) {
           const safeLen = combined.length - (markerLen - 1);

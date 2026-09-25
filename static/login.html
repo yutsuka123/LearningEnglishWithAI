@@ -393,6 +393,13 @@
     if (window.I18N) {
       window.I18N.initLangSwitchers();
       window.I18N.translateDom(document);
+      // ページタイトルは表示中のフォーム(ログイン/登録)で変わるため、
+      // data-i18nでなく言語切替のたびに組み立て直す。
+      window.I18N.onChange(() => {
+        document.title = fSignup.classList.contains('hidden')
+          ? i18nT('meta.loginTitle', 'ログイン / 新規登録｜nyangailab')
+          : i18nT('meta.signupTitle', '新規登録｜nyangailab');
+      });
     }
 
     // 離脱分析用の軽量トラッキング(2026-08-24)。このページはSPA外の独立
@@ -450,12 +457,17 @@
     // 指摘)。フォーム切替のたびhistoryへ1件積み、ブラウザの戻るボタンで
     // ログイン⇔登録を行き来できるようにする(popstateからの復元時は
     // push=falseにして無限に積まないようにする)。
+    // 現在の表示言語の文言(i18n.js未読込なら日本語の既定文)。
+    function i18nT(key, fallback) {
+      try { return window.I18N ? window.I18N.t(key) : fallback; }
+      catch (e) { return fallback; }
+    }
     function showSignup(push) {
       fLogin.classList.add('hidden');
       fSignup.classList.remove('hidden');
       pLogin.disabled = true;
       pSignup.forEach((el) => { el.disabled = false; });
-      document.title = '新規登録｜nyangailab';
+      document.title = i18nT('meta.signupTitle', '新規登録｜nyangailab');
       if (push) history.pushState({ form: 'signup' }, '', '/login#signup');
       track('click', 'signup_form', 'opened');
     }
@@ -464,7 +476,7 @@
       fLogin.classList.remove('hidden');
       pSignup.forEach((el) => { el.disabled = true; });
       pLogin.disabled = false;
-      document.title = 'ログイン / 新規登録｜nyangailab';
+      document.title = i18nT('meta.loginTitle', 'ログイン / 新規登録｜nyangailab');
       if (push) history.pushState({ form: 'login' }, '', '/login');
     }
     document.getElementById('toSignup')

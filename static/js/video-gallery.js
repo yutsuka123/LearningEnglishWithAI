@@ -13,46 +13,47 @@
 
 import { api } from "./api.js";
 import * as speech from "./speech.js";
-import { escapeHtml, go } from "./app.js";
+import { escapeHtml, go, tx } from "./app.js";
 
 // 表示順=配列順。
 //   name     : 動画の識別名(ファイル名・計測のlabelに使う。英数字と_のみ)
-//   title    : 題(カード下の見出し)
-//   desc     : 1行説明
+//   titleKey : 題(カード下の見出し)の翻訳キー(2026-09-26多言語化・辞書i18n_dict.js)
+//   descKey  : 1行説明の翻訳キー
 //   src/poster: 動画とポスターのURL(?v=で版付け)
 //   sound    : true=「🔊 音が流れます」を出す
 //   tryTab   : 見終わった後の導線先タブ(app.jsのTABSのキー)
-//   tryLabel : その導線ボタンの文言
+//   tryKey   : その導線ボタンの文言の翻訳キー
+//   (動画本体は日本語UIの画面を録画したもの=言語切替では変わらない)
 export const VIDEOS = [
   {
     name: "flash_word",
-    title: "フラッシュ単語",
-    desc: "カードをめくって、単語と例文の音声を聞く。スワイプで採点",
+    titleKey: "video.flashWord.title",
+    descKey: "video.flashWord.desc",
     src: "/static/video/flash_word.mp4?v=1",
     poster: "/static/video/posters/flash_word.jpg?v=1",
     sound: true,
     tryTab: "flashcard",
-    tryLabel: "フラッシュ単語を試す →",
+    tryKey: "video.flashWord.try",
   },
   {
     name: "phrase_polite",
-    title: "そっけない“No.”を上品に",
-    desc: "「残念ながら」の一言で断りがやわらかくなる言い方と、その使い分け",
+    titleKey: "video.phrasePolite.title",
+    descKey: "video.phrasePolite.desc",
     src: "/static/video/phrase_polite.mp4?v=2",
     poster: "/static/video/posters/phrase_polite.jpg?v=2",
     sound: true,
     tryTab: "phrases",
-    tryLabel: "ミニフレーズを試す →",
+    tryKey: "video.phrasePolite.try",
   },
   {
     name: "crossword",
-    title: "猫のマスの英単語クロスワード",
-    desc: "例文ヒントと発音ヒントで単語を当てる。サンプルは登録なしで遊べる",
+    titleKey: "video.crossword.title",
+    descKey: "video.crossword.desc",
     src: "/static/video/crossword.mp4?v=1",
     poster: "/static/video/posters/crossword.jpg?v=1",
     sound: true,
     tryTab: "games",
-    tryLabel: "クロスワードを試す →",
+    tryKey: "video.crossword.try",
   },
 ];
 
@@ -70,7 +71,9 @@ function track(name, event, value) {
 
 // 動画のポスター状態(ボタン)のHTML。ポスター全体が押せる<button>。
 function posterHtml(v) {
-  const label = `${v.title}を再生${v.sound ? "(音が流れます)" : ""}`;
+  const label = tx("video.playAria", {
+    title: tx(v.titleKey), sound: v.sound ? tx("video.soundNote") : "",
+  });
   // 画像は寸法(540x960=9:16)を明示して場所を確保する(CLSを出さない)。
   return `
     <button type="button" class="vg-poster" aria-label="${escapeHtml(label)}">
@@ -78,15 +81,15 @@ function posterHtml(v) {
         width="540" height="960" loading="lazy" decoding="async" />
       <span class="vg-play" aria-hidden="true"></span>
     </button>
-    ${v.sound ? `<span class="vg-badge" aria-hidden="true">🔊 音が流れます</span>` : ""}`;
+    ${v.sound ? `<span class="vg-badge" aria-hidden="true">${tx("video.soundBadge")}</span>` : ""}`;
 }
 
 function cardHtml(v) {
   return `
     <article class="vg-card" data-name="${escapeHtml(v.name)}">
       <div class="vg-stage">${posterHtml(v)}</div>
-      <h3 class="vg-card-title">${escapeHtml(v.title)}</h3>
-      <p class="vg-desc muted">${escapeHtml(v.desc)}</p>
+      <h3 class="vg-card-title">${escapeHtml(tx(v.titleKey))}</h3>
+      <p class="vg-desc muted">${escapeHtml(tx(v.descKey))}</p>
     </article>`;
 }
 
@@ -129,7 +132,7 @@ function createController(root, videos) {
     video.setAttribute("playsinline", "");
     video.preload = "auto";
     video.poster = v.poster;
-    video.setAttribute("aria-label", v.title);
+    video.setAttribute("aria-label", tx(v.titleKey));
     stage.replaceChildren(video);
     active = { card, video, v };
 
@@ -178,8 +181,8 @@ function createController(root, videos) {
       track(v.name, "ended");
       const ov = showOverlay(stage, `
         <div class="vg-end">
-          <button type="button" class="btn vg-try">${escapeHtml(v.tryLabel || "試してみる →")}</button>
-          <button type="button" class="btn ghost vg-replay">もう一度見る</button>
+          <button type="button" class="btn vg-try">${escapeHtml(v.tryKey ? tx(v.tryKey) : tx("video.tryDefault"))}</button>
+          <button type="button" class="btn ghost vg-replay">${tx("video.replay")}</button>
         </div>`, "vg-overlay-end");
       ov.querySelector(".vg-try").addEventListener("click", () => {
         track(v.name, "try");
@@ -201,8 +204,8 @@ function createController(root, videos) {
       track(v.name, "error");
       const ov = showOverlay(stage, `
         <div class="vg-end">
-          <p class="vg-err" role="alert">動画を再生できませんでした</p>
-          <button type="button" class="btn ghost vg-back">ポスターに戻す</button>
+          <p class="vg-err" role="alert">${tx("video.playError")}</p>
+          <button type="button" class="btn ghost vg-back">${tx("video.backToPoster")}</button>
         </div>`);
       ov.querySelector(".vg-back").addEventListener("click", () => resetToPoster(card, v));
     });
@@ -234,13 +237,13 @@ function createController(root, videos) {
 export function renderVideoGallery(container) {
   if (!container) return false;
   const videos = (Array.isArray(VIDEOS) ? VIDEOS : []).filter((v) =>
-    v && v.name && v.src && v.poster && v.title);
+    v && v.name && v.src && v.poster && v.titleKey);
   if (!videos.length) return false;
   container.innerHTML = `
     <section class="vg" aria-labelledby="vgHeading">
       <div class="vg-head">
-        <h2 class="vg-heading" id="vgHeading">🎬 動画で見る</h2>
-        <span class="vg-sub muted">各約20秒・押すと再生</span>
+        <h2 class="vg-heading" id="vgHeading">${tx("video.heading")}</h2>
+        <span class="vg-sub muted">${tx("video.sub")}</span>
       </div>
       ${videos.map(cardHtml).join("")}
     </section>`;
