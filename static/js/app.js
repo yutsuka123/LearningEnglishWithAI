@@ -558,6 +558,10 @@ export async function refreshCost() {
     state.canUseGames = true;
     state.multiuser = !!u.multiuser;
     state.isGuest = !!u.is_guest;
+    // 未登録(ゲスト)には残高(pt)の概念が無く「残り0pt」が赤字で出ると何のことか分からず
+    // 不安を与えるため、トップバーの残高表示を隠す(2026-09-26オーナー指示・CSSは
+    // `body.is-guest`・ログイン後はリロードで外れる)。
+    document.body.classList.toggle("is-guest", state.isGuest);
     // AI呼び出し(会話・生成)や無料範囲外の語・フレーズ再生を「実際に
     // 使えるか」（🔒アイコン判定用・2026-08-13、要ログイン/要課金の
     // 出し分け用に2026-08-23汎用化）。管理者は常に課金対象外＝常に可。

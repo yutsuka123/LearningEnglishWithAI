@@ -184,6 +184,13 @@ body.tab-welcome #aiState, body.tab-welcome #appVer {
   display: none;
 }
 
+/* 未登録(ゲスト)にはpt残高の概念が無いので、どのタブでも「残り0pt」とそのⓘは出さない
+   (2026-09-26オーナー指示・app.jsのrefreshCostが`is-guest`を付ける)。 */
+body.is-guest #usageBalance,
+body.is-guest #usageBalanceInfo {
+  display: none;
+}
+
 /* スマホのようこそ画面ではトップバーを1段に収める(2026-09-20・照査の
    反映): 2段目に押し出されていた文字サイズ選択をトップバーから隠して
    メニュー内(#navFontSizeWrap)へ移し、ブランドのサブタイトルも省く
