@@ -452,16 +452,16 @@
     // (display:noneだけだとブラウザ/パスワード管理ソフトが非表示要素も
     // 走査し、ログイン欄と登録欄が同一ページに同居していることで自動生成・
     // 自動入力を誤爆させる問題があったため・2026-09-01)。
-    // 2026-08-18〜: リリース前最終テストのため新規登録を再開。
-    // 「戻る」でサイトごと離脱してしまう問題への対応(2026-09-05opus照査
-    // 指摘)。フォーム切替のたびhistoryへ1件積み、ブラウザの戻るボタンで
-    // ログイン⇔登録を行き来できるようにする(popstateからの復元時は
-    // push=falseにして無限に積まないようにする)。
     // 現在の表示言語の文言(i18n.js未読込なら日本語の既定文)。
     function i18nT(key, fallback) {
       try { return window.I18N ? window.I18N.t(key) : fallback; }
       catch (e) { return fallback; }
     }
+    // 2026-08-18〜: リリース前最終テストのため新規登録を再開。
+    // 「戻る」でサイトごと離脱してしまう問題への対応(2026-09-05opus照査
+    // 指摘)。フォーム切替のたびhistoryへ1件積み、ブラウザの戻るボタンで
+    // ログイン⇔登録を行き来できるようにする(popstateからの復元時は
+    // push=falseにして無限に積まないようにする)。
     function showSignup(push) {
       fLogin.classList.add('hidden');
       fSignup.classList.remove('hidden');
@@ -498,6 +498,7 @@
       showSignup(false);
     } else {
       history.replaceState({ form: 'login' }, '', location.pathname);
+      document.title = i18nT('meta.loginTitle', 'ログイン / 新規登録｜nyangailab');
     }
 
     // 離脱分析の解像度を上げる(2026-09-05opus照査提案): 「開いただけ／
