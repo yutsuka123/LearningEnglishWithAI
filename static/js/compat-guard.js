@@ -5,11 +5,40 @@
 // 設計: このファイルは古いブラウザでも必ず解釈できるよう ES5 の構文だけで書く(let/const・アロー関数・
 //   テンプレート文字列・?. は使わない)。他のスクリプトより前に同期で読み込むこと(各HTMLのheadの先頭)。
 //   外部への通信・記録は一切行わない(JSエラー自体は error-report.js が従来どおり報告する)。
+// ストレージ: localStorageが使えない環境(サイトデータの保存を拒否・一部のアプリ内ブラウザ等)では、
+//   app.js等が起動時にlocalStorageを直接読んで例外で止まっていた。ここでメモリ上の代替を差し込み、
+//   設定の記憶ができないだけでアプリ自体は動くようにする(差し込めない場合だけ案内を出す)。
 // 表示: <script data-app="1"> のページ(=app.js で動くSPAのindex.html)は、アプリが動かないので全画面で案内する。
 //   それ以外の静的ページ(概要・規約等)は本文を読めるため、上部の帯で案内するだけにする。
 (function () {
   var script = document.currentScript;
   var isApp = !!(script && script.getAttribute("data-app"));
+
+  function storageUsable() {
+    try {
+      var k = "__compat_guard__";
+      localStorage.setItem(k, "1");
+      localStorage.removeItem(k);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // メモリ上のStorage互換オブジェクト(ページを閉じると消える)。getItem/setItem/removeItem/clear/key/lengthのみ。
+  function installMemoryStorage() {
+    var mem = {};
+    var has = Object.prototype.hasOwnProperty;
+    var shim = {
+      getItem: function (k) { return has.call(mem, k) ? mem[k] : null; },
+      setItem: function (k, v) { mem[k] = String(v); },
+      removeItem: function (k) { delete mem[k]; },
+      clear: function () { mem = {}; },
+      key: function (i) { return Object.keys(mem)[i] || null; }
+    };
+    Object.defineProperty(shim, "length", { get: function () { return Object.keys(mem).length; } });
+    try { Object.defineProperty(window, "localStorage", { value: shim, configurable: true }); } catch (e) { /* 差し込めない環境 */ }
+  }
 
   // 何が使えないか。"old"=構文/モジュール非対応、"storage"=ブラウザのサイトデータ保存が無効(SPAのみ問題)。
   function detect() {
@@ -22,14 +51,9 @@
     }
     // <script type="module"> を解釈できない古いブラウザは、app.js を無視して空白のままになる。
     if (!("noModule" in document.createElement("script"))) return "old";
-    if (isApp) {
-      try {
-        var k = "__compat_guard__";
-        localStorage.setItem(k, "1");
-        localStorage.removeItem(k);
-      } catch (e) {
-        return "storage";
-      }
+    if (!storageUsable()) {
+      installMemoryStorage();
+      if (isApp && !storageUsable()) return "storage";  // 代替を差し込めなかった(最後の手段の案内)
     }
     return null;
   }
