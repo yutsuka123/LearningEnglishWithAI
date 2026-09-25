@@ -93,6 +93,25 @@
     <select class="i18n-lang-select" title="Language"></select>
     <button type="button" id="themeToggle" data-i18n-title="topbar.themeToggleTitleStatic" title="ダーク/ライト切替">🌙</button>
   </div>
+  <!-- ☰メニュー(2026-09-24 メモ（管）#4): 長いページのどこからでもトップ画面・
+       各節へ移れる。項目は本文の目次(#toc)と同じ節+トップ画面。 -->
+  <div class="pagemenu">
+    <button type="button" id="pageMenuBtn" aria-haspopup="true" aria-expanded="false"
+      aria-controls="pageMenuPanel" data-i18n-title="topbar.menuTitle" title="メニュー">☰</button>
+    <nav id="pageMenuPanel" class="pagemenu-panel" hidden aria-label="メニュー">
+      <a href="/" data-i18n="about.menuTop">🏠 トップ画面へ戻る</a>
+      <hr class="pagemenu-sep" />
+      <a href="#toc" data-i18n="about.tocTitle">📋 目次</a>
+      <a href="#signup">📝 <span data-i18n="about.toc.signup">登録するには？</span></a>
+      <a href="#charge">💳 <span data-i18n="about.toc.charge">課金して使うには？</span></a>
+      <a href="#tiers">🔓 <span data-i18n="about.toc.tiers">ログイン前後・無課金/課金でできることの違い（詳細）</span></a>
+      <a href="#quickstart">🚀 <span data-i18n="about.toc.quickstart">かんたん使い方ガイド</span></a>
+      <a href="#legal">📄 <span data-i18n="about.toc.legal">利用規約・特定商取引法など</span></a>
+      <a href="#manual">📘 <span data-i18n="about.toc.manual">詳しい取扱説明書・使い方ガイド</span></a>
+      <a href="#faq">❓ <span data-i18n="about.toc.faq">よくある質問</span></a>
+      <a href="#trouble">🔧 <span data-i18n="about.toc.trouble">困ったときは</span></a>
+    </nav>
+  </div>
   <div class="wrap">
     <div class="card" id="overview">
       <img class="hero-img" src="/static/img/nyangailab_header_hero.jpg"
@@ -809,6 +828,31 @@
       }
       openTargetDetails();
       window.addEventListener('hashchange', openTargetDetails);
+
+      // ☰メニュー(2026-09-24 メモ（管）#4)。ボタンで開閉・項目を選ぶ/外側を
+      // タップ/Escで閉じる。#で始まる項目は移動先のdetailsも開く(上のhashchange)。
+      (function () {
+        var btn = document.getElementById('pageMenuBtn');
+        var panel = document.getElementById('pageMenuPanel');
+        if (!btn || !panel) return;
+        function setOpen(open) {
+          panel.hidden = !open;
+          btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        }
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          setOpen(panel.hidden);
+        });
+        panel.addEventListener('click', function (e) {
+          if (e.target.closest('a')) setOpen(false);
+        });
+        document.addEventListener('click', function (e) {
+          if (!panel.hidden && !e.target.closest('.pagemenu')) setOpen(false);
+        });
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && !panel.hidden) { setOpen(false); btn.focus(); }
+        });
+      })();
 
       // バージョン/リリース日はCHANGELOG.mdに連動（/api/system/my-usage
       // 経由。手動転記だと更新漏れが起きるため・2026-08-12）。
