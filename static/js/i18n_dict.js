@@ -1435,6 +1435,13 @@
     "paypayReturn.recheck": "再確認する",
     "paypayReturn.failed": "確認できませんでした: {msg}",
     "paypayReturn.retry": "再試行する",
+    // ---- リスニング題材の表示名・トップページのh1 2026-09-26 ----
+    "listening.srcMovie": "映画",
+    "listening.srcDrama": "ドラマ",
+    "listening.srcNews": "ニュース",
+    "listening.accUS": "アメリカ英語",
+    "listening.accUK": "イギリス英語",
+    "meta.indexH1": "nyangailab（にゃんがいらぼ）｜サブスク疲れの人向け、前払い制で使った分だけ払う安いAI英語学習アプリ。AI活用で価格を抑え、日常会話からマニアックな専門用語・マイナーな英単語まで学べます。登録・ログイン不要でも単語/フレーズの閲覧とフラッシュカード、無料範囲の音声再生を今すぐ無料体験できます。",
   });
 
   Object.assign(D.en, {
@@ -2858,6 +2865,13 @@
     "paypayReturn.recheck": "Check again",
     "paypayReturn.failed": "Could not confirm: {msg}",
     "paypayReturn.retry": "Try again",
+    // ---- リスニング題材の表示名・トップページのh1 2026-09-26 ----
+    "listening.srcMovie": "Movies",
+    "listening.srcDrama": "TV dramas",
+    "listening.srcNews": "News",
+    "listening.accUS": "American English",
+    "listening.accUK": "British English",
+    "meta.indexH1": "nyangailab | A low-cost AI English learning app for people tired of subscriptions: prepay and pay only for what you use. Using AI keeps prices down while covering everything from everyday conversation to niche technical terms and minor English words. Even without registering or logging in, you can try browsing words and phrases, flashcards and the free range of audio playback right now.",
   });
 
   Object.assign(D["zh-CN"], {
@@ -4261,6 +4275,13 @@
     "paypayReturn.recheck": "重新确认",
     "paypayReturn.failed": "无法确认: {msg}",
     "paypayReturn.retry": "重试",
+    // ---- リスニング題材の表示名・トップページのh1 2026-09-26 ----
+    "listening.srcMovie": "电影",
+    "listening.srcDrama": "电视剧",
+    "listening.srcNews": "新闻",
+    "listening.accUS": "美式英语",
+    "listening.accUK": "英式英语",
+    "meta.indexH1": "nyangailab｜面向厌倦订阅的人，预付制、用多少付多少的低价AI英语学习应用。借助AI压低价格，从日常会话到小众专业术语、冷门英语单词都能学。即使不注册、不登录，也可以立即免费体验单词/短语浏览、闪卡和免费范围内的语音播放。",
   });
 
   Object.assign(D["zh-TW"], {
@@ -5664,5 +5685,12 @@
     "paypayReturn.recheck": "重新確認",
     "paypayReturn.failed": "無法確認: {msg}",
     "paypayReturn.retry": "重試",
+    // ---- リスニング題材の表示名・トップページのh1 2026-09-26 ----
+    "listening.srcMovie": "電影",
+    "listening.srcDrama": "電視劇",
+    "listening.srcNews": "新聞",
+    "listening.accUS": "美式英語",
+    "listening.accUK": "英式英語",
+    "meta.indexH1": "nyangailab｜面向厭倦訂閱的人，預付制、用多少付多少的低價AI英語學習應用程式。借助AI壓低價格，從日常會話到小眾專業術語、冷門英語單字都能學。即使不註冊、不登入，也可以立即免費體驗單字/短語瀏覽、閃卡和免費範圍內的語音播放。",
   });
 })();

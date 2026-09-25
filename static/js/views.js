@@ -4046,6 +4046,21 @@ export async function conversation(root) {
 
 // --- Listening --------------------------------------------------------------
 
+// リスニング題材の表示名(DBの source/accent は日本語のシード値。既知の値だけ
+// 翻訳し、未知の値はそのまま表示する)。AIへ送る題材名(data-label)は素の値。
+const LISTENING_SRC_KEYS = {
+  "映画": "listening.srcMovie", "ドラマ": "listening.srcDrama",
+  "ニュース": "listening.srcNews",
+};
+const LISTENING_ACC_KEYS = {
+  "アメリカ英語": "listening.accUS", "イギリス英語": "listening.accUK",
+};
+function listeningTopicLabel(t) {
+  const s = LISTENING_SRC_KEYS[t.source] ? tx(LISTENING_SRC_KEYS[t.source]) : t.source;
+  const a = LISTENING_ACC_KEYS[t.accent] ? tx(LISTENING_ACC_KEYS[t.accent]) : t.accent;
+  return `${s} / ${a}`;
+}
+
 export async function listening(root) {
   const topics = await api.get("/api/listening");
   root.innerHTML = `
@@ -4062,7 +4077,7 @@ export async function listening(root) {
           // なんだかわからない」)。
           // data-label: AIへ送る題材名は理解度の付記を含まない素の名前にする
           // (表示訳に依存しないため)。
-          `<option value="${t.id}" data-label="${escapeHtml(`${t.source} / ${t.accent}`)}">${t.source} / ${t.accent}${
+          `<option value="${t.id}" data-label="${escapeHtml(`${t.source} / ${t.accent}`)}">${escapeHtml(listeningTopicLabel(t))}${
             t.comprehension ? tx("listening.compSuffix", { n: t.comprehension }) : ""}</option>`
         ).join("")}</select>
         <select id="genre" title="${escapeHtml(tx("listening.genreTitle"))}">
