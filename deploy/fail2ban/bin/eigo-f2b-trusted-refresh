@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+"""直近30日にログイン成功(POST /api/auth/login → 200)したIPの一覧を作る(cronで10分ごと)。
+
+fail2banのignorecommand(eigo-f2b-ignore)がこれを読み、実ユーザーのIPをBANの対象外にする。
+登録(signup)成功は含めない(誰でも登録できるため、スキャナーが登録して信頼IPになる抜け道を塞ぐ)。
+元データ=Caddyのstudy.log(+直近のローテート済み.gz)。生IPは/var/lib/eigo-f2b/に置く(root管理・VPS内のみ)。
+"""
+import glob
+import gzip
+import json
+import os
+import sys
+import tempfile
+import time
+
+CONF = os.environ.get("EIGO_F2B_CONF", "/etc/eigo-f2b.conf")  # 環境変数はテスト用
+OUT = os.environ.get("EIGO_F2B_TRUSTED", "/var/lib/eigo-f2b/trusted.txt")
+AUDIT = os.environ.get("EIGO_F2B_AUDIT", "/var/log/eigo-f2b-audit.log")
+DAYS = 30
+
+
+def logdir():
+    with open(CONF, encoding="utf-8") as f:
+        for line in f:
+            if line.startswith("CADDY_LOG_DIR="):
+                return line.split("=", 1)[1].strip()
+    raise SystemExit("CADDY_LOG_DIR が /etc/eigo-f2b.conf にありません")
+
+
+def main():
+    d = logdir()
+    cutoff = time.time() - DAYS * 86400
+    files = [os.path.join(d, "study.log")] + sorted(
+        glob.glob(os.path.join(d, "study-*.log.gz")), reverse=True)
+    ips = set()
+    for f in files:
+        try:
+            if os.path.getmtime(f) < cutoff:
+                continue
+            op = gzip.open if f.endswith(".gz") else open
+            with op(f, "rt", encoding="utf-8", errors="replace") as fh:
+                for line in fh:
+                    if '"/api/auth/login"' not in line or '"status":200' not in line:
+                        continue  # 高速化のための前段フィルタ(全行のJSON解析を避ける)
+                    try:
+                        r = json.loads(line)
+                    except ValueError:
+                        continue
+                    req = r.get("request", {})
+                    if (req.get("method") == "POST"
+                            and req.get("uri", "").split("?")[0] == "/api/auth/login"
+                            and r.get("status") == 200 and r.get("ts", 0) >= cutoff):
+                        ip = req.get("remote_ip")
+                        if ip:
+                            ips.add(ip)
+        except (OSError, EOFError):
+            continue  # ローテート中・破損したgzは飛ばす(次回のcronで再集計)
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(OUT))
+    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+        fh.write("# 自動生成: 直近%d日にログイン成功したIP(eigo-f2b-trusted-refresh)\n" % DAYS)
+        for ip in sorted(ips):
+            fh.write(ip + "\n")
+    os.chmod(tmp, 0o644)
+    os.replace(tmp, OUT)  # 原子的に置き換える(読み取り中の不完全なファイルを見せない)
+    try:
+        with open(AUDIT, "a", encoding="utf-8") as fh:
+            fh.write("%s TRUSTED-REFRESH n=%d\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), len(ips)))
+    except OSError:
+        pass
+
+
+if __name__ == "__main__":
+    main()

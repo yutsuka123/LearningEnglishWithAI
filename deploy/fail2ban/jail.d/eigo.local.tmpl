@@ -1,0 +1,59 @@
+# eigo(study.nyangailab.com)用のfail2ban jail(2026-09-26)。install.shがlogpath行とaction行の
+# プレースホルダーを埋めて /etc/fail2ban/jail.d/eigo.local に置く(コメント行は置換しない)。しきい値の根拠=tools/simulate.py(実ログ3か月分で誤BAN0件)。
+# ・対象はstudy.logだけ(相乗りの他プロジェクトのログ・jailには触れない)。
+# ・ignorecommand=eigo-f2b-ignore: 直近30日にログイン成功したIP・運営者の許可リストはBANしない。
+# ・ignoreip: ローカル/Docker/プライベート帯はBANしない。
+# ・BANはDocker公開ポート(80/443)に効くようDOCKER-USERチェーンを使う(通常のINPUTでは効かない)。
+# ・IPv6は実ログで0件のため未対応(必要になったらnftables系のアクションを検討)。
+
+[eigo-probe]
+enabled = true
+filter = eigo-probe
+logpath = __LOGPATH__
+backend = auto
+maxretry = 3
+findtime = 10m
+bantime = 12h
+port = http,https
+ignoreip = 127.0.0.0/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+ignorecommand = /usr/local/sbin/eigo-f2b-ignore <ip>
+action = __ACTIONS__
+
+[eigo-loginflood]
+enabled = true
+filter = eigo-loginflood
+logpath = __LOGPATH__
+backend = auto
+maxretry = 40
+findtime = 5m
+bantime = 6h
+port = http,https
+ignoreip = 127.0.0.0/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+ignorecommand = /usr/local/sbin/eigo-f2b-ignore <ip>
+action = __ACTIONS__
+
+[eigo-loginfail]
+enabled = true
+filter = eigo-loginfail
+logpath = __LOGPATH__
+backend = auto
+maxretry = 12
+findtime = 10m
+bantime = 1h
+port = http,https
+ignoreip = 127.0.0.0/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+ignorecommand = /usr/local/sbin/eigo-f2b-ignore <ip>
+action = __ACTIONS__
+
+[eigo-ratelimited]
+enabled = true
+filter = eigo-ratelimited
+logpath = __LOGPATH__
+backend = auto
+maxretry = 60
+findtime = 10m
+bantime = 1h
+port = http,https
+ignoreip = 127.0.0.0/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+ignorecommand = /usr/local/sbin/eigo-f2b-ignore <ip>
+action = __ACTIONS__

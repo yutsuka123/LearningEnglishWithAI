@@ -1,0 +1,2 @@
+# 直近30日のログイン成功IP(=BAN対象外にする信頼IP)を10分ごとに更新する(eigo-f2b用)。
+*/10 * * * * root /usr/local/sbin/eigo-f2b-trusted-refresh >/dev/null 2>&1

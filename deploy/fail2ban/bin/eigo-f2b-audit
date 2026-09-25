@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+"""fail2banのアクション(eigo-audit)から呼ばれ、判定の根拠を監査ログに残す。
+
+使い方: eigo-f2b-audit <ban|unban|start|stop> <jail> <ip> <failures> <bantime> <mode>
+- mode=dryrun: 実際にはBANしていない(「BANしたはず」の記録)。mode=ban: 実際にBANした。
+- BAN時は、そのIPの直近のリクエスト(時刻・メソッド・URI・status・UA)を最大6件、根拠として添える。
+  ヘッダー全体(Cookie等)は出力しない。UAは60字まで。URIのクエリ(gclid等)は落とす。
+出力先: /var/log/eigo-f2b-audit.log(root:adm 640・logrotateで8世代)。
+"""
+import json
+import os
+import re
+import sys
+import time
+
+CONF = os.environ.get("EIGO_F2B_CONF", "/etc/eigo-f2b.conf")  # 環境変数はテスト用
+AUDIT = os.environ.get("EIGO_F2B_AUDIT", "/var/log/eigo-f2b-audit.log")
+TAIL_BYTES = 24 * 1024 * 1024
+
+
+def logdir():
+    with open(CONF, encoding="utf-8") as f:
+        for line in f:
+            if line.startswith("CADDY_LOG_DIR="):
+                return line.split("=", 1)[1].strip()
+    return ""
+
+
+SUSPECT = re.compile(
+    r"(wp-login|wp-admin|wp-content|xmlrpc|/\.env|/\.git/|phpmyadmin|phpinfo|cgi-bin|/vendor/|actuator|"
+    r"/etc/passwd|boaform|HNAP1|manager/html|\.php|\.asp|\.jsp|^/login)", re.I)
+
+
+def evidence(ip):
+    """そのIPの直近のリクエストのうち、不審なもの(4xx・探索URL・/login)を優先して最大6件(時刻順)。"""
+    path = os.path.join(logdir(), "study.log")
+    rows = []  # (ts, 表示文字列, 不審か)
+    try:
+        size = os.path.getsize(path)
+        with open(path, "rb") as fh:
+            fh.seek(max(0, size - TAIL_BYTES))
+            data = fh.read().decode("utf-8", errors="replace")
+        for line in data.splitlines():
+            if ip not in line:
+                continue
+            try:
+                r = json.loads(line)
+            except ValueError:
+                continue
+            req = r.get("request", {})
+            if req.get("remote_ip") != ip:
+                continue
+            ua = (req.get("headers", {}).get("User-Agent") or [""])[0][:60]
+            uri = req.get("uri", "").split("?")[0][:80]
+            status = r.get("status", 0)
+            ts = r.get("ts", 0)
+            text = '%s %s %s %s "%s"' % (
+                time.strftime("%H:%M:%S", time.localtime(ts)), req.get("method", "?"), uri, status, ua)
+            rows.append((ts, text, status in (401, 403, 404, 429) or bool(SUSPECT.search(uri))))
+    except OSError:
+        return ["(ログを読めませんでした)"]
+    suspects = [r for r in rows if r[2]][-4:]
+    latest = [r for r in rows[-2:] if r not in suspects]
+    return [r[1] for r in sorted(suspects + latest)]
+
+
+def main():
+    action, jail, ip, failures, bantime, mode = (sys.argv[1:7] + [""] * 6)[:6]
+    now = time.strftime("%Y-%m-%d %H:%M:%S")
+    tag = "DRYRUN" if mode == "dryrun" else "BAN-ON"
+    lines = []
+    if action == "ban":
+        lines.append("%s %-6s BAN    %s ip=%s failures=%s bantime=%ss" % (now, tag, jail, ip, failures, bantime))
+        lines += ["    根拠: " + e for e in evidence(ip)]
+    elif action == "unban":
+        lines.append("%s %-6s UNBAN  %s ip=%s" % (now, tag, jail, ip))
+    else:
+        lines.append("%s %-6s %s %s" % (now, tag, action.upper(), jail))
+    try:
+        with open(AUDIT, "a", encoding="utf-8") as fh:
+            fh.write("\n".join(lines) + "\n")
+    except OSError as e:
+        print("audit log write failed: %s" % e, file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
