@@ -16,7 +16,7 @@ from pydantic import BaseModel
 
 from ..config import log
 from ..database import db
-from ..services import auth, geoip, visitor_kind
+from ..services import auth, geoip, messages, visitor_kind
 from ..services.errors import error_response
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -120,7 +120,7 @@ def signup(
         return error_response(code, message)
 
     if not SIGNUP_OPEN:
-        return fail("2016", SIGNUP_CLOSED_MESSAGE)
+        return fail("2016", messages.tr("auth.signup_closed"))
     if charge_keys.signup_redeem_locked(ip):
         log.warning("signup: rate-limited ip=%s", ip)
         return fail("2015")
@@ -134,11 +134,12 @@ def signup(
         log.info(
             "signup: disposable email domain (許可・記録のみ) ip=%s email=%s",
             ip, email)
-    pw_error = auth.password_policy_error(password)
-    if pw_error:
+    pw_key = auth.password_policy_key(password)
+    if pw_key:
+        # ログは日本語(従来どおり)・利用者への文言は表示言語(X-Lang)。
         log.warning("signup: password policy error ip=%s email=%s reason=%s",
-                     ip, email, pw_error)
-        return fail("2012", pw_error)
+                     ip, email, messages.tr_ja(pw_key))
+        return fail("2012", messages.tr(pw_key))
     display_name = payload.display_name.strip()
     # フリガナは任意（2026-08-24・登録の入力項目を減らして離脱を防ぐ
     # ユーザー方針。お名前(呼んでほしい名前)は宛名として必要なため必須の

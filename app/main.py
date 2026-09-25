@@ -26,7 +26,7 @@ from .routers import (
     phrase_decks, phrases, seo_pages, system, vocabulary,
 )
 from .services import auth as auth_svc
-from .services import geoip, traffic_source, visitor_kind
+from .services import geoip, messages, traffic_source, visitor_kind
 from .services.errors import error_response
 from .services.spaced_repetition import apply_forgetting_decay
 
@@ -185,11 +185,29 @@ async def _unhandled_exception_handler(request: Request, exc: Exception):
         "unhandled exception path=%s method=%s", request.url.path,
         request.method, exc_info=exc,
     )
-    return error_response("7999")
+    # このハンドラは外側(ServerErrorMiddleware)で動き、_auth_contextが載せた
+    # 言語のcontextvarは既に外れているため、ヘッダから改めて設定する。
+    lang_token = messages.set_current_lang(request.headers.get("x-lang"))
+    try:
+        return error_response("7999")
+    finally:
+        messages.reset_current_lang(lang_token)
 
 
 @app.middleware("http")
 async def _auth_context(request, call_next):
+    """リクエストの表示言語(`X-Lang`ヘッダ)をcontextvarへ載せてから本体
+    (`_auth_context_inner`)を実行する(2026-09-26多言語化・messages.py参照)。
+    本体の早期return(レート制限・要ログイン等のエラー文)でも訳が効くよう、
+    最初に設定する。ヘッダ無し/未対応の言語は日本語(従来どおり)。"""
+    lang_token = messages.set_current_lang(request.headers.get("x-lang"))
+    try:
+        return await _auth_context_inner(request, call_next)
+    finally:
+        messages.reset_current_lang(lang_token)
+
+
+async def _auth_context_inner(request, call_next):
     """リクエスト毎に「現在のユーザー」を contextvar に設定する（§A）。
     - MULTIUSER=0（既定・ローカル）: 常に owner。認証なしで従来どおり動く。
     - MULTIUSER=1: 署名Cookieから user_id を復元。未ログインなら API は 401、
@@ -199,14 +217,14 @@ async def _auth_context(request, call_next):
     client_ip = auth_svc.real_client_ip(request)
     if auth_svc.ip_rate_limited(client_ip):
         return JSONResponse(
-            {"ok": False, "error": "リクエストが多すぎます。少し待って"
-             "ください。"}, status_code=429)
+            {"ok": False, "error": messages.tr("rate.too_many")},
+            status_code=429)
     if (request.method == "GET"
             and request.url.path in auth_svc.HEAVY_GET_PATHS
             and auth_svc.heavy_ip_rate_limited(client_ip)):
         return JSONResponse(
-            {"ok": False, "error": "リクエストが多すぎます。少し待って"
-             "ください。"}, status_code=429)
+            {"ok": False, "error": messages.tr("rate.too_many")},
+            status_code=429)
     multiuser = auth_svc.multiuser_enabled()
     # 未ログイン訪問者を1人ずつ区別するための匿名セッションID
     # (2026-08-30・登録に至らない原因分析の常設化用)。ログイン有無に
@@ -376,6 +394,12 @@ async def _auth_context(request, call_next):
     response.headers.setdefault(
         "Content-Security-Policy", "frame-ancestors 'self'")
     path = request.url.path
+    if path.startswith("/api/"):
+        # 応答の文言が`X-Lang`で変わる(messages.py)ため、中間キャッシュが
+        # 言語違いの応答を取り違えないよう明示する。
+        vary = response.headers.get("vary")
+        if not vary or "x-lang" not in vary.lower():
+            response.headers["Vary"] = f"{vary}, X-Lang" if vary else "X-Lang"
     if path.startswith("/static/video/"):
         # 機能紹介動画・ポスター(2026-09-20)。数MBあり毎回の再検証(304)も
         # 無駄なので1年キャッシュ。URLは差し替えのたびに?v=で版付けする前提

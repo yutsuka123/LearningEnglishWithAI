@@ -22,6 +22,7 @@ from pydantic import BaseModel
 from ..config import log
 from ..database import db
 from ..services import crossword_gen, errors
+from ..services import messages
 from ..services.auth import current_user_id
 from ..services.spaced_repetition import banned_filter
 
@@ -1119,8 +1120,8 @@ def _crossword_source_label(
     if domains:
         return ",".join(domains)
     if category:
-        return f"{category}(全分野)"
-    return "すべて"
+        return messages.tr("games.source_cat_all", category=category)
+    return messages.tr("games.source_all")
 
 
 def _create_crossword_session(
@@ -1175,9 +1176,7 @@ def _create_crossword_session(
     if len(candidates) < MIN_PLACED_WORDS:
         raise errors.http_error(
             "7005",
-            f"選んだ範囲に単語が{MIN_PLACED_WORDS}語未満しかありません。"
-            "分野を増やす・単語帳を変える、またはレベル範囲を広げて"
-            "ください。",
+            messages.tr("games.few_words", n=MIN_PLACED_WORDS),
         )
     word_count = min(max(word_count, MIN_PLACED_WORDS), MAX_WORD_COUNT)
     random.shuffle(candidates)
@@ -1300,12 +1299,8 @@ def _create_crossword_session(
     # 組み合わせだと、MIN_PLACED_WORDS語以上は満たしていても希望語数を
     # 下回ることがあるため。
     if len(puzzle.clues) < word_count:
-        state["notice"] = (
-            f"{word_count}語を希望しましたが、単語同士がうまく交差"
-            f"できず{len(puzzle.clues)}語だけ配置しました。分野を"
-            f"複数選ぶ・単語帳を変える、または語数を減らすと、"
-            f"希望語数に近づきやすくなります。"
-        )
+        state["notice"] = messages.tr(
+            "games.notice_fewer", want=word_count, placed=len(puzzle.clues))
     return state
 
 
@@ -1461,11 +1456,11 @@ def _start_sample_session(conn, uid: int, sample: dict) -> dict:
                  else CW_SAMPLE_PLAY_LIMIT_FREE)
         if _sample_play_count(conn, uid, is_guest, gsid) >= limit:
             if is_guest:
-                msg = (f"ゲストで試せるサンプルは{limit}個までです。"
-                       "ログイン(無料)すると20個まで遊べるようになります。")
+                msg = messages.tr(
+                    "games.sample_limit_guest", limit=limit,
+                    free_limit=CW_SAMPLE_PLAY_LIMIT_FREE)
             else:
-                msg = (f"無料で遊べるサンプルは{limit}個までです。"
-                       "チャージすると無制限に遊べるようになります。")
+                msg = messages.tr("games.sample_limit_free", limit=limit)
             raise errors.http_error("7002", msg)
     cur = conn.execute(
         "INSERT INTO crossword_sessions "
@@ -1653,8 +1648,7 @@ def crossword_pin(session_id: int, payload: PinPayload):
             ).fetchone()["c"]
             if pinned_count >= cap:
                 raise errors.http_error(
-                    "7002", f"保存できるのは{cap}件までです。他の保存を"
-                    "解除してからお試しください。")
+                    "7002", messages.tr("games.pin_cap", cap=cap))
         conn.execute(
             "UPDATE crossword_sessions SET pinned = ? WHERE id = ? "
             "AND user_id = ?",
@@ -1867,7 +1861,7 @@ def crossword_ranking(period: str = "month"):
 
     def _anon(username: str) -> str:
         first = (username or "?")[:1].upper()
-        return f"{first}さん"
+        return messages.tr("games.rank_anon", first=first)
 
     top = []
     my_entry = None

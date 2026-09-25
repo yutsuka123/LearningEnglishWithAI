@@ -1639,6 +1639,16 @@
     "about.avatarAlt": "nyangai labのアイコン(白衣を着た猫)",
     // ---- about.html 戻るリンク 2026-09-26 ----
     "about.backToTop": "← トップ画面に戻る",
+    // ---- login.html のクライアント側メッセージ 2026-09-26 ----
+    "login.hidePassword": "パスワードを隠す",
+    "login.pwLength": "パスワードは8文字以上32文字以下にしてください。",
+    "login.pwChars": "パスワードに使用できない文字が含まれています（半角の英字・数字・記号のみ使用できます）。",
+    "login.pwKinds": "パスワードは英字・数字・記号のうち2種類以上を組み合わせてください。",
+    "login.failed": "ログインに失敗しました。",
+    "login.networkError": "通信エラーが発生しました。",
+    "signup.emailMismatch": "メールアドレスが一致しません。",
+    "signup.pwMismatch": "パスワードが一致しません。",
+    "signup.failed": "登録に失敗しました。",
   });
 
   Object.assign(D.en, {
@@ -3266,6 +3276,16 @@
     "about.avatarAlt": "nyangai lab icon (a cat in a lab coat)",
     // ---- about.html 戻るリンク 2026-09-26 ----
     "about.backToTop": "← Back to the top screen",
+    // ---- login.html のクライアント側メッセージ 2026-09-26 ----
+    "login.hidePassword": "Hide password",
+    "login.pwLength": "The password must be between 8 and 32 characters long.",
+    "login.pwChars": "The password contains characters that cannot be used (only half-width letters, digits and symbols are allowed).",
+    "login.pwKinds": "The password must combine at least two of letters, digits and symbols.",
+    "login.failed": "Login failed.",
+    "login.networkError": "A network error occurred.",
+    "signup.emailMismatch": "The email addresses do not match.",
+    "signup.pwMismatch": "The passwords do not match.",
+    "signup.failed": "Registration failed.",
   });
 
   Object.assign(D["zh-CN"], {
@@ -4873,6 +4893,16 @@
     "about.avatarAlt": "nyangai lab的图标(穿着白大褂的猫)",
     // ---- about.html 戻るリンク 2026-09-26 ----
     "about.backToTop": "← 返回首页",
+    // ---- login.html のクライアント側メッセージ 2026-09-26 ----
+    "login.hidePassword": "隐藏密码",
+    "login.pwLength": "密码长度须为8个字符以上、32个字符以下。",
+    "login.pwChars": "密码中包含无法使用的字符（只能使用半角的字母、数字和符号）。",
+    "login.pwKinds": "密码须组合使用字母、数字、符号中的至少2种。",
+    "login.failed": "登录失败。",
+    "login.networkError": "发生通信错误。",
+    "signup.emailMismatch": "邮箱地址不一致。",
+    "signup.pwMismatch": "两次输入的密码不一致。",
+    "signup.failed": "注册失败。",
   });
 
   Object.assign(D["zh-TW"], {
@@ -6480,5 +6510,15 @@
     "about.avatarAlt": "nyangai lab的圖示(穿著白袍的貓)",
     // ---- about.html 戻るリンク 2026-09-26 ----
     "about.backToTop": "← 返回首頁",
+    // ---- login.html のクライアント側メッセージ 2026-09-26 ----
+    "login.hidePassword": "隱藏密碼",
+    "login.pwLength": "密碼長度須為8個字元以上、32個字元以下。",
+    "login.pwChars": "密碼中包含無法使用的字元（只能使用半形的字母、數字和符號）。",
+    "login.pwKinds": "密碼須組合使用字母、數字、符號中的至少2種。",
+    "login.failed": "登入失敗。",
+    "login.networkError": "發生通訊錯誤。",
+    "signup.emailMismatch": "電子郵件地址不一致。",
+    "signup.pwMismatch": "兩次輸入的密碼不一致。",
+    "signup.failed": "註冊失敗。",
   });
 })();

@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse, Response
 
 from ..services import errors
+from ..services import messages
 from pydantic import BaseModel
 
 from ..database import db
@@ -802,10 +803,10 @@ def word_detail(word_id: int, regen: bool = False):
         if is_guest_user_id(conn, current_user_id()):
             return {
                 "ok": False,
-                "error": "詳細の生成はログインすると利用できます。",
+                "error": messages.tr("learn.detail_login"),
             }
     if not ai.is_enabled():
-        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+        return {"ok": False, "error": messages.tr("ai.no_key")}
     system = (
         "英単語の詳細情報を日本語でJSONのみ作成。キー: "
         "pronunciation(発音記号・IPA。米音を基本にスラッシュで囲む 例: /əˈbændən/), "
@@ -836,7 +837,7 @@ def word_detail(word_id: int, regen: bool = False):
         return {"ok": False, "error": r.error}
     data = _json_object(r.text)
     if not data:
-        return {"ok": False, "error": "詳細の生成に失敗しました。"}
+        return {"ok": False, "error": messages.tr("learn.detail_failed")}
     # 生成した訳が「どの例文に対する訳か」を必ず記録しておく（後で例文を
     # 差し替えたときに古い訳が残っているのを検出できるようにするため・
     # `_resolve_example_ja` 参照）。
@@ -1059,7 +1060,7 @@ def retag(batch: int = 30):
     with db() as conn:
         _require_admin(conn)
     if not ai.is_enabled():
-        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+        return {"ok": False, "error": messages.tr("ai.no_key")}
     with db() as conn:
         rows = conn.execute(
             "SELECT id, english, japanese FROM words "

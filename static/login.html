@@ -566,7 +566,8 @@
         inp.type = show ? 'text' : 'password';
         btn.innerHTML = show ? EYE_OFF_ICON : EYE_ICON;
         btn.setAttribute('aria-label',
-          show ? 'パスワードを隠す' : 'パスワードを表示');
+          show ? i18nT('login.hidePassword', 'パスワードを隠す')
+            : i18nT('login.showPassword', 'パスワードを表示'));
       });
     });
 
@@ -574,18 +575,18 @@
     // すぐに気づけるようクライアント側でも軽く事前チェックする。
     function passwordPolicyError(pw) {
       if (pw.length < 8 || pw.length > 32) {
-        return 'パスワードは8文字以上32文字以下にしてください。';
+        return i18nT('login.pwLength', 'パスワードは8文字以上32文字以下にしてください。');
       }
       if (!/^[A-Za-z0-9!"#$%&'()*+,\-./:;<=>?@[\]^_`{|}~]+$/.test(pw)) {
-        return 'パスワードに使用できない文字が含まれています' +
-          '（半角の英字・数字・記号のみ使用できます）。';
+        return i18nT('login.pwChars', 'パスワードに使用できない文字が含まれています' +
+          '（半角の英字・数字・記号のみ使用できます）。');
       }
       const kinds = [/[A-Za-z]/, /[0-9]/,
         /[!"#$%&'()*+,\-./:;<=>?@[\]^_`{|}~]/]
         .filter((re) => re.test(pw)).length;
       if (kinds < 2) {
-        return 'パスワードは英字・数字・記号のうち2種類以上を' +
-          '組み合わせてください。';
+        return i18nT('login.pwKinds', 'パスワードは英字・数字・記号のうち2種類以上を' +
+          '組み合わせてください。');
       }
       return null;
     }
@@ -757,8 +758,8 @@
         });
         const d = await r.json();
         if (d.ok) { location.href = safeNextUrl(); }
-        else { e.textContent = d.error || 'ログインに失敗しました。'; }
-      } catch (_) { e.textContent = '通信エラーが発生しました。'; }
+        else { e.textContent = d.error || i18nT('login.failed', 'ログインに失敗しました。'); }
+      } catch (_) { e.textContent = i18nT('login.networkError', '通信エラーが発生しました。'); }
     });
 
     fSignup.addEventListener('submit', async (ev) => {
@@ -774,12 +775,12 @@
       // 送らない設計のため、誤入力に気づけないままだとチャージキー等の
       // 連絡が届かなくなる)。
       if (email.trim().toLowerCase() !== emailConfirm.trim().toLowerCase()) {
-        se.textContent = 'メールアドレスが一致しません。';
+        se.textContent = i18nT('signup.emailMismatch', 'メールアドレスが一致しません。');
         track('click', 'signup_form', 'invalid:email_mismatch');
         return;
       }
       if (password !== passwordConfirm) {
-        se.textContent = 'パスワードが一致しません。';
+        se.textContent = i18nT('signup.pwMismatch', 'パスワードが一致しません。');
         track('click', 'signup_form', 'invalid:pw_mismatch');
         return;
       }
@@ -829,14 +830,14 @@
           location.href = safeNextUrl();
         }
         else {
-          se.textContent = d.error || '登録に失敗しました。';
+          se.textContent = d.error || i18nT('signup.failed', '登録に失敗しました。');
           // 失敗の種類(サーバーが返す4桁のエラーコードだけ・メッセージや
           // 入力内容は送らない)。コードが取れなければ'other'。
           const code = String(d.code || r.headers.get('X-Error-Code') || '');
           track('click', 'signup_form',
             'fail:' + (/^[0-9]{4}$/.test(code) ? code : 'other'));
         }
-      } catch (_) { se.textContent = '通信エラーが発生しました。';
+      } catch (_) { se.textContent = i18nT('login.networkError', '通信エラーが発生しました。');
         track('click', 'signup_form', 'fail:network');
       } finally { if (submitBtn) submitBtn.disabled = false; }
     });

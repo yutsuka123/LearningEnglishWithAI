@@ -22,6 +22,7 @@ import sqlite3
 from typing import Optional
 
 from ..database import OWNER_USER_ID, db
+from . import messages
 
 # pbkdf2 パラメータ（保存形式: ``pbkdf2_sha256$<iters>$<salt_hex>$<hash_hex>``）。
 _PBKDF2_ALGO = "sha256"
@@ -305,22 +306,29 @@ _PW_DIGIT_RE = re.compile(r"[0-9]")
 _PW_SYMBOL_RE = re.compile(rf"[{_PW_SYMBOLS}]")
 
 
-def password_policy_error(password: str) -> Optional[str]:
-    """パスワードがポリシーに反していればエラー文言、OKならNoneを返す。"""
+def password_policy_key(password: str) -> Optional[str]:
+    """パスワードがポリシーに反していれば違反の種類(messagesのキー)、OKなら
+    Noneを返す(2026-09-26: 多言語化のため文言ではなくキーを返す形に分離)。"""
     if not (8 <= len(password) <= 32):
-        return "パスワードは8文字以上32文字以下にしてください。"
+        return "auth.pw_length"
     if not _PW_ALLOWED_RE.match(password):
-        return ("パスワードに使用できない文字が含まれています"
-                "（半角の英字・数字・記号のみ使用できます）。")
+        return "auth.pw_chars"
     kinds = sum([
         bool(_PW_LETTER_RE.search(password)),
         bool(_PW_DIGIT_RE.search(password)),
         bool(_PW_SYMBOL_RE.search(password)),
     ])
     if kinds < 2:
-        return ("パスワードは英字・数字・記号のうち2種類以上を"
-                "組み合わせてください。")
+        return "auth.pw_kinds"
     return None
+
+
+def password_policy_error(password: str) -> Optional[str]:
+    """パスワードがポリシーに反していればエラー文言(**日本語**・ログ用/従来
+    互換)、OKならNoneを返す。利用者へ返す文言は`password_policy_key`の
+    キーを`messages.tr()`に通すこと(表示言語に追従する)。"""
+    key = password_policy_key(password)
+    return messages.tr_ja(key) if key else None
 
 
 def authenticate(

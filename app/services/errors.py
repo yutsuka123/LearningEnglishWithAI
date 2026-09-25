@@ -32,6 +32,8 @@ from typing import Optional
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 
+from . import messages
+
 CATEGORIES: dict[int, str] = {
     1000: "通信(ネット)",
     2000: "認証",
@@ -174,6 +176,29 @@ ERROR_CODES: dict[str, tuple[str, int]] = {
 }
 
 
+# 多言語化(2026-09-26): 既定文と同じ日本語文を呼び出し側が明示的に渡す場合
+# (billingの3003等)も訳せるよう、日本語の既定文をmessagesへ登録する。
+messages.register_error_defaults(ERROR_CODES)
+
+
+def default_message(code: str) -> str:
+    """コードの既定文を現在の言語(`X-Lang`)で返す。`ERROR_CODES[code][0]`を
+    直接利用者向けに返していた箇所用(訳のある言語なら訳、なければ日本語)。"""
+    ja = ERROR_CODES.get(code, ERROR_CODES["9999"])[0]
+    return messages.localize_error(code, ja)
+
+
+def _detail(code: str, message: Optional[str], default_msg: str) -> str:
+    """利用者に返す文言を現在の言語(`X-Lang`ヘッダ・messages.py参照)で決める。
+    ・message省略 → コードの既定文の訳(日本語・未対応言語は日本語)
+    ・message指定 → 登録済みの日本語定型文なら訳し、未登録(管理者向け・
+      動的に組み立てた文)はそのまま。動的な文は呼び出し側が
+      `messages.tr(key, ...)`で組み立てて渡す。"""
+    if message:
+        return messages.localize_text(message)
+    return messages.localize_error(code, default_msg)
+
+
 def http_error(
     code: str, message: Optional[str] = None, status: Optional[int] = None,
 ) -> HTTPException:
@@ -183,7 +208,7 @@ def http_error(
     default_msg, default_status = ERROR_CODES.get(code, ERROR_CODES["9999"])
     return HTTPException(
         status_code=status or default_status or 500,
-        detail=message or default_msg,
+        detail=_detail(code, message, default_msg),
         headers={"X-Error-Code": code},
     )
 
@@ -195,7 +220,8 @@ def error_response(
     早期returnしたい既存パターン向け・auth_routes.py参照）。"""
     default_msg, default_status = ERROR_CODES.get(code, ERROR_CODES["9999"])
     return JSONResponse(
-        {"ok": False, "error": message or default_msg, "code": code},
+        {"ok": False, "error": _detail(code, message, default_msg),
+         "code": code},
         status_code=status or default_status or 500,
         headers={"X-Error-Code": code},
     )

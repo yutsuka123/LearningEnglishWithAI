@@ -156,6 +156,38 @@
   }
 
   // ============================================================
+  // バックエンドへ現在の表示言語を伝える(2026-09-26)。同一オリジンの
+  // `/api/`宛てfetchに`X-Lang`ヘッダ(ja/en/zh-CN/zh-TW)を自動で付ける。
+  // サーバー(app/main.pyの_auth_context・app/services/messages.py)が
+  // これを見て、エラー/上限到達などの利用者向けメッセージを同じ言語で返す。
+  // 個々のfetch呼び出し(api.js・speech.js・login.html等)を直さなくても
+  // 新しい呼び出しを含め全てに効くよう、ここで一括して付与する。
+  // 失敗しても(古い環境・特殊なinput等)元のfetchをそのまま呼ぶだけ。
+  // 既に呼び出し側がX-Langを付けていればそれを優先する。
+  // ============================================================
+  (function patchFetchForLang() {
+    var origFetch = global.fetch;
+    if (typeof origFetch !== "function") return;
+    global.fetch = function (input, init) {
+      try {
+        var url = typeof input === "string" ? input
+          : (input && input.url) || String(input || "");
+        var u = new URL(url, global.location.href);
+        if (u.origin === global.location.origin
+          && u.pathname.indexOf("/api/") === 0) {
+          init = init ? Object.assign({}, init) : {};
+          var h = new Headers(init.headers
+            || (input && typeof input !== "string" && input.headers)
+            || undefined);
+          if (!h.has("X-Lang")) h.set("X-Lang", currentLang);
+          init.headers = h;
+        }
+      } catch (e) { /* 付与できなければそのまま送る */ }
+      return origFetch.call(this, input, init);
+    };
+  })();
+
+  // ============================================================
   // 辞書。DICT[lang][key] = 文字列。ja以外で未登録のキーはjaへ自動fallback。
   // ============================================================
   var DICT = { ja: {}, en: {}, "zh-CN": {}, "zh-TW": {} };
