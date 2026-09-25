@@ -98,20 +98,13 @@ function micErrorMessage(e) {
   const name = e && e.name;
   if (name === "NotAllowedError" || name === "SecurityError"
     || /denied/i.test(e && e.message || "")) {
-    return "マイクの使用が許可されていません。ブラウザまたはOSの設定で"
-      + "このサイトのマイクがブロックされている可能性があります。\n\n"
-      + "詳しい確認手順（Chrome/Edge/Firefox/Safari・Windows/Mac/"
-      + "iOS/Android）はこちら:\n"
-      + "https://study.nyangailab.com/static/about.html#trouble-mic";
+    return tx("mic.denied", {
+      url: "https://study.nyangailab.com/static/about.html#trouble-mic",
+    });
   }
-  if (name === "NotFoundError") {
-    return "マイクが見つかりません。マイクが接続されているかご確認ください。";
-  }
-  if (name === "NotReadableError") {
-    return "マイクを他のアプリが使用中の可能性があります。"
-      + "他のアプリ/タブでマイクを使っていないかご確認ください。";
-  }
-  return (e && e.message) || "マイクを利用できません";
+  if (name === "NotFoundError") return tx("mic.notFound");
+  if (name === "NotReadableError") return tx("mic.inUse");
+  return (e && e.message) || tx("mic.unavailable");
 }
 
 // 分野/レベル等の複数チェック可チェックボックス一覧(.chkbox)に添える
@@ -145,39 +138,41 @@ function wireChkAllClear(scope) {
 
 // --- shared answer-input helper (voice or text) ----------------------------
 
-function answerInput(onSubmit, { lang = "en-US", placeholder = "答えを入力" } = {}) {
+function answerInput(onSubmit, { lang = "en-US", placeholder = "" } = {}) {
   const wrap = el(`<div class="mt"></div>`);
-  const ta = el(`<textarea placeholder="${placeholder}"></textarea>`);
+  // placeholder未指定のときは現在言語の既定文言(2026-09-26多言語化)。
+  const ta = el(`<textarea placeholder="${escapeHtml(
+    placeholder || tx("input.answerPlaceholder"))}"></textarea>`);
   const row = el(`<div class="row"></div>`);
   // ゲスト(サンプル閲覧のみ)や残高0のログインユーザーはAI呼び出し系の
   // 送信ができないため、押しても401/402で固まる/紛らわしいエラーになる
   // 前に鍵表示で分かりやすく無効化する（2026-08-13・要課金の案内は
   // 2026-08-23追加）。
   const sendBtn = el(aiGateDisabled()
-    ? `<button class="btn" disabled>${aiGateLabel("送信")}</button>`
-    : `<button class="btn">✓ 送信</button>`);
+    ? `<button class="btn" disabled>${aiGateLabel(tx("input.send"))}</button>`
+    : `<button class="btn">✓ ${tx("input.send")}</button>`);
   sendBtn.addEventListener("click", () => onSubmit(ta.value));
 
   if (state.inputMode === "voice") {
     // Toggle: ON=録音開始, OFF=認識して回答(送信)。テキストは確認用に残る。
     let recorder = null;
     let recording = false;
-    const mic = el(`<button class="btn good">🎤 録音開始</button>`);
+    const mic = el(`<button class="btn good">🎤 ${tx("input.recStart")}</button>`);
     mic.addEventListener("click", async () => {
       if (!recording) {
         try {
           recorder = speech.createRecorder(lang);
           recorder.start();
           recording = true;
-          mic.textContent = "⏹ 停止して回答";
+          mic.textContent = "⏹ " + tx("input.recStopAnswer");
           mic.classList.remove("good"); mic.classList.add("bad");
         } catch (e) { alert(micErrorMessage(e)); }
       } else {
         recording = false;
-        mic.disabled = true; mic.textContent = "認識中…";
+        mic.disabled = true; mic.textContent = tx("input.recognizing");
         const said = await recorder.stop();
         ta.value = said;
-        mic.disabled = false; mic.textContent = "🎤 録音開始";
+        mic.disabled = false; mic.textContent = "🎤 " + tx("input.recStart");
         mic.classList.remove("bad"); mic.classList.add("good");
         if (said.trim() && speech.isVoiceAutoSubmit()) onSubmit(said);
       }
@@ -193,7 +188,7 @@ function answerInput(onSubmit, { lang = "en-US", placeholder = "答えを入力"
 
 function aiBadgeNote() {
   return state.aiEnabled ? ""
-    : `<p class="muted">⚠️ AI未設定のため、この機能は設定でAPIキーを登録すると使えます。</p>`;
+    : `<p class="muted">${tx("gate.aiNotConfigured")}</p>`;
 }
 
 // AI呼び出し(生成・会話開始等、必ず課金が絡む操作)を行うボタンのラベル/
@@ -201,8 +196,8 @@ function aiBadgeNote() {
 // 使えるように見えるが、実際はログイン後も残高(pt)が無いと使えないため、
 // ログイン済みかつ残高0の場合は「要課金」と案内する（ユーザー指摘）。
 function aiGateLabel(label) {
-  if (state.isGuest) return `🔒 ${label}(要ログイン)`;
-  if (!state.hasAiBalance) return `🔒 ${label}(要課金)`;
+  if (state.isGuest) return tx("gate.labelNeedLogin", { label });
+  if (!state.hasAiBalance) return tx("gate.labelNeedCharge", { label });
   return label;
 }
 function aiGateDisabled() {
@@ -220,8 +215,7 @@ function aiGateDisabled() {
 function sampleGateBanner() {
   if (!aiGateDisabled()) return "";
   return `<div class="sample-gate-banner">
-    ⚠️ この機能はご登録・チャージが必要です。
-    無課金でも見られるサンプルを下記にご用意しています。
+    ${tx("gate.sampleBanner")}
   </div><div id="sampleSlotTop"></div>`;
 }
 // ゲート中(未登録/残高無し)はサンプルを冒頭のバナー直後(先頭)に、
@@ -249,10 +243,10 @@ function englishOnly(text) {
 // 読み上げ速度の共通コントロール（playbackRate を全再生に適用・音程不変）。
 // 一度設定すると localStorage に保存され、会話など他の読み上げにも効く。
 function playbackSpeedControl() {
-  const sel = el(`<select title="読み上げ速度">
-    <option value="1">速度: 標準</option>
-    <option value="0.8">速度: ゆっくり</option>
-    <option value="1.2">速度: 速い(native寄り)</option></select>`);
+  const sel = el(`<select title="${escapeHtml(tx("playback.title"))}">
+    <option value="1">${tx("playback.normal")}</option>
+    <option value="0.8">${tx("playback.slow")}</option>
+    <option value="1.2">${tx("playback.fast")}</option></select>`);
   sel.value = String(speech.getPlaybackRate());
   sel.addEventListener("change", () =>
     speech.setPlaybackRate(parseFloat(sel.value) || 1));
@@ -262,8 +256,8 @@ function playbackSpeedControl() {
 // A reusable 🔊読み上げ / ⏹停止 control bar for generated material.
 function readAloudBar(getText, feature) {
   const bar = el(`<div class="row mt"></div>`);
-  const play = el(`<button class="btn ghost">🔊 英文を読み上げ</button>`);
-  const stop = el(`<button class="btn ghost">⏹ 停止</button>`);
+  const play = el(`<button class="btn ghost">🔊 ${tx("readAloud.play")}</button>`);
+  const stop = el(`<button class="btn ghost">⏹ ${tx("common.stop")}</button>`);
   play.addEventListener("click",
     () => speech.speak(englishOnly(getText()), { feature }));
   stop.addEventListener("click", () => speech.stopSpeaking());
@@ -736,23 +730,23 @@ export async function daily(root) {
     if (current >= steps.length) {
       root.innerHTML = `${chips()}
         <div class="card center">
-          <h2>デイリー完了！🎉</h2>
-          <p class="muted">学習履歴に記録を残せます。</p>
-          <button class="btn" id="toHist">学習履歴へ</button>
+          <h2>${tx("daily.doneTitle")}</h2>
+          <p class="muted">${tx("daily.doneNote")}</p>
+          <button class="btn" id="toHist">${tx("daily.toHistory")}</button>
         </div>`;
       root.querySelector("#toHist").addEventListener("click", () => go("history"));
       refreshCost();
       return;
     }
     const step = steps[current];
-    root.innerHTML = `<h1>デイリーセッション</h1>${chips()}
+    root.innerHTML = `<h1>${tx("daily.title")}</h1>${chips()}
       <div id="stepArea"></div>`;
     const area = root.querySelector("#stepArea");
 
     if (step.step === "vocab" || step.step === "phrases") {
       if (!step.items.length) {
-        area.innerHTML = `<div class="card">項目がありません。</div>`;
-        area.appendChild(el(`<button class="btn" id="sk">次へ</button>`));
+        area.innerHTML = `<div class="card">${tx("daily.noItems")}</div>`;
+        area.appendChild(el(`<button class="btn" id="sk">${tx("common.next")}</button>`));
         area.querySelector("#sk").addEventListener("click", next);
         return;
       }
@@ -763,7 +757,7 @@ export async function daily(root) {
         kind: step.step === "vocab" ? "word" : "phrase",
         appState: state,
         onDone: () => {
-          const b = el(`<button class="btn mt" id="cont">次のステップへ</button>`);
+          const b = el(`<button class="btn mt" id="cont">${tx("daily.nextStep")}</button>`);
           holder.appendChild(b);
           b.addEventListener("click", next);
         },
@@ -778,12 +772,11 @@ export async function daily(root) {
   // 開いた直後は発声しない。開始ボタンを押してから render() を始める。
   // （以降は単語表示と同時に読み上げてOK、というご要望どおりの挙動。）
   function intro() {
-    root.innerHTML = `<h1>デイリーセッション</h1>${chips()}
+    root.innerHTML = `<h1>${tx("daily.title")}</h1>${chips()}
       <div class="card center">
-        <h2>今日の学習（約10分）</h2>
-        <p class="muted">単語・フレーズ・読み書きを順番に進めます。
-          音声は開始後に再生されます。</p>
-        <button class="btn" id="startDaily">▶ 開始する</button>
+        <h2>${tx("daily.introTitle")}</h2>
+        <p class="muted">${tx("daily.introNote")}</p>
+        <button class="btn" id="startDaily">${tx("daily.startBtn")}</button>
       </div>`;
     root.querySelector("#startDaily")
       .addEventListener("click", () => render());
@@ -792,56 +785,57 @@ export async function daily(root) {
 }
 
 async function readingStep(area, next) {
-  area.innerHTML = `<div class="card"><h2>リーディング (1題)</h2>
+  area.innerHTML = `<div class="card"><h2>${tx("daily.readingTitle")}</h2>
     ${aiBadgeNote()}
     <div class="row">
       <button class="btn" id="gen" ${state.aiEnabled ? "" : "disabled"}>
-        教材を生成</button>
-      <button class="btn secondary" id="skip">スキップ</button>
+        ${tx("daily.genMaterial")}</button>
+      <button class="btn secondary" id="skip">${tx("common.skip")}</button>
     </div>
     <div id="out" class="md mt"></div></div>`;
   area.querySelector("#skip").addEventListener("click", next);
   area.querySelector("#gen").addEventListener("click", async () => {
     const out = area.querySelector("#out");
-    out.textContent = "生成中…";
+    out.textContent = tx("common.generating");
+    // field/instructionはAIへの指示(バックエンドが解釈する値)なので日本語のまま。
     const r = await api.post("/api/learn/generate",
       { area: "reading", field: "一般", instruction: "短めの長文1題" });
     if (!r.ok) { out.textContent = r.error; return; }
     out.innerHTML = md(r.body);
-    out.appendChild(el(`<button class="btn ghost mt" id="say">🔊 読み上げ</button>`));
+    out.appendChild(el(`<button class="btn ghost mt" id="say">${tx("common.readAloudBtn")}</button>`));
     out.querySelector("#say").addEventListener("click",
       () => speech.speak(r.body, { feature: "reading_tts" }));
-    out.appendChild(el(`<button class="btn mt" id="done">次へ</button>`));
+    out.appendChild(el(`<button class="btn mt" id="done">${tx("common.next")}</button>`));
     out.querySelector("#done").addEventListener("click", next);
     refreshCost();
   });
 }
 
 async function writingStep(area, next) {
-  area.innerHTML = `<div class="card"><h2>ライティング (1題・音声応答可)</h2>
+  area.innerHTML = `<div class="card"><h2>${tx("daily.writingTitle")}</h2>
     ${aiBadgeNote()}
-    <p class="muted">お題: 今日あったことを3文で英語で書いて(話して)みましょう。</p>
+    <p class="muted">${tx("daily.writingPrompt")}</p>
     <div id="ans"></div><div id="fb" class="md mt"></div>
-    <button class="btn secondary mt" id="skip">スキップ</button></div>`;
+    <button class="btn secondary mt" id="skip">${tx("common.skip")}</button></div>`;
   area.querySelector("#skip").addEventListener("click", next);
   const ansBox = area.querySelector("#ans");
   ansBox.appendChild(answerInput(async (txt) => {
     const fb = area.querySelector("#fb");
-    if (!txt.trim()) { toast("文章が空です"); return; }
+    if (!txt.trim()) { toast(tx("writing.emptyText")); return; }
     if (!state.aiEnabled) {
-      fb.innerHTML = md("AI未設定のため添削は省略。よく書けました！");
-      const nb = el(`<button class="btn mt">次へ</button>`);
+      fb.innerHTML = md(tx("daily.noAiWritingDone"));
+      const nb = el(`<button class="btn mt">${tx("common.next")}</button>`);
       nb.addEventListener("click", next); fb.appendChild(nb);
       return;
     }
-    fb.textContent = "添削中…";
+    fb.textContent = tx("writing.correcting");
     const r = await api.post("/api/learn/writing-feedback",
       { category: "日常", prompt: "今日あったこと", text: txt });
     fb.innerHTML = r.ok ? md(r.feedback) : escapeHtml(r.error);
-    fb.appendChild(el(`<button class="btn mt" id="done">次へ</button>`));
+    fb.appendChild(el(`<button class="btn mt" id="done">${tx("common.next")}</button>`));
     fb.querySelector("#done").addEventListener("click", next);
     refreshCost();
-  }, { lang: "en-US", placeholder: "英語で入力" }));
+  }, { lang: "en-US", placeholder: tx("input.englishPlaceholder") }));
 }
 
 // --- Vocabulary -------------------------------------------------------------
@@ -853,8 +847,8 @@ const FEMALE_VOICE = "nova";
 // 2つの再生ボタン(男声=青 / 女声=赤)を作って返す。getText() は再生する英文。
 function voiceButtons(getText) {
   const cell = el(`<div class="voice-cell">
-    <button class="btn voice-m" title="男性の声 (ash)">🔊</button>
-    <button class="btn voice-f" title="女性の声 (nova)">🔊</button></div>`);
+    <button class="btn voice-m" title="${escapeHtml(tx("voice.maleTitle"))}">🔊</button>
+    <button class="btn voice-f" title="${escapeHtml(tx("voice.femaleTitle"))}">🔊</button></div>`);
   const [m, f] = cell.querySelectorAll("button");
   m.addEventListener("click", () => speech.sayWithVoice(getText(), MALE_VOICE));
   f.addEventListener("click", () => speech.sayWithVoice(getText(), FEMALE_VOICE));
@@ -867,16 +861,16 @@ function voiceButtons(getText) {
 // 同じ男声(ash)/女声(nova)を選べ、速度(標準/ゆっくり/速い)も選べる。
 function sampleReadAloudBar(material) {
   const bar = el(`<div class="row mt"></div>`);
-  const playM = el(`<button class="btn ghost">🔊 男声で再生</button>`);
-  const playF = el(`<button class="btn ghost">🔊 女声で再生</button>`);
-  const stop = el(`<button class="btn ghost">⏹ 停止</button>`);
+  const playM = el(`<button class="btn ghost">${tx("sampleAudio.playMale")}</button>`);
+  const playF = el(`<button class="btn ghost">${tx("sampleAudio.playFemale")}</button>`);
+  const stop = el(`<button class="btn ghost">⏹ ${tx("common.stop")}</button>`);
   // 初回再生は未キャッシュだとAI合成に数秒〜十数秒かかることがあり、
   // 無表示だと固まって見える(2026-08-13ユーザー指摘)。押した瞬間から
   // ボタンを無効化+「生成中…」表示にして、待ち時間を可視化する。
   const playing = async (btn, label, voice) => {
     const orig = btn.textContent;
     playM.disabled = true; playF.disabled = true;
-    btn.textContent = "⏳ 生成中…";
+    btn.textContent = "⏳ " + tx("common.generating");
     try {
       await speech.sayMaterial(material.id, voice);
     } finally {
@@ -884,8 +878,8 @@ function sampleReadAloudBar(material) {
       playM.disabled = false; playF.disabled = false;
     }
   };
-  playM.addEventListener("click", () => playing(playM, "男声", MALE_VOICE));
-  playF.addEventListener("click", () => playing(playF, "女声", FEMALE_VOICE));
+  playM.addEventListener("click", () => playing(playM, tx("voice.maleLabel"), MALE_VOICE));
+  playF.addEventListener("click", () => playing(playF, tx("voice.femaleLabel"), FEMALE_VOICE));
   stop.addEventListener("click", () => speech.stopSpeaking());
   bar.append(playM, playF, stop, playbackSpeedControl());
   return bar;
@@ -900,24 +894,25 @@ const LENGTH_INSTR = {
   "5": "長文（約300語・朗読で約2分）で",
 };
 function lengthSelect(id) {
-  return `<select id="${id}" title="長さ(5段階)">
-    <option value="1">長さ: 短め(1〜2文)</option>
-    <option value="2">長さ: やや短め</option>
-    <option value="3" selected>長さ: 標準</option>
-    <option value="4">長さ: やや長め</option>
-    <option value="5">長さ: 長文(約2分)</option></select>`;
+  return `<select id="${id}" title="${escapeHtml(tx("length.title"))}">
+    <option value="1">${tx("length.opt1")}</option>
+    <option value="2">${tx("length.opt2")}</option>
+    <option value="3" selected>${tx("length.opt3")}</option>
+    <option value="4">${tx("length.opt4")}</option>
+    <option value="5">${tx("length.opt5")}</option></select>`;
 }
 
 // 生成時の難易度セレクト（おまかせ＝学習者プロフィール）。
 function diffSelect(id) {
-  return `<select id="${id}" title="難易度">
-    <option value="">難易度: おまかせ</option>
-    <option value="入門(TOEIC 300-400)">難易度: 入門</option>
-    <option value="初級(TOEIC 500)">難易度: 初級</option>
-    <option value="中級(TOEIC 600)">難易度: 中級</option>
-    <option value="中上級(TOEIC 700)">難易度: 中上級</option>
-    <option value="上級(TOEIC 800)">難易度: 上級</option>
-    <option value="最上級(TOEIC 900+)">難易度: 最上級</option></select>`;
+  // value(AIへ送る難易度指示)は日本語のまま・表示だけ翻訳。
+  return `<select id="${id}" title="${escapeHtml(tx("difficulty.title"))}">
+    <option value="">${tx("difficulty.auto")}</option>
+    <option value="入門(TOEIC 300-400)">${tx("difficulty.intro")}</option>
+    <option value="初級(TOEIC 500)">${tx("difficulty.basic")}</option>
+    <option value="中級(TOEIC 600)">${tx("difficulty.mid")}</option>
+    <option value="中上級(TOEIC 700)">${tx("difficulty.upperMid")}</option>
+    <option value="上級(TOEIC 800)">${tx("difficulty.high")}</option>
+    <option value="最上級(TOEIC 900+)">${tx("difficulty.top")}</option></select>`;
 }
 
 // 内容理解問題の見出し以降を取り除く（保存はフル、表示だけ問題を隠す用）。
@@ -1204,23 +1199,19 @@ function clearButton(base, item, onChange) {
 function deleteButton(name, onDel) {
   // ゴミ箱マークは赤（背景はそのまま）。絵文字は色を変えられないのでSVGを使う。
   const btn = el(`<button class="btn ghost del-btn"
-    title="削除（確認を2回します）">
+    title="${escapeHtml(tx("del.title"))}">
     <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"
       aria-hidden="true"><path d="M9 3h6l1 2h4v2H4V5h4l1-2zM6 9h12l-1 11a2 2
       0 0 1-2 2H9a2 2 0 0 1-2-2L6 9z"/></svg></button>`);
   btn.addEventListener("click", async () => {
     const label = (name || "").slice(0, 40);
-    if (!confirm(
-      `「${label}」を削除しますか？\n` +
-      "※基本的に削除は不要です。本当に消す場合のみ進めてください。")) return;
-    if (!confirm(
-      `最終確認です。「${label}」を完全に削除します。\n` +
-      "この操作は元に戻せません。よろしいですか？")) return;
+    if (!confirm(tx("del.confirm1", { label }))) return;
+    if (!confirm(tx("del.confirm2", { label }))) return;
     try {
       await onDel();
-      toast("削除しました");
+      toast(tx("del.done"));
     } catch (e) {
-      toast(e.message || "削除に失敗しました");
+      toast(e.message || tx("del.failed"));
     }
   });
   return btn;
@@ -1301,9 +1292,9 @@ function renderWordDetail(box, d, primaryEn) {
     ? jw(x)
     : `${jw(x.word || "")}${x.note
       ? "（" + escapeHtml(x.note) + "）" : ""}`).join(" / ") : "";
-  sec("発音:", d.pronunciation ? escapeHtml(d.pronunciation) : "");
-  sec("品詞:", d.pos ? escapeHtml(d.pos) : "");
-  sec("意味:", arr(d.meanings));
+  sec(tx("wordDetail.pronunciation"), d.pronunciation ? escapeHtml(d.pronunciation) : "");
+  sec(tx("wordDetail.pos"), d.pos ? escapeHtml(d.pos) : "");
+  sec(tx("wordDetail.meanings"), arr(d.meanings));
   // 例文(英文＋日本語訳)。各例文に男声/女声の再生ボタンを付ける
   // (2026-09-09・多義語のように複数例文を持つ語で、それぞれの意味を
   // 音でも確認したいという要望に対応。POST /api/learn/tts はテキスト
@@ -1317,7 +1308,7 @@ function renderWordDetail(box, d, primaryEn) {
       ? d.examples.filter((x) => norm(x.en) !== norm(primaryEn))
       : d.examples;
     if (exs.length) {
-      const wrap = el(`<div style="margin:6px 0"><b>例文:</b></div>`);
+      const wrap = el(`<div style="margin:6px 0"><b>${tx("wordDetail.examples")}</b></div>`);
       exs.forEach((x) => {
         const row = el(`<div class="row" style="align-items:center; gap:8px; margin:4px 0">
           <div>${escapeHtml(x.en || "")}<br>
@@ -1330,15 +1321,15 @@ function renderWordDetail(box, d, primaryEn) {
     }
   }
   if (Array.isArray(d.derivatives) && d.derivatives.length) {
-    sec("派生:", d.derivatives.map((x) =>
+    sec(tx("wordDetail.derivatives"), d.derivatives.map((x) =>
       `${jw(x.word || "")}（${escapeHtml(x.pos || "")}: `
       + `${escapeHtml(x.ja || "")}）`).join(" / "));
   }
-  sec("類義語:", wn(d.synonyms));
-  sec("対義語:", wn(d.antonyms));
-  sec("語源・由来:", d.origin ? escapeHtml(d.origin) : "");
-  sec("豆知識:", d.trivia ? escapeHtml(d.trivia) : "");
-  sec("解説:", d.explanation ? escapeHtml(d.explanation) : "");
+  sec(tx("wordDetail.synonyms"), wn(d.synonyms));
+  sec(tx("wordDetail.antonyms"), wn(d.antonyms));
+  sec(tx("wordDetail.origin"), d.origin ? escapeHtml(d.origin) : "");
+  sec(tx("wordDetail.trivia"), d.trivia ? escapeHtml(d.trivia) : "");
+  sec(tx("wordDetail.explanation"), d.explanation ? escapeHtml(d.explanation) : "");
   linkifyJumps(box);
 }
 
@@ -1358,10 +1349,11 @@ async function linkifyJumps(box) {
       if (hits && hits.length) {
         s.classList.add("jw-link");
         if (hits.length === 1) {
-          s.title = `「${hits[0].english}」の詳細へ`;
+          s.title = tx("wordDetail.jumpTo", { en: hits[0].english });
           s.addEventListener("click", () => showWordDetail(hits[0]));
         } else {
-          s.title = `「${hits[0].english}」の詳細へ（${hits.length}件の意味）`;
+          s.title = tx("wordDetail.jumpToMulti",
+            { en: hits[0].english, n: hits.length });
           s.addEventListener("click", () => showWordChoices(hits));
         }
       }
@@ -1373,13 +1365,13 @@ async function linkifyJumps(box) {
 function showWordChoices(hits) {
   openModal(hits[0].english, (body) => {
     body.appendChild(el(
-      `<p class="muted">同じ綴りで複数の意味があります。選んでください。</p>`));
+      `<p class="muted">${tx("wordDetail.choicesNote")}</p>`));
     const list = el(
       `<div class="row" style="flex-direction:column;align-items:stretch;gap:6px"></div>`);
     hits.forEach((h) => {
       const btn = el(`<button class="btn ghost" style="text-align:left">
         ${escapeHtml(h.japanese || "")}
-        <span class="muted">（${escapeHtml(h.domain || "分野未設定")}）</span>
+        <span class="muted">（${escapeHtml(h.domain || tx("common.domainUnset"))}）</span>
       </button>`);
       btn.addEventListener("click", () => showWordDetail(h));
       list.appendChild(btn);
@@ -1481,7 +1473,8 @@ function showWordDetail(w) {
     });
     if (memo) body.appendChild(memo);
     const exLine = el(`<p style="margin-bottom:2px">${w.example
-      ? "例文: " + escapeHtml(w.example) : "（例文なし）"}</p>`);
+      ? tx("wordDetail.exampleLine", { text: escapeHtml(w.example) })
+      : tx("wordDetail.noExample")}</p>`);
     body.appendChild(exLine);
     // 読み上げ例文の日本語訳（詳細の example_ja。読み込み後に埋める・発声なし）。
     const exJa = el(`<p class="muted" style="margin:0 0 4px"></p>`);
@@ -1502,29 +1495,29 @@ function showWordDetail(w) {
     body.appendChild(detailBox);
     // 詳細は事前生成方式（キャッシュ済みのみ表示）。AI生成/作り直しボタンは廃止。
     const loadDetail = async () => {
-      detailBox.innerHTML = `<p class="muted">詳細を取得中…</p>`;
+      detailBox.innerHTML = `<p class="muted">${tx("detail.loading")}</p>`;
       try {
         const r = await api.post(`/api/words/${w.id}/detail`);
         if (r.ok) {
           renderWordDetail(detailBox, r.detail, w.example);
           if (w.example && r.detail && r.detail.example_ja) {
-            exJa.textContent = "訳: " + r.detail.example_ja;
+            exJa.textContent = tx("wordDetail.exampleJa", { text: r.detail.example_ja });
           }
           w.has_detail = true;
         } else {
           detailBox.innerHTML =
-            `<p class="muted">${escapeHtml(r.error || "失敗")}</p>`;
+            `<p class="muted">${escapeHtml(r.error || tx("detail.failed"))}</p>`;
         }
       } catch (e) {
         detailBox.innerHTML =
-          `<p class="muted">失敗: ${escapeHtml(e.message || "")}</p>`;
+          `<p class="muted">${tx("common.failedPrefix")}${escapeHtml(e.message || "")}</p>`;
       }
     };
     if (w.has_detail) {
       loadDetail();  // キャッシュ済み → 無料で表示
     } else {
       detailBox.appendChild(el(
-        `<p class="muted">この単語の詳細は準備中です。</p>`));
+        `<p class="muted">${tx("wordDetail.notReady")}</p>`));
     }
 
     // 同綴りで意味が異なる別エントリがあれば案内する（§B17・論点1-b）。
@@ -1536,12 +1529,12 @@ function showWordDetail(w) {
           || [];
         const others = hits.filter((h) => h.id !== w.id);
         if (!others.length) return;
-        const box2 = el(`<p class="muted mt">🔀 同じ綴りの別の意味: </p>`);
+        const box2 = el(`<p class="muted mt">${tx("wordDetail.otherMeanings")}</p>`);
         others.forEach((h, i) => {
           if (i > 0) box2.appendChild(document.createTextNode(" / "));
           const link = el(`<span class="jw-link" style="cursor:pointer;
             text-decoration:underline">${escapeHtml(h.japanese || "")}
-            （${escapeHtml(h.domain || "分野未設定")}）</span>`);
+            （${escapeHtml(h.domain || tx("common.domainUnset"))}）</span>`);
           link.addEventListener("click", () => showWordDetail(h));
           box2.appendChild(link);
         });
@@ -1560,17 +1553,17 @@ function renderPhraseDetail(box, d) {
     if (!html) return;
     box.appendChild(el(`<p style="margin:6px 0"><b>${label}</b> ${html}</p>`));
   };
-  sec("ニュアンス:", d.nuance ? escapeHtml(d.nuance) : "");
+  sec(tx("phraseDetail.nuance"), d.nuance ? escapeHtml(d.nuance) : "");
   if (Array.isArray(d.similar_expressions) && d.similar_expressions.length) {
     const html = d.similar_expressions.map((x) =>
       `${escapeHtml(x.en || "")}（${escapeHtml(x.ja || "")}）`
       + (x.diff ? ` — ${escapeHtml(x.diff)}` : "")).join("<br>");
-    sec("類似表現:", html);
+    sec(tx("phraseDetail.similar"), html);
   }
-  sec("由来・背景:", d.background ? escapeHtml(d.background) : "");
-  sec("⚠️ 注意:", d.caution ? escapeHtml(d.caution) : "");
-  sec("豆知識:", d.trivia ? escapeHtml(d.trivia) : "");
-  sec("解説:", d.explanation ? escapeHtml(d.explanation) : "");
+  sec(tx("phraseDetail.background"), d.background ? escapeHtml(d.background) : "");
+  sec(tx("phraseDetail.caution"), d.caution ? escapeHtml(d.caution) : "");
+  sec(tx("phraseDetail.trivia"), d.trivia ? escapeHtml(d.trivia) : "");
+  sec(tx("phraseDetail.explanation"), d.explanation ? escapeHtml(d.explanation) : "");
 }
 
 // フレーズの詳細ポップアップ（単語のshowWordDetailと同じ方式）。
@@ -1591,7 +1584,7 @@ function showPhraseDetail(p) {
     const detailBox = el(`<div class="mt"></div>`);
     body.appendChild(detailBox);
     const loadDetail = async () => {
-      detailBox.innerHTML = `<p class="muted">詳細を取得中…</p>`;
+      detailBox.innerHTML = `<p class="muted">${tx("detail.loading")}</p>`;
       try {
         const r = await api.post(`/api/phrases/${p.id}/detail`);
         if (r.ok) {
@@ -1599,18 +1592,18 @@ function showPhraseDetail(p) {
           p.has_detail = true;
         } else {
           detailBox.innerHTML =
-            `<p class="muted">${escapeHtml(r.error || "失敗")}</p>`;
+            `<p class="muted">${escapeHtml(r.error || tx("detail.failed"))}</p>`;
         }
       } catch (e) {
         detailBox.innerHTML =
-          `<p class="muted">失敗: ${escapeHtml(e.message || "")}</p>`;
+          `<p class="muted">${tx("common.failedPrefix")}${escapeHtml(e.message || "")}</p>`;
       }
     };
     if (p.has_detail) {
       loadDetail();  // キャッシュ済み → 無料で表示
     } else {
       detailBox.appendChild(el(
-        `<p class="muted">このフレーズの詳細は準備中です。</p>`));
+        `<p class="muted">${tx("phraseDetail.notReady")}</p>`));
     }
   });
 }
@@ -3116,37 +3109,37 @@ export async function quiz(root) {
 // 生成済み題材の履歴パネル。再表示(無料)＋覚えた/うろ覚え/削除。
 // areas: カンマ区切りの領域。showInto(body): 本文を表示するコールバック。
 async function renderHistory(panel, areas, showInto) {
-  panel.innerHTML = `<p class="muted">読み込み中…</p>`;
+  panel.innerHTML = `<p class="muted">${tx("common.loading")}</p>`;
   const list = await api.get(
     "/api/learn/materials?areas=" + encodeURIComponent(areas) + "&limit=100");
   panel.innerHTML = "";
   const head = el(`<div class="row" style="justify-content:space-between">
-    <h3 style="margin:0">履歴 (${list.length})</h3></div>`);
+    <h3 style="margin:0">${tx("matHist.title", { n: list.length })}</h3></div>`);
   panel.appendChild(head);
   if (!list.length) {
-    panel.appendChild(el(`<p class="muted">まだ履歴がありません。</p>`));
+    panel.appendChild(el(`<p class="muted">${tx("matHist.empty")}</p>`));
     return;
   }
   list.forEach((m) => {
     const badge = m.mastery >= 100
-      ? `<span class="pill mastered">覚えた</span>`
+      ? `<span class="pill mastered">${tx("matHist.known")}</span>`
       : (m.mastery > 0 ? `<span class="pill">${m.mastery}</span>` : "");
     const row = el(`<div class="hist-row">
       <span class="hist-title">${escapeHtml(m.title)} ${badge}</span>
       <span class="ops-cell"></span></div>`);
     const ops = row.querySelector(".ops-cell");
-    const show = el(`<button class="btn ghost">再表示</button>`);
+    const show = el(`<button class="btn ghost">${tx("matHist.reshow")}</button>`);
     show.addEventListener("click", () => showInto(m.body));
-    const vague = el(`<button class="vague-btn btn">うろ覚え</button>`);
+    const vague = el(`<button class="vague-btn btn">${tx("matHist.vague")}</button>`);
     vague.addEventListener("click", async () => {
       const r = await api.post(`/api/learn/materials/${m.id}/vague`);
       m.mastery = r.mastery; renderHistory(panel, areas, showInto);
-      toast("うろ覚え +10");
+      toast(tx("matHist.vagueToast"));
     });
-    const known = el(`<button class="btn blue">覚えた</button>`);
+    const known = el(`<button class="btn blue">${tx("matHist.known")}</button>`);
     known.addEventListener("click", async () => {
       await api.post(`/api/learn/materials/${m.id}/known`);
-      m.mastery = 200; renderHistory(panel, areas, showInto); toast("覚えた");
+      m.mastery = 200; renderHistory(panel, areas, showInto); toast(tx("matHist.knownToast"));
     });
     const del = deleteButton(m.title, async () => {
       await api.del(`/api/learn/materials/${m.id}`);
@@ -3168,7 +3161,7 @@ function materialView(title, sub, area, fields, histAreas, help) {
       <div class="card">
         <div class="row">
           <select id="field">${fields.map((f) =>
-            `<option value="${escapeHtml(f)}">${escapeHtml(fieldLabelKey(f) ? tx(fieldLabelKey(f)) : f)}</option>`).join("")}</select>
+            `<option value="${escapeHtml(f)}">${escapeHtml(fieldLabel(f))}</option>`).join("")}</select>
           ${diffSelect("fdiff")}
           ${lengthSelect("flen")}
           <label class="toggle" title="${escapeHtml(tx("material.comprehensionTitle"))}">
@@ -3247,11 +3240,20 @@ const FIELD_LABEL_KEYS = {
   "文学(英文学)": "material.field.litEnglish", "文学(古典)": "material.field.litClassic",
 };
 function fieldLabelKey(f) { return FIELD_LABEL_KEYS[f] || null; }
+// 分野の表示名(未登録=ニュース(トピック)は「News (トピック)」形式・トピック名自体は
+// DB由来のためそのまま)。送信値(value)は常に日本語のまま。
+function fieldLabel(f) {
+  const k = fieldLabelKey(f);
+  if (k) return tx(k);
+  const m = /^ニュース\((.*)\)$/.exec(f || "");
+  if (m) return tx("material.field.newsWith", { topic: m[1] });
+  return f;
+}
 
 // リーディングに「文学」「ニュース」も統合（独立タブは廃止）。
 export const reading = (root) => materialView(
-  "リーディング",
-  "分野別の長文（文学・ニュースも含む）と理解問題をAIが生成します。",
+  tx("nav.reading"),
+  tx("reading.sub"),
   "reading",
   [
     "一般", "新聞", "雑誌", "ビジネスメール", "技術文書", "API仕様書",
@@ -3263,10 +3265,7 @@ export const reading = (root) => materialView(
          "ニュース(IT)"]),
   ], "reading,literature,news", [
     "help-reading",
-    "分野・難易度・長さを選ぶと、AIが英語の長文と内容理解問題を作ります。"
-    + "文学やニュースも選べます。サンプルは無料で見られますが、生成には"
-    + "ログインとAI利用の残高が必要です。「履歴」から過去に作った教材を"
-    + "無料で再表示でき、「覚えた」「うろ覚え」で習熟度も付けられます。",
+    tx("reading.help"),
   ])(root);
 
 // --- Writing ----------------------------------------------------------------
@@ -3281,9 +3280,8 @@ export const reading = (root) => materialView(
 function sampleMaterialsCard(area, cardTitle, emptyLabel) {
   const card = el(`<div class="card" id="sampleCard-${escapeHtml(area)}">
     <h2>${escapeHtml(cardTitle)}</h2>
-    <p class="muted">実際にAIを使わなくても内容を確認できるサンプルです。
-      無課金でもご覧いただけます。</p>
-    <div class="row" id="smList"><p class="muted">読み込み中…</p></div>
+    <p class="muted">${tx("sample.note")}</p>
+    <div class="row" id="smList"><p class="muted">${tx("common.loading")}</p></div>
     <div id="smBody" class="md mt"></div>
   </div>`);
   (async () => {
@@ -3301,7 +3299,7 @@ function sampleMaterialsCard(area, cardTitle, emptyLabel) {
     list.innerHTML = "";
     items.forEach((m) => {
       const btn = el(`<button class="btn ghost"
-        style="margin:2px">${escapeHtml(m.field || m.title)}</button>`);
+        style="margin:2px">${escapeHtml(m.field ? fieldLabel(m.field) : m.title)}</button>`);
       btn.addEventListener("click", () => {
         bodyBox.innerHTML = "";
         bodyBox.appendChild(sampleReadAloudBar(m));
@@ -3320,26 +3318,28 @@ export async function writing(root) {
   root.innerHTML = `
     <h1>${tx("nav.writing")} ${infoIcon("help-writing", tx("writing.helpText"))}</h1>
     ${sampleGateBanner()}
-    <p class="sub">英文を書く(または話す)とAIが添削します。音声応答可。</p>
+    <p class="sub">${tx("writing.sub")}</p>
     ${aiBadgeNote()}
     <div class="card">
       <div class="row">
         <select id="cat">
-          ${["日常文章", "ビジネスメール", "IT文書", "技術仕様書"]
-            .map((c) => `<option>${c}</option>`).join("")}</select>
-        <input id="prompt" placeholder="お題(任意)" style="width:320px" />
+          ${[["日常文章", "writing.cat.daily"],
+            ["ビジネスメール", "material.field.businessEmail"],
+            ["IT文書", "writing.cat.it"], ["技術仕様書", "writing.cat.spec"]]
+            .map(([v, k]) => `<option value="${v}">${tx(k)}</option>`).join("")}</select>
+        <input id="prompt" placeholder="${escapeHtml(tx("writing.promptPlaceholder"))}" style="width:320px" />
       </div>
       <div id="ans"></div>
       <div id="fb" class="md mt"></div>
     </div>`;
   placeSampleCard(root, sampleMaterialsCard("writing_sample",
-    "📝 添削サンプルを見る", "サンプルがまだありません。"));
+    tx("writing.viewSamples"), tx("material.noSamplesYet")));
   const ansBox = root.querySelector("#ans");
   ansBox.appendChild(answerInput(async (txt) => {
-    if (!txt.trim()) { toast("文章が空です"); return; }
+    if (!txt.trim()) { toast(tx("writing.emptyText")); return; }
     const fb = root.querySelector("#fb");
-    if (!state.aiEnabled) { fb.textContent = "AI未設定です。"; return; }
-    fb.textContent = "添削中…";
+    if (!state.aiEnabled) { fb.textContent = tx("writing.aiNotSet"); return; }
+    fb.textContent = tx("writing.correcting");
     try {
       const r = await api.post("/api/learn/writing-feedback", {
         category: root.querySelector("#cat").value,
@@ -3347,12 +3347,11 @@ export async function writing(root) {
         text: txt,
       });
       fb.innerHTML = r.ok ? md(r.feedback) : escapeHtml(r.error);
-      if (r.ok) { const s = el(`<button class="btn ghost mt">🔊 読み上げ</button>`);
+      if (r.ok) { const s = el(`<button class="btn ghost mt">${tx("common.readAloudBtn")}</button>`);
         s.addEventListener("click", () => speech.speak(r.feedback)); fb.appendChild(s); }
       refreshCost();
-    } catch (e) { fb.textContent = "添削にはログインが必要です。" +
-      "（" + e.message + "）"; }
-  }, { lang: "en-US", placeholder: "英語で入力" }));
+    } catch (e) { fb.textContent = tx("writing.needLoginWith", { msg: e.message }); }
+  }, { lang: "en-US", placeholder: tx("input.englishPlaceholder") }));
 }
 
 // --- Conversation (streaming) ----------------------------------------------
