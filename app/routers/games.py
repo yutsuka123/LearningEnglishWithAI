@@ -1494,6 +1494,33 @@ def _restart_sample_session(conn, uid: int, old: dict) -> dict:
     return _start_sample_session(conn, uid, dict(sample))
 
 
+def _localize_sample(d: dict) -> dict:
+    """サンプル1行のtitle/description/tagsを現在の表示言語(`X-Lang`)に合わせる
+    (2026-09-26)。`i18n_json`(多言語訳のJSON・NULL可)にその言語の訳が
+    あればそれを、無ければ(未投入・未対応言語・日本語)従来どおり日本語の
+    title/descriptionを返す。`tags`は分野(domains)の表示名のリスト
+    (訳があれば訳・無ければdomainsをカンマで分けたもの)。`domains`は
+    従来どおり日本語の生の値のまま残す(応答の形は変えず、キーを足すだけ)。
+    `i18n_json`自体はレスポンスに載せない。"""
+    raw = d.pop("i18n_json", None)
+    tags = [t for t in (d.get("domains") or "").split(",") if t]
+    lang = messages.current_lang()
+    if raw and lang != "ja":
+        try:
+            tr = (json.loads(raw) or {}).get(lang) or {}
+        except (ValueError, TypeError):
+            tr = {}
+        if tr.get("title"):
+            d["title"] = tr["title"]
+        if tr.get("description"):
+            d["description"] = tr["description"]
+        t_tags = tr.get("tags")
+        if isinstance(t_tags, list) and len(t_tags) == len(tags):
+            tags = [str(t) for t in t_tags]
+    d["tags"] = tags
+    return d
+
+
 @router.get("/crossword/samples")
 def crossword_sample_list():
     """サンプル一覧+現在のユーザーのプレイ上限・消費状況(2026-09-05)。
@@ -1511,12 +1538,12 @@ def crossword_sample_list():
         played = _sample_play_count(conn, uid, is_guest, gsid)
         rows = conn.execute(
             "SELECT id, title, description, domains, level_min, level_max, "
-            "word_count, guest_playable FROM crossword_samples "
+            "word_count, guest_playable, i18n_json FROM crossword_samples "
             "WHERE is_active = 1 ORDER BY sort_order, id",
         ).fetchall()
         samples = []
         for r in rows:
-            d = dict(r)
+            d = _localize_sample(dict(r))
             d["already_played"] = _sample_already_played(
                 conn, uid, is_guest, gsid, r["id"])
             # ゲストには「登録者限定」であることを一覧の時点で伝える

@@ -10003,6 +10003,8 @@ async function cwRenderSamples(root) {
     : tx("games.statusFree", { remain: Math.max(limit - played, 0), limit });
   const levelText = (s) => (s.level_min || s.level_max)
     ? `TOEIC ${s.level_min || tx("games.noLowerBound")}〜${s.level_max || tx("games.noUpperBound")}` : "";
+  // s.title/s.description/s.tags は現在の表示言語の訳(サーバーが X-Lang で
+  // 選ぶ・訳が無ければ日本語のまま・2026-09-26)。
   const card = (s) => `<div class="card cw-sample-card" data-sample="${s.id}"
       style="cursor:${s.guest_locked ? "default" : "pointer"}">
     <h3>${escapeHtml(s.title)}${
@@ -10013,8 +10015,9 @@ async function cwRenderSamples(root) {
     <p class="muted">${escapeHtml(s.description || "")}</p>
     <p class="muted">${tx("games.wordCountN", { n: s.word_count })}${
       levelText(s) ? ` ・ ${escapeHtml(levelText(s))}` : ""}</p>
-    <p>${(s.domains || "").split(",").filter(Boolean).map((d) =>
-      `<span class="pill">${escapeHtml(d)}</span>`).join(" ")}</p>
+    <p>${(s.tags || (s.domains || "").split(","))
+      .filter(Boolean).map((d) =>
+        `<span class="pill">${escapeHtml(d)}</span>`).join(" ")}</p>
     <button type="button" class="btn ${s.guest_locked ? "ghost" : "primary"} mt"
       ${s.guest_locked ? "disabled" : ""}>${
       s.guest_locked ? "🔒 " + tx("games.registeredOnly")

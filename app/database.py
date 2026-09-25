@@ -1174,6 +1174,15 @@ def _migrate(conn: sqlite3.Connection) -> None:
     # ゲストもプレイ可(解放)にする。
     _add_col(conn, "crossword_samples", "guest_playable",
              "guest_playable INTEGER NOT NULL DEFAULT 0")
+    # サンプルのタイトル/説明/タグの多言語訳(2026-09-26・オーナー要望「題名
+    # くらいは多言語化したい」)。加算的なNULL許容列で、既存のtitle/description/
+    # domains(日本語)には一切触れない。中身は
+    # {"en": {"title": "...", "description": "...", "tags": ["...", ...]},
+    #  "zh-CN": {...}, "zh-TW": {...}}のJSON。tagsはdomains(カンマ区切り)と
+    # 同じ順序・同じ個数。NULL/その言語の訳が無い場合は日本語のまま表示する
+    # (games.py _localize_sample参照)。投入はscripts/set_crossword_sample_
+    # translations.py(タイトル一致で対象行だけを更新)。
+    _add_col(conn, "crossword_samples", "i18n_json", "i18n_json TEXT")
     # 大分類まるごと/全分野でのクロスワード作成に対応(2026-09-06・
     # 上のCREATE TABLE crossword_sessionsのコメント参照)。
     _add_col(conn, "crossword_sessions", "category",
