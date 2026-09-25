@@ -107,6 +107,15 @@ function micErrorMessage(e) {
   return (e && e.message) || tx("mic.unavailable");
 }
 
+// 現在の表示言語に対応する音声合成(ブラウザ標準音声)の言語コード(2026-09-26)。
+// 案内文を読み上げる箇所で、日本語固定("ja-JP")だと英語/中国語UIの利用者に
+// 日本語が流れてしまうため。
+function uiSpeechLang() {
+  const l = window.I18N ? window.I18N.currentLang() : "ja";
+  return { ja: "ja-JP", en: "en-US", "zh-CN": "zh-CN", "zh-TW": "zh-TW" }[l]
+    || "ja-JP";
+}
+
 // 分野/レベル等の複数チェック可チェックボックス一覧(.chkbox)に添える
 // 「すべてチェック」「選択済み全クリア」ボタン(2026-08-18・ユーザー要望・
 // 単語帳/フレーズ帳の一括追加UIで項目数が多く手動チェックが大変だった
@@ -3366,63 +3375,61 @@ export async function conversation(root) {
   root.innerHTML = `
     <h1>${tx("nav.conversation")} ${infoIcon("help-conversation", tx("conversation.helpText"))}</h1>
     ${sampleGateBanner()}
-    <p class="sub">AIの声:
+    <p class="sub">${tx("conversation.voiceLabel")}
       <select id="voiceSel">${vlist.map((v) =>
         `<option value="${v}" ${v === speech.currentVoice() ? "selected" : ""}
           >${v}（${speech.voiceGender(v)}）</option>`).join("")}</select>
       <button class="btn ghost" id="changeVoice"
-        style="padding:2px 8px">🔁 ランダム</button></p>
+        style="padding:2px 8px">${tx("conversation.randomBtn")}</button></p>
     ${aiBadgeNote()}
     ${state.tripPrepPersona ? `<div class="card" id="personaBanner">
       <div class="row">
-        <b>🧳 出張ロールプレイ中</b>
+        <b>${tx("conversation.personaTitle")}</b>
         <span class="muted">${escapeHtml(state.tripPrepPersona)}</span>
         <button class="btn ghost" id="endPersona"
-          style="padding:2px 8px">終了して通常の会話に戻る</button>
+          style="padding:2px 8px">${tx("conversation.personaEnd")}</button>
       </div>
     </div>` : ""}
     <div class="card" id="hfCard">
       <div class="row">
-        <b>🎙️ ハンズフリー会話</b>
+        <b>${tx("conversation.hfTitle")}</b>
         ${infoIcon("conv-handsfree", tx("conversation.handsfreeHelp"))}
         <button class="btn good" id="hfStart"
           ${aiGateDisabled() ? "disabled" : ""}>${
-          aiGateDisabled() ? aiGateLabel("開始") : "▶ 開始"}</button>
-        <button class="btn bad" id="hfStop" style="display:none">⏹ 終了</button>
-        <button class="btn" id="hfEnd" style="display:none">発話終了</button>
+          aiGateDisabled() ? aiGateLabel(tx("common.startLabel"))
+            : "▶ " + tx("common.startLabel")}</button>
+        <button class="btn bad" id="hfStop" style="display:none">${tx("conversation.hfStopBtn")}</button>
+        <button class="btn" id="hfEnd" style="display:none">${tx("conversation.hfEndUtterance")}</button>
         <label class="toggle"><input type="checkbox" id="autoLog" />
-          ✓ 自動で記録</label>
+          ${tx("conversation.autoLogLabel")}</label>
         <button class="btn ghost" id="hfSave"
-          style="padding:2px 8px">📝 今すぐ記録</button>
+          style="padding:2px 8px">${tx("conversation.saveNowBtn")}</button>
         <span id="hfStatus" class="muted"></span>
       </div>
       <div class="row mt">
-        <label>無音しきい値(秒):
+        <label>${tx("conversation.silenceThreshold")}
           <input id="hfSil" type="number" value="2" step="0.5" min="0.5"
             style="width:64px" /></label>
         <label class="toggle"><input type="checkbox" id="hfManual" />
-          発話終了ボタンで応答(手動)</label>
-        <span class="muted">・声の切れ目を音量で判定します。</span>
+          ${tx("conversation.hfManualLabel")}</label>
+        <span class="muted">${tx("conversation.hfSilenceNote")}</span>
       </div>
       <div class="row mt">
-        <label>無音で自動終了(分):
+        <label>${tx("conversation.noSpeechAutoEnd")}
           <input id="hfNoSpeechMin" type="number" value="2" step="0.5" min="0.5"
             style="width:64px" /></label>
-        <label>最大会話時間(分):
+        <label>${tx("conversation.maxMinutes")}
           <input id="hfMaxMin" type="number" value="15" step="1" min="1"
             style="width:64px" /></label>
-        <span class="muted">・話しかけないまま一定時間経つと自動終了します。
-          発話中でも最大時間で自動終了し、つけっぱなしによる課金を防ぎます。</span>
+        <span class="muted">${tx("conversation.hfAutoEndNote")}</span>
       </div>
-      <p class="muted mt">⚠️ 使い終わったら「⏹ 終了」を押すことをおすすめします
-        （自動終了はあくまで保険です。つけっぱなしは利用料がかかり続ける
-        原因になります）。</p>
+      <p class="muted mt">${tx("conversation.hfWarn")}</p>
     </div>
     <div class="card">
       <div class="row">
         <select id="mode">
-          <option value="scene">🎬 シーン会話</option>
-          <option value="free">💬 自由会話(なんでも相談)</option>
+          <option value="scene">${tx("conversation.modeScene")}</option>
+          <option value="free">${tx("conversation.modeFree")}</option>
         </select>
         <span id="sceneSel" class="row">
           <select id="grp">${grps.map((g) =>
@@ -3430,39 +3437,37 @@ export async function conversation(root) {
           <select id="topic"></select>
         </span>
         <label class="toggle"><input type="checkbox" id="autoTts" checked />
-          AI返答を読み上げ</label>
+          ${tx("conversation.autoTts")}</label>
         <label class="toggle"><input type="checkbox" id="speakSpeaker" />
-          話者名を読み上げる（AI）</label>
+          ${tx("conversation.speakSpeaker")}</label>
         <label class="toggle"><input type="checkbox" id="fastMode" />
           ⚡ ${tx("conversation.fastModeLabel")}</label>
         ${infoIcon("conv-fast-mode", tx("conversation.fastModeHelp"))}
         <button class="btn secondary" id="start"
           ${aiGateDisabled() ? "disabled" : ""}>${
-          aiGateLabel("AIから始める")}</button>
+          aiGateLabel(tx("conversation.startFromAi"))}</button>
       </div>
       <div class="row mt">
-        <label>🎤 認識言語:
+        <label>${tx("conversation.sttLangLabel")}
           <select id="sttLang">
-            <option value="en,ja">英語もしくは日本語</option>
-            <option value="en">英語</option>
-            <option value="ja">日本語</option>
-            <option value="zh,en">中国語もしくは英語</option>
-            <option value="zh">中国語</option>
-            <option value="ko,en">韓国語もしくは英語</option>
-            <option value="ko">韓国語</option>
-            <option value="">自動判定(すべて)</option>
+            <option value="en,ja">${tx("conversation.sttEnJa")}</option>
+            <option value="en">${tx("conversation.sttEn")}</option>
+            <option value="ja">${tx("conversation.sttJa")}</option>
+            <option value="zh,en">${tx("conversation.sttZhEn")}</option>
+            <option value="zh">${tx("conversation.sttZh")}</option>
+            <option value="ko,en">${tx("conversation.sttKoEn")}</option>
+            <option value="ko">${tx("conversation.sttKo")}</option>
+            <option value="">${tx("conversation.sttAuto")}</option>
           </select></label>
-        <span class="muted">音声入力(AI認識)の言語。誤認識(例: 韓国語に
-          化ける)時はここを絞ると改善します。</span>
+        <span class="muted">${tx("conversation.sttNote")}</span>
       </div>
       <p id="freeHelp" class="muted" style="display:none">
-        日本語でもOK。単語・フレーズ・リスニング・ライティング、何でも相談できます。
-        「録音」で話し、「わからない」で答えを教えてもらえます。</p>
+        ${tx("conversation.freeHelp")}</p>
       <div class="chat" id="chat"></div>
       <div id="inputArea" class="mt"></div>
     </div>`;
   placeSampleCard(root, sampleMaterialsCard("conversation_sample",
-    "💬 会話サンプルを見る", "サンプルがまだありません。"));
+    tx("conversation.viewSamples"), tx("material.noSamplesYet")));
 
   const modeSel = root.querySelector("#mode");
   const sceneSel = root.querySelector("#sceneSel");
@@ -3496,14 +3501,15 @@ export async function conversation(root) {
   const voiceSel = root.querySelector("#voiceSel");
   voiceSel.addEventListener("change", () => {
     speech.setVoice(voiceSel.value);
-    toast("声: " + voiceSel.value + "（" + speech.voiceGender(voiceSel.value)
-      + "）");
+    toast(tx("conversation.voiceToast", {
+      voice: voiceSel.value, gender: speech.voiceGender(voiceSel.value),
+    }));
   });
   // 🔁 ランダム: 別の声を選び、プルダウンと記憶も更新。
   root.querySelector("#changeVoice").addEventListener("click", () => {
     const v = speech.pickRoundVoice();
     if (v) { speech.setVoice(v); voiceSel.value = v; }
-    toast("声: " + (v || "なし"));
+    toast(tx("conversation.voiceToastSimple", { v: v || tx("common.none") }));
   });
 
   // 🎤 認識言語: localStorage に記憶。既定は「英語もしくは日本語」。
@@ -3547,33 +3553,34 @@ export async function conversation(root) {
   function addMsg(role, text) {
     // ラベルは吹き出しの外。本文・ツール類は bubble の中。
     const m = el(`<div class="msg ${role}">
-      <div class="who">${role === "user" ? "あなた" : "AI"}</div>
+      <div class="who">${role === "user" ? tx("conversation.you") : "AI"}</div>
       <div class="bubble"><div class="body"></div></div></div>`);
     const bubble = m.querySelector(".bubble");
     const body = m.querySelector(".body");
     body.textContent = text;
     if (role === "ai") {
       const tools = el(`<div class="row" style="margin-top:6px"></div>`);
-      const jp = el(`<button class="btn secondary">🌐 日本語訳を表示</button>`);
-      const say = el(`<button class="btn ghost">🔊 読み上げ</button>`);
-      const sayEx = el(`<button class="btn ghost">🔊 添削例を読む</button>`);
+      const jp = el(`<button class="btn secondary">${tx("conversation.showJa")}</button>`);
+      const say = el(`<button class="btn ghost">${tx("common.readAloudBtn")}</button>`);
+      const sayEx = el(`<button class="btn ghost">${tx("conversation.readExampleBtn")}</button>`);
       const tr = el(`<div class="md" style="margin-top:6px;
         border-left:3px solid var(--accent);padding-left:8px"></div>`);
       jp.addEventListener("click", async () => {
         // 英文を訳す。英語が取れなければ本文全体を訳す。
         const en = enText(body.textContent) || body.textContent;
         if (!en.trim()) return;
-        tr.textContent = "翻訳中…";
+        tr.textContent = tx("conversation.translating");
         const r = await api.post("/api/learn/translate", { text: en });
         tr.innerHTML = r.ok
-          ? "🌐 " + md(r.text) : escapeHtml(r.error || "翻訳失敗");
+          ? "🌐 " + md(r.text)
+          : escapeHtml(r.error || tx("conversation.translateFailed"));
         refreshCost();
       });
       say.addEventListener("click", () => speech.speak(
         withSpeaker(enText(body.textContent) || body.textContent)));
       sayEx.addEventListener("click", () => {
         const ex = coachExample(body.textContent);
-        if (ex) speech.speak(ex); else toast("添削例がありません");
+        if (ex) speech.speak(ex); else toast(tx("conversation.noExample"));
       });
       tools.append(jp, say, sayEx);
       bubble.append(tools, tr);
@@ -3650,7 +3657,7 @@ export async function conversation(root) {
           const bubble = target.parentElement;
           if (bubble) {
             bubble.insertBefore(el(`<div class="muted coach-note"
-              style="font-size:12px">アドバイスを取得できませんでした</div>`),
+              style="font-size:12px">${tx("conversation.coachFailed")}</div>`),
             bubble.querySelector(".row"));
           }
         });
@@ -3700,7 +3707,7 @@ export async function conversation(root) {
         // 実害のあるバグだった(Fableレビューで発見)。エラー時は履歴に
         // 積まず、保存も読み上げもしない。
         showTurnError(target,
-          e.message || "エラーが発生しました。もう一度お試しください。");
+          e.message || tx("conversation.errorRetry"));
         // 積んだユーザー発言が(返答の無いまま)次回送信時のAIへの文脈に
         // 残り続けないよう戻す(kickoffは元々ユーザー発言を積んでいない)。
         if (!kickoff) history.pop();
@@ -3710,13 +3717,13 @@ export async function conversation(root) {
       if (!full.trim()) {
         // 生成が0文字で終わった場合(途中で切れた等)も、無言のAI発言を
         // 履歴に積まないようエラー扱いにする。
-        showTurnError(target, "応答が空でした。もう一度お試しください。");
+        showTurnError(target, tx("conversation.emptyResponse"));
         if (!kickoff) history.pop();
         refreshCost();
         return;
       }
     } else {
-      full = "（AI未設定）設定でAPIキーを登録すると会話できます。";
+      full = tx("conversation.aiNotSetReply");
       target.textContent = full;
     }
     history.push({
@@ -3739,32 +3746,36 @@ export async function conversation(root) {
   function renderInput() {
     const free = modeSel.value === "free";
     inputArea.innerHTML = "";
-    const ta = el(`<textarea placeholder="${free
-      ? "英語でも日本語でもOK" : "英語で話しかける"}"></textarea>`);
+    const ta = el(`<textarea placeholder="${escapeHtml(free
+      ? tx("conversation.placeholderFree")
+      : tx("conversation.placeholderScene"))}"></textarea>`);
     const bar = el(`<div class="row mt"></div>`);
     const aiStt = speech.aiSttSupported() && state.aiEnabled;
-    const langSel = el(`<select title="音声入力の言語">
-      ${aiStt ? '<option value="auto">🎤 自動(AI・高精度)</option>' : ""}
-      <option value="en-US">🎤 英語</option>
-      <option value="ja-JP">🎤 日本語</option></select>`);
-    const mic = el(`<button class="btn good">🎤 録音</button>`);
+    const langSel = el(`<select title="${escapeHtml(tx("conversation.sttInputTitle"))}">
+      ${aiStt ? `<option value="auto">${tx("conversation.langAuto")}</option>` : ""}
+      <option value="en-US">${tx("conversation.langEn")}</option>
+      <option value="ja-JP">${tx("conversation.langJa")}</option></select>`);
+    const mic = el(`<button class="btn good">${tx("conversation.recBtn")}</button>`);
+    const dontKnow = tx("conversation.dontKnowLabel");
+    const exampleReply = tx("conversation.exampleReplyLabel");
     const dk = el(state.isGuest
-      ? `<button class="btn ghost" disabled>🔒 わからない</button>`
-      : `<button class="btn ghost">🤔 わからない</button>`);
+      ? `<button class="btn ghost" disabled>🔒 ${dontKnow}</button>`
+      : `<button class="btn ghost">🤔 ${dontKnow}</button>`);
     const ex = el(state.isGuest
-      ? `<button class="btn ghost" disabled>🔒 返答例</button>`
-      : `<button class="btn ghost">💡 返答例</button>`);
+      ? `<button class="btn ghost" disabled>🔒 ${exampleReply}</button>`
+      : `<button class="btn ghost">💡 ${exampleReply}</button>`);
     const sendBtn = el(state.isGuest
-      ? `<button class="btn" disabled>🔒 送信(要ログイン)</button>`
-      : `<button class="btn">✓ 送信</button>`);
+      ? `<button class="btn" disabled>${tx("gate.labelNeedLogin", { label: tx("input.send") })}</button>`
+      : `<button class="btn">✓ ${tx("input.send")}</button>`);
     const auto = el(`<label class="toggle"><input type="checkbox" id="cAuto"
-      ${speech.isVoiceAutoSubmit() ? "checked" : ""}/> 録音後に自動送信</label>`);
+      ${speech.isVoiceAutoSubmit() ? "checked" : ""}/> ${tx("conversation.autoSendLabel")}</label>`);
 
     sendBtn.addEventListener("click", () => {
       const t = ta.value; ta.value = ""; send(t);
     });
     dk.addEventListener("click", () => {
-      send(free ? "わかりません。やさしく教えてください。"
+      // シーン会話は英語練習なので英語の定型文・自由会話は現在の表示言語の文。
+      send(free ? tx("conversation.dontKnowFree")
         : "I don't know. Could you tell me the answer?");
     });
     auto.querySelector("input").addEventListener("change", (e) =>
@@ -3779,13 +3790,15 @@ export async function conversation(root) {
             ? await speech.createAIRecorder(sttLang())
             : speech.createRecorder(langSel.value);
           recorder.start(); recording = true;
-          mic.textContent = "⏹ 停止"; mic.classList.replace("good", "bad");
+          mic.textContent = "⏹ " + tx("common.stop");
+          mic.classList.replace("good", "bad");
         } catch (e) { alert(micErrorMessage(e)); }
       } else {
-        recording = false; mic.disabled = true; mic.textContent = "認識中…";
+        recording = false; mic.disabled = true;
+        mic.textContent = tx("input.recognizing");
         const said = await recorder.stop();
         ta.value = said;
-        mic.disabled = false; mic.textContent = "🎤 録音";
+        mic.disabled = false; mic.textContent = tx("conversation.recBtn");
         mic.classList.replace("bad", "good");
         if (said.trim() && speech.isVoiceAutoSubmit()) {
           ta.value = ""; send(said);
@@ -3795,13 +3808,13 @@ export async function conversation(root) {
 
     // 返答例: 直近のAI発話に対して、どう答えればよいか例を表示。
     ex.addEventListener("click", async () => {
-      if (!state.aiEnabled) { toast("AI未設定です"); return; }
-      toast("返答例を生成中…");
+      if (!state.aiEnabled) { toast(tx("common.aiNotSetToast")); return; }
+      toast(tx("conversation.genReplyExamples"));
       const s = scene();
       const r = await api.post("/api/learn/reply-examples", {
         grp: s.grp, topic: s.topic, history, message: "",
       });
-      if (r.ok) addHelper("💡 返答例", r.text);
+      if (r.ok) addHelper("💡 " + exampleReply, r.text);
       refreshCost();
     });
 
@@ -3830,8 +3843,7 @@ export async function conversation(root) {
       // sendと同じ理由(2026-09-18修正)。従来はここでのエラーがそのまま
       // 「AIの発言」として画面表示・履歴保存され、さらに音声で読み上げ
       // までされていた(ハンズフリー機能のため実害が一番大きい経路)。
-      showTurnError(target,
-        e.message || "エラーが発生しました。もう一度お試しください。");
+      showTurnError(target, e.message || tx("conversation.errorRetry"));
       history.pop();
       refreshCost();
       // ハンズフリー中は画面を見ていない前提の機能のため、テキスト表示
@@ -3839,16 +3851,16 @@ export async function conversation(root) {
       // だけを読み上げる(エラーの生文言は読み上げない＝内部情報の
       // 音声経由の漏洩も防ぐ)。forceBrowser: エラー直後にまた有料AI音声
       // (/api/learn/tts)へ二重に頼らない(Fable2回目レビュー指摘)。
-      await speech.speakAndWait("エラーが発生しました。もう一度お試しください。",
-        { forceBrowser: true, lang: "ja-JP" });
+      await speech.speakAndWait(tx("conversation.errorRetry"),
+        { forceBrowser: true, lang: uiSpeechLang() });
       return;
     }
     if (!full.trim()) {
-      showTurnError(target, "応答が空でした。もう一度お試しください。");
+      showTurnError(target, tx("conversation.emptyResponse"));
       history.pop();
       refreshCost();
-      await speech.speakAndWait("応答が空でした。もう一度お試しください。",
-        { forceBrowser: true, lang: "ja-JP" });
+      await speech.speakAndWait(tx("conversation.emptyResponse"),
+        { forceBrowser: true, lang: uiSpeechLang() });
       return;
     }
     history.push({ role: "assistant", content: turn.historyText });
@@ -3958,7 +3970,7 @@ export async function conversation(root) {
   autoLogCb.checked = localStorage.getItem("convAutoLog") === "1";
   autoLogCb.addEventListener("change", () => {
     localStorage.setItem("convAutoLog", autoLogCb.checked ? "1" : "0");
-    if (autoLogCb.checked) { toast("自動で記録します"); doSave(false); }
+    if (autoLogCb.checked) { toast(tx("conversation.autoLogToast")); doSave(false); }
   });
 
   let hf = null;
@@ -3973,9 +3985,9 @@ export async function conversation(root) {
     hfEnd.style.display = "none";
   };
   hfStart.addEventListener("click", async () => {
-    if (!state.aiEnabled) { toast("AI未設定です"); return; }
+    if (!state.aiEnabled) { toast(tx("common.aiNotSetToast")); return; }
     if (!speech.vadSupported()) {
-      toast("このブラウザはハンズフリーに未対応です"); return;
+      toast(tx("voice.handsfreeUnsupported")); return;
     }
     const sil = Math.max(0.5,
       parseFloat(root.querySelector("#hfSil").value) || 2) * 1000;
@@ -3988,46 +4000,47 @@ export async function conversation(root) {
       hf = await speech.createVADSession({
         baseSilenceMs: sil, noSpeechEndMs: noSpeechMin * 60000,
         maxSessionMs: maxMin * 60000, manual,
-        onSpeechStart: () => setHfStatus("🎤 聞き取り中…"),
+        onSpeechStart: () => setHfStatus(tx("conversation.hfListening")),
         onUtterance: async (blob) => {
           if (!hf) return;
-          hf.pause(); setHfStatus("認識中…");
+          hf.pause(); setHfStatus(tx("input.recognizing"));
           const text = await speech.transcribeBlob(blob, sttLang());
           if (!text.trim()) {
-            if (hf) { hf.resume(); setHfStatus("🎤 どうぞ話してください"); }
+            if (hf) { hf.resume(); setHfStatus(tx("conversation.hfSpeakNow")); }
             return;
           }
-          setHfStatus("AI応答中…");
+          setHfStatus(tx("conversation.hfAiResponding"));
           await handsfreeTurn(text);
           if (hf && hf.isRunning()) {
-            hf.resume(); setHfStatus("🎤 どうぞ話してください");
+            hf.resume(); setHfStatus(tx("conversation.hfSpeakNow"));
           }
         },
         onNoSpeechEnd: () => {
-          setHfStatus(`${noSpeechMin}分無音のため自動終了しました`); stopHF();
+          setHfStatus(tx("conversation.hfAutoEndSilence", { min: noSpeechMin }));
+          stopHF();
         },
         onMaxDuration: () => {
-          setHfStatus(`最大会話時間(${maxMin}分)に達したため自動終了しました`);
+          setHfStatus(tx("conversation.hfAutoEndMax", { min: maxMin }));
           stopHF();
         },
       });
       await hf.start();
       hfStart.style.display = "none"; hfStop.style.display = "";
       hfEnd.style.display = manual ? "" : "none";
-      setHfStatus("🎤 どうぞ話してください");
+      setHfStatus(tx("conversation.hfSpeakNow"));
     } catch (e) { alert(micErrorMessage(e)); }
   });
   hfStop.addEventListener("click", () => {
-    stopHF(); setHfStatus("終了しました");
+    stopHF(); setHfStatus(tx("conversation.hfEnded"));
   });
   hfEnd.addEventListener("click", () => { if (hf) hf.forceEnd(); });
   // 📝 今すぐ記録: その場で確定保存(直近そのまま＋古い部分は要約)。
   root.querySelector("#hfSave").addEventListener("click", async () => {
-    if (!history.length) { toast("まだ会話がありません"); return; }
-    setHfStatus("要点をまとめています…");
+    if (!history.length) { toast(tx("conversation.noConvYet")); return; }
+    setHfStatus(tx("conversation.hfSummarizing"));
     await doSave(true);
-    setHfStatus("会話を記録しました（学習履歴に保存）");
-    toast("会話を記録しました");
+    setHfStatus(tx("conversation.hfSaved"));
+    toast(tx("conversation.savedToast"));
   });
 }
 
@@ -4038,7 +4051,7 @@ export async function listening(root) {
   root.innerHTML = `
     <h1>${tx("nav.listening")} ${infoIcon("help-listening", tx("listening.helpText"))}</h1>
     ${sampleGateBanner()}
-    <p class="sub">スクリプトを生成して読み上げ、理解度を記録します。</p>
+    <p class="sub">${tx("listening.sub")}</p>
     ${aiBadgeNote()}
     <div class="card">
       <div class="row">
@@ -4047,61 +4060,64 @@ export async function listening(root) {
           // なっていたため、記録済み(1以上)のときだけ表示する
           // (2026-09-05ユーザー指摘「理解度0はいらないのでは・
           // なんだかわからない」)。
-          `<option value="${t.id}">${t.source} / ${t.accent}${
-            t.comprehension ? ` (理解度${t.comprehension})` : ""}</option>`
+          // data-label: AIへ送る題材名は理解度の付記を含まない素の名前にする
+          // (表示訳に依存しないため)。
+          `<option value="${t.id}" data-label="${escapeHtml(`${t.source} / ${t.accent}`)}">${t.source} / ${t.accent}${
+            t.comprehension ? tx("listening.compSuffix", { n: t.comprehension }) : ""}</option>`
         ).join("")}</select>
-        <select id="genre" title="題材ジャンル">
-          <option value="">（題材: トピックのまま）</option>
-          <option value="lit_uk">文学（英文学）</option>
-          <option value="lit_us">文学（米国文学）</option>
-          <option value="lit_rand">文学（ランダム）</option>
-          <option value="news">ニュース風</option>
-          <option value="business">ビジネス</option>
+        <select id="genre" title="${escapeHtml(tx("listening.genreTitle"))}">
+          <option value="">${tx("listening.genreAsTopic")}</option>
+          <option value="lit_uk">${tx("listening.genreLitUk")}</option>
+          <option value="lit_us">${tx("listening.genreLitUs")}</option>
+          <option value="lit_rand">${tx("listening.genreLitRand")}</option>
+          <option value="news">${tx("listening.genreNews")}</option>
+          <option value="business">${tx("listening.genreBusiness")}</option>
         </select>
-        <input id="theme" placeholder="テーマ(任意)" style="width:120px" />
+        <input id="theme" placeholder="${escapeHtml(tx("listening.themePlaceholder"))}" style="width:120px" />
         ${diffSelect("ldiff")}
         ${lengthSelect("llen")}
-        <label class="toggle">速度
+        <label class="toggle">${tx("listening.speedLabel")}
           <input type="range" id="rate" min="0.6" max="1.2" step="0.05" value="0.95" />
         </label>
-        <label class="toggle" title="内容理解問題を表示(常に生成・保存)">
-          <input type="checkbox" id="showQ" checked /> 内容理解問題</label>
+        <label class="toggle" title="${escapeHtml(tx("material.comprehensionTitle"))}">
+          <input type="checkbox" id="showQ" checked /> ${tx("material.comprehensionLabel")}</label>
         ${infoIcon("comprehension-questions", COMPREHENSION_Q_HINT())}
         <button class="btn" id="gen"
           ${(state.aiEnabled && !aiGateDisabled()) ? "" : "disabled"}>${
-          aiGateLabel("スクリプト生成")}
+          aiGateLabel(tx("listening.genScript"))}
           </button>
         <button class="btn ghost" id="histBtn"
           ${state.isGuest ? "disabled" : ""}>${
-          state.isGuest ? "🔒 履歴(要ログイン)" : "📚 履歴"}</button>
+          state.isGuest ? "🔒 " + tx("material.historyLoginRequired")
+            : "📚 " + tx("material.history")}</button>
       </div>
       <div class="row mt" style="border-top:1px solid var(--panel-2);
         padding-top:8px">
-        <b>🎧 聞き流し</b>
+        <b>${tx("listening.passiveTitle")}</b>
         ${infoIcon("listening-passive", tx("listening.passiveHelp"))}
-        <button class="btn secondary" id="plStart">▶ 開始(約2分)</button>
-        <button class="btn bad" id="plStop" style="display:none">⏹ 停止</button>
+        <button class="btn secondary" id="plStart">${tx("listening.passiveStart")}</button>
+        <button class="btn bad" id="plStop" style="display:none">⏹ ${tx("common.stop")}</button>
         <label class="toggle"><input type="checkbox" id="plEn" checked />
-          英文表示</label>
+          ${tx("listening.showEn")}</label>
         <label class="toggle"><input type="checkbox" id="plJa" checked />
-          日本語訳</label>
+          ${tx("listening.showJa")}</label>
         <label class="toggle"><input type="checkbox" id="plLoop" />
-          繰り返し</label>
+          ${tx("listening.loop")}</label>
         <span id="plStatus" class="muted"></span>
       </div>
       <div id="plBox" class="mt" style="display:none"></div>
       <div id="histPanel" class="mt" style="display:none"></div>
       <div id="out" class="md mt"></div>
       <div class="row mt">
-        <label class="toggle">理解度
+        <label class="toggle">${tx("listening.comprehensionLabel")}
           <input type="range" id="comp" min="0" max="100" value="50" /></label>
         ${infoIcon("listening-comprehension", tx("listening.comprehensionHelp"))}
-        <input id="weak" placeholder="苦手だった点" style="width:240px" />
-        <button class="btn good" id="save">記録</button>
+        <input id="weak" placeholder="${escapeHtml(tx("listening.weakPlaceholder"))}" style="width:240px" />
+        <button class="btn good" id="save">${tx("listening.recordBtn")}</button>
       </div>
     </div>`;
   placeSampleCard(root, sampleMaterialsCard("listening",
-    "🎧 サンプルを見る", "サンプルがまだありません。"));
+    tx("listening.viewSamples"), tx("material.noSamplesYet")));
   let scriptText = "";
   // 内容理解問題トグル＋読み上げは英語のみ(englishOnly)で統一。
   const lDisp = (b) =>
@@ -4115,7 +4131,7 @@ export async function listening(root) {
       scriptText = body;
       const out = root.querySelector("#out");
       out.innerHTML = md(lDisp(body));
-      const play = el(`<button class="btn mt">🔊 再生</button>`);
+      const play = el(`<button class="btn mt">${tx("listening.playBtn")}</button>`);
       play.addEventListener("click", () => lSpeak(body));
       out.appendChild(play);
     };
@@ -4128,8 +4144,8 @@ export async function listening(root) {
   }
   root.querySelector("#gen").addEventListener("click", async () => {
     const sel = root.querySelector("#topic");
-    const label = sel.options[sel.selectedIndex].textContent;
-    const out = root.querySelector("#out"); out.textContent = "生成中…";
+    const label = sel.options[sel.selectedIndex].dataset.label;
+    const out = root.querySelector("#out"); out.textContent = tx("common.generating");
     const theme = root.querySelector("#theme").value.trim();
     const genre = root.querySelector("#genre").value;
     // 文学などのジャンルは適切な area/field・指示に振り分け。
@@ -4167,11 +4183,11 @@ export async function listening(root) {
       const r = await api.post("/api/learn/generate", body);
       if (!r.ok) { out.textContent = r.error; return; }
       scriptText = r.body; out.innerHTML = md(lDisp(r.body));
-      const play = el(`<button class="btn mt">🔊 再生</button>`);
+      const play = el(`<button class="btn mt">${tx("listening.playBtn")}</button>`);
       play.addEventListener("click", () => lSpeak(scriptText));
       out.appendChild(play);
       refreshCost();
-    } catch (e) { out.textContent = "生成にはログインが必要です。" +
+    } catch (e) { out.textContent = tx("material.generateNeedsLogin") +
       "（" + e.message + "）"; }
   });
   root.querySelector("#save").addEventListener("click", async () => {
@@ -4180,7 +4196,7 @@ export async function listening(root) {
       comprehension: parseInt(root.querySelector("#comp").value),
       weak_areas: root.querySelector("#weak").value,
     });
-    toast("記録しました"); go("listening");
+    toast(tx("listening.recorded")); go("listening");
   });
 
   // --- 🎧 聞き流しモード (§D3) ------------------------------------------------
@@ -4202,10 +4218,10 @@ export async function listening(root) {
 
   async function ensureScript() {
     if (scriptText && splitSentences(scriptText).length) return scriptText;
-    if (!state.aiEnabled) { toast("AI未設定です"); return ""; }
-    plStatus.textContent = "約2分ぶんを生成中…";
+    if (!state.aiEnabled) { toast(tx("common.aiNotSetToast")); return ""; }
+    plStatus.textContent = tx("listening.generatingTwoMin");
     const sel = root.querySelector("#topic");
-    const label = sel.options[sel.selectedIndex].textContent;
+    const label = sel.options[sel.selectedIndex].dataset.label;
     const theme = root.querySelector("#theme").value.trim();
     const r = await api.post("/api/learn/generate", {
       area: "listening",
@@ -4216,7 +4232,7 @@ export async function listening(root) {
       difficulty: root.querySelector("#ldiff").value,
     });
     refreshCost();
-    if (!r.ok) { toast(r.error || "生成失敗"); return ""; }
+    if (!r.ok) { toast(r.error || tx("common.genFailed")); return ""; }
     scriptText = r.body;
     return scriptText;
   }
@@ -4240,7 +4256,7 @@ export async function listening(root) {
     const text = await ensureScript();
     if (!text) { stopPL(); return; }
     const sents = splitSentences(text);
-    if (!sents.length) { toast("読み上げる英文がありません"); stopPL(); return; }
+    if (!sents.length) { toast(tx("listening.noEnglish")); stopPL(); return; }
     const showEn = () => root.querySelector("#plEn").checked;
     const showJa = () => root.querySelector("#plJa").checked;
     const rate = () => parseFloat(root.querySelector("#rate").value) || 0.95;
@@ -4272,19 +4288,20 @@ export async function listening(root) {
         segEls.forEach((s) => s.classList.remove("active"));
         seg.classList.add("active");
         seg.scrollIntoView({ block: "nearest", behavior: "smooth" });
-        plStatus.textContent = `再生中 ${i + 1}/${sents.length}`;
+        plStatus.textContent = tx("listening.playingStatus",
+          { i: i + 1, n: sents.length });
         // 日本語訳トグルがONなら、その文の訳を直後に出す(英→日)。
         if (showJa()) {
           const jaEl = seg.querySelector(".pl-ja");
-          if (!jaEl.textContent) jaEl.textContent = "訳: " +
-            (await jaFor(sents[i]) || "—");
+          if (!jaEl.textContent) jaEl.textContent = tx("listening.transLine",
+            { text: (await jaFor(sents[i])) || "—" });
         }
         if (!plRunning) return;
         await speech.speakAndWait(sents[i],
           { rate: rate(), feature: "listening_tts" });
       }
     } while (plRunning && root.querySelector("#plLoop").checked);
-    if (plRunning) { plStatus.textContent = "完了"; stopPL(); }
+    if (plRunning) { plStatus.textContent = tx("listening.doneStatus"); stopPL(); }
   }
 
   plStart.addEventListener("click", async () => {
@@ -4294,7 +4311,7 @@ export async function listening(root) {
     await runPassive();
   });
   plStop.addEventListener("click", () => {
-    stopPL(); plStatus.textContent = "停止しました";
+    stopPL(); plStatus.textContent = tx("listening.stoppedStatus");
   });
   // 画面を離れたら聞き流しを止める(go() も stopSpeaking するが、ループ継続を防ぐ)。
   onLeaveView(() => { plRunning = false; });
@@ -4307,11 +4324,11 @@ export async function listening(root) {
 function renderTripPrepData(panel, data) {
   panel.innerHTML = "";
   if (!data || typeof data !== "object") {
-    panel.appendChild(el(`<p class="muted">表示できる内容がありません。</p>`));
+    panel.appendChild(el(`<p class="muted">${tx("tripprep.empty")}</p>`));
     return;
   }
   if (Array.isArray(data.checklist) && data.checklist.length) {
-    const card = el(`<div class="card"><h3>✅ チェックリスト</h3></div>`);
+    const card = el(`<div class="card"><h3>${tx("tripprep.checklist")}</h3></div>`);
     const ul = el(`<ul></ul>`);
     data.checklist.forEach((item) => {
       ul.appendChild(el(`<li><label><input type="checkbox" /> `
@@ -4321,7 +4338,7 @@ function renderTripPrepData(panel, data) {
     panel.appendChild(card);
   }
   if (Array.isArray(data.vocabulary) && data.vocabulary.length) {
-    const card = el(`<div class="card"><h3>🔤 必要語彙</h3></div>`);
+    const card = el(`<div class="card"><h3>${tx("tripprep.vocab")}</h3></div>`);
     const list = el(`<div></div>`);
     data.vocabulary.forEach((v) => {
       list.appendChild(el(`<div class="row mt"><b>`
@@ -4334,7 +4351,7 @@ function renderTripPrepData(panel, data) {
     panel.appendChild(card);
   }
   if (Array.isArray(data.cheat_sheet) && data.cheat_sheet.length) {
-    const card = el(`<div class="card"><h3>📝 当日用カンペ</h3></div>`);
+    const card = el(`<div class="card"><h3>${tx("tripprep.cheat")}</h3></div>`);
     const ul = el(`<ul></ul>`);
     data.cheat_sheet.forEach((item) =>
       ul.appendChild(el(`<li>${escapeHtml(String(item))}</li>`)));
@@ -4343,7 +4360,7 @@ function renderTripPrepData(panel, data) {
     panel.appendChild(card);
   }
   if (Array.isArray(data.questions) && data.questions.length) {
-    const card = el(`<div class="card"><h3>❓ 質問一覧</h3></div>`);
+    const card = el(`<div class="card"><h3>${tx("tripprep.questions")}</h3></div>`);
     const ul = el(`<ul></ul>`);
     data.questions.forEach((item) =>
       ul.appendChild(el(`<li>${escapeHtml(String(item))}</li>`)));
@@ -4352,9 +4369,9 @@ function renderTripPrepData(panel, data) {
   }
   if (Array.isArray(data.sample_conversation)
       && data.sample_conversation.length) {
-    const card = el(`<div class="card"><h3>💬 想定会話</h3>
+    const card = el(`<div class="card"><h3>${tx("tripprep.sample")}</h3>
       <label class="toggle"><input type="checkbox" id="scSpeaker" />
-        話者名を読み上げる</label></div>`);
+        ${tx("tripprep.speakerToggle")}</label></div>`);
     const chat = el(`<div class="chat"></div>`);
     data.sample_conversation.forEach((turn) => {
       const you = String(turn.speaker || "").toLowerCase().startsWith("you");
@@ -4379,8 +4396,8 @@ function renderTripPrepData(panel, data) {
   }
   if (data.follow_up_email
       && (data.follow_up_email.subject || data.follow_up_email.body)) {
-    const card = el(`<div class="card"><h3>✉️ フォローメール</h3></div>`);
-    const subj = el(`<p><b>件名:</b> `
+    const card = el(`<div class="card"><h3>${tx("tripprep.followUp")}</h3></div>`);
+    const subj = el(`<p><b>${tx("tripprep.subject")}</b> `
       + `${escapeHtml(data.follow_up_email.subject || "")}</p>`);
     const body = el(`<textarea style="min-height:140px"></textarea>`);
     body.value = data.follow_up_email.body || "";
@@ -4391,49 +4408,48 @@ function renderTripPrepData(panel, data) {
 
 export async function tripPrep(root) {
   root.innerHTML = `
-    <h1>🧳 出張・旅行準備</h1>
-    <p class="sub">渡航先や状況を入力すると、AIがチェックリスト・語彙・
-      想定会話などを一括で作成します。</p>
+    <h1>${tx("tripprep.title")}</h1>
+    <p class="sub">${tx("tripprep.sub")}</p>
     ${aiBadgeNote()}
     <div class="card">
-      <div class="row"><label class="toggle" style="width:110px">渡航先
+      <div class="row"><label class="toggle" style="width:110px">${tx("tripprep.dest")}
         <span style="color:#c00">*</span></label>
-        <input id="tp_dest" placeholder="例: ドイツ・シュツットガルト"
+        <input id="tp_dest" placeholder="${escapeHtml(tx("tripprep.destPh"))}"
           style="width:260px" /></div>
-      <div class="row mt"><label class="toggle" style="width:110px">日程</label>
-        <input id="tp_dates" placeholder="例: 2026-09-01〜09-05"
+      <div class="row mt"><label class="toggle" style="width:110px">${tx("tripprep.dates")}</label>
+        <input id="tp_dates" placeholder="${escapeHtml(tx("tripprep.datesPh"))}"
           style="width:260px" /></div>
-      <div class="row mt"><label class="toggle" style="width:110px">訪問目的</label>
-        <input id="tp_purpose" placeholder="例: 装置の立上げ・現地デバッグ"
+      <div class="row mt"><label class="toggle" style="width:110px">${tx("tripprep.purpose")}</label>
+        <input id="tp_purpose" placeholder="${escapeHtml(tx("tripprep.purposePh"))}"
           style="width:340px" /></div>
-      <div class="row mt"><label class="toggle" style="width:110px">訪問先URL</label>
-        <input id="tp_url" placeholder="任意・参考として渡すのみ(取得はしません)"
+      <div class="row mt"><label class="toggle" style="width:110px">${tx("tripprep.url")}</label>
+        <input id="tp_url" placeholder="${escapeHtml(tx("tripprep.urlPh"))}"
           style="width:340px" /></div>
-      <div class="row mt"><label class="toggle" style="width:110px">自分の役割</label>
-        <input id="tp_role" placeholder="例: 品質保証エンジニア"
+      <div class="row mt"><label class="toggle" style="width:110px">${tx("tripprep.role")}</label>
+        <input id="tp_role" placeholder="${escapeHtml(tx("tripprep.rolePh"))}"
           style="width:260px" /></div>
-      <div class="row mt"><label class="toggle" style="width:110px">会う相手</label>
-        <input id="tp_counterpart" placeholder="例: 現地工場の品質責任者"
+      <div class="row mt"><label class="toggle" style="width:110px">${tx("tripprep.counterpart")}</label>
+        <input id="tp_counterpart" placeholder="${escapeHtml(tx("tripprep.counterpartPh"))}"
           style="width:260px" /></div>
-      <div class="row mt"><label class="toggle" style="width:110px">心配なこと</label>
+      <div class="row mt"><label class="toggle" style="width:110px">${tx("tripprep.concerns")}</label>
         <input id="tp_concerns"
-          placeholder="例: 原因を断定した根拠を聞き返せるか不安"
+          placeholder="${escapeHtml(tx("tripprep.concernsPh"))}"
           style="width:340px" /></div>
-      <div class="row mt"><label class="toggle" style="width:110px">英語レベル</label>
-        <input id="tp_level" placeholder="例: TOEIC 600程度"
+      <div class="row mt"><label class="toggle" style="width:110px">${tx("tripprep.level")}</label>
+        <input id="tp_level" placeholder="${escapeHtml(tx("tripprep.levelPh"))}"
           style="width:200px" /></div>
       <div class="row mt"><label class="toggle" style="width:110px">
-        自社資料等</label></div>
+        ${tx("tripprep.materials")}</label></div>
       <textarea id="tp_materials"
-        placeholder="製品概要や資料の抜粋(任意・そのままプロンプトに渡ります)"
+        placeholder="${escapeHtml(tx("tripprep.materialsPh"))}"
         style="min-height:80px"></textarea>
       <div class="row mt">
-        <button class="btn good" id="tp_gen">生成する</button>
+        <button class="btn good" id="tp_gen">${tx("tripprep.gen")}</button>
         <span id="tp_status" class="muted"></span>
       </div>
     </div>
     <div id="tp_result"></div>
-    <h2 class="mt">履歴</h2>
+    <h2 class="mt">${tx("material.history")}</h2>
     <div id="tp_hist"></div>`;
 
   // 前回入力の復元（user_settings.trip_prep_last）。
@@ -4465,13 +4481,13 @@ export async function tripPrep(root) {
     try { data = JSON.parse(body); } catch (_) { data = null; }
     if (!data) {
       resultPanel.innerHTML =
-        `<p class="muted">この履歴は表示できませんでした。</p>`;
+        `<p class="muted">${tx("tripprep.histNotShown")}</p>`;
       return;
     }
     renderTripPrepData(resultPanel, data);
     const rp = el(`<div class="row mt"></div>`);
     const startBtn = el(
-      `<button class="btn secondary">🎭 この内容でロールプレイを始める`
+      `<button class="btn secondary">${tx("tripprep.startRoleplay")}`
       + `</button>`);
     startBtn.addEventListener("click", () => {
       const role = (lastForm && lastForm.role) || "出張者";
@@ -4489,9 +4505,9 @@ export async function tripPrep(root) {
   const histPanel = root.querySelector("#tp_hist");
 
   root.querySelector("#tp_gen").addEventListener("click", async () => {
-    if (!state.aiEnabled) { toast("AI未設定です"); return; }
+    if (!state.aiEnabled) { toast(tx("common.aiNotSetToast")); return; }
     const dest = root.querySelector("#tp_dest").value.trim();
-    if (!dest) { toast("渡航先を入力してください"); return; }
+    if (!dest) { toast(tx("tripprep.needDest")); return; }
     const form = {
       destination: dest,
       dates: root.querySelector("#tp_dates").value.trim(),
@@ -4504,16 +4520,16 @@ export async function tripPrep(root) {
       english_level: root.querySelector("#tp_level").value.trim(),
     };
     const status = root.querySelector("#tp_status");
-    status.textContent = "生成中…(数十秒かかることがあります)";
+    status.textContent = tx("tripprep.generating");
     try {
       const r = await api.post("/api/learn/trip-prep", form);
-      if (!r.ok) { status.textContent = "失敗: " + r.error; return; }
+      if (!r.ok) { status.textContent = tx("common.failedPrefix") + r.error; return; }
       status.textContent = "";
       lastForm = form;
       showInto(JSON.stringify(r.data));
       renderHistory(histPanel, "trip_prep", showInto);
       refreshCost();
-    } catch (e) { status.textContent = "失敗: " + e.message; }
+    } catch (e) { status.textContent = tx("common.failedPrefix") + e.message; }
   });
 
   renderHistory(histPanel, "trip_prep", showInto);
@@ -4530,39 +4546,38 @@ export async function assess(root) {
       <h2>🎯 ${tx("assess.levelTitle")} ${infoIcon("assess-level", tx("assess.levelHelp"))}</h2>
       <div class="grid cols-3">
         <div class="stat"><div class="num">${
-          p.toeic_estimate == null ? "未判定" : p.toeic_estimate}</div>
-          <div class="lbl">TOEIC換算(目安)</div></div>
+          p.toeic_estimate == null ? tx("assess.notJudged") : p.toeic_estimate}</div>
+          <div class="lbl">${tx("assess.toeicEstimate")}</div></div>
         <div class="stat"><div class="num">${w.studied}</div>
-          <div class="lbl">学習済み単語</div></div>
+          <div class="lbl">${tx("assess.studiedWords")}</div></div>
         <div class="stat"><div class="num">${w.mastered}</div>
-          <div class="lbl">習得(80+)</div></div>
+          <div class="lbl">${tx("assess.mastered")}</div></div>
       </div>
       ${aiBadgeNote()}
       <div class="row mt">
         <button class="btn" id="run" ${state.aiEnabled ? "" : "disabled"}>
-          AIで判定実施</button>
+          ${tx("assess.runBtn")}</button>
         <button class="btn secondary" id="saveMem" style="display:none">
-          判定をmemoryに保存</button>
+          ${tx("assess.saveMemBtn")}</button>
       </div>
       <div id="out" class="md mt"></div>
     </div>
 
     <div class="card">
       <h2>📚 ${tx("assess.generateTitle")} ${infoIcon("assess-generate", tx("assess.generateHelp"))}</h2>
-      <p class="muted">AIが今のレベル・苦手に合わせて単語/フレーズを生成し、
-        そのままDBに追加します（重複は自動でスキップ）。</p>
+      <p class="muted">${tx("assess.generateNote")}</p>
       <div class="row">
         <select id="kind">
-          <option value="word">英単語</option>
-          <option value="phrase">フレーズ</option>
+          <option value="word">${tx("assess.kindWord")}</option>
+          <option value="phrase">${tx("common.phraseNoun")}</option>
         </select>
         <select id="count">
           <option>10</option><option>20</option><option>30</option>
         </select>
-        <input id="focus" placeholder="テーマ・苦手分野(任意 例: IT会議, 旅行)"
+        <input id="focus" placeholder="${escapeHtml(tx("assess.focusPlaceholder"))}"
           style="width:300px" />
         <button class="btn good" id="gen" ${state.aiEnabled ? "" : "disabled"}>
-          生成して追加</button>
+          ${tx("assess.genBtn")}</button>
       </div>
       <div id="genOut" class="md mt"></div>
     </div>`;
@@ -4570,12 +4585,13 @@ export async function assess(root) {
   let lastAssessment = "";
   root.querySelector("#run").addEventListener("click", async () => {
     const out = root.querySelector("#out");
-    out.textContent = "判定中…（品質モデルを使用）";
+    out.textContent = tx("assess.judging");
     const r = await api.get("/api/learn/assess");
-    if (!r.ok) { out.textContent = r.error || "判定できませんでした"; refreshCost(); return; }
+    if (!r.ok) { out.textContent = r.error || tx("assess.judgeFailed"); refreshCost(); return; }
     lastAssessment = r.assessment;
     out.innerHTML = md(r.assessment) +
-      `<p class="muted">使用モデル: ${r.model || "-"} / 学習済み ${r.studied_words}語</p>`;
+      `<p class="muted">${tx("assess.modelLine",
+        { model: r.model || "-", n: r.studied_words })}</p>`;
     root.querySelector("#saveMem").style.display = "";
     refreshCost();
   });
@@ -4584,23 +4600,24 @@ export async function assess(root) {
     const cur = (await api.get("/api/system/memory")).content;
     const stamp = "\n\n## AI判定メモ\n" + lastAssessment + "\n";
     await api.put("/api/system/memory", { content: cur + stamp });
-    toast("memory.md に保存しました");
+    toast(tx("assess.savedToMemory"));
   });
 
   root.querySelector("#gen").addEventListener("click", async () => {
     const out = root.querySelector("#genOut");
-    out.textContent = "生成中…（品質モデルを使用）";
+    out.textContent = tx("assess.genGenerating");
     const r = await api.post("/api/learn/generate-items", {
       kind: root.querySelector("#kind").value,
       count: parseInt(root.querySelector("#count").value),
       focus: root.querySelector("#focus").value,
     });
-    if (!r.ok) { out.textContent = r.error || "生成失敗"; refreshCost(); return; }
+    if (!r.ok) { out.textContent = r.error || tx("common.genFailed"); refreshCost(); return; }
     const list = r.added.map((x) =>
       `- ${escapeHtml(x.english)} — ${escapeHtml(x.japanese)}`).join("\n");
     out.innerHTML = md(
-      `**${r.added.length}件 追加**（重複スキップ ${r.skipped}件 / モデル ${r.model}）\n\n`
-      + (list || "（追加なし）"));
+      tx("assess.addedSummary",
+        { n: r.added.length, skipped: r.skipped, model: r.model }) + "\n\n"
+      + (list || tx("assess.noneAdded")));
     refreshCost();
   });
 }
@@ -4617,46 +4634,48 @@ export async function history(root) {
     <h1>${tx("nav.history")} ${infoIcon("help-history", tx("history.helpText"))}</h1>
     <p class="sub">${tx("history.subtitle")}</p>
     <div class="card">
-      <h2>セッション終了 → 記録</h2>
+      <h2>${tx("history.endSessionTitle")}</h2>
       <div class="grid cols-2">
-        <textarea id="content" placeholder="今日学んだ内容"></textarea>
-        <textarea id="weak" placeholder="苦手だった点"></textarea>
+        <textarea id="content" placeholder="${escapeHtml(tx("history.todayPlaceholder"))}"></textarea>
+        <textarea id="weak" placeholder="${escapeHtml(tx("history.weakPlaceholder"))}"></textarea>
       </div>
       <div class="row mt">
-        <input id="acc" type="number" min="0" max="100" placeholder="正答率%" style="width:120px" />
-        <input id="next" placeholder="次回の課題" style="width:240px" />
-        <input id="neww" placeholder="新出単語(カンマ区切り)" style="width:240px" />
+        <input id="acc" type="number" min="0" max="100" placeholder="${escapeHtml(tx("history.accPlaceholder"))}" style="width:120px" />
+        <input id="next" placeholder="${escapeHtml(tx("history.nextPlaceholder"))}" style="width:240px" />
+        <input id="neww" placeholder="${escapeHtml(tx("history.newWordsPlaceholder"))}" style="width:240px" />
       </div>
       <div class="row mt">
         <button class="btn" id="summary" ${state.aiEnabled ? "" : "disabled"}>
-          AIに要約してもらう</button>
-        <button class="btn good" id="save">記録を保存</button>
+          ${tx("history.summaryBtn")}</button>
+        <button class="btn good" id="save">${tx("history.saveBtn")}</button>
       </div>
       <div id="sumOut" class="md mt"></div>
     </div>
     <div class="card">
-      <h2>学習プロフィール（AIが参考にします）</h2>
-      <p class="muted">記入すると会話・教材作成でAIが考慮します。空欄でOK。</p>
-      <label class="toggle">学習方針</label>
+      <h2>${tx("history.profileTitle")}</h2>
+      <p class="muted">${tx("history.profileNote")}</p>
+      <label class="toggle">${tx("history.policyLabel")}</label>
       <textarea id="mem_policy"
-        placeholder="例: 英会話とリスニングを重点的に"></textarea>
-      <label class="toggle mt">目標</label>
+        placeholder="${escapeHtml(tx("history.policyPh"))}"></textarea>
+      <label class="toggle mt">${tx("history.goalLabel")}</label>
       <textarea id="mem_goal"
-        placeholder="例: 半年でTOEIC700点"></textarea>
-      <label class="toggle mt">苦手分野</label>
+        placeholder="${escapeHtml(tx("history.goalPh"))}"></textarea>
+      <label class="toggle mt">${tx("history.weakLabel")}</label>
       <textarea id="mem_weak"
-        placeholder="例: 長文読解、前置詞の使い分け"></textarea>
-      <label class="toggle mt">学習の傾向・自由メモ</label>
+        placeholder="${escapeHtml(tx("history.weakAreaPh"))}"></textarea>
+      <label class="toggle mt">${tx("history.noteLabel")}</label>
       <textarea id="mem_note"
-        placeholder="その他、AIに伝えたいこと"></textarea>
-      <button class="btn good mt" id="saveMem">プロフィールを保存</button>
+        placeholder="${escapeHtml(tx("history.notePh"))}"></textarea>
+      <button class="btn good mt" id="saveMem">${tx("history.saveProfileBtn")}</button>
     </div>
     <div class="card">
-      <h2>学習ログ（自動記録）</h2>
+      <h2>${tx("history.logTitle")}</h2>
       <div class="md" style="max-height:320px;overflow:auto">${md(log.content)}</div>
     </div>`;
 
-  // memory.md(セクション形式) ⇄ 入力欄 の相互変換。
+  // memory.md(セクション形式) ⇄ 入力欄 の相互変換。見出し(## 学習方針 等)は
+  // 保存ファイルの書式であり、AIも参照するため表示言語に関わらず日本語のまま
+  // (翻訳するのは画面上のラベル・プレースホルダーだけ)。
   const MEM_MAP = [["学習方針", "mem_policy"], ["目標", "mem_goal"],
     ["苦手分野", "mem_weak"], ["学習傾向", "mem_note"]];
   const parseMem = (text) => {
@@ -4698,24 +4717,24 @@ export async function history(root) {
     // (実機ログで、この直後にユーザーが離脱していた形跡があった)。
     // ボタンを連打できないようにし、失敗時も必ずメッセージを出す。
     btn.disabled = true;
-    out.textContent = "要約中…";
+    out.textContent = tx("history.summarizing");
     try {
       const r = await api.post("/api/learn/session/summary", payload());
       out.innerHTML = r.ok ? md(r.summary) : escapeHtml(r.error);
       refreshCost();
     } catch (e) {
-      out.textContent = e.message || "要約に失敗しました。時間をおいて再度お試しください。";
+      out.textContent = e.message || tx("history.summaryFailed");
     } finally {
       btn.disabled = false;
     }
   });
   root.querySelector("#save").addEventListener("click", async () => {
     await api.post("/api/learn/session/save", payload());
-    toast("学習履歴に保存しました"); go("history");
+    toast(tx("history.savedToast")); go("history");
   });
   root.querySelector("#saveMem").addEventListener("click", async () => {
     await api.put("/api/system/memory", { content: buildMem() });
-    toast("プロフィールを保存しました");
+    toast(tx("settings.profileSaved"));
   });
 }
 
