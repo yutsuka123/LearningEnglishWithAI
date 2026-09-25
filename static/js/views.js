@@ -1284,7 +1284,9 @@ function askFreeRangeChoice(kindKey) {
 
 // 詳細(JSON)を整形して描画。類義語/対義語/派生語のうちDB登録済みの語は、
 // 描画後に linkifyJumps() でクリック可能化し、その語の詳細へジャンプできる。
-function renderWordDetail(box, d, primaryEn) {
+// headVoice: 見出し語の男声/女声ボタン(要素)を返す関数。あれば「発音」行に添える
+// (IPAを見ながら英語話者の読みを聞ける・2026-09-26・docs/DESIGN.md §9.8 段階(a))。
+function renderWordDetail(box, d, primaryEn, headVoice) {
   box.innerHTML = "";
   const sec = (label, html) => {
     if (!html) return;
@@ -1302,6 +1304,17 @@ function renderWordDetail(box, d, primaryEn) {
     : `${jw(x.word || "")}${x.note
       ? "（" + escapeHtml(x.note) + "）" : ""}`).join(" / ") : "";
   sec("発音:", d.pronunciation ? escapeHtml(d.pronunciation) : "");
+  if (headVoice) {
+    // IPAがある語は同じ行に、無い語は音声だけの行として出す(どちらも見出し語の音声)。
+    const line = d.pronunciation
+      ? box.lastElementChild
+      : box.appendChild(el(`<p style="margin:6px 0"><b>発音:</b> </p>`));
+    const vc = headVoice();
+    vc.style.display = "inline-flex";
+    vc.style.verticalAlign = "middle";
+    vc.style.marginLeft = "8px";
+    line.appendChild(vc);
+  }
   sec("品詞:", d.pos ? escapeHtml(d.pos) : "");
   sec("意味:", arr(d.meanings));
   // 例文(英文＋日本語訳)。各例文に男声/女声の再生ボタンを付ける
@@ -1506,7 +1519,8 @@ function showWordDetail(w) {
       try {
         const r = await api.post(`/api/words/${w.id}/detail`);
         if (r.ok) {
-          renderWordDetail(detailBox, r.detail, w.example);
+          renderWordDetail(detailBox, r.detail, w.example, () => voiceButtonsItem(
+            "word", w.id, "word", () => w.english, getMode, w.is_free_range));
           if (w.example && r.detail && r.detail.example_ja) {
             exJa.textContent = "訳: " + r.detail.example_ja;
           }
