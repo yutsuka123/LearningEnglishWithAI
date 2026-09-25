@@ -275,6 +275,12 @@ async def _auth_context(request, call_next):
                         request.headers.get("referer", ""),
                         request.url.query)
                     with db() as conn:
+                        # UAが普通でも、同一IPの短時間の大量訪問は人間の閲覧ではない
+                        # (2026-09-26・visitor_kind.is_heavy_ip)。
+                        mark = visitor_kind.classify_ua(ua)[0]
+                        if (mark == visitor_kind.MARK_NONE and not is_internal
+                                and visitor_kind.is_heavy_ip(conn, client_ip)):
+                            mark = visitor_kind.MARK_HEAVY_IP
                         conn.execute(
                             "INSERT INTO landing_visits "
                             "(ip, path, user_agent, guest_sid, "
@@ -291,7 +297,7 @@ async def _auth_context(request, call_next):
                              src["utm_medium"], src["utm_campaign"],
                              src["utm_content"], src["has_gclid"],
                              path[:200],
-                             visitor_kind.classify_ua(ua)[0],
+                             mark,
                              1 if is_internal else 0),
                         )
                     # 国・場所・接続元組織名の非同期エンリッチ（未キャッ
