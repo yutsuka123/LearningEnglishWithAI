@@ -1315,6 +1315,17 @@ function renderWordDetail(box, d, primaryEn, headVoice) {
     vc.style.marginLeft = "8px";
     line.appendChild(vc);
   }
+  // 語源の言語と原語表記(日本語由来語・2026-09-26・設計§9.8 段階b-4の無料部分)。原語のIPA・音声は
+  // 「詳細plus」(有料級)の範囲なのでここには出さない。
+  if (d.origin_lang) {
+    const n = d.native || {};
+    const langName = window.I18N ? tx("langName." + d.origin_lang) : "";
+    const shown = (langName && langName !== "langName." + d.origin_lang)
+      ? langName : (d.origin_lang_name || d.origin_lang);
+    const orig = n.text
+      ? "　" + escapeHtml(n.text) + (n.romaji ? "（" + escapeHtml(n.romaji) + "）" : "") : "";
+    sec(tx("detail.originLangLabel"), escapeHtml(shown) + orig);
+  }
   sec("品詞:", d.pos ? escapeHtml(d.pos) : "");
   sec("意味:", arr(d.meanings));
   // 例文(英文＋日本語訳)。各例文に男声/女声の再生ボタンを付ける
