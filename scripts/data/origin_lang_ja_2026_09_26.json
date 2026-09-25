@@ -1,0 +1,2053 @@
+[
+{
+"id": 1594,
+"english": "samurai",
+"kind": "ja_loan",
+"native_text": "侍",
+"confidence": 1
+},
+{
+"id": 1595,
+"english": "shogun",
+"kind": "ja_loan",
+"native_text": "将軍",
+"confidence": 1
+},
+{
+"id": 1596,
+"english": "shogunate",
+"kind": "ja_loan",
+"native_text": "",
+"confidence": 0.95
+},
+{
+"id": 1597,
+"english": "daimyo",
+"kind": "ja_loan",
+"native_text": "大名",
+"confidence": 1
+},
+{
+"id": 1598,
+"english": "ninja",
+"kind": "ja_loan",
+"native_text": "忍者",
+"confidence": 1
+},
+{
+"id": 1599,
+"english": "katana",
+"kind": "ja_loan",
+"native_text": "刀",
+"confidence": 1
+},
+{
+"id": 1608,
+"english": "geisha",
+"kind": "ja_loan",
+"native_text": "芸者",
+"confidence": 1
+},
+{
+"id": 1609,
+"english": "sumo",
+"kind": "ja_loan",
+"native_text": "相撲",
+"confidence": 1
+},
+{
+"id": 3159,
+"english": "sushi",
+"kind": "ja_loan",
+"native_text": "寿司",
+"confidence": 1
+},
+{
+"id": 3160,
+"english": "sashimi",
+"kind": "ja_loan",
+"native_text": "刺身",
+"confidence": 1
+},
+{
+"id": 3161,
+"english": "tempura",
+"kind": "ja_loan",
+"native_text": "天ぷら",
+"confidence": 1
+},
+{
+"id": 3162,
+"english": "ramen",
+"kind": "ja_loan",
+"native_text": "ラーメン",
+"confidence": 1
+},
+{
+"id": 3163,
+"english": "udon",
+"kind": "ja_loan",
+"native_text": "うどん",
+"confidence": 1
+},
+{
+"id": 3164,
+"english": "soba",
+"kind": "ja_loan",
+"native_text": "そば",
+"confidence": 1
+},
+{
+"id": 3166,
+"english": "teriyaki",
+"kind": "ja_loan",
+"native_text": "照り焼き",
+"confidence": 1.0
+},
+{
+"id": 3167,
+"english": "yakitori",
+"kind": "ja_loan",
+"native_text": "焼き鳥",
+"confidence": 1.0
+},
+{
+"id": 3168,
+"english": "okonomiyaki",
+"kind": "ja_loan",
+"native_text": "お好み焼き",
+"confidence": 1.0
+},
+{
+"id": 3169,
+"english": "takoyaki",
+"kind": "ja_loan",
+"native_text": "たこ焼き",
+"confidence": 1.0
+},
+{
+"id": 3170,
+"english": "donburi",
+"kind": "ja_loan",
+"native_text": "丼",
+"confidence": 1.0
+},
+{
+"id": 4228,
+"english": "bokeh",
+"kind": "ja_loan",
+"native_text": "ボケ",
+"confidence": 1.0
+},
+{
+"id": 4501,
+"english": "bonsai",
+"kind": "ja_loan",
+"native_text": "盆栽",
+"confidence": 1.0
+},
+{
+"id": 4583,
+"english": "soybean",
+"kind": "ja_loan",
+"native_text": "",
+"confidence": 0.95
+},
+{
+"id": 4809,
+"english": "washoku",
+"kind": "ja_loan",
+"native_text": "和食",
+"confidence": 1.0
+},
+{
+"id": 4810,
+"english": "kaiseki",
+"kind": "ja_loan",
+"native_text": "懐石",
+"confidence": 1.0
+},
+{
+"id": 4811,
+"english": "izakaya",
+"kind": "ja_loan",
+"native_text": "居酒屋",
+"confidence": 1.0
+},
+{
+"id": 4812,
+"english": "onigiri",
+"kind": "ja_loan",
+"native_text": "おにぎり",
+"confidence": 1.0
+},
+{
+"id": 4813,
+"english": "natto",
+"kind": "ja_loan",
+"native_text": "納豆",
+"confidence": 1.0
+},
+{
+"id": 4814,
+"english": "tsukemono",
+"kind": "ja_loan",
+"native_text": "漬物",
+"confidence": 1.0
+},
+{
+"id": 4815,
+"english": "dashi",
+"kind": "ja_loan",
+"native_text": "だし",
+"confidence": 1.0
+},
+{
+"id": 4816,
+"english": "umami",
+"kind": "ja_loan",
+"native_text": "うま味",
+"confidence": 1.0
+},
+{
+"id": 4817,
+"english": "wagyu",
+"kind": "ja_loan",
+"native_text": "和牛",
+"confidence": 1.0
+},
+{
+"id": 4818,
+"english": "unagi",
+"kind": "ja_loan",
+"native_text": "うなぎ",
+"confidence": 1.0
+},
+{
+"id": 4819,
+"english": "katsu",
+"kind": "ja_loan",
+"native_text": "カツ",
+"confidence": 0.95
+},
+{
+"id": 4820,
+"english": "tonkatsu",
+"kind": "ja_loan",
+"native_text": "とんかつ",
+"confidence": 1.0
+},
+{
+"id": 4821,
+"english": "gyudon",
+"kind": "ja_romanized",
+"native_text": "牛丼",
+"confidence": 1.0
+},
+{
+"id": 4822,
+"english": "oden",
+"kind": "ja_loan",
+"native_text": "おでん",
+"confidence": 1.0
+},
+{
+"id": 4823,
+"english": "chawanmushi",
+"kind": "ja_romanized",
+"native_text": "茶碗蒸し",
+"confidence": 1.0
+},
+{
+"id": 4824,
+"english": "mochi",
+"kind": "ja_loan",
+"native_text": "餅",
+"confidence": 1.0
+},
+{
+"id": 4825,
+"english": "dorayaki",
+"kind": "ja_romanized",
+"native_text": "どら焼き",
+"confidence": 1.0
+},
+{
+"id": 4826,
+"english": "matcha",
+"kind": "ja_loan",
+"native_text": "抹茶",
+"confidence": 1.0
+},
+{
+"id": 4827,
+"english": "sake",
+"kind": "ja_loan",
+"native_text": "酒",
+"confidence": 1.0
+},
+{
+"id": 4828,
+"english": "shabu-shabu",
+"kind": "ja_loan",
+"native_text": "しゃぶしゃぶ",
+"confidence": 1.0
+},
+{
+"id": 4830,
+"english": "bento",
+"kind": "ja_loan",
+"native_text": "弁当",
+"confidence": 1.0
+},
+{
+"id": 4831,
+"english": "nigiri",
+"kind": "ja_romanized",
+"native_text": "握り",
+"confidence": 1.0
+},
+{
+"id": 4834,
+"english": "wasabi",
+"kind": "ja_loan",
+"native_text": "わさび",
+"confidence": 1.0
+},
+{
+"id": 4837,
+"english": "tare",
+"kind": "ja_loan",
+"native_text": "タレ",
+"confidence": 1.0
+},
+{
+"id": 5390,
+"english": "rotenburo",
+"kind": "ja_romanized",
+"native_text": "露天風呂",
+"confidence": 0.98
+},
+{
+"id": 5400,
+"english": "ryokan",
+"kind": "ja_loan",
+"native_text": "旅館",
+"confidence": 0.98
+},
+{
+"id": 5401,
+"english": "yukata",
+"kind": "ja_loan",
+"native_text": "浴衣",
+"confidence": 0.98
+},
+{
+"id": 6570,
+"english": "poka-yoke",
+"kind": "ja_romanized",
+"native_text": "ポカヨケ",
+"confidence": 0.98
+},
+{
+"id": 6571,
+"english": "kaizen",
+"kind": "ja_loan",
+"native_text": "改善",
+"confidence": 0.98
+},
+{
+"id": 6682,
+"english": "kanban board",
+"kind": "ja_loan",
+"native_text": "看板",
+"confidence": 0.98
+},
+{
+"id": 7079,
+"english": "omakase",
+"kind": "ja_romanized",
+"native_text": "おまかせ",
+"confidence": 0.98
+},
+{
+"id": 7087,
+"english": "itamae",
+"kind": "ja_romanized",
+"native_text": "板前",
+"confidence": 1
+},
+{
+"id": 7089,
+"english": "kaiten-zushi",
+"kind": "ja_romanized",
+"native_text": "回転寿司",
+"confidence": 1
+},
+{
+"id": 7099,
+"english": "otoro",
+"kind": "ja_romanized",
+"native_text": "大トロ",
+"confidence": 1
+},
+{
+"id": 7101,
+"english": "akami",
+"kind": "ja_romanized",
+"native_text": "赤身",
+"confidence": 1
+},
+{
+"id": 7176,
+"english": "koden",
+"kind": "ja_romanized",
+"native_text": "香典",
+"confidence": 1
+},
+{
+"id": 8028,
+"english": "samurai class",
+"kind": "ja_loan",
+"native_text": "侍",
+"confidence": 1
+},
+{
+"id": 8207,
+"english": "tonkotsu ramen",
+"kind": "ja_romanized",
+"native_text": "豚骨ラーメン",
+"confidence": 1
+},
+{
+"id": 8208,
+"english": "shio ramen",
+"kind": "ja_romanized",
+"native_text": "塩ラーメン",
+"confidence": 1
+},
+{
+"id": 8209,
+"english": "shoyu ramen",
+"kind": "ja_romanized",
+"native_text": "醤油ラーメン",
+"confidence": 1
+},
+{
+"id": 8210,
+"english": "miso ramen",
+"kind": "ja_romanized",
+"native_text": "味噌ラーメン",
+"confidence": 1
+},
+{
+"id": 8211,
+"english": "tsukemen",
+"kind": "ja_romanized",
+"native_text": "つけ麺",
+"confidence": 1
+},
+{
+"id": 8218,
+"english": "nori",
+"kind": "ja_loan",
+"native_text": "海苔",
+"confidence": 1
+},
+{
+"id": 8219,
+"english": "ajitama",
+"kind": "ja_romanized",
+"native_text": "味玉",
+"confidence": 1
+},
+{
+"id": 8231,
+"english": "unagi restaurant",
+"kind": "ja_loan",
+"native_text": "うなぎ",
+"confidence": 0.98
+},
+{
+"id": 8240,
+"english": "tempura udon",
+"kind": "ja_loan",
+"native_text": "うどん",
+"confidence": 0.98
+},
+{
+"id": 8241,
+"english": "curry udon",
+"kind": "ja_loan",
+"native_text": "うどん",
+"confidence": 0.98
+},
+{
+"id": 8243,
+"english": "udon noodles",
+"kind": "ja_loan",
+"native_text": "うどん",
+"confidence": 0.99
+},
+{
+"id": 8244,
+"english": "soba noodles",
+"kind": "ja_loan",
+"native_text": "そば",
+"confidence": 0.99
+},
+{
+"id": 8246,
+"english": "salmon nigiri",
+"kind": "ja_loan",
+"native_text": "握り",
+"confidence": 0.97
+},
+{
+"id": 8250,
+"english": "eel sushi",
+"kind": "ja_loan",
+"native_text": "寿司",
+"confidence": 0.99
+},
+{
+"id": 8251,
+"english": "egg sushi",
+"kind": "ja_loan",
+"native_text": "寿司",
+"confidence": 0.99
+},
+{
+"id": 8252,
+"english": "scallop nigiri",
+"kind": "ja_loan",
+"native_text": "握り",
+"confidence": 0.97
+},
+{
+"id": 8255,
+"english": "clam miso soup",
+"kind": "ja_loan",
+"native_text": "味噌",
+"confidence": 0.99
+},
+{
+"id": 8258,
+"english": "bonsai tree",
+"kind": "ja_loan",
+"native_text": "盆栽",
+"confidence": 0.99
+},
+{
+"id": 8261,
+"english": "bonsai pot",
+"kind": "ja_loan",
+"native_text": "盆栽",
+"confidence": 0.99
+},
+{
+"id": 8268,
+"english": "Noh",
+"kind": "ja_loan",
+"native_text": "能",
+"confidence": 0.99
+},
+{
+"id": 8270,
+"english": "Noh theater",
+"kind": "ja_loan",
+"native_text": "能",
+"confidence": 0.99
+},
+{
+"id": 8486,
+"english": "Shinto priest",
+"kind": "ja_loan",
+"native_text": "神道",
+"confidence": 1
+},
+{
+"id": 8487,
+"english": "haniwa maker",
+"kind": "ja_loan",
+"native_text": "埴輪",
+"confidence": 1
+},
+{
+"id": 8500,
+"english": "kofun laborer",
+"kind": "ja_loan",
+"native_text": "古墳",
+"confidence": 1
+},
+{
+"id": 8501,
+"english": "ama diver",
+"kind": "ja_loan",
+"native_text": "海女",
+"confidence": 1
+},
+{
+"id": 8543,
+"english": "ronin",
+"kind": "ja_loan",
+"native_text": "浪人",
+"confidence": 1
+},
+{
+"id": 8544,
+"english": "shogunal regent",
+"kind": "ja_loan",
+"native_text": "将軍",
+"confidence": 1
+},
+{
+"id": 8548,
+"english": "ukiyo-e artist",
+"kind": "ja_loan",
+"native_text": "浮世絵",
+"confidence": 1
+},
+{
+"id": 8554,
+"english": "onmyoji",
+"kind": "ja_romanized",
+"native_text": "陰陽師",
+"confidence": 1
+},
+{
+"id": 8556,
+"english": "sake brewer",
+"kind": "ja_loan",
+"native_text": "酒",
+"confidence": 1
+},
+{
+"id": 8579,
+"english": "rickshaw puller",
+"kind": "ja_loan",
+"native_text": "人力車",
+"confidence": 1
+},
+{
+"id": 8649,
+"english": "hensachi",
+"kind": "ja_romanized",
+"native_text": "偏差値",
+"confidence": 1
+},
+{
+"id": 8650,
+"english": "naishinten",
+"kind": "ja_romanized",
+"native_text": "内申点",
+"confidence": 1
+},
+{
+"id": 8652,
+"english": "exam ronin",
+"kind": "ja_loan",
+"native_text": "浪人",
+"confidence": 1
+},
+{
+"id": 8671,
+"english": "shogi",
+"kind": "ja_loan",
+"native_text": "将棋",
+"confidence": 1
+},
+{
+"id": 8678,
+"english": "tokin",
+"kind": "ja_loan",
+"native_text": "と金",
+"confidence": 1
+},
+{
+"id": 8681,
+"english": "sente",
+"kind": "ja_loan",
+"native_text": "先手",
+"confidence": 1
+},
+{
+"id": 8682,
+"english": "gote",
+"kind": "ja_loan",
+"native_text": "後手",
+"confidence": 1
+},
+{
+"id": 8683,
+"english": "tsumeshogi",
+"kind": "ja_romanized",
+"native_text": "詰将棋",
+"confidence": 1
+},
+{
+"id": 8684,
+"english": "kifu",
+"kind": "ja_loan",
+"native_text": "棋譜",
+"confidence": 1
+},
+{
+"id": 8686,
+"english": "Go (board game)",
+"kind": "ja_loan",
+"native_text": "碁",
+"confidence": 1
+},
+{
+"id": 8687,
+"english": "goban",
+"kind": "ja_loan",
+"native_text": "碁盤",
+"confidence": 1
+},
+{
+"id": 8690,
+"english": "atari",
+"kind": "ja_loan",
+"native_text": "アタリ",
+"confidence": 1
+},
+{
+"id": 8692,
+"english": "ko",
+"kind": "ja_loan",
+"native_text": "劫",
+"confidence": 1
+},
+{
+"id": 8693,
+"english": "seki",
+"kind": "ja_loan",
+"native_text": "セキ",
+"confidence": 1
+},
+{
+"id": 8696,
+"english": "komi",
+"kind": "ja_loan",
+"native_text": "コミ",
+"confidence": 1
+},
+{
+"id": 8698,
+"english": "joseki",
+"kind": "ja_loan",
+"native_text": "定石",
+"confidence": 1.0
+},
+{
+"id": 8699,
+"english": "fuseki",
+"kind": "ja_loan",
+"native_text": "布石",
+"confidence": 1.0
+},
+{
+"id": 8700,
+"english": "dan rank",
+"kind": "ja_romanized",
+"native_text": "段",
+"confidence": 0.95
+},
+{
+"id": 9326,
+"english": "karaoke",
+"kind": "ja_loan",
+"native_text": "カラオケ",
+"confidence": 1.0
+},
+{
+"id": 9475,
+"english": "torii",
+"kind": "ja_loan",
+"native_text": "鳥居",
+"confidence": 1.0
+},
+{
+"id": 9476,
+"english": "kami",
+"kind": "ja_loan",
+"native_text": "神",
+"confidence": 1.0
+},
+{
+"id": 9525,
+"english": "katsuobushi",
+"kind": "ja_loan",
+"native_text": "鰹節",
+"confidence": 1.0
+},
+{
+"id": 9526,
+"english": "kombu",
+"kind": "ja_loan",
+"native_text": "昆布",
+"confidence": 1.0
+},
+{
+"id": 9527,
+"english": "awase dashi",
+"kind": "ja_romanized",
+"native_text": "合わせ出汁",
+"confidence": 0.95
+},
+{
+"id": 9528,
+"english": "ichiban dashi",
+"kind": "ja_romanized",
+"native_text": "一番出汁",
+"confidence": 0.95
+},
+{
+"id": 9529,
+"english": "shari",
+"kind": "ja_loan",
+"native_text": "シャリ",
+"confidence": 1.0
+},
+{
+"id": 9530,
+"english": "neta",
+"kind": "ja_loan",
+"native_text": "ネタ",
+"confidence": 1.0
+},
+{
+"id": 9531,
+"english": "zuke",
+"kind": "ja_loan",
+"native_text": "漬け",
+"confidence": 1.0
+},
+{
+"id": 9532,
+"english": "ikejime",
+"kind": "ja_romanized",
+"native_text": "活け締め",
+"confidence": 0.95
+},
+{
+"id": 9533,
+"english": "aburi",
+"kind": "ja_loan",
+"native_text": "炙り",
+"confidence": 1.0
+},
+{
+"id": 9534,
+"english": "yanagiba",
+"kind": "ja_romanized",
+"native_text": "柳刃",
+"confidence": 0.95
+},
+{
+"id": 9536,
+"english": "usuzukuri",
+"kind": "ja_romanized",
+"native_text": "薄造り",
+"confidence": 0.95
+},
+{
+"id": 9537,
+"english": "moritsuke",
+"kind": "ja_romanized",
+"native_text": "盛り付け",
+"confidence": 0.95
+},
+{
+"id": 9542,
+"english": "teppanyaki",
+"kind": "ja_loan",
+"native_text": "鉄板焼き",
+"confidence": 1.0
+},
+{
+"id": 9543,
+"english": "chutoro",
+"kind": "ja_loan",
+"native_text": "中トロ",
+"confidence": 1.0
+},
+{
+"id": 9544,
+"english": "uni",
+"kind": "ja_loan",
+"native_text": "ウニ",
+"confidence": 1.0
+},
+{
+"id": 9545,
+"english": "ankimo",
+"kind": "ja_romanized",
+"native_text": "あん肝",
+"confidence": 1.0
+},
+{
+"id": 9546,
+"english": "shirako",
+"kind": "ja_romanized",
+"native_text": "白子",
+"confidence": 1.0
+},
+{
+"id": 9547,
+"english": "kohada",
+"kind": "ja_romanized",
+"native_text": "小鰭",
+"confidence": 1.0
+},
+{
+"id": 9548,
+"english": "anago",
+"kind": "ja_loan",
+"native_text": "穴子",
+"confidence": 1.0
+},
+{
+"id": 9550,
+"english": "konowata",
+"kind": "ja_romanized",
+"native_text": "このわた",
+"confidence": 1.0
+},
+{
+"id": 9551,
+"english": "funazushi",
+"kind": "ja_romanized",
+"native_text": "ふなずし",
+"confidence": 1.0
+},
+{
+"id": 9552,
+"english": "narezushi",
+"kind": "ja_romanized",
+"native_text": "なれずし",
+"confidence": 1.0
+},
+{
+"id": 9553,
+"english": "gunkan-maki",
+"kind": "ja_romanized",
+"native_text": "軍艦巻き",
+"confidence": 1.0
+},
+{
+"id": 9554,
+"english": "robatayaki",
+"kind": "ja_loan",
+"native_text": "炉端焼き",
+"confidence": 1.0
+},
+{
+"id": 9555,
+"english": "kappo",
+"kind": "ja_loan",
+"native_text": "割烹",
+"confidence": 1.0
+},
+{
+"id": 9556,
+"english": "ryotei",
+"kind": "ja_loan",
+"native_text": "料亭",
+"confidence": 1.0
+},
+{
+"id": 9825,
+"english": "tsunami",
+"kind": "ja_loan",
+"native_text": "津波",
+"confidence": 1.0
+},
+{
+"id": 9906,
+"english": "genba",
+"kind": "ja_loan",
+"native_text": "現場",
+"confidence": 1.0
+},
+{
+"id": 9907,
+"english": "5S",
+"kind": "ja_romanized",
+"native_text": "",
+"confidence": 0.95
+},
+{
+"id": 9908,
+"english": "andon",
+"kind": "ja_loan",
+"native_text": "アンドン",
+"confidence": 1.0
+},
+{
+"id": 9909,
+"english": "jidoka",
+"kind": "ja_loan",
+"native_text": "自働化",
+"confidence": 1.0
+},
+{
+"id": 9910,
+"english": "muda",
+"kind": "ja_loan",
+"native_text": "ムダ",
+"confidence": 1.0
+},
+{
+"id": 9992,
+"english": "sento",
+"kind": "ja_loan",
+"native_text": "銭湯",
+"confidence": 1.0
+},
+{
+"id": 9994,
+"english": "totonou",
+"kind": "ja_romanized",
+"native_text": "ととのう",
+"confidence": 1.0
+},
+{
+"id": 10020,
+"english": "mikoshi",
+"kind": "ja_loan",
+"native_text": "神輿",
+"confidence": 1.0
+},
+{
+"id": 10021,
+"english": "yatai",
+"kind": "ja_loan",
+"native_text": "屋台",
+"confidence": 1.0
+},
+{
+"id": 10022,
+"english": "bon odori",
+"kind": "ja_loan",
+"native_text": "盆踊り",
+"confidence": 1.0
+},
+{
+"id": 10025,
+"english": "taiko drumming",
+"kind": "ja_loan",
+"native_text": "太鼓",
+"confidence": 1.0
+},
+{
+"id": 10027,
+"english": "kakigori",
+"kind": "ja_loan",
+"native_text": "かき氷",
+"confidence": 1.0
+},
+{
+"id": 10038,
+"english": "dojo",
+"kind": "ja_loan",
+"native_text": "道場",
+"confidence": 1.0
+},
+{
+"id": 10063,
+"english": "kata",
+"kind": "ja_loan",
+"native_text": "型",
+"confidence": 1.0
+},
+{
+"id": 10175,
+"english": "origami paper",
+"kind": "ja_loan",
+"native_text": "折り紙",
+"confidence": 1.0
+},
+{
+"id": 10227,
+"english": "wagashi",
+"kind": "ja_loan",
+"native_text": "和菓子",
+"confidence": 1.0
+},
+{
+"id": 10229,
+"english": "anko",
+"kind": "ja_loan",
+"native_text": "あんこ",
+"confidence": 1.0
+},
+{
+"id": 10230,
+"english": "kinako",
+"kind": "ja_loan",
+"native_text": "きな粉",
+"confidence": 1.0
+},
+{
+"id": 10231,
+"english": "mochiko",
+"kind": "ja_loan",
+"native_text": "もち粉",
+"confidence": 1.0
+},
+{
+"id": 10278,
+"english": "zazen",
+"kind": "ja_loan",
+"native_text": "座禅",
+"confidence": 1.0
+},
+{
+"id": 10281,
+"english": "taiko ensemble",
+"kind": "ja_loan",
+"native_text": "太鼓",
+"confidence": 1.0
+},
+{
+"id": 10285,
+"english": "kendama",
+"kind": "ja_loan",
+"native_text": "けん玉",
+"confidence": 1.0
+},
+{
+"id": 10291,
+"english": "haiku",
+"kind": "ja_loan",
+"native_text": "俳句",
+"confidence": 1.0
+},
+{
+"id": 10292,
+"english": "tanka",
+"kind": "ja_loan",
+"native_text": "短歌",
+"confidence": 1.0
+},
+{
+"id": 10293,
+"english": "kigo",
+"kind": "ja_loan",
+"native_text": "季語",
+"confidence": 1.0
+},
+{
+"id": 10321,
+"english": "Obon",
+"kind": "ja_loan",
+"native_text": "お盆",
+"confidence": 1.0
+},
+{
+"id": 10324,
+"english": "Onbashira Festival",
+"kind": "ja_romanized",
+"native_text": "御柱祭",
+"confidence": 0.98
+},
+{
+"id": 10328,
+"english": "Nebuta Matsuri",
+"kind": "ja_romanized",
+"native_text": "ねぶた祭り",
+"confidence": 0.98
+},
+{
+"id": 10330,
+"english": "haneto",
+"kind": "ja_romanized",
+"native_text": "跳人",
+"confidence": 0.95
+},
+{
+"id": 10332,
+"english": "Gion Matsuri",
+"kind": "ja_romanized",
+"native_text": "祇園祭",
+"confidence": 0.98
+},
+{
+"id": 10333,
+"english": "yamaboko float",
+"kind": "ja_romanized",
+"native_text": "山鉾",
+"confidence": 0.95
+},
+{
+"id": 10335,
+"english": "Yoiyama",
+"kind": "ja_romanized",
+"native_text": "宵山",
+"confidence": 0.95
+},
+{
+"id": 10336,
+"english": "Tanabata",
+"kind": "ja_loan",
+"native_text": "七夕",
+"confidence": 0.98
+},
+{
+"id": 10337,
+"english": "Awa Odori",
+"kind": "ja_romanized",
+"native_text": "阿波おどり",
+"confidence": 0.98
+},
+{
+"id": 10339,
+"english": "Jidai Matsuri",
+"kind": "ja_romanized",
+"native_text": "時代祭",
+"confidence": 0.98
+},
+{
+"id": 10340,
+"english": "Danjiri Matsuri",
+"kind": "ja_romanized",
+"native_text": "だんじり祭",
+"confidence": 0.95
+},
+{
+"id": 10341,
+"english": "Tenjin Matsuri",
+"kind": "ja_romanized",
+"native_text": "天神祭",
+"confidence": 0.98
+},
+{
+"id": 10426,
+"english": "Kappa",
+"kind": "ja_loan",
+"native_text": "河童",
+"confidence": 0.98
+},
+{
+"id": 10427,
+"english": "Oni",
+"kind": "ja_loan",
+"native_text": "鬼",
+"confidence": 0.98
+},
+{
+"id": 10428,
+"english": "Tengu",
+"kind": "ja_loan",
+"native_text": "天狗",
+"confidence": 0.98
+},
+{
+"id": 10429,
+"english": "Kitsune",
+"kind": "ja_loan",
+"native_text": "狐",
+"confidence": 0.98
+},
+{
+"id": 10430,
+"english": "Tanuki",
+"kind": "ja_loan",
+"native_text": "狸",
+"confidence": 0.98
+},
+{
+"id": 10431,
+"english": "Yokai",
+"kind": "ja_loan",
+"native_text": "妖怪",
+"confidence": 0.98
+},
+{
+"id": 10434,
+"english": "Yuki-onna",
+"kind": "ja_romanized",
+"native_text": "雪女",
+"confidence": 0.98
+},
+{
+"id": 10435,
+"english": "Ho-o",
+"kind": "ja_romanized",
+"native_text": "鳳凰",
+"confidence": 0.98
+},
+{
+"id": 10436,
+"english": "Kirin",
+"kind": "ja_loan",
+"native_text": "麒麟",
+"confidence": 0.95
+},
+{
+"id": 10437,
+"english": "Amabie",
+"kind": "ja_loan",
+"native_text": "アマビエ",
+"confidence": 0.98
+},
+{
+"id": 10438,
+"english": "Tsuchinoko",
+"kind": "ja_loan",
+"native_text": "ツチノコ",
+"confidence": 0.98
+},
+{
+"id": 10439,
+"english": "Ryujin",
+"kind": "ja_romanized",
+"native_text": "龍神",
+"confidence": 0.98
+},
+{
+"id": 10440,
+"english": "Yamata no Orochi",
+"kind": "ja_romanized",
+"native_text": "八岐大蛇",
+"confidence": 0.98
+},
+{
+"id": 10441,
+"english": "Zashiki-warashi",
+"kind": "ja_romanized",
+"native_text": "座敷わらし",
+"confidence": 0.98
+},
+{
+"id": 10442,
+"english": "Nekomata",
+"kind": "ja_loan",
+"native_text": "猫又",
+"confidence": 0.98
+},
+{
+"id": 10443,
+"english": "Onibi",
+"kind": "ja_romanized",
+"native_text": "鬼火",
+"confidence": 0.98
+},
+{
+"id": 10449,
+"english": "Mujina",
+"kind": "ja_loan",
+"native_text": "貉",
+"confidence": 0.98
+},
+{
+"id": 10450,
+"english": "Jorogumo",
+"kind": "ja_romanized",
+"native_text": "絡新婦",
+"confidence": 0.98
+},
+{
+"id": 10451,
+"english": "Kudan",
+"kind": "ja_romanized",
+"native_text": "件",
+"confidence": 0.98
+},
+{
+"id": 10452,
+"english": "Nurarihyon",
+"kind": "ja_romanized",
+"native_text": "ぬらりひょん",
+"confidence": 0.98
+},
+{
+"id": 10453,
+"english": "Ittan-momen",
+"kind": "ja_romanized",
+"native_text": "一反木綿",
+"confidence": 0.98
+},
+{
+"id": 11067,
+"english": "kei car",
+"kind": "ja_loan",
+"native_text": "軽",
+"confidence": 0.98
+},
+{
+"id": 11151,
+"english": "manga artist",
+"kind": "ja_loan",
+"native_text": "漫画",
+"confidence": 0.98
+},
+{
+"id": 11307,
+"english": "kintsugi craftsman",
+"kind": "ja_romanized",
+"native_text": "金継ぎ",
+"confidence": 0.98
+},
+{
+"id": 11308,
+"english": "wagashi maker",
+"kind": "ja_romanized",
+"native_text": "和菓子",
+"confidence": 0.98
+},
+{
+"id": 11405,
+"english": "rickshaw",
+"kind": "ja_loan",
+"native_text": "人力車",
+"confidence": 0.98
+},
+{
+"id": 11871,
+"english": "Shinto",
+"kind": "ja_loan",
+"native_text": "神道",
+"confidence": 0.98
+},
+{
+"id": 11874,
+"english": "shimenawa",
+"kind": "ja_romanized",
+"native_text": "しめ縄",
+"confidence": 0.98
+},
+{
+"id": 11875,
+"english": "ema",
+"kind": "ja_romanized",
+"native_text": "絵馬",
+"confidence": 0.98
+},
+{
+"id": 11876,
+"english": "omikuji",
+"kind": "ja_romanized",
+"native_text": "おみくじ",
+"confidence": 0.98
+},
+{
+"id": 11877,
+"english": "omamori",
+"kind": "ja_romanized",
+"native_text": "お守り",
+"confidence": 0.98
+},
+{
+"id": 11878,
+"english": "kagura",
+"kind": "ja_romanized",
+"native_text": "神楽",
+"confidence": 0.98
+},
+{
+"id": 11879,
+"english": "kamidana",
+"kind": "ja_romanized",
+"native_text": "神棚",
+"confidence": 0.98
+},
+{
+"id": 11880,
+"english": "ujigami",
+"kind": "ja_romanized",
+"native_text": "氏神",
+"confidence": 1.0
+},
+{
+"id": 11882,
+"english": "yaoyorozu no kami",
+"kind": "ja_romanized",
+"native_text": "八百万の神",
+"confidence": 1.0
+},
+{
+"id": 11891,
+"english": "butsudan",
+"kind": "ja_loan",
+"native_text": "仏壇",
+"confidence": 1.0
+},
+{
+"id": 11892,
+"english": "Zen",
+"kind": "ja_loan",
+"native_text": "禅",
+"confidence": 1.0
+},
+{
+"id": 11894,
+"english": "hatsumode",
+"kind": "ja_romanized",
+"native_text": "初詣",
+"confidence": 1.0
+},
+{
+"id": 11895,
+"english": "kaimyo",
+"kind": "ja_romanized",
+"native_text": "戒名",
+"confidence": 1.0
+},
+{
+"id": 11898,
+"english": "Shugendo",
+"kind": "ja_loan",
+"native_text": "修験道",
+"confidence": 1.0
+},
+{
+"id": 11899,
+"english": "yamabushi",
+"kind": "ja_loan",
+"native_text": "山伏",
+"confidence": 1.0
+},
+{
+"id": 11903,
+"english": "Ainu",
+"kind": "ja_loan",
+"native_text": "アイヌ",
+"confidence": 1.0
+},
+{
+"id": 11994,
+"english": "yabusame",
+"kind": "ja_romanized",
+"native_text": "流鏑馬",
+"confidence": 1.0
+},
+{
+"id": 11997,
+"english": "misogi",
+"kind": "ja_loan",
+"native_text": "禊",
+"confidence": 1.0
+},
+{
+"id": 11998,
+"english": "harae",
+"kind": "ja_romanized",
+"native_text": "祓い",
+"confidence": 1.0
+},
+{
+"id": 11999,
+"english": "harai-gushi",
+"kind": "ja_romanized",
+"native_text": "祓串",
+"confidence": 1.0
+},
+{
+"id": 12000,
+"english": "gohei",
+"kind": "ja_loan",
+"native_text": "御幣",
+"confidence": 1.0
+},
+{
+"id": 12001,
+"english": "jichinsai",
+"kind": "ja_romanized",
+"native_text": "地鎮祭",
+"confidence": 1.0
+},
+{
+"id": 12004,
+"english": "omiyamairi",
+"kind": "ja_romanized",
+"native_text": "お宮参り",
+"confidence": 0.99
+},
+{
+"id": 12005,
+"english": "Shichi-Go-San",
+"kind": "ja_romanized",
+"native_text": "七五三",
+"confidence": 0.99
+},
+{
+"id": 12011,
+"english": "nihonto",
+"kind": "ja_romanized",
+"native_text": "日本刀",
+"confidence": 0.99
+},
+{
+"id": 12012,
+"english": "tamahagane",
+"kind": "ja_romanized",
+"native_text": "玉鋼",
+"confidence": 0.99
+},
+{
+"id": 12014,
+"english": "tsuba",
+"kind": "ja_loan",
+"native_text": "鍔",
+"confidence": 0.99
+},
+{
+"id": 12018,
+"english": "tanegashima",
+"kind": "ja_romanized",
+"native_text": "種子島",
+"confidence": 0.99
+},
+{
+"id": 12030,
+"english": "ippon",
+"kind": "ja_loan",
+"native_text": "一本",
+"confidence": 0.99
+},
+{
+"id": 12031,
+"english": "waza-ari",
+"kind": "ja_loan",
+"native_text": "技あり",
+"confidence": 0.99
+},
+{
+"id": 12032,
+"english": "osaekomi",
+"kind": "ja_loan",
+"native_text": "抑え込み",
+"confidence": 0.99
+},
+{
+"id": 12033,
+"english": "randori",
+"kind": "ja_loan",
+"native_text": "乱取り",
+"confidence": 0.99
+},
+{
+"id": 12034,
+"english": "ukemi",
+"kind": "ja_loan",
+"native_text": "受け身",
+"confidence": 0.99
+},
+{
+"id": 12036,
+"english": "judogi",
+"kind": "ja_loan",
+"native_text": "柔道着",
+"confidence": 0.99
+},
+{
+"id": 12037,
+"english": "obi",
+"kind": "ja_loan",
+"native_text": "帯",
+"confidence": 0.99
+},
+{
+"id": 12038,
+"english": "tatami mat",
+"kind": "ja_loan",
+"native_text": "畳",
+"confidence": 0.99
+},
+{
+"id": 12039,
+"english": "shinai",
+"kind": "ja_loan",
+"native_text": "竹刀",
+"confidence": 0.99
+},
+{
+"id": 12040,
+"english": "bogu",
+"kind": "ja_loan",
+"native_text": "防具",
+"confidence": 0.99
+},
+{
+"id": 12042,
+"english": "kiai",
+"kind": "ja_loan",
+"native_text": "気合",
+"confidence": 0.99
+},
+{
+"id": 12043,
+"english": "zanshin",
+"kind": "ja_loan",
+"native_text": "残心",
+"confidence": 0.99
+},
+{
+"id": 12044,
+"english": "ninjutsu",
+"kind": "ja_loan",
+"native_text": "忍術",
+"confidence": 1.0
+},
+{
+"id": 12048,
+"english": "shuriken",
+"kind": "ja_loan",
+"native_text": "手裏剣",
+"confidence": 1.0
+},
+{
+"id": 12049,
+"english": "kunai",
+"kind": "ja_loan",
+"native_text": "苦無",
+"confidence": 1.0
+},
+{
+"id": 12055,
+"english": "koryu",
+"kind": "ja_romanized",
+"native_text": "古流",
+"confidence": 1.0
+},
+{
+"id": 12056,
+"english": "bujutsu",
+"kind": "ja_romanized",
+"native_text": "武術",
+"confidence": 1.0
+},
+{
+"id": 12057,
+"english": "naginata",
+"kind": "ja_loan",
+"native_text": "薙刀",
+"confidence": 1.0
+},
+{
+"id": 12059,
+"english": "iaido",
+"kind": "ja_romanized",
+"native_text": "居合道",
+"confidence": 1.0
+},
+{
+"id": 12060,
+"english": "kobudo",
+"kind": "ja_romanized",
+"native_text": "古武道",
+"confidence": 1.0
+},
+{
+"id": 12061,
+"english": "bushido",
+"kind": "ja_loan",
+"native_text": "武士道",
+"confidence": 1.0
+},
+{
+"id": 12063,
+"english": "chasen",
+"kind": "ja_loan",
+"native_text": "茶筅",
+"confidence": 1.0
+},
+{
+"id": 12064,
+"english": "chashaku",
+"kind": "ja_loan",
+"native_text": "茶杓",
+"confidence": 1.0
+},
+{
+"id": 12065,
+"english": "chawan",
+"kind": "ja_loan",
+"native_text": "茶碗",
+"confidence": 1.0
+},
+{
+"id": 12069,
+"english": "wabi-sabi",
+"kind": "ja_loan",
+"native_text": "侘び寂び",
+"confidence": 1.0
+},
+{
+"id": 12070,
+"english": "ichigo ichie",
+"kind": "ja_romanized",
+"native_text": "一期一会",
+"confidence": 1.0
+},
+{
+"id": 12077,
+"english": "tokonoma",
+"kind": "ja_loan",
+"native_text": "床の間",
+"confidence": 1.0
+},
+{
+"id": 12078,
+"english": "Jodo",
+"kind": "ja_romanized",
+"native_text": "浄土",
+"confidence": 1.0
+},
+{
+"id": 12086,
+"english": "koan",
+"kind": "ja_loan",
+"native_text": "公案",
+"confidence": 1.0
+},
+{
+"id": 12087,
+"english": "satori",
+"kind": "ja_loan",
+"native_text": "悟り",
+"confidence": 1.0
+},
+{
+"id": 12088,
+"english": "shakyo",
+"kind": "ja_romanized",
+"native_text": "写経",
+"confidence": 1.0
+},
+{
+"id": 13104,
+"english": "kami",
+"kind": "ja_loan",
+"native_text": "神",
+"confidence": 1
+},
+{
+"id": 13122,
+"english": "torii",
+"kind": "ja_loan",
+"native_text": "鳥居",
+"confidence": 1
+},
+{
+"id": 13126,
+"english": "seppuku",
+"kind": "ja_loan",
+"native_text": "切腹",
+"confidence": 1
+},
+{
+"id": 13127,
+"english": "Sengoku period",
+"kind": "ja_romanized",
+"native_text": "戦国時代",
+"confidence": 1
+},
+{
+"id": 13129,
+"english": "bakufu",
+"kind": "ja_romanized",
+"native_text": "幕府",
+"confidence": 1
+},
+{
+"id": 13130,
+"english": "sonno joi",
+"kind": "ja_romanized",
+"native_text": "尊皇攘夷",
+"confidence": 1
+},
+{
+"id": 13133,
+"english": "rangaku",
+"kind": "ja_romanized",
+"native_text": "蘭学",
+"confidence": 1
+},
+{
+"id": 13207,
+"english": "waka",
+"kind": "ja_loan",
+"native_text": "和歌",
+"confidence": 1
+},
+{
+"id": 13208,
+"english": "renga",
+"kind": "ja_loan",
+"native_text": "連歌",
+"confidence": 1
+},
+{
+"id": 13209,
+"english": "monogatari",
+"kind": "ja_romanized",
+"native_text": "物語",
+"confidence": 1
+},
+{
+"id": 13210,
+"english": "zuihitsu",
+"kind": "ja_romanized",
+"native_text": "随筆",
+"confidence": 1
+},
+{
+"id": 13212,
+"english": "gesaku",
+"kind": "ja_romanized",
+"native_text": "戯作",
+"confidence": 1
+},
+{
+"id": 14277,
+"english": "koi",
+"kind": "ja_loan",
+"native_text": "鯉",
+"confidence": 1
+},
+{
+"id": 15561,
+"english": "isekai",
+"kind": "ja_romanized",
+"native_text": "異世界",
+"confidence": 0.98
+},
+{
+"id": 15562,
+"english": "tsundere",
+"kind": "ja_romanized",
+"native_text": "ツンデレ",
+"confidence": 0.98
+},
+{
+"id": 15563,
+"english": "kuudere",
+"kind": "ja_romanized",
+"native_text": "クーデレ",
+"confidence": 0.95
+},
+{
+"id": 15564,
+"english": "yandere",
+"kind": "ja_romanized",
+"native_text": "ヤンデレ",
+"confidence": 0.95
+},
+{
+"id": 15565,
+"english": "dandere",
+"kind": "ja_romanized",
+"native_text": "ダンデレ",
+"confidence": 0.95
+},
+{
+"id": 15566,
+"english": "moe",
+"kind": "ja_loan",
+"native_text": "萌え",
+"confidence": 0.98
+},
+{
+"id": 15567,
+"english": "chuunibyou",
+"kind": "ja_romanized",
+"native_text": "中二病",
+"confidence": 0.98
+},
+{
+"id": 15568,
+"english": "seiyuu",
+"kind": "ja_romanized",
+"native_text": "声優",
+"confidence": 0.98
+},
+{
+"id": 15569,
+"english": "sakuga",
+"kind": "ja_romanized",
+"native_text": "作画",
+"confidence": 0.98
+},
+{
+"id": 15573,
+"english": "yuri",
+"kind": "ja_loan",
+"native_text": "百合",
+"confidence": 0.98
+},
+{
+"id": 15574,
+"english": "shounen",
+"kind": "ja_romanized",
+"native_text": "少年",
+"confidence": 0.98
+},
+{
+"id": 15575,
+"english": "shoujo",
+"kind": "ja_romanized",
+"native_text": "少女",
+"confidence": 0.98
+},
+{
+"id": 15576,
+"english": "seinen",
+"kind": "ja_romanized",
+"native_text": "青年",
+"confidence": 0.98
+},
+{
+"id": 15577,
+"english": "josei",
+"kind": "ja_romanized",
+"native_text": "女性",
+"confidence": 0.98
+},
+{
+"id": 15579,
+"english": "iyashikei",
+"kind": "ja_romanized",
+"native_text": "癒し系",
+"confidence": 0.98
+},
+{
+"id": 15584,
+"english": "bishounen",
+"kind": "ja_romanized",
+"native_text": "美少年",
+"confidence": 0.98
+},
+{
+"id": 15585,
+"english": "bishoujo",
+"kind": "ja_romanized",
+"native_text": "美少女",
+"confidence": 0.98
+},
+{
+"id": 15592,
+"english": "doujinshi",
+"kind": "ja_loan",
+"native_text": "同人誌",
+"confidence": 1.0
+},
+{
+"id": 15605,
+"english": "gacha",
+"kind": "ja_loan",
+"native_text": "ガチャ",
+"confidence": 1.0
+},
+{
+"id": 16388,
+"english": "sora-iro",
+"kind": "ja_romanized",
+"native_text": "空色",
+"confidence": 1.0
+}
+]
