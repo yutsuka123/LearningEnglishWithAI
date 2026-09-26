@@ -51,8 +51,48 @@ def _respell_sake(text: str) -> str:
         else _SAKE_SPOKEN, text)
 
 
+# --- 日本語由来語(色名・将棋語): 「英語話者が読む音」への読み替え(2026-09-26) ---------------
+# 綴りだけを渡すと、声(ash/nova)によって別々に読まれたり誤読される語(sente=「セント」・gote=「ゴート」・
+# 色名の`-iro`=「ヘロ」等)がある(既存音声のブラインド判定で確認)。DBのIPA(英語風・
+# `scripts/apply_ja_origin_pronunciation_2026_09_26.py`で設定)と音声を一致させるため、読みを固定する
+# 読み替えを合成時の入力にだけ適用する(表示・DB・item音声のキャッシュキーは元の綴りのまま)。
+# 値は「読み通りの綴り」(sakeの`sah-kee`と同じ型)。追加するときはIPAと矛盾しないこと・実際に合成して
+# ブラインド判定で確認すること。
+_JA_LOAN_RESPELL: dict[str, str] = {
+    "sente": "sen-tay",                    # /ˈsɛnteɪ/
+    "gote": "goh-tay",                     # /ˈɡoʊteɪ/
+    "kifu": "kee-foo",                     # /ˈkiːfuː/
+    "ai-iro": "eye ee-roh",                # /ˈaɪ ˌiːroʊ/
+    "moegi-iro": "moh-eh-ghee ee-roh",     # /moʊˈɛɡi ˌiːroʊ/ (綴りのgeeはアルファベットGの「ジー」に読まれるため、硬いgはghee)
+    "asagi-iro": "ah-sah-ghee ee-roh",     # /ɑːˈsɑːɡi ˌiːroʊ/
+    "shu-iro": "shoo ee-roh",              # /ˈʃuː ˌiːroʊ/
+    "uguisu-iro": "oo-gwee-soo ee-roh",    # /uːˈɡwiːsuː ˌiːroʊ/
+    "kinari-iro": "kee-nah-ree ee-roh",    # /kiːˈnɑːri ˌiːroʊ/
+    "ama-iro": "ah-mah ee-roh",            # /ˈɑːmɑː ˌiːroʊ/
+    "fuji-iro": "foo-jee ee-roh",          # /ˈfuːdʒi ˌiːroʊ/
+    "kyo-murasaki": "kyoh moo-rah-sah-kee",  # /ˈkjoʊ mʊrɑːˈsɑːki/
+    "koki-hi": "koh-kee hee",              # /koʊˈki hi/
+}
+_JA_LOAN_RE = re.compile(
+    r"(?<![\w-])(" + "|".join(
+        re.escape(k) for k in sorted(_JA_LOAN_RESPELL, key=len, reverse=True)) + r")(?![\w-])",
+    re.I)
+
+
+def _has_ja_loan(text: str) -> bool:
+    return bool(_JA_LOAN_RE.search(text))
+
+
+def _respell_ja_loan(text: str) -> str:
+    def sub(m: re.Match) -> str:
+        r = _JA_LOAN_RESPELL[m.group(1).lower()]
+        return r[0].upper() + r[1:] if m.group(1)[0].isupper() else r
+    return _JA_LOAN_RE.sub(sub, text)
+
+
 RULES: list[tuple[Callable[[str], bool], Callable[[str], str]]] = [
     (_is_japanese_sake, _respell_sake),
+    (_has_ja_loan, _respell_ja_loan),
 ]
 
 
