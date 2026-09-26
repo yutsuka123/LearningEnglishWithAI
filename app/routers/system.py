@@ -3551,7 +3551,11 @@ def admin_cost_report(days: int = 30):
     先頭トークンから復元する。クロスワードはreason='crossword_game'
     (1ゲームまとめて課金・`charge_crossword_game`参照)を別途集計し、
     原価側もcrossword_hint/crossword_hint_reviewをまとめて突き合わせる
-    (`_cost_report_feature_bucket`)。"""
+    (`_cost_report_feature_bucket`)。単語/フレーズ音声の**再生課金**
+    (reason='tts_playback'・無料範囲外で再生ごとに約0.5pt)と、その返金
+    (reason='tts_playback_refund'・音声を届けられなかったとき)は、TTSの
+    売上として`tts`にまとめる(返金は売上のマイナス・2026-09-26修正: 以前は
+    再生課金の売上が一切計上されず、TTSの粗利が過小に出ていた)。"""
     _require_admin()
     days = max(1, min(days, 365))
     since = f"-{days} days"
@@ -3567,8 +3571,9 @@ def admin_cost_report(days: int = 30):
         ledger_rows = conn.execute(
             "SELECT user_id, reason, note, delta_jpy FROM balance_ledger "
             "WHERE created_at >= datetime('now', ?) "
-            "AND reason IN ('ai_usage', 'crossword_game', 'word_plus') "
-            "AND delta_jpy < 0",
+            "AND reason IN ('ai_usage', 'crossword_game', 'word_plus', "
+            "'tts_playback', 'tts_playback_refund') "
+            "AND (delta_jpy < 0 OR reason = 'tts_playback_refund')",
             (since,),
         ).fetchall()
         user_rows = conn.execute(
@@ -3591,6 +3596,8 @@ def admin_cost_report(days: int = 30):
             feature = "crossword"
         elif r["reason"] == "word_plus":
             feature = "word_plus"   # 詳細plus(原価0のため粗利100%の行になる)
+        elif r["reason"] in ("tts_playback", "tts_playback_refund"):
+            feature = "tts"   # 再生課金=TTSの売上・返金は売上のマイナス(-delta_jpyが負になる)
         else:
             feature = (r["note"] or "").split(" ", 1)[0] or "(不明)"
         key = (r["user_id"], feature)
