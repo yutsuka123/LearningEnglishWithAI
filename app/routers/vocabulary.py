@@ -928,7 +928,7 @@ def word_plus_audio(word_id: int, sex: str):
     """「詳細plus」の原語音声(VOICEVOX・男声/女声)。**開いた記録がある(または管理者)ときだけ**返す=有料の中身なので、
     ファイルへの直リンクは無く、必ずここ(ログイン・開いた済みの検査)を通る。未開封は3026。
     ゲストは要ログイン(2003)・対象外/公開前は7001(`_plus_context`)。"""
-    import json as _json
+    import logging
 
     from ..services import native_audio, word_plus
     if sex not in native_audio.SEXES:
@@ -941,21 +941,22 @@ def word_plus_audio(word_id: int, sex: str):
                 "SELECT 1 FROM word_plus_unlocks WHERE user_id = ? AND word_id = ?",
                 (uid, word_id)).fetchone() is None:
             raise errors.http_error("3026")
-        row = conn.execute("SELECT detail, english FROM words WHERE id = ?", (word_id,)).fetchone()
-        try:
-            text = (_json.loads(row["detail"] or "{}").get("native") or {}).get("text") or ""
-        except ValueError:
-            text = ""
+        row = conn.execute("SELECT english FROM words WHERE id = ?", (word_id,)).fetchone()
+        if row is None:   # `_plus_context`の直後に語が消えた極小の競合
+            raise errors.http_error("7001", "単語が見つかりません")
+        text = (content.get("native") or {}).get("text") or ""
         path = native_audio.file_path(word_id, sex, row["english"] or "", text)
     if path is None:
         raise errors.http_error("7001", "単語が見つかりません")
     try:
         data = path.read_bytes()
     except OSError:
+        logging.getLogger(__name__).warning("原語音声を読めません(ファイル欠落?): word_id=%s sex=%s", word_id, sex)
         raise errors.http_error("7001", "単語が見つかりません")
-    # ログイン者専用の有料の中身: 共有キャッシュに載せない(private)。ブラウザ内の再生し直しは許す。
+    # ログイン者専用の有料の中身: **no-store**。`private`+max-ageだと、同じブラウザで別アカウントに切り替えたとき
+    # (URLだけがキャッシュキーでCookieはVaryに入らない)開いていない語でもキャッシュから聞けてしまう(Fable指摘M)。数KBなので毎回取り直す。
     return Response(content=data, media_type="audio/mpeg",
-                    headers={"Cache-Control": "private, max-age=3600"})
+                    headers={"Cache-Control": "private, no-store"})
 
 
 class ResolveIn(BaseModel):

@@ -376,7 +376,8 @@ export async function sayNativeAudio(url) {
     await playBlob(blob, undefined, "native");
     return true;
   } catch (e) {
-    return false;
+    // 連打で新しい再生要求が来ると、古い再生のplay()はAbortErrorで拒否される。それは失敗ではない(Fable指摘)。
+    return myToken !== playSeq;
   }
 }
 

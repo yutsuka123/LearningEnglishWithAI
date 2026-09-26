@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import re
 from pathlib import Path
 from typing import Optional
@@ -25,8 +26,9 @@ from typing import Optional
 from ..config import paths
 
 SEXES = ("male", "female")
-_CREDIT_RE = re.compile(r"^VOICEVOX:[^\s<>&\"'/\\]{1,30}$")
-_cache: dict = {"mtime": None, "words": {}}
+_CREDIT_RE = re.compile(r"^VOICEVOX:[^<>&\"'/\\\r\n]{1,40}$")   # キャラ名に空白は許す(表示側でescape)
+_log = logging.getLogger(__name__)
+_cache: dict = {"stamp": None, "words": {}}
 
 
 def _dir() -> Path:
@@ -39,23 +41,25 @@ def text_hash(text: str) -> str:
 
 
 def _manifest() -> dict:
-    """{語ID(文字列): {english, text, male:{credit}, female:{credit}, ...}}。ファイルの更新時刻が変わったときだけ読み直す。
+    """{語ID(文字列): {english, text, male:{credit}, female:{credit}, ...}}。ファイルの更新時刻・大きさが変わったときだけ読み直す。
     無い/壊れているときは空(=原語音声なし)で、例外は出さない。"""
     p = _dir() / "manifest.json"
     try:
-        mtime = p.stat().st_mtime_ns
+        st = p.stat()
     except OSError:
-        _cache.update(mtime=None, words={})
+        _cache.update(stamp=None, words={})
         return {}
-    if _cache["mtime"] != mtime:
+    stamp = (st.st_mtime_ns, st.st_size)
+    if _cache["stamp"] != stamp:
         words: dict = {}
         try:
             data = json.loads(p.read_text(encoding="utf-8"))
             if isinstance(data, dict) and isinstance(data.get("words"), dict):
                 words = data["words"]
         except (OSError, ValueError):
+            _log.warning("原語音声のmanifest.jsonを読めません(壊れている?)。原語音声なしとして動きます。")
             words = {}
-        _cache.update(mtime=mtime, words=words)
+        _cache.update(stamp=stamp, words=words)
     return _cache["words"]
 
 
@@ -88,5 +92,9 @@ def info(word_id: int, english: str, text: str) -> Optional[dict]:
         if not isinstance(s, dict) or file_path(word_id, sex, english, text) is None:
             return None
         credit = str(s.get("credit") or "")
-        out[sex] = {"credit": credit if _CREDIT_RE.match(credit) else "VOICEVOX"}
+        if not _CREDIT_RE.match(credit):
+            # クレジット「VOICEVOX:キャラ名」は規約上の必須表記。不正なら**音声を出さない**(fail-closed・表記なしで配らない)。
+            _log.warning("原語音声のcreditが不正です(音声を出しません): word_id=%s sex=%s", word_id, sex)
+            return None
+        out[sex] = {"credit": credit}
     return out
