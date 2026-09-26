@@ -67,11 +67,33 @@
     }
     if (theme === 'light') document.documentElement.dataset.theme = 'light';
 
-    // 現在の表示言語の文言(i18n.js未読込なら日本語の既定文にはならずキー名が出るため、
-    // 読み込み失敗時に備えてtryで包み、最低限の日本語を返す)。
+    // 現在の表示言語の文言。i18n.js/辞書が読み込めなかった場合(通信断・古い
+    // キャッシュ等)でも決済結果の案内が壊れないよう、日本語の最小限の代替文を
+    // 持つ(決済直後に戻ってくる画面のため・辞書のキー名がそのまま出るのを防ぐ)。
+    const FALLBACK_JA = {
+      'paypayReturn.checking': '確認しています…',
+      'paypayReturn.backToApp': 'アプリに戻る',
+      'paypayReturn.standalone': 'この画面は購入手続きの一部です。単体では開けません。',
+      'paypayReturn.errorStatus': 'エラー {status}',
+      'paypayReturn.credited': '🎉 チャージが完了しました',
+      'paypayReturn.balanceNow': '現在の残高です。',
+      'paypayReturn.notYet': '支払いがまだ確認できませんでした。',
+      'paypayReturn.unknownStatus': '不明',
+      'paypayReturn.notYetGuide': 'PayPayアプリで支払いを完了してから、下のボタンで再確認してください。決済をキャンセルした場合はチャージされません。',
+      'paypayReturn.recheck': '再確認する',
+      'paypayReturn.failed': '確認できませんでした: {msg}',
+      'paypayReturn.retry': '再試行する',
+    };
     const t = (key, vars) => {
-      try { return window.I18N ? window.I18N.t(key, vars) : key; }
-      catch (_) { return key; }
+      try {
+        if (window.I18N) {
+          const s = window.I18N.t(key, vars);
+          if (s !== key) return s;
+        }
+      } catch (_) { /* 下の代替文へ */ }
+      const base = FALLBACK_JA[key] || key;
+      return base.replace(/\{(\w+)\}/g, (m, k) =>
+        (vars && Object.prototype.hasOwnProperty.call(vars, k)) ? vars[k] : m);
     };
     if (window.I18N) window.I18N.translateDom(document);
 
