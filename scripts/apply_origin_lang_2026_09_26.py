@@ -6,7 +6,7 @@
 「日本での使われ方」だけの語は含めない。オーナーの抜取り確認(docs/ORIGIN_LANG_PROPOSAL_2026-09-26.md)後に反映すること。
 
 書き換える内容(words.detail のJSONに、無いキーだけを足す・既存の値は上書きしない):
-  origin_lang="ja" / origin_lang_name="日本語" / native={"text":原語表記,"romaji":綴り}(原語表記が確かな語のみtext)。別の言語のorigin_langが既にある語は触らない。
+  origin_lang="ja" / origin_lang_name="日本語" / native={"text":原語表記,"romaji":綴り}(原語表記が確かな語のみtext。複合語("sake brewer"等)で原語表記が一部分だけを指すときは、JSONの`native_romaji`(例"sake")を綴りにする=画面が「酒(sake)」となり「酒=sake brewer」に見えない)。別の言語のorigin_langが既にある語は触らない。
   ※先に apply_ja_origin_pronunciation_2026_09_26.py を適用した33語は、native.ipa等を保持したままtext等の不足分だけ補う。
 
 使い方(wordsテーブルのみ・dry-run既定・バックアップ(既定DATA_DIR/script_backups・コンテナが消えても残る)+ロールバック
@@ -73,7 +73,7 @@ def main() -> int:
             native = dict(nd.get("native") or {})
             if it.get("native_text"):
                 native.setdefault("text", it["native_text"])
-            native.setdefault("romaji", it["english"])
+            native.setdefault("romaji", it.get("native_romaji") or it["english"])   # native_romaji=原語表記が指す部分の綴り(複合語用)
             nd["native"] = native
             if nd == d:
                 skipped.setdefault("反映済み", []).append(it["english"])

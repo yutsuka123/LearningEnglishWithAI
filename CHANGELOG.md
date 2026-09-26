@@ -34,6 +34,7 @@ prune cron(03:45)でusage_events 0件削除+growth_daily 41日分保存を確認
   **Fable照査(2026-09-26・BLOCKERなし)の指摘反映**: 課金のcommit前に返金用の領収と「直近5分」印を確定させていたため、commit失敗(database is locked)時に控除は巻き戻るのに返金だけが走り残高が純増しうる→**領収・印はcommit成功後にだけ確定**(M・実証済みの不具合を修正)・キャッシュ済み経路の`delivered`も`with db()`を抜けてから確定(NIT)。範囲: 返金は**再生課金(約0.5pt)のみ**(合成成功後の例外では生成費用の控除は戻らないが音声は`tts_cache`に保存済みで再試行は無料=合計で正当な額)。既知の限界(受容): 同じ未キャッシュ有料語のほぼ同時2回押しで先着だけが失敗すると、後着は先着の「直近5分」印で無課金のまま成功する(0.5ptぶん・先着だけを失敗させる手段が利用者側に無い)。
   ③**MEDIUM-1** 閾値は**下げない**: 8KB未満の音声を文字起こしで検証したところほぼ全て不良で、8,832B・9,600Bにも不良が残っていた(バイト数では判別できない)=誤検出の心配は当たらず。詳細は`ai.py`のコメントと`docs/TODO.md`。
 - **管理画面の原価レポートに、音声の再生課金の売上を計上**(以前は`reason='tts_playback'`が集計対象外でTTSの粗利が過小だった)。再生課金と、その返金(`tts_playback_refund`・売上のマイナス)を`tts`にまとめる。
+- **日本語由来語の分類の独立検証(Fable・2026-09-26)と反映**: 293語のうち問題あり約40語。原語表記そのものの取り違えは0。反映: ①**除外**=Ainu(アイヌ語由来で日本語経由ではない)・soybean(soy sauceが除外済みで不統一) ②**複合語の表示**=`native_romaji`(原語表記が指す部分の綴り)を新設し「酒(sake)」のように表示(以前は「酒(sake brewer)」で酒=sake brewerに見えた)。対象30語 ③**原語表記の差し替え**=kanban board→かんばん・tempura udon→天ぷらうどん・curry udon→カレーうどん・clam miso soup→味噌汁・kei car→軽自動車 ④**取りこぼしの追補18語**(judo・karate・kimono・origami・Kabuki・kintsugi・shamisen・bunraku・ikebana・furoshiki・sukiyaki・netsuke・ukiyo-e・sumi-e・senryu・kanban・miso soup・Shiba Inu)。対象は309語(音声も332語・男女664本に更新)。
 - 課金の中身は変えていない(0.25pt・初回のみ・無課金10語無料)。**フラグONの前にFable照査(課金・認可・配信)が必須**。
 
 ## ver1.5.3 (2026-09-26作成・未デプロイ)

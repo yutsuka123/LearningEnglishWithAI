@@ -96,7 +96,8 @@ def main() -> int:
     manifest: dict = {"format": 1, "generated": time.strftime("%Y-%m-%d %H:%M:%S"), "words": {}}
     mpath = out / "manifest.json"
     if a.merge and mpath.exists():
-        manifest["words"] = json.loads(mpath.read_text(encoding="utf-8")).get("words", {})
+        manifest["words"] = {k: v for k, v in json.loads(mpath.read_text(encoding="utf-8")).get("words", {}).items()
+                             if int(k) in words}   # 対象から外れた語(除外した語)のエントリは落とす
     errors = []
     for wid in sorted(words):
         w = words[wid]
