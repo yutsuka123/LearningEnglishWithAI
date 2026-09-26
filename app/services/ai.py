@@ -727,6 +727,62 @@ _TTS_USD_PER_1K_CHARS = 0.015
 _MIN_SPEECH_BYTES = 8192
 _MIN_GUARD_CHARS = 3
 _MAX_TTS_ATTEMPTS = 3
+
+# ---- 合成直後の文字起こし照合(2026-09-26・オーナー承認「音声を新しく作るたびに文字起こしで照合」) ------------
+# サイズ閾値(_MIN_SPEECH_BYTES)だけでは不良音声を見抜けない(閾値の上にも「別の語を読む」「無音に近い」音声が
+# 残る・単語音声33,128本の実測で約0.1〜0.2%)。短いテキスト(単語・短いフレーズ)は、合成直後に文字起こしして
+# 元の綴りと照合し、明らかに別物なら再試行する。**検証で失敗にはしない**: 最大試行回数の中で最も綴りに近い音声を
+# 採用する(同音異義語・略語・外来語の読み等で正しい音声が低スコアになりうるため、検証だけで「再生できない語」を
+# 作らない)。検証の費用(STT)は運営負担(feature='tts_verify'・OPERATOR_USER_ID)で、利用者の枠・残高には載せない。
+# 無効化=環境変数TTS_VERIFY_ENABLED=0。
+_VERIFY_MODEL = "gpt-4o-transcribe"
+_VERIFY_PROMPT = "An English word or short phrase, spoken alone. Write it in English letters."
+_VERIFY_MAX_CHARS = 40          # これを超える長いテキストは検証しない(不良は目立ち、遅延・費用が増えるため)
+_VERIFY_MIN_SCORE = 0.5         # 綴りとの一致度(0〜1)。これ未満は「別物」の疑い
+_VERIFY_USD_PER_SEC = 0.006 / 60   # gpt-4o-transcribe(約$0.006/分)・費用の概算記録用
+_VERIFY_BYTES_PER_SEC = 16000      # mp3(約128kbps)の秒数換算
+
+
+def _verify_enabled() -> bool:
+    import os
+    return os.getenv("TTS_VERIFY_ENABLED", "1").strip().lower() not in ("0", "false", "no", "off")
+
+
+def _norm_letters(s: str) -> str:
+    import re
+    return re.sub(r"[^a-z0-9]", "", s.lower())
+
+
+def _verify_worthy(speak: str) -> bool:
+    """検証する価値と信頼性があるテキストか(短い・数字を含まない・3文字以上)。数字は「73→seventy-three」のように
+    読み上げ表記が変わり、1〜2文字は同音の別綴り(C→see・eye→I)が多く、照合が信頼できない。"""
+    import re
+    t = speak.strip()
+    return (len(t) <= _VERIFY_MAX_CHARS and len(_norm_letters(t)) >= 3
+            and not re.search(r"\d", t))
+
+
+def _speech_score(client, audio: bytes, expected: str, speak: str) -> tuple[float | None, str]:
+    """(綴りとの一致度, 聞こえた文字列)。検証できない場合(APIエラー・応答拒否など)は(None, "")=合格扱い。"""
+    import difflib
+    import re
+    try:
+        r = client.audio.transcriptions.create(
+            model=_VERIFY_MODEL, file=("tts_check.mp3", audio, "audio/mpeg"),
+            language="en", prompt=_VERIFY_PROMPT)
+        heard = getattr(r, "text", "") or ""
+    except Exception as exc:   # 検証の失敗で再生を止めない
+        log.warning("TTS 照合のSTTに失敗(検証なしで採用): %s", type(exc).__name__)
+        return None, ""
+    low = heard.lower()
+    if "can't assist" in low or "here to help" in low:   # 不適切語へのSTT側の拒否は音声の良否と無関係
+        return None, heard
+    variants = {expected, re.sub(r"\s*\(.*?\)\s*", " ", expected).strip(), speak}
+    score = max((difflib.SequenceMatcher(None, _norm_letters(v), _norm_letters(heard)).ratio()
+                 for v in variants if _norm_letters(v)), default=0.0)
+    return score, heard
+
+
 # 運営負担の原価(不良音声の再試行分)を記録するai_usageのuser_id(実ユーザーは1以上=このIDは使われない)。
 # 管理画面の原価レポートでは「(運営負担・TTS再試行)」と表示する。
 OPERATOR_USER_ID = 0
@@ -831,6 +887,10 @@ def synthesize_speech(
     try:
         attempts = 0
         audio = b""
+        verify_on = _verify_enabled() and _verify_worthy(speak)
+        verify_secs = 0.0          # 照合(STT)に使った音声の秒数(費用の概算記録用)
+        accepted: bytes | None = None
+        best: tuple[float, bytes] | None = None   # 照合で疑いが残った音声のうち最も綴りに近いもの
         while attempts < _MAX_TTS_ATTEMPTS:
             attempts += 1
             resp = client.audio.speech.create(
@@ -841,12 +901,32 @@ def synthesize_speech(
                 **extra,
             )
             audio = resp.read() if hasattr(resp, "read") else resp.content
-            if not _looks_broken(audio, speak):
+            if _looks_broken(audio, speak):
+                log.warning(
+                    "TTS 不良音声を検出 (%dB・試行%d/%d・voice=%s model=%s・"
+                    "文字数%d)", len(audio), attempts, _MAX_TTS_ATTEMPTS, voice,
+                    settings.tts_model, len(speak))
+                continue
+            if not verify_on:
+                accepted = audio
+                break
+            score, heard = _speech_score(client, audio, text, speak)
+            if score is not None or heard:   # STTが実際に応答した分だけ費用に数える(APIエラーは数えない)
+                verify_secs += len(audio) / _VERIFY_BYTES_PER_SEC
+            if score is None or score >= _VERIFY_MIN_SCORE:
+                accepted = audio
                 break
             log.warning(
-                "TTS 不良音声を検出 (%dB・試行%d/%d・voice=%s model=%s・"
-                "文字数%d)", len(audio), attempts, _MAX_TTS_ATTEMPTS, voice,
-                settings.tts_model, len(speak))
+                "TTS 照合で別の語に聞こえる疑い (一致度%.2f・聞こえた=%r・期待=%r・試行%d/%d・voice=%s)",
+                score, heard[:40], text[:40], attempts, _MAX_TTS_ATTEMPTS, voice)
+            if best is None or score > best[0]:
+                best = (score, audio)
+        if accepted is None and best is not None:
+            # 最大試行でも疑いが晴れなかった=同音語・外来語の読み等で正しい可能性もあるため、失敗にせず最良を採用する。
+            accepted = best[1]
+            log.warning("TTS 照合で疑いのまま最良(一致度%.2f)を採用: %r", best[0], text[:40])
+        if accepted is not None:
+            audio = accepted
         elapsed = time.monotonic() - t0
         if elapsed >= _SLOW_CALL_SEC:
             log.warning("TTS 低速 (voice=%s model=%s elapsed=%.1fs)",
@@ -883,6 +963,14 @@ def synthesize_speech(
                     " user_id, ip) VALUES (?, 0, 0, ?, 'tts_retry', ?, ?)",
                     (settings.tts_model, operator_cost, OPERATOR_USER_ID,
                      current_ip()),
+                )
+            if verify_secs > 0:
+                conn.execute(
+                    "INSERT INTO ai_usage "
+                    "(model, prompt_tokens, output_tokens, cost_usd, feature, "
+                    " user_id, ip) VALUES (?, 0, 0, ?, 'tts_verify', ?, ?)",
+                    (_VERIFY_MODEL, verify_secs * _VERIFY_USD_PER_SEC,
+                     OPERATOR_USER_ID, current_ip()),
                 )
             # 2026-08-12修正: 以前はここでチャージ残高を消費しておらず、
             # 無料枠を使い切った後もTTSだけ無制限に無料で使えてしまう
