@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- 非対応ブラウザ向けの案内(2026-09-26)。ES5のみ・他のスクリプトより前に置く。 -->
   <script src="/static/js/compat-guard.js"></script>
-  <title>nyangailabとは｜サブスクなし・前払い制の安いAI英語学習アプリ【無料体験】</title>
+  <title data-i18n="meta.aboutTitle">nyangailabとは｜サブスクなし・前払い制の安いAI英語学習アプリ【無料体験】</title>
   <meta name="description" content="nyangailabは月額サブスクではなく前払い制で使った分だけ払うAI英語学習アプリです。日常会話の基礎語彙から専門用語・妖怪や絶滅種などマニアックな分野まで、AI活用で価格を抑えつつ自然な音声つきで学べます。登録なしで無料体験できます。" />
   <meta name="keywords" content="nyangailab, にゃんがいらぼ, 英語学習アプリ, AI英語学習, サブスク疲れ, サブスクなし, 前払い, 都度課金, 廉価, 安い英語アプリ, 無料体験, 専門用語, マイナー英語, マニアックな英語学習" />
   <meta name="robots" content="index, follow" />
@@ -67,6 +67,7 @@
   <link rel="stylesheet" href="/static/css/page.css" />
   <script src="/static/js/i18n.js"></script>
   <script src="/static/js/i18n_dict.js"></script>
+  <script src="/static/js/i18n_dict_about.js"></script>
   <script src="/static/js/page-chrome.js"></script>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17457232912"></script>
@@ -100,7 +101,7 @@
   <div class="pagemenu">
     <button type="button" id="pageMenuBtn" aria-haspopup="true" aria-expanded="false"
       aria-controls="pageMenuPanel" data-i18n-title="topbar.menuTitle" title="メニュー">☰</button>
-    <nav id="pageMenuPanel" class="pagemenu-panel" hidden aria-label="メニュー">
+    <nav id="pageMenuPanel" class="pagemenu-panel" hidden aria-label="メニュー" data-i18n-aria="topbar.menuTitle">
       <a href="/" data-i18n="about.menuTop">🏠 トップ画面へ戻る</a>
       <hr class="pagemenu-sep" />
       <a href="#toc" data-i18n="about.tocTitle">📋 目次</a>
@@ -117,7 +118,7 @@
   <div class="wrap">
     <div class="card" id="overview">
       <img class="hero-img" src="/static/img/nyangailab_header_hero.jpg"
-        width="960" height="540" alt="nyangai labのイラスト：白衣を着た猫がAI英語学習アプリの教材（単語・フレーズ）を実験室で作っている様子" />
+        width="960" height="540" alt="nyangai labのイラスト：白衣を着た猫がAI英語学習アプリの教材（単語・フレーズ）を実験室で作っている様子" data-i18n-alt="about.heroAlt" />
       <h1>🐱 nyangailab</h1>
       <p class="sub" data-i18n="about.sub">前払いチャージ制（使った分だけ）で、ニッチな語彙まで
         学べるAI英語学習アプリ</p>
@@ -163,7 +164,7 @@
       <h3 data-i18n="about.devTitle">🐾 開発者より</h3>
       <div class="dev-row">
         <img class="dev-avatar" src="/static/img/nyangailab_icon_128.png"
-          width="56" height="56" alt="nyangai labのアイコン(白衣を着た猫)" />
+          width="56" height="56" alt="nyangai labのアイコン(白衣を着た猫)" data-i18n-alt="about.avatarAlt" />
         <p data-i18n="about.devMessage">「サブスク疲れ」の私自身が、月額課金なしで英語学習を続けたくて
           趣味で作り始めたのがこのアプリです。今のAIの力を借りることで、
           一人ではとても揃えられなかった幅広い分野・語彙数を収録できました。
@@ -186,49 +187,48 @@
         <li>❓ <a href="#faq" data-i18n="about.toc.faq">よくある質問</a></li>
         <li>🔧 <a href="#trouble" data-i18n="about.toc.trouble">困ったときは</a></li>
       </ol>
-      <p class="muted mt" data-i18n="about.tocNote">このページの残りの節（登録の手順・課金方法・FAQ等の詳細）は現在日本語のみです。</p>
     </div>
 
     <div class="card" id="signup">
-      <h2>📝 登録するには？</h2>
-      <p class="totoc"><a href="#toc">▲ 目次へ戻る</a></p>
-      <p>メールアドレス・パスワード・呼んでほしいお名前（ニックネームで
+      <h2 data-i18n="about.sec.signup.1">📝 登録するには？</h2>
+      <p class="totoc" data-i18n-html="about.sec.signup.2"><a href="#toc">▲ 目次へ戻る</a></p>
+      <p data-i18n="about.sec.signup.3">メールアドレス・パスワード・呼んでほしいお名前（ニックネームで
         可）を入力するだけで、確認メールなしでその場ですぐ登録できます
         （現在、新規登録は受付中です）。</p>
       <a class="cta" href="/login#signup"
-        data-track="about_cta:section_signup">新規登録ページを開く →</a>
+        data-track="about_cta:section_signup" data-i18n="about.sec.signup.4">新規登録ページを開く →</a>
 
-      <h3>登録すると何がいいの？</h3>
+      <h3 data-i18n="about.sec.signup.5">登録すると何がいいの？</h3>
       <ul>
-        <li>学習記録（習熟度・忘却曲線に基づく復習間隔）が保存され、
+        <li data-i18n="about.sec.signup.6">学習記録（習熟度・忘却曲線に基づく復習間隔）が保存され、
           次回もそこから続けられます</li>
-        <li>単語帳・フレーズ帳を作成できます</li>
-        <li>音声再生の無料範囲が広がります（単語1,000→2,000語、
+        <li data-i18n="about.sec.signup.7">単語帳・フレーズ帳を作成できます</li>
+        <li data-i18n="about.sec.signup.8">音声再生の無料範囲が広がります（単語1,000→2,000語、
           フレーズ750→1,500件）</li>
-        <li>前払いチャージ（<a href="#charge">下記</a>）をすれば、
+        <li data-i18n-html="about.sec.signup.9">前払いチャージ（<a href="#charge">下記</a>）をすれば、
           AI英会話・教材生成・添削なども使えるようになります</li>
       </ul>
-      <p class="muted">すでにアカウントをお持ちの方は
+      <p class="muted" data-i18n-html="about.sec.signup.10">すでにアカウントをお持ちの方は
         <a href="/login">ログイン画面</a>からログインしてください。
         登録・ログインしなくても、単語/フレーズの閲覧やサンプル教材は
         お試しいただけます（<a href="#tiers">詳細</a>）。</p>
     </div>
 
     <div class="card" id="charge">
-      <h2>💳 課金して使うには？</h2>
-      <p class="totoc"><a href="#toc">▲ 目次へ戻る</a></p>
-      <p>AI英会話・リーディング/リスニング教材の生成・ライティング添削
+      <h2 data-i18n="about.sec.charge.1">💳 課金して使うには？</h2>
+      <p class="totoc" data-i18n-html="about.sec.signup.2"><a href="#toc">▲ 目次へ戻る</a></p>
+      <p data-i18n="about.sec.charge.2">AI英会話・リーディング/リスニング教材の生成・ライティング添削
         などを使うには、前払いチャージが必要です（月額サブスクは
         ありません。使った分だけ残高から消費されます）。</p>
       <div class="mt" style="border:1px solid var(--accent);
         border-radius:8px;padding:10px 12px;background:rgba(77,163,255,.10)">
-        <p style="margin:0;color:var(--text)">📱 <b>PayPayなら即時チャージ
+        <p style="margin:0;color:var(--text)" data-i18n-html="about.sec.charge.3">📱 <b>PayPayなら即時チャージ
           できます。</b> ログイン後、サイドバーの「⚙️ 設定・チャージ」
           画面にある「① PayPayで購入」ボタンから¥800/¥8,000を選ぶと、
           キーの発行・入力なしでそのまま残高に反映されます。</p>
         <a class="cta" style="margin-top:8px" href="/?tab=settings"
-          data-track="about_cta:paypay_settings">設定・チャージ画面を開く →</a>
-        <p class="muted" style="margin:6px 0 0">通常は支払い完了と同時に
+          data-track="about_cta:paypay_settings" data-i18n="about.sec.charge.4">設定・チャージ画面を開く →</a>
+        <p class="muted" style="margin:6px 0 0" data-i18n-html="about.sec.charge.5">通常は支払い完了と同時に
           反映されますが、お支払い後にアプリ/ブラウザの画面がこちらに
           戻ってこなかった場合(タブを閉じた等)でも、システムが自動で
           お支払い状況を確認しており、目安として<b>数分程度(通常5分
@@ -236,81 +236,81 @@
           自体が取り消されることはありませんので、しばらく経ってから
           再度残高をご確認ください。</p>
       </div>
-      <p class="muted" style="margin:4px 0 0">「PayPay」はPayPay株式会社の
+      <p class="muted" style="margin:4px 0 0" data-i18n="about.sec.charge.6">「PayPay」はPayPay株式会社の
         登録商標です。</p>
-      <p class="mt">BASEでの購入も引き続きご利用いただけます。</p>
+      <p class="mt" data-i18n="about.sec.charge.7">BASEでの購入も引き続きご利用いただけます。</p>
       <ol>
-        <li>「nyangailab BASEショップ」でポイントパックを購入します
+        <li data-i18n="about.sec.charge.8">「nyangailab BASEショップ」でポイントパックを購入します
           （例: ¥800→800pt、¥8,000→8,800pt〈+10%〉。決済はBASEの
           かんたん決済〈クレジットカード・PayPay等〉です）。</li>
-        <li>購入後、BASEの取引メッセージで「チャージキー」が届きます
+        <li data-i18n="about.sec.charge.9">購入後、BASEの取引メッセージで「チャージキー」が届きます
           （現在は手動発行のため、反映まで少しお時間をいただく場合が
           あります）。</li>
-        <li>ログイン後、サイドバーの「⚙️ 設定・チャージ」画面にある
+        <li data-i18n="about.sec.charge.10">ログイン後、サイドバーの「⚙️ 設定・チャージ」画面にある
           「💳 チャージ」欄に届いたキーを入力し、「チャージする」を
           押すと pt（1pt=1円）が残高に加算されます。</li>
       </ol>
       <a class="cta" href="https://nyangailab.base.shop/" target="_blank"
-        rel="noopener" data-track="about_cta:base_shop">nyangailab
+        rel="noopener" data-track="about_cta:base_shop" data-i18n="about.sec.charge.11">nyangailab
         BASEショップを開く →</a>
-      <p class="muted mt">料金の詳細・最新の価格は
+      <p class="muted mt" data-i18n-html="about.sec.charge.12">料金の詳細・最新の価格は
         <a href="/tokushoho">特定商取引法に基づく表記</a>を
         ご覧ください。</p>
     </div>
 
     <div class="card" id="tiers">
-      <h2>🔓 ログイン前後・無課金/課金でできることの違い（詳細）</h2>
-      <p class="totoc"><a href="#toc">▲ 目次へ戻る</a></p>
-      <p class="muted">「①未ログイン」「②ログイン（無課金）」「③課金（チャージ後）」
+      <h2 data-i18n="about.sec.tiers.1">🔓 ログイン前後・無課金/課金でできることの違い（詳細）</h2>
+      <p class="totoc" data-i18n-html="about.sec.signup.2"><a href="#toc">▲ 目次へ戻る</a></p>
+      <p class="muted" data-i18n="about.sec.tiers.2">「①未ログイン」「②ログイン（無課金）」「③課金（チャージ後）」
         の3段階で、使える範囲が変わります。</p>
 
       <div class="tier-cards">
         <div class="tier-card">
-          <h3>🆓 登録なし</h3>
+          <h3 data-i18n="about.sec.tiers.3">🆓 登録なし</h3>
           <ul>
-            <li>単語・フレーズ全分野を閲覧OK</li>
-            <li>発音は単語1,000語・フレーズ750件まで無料（ほかに、河童・天狗など紹介用の語・フレーズが数件も無料）</li>
-            <li>学習記録は保存されません</li>
-            <li>単語帳・フレーズ帳は作れません</li>
-            <li>🎮 クロスワードはサンプルの一部（5個）が遊べます</li>
+            <li data-i18n="about.sec.tiers.4">単語・フレーズ全分野を閲覧OK</li>
+            <li data-i18n="about.sec.tiers.5">発音は単語1,000語・フレーズ750件まで無料（ほかに、河童・天狗など紹介用の語・フレーズが数件も無料）</li>
+            <li data-i18n="about.sec.tiers.6">学習記録は保存されません</li>
+            <li data-i18n="about.sec.tiers.7">単語帳・フレーズ帳は作れません</li>
+            <li data-i18n="about.sec.tiers.8">🎮 クロスワードはサンプルの一部（5個）が遊べます</li>
           </ul>
         </div>
         <div class="tier-card">
-          <h3>✅ 登録（無料）</h3>
+          <h3 data-i18n="about.sec.tiers.9">✅ 登録（無料）</h3>
           <ul>
-            <li>発音の無料範囲が単語2,000語・フレーズ1,500件に拡大</li>
-            <li>学習記録（習熟度・復習間隔）を保存</li>
-            <li>単語帳・フレーズ帳が作れる（1個・100語まで）</li>
-            <li>AI英会話・教材生成・添削はサンプルのみ</li>
-            <li>🎮 クロスワードはサンプル全部が使えます（自分で作るは課金が必要）</li>
+            <li data-i18n="about.sec.tiers.10">発音の無料範囲が単語2,000語・フレーズ1,500件に拡大</li>
+            <li data-i18n="about.sec.tiers.11">学習記録（習熟度・復習間隔）を保存</li>
+            <li data-i18n="about.sec.tiers.12">単語帳・フレーズ帳が作れる（1個・100語まで）</li>
+            <li data-i18n="about.sec.tiers.13">AI英会話・教材生成・添削はサンプルのみ</li>
+            <li data-i18n="about.sec.tiers.14">🎮 クロスワードはサンプル全部が使えます（自分で作るは課金が必要）</li>
           </ul>
         </div>
         <div class="tier-card">
-          <h3>💳 チャージ（¥800〜）</h3>
+          <h3 data-i18n="about.sec.tiers.15">💳 チャージ（¥800〜）</h3>
           <ul>
-            <li>収録すべての発音を再生可能（単語16,000語以上）</li>
-            <li>単語帳・フレーズ帳が個数・語数とも無制限</li>
-            <li>AI英会話・教材生成・添削が使える</li>
-            <li>使った分だけ消費（月額固定費なし）</li>
-            <li>🎮 クロスワードはプレイ数無制限・保存はサンプル10件・
+            <li data-i18n="about.sec.tiers.16">収録すべての発音を再生可能（単語16,000語以上）</li>
+            <li data-i18n="about.sec.tiers.17">単語帳・フレーズ帳が個数・語数とも無制限</li>
+            <li data-i18n="about.sec.tiers.18">AI英会話・教材生成・添削が使える</li>
+            <li data-i18n="about.sec.tiers.19">使った分だけ消費（月額固定費なし）</li>
+            <li data-i18n="about.sec.tiers.20">🎮 クロスワードはプレイ数無制限・保存はサンプル10件・
               自分で作ったもの50件まで</li>
           </ul>
         </div>
       </div>
       <details class="manual-collapse">
-      <summary>各段階の詳しい説明を開く</summary>
+      <summary data-i18n="about.sec.tiers.21">各段階の詳しい説明を開く</summary>
 
       <div class="manual-item">
-        <h3>🔊🆓🔒 単語・フレーズ一覧の再生アイコンの意味</h3>
+        <h3 data-i18n="about.sec.tiers.22">🔊🆓🔒 単語・フレーズ一覧の再生アイコンの意味</h3>
         <ul>
-          <li>🆓 … 誰でも無料で再生できる範囲です。</li>
-          <li>🔊 … 通常の再生ボタンです（無料範囲外でも、チャージ残高が
+          <li data-i18n="about.sec.tiers.23">🆓 … 誰でも無料で再生できる範囲です。</li>
+          <li data-i18n="about.sec.tiers.24">🔊 … 通常の再生ボタンです（無料範囲外でも、チャージ残高が
             あれば少額消費して再生できます）。</li>
-          <li>🔒 … 無料範囲外で、かつ未ログイン/チャージ残高が無いため、
+          <li data-i18n="about.sec.tiers.25">🔒 … 無料範囲外で、かつ未ログイン/チャージ残高が無いため、
             現在は再生できない状態です。ログインまたはチャージで再生
             できるようになります。</li>
         </ul>
-        <p class="muted">🔁 <b>誤連打・聞き直し対策（2026-08-13〜）</b>:
+        <p class="muted" data-i18n-html="about.sec.tiers.26">🔁 <b>誤連打・聞き直し対策（2026-08-13〜）</b>:
           無料範囲外の単語・フレーズの再生でチャージを消費した場合、
           同じ単語・同じ例文を<b>5分以内に何度再生してもその後は
           追加課金されません</b>（誤って連打してしまっても安心です）。
@@ -321,8 +321,8 @@
       </div>
 
       <div class="manual-item">
-        <h3>① 未ログイン（ゲスト）</h3>
-        <p>単語・フレーズの一覧・検索・詳細（意味・例文・発音記号など）は
+        <h3 data-i18n="about.sec.tiers.27">① 未ログイン（ゲスト）</h3>
+        <p data-i18n="about.sec.tiers.28">単語・フレーズの一覧・検索・詳細（意味・例文・発音記号など）は
           全分野無料で閲覧できます。発音の音声再生は、レベルの低い方から
           単語1,000語・フレーズ750件までは無料（ほかに、河童・天狗など
           紹介用の語・フレーズが数件も無料）で、それ以降はログインまたは
@@ -339,8 +339,8 @@
       </div>
 
       <div class="manual-item">
-        <h3>② ログイン・無課金</h3>
-        <p>音声再生の無料範囲が単語2,000語・フレーズ1,500件に広がります。
+        <h3 data-i18n="about.sec.tiers.29">② ログイン・無課金</h3>
+        <p data-i18n="about.sec.tiers.30">音声再生の無料範囲が単語2,000語・フレーズ1,500件に広がります。
           学習記録（習熟度・忘却曲線に基づく復習間隔）もご自身のアカウント
           に保存されます。単語帳・フレーズ帳も作成できます（無課金の間は
           1個・100語までの制限があります）。🎮ゲーム（クロスワード）は
@@ -352,8 +352,8 @@
       </div>
 
       <div class="manual-item">
-        <h3>③ 課金（チャージ後）</h3>
-        <p>音声再生の無料範囲を超えた単語・フレーズも、チャージ残高が
+        <h3 data-i18n="about.sec.tiers.31">③ 課金（チャージ後）</h3>
+        <p data-i18n-html="about.sec.tiers.32">音声再生の無料範囲を超えた単語・フレーズも、チャージ残高が
           あれば少額消費してすべて再生できるようになります（収録数は
           単語16,000語以上・フレーズ7,000件以上、随時追加中）。加えて
           AI英会話・リーディング/リスニング教材の生成・ライティング添削・
@@ -364,7 +364,7 @@
           チャージ残高は前払い方式で、使った分
           だけ消費されます。料金の目安は<a href="/tokushoho">特定商取引法に
           基づく表記</a>をご覧ください。</p>
-        <p class="muted">※チャージ残高でご利用いただける量（消費ペース）は、
+        <p class="muted" data-i18n-html="about.sec.tiers.33">※チャージ残高でご利用いただける量（消費ペース）は、
           為替レートやAI提供元のAPI価格改定により変動することがあります。
           詳しくは<a href="/static/terms.html">利用規約・免責事項</a>を
           ご確認ください。</p>
@@ -373,46 +373,46 @@
     </div>
 
     <div class="card" id="quickstart">
-      <h2>📝 かんたん使い方ガイド</h2>
-      <p class="totoc"><a href="#toc">▲ 目次へ戻る</a></p>
-      <p class="muted">サイドバーメニューの主な項目を、ひとことで紹介します。
+      <h2 data-i18n="about.sec.quickstart.1">📝 かんたん使い方ガイド</h2>
+      <p class="totoc" data-i18n-html="about.sec.signup.2"><a href="#toc">▲ 目次へ戻る</a></p>
+      <p class="muted" data-i18n-html="about.sec.quickstart.2">サイドバーメニューの主な項目を、ひとことで紹介します。
         各機能の詳しい説明は下記「<a href="#manual">詳しい取扱説明書</a>」
         をご覧ください。</p>
       <ul class="quick-list">
-        <li><b>🏠 ダッシュボード</b> — 学習状況のサマリー画面</li>
-        <li><b>🔤 英単語 ／ 💬 ミニフレーズ</b> — 単語・フレーズの一覧・検索</li>
-        <li><b>🃏 フラッシュ単語 ／ フラッシュフレーズ</b> — カード形式の復習</li>
-        <li><b>🗂️ 単語帳 ／ フレーズ帳</b> — 自分だけのコレクション作成</li>
-        <li><b>📝 クイズ</b> — 4択・タイピングで単語/フレーズを出題</li>
-        <li><b>📖 リーディング ／ 🎧 リスニング ／ ✍️ ライティング ／
+        <li data-i18n-html="about.sec.quickstart.3"><b>🏠 ダッシュボード</b> — 学習状況のサマリー画面</li>
+        <li data-i18n-html="about.sec.quickstart.4"><b>🔤 英単語 ／ 💬 ミニフレーズ</b> — 単語・フレーズの一覧・検索</li>
+        <li data-i18n-html="about.sec.quickstart.5"><b>🃏 フラッシュ単語 ／ フラッシュフレーズ</b> — カード形式の復習</li>
+        <li data-i18n-html="about.sec.quickstart.6"><b>🗂️ 単語帳 ／ フレーズ帳</b> — 自分だけのコレクション作成</li>
+        <li data-i18n-html="about.sec.quickstart.7"><b>📝 クイズ</b> — 4択・タイピングで単語/フレーズを出題</li>
+        <li data-i18n-html="about.sec.quickstart.8"><b>📖 リーディング ／ 🎧 リスニング ／ ✍️ ライティング ／
           🗣️ 英会話</b> — AI教材で練習（サンプルは無料、AIによる新規生成・
           添削・会話は課金ユーザー向け）</li>
-        <li><b>🎯 判定・教材</b> — レベル判定や場面別教材の生成（課金）</li>
-        <li><b>📚 学習履歴</b> — これまでの学習記録の振り返り</li>
-        <li><b>⚙️ 設定・チャージ</b> — 表示設定・プロフィール・チャージ
+        <li data-i18n-html="about.sec.quickstart.9"><b>🎯 判定・教材</b> — レベル判定や場面別教材の生成（課金）</li>
+        <li data-i18n-html="about.sec.quickstart.10"><b>📚 学習履歴</b> — これまでの学習記録の振り返り</li>
+        <li data-i18n-html="about.sec.quickstart.11"><b>⚙️ 設定・チャージ</b> — 表示設定・プロフィール・チャージ
           （残高追加）</li>
       </ul>
     </div>
 
     <div class="card" id="legal">
-      <h2>📄 利用規約・特定商取引法など</h2>
-      <p class="totoc"><a href="#toc">▲ 目次へ戻る</a></p>
+      <h2 data-i18n="about.sec.legal.1">📄 利用規約・特定商取引法など</h2>
+      <p class="totoc" data-i18n-html="about.sec.signup.2"><a href="#toc">▲ 目次へ戻る</a></p>
       <ul class="links">
-        <li><a href="/static/terms.html">📄 利用規約・免責事項</a></li>
-        <li><a href="/tokushoho">🧾 特定商取引法に基づく表記</a></li>
+        <li data-i18n-html="about.sec.legal.2"><a href="/static/terms.html">📄 利用規約・免責事項</a></li>
+        <li data-i18n-html="about.sec.legal.3"><a href="/tokushoho">🧾 特定商取引法に基づく表記</a></li>
       </ul>
     </div>
 
     <div class="card" id="manual">
-      <h2>📘 詳しい取扱説明書・使い方ガイド</h2>
-      <p class="totoc"><a href="#toc">▲ 目次へ戻る</a></p>
-      <p class="muted">サイドバーメニューの並び順に沿って、各機能を詳しく
+      <h2 data-i18n="about.sec.manual.1">📘 詳しい取扱説明書・使い方ガイド</h2>
+      <p class="totoc" data-i18n-html="about.sec.signup.2"><a href="#toc">▲ 目次へ戻る</a></p>
+      <p class="muted" data-i18n="about.sec.manual.2">サイドバーメニューの並び順に沿って、各機能を詳しく
         説明します。ログイン後の画面と合わせてご覧ください。</p>
 
       <details class="manual-collapse">
-      <summary>各機能の詳しい説明を開く</summary>
+      <summary data-i18n="about.sec.manual.3">各機能の詳しい説明を開く</summary>
 
-      <div class="notice">
+      <div class="notice" data-i18n-html="about.sec.manual.4">
         ⚠️ <strong>単語・フレーズ・例文等のコンテンツ、読み上げ音声、
         音声入力の認識（発音判定等）は、OpenAIが提供するAIモデルを用いて
         作成・生成しています。</strong>
@@ -428,11 +428,11 @@
       </div>
 
       <div class="manual-item">
-        <h3>🏠 ダッシュボード</h3>
-        <p>ログイン後の最初の画面。習熟度・学習履歴のサマリーを表示します。
+        <h3 data-i18n="about.sec.manual.5">🏠 ダッシュボード</h3>
+        <p data-i18n="about.sec.manual.6">ログイン後の最初の画面。習熟度・学習履歴のサマリーを表示します。
           学習記録（単語/フレーズの習熟度・忘却曲線の復習間隔）は無課金の
           ログインユーザーでも保存されます。</p>
-        <p class="muted">※表示される「TOEIC推定スコア」は学習履歴を
+        <p class="muted" data-i18n-html="about.sec.manual.7">※表示される「TOEIC推定スコア」は学習履歴を
           もとにしたAIによる目安です。個人開発のAIアプリならではの
           簡易指標として気軽にご活用ください（公式スコアとは差が
           生じます。詳しくは<a href="/static/terms.html" target="_blank"
@@ -440,22 +440,22 @@
       </div>
 
       <div class="manual-item">
-        <h3>🔤 英単語</h3>
-        <p>単語の一覧・検索・分野別フィルターの画面です。分野・レベルで
+        <h3 data-i18n="about.sec.manual.8">🔤 英単語</h3>
+        <p data-i18n="about.sec.manual.9">単語の一覧・検索・分野別フィルターの画面です。分野・レベルで
           絞り込みながら閲覧でき、各単語の🔊発音・詳細（品詞・意味・例文・
           派生語・類義語など）を確認できます。</p>
       </div>
 
       <div class="manual-item">
-        <h3>🎴 フラッシュ単語</h3>
-        <p>単語をカード形式で1問ずつ出題する復習モードです。習熟度の低い
+        <h3 data-i18n="about.sec.manual.10">🎴 フラッシュ単語</h3>
+        <p data-i18n="about.sec.manual.11">単語をカード形式で1問ずつ出題する復習モードです。習熟度の低い
           単語ほど優先的に出題されます。分野・レベルで出題範囲を絞り込める
           ほか、自分の単語帳を選んでその中だけを出題することもできます。</p>
       </div>
 
       <div class="manual-item">
-        <h3>📁 単語帳</h3>
-        <p>自分だけの単語コレクションを作成できます。分野・レベルで絞り
+        <h3 data-i18n="about.sec.manual.12">📁 単語帳</h3>
+        <p data-i18n-html="about.sec.manual.13">自分だけの単語コレクションを作成できます。分野・レベルで絞り
           込んだ単語をまとめて追加したり（「全件」を選ぶと絞り込み条件に
           該当するものを全て追加できます。無課金の間は<a href="#tiers">
           1個・100語までの上限</a>があります）、一覧から個別に外したり
@@ -463,63 +463,63 @@
       </div>
 
       <div class="manual-item">
-        <h3>💬 ミニフレーズ</h3>
-        <p>短い実用フレーズの一覧・検索・シーン別フィルターの画面です。
+        <h3 data-i18n="about.sec.manual.14">💬 ミニフレーズ</h3>
+        <p data-i18n="about.sec.manual.15">短い実用フレーズの一覧・検索・シーン別フィルターの画面です。
           日常会話・ビジネス・映画のセリフなど、幅広いシーンのフレーズを
           収録しています。</p>
       </div>
 
       <div class="manual-item">
-        <h3>🎴 フラッシュフレーズ</h3>
-        <p>フレーズ版のフラッシュカード復習モードです。使い方はフラッシュ
+        <h3 data-i18n="about.sec.manual.16">🎴 フラッシュフレーズ</h3>
+        <p data-i18n="about.sec.manual.17">フレーズ版のフラッシュカード復習モードです。使い方はフラッシュ
           単語と同様です（自分のフレーズ帳を選んでの出題にも対応）。</p>
       </div>
 
       <div class="manual-item">
-        <h3>📁 フレーズ帳</h3>
-        <p>フレーズ版の単語帳です。使い方は単語帳と同様です（「全件」
+        <h3 data-i18n="about.sec.manual.18">📁 フレーズ帳</h3>
+        <p data-i18n="about.sec.manual.19">フレーズ版の単語帳です。使い方は単語帳と同様です（「全件」
           追加にも対応）。</p>
       </div>
 
       <div class="manual-item">
-        <h3>📖 リーディング</h3>
-        <p>AIが生成した英文（ニュース・物語・文学など）を読んで設問に
+        <h3 data-i18n="about.sec.manual.20">📖 リーディング</h3>
+        <p data-i18n="about.sec.manual.21">AIが生成した英文（ニュース・物語・文学など）を読んで設問に
           答える練習ができます。あらかじめ用意されたサンプル教材のほか、
           課金ユーザーはその場でAIに新しい教材を生成させることもできます。</p>
       </div>
 
       <div class="manual-item">
-        <h3>✍️ ライティング</h3>
-        <p>英文を書いてAIに添削してもらう機能です（課金ユーザー向け）。</p>
+        <h3 data-i18n="about.sec.manual.22">✍️ ライティング</h3>
+        <p data-i18n="about.sec.manual.23">英文を書いてAIに添削してもらう機能です（課金ユーザー向け）。</p>
       </div>
 
       <div class="manual-item">
-        <h3>🗣️ 英会話</h3>
-        <p>AIとテキスト（または音声）で英会話練習ができます。AIと実際に
+        <h3 data-i18n="about.sec.manual.24">🗣️ 英会話</h3>
+        <p data-i18n="about.sec.manual.25">AIとテキスト（または音声）で英会話練習ができます。AIと実際に
           会話する機能は課金ユーザー向けです。</p>
       </div>
 
       <div class="manual-item">
-        <h3>🎧 リスニング</h3>
-        <p>音声を聞いて内容を理解する練習ができます。リーディングと同様、
+        <h3 data-i18n="about.sec.manual.26">🎧 リスニング</h3>
+        <p data-i18n="about.sec.manual.27">音声を聞いて内容を理解する練習ができます。リーディングと同様、
           サンプル教材は無料、AIによる新規生成は課金ユーザー向けです。</p>
       </div>
 
       <div class="manual-item">
-        <h3>🎯 判定・教材</h3>
-        <p>現在の実力を判定したり、出張・旅行など特定の場面に合わせた
+        <h3 data-i18n="about.sec.manual.28">🎯 判定・教材</h3>
+        <p data-i18n="about.sec.manual.29">現在の実力を判定したり、出張・旅行など特定の場面に合わせた
           教材をAIに作ってもらえる機能です（課金ユーザー向け）。</p>
       </div>
 
       <div class="manual-item">
-        <h3>📚 学習履歴</h3>
-        <p>これまでの学習セッションの記録を振り返れます。ログインしていれば
+        <h3 data-i18n="about.sec.manual.30">📚 学習履歴</h3>
+        <p data-i18n="about.sec.manual.31">これまでの学習セッションの記録を振り返れます。ログインしていれば
           無課金でもご利用いただけます。</p>
       </div>
 
       <div class="manual-item">
-        <h3>🎮 ゲーム（クロスワード）</h3>
-        <p>英単語のクロスワードで遊びながら学べます。あらかじめ用意した
+        <h3 data-i18n="about.sec.manual.32">🎮 ゲーム（クロスワード）</h3>
+        <p data-i18n="about.sec.manual.33">英単語のクロスワードで遊びながら学べます。あらかじめ用意した
           サンプルはログイン不要（一部）で誰でも遊べます。分野・単語帳から
           自由に出題できる「自分で作る」は、作成のたびにAI利用料が
           実際に発生するため、課金（チャージ）ユーザー限定です
@@ -527,40 +527,40 @@
       </div>
 
       <div class="manual-item">
-        <h3>⚙️ 設定</h3>
-        <p>表示する分野・シーンの絞り込み、既定フィルター、プロフィール、
+        <h3 data-i18n="about.sec.manual.34">⚙️ 設定</h3>
+        <p data-i18n="about.sec.manual.35">表示する分野・シーンの絞り込み、既定フィルター、プロフィール、
           チャージ（残高の追加）などを管理できます。</p>
       </div>
 
       <div class="manual-item">
-        <h3>🧠 習熟度(mastery)と忘却曲線</h3>
-        <p>単語・フレーズごとの理解度は、0〜満点(既定200pt)の
+        <h3 data-i18n="about.sec.manual.36">🧠 習熟度(mastery)と忘却曲線</h3>
+        <p data-i18n-html="about.sec.manual.37">単語・フレーズごとの理解度は、0〜満点(既定200pt)の
           <b>ポイント</b>で管理しています。このポイントが一定以上になると
           「覚えた」として扱われ、クイズ・フラッシュカードに出にくくなります
           （逆に低いものほど優先的に出題されます）。</p>
-        <p>単語・フレーズ一覧の習熟度欄には、現在のポイント数に応じて
+        <p data-i18n="about.sec.manual.38">単語・フレーズ一覧の習熟度欄には、現在のポイント数に応じて
           次の記号入りバッジが表示されます（ポイントが低いうちは
           バッジ自体が出ません）。</p>
         <ul>
-          <li><b>◎卒業</b>：「卒業」ボタンで満点固定した状態。
+          <li data-i18n-html="about.sec.manual.39"><b>◎卒業</b>：「卒業」ボタンで満点固定した状態。
             忘却曲線の対象外で、ポイントが自然に減りません。</li>
-          <li><b>○覚えた</b>：「覚えた」の基準(既定100pt)以上。クイズ・
+          <li data-i18n-html="about.sec.manual.40"><b>○覚えた</b>：「覚えた」の基準(既定100pt)以上。クイズ・
             フラッシュカードには出にくくなりますが、忘却曲線で少しずつ
             ポイントが減っていきます。</li>
-          <li><b>△うろ覚え</b>：「覚えた」の基準にはまだ届いていないものの、
+          <li data-i18n-html="about.sec.manual.41"><b>△うろ覚え</b>：「覚えた」の基準にはまだ届いていないものの、
             ある程度ポイントが貯まってきた状態（目安は基準の4割前後）。
             ダッシュボードの「うろ覚え」件数もこの基準に連動します。</li>
         </ul>
-        <p>ポイントが増減するタイミングは主に次の3つです。</p>
+        <p data-i18n="about.sec.manual.42">ポイントが増減するタイミングは主に次の3つです。</p>
         <ul>
-          <li><b>クイズ・フラッシュカードで両方向（英→日・日→英）とも
+          <li data-i18n-html="about.sec.manual.43"><b>クイズ・フラッシュカードで両方向（英→日・日→英）とも
             正解した日</b>：1日1回だけ +5pt。</li>
-          <li><b>「うろ覚え」ボタン</b>：+25pt（既定値）。「分かるけど
+          <li data-i18n-html="about.sec.manual.44"><b>「うろ覚え」ボタン</b>：+25pt（既定値）。「分かるけど
             自信がない」ときに使うと、2日後くらいにもう一度出題されます。
             何度押しても<b>「覚えた」の基準(100pt)を超えては増えません</b>
             （繰り返し押すだけで明示的に「覚えた」を宣言した扱いには
             ならない設計です）。</li>
-          <li><b>「覚えた」ボタン</b>：mastery を<b>「覚えた」の基準を
+          <li data-i18n-html="about.sec.manual.45"><b>「覚えた」ボタン</b>：mastery を<b>「覚えた」の基準を
             少し超えた既定125pt以上</b>にします（既にそれ以上なら変わり
             ません）。「戻す」→「覚えた」を繰り返しても125pt止まりで、
             それ以上には積み上がりません。その後まったく復習しないと
@@ -568,20 +568,20 @@
             出題対象に戻ります。「戻す」を押すとすぐに基準の少し手前まで
             下がり、出題対象に戻ります。</li>
         </ul>
-        <p><b>忘却曲線</b>：何もしなくても、既定では1日ごとに1ptずつ自然に
+        <p data-i18n-html="about.sec.manual.46"><b>忘却曲線</b>：何もしなくても、既定では1日ごとに1ptずつ自然に
           減っていきます（実際の人の記憶の忘れやすさを模した仕組みです）。
           しばらく復習していない単語ほど少しずつポイントが下がり、
           再び出題されやすくなります。</p>
-        <p><b>「卒業」ボタン</b>：「覚えた」よりさらに強い宣言です。満点で
+        <p data-i18n-html="about.sec.manual.47"><b>「卒業」ボタン</b>：「覚えた」よりさらに強い宣言です。満点で
           固定され、<b>忘却曲線の対象から外れる</b>ため、時間が経っても
           ポイントが自然に減りません（本当にもう復習不要という単語・
           フレーズ向けです）。解除したいときは、下の「クリア」を押してから
           もう一度「覚えた」を押してください。</p>
-        <p><b>クリアボタン</b>：単語・フレーズの一覧画面で、1pt以上の
+        <p data-i18n-html="about.sec.manual.48"><b>クリアボタン</b>：単語・フレーズの一覧画面で、1pt以上の
           項目にのみ表示されます。押すとその項目の学習記録を0ptに
           完全リセットします（「卒業」の固定も解除されます）。
           やり直したいときにお使いください。</p>
-        <p class="muted">これらの数値（満点・「覚えた」の基準・各ボタンの
+        <p class="muted" data-i18n-html="about.sec.manual.49">これらの数値（満点・「覚えた」の基準・各ボタンの
           加点量・忘却曲線の強さ）は、設定画面の<b>詳細設定</b>から
           アカウント単位で調整できます（単語帳・フレーズ帳ごとには
           設定しません）。「既定値に戻す」ボタンでいつでも元の値に戻せます。
@@ -592,60 +592,60 @@
     </div>
 
     <div class="card" id="faq">
-      <h2>❓ ご利用の前に（よくある質問）</h2>
-      <p class="totoc"><a href="#toc">▲ 目次へ戻る</a></p>
+      <h2 data-i18n="about.sec.faq.1">❓ ご利用の前に（よくある質問）</h2>
+      <p class="totoc" data-i18n-html="about.sec.signup.2"><a href="#toc">▲ 目次へ戻る</a></p>
       <details class="faq-item">
-        <summary><h3>登録するといいことは？</h3></summary>
-        <p>覚えた単語がずっと積み上がり（習熟度・忘却曲線に基づく復習
+        <summary><h3 data-i18n="about.sec.faq.2">登録するといいことは？</h3></summary>
+        <p data-i18n="about.sec.faq.3">覚えた単語がずっと積み上がり（習熟度・忘却曲線に基づく復習
           間隔を記録）、次に開いたときもそこから続けられます。単語帳・
           フレーズ帳も作れるようになり、発音の無料再生範囲も広がります。
           登録は無料で、1分ほどで完了します。</p>
       </details>
       <details class="faq-item">
-        <summary><h3>登録しないとどうなる？</h3></summary>
-        <p>単語・フレーズの閲覧やサンプル教材は、登録しなくても
+        <summary><h3 data-i18n="about.sec.faq.4">登録しないとどうなる？</h3></summary>
+        <p data-i18n="about.sec.faq.5">単語・フレーズの閲覧やサンプル教材は、登録しなくても
           お試しいただけます。ただし学習記録が保存されないため、
           訪れるたびにリセットされた状態になります。単語帳・フレーズ帳の
           作成もできません。まずは登録なしで雰囲気を確かめてから、
           気に入ったら登録していただく形でも問題ありません。</p>
       </details>
       <details class="faq-item">
-        <summary><h3>実名での登録は必要ですか？</h3></summary>
-        <p><b>必要ありません。</b>「呼んでほしいお名前」はニックネームで
+        <summary><h3 data-i18n="about.sec.faq.6">実名での登録は必要ですか？</h3></summary>
+        <p data-i18n-html="about.sec.faq.7"><b>必要ありません。</b>「呼んでほしいお名前」はニックネームで
           構いません。チャージキーの発行などご連絡の際の宛名として
           使うだけで、本名確認等は一切行っていません。</p>
       </details>
       <details class="faq-item">
-        <summary><h3>課金（チャージ）するといいことは？</h3></summary>
-        <p>発音の音声再生が収録すべての単語・フレーズで聞けるように
+        <summary><h3 data-i18n="about.sec.faq.8">課金（チャージ）するといいことは？</h3></summary>
+        <p data-i18n="about.sec.faq.9">発音の音声再生が収録すべての単語・フレーズで聞けるように
           なるほか、AI英会話・リーディング/リスニング教材の生成・
           ライティング添削などが使えるようになります。単語帳・フレーズ帳の
           個数・語数の上限もなくなります。月額サブスクではなく前払い
           チャージ制なので、使わなければ追加の費用は発生しません。</p>
       </details>
       <details class="faq-item">
-        <summary><h3>クレジットカード情報や決済の管理はどうなっていますか？</h3></summary>
-        <p>クレジットカード番号等の決済情報は、開発者（私）側では
+        <summary><h3 data-i18n="about.sec.faq.10">クレジットカード情報や決済の管理はどうなっていますか？</h3></summary>
+        <p data-i18n="about.sec.faq.11">クレジットカード番号等の決済情報は、開発者（私）側では
           一切保持・管理していません。決済方法は2通りあります。</p>
-        <p>① 「<a href="https://thebase.in/"
+        <p data-i18n-html="about.sec.faq.12">① 「<a href="https://thebase.in/"
           target="_blank" rel="noopener">BASE</a>」（BASE株式会社が提供する
           ECプラットフォーム）経由でのお支払い。BASEの「かんたん決済」は
           クレジットカードのほかPayPayにも対応しており、カード情報の入力・
           保管もBASE側で安全に取り扱われます。</p>
-        <p>② PayPayでの直接決済（アプリ内「①PayPayで購入」ボタン）。
+        <p data-i18n="about.sec.faq.13">② PayPayでの直接決済（アプリ内「①PayPayで購入」ボタン）。
           こちらはPayPay公式のAPIを通じてPayPay側で決済が処理されます。</p>
-        <p>いずれの方法でも、開発者が受け取るのは決済完了後の結果通知の
+        <p data-i18n="about.sec.faq.14">いずれの方法でも、開発者が受け取るのは決済完了後の結果通知の
           みで、カード番号やPayPayアカウントの詳細に触れることは
           ありません。</p>
       </details>
       <details class="faq-item">
-        <summary><h3>個人開発とのことですが、止まったりしませんか？</h3></summary>
-        <p>不具合対応やメンテナンスのため、予告なく一時的にご利用
+        <summary><h3 data-i18n="about.sec.faq.15">個人開発とのことですが、止まったりしませんか？</h3></summary>
+        <p data-i18n="about.sec.faq.16">不具合対応やメンテナンスのため、予告なく一時的にご利用
           いただけなくなる場合があります。ご了承のうえお使いください。</p>
       </details>
       <details class="faq-item">
-        <summary><h3>教材はAIが作っているのですか？</h3></summary>
-        <p>はい。単語・フレーズ・例文等のコンテンツ、読み上げ音声、
+        <summary><h3 data-i18n="about.sec.faq.17">教材はAIが作っているのですか？</h3></summary>
+        <p data-i18n-html="about.sec.faq.18">はい。単語・フレーズ・例文等のコンテンツ、読み上げ音声、
           音声入力の認識（発音判定等）は、OpenAIが提供するAIモデルを
           用いて作成・生成しています。内容の確認には努めていますが、
           まれに不自然な表現や誤りが生じる可能性があります。詳しくは
@@ -653,12 +653,12 @@
           ご覧ください。</p>
       </details>
       <details class="faq-item">
-        <summary><h3>PayPay直接決済とBASE、どちらで購入すればいいですか？</h3></summary>
-        <p>PayPayでの直接決済（①）は、支払いが完了すると同時に
+        <summary><h3 data-i18n="about.sec.faq.19">PayPay直接決済とBASE、どちらで購入すればいいですか？</h3></summary>
+        <p data-i18n="about.sec.faq.20">PayPayでの直接決済（①）は、支払いが完了すると同時に
           キーの発行・入力なしでそのまま残高に反映されるのが特長です
           （対応する決済手段はPayPayのみ）。すぐにチャージしたい方に
           向いています。</p>
-        <p>BASEでの購入（②）は、クレジットカード・PayPay・コンビニ払い
+        <p data-i18n="about.sec.faq.21">BASEでの購入（②）は、クレジットカード・PayPay・コンビニ払い
           など複数の決済手段から選べる一方、購入後に届く「チャージキー」
           を設定画面で入力する一手間と、キー発行までの多少のお時間が
           必要です。PayPay以外の決済手段をご希望の方はこちらをお使い
@@ -667,53 +667,53 @@
     </div>
 
     <div class="card" id="trouble">
-      <h2>🔧 困ったときは</h2>
-      <p class="totoc"><a href="#toc">▲ 目次へ戻る</a></p>
+      <h2 data-i18n="about.sec.trouble.1">🔧 困ったときは</h2>
+      <p class="totoc" data-i18n-html="about.sec.signup.2"><a href="#toc">▲ 目次へ戻る</a></p>
 
       <details class="faq-item" id="trouble-signup">
-        <summary><h3>新規登録ができない</h3></summary>
+        <summary><h3 data-i18n="about.sec.trouble.2">新規登録ができない</h3></summary>
         <ul>
-          <li>メールアドレスの形式が正しいか確認してください
+          <li data-i18n="about.sec.trouble.3">メールアドレスの形式が正しいか確認してください
             （例: example@mail.com）。</li>
-          <li>「メールアドレス（確認）」「パスワード（確認）」欄は、
+          <li data-i18n="about.sec.trouble.4">「メールアドレス（確認）」「パスワード（確認）」欄は、
             それぞれ上の欄と完全に一致している必要があります
             （大文字・小文字も区別されます）。</li>
-          <li>パスワードは8〜32文字で、英字・数字・記号のうち2種類以上を
+          <li data-i18n="about.sec.trouble.5">パスワードは8〜32文字で、英字・数字・記号のうち2種類以上を
             組み合わせてください。</li>
-          <li>そのメールアドレスは既に登録済みの可能性があります。
+          <li data-i18n="about.sec.trouble.6">そのメールアドレスは既に登録済みの可能性があります。
             「ログイン画面に戻る」からログインをお試しください。</li>
-          <li>お名前欄（呼んでほしいお名前）は必須です。本名でなくても
+          <li data-i18n="about.sec.trouble.7">お名前欄（呼んでほしいお名前）は必須です。本名でなくても
             登録できます。</li>
-          <li>登録ボタンを押しても反応しない場合、ブラウザの「すべての
+          <li data-i18n="about.sec.trouble.8">登録ボタンを押しても反応しない場合、ブラウザの「すべての
             Cookie・サイトデータをブロック」等のプライバシー設定が
             原因のことがあります。設定を確認するか、別のブラウザ・
             シークレット/プライベートウィンドウでお試しください。</li>
-          <li>短時間に何度も送信すると、一時的に登録を制限する場合が
+          <li data-i18n="about.sec.trouble.9">短時間に何度も送信すると、一時的に登録を制限する場合が
             あります。少し時間をおいてから再度お試しください。</li>
         </ul>
       </details>
 
       <details class="faq-item" id="trouble-login">
-        <summary><h3>ログインできない</h3></summary>
+        <summary><h3 data-i18n="about.sec.trouble.10">ログインできない</h3></summary>
         <ul>
-          <li>メールアドレス（初期からご利用の方はユーザー名）と
+          <li data-i18n="about.sec.trouble.11">メールアドレス（初期からご利用の方はユーザー名）と
             パスワードが正しいか確認してください。</li>
-          <li>パスワードをお忘れの場合、現時点では画面からの再発行に
+          <li data-i18n-html="about.sec.trouble.12">パスワードをお忘れの場合、現時点では画面からの再発行に
             対応していません。<a href="/tokushoho">特定商取引法に基づく
             表記</a>に記載の連絡先までご連絡ください。</li>
-          <li>短時間に何度も失敗すると、一時的にログインを制限する場合が
+          <li data-i18n="about.sec.trouble.13">短時間に何度も失敗すると、一時的にログインを制限する場合が
             あります。少し時間をおいてから再度お試しください。</li>
         </ul>
       </details>
 
       <details class="faq-item" id="trouble-charge">
-        <summary><h3>チャージキーが使えない・届かない</h3></summary>
+        <summary><h3 data-i18n="about.sec.trouble.14">チャージキーが使えない・届かない</h3></summary>
         <ul>
-          <li>キーは大文字・小文字や記号を含め、届いたとおり正確に
+          <li data-i18n="about.sec.trouble.15">キーは大文字・小文字や記号を含め、届いたとおり正確に
             入力してください（コピー＆ペーストがおすすめです）。</li>
-          <li>1つのチャージキーは1回のみ使用できます。既に使用済みの
+          <li data-i18n="about.sec.trouble.16">1つのチャージキーは1回のみ使用できます。既に使用済みの
             場合はエラーになります。</li>
-          <li>ご購入後、チャージキーの発行は手動のため反映まで
+          <li data-i18n="about.sec.trouble.17">ご購入後、チャージキーの発行は手動のため反映まで
             お時間をいただく場合があります。しばらく経っても届かない
             場合は、ご購入時のメールアドレスと登録メールアドレスが
             一致しているかご確認のうえ、上記連絡先までご連絡ください。</li>
@@ -721,91 +721,91 @@
       </details>
 
       <details class="faq-item" id="trouble-mic">
-        <summary><h3>マイクが使えない（ハンズフリー会話・録音）</h3></summary>
-        <p>「マイクの使用が許可されていません」と表示される場合、多くは
+        <summary><h3 data-i18n="about.sec.trouble.18">マイクが使えない（ハンズフリー会話・録音）</h3></summary>
+        <p data-i18n="about.sec.trouble.19">「マイクの使用が許可されていません」と表示される場合、多くは
           ブラウザまたはOSの側でこのサイトのマイク使用がブロックされて
           います。以下の該当箇所をご確認のうえ、ページを再読み込みして
           もう一度お試しください。</p>
-        <p><b>ブラウザ側の設定</b></p>
+        <p data-i18n-html="about.sec.trouble.20"><b>ブラウザ側の設定</b></p>
         <ul>
-          <li><b>Chrome / Edge（PC）</b>: アドレスバーに
+          <li data-i18n-html="about.sec.trouble.21"><b>Chrome / Edge（PC）</b>: アドレスバーに
             <code>chrome://settings/content/microphone</code>
             （Edgeは<code>edge://settings/content/microphone</code>）と
             入力して開き、「マイクの使用を許可しないサイト」に
             study.nyangailab.com があれば削除（🗑️）してください。</li>
-          <li><b>Firefox（PC）</b>: アドレスバー左側のアイコン→
+          <li data-i18n-html="about.sec.trouble.22"><b>Firefox（PC）</b>: アドレスバー左側のアイコン→
             「権限」からマイクの許可状態を確認・変更できます。</li>
-          <li><b>Safari（Mac）</b>: 上部メニューの「Safari」→「設定」→
+          <li data-i18n-html="about.sec.trouble.23"><b>Safari（Mac）</b>: 上部メニューの「Safari」→「設定」→
             「Webサイト」タブ→左側の「マイク」で、このサイトを
             「許可」に変更してください。</li>
-          <li><b>Safari（iPhone/iPad）</b>: アドレスバーの「aA」アイコン→
+          <li data-i18n-html="about.sec.trouble.24"><b>Safari（iPhone/iPad）</b>: アドレスバーの「aA」アイコン→
             「Webサイトの設定」からマイクの許可を確認できます。
             見当たらない場合は、iOSの「設定」アプリ→「Safari」→
             「マイクへのアクセス」もご確認ください。</li>
-          <li><b>Chrome（Android）</b>: Chromeメニュー（⋮）→「設定」→
+          <li data-i18n-html="about.sec.trouble.25"><b>Chrome（Android）</b>: Chromeメニュー（⋮）→「設定」→
             「サイトの設定」→「マイク」から確認できます。</li>
         </ul>
-        <p><b>OS側の設定</b></p>
+        <p data-i18n-html="about.sec.trouble.26"><b>OS側の設定</b></p>
         <ul>
-          <li><b>Mac</b>: 「システム設定」→「プライバシーとセキュリティ」→
+          <li data-i18n-html="about.sec.trouble.27"><b>Mac</b>: 「システム設定」→「プライバシーとセキュリティ」→
             「マイク」で、お使いのブラウザ自体が許可されているか
             ご確認ください。</li>
-          <li><b>Windows</b>: 「設定」→「プライバシーとセキュリティ」→
+          <li data-i18n-html="about.sec.trouble.28"><b>Windows</b>: 「設定」→「プライバシーとセキュリティ」→
             「マイク」で、マイクへのアクセス自体とお使いのブラウザの
             両方が許可されているかご確認ください。</li>
-          <li><b>Android</b>: 「設定」→「アプリ」→（お使いのブラウザ）→
+          <li data-i18n-html="about.sec.trouble.29"><b>Android</b>: 「設定」→「アプリ」→（お使いのブラウザ）→
             「権限」→「マイク」を許可してください。</li>
         </ul>
-        <p class="muted">上記はブラウザ・OSのバージョンによって画面や
+        <p class="muted" data-i18n="about.sec.trouble.30">上記はブラウザ・OSのバージョンによって画面や
           手順が異なる場合があります。あらかじめご了承ください。</p>
       </details>
 
       <details class="faq-item" id="manual-pricing">
-        <summary><h3>💰 ポイントの目安（800ptでどのくらい使える？）</h3></summary>
-        <p>チャージしたポイント(pt)は、AI英会話・教材の読み上げ・添削・
+        <summary><h3 data-i18n="about.sec.trouble.31">💰 ポイントの目安（800ptでどのくらい使える？）</h3></summary>
+        <p data-i18n-html="about.sec.trouble.32">チャージしたポイント(pt)は、AI英会話・教材の読み上げ・添削・
           クロスワードのAIヒントなどに使うたびに少しずつ消費されます。
           内容の長さによって消費量は変わりますが、目安は次のとおりです
           （<a href="#charge">¥800=800pt・¥8,000=8,800pt〈+10%〉</a>の
           ポイントパックが購入できます）。</p>
         <table class="pricing-table">
           <thead>
-            <tr><th>機能</th><th>1回あたりの目安</th><th>800ptでの目安</th></tr>
+            <tr><th data-i18n="about.sec.trouble.33">機能</th><th data-i18n="about.sec.trouble.34">1回あたりの目安</th><th data-i18n="about.sec.trouble.35">800ptでの目安</th></tr>
           </thead>
           <tbody>
-            <tr><td>🔊 単語・フレーズ・例文の発音再生（無料範囲外）</td>
-              <td>約0.5pt〜</td>
-              <td>〜1,600回（約0.5pt/1回の場合）</td></tr>
-            <tr><td>🧩 クロスワード1ゲーム</td>
-              <td>約1〜3.75pt(語数3〜50語・目安10語なら約1.5pt。以前と
+            <tr><td data-i18n="about.sec.trouble.36">🔊 単語・フレーズ・例文の発音再生（無料範囲外）</td>
+              <td data-i18n="about.sec.trouble.37">約0.5pt〜</td>
+              <td data-i18n="about.sec.trouble.38">〜1,600回（約0.5pt/1回の場合）</td></tr>
+            <tr><td data-i18n="about.sec.trouble.39">🧩 クロスワード1ゲーム</td>
+              <td data-i18n="about.sec.trouble.40">約1〜3.75pt(語数3〜50語・目安10語なら約1.5pt。以前と
                 同じ単語でヒントがキャッシュ再利用できた場合は下記の
                 最低0.25ptのみ)</td>
-              <td>〜533ゲーム（約1.5pt/回の場合）</td></tr>
-            <tr><td>💬 AI英会話 1往復（発話+返答の音声つき）</td>
-              <td>約2.5pt〜</td>
-              <td>〜320往復（約2.5pt/往復の場合）</td></tr>
-            <tr><td>📖 リーディング/リスニング教材 1本（生成+読み上げ）</td>
-              <td>約6.5pt〜</td>
-              <td>〜123本（約6.5pt/本の場合）</td></tr>
-            <tr><td>✍️ ライティング添削 1回</td>
-              <td>約1pt〜</td>
-              <td>〜800回（約1pt/回の場合）</td></tr>
+              <td data-i18n="about.sec.trouble.41">〜533ゲーム（約1.5pt/回の場合）</td></tr>
+            <tr><td data-i18n="about.sec.trouble.42">💬 AI英会話 1往復（発話+返答の音声つき）</td>
+              <td data-i18n="about.sec.trouble.43">約2.5pt〜</td>
+              <td data-i18n="about.sec.trouble.44">〜320往復（約2.5pt/往復の場合）</td></tr>
+            <tr><td data-i18n="about.sec.trouble.45">📖 リーディング/リスニング教材 1本（生成+読み上げ）</td>
+              <td data-i18n="about.sec.trouble.46">約6.5pt〜</td>
+              <td data-i18n="about.sec.trouble.47">〜123本（約6.5pt/本の場合）</td></tr>
+            <tr><td data-i18n="about.sec.trouble.48">✍️ ライティング添削 1回</td>
+              <td data-i18n="about.sec.trouble.49">約1pt〜</td>
+              <td data-i18n="about.sec.trouble.50">〜800回（約1pt/回の場合）</td></tr>
           </tbody>
         </table>
-        <p class="muted">※上記はあくまで目安です。実際の消費ポイントは内容の
+        <p class="muted" data-i18n="about.sec.trouble.51">※上記はあくまで目安です。実際の消費ポイントは内容の
           長さによって変わるほか、AI提供事業者のAPI料金改定や為替(ドル円)の
           変動によっても変わることがあります。実際の消費量は利用のつど
           画面に表示されます。</p>
-        <p class="muted">※クロスワードは、以前に同じ単語で作ったヒントが
+        <p class="muted" data-i18n="about.sec.trouble.52">※クロスワードは、以前に同じ単語で作ったヒントが
           再利用できAIを呼び出す必要が無かった場合でも、最低0.25ptを
           消費します（データベースの保存・スコア管理など、AI以外の運用
           コストぶんとしてご了承ください）。</p>
       </details>
 
-      <p class="muted mt">ご不明な点は、ログイン後の設定画面にある
+      <p class="muted mt" data-i18n="about.sec.trouble.53">ご不明な点は、ログイン後の設定画面にある
         「お問い合わせ・ご要望」よりお気軽にご連絡ください。</p>
     </div>
 
-    <a class="back" href="/">← トップ画面に戻る</a>
+    <a class="back" href="/" data-i18n="about.backToTop">← トップ画面に戻る</a>
   </div>
 
   <script>

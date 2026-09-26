@@ -10,6 +10,7 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse, Response
 
 from ..services import errors
+from ..services import messages
 from pydantic import BaseModel, Field
 
 from ..database import db
@@ -495,10 +496,10 @@ def phrase_detail(phrase_id: int, regen: bool = False):
         if is_guest_user_id(conn, current_user_id()):
             return {
                 "ok": False,
-                "error": "詳細の生成はログインすると利用できます。",
+                "error": messages.tr("learn.detail_login"),
             }
     if not ai.is_enabled():
-        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+        return {"ok": False, "error": messages.tr("ai.no_key")}
     system = (
         "英語フレーズの詳細情報を日本語でJSONのみ作成する英語講師です。"
         "このフレーズが(a)格言・ことわざ・歴史的に有名な発言・出典のある"
@@ -531,7 +532,7 @@ def phrase_detail(phrase_id: int, regen: bool = False):
         return {"ok": False, "error": r.error}
     data = _json_object(r.text)
     if not data:
-        return {"ok": False, "error": "詳細の生成に失敗しました。"}
+        return {"ok": False, "error": messages.tr("learn.detail_failed")}
     with db() as conn:
         conn.execute(
             "UPDATE phrases SET detail = ? WHERE id = ?",

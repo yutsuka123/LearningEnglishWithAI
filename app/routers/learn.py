@@ -12,6 +12,7 @@ from datetime import date
 from fastapi import APIRouter, File, Form, Response, UploadFile
 
 from ..services import errors
+from ..services import messages
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
@@ -159,7 +160,7 @@ def trip_prep(payload: TripPrepIn):
     エンドポイントで一覧・再表示できるようにする。訪問先URLはサーバー側では
     取得しない(著作権/利用規約リスク回避・参考テキストとして渡すのみ)。"""
     if not ai.is_enabled():
-        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+        return {"ok": False, "error": messages.tr("ai.no_key")}
 
     system = (
         "あなたは海外出張・旅行の準備を手伝う英語コーチです。" + _LEVEL_NOTE +
@@ -208,7 +209,7 @@ def trip_prep(payload: TripPrepIn):
 
     data = _parse_json_object(result.text)
     if not data:
-        return {"ok": False, "error": "生成結果を解釈できませんでした。"}
+        return {"ok": False, "error": messages.tr("learn.parse_failed")}
 
     title = f"{payload.destination} 渡航準備 ({date.today().isoformat()})"
     body = json.dumps(data, ensure_ascii=False)
@@ -717,7 +718,7 @@ class TranslateIn(BaseModel):
 def translate(payload: TranslateIn):
     """英文を日本語に訳す（会話の「日本語訳を表示」用）。"""
     if not ai.is_enabled():
-        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+        return {"ok": False, "error": messages.tr("ai.no_key")}
     system = "次の英文を自然な日本語に訳してください。訳文のみ出力。"
     result = ai.chat(
         system, payload.text, temperature=0.2,
@@ -734,7 +735,7 @@ class ExampleIn(BaseModel):
 def example_sentence(payload: ExampleIn):
     """単語を使った例文を1つ生成（英文＋日本語訳）。"""
     if not ai.is_enabled():
-        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+        return {"ok": False, "error": messages.tr("ai.no_key")}
     system = (
         "英単語を使った短い例文を1つ作ります。" + _LEVEL_NOTE +
         ' JSONのみ出力: {"english":"...","japanese":"...訳..."}'
@@ -763,7 +764,7 @@ def example_sentence(payload: ExampleIn):
 def reply_examples(payload: ConversationIn):
     """直近のAI発話に対する「返答例」を生成（答えに困ったとき用）。"""
     if not ai.is_enabled():
-        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+        return {"ok": False, "error": messages.tr("ai.no_key")}
     window = payload.history[-6:]
     transcript = "\n".join(
         f"{m.get('role')}: {m.get('content')}" for m in window
@@ -838,7 +839,7 @@ def assess():
     }
     if not ai.is_enabled():
         base["ok"] = False
-        base["error"] = "OPENAI_API_KEY が未設定です。"
+        base["error"] = messages.tr("ai.no_key")
         return base
     if not studied and not convo:
         base["ok"] = False
@@ -908,7 +909,7 @@ def generate_items(payload: GenItemsIn):
             raise errors.http_error(
                 "2004", "単語/フレーズの自動生成は管理者のみ行えます。")
     if not ai.is_enabled():
-        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+        return {"ok": False, "error": messages.tr("ai.no_key")}
     n = max(1, min(payload.count, 30))
     focus = payload.focus.strip() or "日常〜ビジネス・IT"
     qmodel = load_settings().quality_model
@@ -944,7 +945,7 @@ def generate_items(payload: GenItemsIn):
 
     items = _parse_json_array(result.text)
     if not items:
-        return {"ok": False, "error": "生成結果を解釈できませんでした。"}
+        return {"ok": False, "error": messages.tr("learn.parse_failed")}
 
     added, skipped = _insert_generated(payload.kind, items, payload.domain)
     return {"ok": True, "added": added, "skipped": skipped, "model": qmodel}
@@ -1223,7 +1224,7 @@ def session_summary(payload: SessionEndIn):
     if not ai.is_enabled():
         return {
             "ok": False,
-            "error": "OPENAI_API_KEY が未設定です。手動入力で保存できます。",
+            "error": messages.tr("ai.no_key_manual"),
         }
     system = (
         "あなたは学習コーチです。本日の学習内容を踏まえ、以下のセクションを"
@@ -1298,7 +1299,7 @@ def session_save(payload: SessionEndIn):
 def summarize(payload: SummarizeIn):
     """会話の古い部分を短い日本語要約にする(会話の自動記録用)。"""
     if not ai.is_enabled():
-        return {"ok": False, "error": "OPENAI_API_KEY が未設定です。"}
+        return {"ok": False, "error": messages.tr("ai.no_key")}
     system = (
         "次の英会話ログを、日本語で3〜6行に要約してください。話した話題・"
         "学習者がつまずいた点・覚えた表現を簡潔に。箇条書きでも可。要約のみ出力。"
@@ -1348,17 +1349,17 @@ def daily_session(
         phrases_list = [dict(r) for r in phrase_rows]
 
     plan = [
-        {"step": "vocab", "label": "英単語テスト", "items": words_list},
-        {"step": "phrases", "label": "ミニフレーズ", "items": phrases_list},
+        {"step": "vocab", "label": messages.tr("learn.daily_words"), "items": words_list},
+        {"step": "phrases", "label": messages.tr("learn.daily_phrases"), "items": phrases_list},
         {
             "step": "reading",
-            "label": "リーディング (1題)",
+            "label": messages.tr("learn.daily_reading"),
             "items": [],
             "needs_ai": True,
         },
         {
             "step": "writing",
-            "label": "ライティング (1題・音声応答可)",
+            "label": messages.tr("learn.daily_writing"),
             "items": [],
             "needs_ai": True,
         },

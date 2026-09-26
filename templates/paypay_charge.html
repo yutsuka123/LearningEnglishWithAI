@@ -3,7 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PayPayでのチャージ — English Learning with AI</title>
+  <title data-i18n="meta.paypayReturnTitle">PayPayでのチャージ — English Learning with AI</title>
+  <!-- 多言語化(2026-09-26): メインアプリと同じ言語設定(localStorageのlang→ブラウザ言語)。
+       Googleタグ等の外部送信は入れない(決済の戻りURLに識別番号が付くため・CLAUDE.md参照)。 -->
+  <script src="/static/js/i18n.js"></script>
+  <script src="/static/js/i18n_dict.js"></script>
   <style>
     :root {
       --bg: #0f1419; --card: #1a2230; --text: #e6edf3; --sub: #d5dde6;
@@ -39,9 +43,9 @@
 </head>
 <body>
   <div class="card">
-    <h1>💳 PayPayでのチャージ</h1>
-    <div id="out"><p class="spinner">⏳</p><p class="msg">確認しています…</p>
-      <a href="/" style="font-size:12px; color:var(--sub)">アプリに戻る</a>
+    <h1 data-i18n="paypayReturn.heading">💳 PayPayでのチャージ</h1>
+    <div id="out"><p class="spinner">⏳</p><p class="msg" data-i18n="paypayReturn.checking">確認しています…</p>
+      <a href="/" style="font-size:12px; color:var(--sub)" data-i18n="paypayReturn.backToApp">アプリに戻る</a>
     </div>
   </div>
 
@@ -63,6 +67,36 @@
     }
     if (theme === 'light') document.documentElement.dataset.theme = 'light';
 
+    // 現在の表示言語の文言。i18n.js/辞書が読み込めなかった場合(通信断・古い
+    // キャッシュ等)でも決済結果の案内が壊れないよう、日本語の最小限の代替文を
+    // 持つ(決済直後に戻ってくる画面のため・辞書のキー名がそのまま出るのを防ぐ)。
+    const FALLBACK_JA = {
+      'paypayReturn.checking': '確認しています…',
+      'paypayReturn.backToApp': 'アプリに戻る',
+      'paypayReturn.standalone': 'この画面は購入手続きの一部です。単体では開けません。',
+      'paypayReturn.errorStatus': 'エラー {status}',
+      'paypayReturn.credited': '🎉 チャージが完了しました',
+      'paypayReturn.balanceNow': '現在の残高です。',
+      'paypayReturn.notYet': '支払いがまだ確認できませんでした。',
+      'paypayReturn.unknownStatus': '不明',
+      'paypayReturn.notYetGuide': 'PayPayアプリで支払いを完了してから、下のボタンで再確認してください。決済をキャンセルした場合はチャージされません。',
+      'paypayReturn.recheck': '再確認する',
+      'paypayReturn.failed': '確認できませんでした: {msg}',
+      'paypayReturn.retry': '再試行する',
+    };
+    const t = (key, vars) => {
+      try {
+        if (window.I18N) {
+          const s = window.I18N.t(key, vars);
+          if (s !== key) return s;
+        }
+      } catch (_) { /* 下の代替文へ */ }
+      const base = FALLBACK_JA[key] || key;
+      return base.replace(/\{(\w+)\}/g, (m, k) =>
+        (vars && Object.prototype.hasOwnProperty.call(vars, k)) ? vars[k] : m);
+    };
+    if (window.I18N) window.I18N.translateDom(document);
+
     const out = document.getElementById('out');
     const params = new URLSearchParams(location.search);
     const mpid = params.get('mpid') || '';
@@ -71,45 +105,43 @@
 
     async function confirmPayment() {
       if (!mpid) {
-        showResult(`<p class="msg">この画面は購入手続きの一部です。
-          単体では開けません。</p>
-          <a class="btn" href="/">アプリに戻る</a>`);
+        showResult(`<p class="msg">${escapeHtml(t('paypayReturn.standalone'))}</p>
+          <a class="btn" href="/">${escapeHtml(t('paypayReturn.backToApp'))}</a>`);
         return;
       }
-      showResult(`<p class="spinner">⏳</p><p class="msg">確認しています…</p>
-        <a href="/" style="font-size:12px; color:var(--sub)">アプリに戻る</a>`);
+      showResult(`<p class="spinner">⏳</p><p class="msg">${escapeHtml(t('paypayReturn.checking'))}</p>
+        <a href="/" style="font-size:12px; color:var(--sub)">${escapeHtml(t('paypayReturn.backToApp'))}</a>`);
       try {
         const r = await fetch(
           '/api/paypay/confirm/' + encodeURIComponent(mpid));
         const d = await r.json();
         if (!r.ok || !d.ok) {
-          throw new Error(d.detail || d.error || ('エラー ' + r.status));
+          throw new Error(d.detail || d.error
+            || t('paypayReturn.errorStatus', { status: r.status }));
         }
         if (d.credited) {
           showResult(`
-            <p class="msg ok">🎉 チャージが完了しました</p>
+            <p class="msg ok">${escapeHtml(t('paypayReturn.credited'))}</p>
             <div class="amount">${d.balance_jpy != null
               ? Math.round(d.balance_jpy) : '-'} pt</div>
-            <p class="msg">現在の残高です。</p>
-            <a class="btn" href="/">アプリに戻る</a>`);
+            <p class="msg">${escapeHtml(t('paypayReturn.balanceNow'))}</p>
+            <a class="btn" href="/">${escapeHtml(t('paypayReturn.backToApp'))}</a>`);
           return;
         }
         // まだCOMPLETEDではない(支払い前・キャンセル・処理中など)。
         showResult(`
-          <p class="msg">支払いがまだ確認できませんでした。</p>
-          <p><span class="badge">${escapeHtml(d.status || '不明')}</span></p>
-          <p class="msg">PayPayアプリで支払いを完了してから、下のボタンで
-            再確認してください。決済をキャンセルした場合はチャージされま
-            せん。</p>
-          <button onclick="confirmPayment()">再確認する</button>
+          <p class="msg">${escapeHtml(t('paypayReturn.notYet'))}</p>
+          <p><span class="badge">${escapeHtml(d.status || t('paypayReturn.unknownStatus'))}</span></p>
+          <p class="msg">${escapeHtml(t('paypayReturn.notYetGuide'))}</p>
+          <button onclick="confirmPayment()">${escapeHtml(t('paypayReturn.recheck'))}</button>
           <br><a class="btn" href="/" style="background:transparent;
-            color:var(--sub); box-shadow:none">アプリに戻る</a>`);
+            color:var(--sub); box-shadow:none">${escapeHtml(t('paypayReturn.backToApp'))}</a>`);
       } catch (e) {
         showResult(`
-          <p class="msg err">確認できませんでした: ${escapeHtml(e.message)}</p>
-          <button onclick="confirmPayment()">再試行する</button>
+          <p class="msg err">${escapeHtml(t('paypayReturn.failed', { msg: e.message }))}</p>
+          <button onclick="confirmPayment()">${escapeHtml(t('paypayReturn.retry'))}</button>
           <br><a class="btn" href="/" style="background:transparent;
-            color:var(--sub); box-shadow:none">アプリに戻る</a>`);
+            color:var(--sub); box-shadow:none">${escapeHtml(t('paypayReturn.backToApp'))}</a>`);
       }
     }
     function escapeHtml(s) {

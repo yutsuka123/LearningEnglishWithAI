@@ -39,6 +39,7 @@ from pydantic import BaseModel
 from ..config import log
 from ..database import db
 from ..services import auth, errors, paypay
+from ..services import messages
 
 router = APIRouter(prefix="/api/paypay", tags=["paypay-charge"])
 
@@ -104,7 +105,8 @@ def create(payload: CreateIn, request: Request):
     if payload.amount_jpy not in ALLOWED_AMOUNTS:
         raise errors.http_error(
             "3019",
-            f"金額は{sorted(ALLOWED_AMOUNTS)}のいずれかにしてください。")
+            messages.tr("pay.amount_choices",
+                        amounts=str(sorted(ALLOWED_AMOUNTS))))
     uid = auth.current_user_id()
     with db() as conn:
         _guard_not_yet_public(conn, uid)
@@ -161,7 +163,7 @@ def create(payload: CreateIn, request: Request):
                     amount_jpy=payload.amount_jpy, ok=False,
                     note="PayPayからurlが返らなかった")
         raise errors.http_error(
-            "3018", f"PayPayからurlが返りませんでした: {data}")
+            "3018", messages.tr("pay.no_url", detail=data))
     with db() as conn:
         conn.execute(
             "UPDATE paypay_payments SET code_id = ?, updated_at = "

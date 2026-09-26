@@ -21,7 +21,8 @@ from typing import Iterator
 from ..config import load_settings, log
 from ..database import db
 from . import tts_hints
-from .errors import ERROR_CODES
+from . import messages
+from .errors import default_message
 
 # ---------------------------------------------------------------------------
 # Cost / rate guards — prevent runaway spend if something loops or misbehaves.
@@ -141,9 +142,9 @@ def _user_guard(s) -> str | None:
         bal = u.get("balance_jpy")
         if bal is not None and float(bal) > 0:
             return None  # 枠到達だがチャージ残高で継続（_record_usageで消費）
-        which = "本日" if over_daily else "今月"
-        return (f"{which}の無料利用枠の上限に達しました。設定画面でチャージ"
-                "キーを登録すると、残高で引き続きご利用いただけます。")
+        which = messages.tr(
+            "ai.period_today" if over_daily else "ai.period_month")
+        return messages.tr("ai.free_quota", period=which)
     return None
 
 
@@ -184,8 +185,7 @@ def _guard(
     # 導入と合わせて「サイト全体の1日合計」チェックとして再定義した。
     site_cap = s.ai_daily_cost_cap_usd
     if site_cap > 0 and _today_cost_usd() >= site_cap:
-        return ("本日のAI利用がサイト全体の上限に達しました。"
-                "時間をおいて再試行してください。")
+        return messages.tr("ai.site_cap")
     # ユーザー別ガード（tierごとの日次/月次無料枠・前払い残高）。
     if not skip_user_cap:
         refusal = _user_guard(s)
@@ -199,11 +199,7 @@ def _guard(
         times = _call_times.setdefault(uid, deque(maxlen=240))
         window = [t for t in times if now - t < 60.0]
         if len(window) >= s.ai_max_calls_per_min:
-            return (
-                f"AI呼び出しが短時間に集中しています（上限 "
-                f"{s.ai_max_calls_per_min}回/分）。少し待ってから再試行して"
-                "ください。"
-            )
+            return messages.tr("ai.rate_limit", n=s.ai_max_calls_per_min)
         times.append(now)
     return None
 
@@ -534,10 +530,10 @@ def chat(
             return AIResult(
                 ok=False,
                 text="",
-                error="OPENAI_API_KEY が未設定です。設定で登録してください。",
+                error=messages.tr("ai.no_key_settings"),
             )
         return AIResult(
-            ok=False, text="", error="OpenAI クライアントを初期化できませんでした。"
+            ok=False, text="", error=messages.tr("ai.client_init_failed")
         )
 
     refusal = _guard(feature, rate_limit=rate_limit)
@@ -567,7 +563,7 @@ def chat(
                    feature, use_model, elapsed, exc)
         # 2026-08-29修正: synthesize_speech()と同じ問題(生の例外文字列を
         # そのままユーザーへ返していた)。errors.pyの定型文(4005)を返す。
-        return AIResult(ok=False, text="", error=ERROR_CODES["4005"][0])
+        return AIResult(ok=False, text="", error=default_message("4005"))
 
     elapsed = time.monotonic() - t0
     if elapsed >= _SLOW_CALL_SEC:
@@ -625,7 +621,7 @@ def chat_stream_precheck(
     エラー応答を返せる段階)に弾けるよう、ここで先出しする。"""
     client, _settings = _client()
     if client is None:
-        return ("AI機能は現在利用できません(APIキー未設定)。", 503)
+        return (default_message("4001"), 503)
     # rate_limit=False: 1往復=2本のAI呼び出しに分けた英会話のうち、2本目
     # (アドバイス)は分間レート制限の枠を消費しない(1往復=1枠のまま。
     # 日次/月次の無料枠・サイト全体の上限は従来どおり判定する)。
@@ -701,8 +697,7 @@ def chat_stream(
         # 2026-08-29のTTS生エラー漏洩修正と同じ理由で、例外の生文字列
         # ({exc})はユーザーへ出さない(内部情報が混じりうる)。詳細は
         # 上のlog.errorにサーバー側でのみ残す。
-        yield (STREAM_ERROR_MARKER
-               + "通信エラーが発生しました。もう一度お試しください。")
+        yield (STREAM_ERROR_MARKER + messages.tr("ai.stream_error"))
 
 
 # OpenAI TTS voices (ChatGPT-quality, natural). Names shown in the UI.
@@ -800,8 +795,8 @@ def synthesize_speech(
     client, settings = _client()
     if client is None:
         if not settings.ai_enabled:
-            return None, "OPENAI_API_KEY が未設定です。"
-        return None, "OpenAI クライアントを初期化できませんでした。"
+            return None, messages.tr("ai.no_key")
+        return None, messages.tr("ai.client_init_failed")
     if voice not in TTS_VOICES:
         voice = "alloy"
 
@@ -884,7 +879,7 @@ def synthesize_speech(
             log.error("TTS 不良音声が%d回続いたため失敗として返します "
                       "(voice=%s model=%s・最終%dB)", attempts, voice,
                       settings.tts_model, len(audio))
-            return None, ERROR_CODES["8001"][0]
+            return None, default_message("8001")
         return audio, None
     except Exception as exc:
         elapsed = time.monotonic() - t0
@@ -894,7 +889,7 @@ def synthesize_speech(
         # OpenAI側の生エラー(レート制限のJSON等)がトースト表示に漏れていた
         # (実機フィードバックで発覚)。詳細はログのみに留め、画面には
         # errors.py(4桁エラーコードの単一ソース)の定型文を返す。
-        return None, ERROR_CODES["8001"][0]
+        return None, default_message("8001")
 
 
 # 単語/フレーズ音声「再生」課金の下限(円)。1回あたりの課金額がこれ未満に
@@ -967,15 +962,8 @@ def charge_playback_if_needed(
             # 語なのに「ログインだけで無料になる」と誤解させてしまい、
             # 苦情の原因になるため区別する(2026-08-11ユーザー指摘)。
             if access_tiers.is_free_range(conn, item_type, item_id):
-                return (
-                    "この単語・フレーズの音声はログインすると聴けます"
-                    "（無料の会員登録のみで再生できる範囲が広がります）。"
-                )
-            return (
-                "この単語・フレーズの音声は無料の範囲外です。ログイン"
-                "（無料の会員登録）だけでは聴けず、少額のチャージが必要に"
-                "なります。"
-            )
+                return messages.tr("ai.tts_login")
+            return messages.tr("ai.tts_outside_free")
         u = get_user(conn, uid)
         if u and u.get("role") == "admin":
             return None
@@ -991,11 +979,9 @@ def charge_playback_if_needed(
         )
         balance = float((u or {}).get("balance_jpy") or 0)
         if balance < charge_jpy:
-            return (
-                "この単語・フレーズの再生には少額のチャージ消費が必要です"
-                f"（必要額: 約¥{charge_jpy:.1f}・残高: ¥{balance:.1f}）。"
-                "設定画面からチャージしてください。"
-            )
+            return messages.tr(
+                "ai.tts_need_credit",
+                need=f"{charge_jpy:.1f}", balance=f"{balance:.1f}")
         delta = -min(charge_jpy, balance)
         if delta != 0:
             add_balance(
@@ -1028,8 +1014,8 @@ def transcribe(
     client, settings = _client()
     if client is None:
         if not settings.ai_enabled:
-            return None, "OPENAI_API_KEY が未設定です。"
-        return None, "OpenAI クライアントを初期化できませんでした。"
+            return None, messages.tr("ai.no_key")
+        return None, messages.tr("ai.client_init_failed")
     refusal = _guard("stt")
     if refusal:
         return None, refusal
@@ -1096,7 +1082,7 @@ def transcribe(
     except Exception as exc:
         elapsed = time.monotonic() - t0
         log.error("STT 失敗 (elapsed=%.1fs): %s", elapsed, exc)
-        return None, f"文字起こしに失敗しました: {exc}"
+        return None, messages.tr("ai.stt_failed", detail=exc)
 
 
 def usage_summary() -> dict:

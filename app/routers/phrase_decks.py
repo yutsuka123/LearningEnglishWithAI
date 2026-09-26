@@ -16,6 +16,7 @@ import random
 from fastapi import APIRouter
 
 from ..services import errors
+from ..services import messages
 from pydantic import BaseModel
 
 from ..database import db
@@ -44,8 +45,7 @@ def _enforce_free_tier_limits(
     ).fetchone()["c"]
     if existing >= FREE_MAX_DECKS:
         raise errors.http_error(
-            "3016", f"無料範囲ではフレーズ帳は{FREE_MAX_DECKS}個までです。"
-            "追加で作るには設定画面からチャージしてください。",
+            "3016", messages.tr("phrasedeck.free_limit", n=FREE_MAX_DECKS),
         )
     if p.phrase_ids:
         p.phrase_ids = p.phrase_ids[:FREE_MAX_ITEMS]
