@@ -936,7 +936,8 @@ def _tts_cache_path(model: str, voice: str, text: str, instr: str = ""):
 # グループIDはクライアントが返答ごとに作る使い捨ての乱数。単一プロセスのメモリ内
 # 管理(_call_times等と同じ)・TTL/回数/件数で頭打ち。
 _TTS_GROUP_TTL_SEC = 180.0
-_TTS_GROUP_MAX_CALLS = 8
+_TTS_GROUP_MAX_CALLS = 5   # クライアントの区切り上限(createReplyStreamer maxSegs=4)+余裕1。8だと分間レート制限が最大8倍に緩む(Fable照査M3)
+_TTS_GROUP_MAX_PER_USER = 20   # 1ユーザーが同時に持てるグループ状態の上限(他人の状態を追い出せないように・Fable照査M4)
 _TTS_GROUP_MAX_ENTRIES = 2000
 _TTS_GROUP_TIMEOUT_BASE_SEC = 6.0  # 応答待ちの上限=これ+文字数/100秒(既定の20秒が上限)
 _TTS_GROUP_ID_RE = None  # 遅延コンパイル(reの読み込みを避ける)
@@ -989,6 +990,11 @@ def _tts_group_get(uid: int, group: str, create: bool) -> dict | None:
         del _tts_groups[key]
         g = None
     if g is None and create:
+        # このユーザーの状態が上限なら、**このユーザー自身の**最古を捨てる(他ユーザーの進行中グループを追い出さない)
+        mine = [(k, v["t"]) for k, v in _tts_groups.items() if k[0] == uid]
+        if len(mine) >= _TTS_GROUP_MAX_PER_USER:
+            for k, _t in sorted(mine, key=lambda kt: kt[1])[:len(mine) - _TTS_GROUP_MAX_PER_USER + 1]:
+                del _tts_groups[k]
         g = {"t": now, "n": 0, "slot": False, "over": None,
              "charged_cost": 0.0, "played": False}
         _tts_groups[key] = g

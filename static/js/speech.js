@@ -248,9 +248,17 @@ function reportPlaybackError(reason, detail) {
     }).catch(() => {});
   } catch (e) { /* 記録の失敗で画面を妨げない */ }
 }
+const _playbackToastedAt = {};
 function playbackFailed(reason, detail) {
   reportPlaybackError(reason, detail);
-  if (playbackErrorCb) playbackErrorCb(tx("voice.playbackFailed"));
+  // 同じ理由のトーストは5秒に1回(フラッシュ/クイズの自動読み上げでカードごとに出続けないように)。
+  const now = Date.now();
+  if (now - (_playbackToastedAt[reason] || 0) < 5000) return;
+  _playbackToastedAt[reason] = now;
+  // 理由別の文言: 通信の失敗だけ「通信状況を確認して」。自動再生の制限は「タップして」・それ以外は「今は再生できません」。
+  const key = reason === "network" ? "voice.playbackFailed"
+    : (reason === "autoplay_blocked" ? "voice.playbackTapToPlay" : "voice.playbackUnavailable");
+  if (playbackErrorCb) playbackErrorCb(tx(key));
 }
 // 再生(fetch/デコード/play())の失敗の理由。"" = 失敗ではない(新しい再生に取って代わられた等)。
 function playFailureReason(e, stage) {
@@ -262,10 +270,13 @@ function playFailureReason(e, stage) {
 export function playErrorTone() {
   try {
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
-    const ctx = new AC(), o = ctx.createOscillator(), g = ctx.createGain();
+    const ctx = new AC();
+    if (ctx.state === "suspended" && ctx.resume) ctx.resume().catch(() => {});
+    const o = ctx.createOscillator(), g = ctx.createGain();
     o.type = "sine"; o.frequency.value = 330; g.gain.value = 0.08;
     o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.25);
-    o.onended = () => { try { ctx.close(); } catch (e) { /* ignore */ } };
+    // suspendedのままだとonendedが来ないため、時間でも必ず閉じる(リソースを残さない)
+    setTimeout(() => { try { ctx.close(); } catch (e) { /* ignore */ } }, 600);
   } catch (e) { /* 音が出せなくても無害 */ }
 }
 
@@ -634,16 +645,17 @@ export async function createAIRecorder(language = "") {
 
 // Like say(), but resolves when the audio FINISHES (for hands-free flow:
 // resume listening only after the AI has stopped talking).
+// 戻り値: true=再生し終えた/false=再生できなかった(呼び出し側=聞き流しのループは、続けて失敗したら止める・2026-09-26 Fable照査M1)。
 export function speakAndWait(text, opts = {}) {
   return new Promise((resolve) => {
     let stage = "network";
-    if (!text || !text.trim()) { resolve(); return; }
+    if (!text || !text.trim()) { resolve(true); return; }
     const browser = () => {
-      if (!synth) { resolve(); return; }
+      if (!synth) { resolve(false); return; }
       synth.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = opts.lang || "en-US"; u.rate = opts.rate || playbackRate || 0.95;
-      u.onend = () => resolve(); u.onerror = () => resolve();
+      u.onend = () => resolve(true); u.onerror = () => resolve(false);
       synth.speak(u);
     };
     // opts.forceBrowser: 常にブラウザ内蔵音声のみを使う(2026-09-18・
@@ -653,9 +665,9 @@ export function speakAndWait(text, opts = {}) {
     // opts.langで発音言語も指定できるようにした。
     // 2026-09-26(オーナー決定): forceBrowserでもブラウザ音声(声)は使わない。ハンズフリー中のエラー通知は短い
     // 「ピッ」(声なし)で知らせる。画面のエラー表示は呼び出し側が出している。
-    if (opts.forceBrowser) { playErrorTone(); setTimeout(resolve, 350); return; }
+    if (opts.forceBrowser) { playErrorTone(); setTimeout(() => resolve(true), 350); return; }
     if (!isNatural()) { browser(); return; }   // 利用者が設定で選んだブラウザ音声
-    if (!aiEnabled) { playbackFailed("ai_unavailable"); resolve(); return; }
+    if (!aiEnabled) { playbackFailed("ai_unavailable"); resolve(false); return; }
     if (!currentIsOpenAI || !currentVoiceName) pickRoundVoice();
     const body = { text, voice: currentVoiceName };
     if (opts.feature) body.feature = opts.feature;
@@ -670,7 +682,7 @@ export function speakAndWait(text, opts = {}) {
           const msg = await r.text().catch(() => "");
           paymentRequiredCb(msg || tx("voice.playbackUnavailable"));
         }
-        resolve();
+        resolve(false);
         return null;
       }
       return r.blob();
@@ -683,20 +695,20 @@ export function speakAndWait(text, opts = {}) {
         a._objUrl = URL.createObjectURL(blob);
         a.src = a._objUrl;
         a.playbackRate = effectiveRate(currentVoiceName, opts.rate);
-        a.onended = () => resolve();
-        a.onerror = () => resolve();
+        a.onended = () => resolve(true);
+        a.onerror = () => resolve(false);
         const pl = a.play();
         if (pl && pl.catch) pl.catch((e) => {
           const why = playFailureReason(e, "play");
           if (why) playbackFailed(why, e);
-          resolve();
+          resolve(false);
         });
         if (usageCb) usageCb();
       }).catch((e) => {
         // ブラウザ音声へは逃げない(無音+案内+エラー記録)
         const why = playFailureReason(e, stage);
         if (why) playbackFailed(why, e);
-        resolve();
+        resolve(false);
       });
   });
 }
@@ -711,8 +723,8 @@ export function speakAndWait(text, opts = {}) {
 //   cancel()    … 中断(再生中の音声も止める・以後の追加は無視)
 //   done        … 再生が終わった/中断/失敗のいずれかで解決するPromise(ハンズフリーが
 //                 「AIが話し終えてから聞き取りを再開する」ために待つ)
-// 失敗時の扱いはsay()と同じ: サーバーが意図的に拒否(402/422等)したら案内だけ出して
-// ブラウザ音声へは逃げない/ネットワーク到達不能のときだけブラウザ音声で残りを読む。
+// 失敗時の扱いはsay()と同じ: サーバーが意図的に拒否(402/422等)したら案内だけ出し、ネットワーク到達不能でも
+// ブラウザ音声へは逃げない(2026-09-26・無音+案内+エラー記録)。ブラウザ音声は利用者が設定でOFFにした場合のみ。
 // グループID(group)は同じ返答のセグメントを束ねる使い捨ての乱数で、サーバーは
 // 課金・分間レート制限をセグメントに分けなかった場合と同じにそろえる(ai.py参照)。
 export function createSegmentSpeaker() {
@@ -728,7 +740,7 @@ export function createSegmentSpeaker() {
   const myToken = ++playSeq;
   const segs = [];
   let finished = false, cancelled = false, pumping = false;
-  let blocked = false, fallback = false, noticeShown = false;
+  let blocked = false, noticeShown = false;
   let started = false, usageReported = false;
   let wake = null, endPlaying = null;
   let resolveDone;

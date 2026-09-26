@@ -4130,7 +4130,7 @@ export async function conversation(root) {
       // 音声経由の漏洩も防ぐ)。forceBrowser: エラー直後にまた有料AI音声
       // (/api/learn/tts)へ二重に頼らない(Fable2回目レビュー指摘)。
       await speech.speakAndWait(tx("conversation.errorRetry"),
-        { forceBrowser: true, lang: uiSpeechLang() });
+        { forceBrowser: true });
       return;
     }
     if (!full.trim()) {
@@ -4139,7 +4139,7 @@ export async function conversation(root) {
       history.pop();
       refreshCost();
       await speech.speakAndWait(tx("conversation.emptyResponse"),
-        { forceBrowser: true, lang: uiSpeechLang() });
+        { forceBrowser: true });
       return;
     }
     history.push({ role: "assistant", content: turn.historyText });
@@ -4240,6 +4240,7 @@ export async function conversation(root) {
 
   // 画面を離れたら確定保存(study_log.md へ1度だけ追記)。
   onLeaveView(() => {
+    speech.stopSpeaking();   // 文単位の読み上げの残り(取得=課金と再生)を止める(Fable照査L5)
     window.removeEventListener("beforeunload", beforeUnload);
     if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
     if (autoLogOn() && history.length && !finalLogged) doSave(true);
@@ -4261,6 +4262,7 @@ export async function conversation(root) {
   const setHfStatus = (t) => { hfStatus.textContent = t; };
   const stopHF = () => {
     if (hf) { hf.stop(); hf = null; }
+    speech.stopSpeaking();   // 停止後に残りの区切りを取得・再生し続けない(Fable照査L5)
     hfStart.style.display = ""; hfStop.style.display = "none";
     hfEnd.style.display = "none";
   };
@@ -4576,6 +4578,7 @@ export async function listening(root) {
     root.querySelector("#plEn").onchange = applyToggles;
     root.querySelector("#plJa").onchange = applyToggles;
 
+    let plFailStreak = 0;
     do {
       for (let i = 0; i < sents.length; i++) {
         if (!plRunning) return;
@@ -4592,8 +4595,13 @@ export async function listening(root) {
             { text: (await jaFor(sents[i])) || "—" });
         }
         if (!plRunning) return;
-        await speech.speakAndWait(sents[i],
+        const played = await speech.speakAndWait(sents[i],
           { rate: rate(), feature: "listening_tts" });
+        // 再生できなかった(通信断・拒否等)のに次の文へ即進むと、ループONでは高速に回り続ける(Fable照査M1)。
+        // 続けて2回失敗したら止める。
+        if (played === false) {
+          if (++plFailStreak >= 2) { plStatus.textContent = tx("listening.stoppedStatus"); stopPL(); return; }
+        } else plFailStreak = 0;
       }
     } while (plRunning && root.querySelector("#plLoop").checked);
     if (plRunning) { plStatus.textContent = tx("listening.doneStatus"); stopPL(); }
