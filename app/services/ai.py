@@ -717,9 +717,19 @@ _TTS_USD_PER_1K_CHARS = 0.015
 # 3文字以上のテキストで8KB未満なら不良とみなして再試行し、それでも直らなければ
 # 「失敗」を返す(キャッシュしない・呼び出し側=バッチ生成スクリプトも作らない)。
 # 1〜2文字("a"・"I"等)は元々短いので対象外。
+#
+# 【2026-09-26 閾値は下げない(P3 MEDIUM-1の検証結果)】「8,064B・8,832Bの正常な短い語を誤って不良扱いする恐れ」を、
+# 手元の音声を文字起こし(gpt-4o-transcribe)して確かめた。結果: 8KB未満のファイルは**ほぼ全て不良**(fine-structure constant=3,456B→
+# 「체크해봐」・soul food=6,528B→「Gitarren」・postscript=7,296B→「Vezda」・block system=8,064B→「모래성이야?」・spare=8,064B→「No.」)。
+# 8,832Bも3本中2本が不良(thumb→「Hair」・stew→「Попкорн」・正常はlitterだけ)、9,600Bも9本中7本が不良だった。つまり
+# 誤検出どころか、**閾値の上にも不良が残っている**(バイト数だけでは判別できない)。閾値を7,000B前後へ下げると不良を素通りさせるので下げない。
+# 根本対策は「合成直後に文字起こしで照合する/既存音声を一括検証して不良を隔離・再生成する」こと(費用・運用のオーナー判断待ち・docs/TODO.md)。
 _MIN_SPEECH_BYTES = 8192
 _MIN_GUARD_CHARS = 3
 _MAX_TTS_ATTEMPTS = 3
+# 運営負担の原価(不良音声の再試行分)を記録するai_usageのuser_id(実ユーザーは1以上=このIDは使われない)。
+# 管理画面の原価レポートでは「(運営負担・TTS再試行)」と表示する。
+OPERATOR_USER_ID = 0
 
 
 def _looks_broken(audio: bytes, spoken: str) -> bool:
@@ -847,19 +857,33 @@ def synthesize_speech(
                 cache.write_bytes(audio)
             except Exception:  # caching is best-effort
                 pass
-        # 実際にAPIを呼んだ回数分の費用は記録する(運営側の実コスト)が、利用者の
-        # チャージ残高から引くのは1回分だけ(不良の再試行は提供側の都合のため)。
+        # 実際にAPIを呼んだ回数分の費用は全て記録する(運営側の実コスト)が、利用者の
+        # ai_usage(=日次/月次の使用量・無料枠)に載せるのは「正常な音声を1回受け取った分」だけにする。
+        # 不良音声の再試行分(提供側の都合)は運営負担として別行(feature='tts_retry'・
+        # user_id=OPERATOR_USER_ID)に記録する。全て不良で失敗した場合は、利用者には何も提供して
+        # いないので、全額を運営負担にする(2026-09-26・P3 LOW-1)。
         cost = len(text) / 1000 * _TTS_USD_PER_1K_CHARS
         logged_cost = cost * attempts
+        user_cost = 0.0 if broken else cost
+        operator_cost = logged_cost - user_cost
         from .auth import current_ip, current_user_id
         uid = current_user_id()
         with db() as conn:
-            conn.execute(
-                "INSERT INTO ai_usage "
-                "(model, prompt_tokens, output_tokens, cost_usd, feature, "
-                " user_id, ip) VALUES (?, 0, 0, ?, ?, ?, ?)",
-                (settings.tts_model, logged_cost, feature, uid, current_ip()),
-            )
+            if user_cost > 0:
+                conn.execute(
+                    "INSERT INTO ai_usage "
+                    "(model, prompt_tokens, output_tokens, cost_usd, feature, "
+                    " user_id, ip) VALUES (?, 0, 0, ?, ?, ?, ?)",
+                    (settings.tts_model, user_cost, feature, uid, current_ip()),
+                )
+            if operator_cost > 0:
+                conn.execute(
+                    "INSERT INTO ai_usage "
+                    "(model, prompt_tokens, output_tokens, cost_usd, feature, "
+                    " user_id, ip) VALUES (?, 0, 0, ?, 'tts_retry', ?, ?)",
+                    (settings.tts_model, operator_cost, OPERATOR_USER_ID,
+                     current_ip()),
+                )
             # 2026-08-12修正: 以前はここでチャージ残高を消費しておらず、
             # 無料枠を使い切った後もTTSだけ無制限に無料で使えてしまう
             # 抜け穴があった。
@@ -924,8 +948,29 @@ def _recent_charge_mark(uid: int, key: str) -> None:
     _recent_charges[(uid, key)] = time.time()
 
 
+def refund_playback(receipt: dict | None) -> float:
+    """`charge_playback_if_needed`が課金した再生を、**音声を届けられなかったとき**にポイント(pt)で返金する
+    (2026-09-26・P3 LOW-2・オーナー承認「ptで返金ならOK」)。現金の返金ではなく、残高(pt)への戻し。
+    `receipt`は`charge_playback_if_needed(..., receipt=receipt)`が課金したときに埋める辞書
+    ({uid, amount, key, note})。課金が無かった(無料範囲・管理者・直近5分の再課金なし)ときは何もしない。
+    同じ領収は1回しか返金しない(冪等)。返金と同時に「直近5分は再課金しない」印も外す(外さないと、
+    返金後の再試行が無課金になり、成功した再生が無料になってしまう)。戻した額(pt)を返す。"""
+    if not receipt or receipt.get("refunded") or not receipt.get("amount"):
+        return 0.0
+    from .auth import add_balance
+
+    amount = float(receipt["amount"])
+    with db() as conn:
+        add_balance(conn, receipt["uid"], amount, reason="tts_playback_refund",
+                    note=receipt.get("note", ""))
+    receipt["refunded"] = True
+    _recent_charges.pop((receipt["uid"], receipt["key"]), None)
+    return amount
+
+
 def charge_playback_if_needed(
     item_type: str, item_id: int, kind: str, text: str,
+    receipt: dict | None = None,
 ) -> str | None:
     """単語/フレーズ音声「再生」の課金ガード（2026-08-09〜）。
 
@@ -944,6 +989,8 @@ def charge_playback_if_needed(
     例文音声は別コンテンツなのでキーに含める)。
 
     戻り値: 課金不要/成功なら None、拒否する場合はユーザー向けエラー文言。
+    `receipt`を渡すと、実際に課金したときだけ{uid, amount, key, note}を埋める。呼び出し側は、音声を届けられな
+    かったとき`refund_playback(receipt)`でポイントを戻す(LOW-2)。
     """
     from . import access_tiers
     from .auth import add_balance, current_user_id, get_user, is_guest_user_id
@@ -988,6 +1035,9 @@ def charge_playback_if_needed(
                 conn, uid, delta, reason="tts_playback",
                 note=f"{item_type}:{item_id}:{kind}",
             )
+            if receipt is not None:
+                receipt.update(uid=uid, amount=-delta, key=recent_key,
+                               note=f"{item_type}:{item_id}:{kind}")
         _recent_charge_mark(uid, recent_key)
         return None
 

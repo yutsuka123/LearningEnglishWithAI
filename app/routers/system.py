@@ -3576,6 +3576,8 @@ def admin_cost_report(days: int = 30):
 
     usernames = {r["id"]: r["username"] for r in user_rows}
     roles = {r["id"]: r["role"] for r in user_rows}
+    # 運営負担の原価(TTSの不良音声の再試行分・ai.OPERATOR_USER_ID)を「(id=0)」でなく分かる名前で出す。
+    usernames.setdefault(0, "(運営負担・TTS再試行)")
 
     cost_by_uf: dict[tuple[int, str], float] = {}
     for r in cost_rows:
