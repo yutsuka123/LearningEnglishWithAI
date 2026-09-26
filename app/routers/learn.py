@@ -1084,18 +1084,17 @@ def tts(payload: TtsIn):
     feature = (payload.feature
               if payload.feature in _TTS_FEATURE_ALLOWLIST else "tts")
     group = ai.tts_group_id(payload.group)
-    continuation = ai.tts_group_begin(group)
     audio, error = ai.synthesize_speech(
-        payload.text, payload.voice, feature=feature,
-        group=group, group_continuation=continuation)
+        payload.text, payload.voice, feature=feature, group=group)
     if error:
         # 422 lets the frontend fall back to the browser voice.
         tracking.log_event(
             "play_error", feature, f"{payload.voice}:{payload.text[:60]}")
         return Response(content=error, status_code=422, media_type="text/plain")
-    # 分けた読み上げの2回目以降は「再生」として数えない(1回の返答=1回の
-    # 再生のまま・管理画面の再生数の意味を変えない)。
-    if not continuation:
+    # 分けた読み上げは、グループで最初に成功した1回だけ「再生」として数える
+    # (1回の返答=1回の再生のまま・管理画面の再生数の意味を変えない)。
+    from ..services.auth import current_user_id
+    if ai.tts_group_first_success(current_user_id(), group):
         tracking.log_event(
             "play", feature, f"{payload.voice}:{payload.text[:60]}")
     return Response(content=audio, media_type="audio/mpeg")

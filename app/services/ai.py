@@ -381,7 +381,7 @@ def _compute_charge_jpy(cost_usd: float, rate: float, feature: str) -> float:
 
 def _maybe_deduct_balance(
     conn, uid: int, cost_usd: float, feature: str, s,
-    prior_cost_usd: float = 0.0,
+    prior_cost_usd: float = 0.0, assume_over: bool | None = None,
 ) -> bool:
     """チャージ残高は「無料枠（日次/月次上限）に到達した後の利用」でのみ消費
     する（枠とは別管理）。枠内の利用では残高を減らさない。呼び出し元が同じ
@@ -393,18 +393,24 @@ def _maybe_deduct_balance(
     呼び出し(_tts_group_*)用。同じ読み上げの既に課金済みの原価の累計を渡すと、
     「累計での課金額 − 既に課金済みの課金額」だけを引く。0.5円単位の切り上げが
     呼び出しごとにかかって合計が増える(分けなかった場合より高くなる)のを防ぎ、
-    合計は1回で読み上げた場合と同じになる。既定0は従来どおり(既存の全呼び出し
-    元は変わらない)。戻り値: 課金対象(枠超過)だったらTrue(残高が0円で実際に
-    引けなかった場合も含む)。"""
+    合計は1回で読み上げた場合と同じになる。``assume_over``: グループの最初の
+    呼び出しで決めた「枠超過か」を渡すと、無料枠の判定(累計コストの再集計)を
+    せずその結果を使う(分けなかった場合は返答全体を呼び出し前の累計で1回判定
+    するので、途中の区切りで枠を跨いでも返答全体の扱いが変わらないように)。
+    既定(0/None)は従来どおり(既存の全呼び出し元は変わらない)。戻り値: 課金
+    対象(枠超過)だったらTrue(残高が0円で実際に引けなかった場合も含む)。"""
     from .auth import add_balance, get_user
 
     u = get_user(conn, uid)
     if not u or u.get("balance_jpy") is None:
         return False
-    dcap, mcap = _effective_caps(u, s)
-    prior_day = _user_cost_usd(uid, "day")
-    prior_mon = _user_cost_usd(uid, "month")
-    over = prior_day >= dcap or prior_mon >= mcap
+    if assume_over is None:
+        dcap, mcap = _effective_caps(u, s)
+        prior_day = _user_cost_usd(uid, "day")
+        prior_mon = _user_cost_usd(uid, "month")
+        over = prior_day >= dcap or prior_mon >= mcap
+    else:
+        over = assume_over
     if not over:
         return False
     charge = _compute_charge_jpy(cost_usd, s.usd_jpy_rate, feature)
@@ -848,23 +854,33 @@ def _tts_cache_path(model: str, voice: str, text: str, instr: str = ""):
 # --- 会話の返答を文単位で分けて読み上げるときの「読み上げグループ」(2026-09-26) ---
 # 英会話の応答速度改善: 返答(LLM)の生成完了を待たず、最初の文ができた時点で
 # TTSを始めるため、1回の返答の読み上げをクライアントが2〜数回のTTS呼び出しに
-# 分ける。1回の読み上げ=1グループとして、次の2点だけ「分けなかった場合」と同じに
-# 揃える(利用者の課金・分間レート制限の消費を増やさない):
-#   ①課金: _maybe_deduct_balance(prior_cost_usd=)の差額方式(合計は1回で読み
-#     上げた場合と同じ)。
-#   ②分間レート制限: グループ内の2回目以降の呼び出しは枠を消費しない
-#     (1回の返答=1枠のまま・英会話のcoachと同じ考え方)。日次/月次の無料枠・
-#     サイト全体の上限は従来どおり毎回判定する。
+# 分ける。1回の読み上げ=1グループとして、次の点を「分けなかった場合(1回の呼び出し)」
+# と同じに揃える(利用者の課金・分間レート制限の消費を増やさない):
+#   ①課金: _maybe_deduct_balance(prior_cost_usd=, assume_over=)。「枠超過か」は
+#     グループの最初に課金判定した呼び出しで1回だけ決め(分けなかった場合の判定=
+#     呼び出し前の累計、と同じ)、以後はその結果を使い、課金額は「累計での課金額−
+#     既に課金済みの額」の差額(0.5円単位の切り上げが呼び出しごとにかかって
+#     合計が増えるのを防ぐ)。合計は1回で読み上げた場合と同じになる。
+#   ②分間レート制限: グループの最初にガードを**通った**呼び出しが枠を1つ消費し、
+#     そのグループの2回目以降は枠を消費しない(1回の返答=1枠のまま・英会話の
+#     coachと同じ考え方)。キャッシュに当たっただけの呼び出しや、ガードに拒否
+#     された呼び出しはグループを開かない(=グループIDを変えながら枠を回避できない)。
+#     日次/月次の無料枠・サイト全体の上限は従来どおり毎回判定する。
+#   ③再生数(管理画面のplayイベント)は、グループで最初に成功した1回だけ数える。
 # グループIDはクライアントが返答ごとに作る使い捨ての乱数。単一プロセスのメモリ内
-# 管理(_call_times等と同じ)・TTLと回数で頭打ち。IDを使い回されても、①は「累計に
-# 対して1回だけ切り上げる」になるだけ(原価×倍率の課金は維持)、②はグループ当たり
-# 最大_TTS_GROUP_MAX_CALLS回までなので悪用の余地は小さい。
+# 管理(_call_times等と同じ)・TTL/回数/件数で頭打ち。
 _TTS_GROUP_TTL_SEC = 180.0
 _TTS_GROUP_MAX_CALLS = 8
+_TTS_GROUP_MAX_ENTRIES = 2000
+_TTS_GROUP_TIMEOUT_BASE_SEC = 6.0  # 応答待ちの上限=これ+文字数/100秒(既定の20秒が上限)
 _TTS_GROUP_ID_RE = None  # 遅延コンパイル(reの読み込みを避ける)
 _tts_groups: dict[tuple[int, str], dict] = {}
 _tts_group_lock = threading.Lock()
-_tts_group_charge_lock = threading.Lock()
+_tts_group_last_purge = 0.0
+# 課金の記録〜差額計算〜グループ累計の更新を直列にするロック。全ユーザー共通の
+# 1本だと、DBが混んだとき他ユーザーの課金まで待たせるので、グループごとに
+# 決まる16本に分ける(同じグループは必ず同じロック)。
+_TTS_GROUP_CHARGE_LOCKS = tuple(threading.Lock() for _ in range(16))
 
 
 def tts_group_id(raw: str | None) -> str:
@@ -879,44 +895,96 @@ def tts_group_id(raw: str | None) -> str:
     return raw if _TTS_GROUP_ID_RE.match(raw) else ""
 
 
-def tts_group_begin(group: str, uid: int | None = None) -> bool:
-    """このユーザーの読み上げグループの呼び出しを1回登録し、「2回目以降
-    (継続)」ならTrueを返す。グループなし/期限切れ/上限超過は最初の呼び出し
-    扱い(False)で、新しいグループとして数え直す。"""
+def _tts_group_charge_lock(uid: int, group: str):
     if not group:
-        return False
-    if uid is None:
-        from .auth import current_user_id
-        uid = current_user_id()
+        return contextlib.nullcontext()
+    return _TTS_GROUP_CHARGE_LOCKS[hash((uid, group)) % len(_TTS_GROUP_CHARGE_LOCKS)]
+
+
+def _tts_group_get(uid: int, group: str, create: bool) -> dict | None:
+    """(uid, group)の状態を返す(期限切れは無いものとして扱う)。呼び出し側が
+    ``_tts_group_lock``を持っていること。"""
+    global _tts_group_last_purge
     now = time.monotonic()
-    with _tts_group_lock:
+    if (now - _tts_group_last_purge >= 10.0
+            or len(_tts_groups) >= _TTS_GROUP_MAX_ENTRIES):
+        _tts_group_last_purge = now
         for k in [k for k, v in _tts_groups.items()
                   if now - v["t"] >= _TTS_GROUP_TTL_SEC]:
             del _tts_groups[k]
-        key = (uid, group)
-        g = _tts_groups.get(key)
-        if g is not None and g["n"] < _TTS_GROUP_MAX_CALLS:
-            g["n"] += 1
-            g["t"] = now
-            return True
-        _tts_groups[key] = {"t": now, "n": 1, "charged_cost": 0.0}
-        return False
+        if len(_tts_groups) >= _TTS_GROUP_MAX_ENTRIES:  # 最後の砦(古い順に捨てる)
+            keep = _TTS_GROUP_MAX_ENTRIES - 1  # これから1件足すので1件分あける
+            for k, _v in sorted(_tts_groups.items(), key=lambda kv: kv[1]["t"])[
+                    :len(_tts_groups) - keep]:
+                del _tts_groups[k]
+    key = (uid, group)
+    g = _tts_groups.get(key)
+    if g is not None and now - g["t"] >= _TTS_GROUP_TTL_SEC:
+        del _tts_groups[key]
+        g = None
+    if g is None and create:
+        g = {"t": now, "n": 0, "slot": False, "over": None,
+             "charged_cost": 0.0, "played": False}
+        _tts_groups[key] = g
+    return g
 
 
-def _tts_group_charged_cost(uid: int, group: str) -> float:
+def tts_group_can_skip_rate_limit(uid: int, group: str) -> bool:
+    """このグループの最初のガード通過(=枠を1つ消費済み)があり、回数上限内なら
+    True(この呼び出しは分間レート制限の枠を消費しない)。"""
     if not group:
-        return 0.0
+        return False
     with _tts_group_lock:
-        g = _tts_groups.get((uid, group))
-        return float(g["charged_cost"]) if g else 0.0
+        g = _tts_group_get(uid, group, create=False)
+        return bool(g and g["slot"] and g["n"] < _TTS_GROUP_MAX_CALLS)
 
 
-def _tts_group_add_charged_cost(uid: int, group: str, cost: float) -> None:
+def tts_group_note_call(uid: int, group: str, consumed_slot: bool) -> None:
+    """ガードを通った(=これからAPIを呼ぶ)呼び出しを1回記録する。
+    ``consumed_slot``: この呼び出しが分間レート制限の枠を消費した場合True
+    (グループはこの呼び出しで「枠消費済み」になる)。"""
     if not group:
         return
     with _tts_group_lock:
-        g = _tts_groups.get((uid, group))
-        if g is not None:
+        g = _tts_group_get(uid, group, create=True)
+        g["n"] += 1
+        g["t"] = time.monotonic()
+        if consumed_slot:
+            g["slot"] = True
+
+
+def tts_group_first_success(uid: int, group: str) -> bool:
+    """グループで最初に成功した呼び出しならTrue(再生数を数える用)。グループ
+    なしは常にTrue(従来どおり成功のたびに数える)。"""
+    if not group:
+        return True
+    with _tts_group_lock:
+        g = _tts_group_get(uid, group, create=True)
+        if g["played"]:
+            return False
+        g["played"] = True
+        return True
+
+
+def _tts_group_charge_state(uid: int, group: str) -> tuple[bool | None, float]:
+    """(グループで決めた「枠超過か」(未決定ならNone), 課金済みの原価の累計)。"""
+    if not group:
+        return None, 0.0
+    with _tts_group_lock:
+        g = _tts_group_get(uid, group, create=False)
+        return (g["over"], float(g["charged_cost"])) if g else (None, 0.0)
+
+
+def _tts_group_record_charge(uid: int, group: str, over: bool, cost: float) -> None:
+    if not group:
+        return
+    with _tts_group_lock:
+        g = _tts_group_get(uid, group, create=False)
+        if g is None:
+            return
+        if g["over"] is None:
+            g["over"] = over
+        if over:
             g["charged_cost"] += cost
 
 
@@ -924,7 +992,7 @@ def synthesize_speech(
     text: str, voice: str = "alloy", *,
     style: str = TTS_STYLE_DEFAULT, rate_limit: bool = True,
     feature: str = "tts", free_range: bool = False,
-    group: str = "", group_continuation: bool = False,
+    group: str = "",
 ) -> tuple[bytes | None, str | None]:
     """Return (audio_mp3_bytes, error). Uses OpenAI's natural TTS voices.
 
@@ -938,11 +1006,9 @@ def synthesize_speech(
     「無料範囲」内と判定済み（＝件数上限があり総コストが有界）の場合に
     True。ユーザー別の日次/月次無料枠チェックだけを免除する
     （サイト全体の上限・レート制限は引き続き有効）。
-    ``group``/``group_continuation``: 会話の返答を文単位で分けた読み上げ(上の
-    「読み上げグループ」参照)。``group``は検証済み(tts_group_id)のグループID、
-    ``group_continuation``は呼び出し元が``tts_group_begin``で得た「2回目以降」
-    の判定。2回目以降は分間レート制限の枠を消費せず、課金は累計との差額に
-    なる。既定(なし)は従来どおり。
+    ``group``: 会話の返答を文単位で分けた読み上げ(上の「読み上げグループ」参照)。
+    検証済み(tts_group_id)のグループID。グループの2回目以降は分間レート制限の
+    枠を消費せず、課金は累計との差額になる。既定(なし)は従来どおり。
     """
     client, settings = _client()
     if client is None:
@@ -961,16 +1027,39 @@ def synthesize_speech(
         return cache.read_bytes(), None  # cache hit → no API call, no cost
 
     # only a real (paid) synthesis hits the guard
+    guid = 0
+    skip_slot = False
+    if group:
+        from .auth import current_user_id as _cuid
+        guid = _cuid()
+        skip_slot = tts_group_can_skip_rate_limit(guid, group)
     refusal = _guard(
-        feature, rate_limit=rate_limit and not group_continuation,
+        feature, rate_limit=rate_limit and not skip_slot,
         skip_user_cap=free_range)
     if refusal:
         return None, refusal
+    if group:
+        # ガードを通った呼び出しだけをグループに数える(拒否/キャッシュ命中は
+        # グループを開かない)。枠を消費したのは、レート制限が有効で免除でなかった時。
+        tts_group_note_call(guid, group, consumed_slot=(rate_limit and not skip_slot))
 
     # instructions は gpt-4o-mini-tts 系のみ対応（tts-1系は非対応なので付けない）
     extra = {}
     if instr and "gpt-4o" in settings.tts_model:
         extra["instructions"] = instr
+    if group:
+        # 会話の返答を文単位で読む短いTTS用に、応答待ちの上限を短くする
+        # (2026-09-26実測: OpenAI側で応答が返ってこない呼び出しが一定割合で起きる
+        # 時間帯があり、既定の20秒待ち+再試行だと1回の読み上げで約22秒(再試行も
+        # 固まれば43秒)止まった。8秒待ち+再試行なら約10.5秒。n=12交互。通常は
+        # 短文で1〜2.5秒なので誤って打ち切る余地は小さい)。文が長いほど待つ。
+        _with = getattr(client, "with_options", None)
+        if callable(_with):
+            import httpx
+            client = _with(timeout=httpx.Timeout(
+                min(_OPENAI_TIMEOUT_SEC,
+                    _TTS_GROUP_TIMEOUT_BASE_SEC + len(speak) / 100.0),
+                connect=_OPENAI_CONNECT_TIMEOUT_SEC))
     t0 = time.monotonic()
     try:
         attempts = 0
@@ -1011,8 +1100,7 @@ def synthesize_speech(
         # 要求する)ため、課金額の差額計算(prior_cost_usd)が正しく積み上がる
         # よう、記録〜課金〜グループ累計の更新を直列にする(APIの合成待ちは
         # この外なので並行のまま・ここは数ms)。グループなしは従来どおり。
-        with (_tts_group_charge_lock if group else contextlib.nullcontext()), \
-                db() as conn:
+        with _tts_group_charge_lock(uid, group), db() as conn:
             conn.execute(
                 "INSERT INTO ai_usage "
                 "(model, prompt_tokens, output_tokens, cost_usd, feature, "
@@ -1031,11 +1119,12 @@ def synthesize_speech(
             # べきなのでスキップする(単語/フレーズ・公開サンプルいずれも
             # 「課金ユーザーでも無料」という設計のため)。
             if not free_range and not broken:
-                if _maybe_deduct_balance(
+                g_over, g_prior = _tts_group_charge_state(uid, group)
+                over = _maybe_deduct_balance(
                     conn, uid, cost, feature, settings,
-                    prior_cost_usd=_tts_group_charged_cost(uid, group),
-                ):
-                    _tts_group_add_charged_cost(uid, group, cost)
+                    prior_cost_usd=g_prior, assume_over=g_over,
+                )
+                _tts_group_record_charge(uid, group, over, cost)
         if broken:
             # 再試行しても直らなかった(=ほぼ起きない)。不良音声を返さず・
             # キャッシュも作らない。利用者は再度押せば新しく生成される。

@@ -259,11 +259,14 @@ function englishOnly(text) {
 // だけ先に渡す。短い最初の文(Sure. 等)はTTSの呼び出し回数が無駄になるので次の文と
 // まとめる。以後は行の終わり/一定量ごとに区切る(区切りの数には上限があり、超えた
 // 分は最後の区切りにまとめる)。emit(text)が「1回のTTSで読む区切り」。
+// 従来との差(敵対的レビューで確認済み・許容): 英語の文の**直後に同じ行で日本語が
+// 長く続く**とき、従来は行全体が日本語優勢で読まれなかったが、先に渡した英語の文だけは
+// 読まれる(英語だけの行・日本語だけの行・複数行は従来と同一)。
 const _EN_LINE_STRIP = /^[#>*\-\d.]+\s*/;
 const _EN_JA_CHARS = /[぀-ヿ一-鿿]/g;
 // 文末の判定で「文の終わりではない」略語(Mr. a.m. 等)。直前の語で見る。
 const _ABBREV_BEFORE_DOT =
-  /(?:^|[\s(])(?:Mr|Mrs|Ms|Dr|Prof|St|Jr|Sr|vs|etc|No|a\.m|p\.m|e\.g|i\.e|U\.S)\.$/i;
+  /(?:^|[\s(])(?:Mr|Mrs|Ms|Dr|Prof|St|Jr|Sr|vs|etc|No|Inc|Ltd|Co|Corp|Ave|Blvd|Rd|Mt|Ft|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec|approx|a\.m|p\.m|e\.g|i\.e|U\.S)\.$/i;
 
 function isEnglishLine(l) {
   const ascii = (l.match(/[A-Za-z]/g) || []).length;

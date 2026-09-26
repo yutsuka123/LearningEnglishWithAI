@@ -622,7 +622,7 @@ export function createSegmentSpeaker() {
   const myToken = ++playSeq;
   const segs = [];
   let finished = false, cancelled = false, pumping = false;
-  let failed = false, fallback = false, noticeShown = false;
+  let blocked = false, fallback = false, noticeShown = false;
   let started = false, usageReported = false;
   let wake = null, endPlaying = null;
   let resolveDone;
@@ -683,12 +683,15 @@ export function createSegmentSpeaker() {
       return;
     }
     if (r.blocked) {
-      // 意図的な拒否(要ログイン/要チャージ等)。say()と同じく案内だけ出して終える。
+      // 意図的な拒否(要ログイン/要チャージ等)。say()と同じく案内だけ出し、
+      // ブラウザ音声へは逃げない。この区切りは飛ばし、以後の新しい合成も
+      // 頼まない(blocked)。既に合成が済んだ(=課金済みの)後続の区切りは、
+      // 鳴らさず捨てるのはもったいないので、そのまま順に再生する。
       if (!noticeShown && paymentRequiredCb) {
         noticeShown = true;
         paymentRequiredCb(r.msg || tx("voice.playbackUnavailable"));
       }
-      failed = true; return;
+      blocked = true; return;
     }
     // ネットワーク到達不能: この区切り以降はブラウザ音声で読む。
     fallback = true;
@@ -701,9 +704,10 @@ export function createSegmentSpeaker() {
     pumping = true;
     try {
       // 最初の区切りを鳴らす前に、鳴っている前の音声を止める(playBlobと同じ)。
-      stopAudioOnly();
+      // 自分が現役のときだけ(別の読み上げに取って代わられていたら止めない)。
+      if (owns()) stopAudioOnly();
       let i = 0;
-      while (owns() && !failed) {
+      while (owns()) {
         if (i >= segs.length) {
           if (finished) break;
           await new Promise((r) => { wake = r; });
@@ -723,6 +727,10 @@ export function createSegmentSpeaker() {
   const api = {
     add(text) {
       if (cancelled || finished || !text || !text.trim()) return;
+      // 生成中に別の読み上げ(🔊等)が始まっていたら、こちらは引退する(合成を頼んで
+      // 課金だけされたり、相手の再生を止めたりしない)。サーバーが拒否した後も同様。
+      if (!owns()) { api._abort(); return; }
+      if (blocked) return;
       const seg = { text, p: null };
       if (useAI) seg.p = fetchSeg(text);
       segs.push(seg);
