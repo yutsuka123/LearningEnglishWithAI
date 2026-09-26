@@ -636,6 +636,18 @@ def _conversation_model(payload: ConversationIn) -> str | None:
     return load_settings().conversation_model
 
 
+def _conversation_reasoning_effort(part: str) -> str | None:
+    """英会話の返答(reply/all)は、推論を既定で行うモデル(gpt-5.6-luna等)でも
+    思考なし("none")にして、最初の文字が出るまでの時間を縮める(2026-09-26
+    実測: 中央値1.79→1.29秒・出力トークン73→33で費用も約2割減)。アドバイス
+    (coach)は返答と並行して後から出る部分で速度に効かず、添削の質を
+    優先したいので従来どおりモデルの既定のまま。.envの
+    CONVERSATION_REASONING_EFFORT=default で従来の挙動に戻せる。"""
+    if part == "coach":
+        return None
+    return load_settings().conversation_reasoning_effort or None
+
+
 @router.post("/conversation")
 def conversation(payload: ConversationIn):
     """Non-streaming conversation turn (used as a fallback)."""
@@ -643,6 +655,7 @@ def conversation(payload: ConversationIn):
     result = ai.chat(
         system, user, temperature=0.8, max_tokens=700, feature="conversation",
         model=_conversation_model(payload),
+        reasoning_effort=_conversation_reasoning_effort("all"),
     )
     return {"ok": result.ok, "reply": result.text, "error": result.error}
 
@@ -665,6 +678,7 @@ def conversation_stream(payload: ConversationIn):
     # reply側だけが記録する(二重記録の防止・レベル判定はuser発話しか使わない)。
     feature = "conversation_coach" if part == "coach" else "conversation"
     max_tokens = 700 if part == "all" else 400
+    effort = _conversation_reasoning_effort(part)
 
     from ..services.auth import current_user_id
     uid = current_user_id()
@@ -690,6 +704,7 @@ def conversation_stream(payload: ConversationIn):
         for chunk in ai.chat_stream(
             system, user, temperature=0.8,
             max_tokens=max_tokens, feature=feature, model=model,
+            reasoning_effort=effort,
         ):
             # 最初の(エラーでない)チャンクを返す直前にcoachの権利を発行する。
             if (part == "reply" and not granted
@@ -1034,6 +1049,12 @@ class TtsIn(BaseModel):
     # "tts" 扱いにする（クライアントが任意の値を送って安い倍率を騙る事を
     # 防ぐため・app/services/ai.pyのCATEGORY_MULTIPLIERと対応）。
     feature: str = ""
+    # 会話の返答を文単位で分けて読み上げるときの「読み上げグループ」ID
+    # (2026-09-26・応答速度改善)。クライアントが返答ごとに作る使い捨ての乱数で、
+    # 同じIDの2回目以降の呼び出しは分間レート制限の枠を消費せず、課金は累計との
+    # 差額になる(合計は1回で読み上げた場合と同じ)。app/services/ai.py
+    # の「読み上げグループ」参照。不正な値は無視(従来どおり1回ごとに独立)。
+    group: str = ""
 
 
 @router.post("/transcribe")
@@ -1062,14 +1083,20 @@ def tts(payload: TtsIn):
     "tts"扱い＝呼び出し元不明として"other"倍率になる）。"""
     feature = (payload.feature
               if payload.feature in _TTS_FEATURE_ALLOWLIST else "tts")
+    group = ai.tts_group_id(payload.group)
     audio, error = ai.synthesize_speech(
-        payload.text, payload.voice, feature=feature)
+        payload.text, payload.voice, feature=feature, group=group)
     if error:
         # 422 lets the frontend fall back to the browser voice.
         tracking.log_event(
             "play_error", feature, f"{payload.voice}:{payload.text[:60]}")
         return Response(content=error, status_code=422, media_type="text/plain")
-    tracking.log_event("play", feature, f"{payload.voice}:{payload.text[:60]}")
+    # 分けた読み上げは、グループで最初に成功した1回だけ「再生」として数える
+    # (1回の返答=1回の再生のまま・管理画面の再生数の意味を変えない)。
+    from ..services.auth import current_user_id
+    if ai.tts_group_first_success(current_user_id(), group):
+        tracking.log_event(
+            "play", feature, f"{payload.voice}:{payload.text[:60]}")
     return Response(content=audio, media_type="audio/mpeg")
 
 
@@ -1191,7 +1218,7 @@ def tts_item(
             return Response(content=cached, media_type="audio/mpeg")
 
         audio, error = ai.synthesize_speech(
-            text, voice, style=speed, free_range=free_range)
+            text, voice, style=speed, free_range=free_range, verify=True)
         if error:
             tracking.log_event(
                 "play_error", item_type, f"synth_fail:{base}:{text[:60]}")

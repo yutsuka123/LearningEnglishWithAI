@@ -92,6 +92,11 @@ class Settings:
     ai_daily_free_jpy: float
     # 同上、role="admin"用(2026-08-26: 100pt/1000ptへの統一に伴い新設)。
     ai_daily_free_jpy_admin: float
+    # 英会話の返答(reply/all)で、推論を既定で行うモデル(gpt-5.6-luna等)に
+    # 送る reasoning_effort(2026-09-26・応答速度改善)。"none"=思考なし(既定・
+    # 最初の文字まで約0.5秒短縮・出力トークンも減る)。""/"default"=送らない
+    # (モデルの既定=従来の挙動に戻す・.envのCONVERSATION_REASONING_EFFORT)。
+    conversation_reasoning_effort: str = "none"
 
     @property
     def ai_enabled(self) -> bool:
@@ -132,6 +137,12 @@ DEFAULT_BALANCE_MARKUP = 2.0
 DEFAULT_AI_DAILY_FREE_JPY = 100.0
 # role="admin"用の既定無料枠(円/日=pt/日)。2026-08-26新設（ユーザー指示）。
 DEFAULT_AI_DAILY_FREE_JPY_ADMIN = 1000.0
+
+
+def _parse_reasoning_effort(value: str) -> str:
+    """none/low/medium/high以外(空・"default"・typo)は""(=送らない・従来動作)。"""
+    v = (value or "").strip().lower()
+    return v if v in ("none", "low", "medium", "high") else ""
 
 
 def load_settings() -> Settings:
@@ -191,6 +202,8 @@ def load_settings() -> Settings:
         balance_markup=max(1.0, markup),
         ai_daily_free_jpy=max(0.0, daily_free_jpy),
         ai_daily_free_jpy_admin=max(0.0, daily_free_jpy_admin),
+        conversation_reasoning_effort=_parse_reasoning_effort(
+            os.getenv("CONVERSATION_REASONING_EFFORT", "none")),
     )
 
 

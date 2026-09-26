@@ -25,6 +25,10 @@ def review_words_today(limit: int = 10) -> list[dict]:
         rows = pick_weighted(
             conn, limit=limit, user_id=current_user_id(),
             exclude_banned=not current_user_allow_banned(),
+            # 会話の1往復ごとに呼ばれる(=応答速度に直結)。使うのは
+            # id/english/japanese/masteryだけなので、detail(JSON)の読み込みと
+            # 全語のfetchallを省く(2026-09-26・実測 約135ms→約12ms)。
+            light=True,
         )
         return [
             {

@@ -249,6 +249,130 @@ function englishOnly(text) {
   return (en.length ? en.join(" ") : text).slice(0, 3500);
 }
 
+// --- 会話の返答ストリームを「文単位」に切り出して読み上げへ渡す(2026-09-26) -----
+// 英会話の応答速度改善: 返答(LLM)が全部出るのを待たず、最初の文ができた時点で
+// 読み上げ(TTS)を始めるため、ストリーム中の本文から読み上げ対象を切り出す。
+// 読み上げ対象は従来(englishOnly(本文の【コーチ】より前))と同じ規則:
+//   ・行頭の記号を除き、英字8文字以上かつ日本語より英字が多い行だけ
+//   ・行は空白でつなぐ / どの行も条件を満たさなければ本文全体 / 最大3500文字
+// 途中の行(改行がまだ来ていない)は、文が完成した(. ! ? の後に空白が来た)部分
+// だけ先に渡す。短い最初の文(Sure. 等)はTTSの呼び出し回数が無駄になるので次の文と
+// まとめる。以後は行の終わり/一定量ごとに区切る(区切りの数には上限があり、超えた
+// 分は最後の区切りにまとめる)。emit(text)が「1回のTTSで読む区切り」。
+// 従来との差(敵対的レビューで確認済み・許容): 英語の文の**直後に同じ行で日本語が
+// 長く続く**とき、従来は行全体が日本語優勢で読まれなかったが、先に渡した英語の文だけは
+// 読まれる(英語だけの行・日本語だけの行・複数行は従来と同一)。
+const _EN_LINE_STRIP = /^[#>*\-\d.]+\s*/;
+const _EN_JA_CHARS = /[぀-ヿ一-鿿]/g;
+// 文末の判定で「文の終わりではない」略語(Mr. a.m. 等)。直前の語で見る。
+const _ABBREV_BEFORE_DOT =
+  /(?:^|[\s(])(?:Mr|Mrs|Ms|Dr|Prof|St|Jr|Sr|vs|etc|No|Inc|Ltd|Co|Corp|Ave|Blvd|Rd|Mt|Ft|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec|approx|a\.m|p\.m|e\.g|i\.e|U\.S)\.$/i;
+
+function isEnglishLine(l) {
+  const ascii = (l.match(/[A-Za-z]/g) || []).length;
+  const jp = (l.match(_EN_JA_CHARS) || []).length;
+  return ascii >= 8 && ascii > jp;
+}
+
+// rest内で「完成した文」の末尾位置(直後の空白まで含む)。無ければ0。
+function completedSentencesEnd(rest) {
+  const re = /[.!?]+["'”’)\]]*\s+/g;
+  let m; let last = 0;
+  while ((m = re.exec(rest))) {
+    const upTo = rest.slice(Math.max(0, m.index - 8), m.index + 1);
+    if (m[0][0] === "." && m[0].replace(/\s+$/, "").length === 1
+        && _ABBREV_BEFORE_DOT.test(upTo)) continue;
+    last = m.index + m[0].length;
+  }
+  return last;
+}
+
+function createReplyStreamer(emit, {
+  prefix = "", firstMin = 24, maxPending = 110, maxSegs = 4, cap = 3500,
+} = {}) {
+  let pos = 0;         // 本文(【コーチ】より前)の処理済み位置(行頭)
+  let lineDone = 0;    // 現在の行のうち、既にpendingへ渡した文字数(正規化後)
+  let pending = "";    // 完成した文のうち、まだ区切りとして渡していないもの
+  let segCount = 0;
+  let sent = 0;        // 読み上げに渡した合計文字数
+  let any = false;     // 読み上げ対象の文が1つでもあったか
+
+  function flush(force) {
+    if (!pending.trim()) { pending = ""; return; }
+    // 区切りの数の上限に達したら、最後まで溜めて最終の区切りにまとめる。
+    if (!force && segCount >= maxSegs - 1) return;
+    let t = pending.trim();
+    pending = "";
+    if (sent >= cap) return;
+    if (sent + t.length > cap) t = t.slice(0, cap - sent);
+    sent += t.length;
+    segCount++;
+    emit(segCount === 1 && prefix ? prefix + t : t);
+  }
+  function addPiece(t) {
+    t = t.trim();
+    if (!t) return;
+    any = true;
+    pending = pending ? pending + " " + t : t;
+  }
+  function flushEarly() {
+    if (segCount === 0 ? pending.length >= firstMin
+      : pending.length >= maxPending) flush(false);
+  }
+
+  function process(acc, final) {
+    const cut = acc.indexOf("【コーチ");
+    const sealed = final || cut >= 0;
+    const body = cut >= 0 ? acc.slice(0, cut) : acc;
+    for (;;) {
+      const nl = body.indexOf("\n", pos);
+      const complete = nl >= 0 || sealed;
+      const end = nl >= 0 ? nl : body.length;
+      const s = body.slice(pos, end).replace(_EN_LINE_STRIP, "").trimStart();
+      if (!complete) {
+        // 行の途中: 条件を満たす行なら、完成した文だけ先に渡す。
+        if (isEnglishLine(s)) {
+          const rest = s.slice(lineDone);
+          const upTo = completedSentencesEnd(rest);
+          if (upTo > 0) {
+            addPiece(rest.slice(0, upTo));
+            lineDone += upTo;
+            flushEarly();
+          }
+        }
+        return;
+      }
+      const line = s.trim();
+      if (line && isEnglishLine(line)) {
+        addPiece(s.slice(lineDone));
+      }
+      lineDone = 0;
+      if (nl < 0) {
+        // 【コーチ】が現れた/ストリーム終了: 英語部分はここまで=残りを待たず渡す。
+        pos = body.length; flush(false); return;
+      }
+      pos = nl + 1;
+      // 行が完成 → ここまでを1つの区切りとして渡す(最初の区切りが短すぎる
+      // 場合も、行が終わったなら待たない)。
+      flush(false);
+    }
+  }
+
+  return {
+    push(acc) { process(acc, false); },
+    // ストリーム終了。どの行も条件を満たさなかった場合は従来どおり本文全体。
+    end(full) {
+      process(full, true);
+      if (!any) {
+        const body = (full || "").split("【コーチ")[0];
+        const t = englishOnly(body).trim();
+        if (t) { addPiece(t); }
+      }
+      flush(true);
+    },
+  };
+}
+
 // 読み上げ速度の共通コントロール（playbackRate を全再生に適用・音程不変）。
 // 一度設定すると localStorage に保存され、会話など他の読み上げにも効く。
 function playbackSpeedControl() {
@@ -3740,8 +3864,10 @@ export async function conversation(root) {
   // 失敗しても返答には影響しない。split=falseは従来どおり1本(自由会話・
   // 会話開始)。課金(1往復1回)・レート制限の扱いはサーバー側
   // (learn.py conversation_stream・ai._BUNDLED_FEATURES)を参照。
+  // onReply(reply): 返答の本文が届くたびに(累積の本文で)呼ぶ。読み上げを、返答が
+  // 全部出る前の最初の文から始めるために使う(2026-09-26・startReplySpeech参照)。
   // 戻り値: { reply, historyText(履歴に積む本文=返答のみ), coachDone(Promise) }
-  async function streamTurn(body, target, { split }) {
+  async function streamTurn(body, target, { split, onReply }) {
     const url = "/api/learn/conversation/stream";
     let reply = "";
     let coach = "";
@@ -3755,7 +3881,9 @@ export async function conversation(root) {
     };
     if (!split) {
       try {
-        await api.stream(url, body, (chunk) => { reply += chunk; paint(); });
+        await api.stream(url, body, (chunk) => {
+          reply += chunk; paint(); if (onReply) onReply(reply);
+        });
       } catch (e) { dead = true; throw e; }
       return { reply, historyText: reply, coachDone: Promise.resolve() };
     }
@@ -3786,7 +3914,10 @@ export async function conversation(root) {
     };
     try {
       await api.stream(url, { ...body, part: "reply" },
-        (chunk) => { reply += chunk; paint(); startCoach(); });
+        (chunk) => {
+          reply += chunk; paint(); startCoach();
+          if (onReply) onReply(reply);
+        });
     } catch (e) {
       dead = true;
       ctl.abort();    // 返答が途中で失敗したターンのアドバイスは不要
@@ -3796,6 +3927,22 @@ export async function conversation(root) {
     // (次のターンのAIに、コーチ付きの形式を真似させないため)。
     const historyText = reply.split("【コーチ")[0].trim() || reply;
     return { reply, historyText, coachDone };
+  }
+
+  // 返答の読み上げを、生成が終わるのを待たず最初の文から始める(2026-09-26・
+  // 英会話の応答速度改善)。feed(累積の本文)で文単位に区切ってTTSへ渡し、
+  // finish(全文)で残りを渡して再生の終了を待つPromiseを返す。読み上げ対象の
+  // 規則・話者名・【コーチ】より前だけ読む点は従来(englishOnly)と同じ。
+  function startReplySpeech() {
+    const speaker = speech.createSegmentSpeaker();
+    const streamer = createReplyStreamer((t) => speaker.add(t), {
+      prefix: root.querySelector("#speakSpeaker").checked ? "AI. " : "",
+    });
+    return {
+      feed: (acc) => streamer.push(acc),
+      finish: (full) => { streamer.end(full); return speaker.finish(); },
+      cancel: () => speaker.cancel(),
+    };
   }
 
   // message can be a user turn, or an AI-initiated opener (kickoff=true).
@@ -3815,14 +3962,18 @@ export async function conversation(root) {
     const target = addMsg("ai", kickoff ? "…" : "");
     let full = "";
     let turn = null;
+    const rs = (state.aiEnabled && root.querySelector("#autoTts").checked)
+      ? startReplySpeech() : null;
     if (state.aiEnabled) {
       target.textContent = "";
       try {
         turn = await streamTurn(body, target, {
           split: !kickoff && s.grp !== "自由会話",
+          onReply: rs ? rs.feed : undefined,
         });
         full = turn.reply;
       } catch (e) {
+        if (rs) rs.cancel();
         // 2026-09-18修正: 従来はここでエラーを検知しておらず、エラー
         // 応答の本文がそのままAIの発言として表示され、会話履歴に積まれ
         // AIへ送信・自動保存・(設定次第で)読み上げまでされてしまう
@@ -3839,6 +3990,7 @@ export async function conversation(root) {
       if (!full.trim()) {
         // 生成が0文字で終わった場合(途中で切れた等)も、無言のAI発言を
         // 履歴に積まないようエラー扱いにする。
+        if (rs) rs.cancel();
         showTurnError(target, tx("conversation.emptyResponse"));
         if (!kickoff) history.pop();
         refreshCost();
@@ -3851,9 +4003,10 @@ export async function conversation(root) {
     history.push({
       role: "assistant", content: turn ? turn.historyText : full,
     });
-    if (root.querySelector("#autoTts").checked && state.aiEnabled) {
-      // 【コーチ】以降と日本語は読み上げない（英語部分のみ）。
-      speech.speak(withSpeaker(englishOnly(full.split("【コーチ")[0])));
+    if (rs) {
+      // 【コーチ】以降と日本語は読み上げない（英語部分のみ）。大半は返答の生成中に
+      // 読み始めているので、ここでは残りを渡すだけ(再生の終了は待たない)。
+      rs.finish(full);
     }
     refreshCost();
     // アドバイス(並行取得)が後から終わった分の費用表示も更新する。
@@ -3954,14 +4107,17 @@ export async function conversation(root) {
     const target = addMsg("ai", "");
     let full = "";
     let turn = null;
+    // ハンズフリーは「自動読み上げ」の設定に関係なく常に読み上げる(従来どおり)。
+    const rs = startReplySpeech();
     try {
       // sendと同じく、返答とアドバイスを並行取得し返答だけを先に読み上げる。
       turn = await streamTurn({
         grp: s.grp, topic: s.topic, history, persona: s.persona || "",
         message: text, fast: root.querySelector("#fastMode").checked,
-      }, target, { split: s.grp !== "自由会話" });
+      }, target, { split: s.grp !== "自由会話", onReply: rs.feed });
       full = turn.reply;
     } catch (e) {
+      rs.cancel();
       // sendと同じ理由(2026-09-18修正)。従来はここでのエラーがそのまま
       // 「AIの発言」として画面表示・履歴保存され、さらに音声で読み上げ
       // までされていた(ハンズフリー機能のため実害が一番大きい経路)。
@@ -3978,6 +4134,7 @@ export async function conversation(root) {
       return;
     }
     if (!full.trim()) {
+      rs.cancel();
       showTurnError(target, tx("conversation.emptyResponse"));
       history.pop();
       refreshCost();
@@ -3989,7 +4146,8 @@ export async function conversation(root) {
     refreshCost();
     turn.coachDone.then(() => refreshCost());
     scheduleAutoSave();
-    await speech.speakAndWait(withSpeaker(englishOnly(full.split("【コーチ")[0])));
+    // 残りを渡し、AIが話し終えるまで待つ(ハンズフリーは話し終えてから聞き取りを再開)。
+    await rs.finish(full);
   }
 
   // --- 会話の自動記録 -------------------------------------------------------

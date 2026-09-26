@@ -154,6 +154,7 @@ def select_for_review(
     where_extra: str = "",
     params_extra: tuple = (),
     cfg: MasteryConfig | None = None,
+    light: bool = False,
 ) -> list[sqlite3.Row]:
     """Pick up to ``limit`` items for ``user_id``, prioritising due ones, then
     weighting the rest by (threshold - mastery). 進捗は per-user テーブルから
@@ -162,20 +163,31 @@ def select_for_review(
     ``where_extra`` は追加の絞り込み条件（先頭の AND 不要・列は subquery の別名
     ``t`` を前提）。フラッシュカード等で分野/レベル/覚えた状態でフィルタするのに使う。
     ``cfg`` は呼び出し元ユーザーの MasteryConfig（未指定ならDEFAULT）。
+
+    ``light``(2026-09-26・英会話の応答速度改善): 呼び出し元が上位``limit``件の
+    基本列(id/english/japanese/mastery等)だけを使う場合にTrueにする。
+    ①detail(JSON・語彙で約15MB)を読まない(``with_detail=False``。
+    ``detail``列の代わりに``has_detail``が返る)、②期限切れ(due)の候補を
+    SQL側で上位``limit``件に絞る(従来は全語=1.6万行超を``fetchall()``して
+    先頭だけ使っていた)。同点(mastery/next_review が同じ行)の選ばれ方は
+    従来も未定義だったので結果の意味は変わらない。既定Falseは従来動作
+    (フラッシュカード等の他の呼び出し元は一切変わらない)。
     """
     from .progress import user_items_subquery
 
     cfg = cfg or DEFAULT_MASTERY_CONFIG
     today = date.today().isoformat()
-    src = user_items_subquery(table)  # 1つの ? (=user_id) を取る
+    # 1つの ? (=user_id) を取る
+    src = user_items_subquery(table, with_detail=not light)
     ban = f" AND {banned_filter(table)}" if exclude_banned else ""
     extra = f" AND ({where_extra})" if where_extra else ""
     ep = tuple(params_extra)
+    sql_limit = f" LIMIT {int(limit)}" if (light and limit > 0) else ""
     # Due items first (never reviewed -> next_review IS NULL counts as due).
     due = conn.execute(
         f"SELECT * FROM {src} AS t "
         f"WHERE (next_review IS NULL OR next_review <= ?){ban}{extra} "
-        "ORDER BY mastery ASC, next_review ASC",
+        f"ORDER BY mastery ASC, next_review ASC{sql_limit}",
         (user_id, today, *ep),
     ).fetchall()
 
@@ -228,11 +240,11 @@ def _weighted_sample(
 def pick_weighted(
     conn: sqlite3.Connection, limit: int = 10, table: str = "words",
     exclude_banned: bool = False, *, user_id: int,
-    cfg: MasteryConfig | None = None,
+    cfg: MasteryConfig | None = None, light: bool = False,
 ) -> list[sqlite3.Row]:
     return select_for_review(
         conn, table=table, limit=limit, exclude_banned=exclude_banned,
-        user_id=user_id, cfg=cfg,
+        user_id=user_id, cfg=cfg, light=light,
     )
 
 
