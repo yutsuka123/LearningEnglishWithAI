@@ -3567,7 +3567,7 @@ def admin_cost_report(days: int = 30):
         ledger_rows = conn.execute(
             "SELECT user_id, reason, note, delta_jpy FROM balance_ledger "
             "WHERE created_at >= datetime('now', ?) "
-            "AND reason IN ('ai_usage', 'crossword_game') "
+            "AND reason IN ('ai_usage', 'crossword_game', 'word_plus') "
             "AND delta_jpy < 0",
             (since,),
         ).fetchall()
@@ -3587,6 +3587,8 @@ def admin_cost_report(days: int = 30):
     for r in ledger_rows:
         if r["reason"] == "crossword_game":
             feature = "crossword"
+        elif r["reason"] == "word_plus":
+            feature = "word_plus"   # 詳細plus(原価0のため粗利100%の行になる)
         else:
             feature = (r["note"] or "").split(" ", 1)[0] or "(不明)"
         key = (r["user_id"], feature)

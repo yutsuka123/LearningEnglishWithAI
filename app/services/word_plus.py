@@ -48,8 +48,8 @@ def is_staff(user: Optional[dict]) -> bool:
 
 
 def available_for(user: Optional[dict]) -> bool:
-    """この利用者に「詳細plus」を出してよいか(フラグON、または管理者=プレビュー)。"""
-    return flag_enabled() or bool(user and user.get("role") == "admin")
+    """この利用者に「詳細plus」を出してよいか(フラグON、または管理者/テスター=プレビュー)。"""
+    return flag_enabled() or is_staff(user)
 
 
 def strip_plus_fields(detail: dict) -> dict:
@@ -65,13 +65,16 @@ def strip_plus_fields(detail: dict) -> dict:
 
 
 def plus_content(detail: dict) -> Optional[dict]:
-    """「詳細plus」の中身(=原語の発音記号・音声)。対象外の語はNone。"""
+    """「詳細plus」の中身(=原語の発音記号・音声)。**有料の中身(native.ipaまたはaudio)が実在する語だけ**が対象で、
+    それ以外(原語表記のテキストだけの語)はNone=欄を出さず課金もしない(空の中身に課金しない・敵対的レビュー指摘)。"""
     if not isinstance(detail, dict) or not detail.get("origin_lang"):
         return None
     native = detail.get("native")
     if not isinstance(native, dict) or not native:
         return None
     audio = native.get("audio") if isinstance(native.get("audio"), dict) else None
+    if not (native.get("ipa") or audio):
+        return None
     return {
         "origin_lang": detail.get("origin_lang"),
         "origin_lang_name": detail.get("origin_lang_name") or "",
@@ -87,10 +90,9 @@ def plus_content(detail: dict) -> Optional[dict]:
 
 
 def _never_paid(conn: sqlite3.Connection, uid: int) -> bool:
-    """課金したことが無い一般ユーザーか(=無料お試しの対象)。`uses_free_first_list_sort`と同じ判定を再利用する
-    (残高>0・チャージキー償還・PayPay入金済みのいずれかがあれば「課金者」)。"""
+    """一度も課金を受けたことが無い一般ユーザーか(=無料お試しの対象)。`auth.has_ever_paid`(専用の判定)。"""
     from . import auth
-    return auth.uses_free_first_list_sort(conn, uid)
+    return not auth.has_ever_paid(conn, uid)
 
 
 def _trial_used(conn: sqlite3.Connection, uid: int) -> int:
@@ -124,22 +126,34 @@ def status(conn: sqlite3.Connection, uid: int, word_id: int, user: Optional[dict
             "balance_jpy": _balance(conn, uid)}
 
 
-def unlock(conn: sqlite3.Connection, uid: int, word_id: int, user: Optional[dict]) -> dict:
+def unlock(conn: sqlite3.Connection, uid: int, word_id: int, user: Optional[dict],
+           expected_cost: Optional[float] = None) -> dict:
     """「詳細plus」を開く。初回だけ課金(またはお試し枠を消費)し、開いた記録を残す。呼び出し側の`db()`が
     commit/rollbackする。拒否は`PlusError`(コード)。課金と記録は同じトランザクション(BEGIN IMMEDIATE)。"""
     from . import auth
 
+    if conn.in_transaction:
+        # 呼び出し前に同じ接続で書き込みがあると「BEGIN IMMEDIATE」が失敗して全POSTが500になる。壊れ方を明示する。
+        raise RuntimeError("word_plus.unlock: この接続で先に書き込みを行わないこと(トランザクションが開いています)")
     if is_staff(user):
         return {"mode": "staff", "charged_jpy": 0.0, "first_time": False}
-    # 書き込みロックを先に取り、判定→課金→記録を直列化する(同時リクエストで二重課金・負残高にしない)。
+    # 開いた済みなら読み取りだけで即返す(他の長い書き込みトランザクションを待たない=「無料の再表示」が固まらない)。
+    if conn.execute("SELECT 1 FROM word_plus_unlocks WHERE user_id = ? AND word_id = ?", (uid, word_id)).fetchone():
+        return {"mode": "already", "charged_jpy": 0.0, "first_time": False}
+    # 書き込みが要るときだけ書き込みロックを取り、判定→課金→記録を直列化する(同時リクエストで二重課金・負残高にしない)。
     conn.execute("BEGIN IMMEDIATE")
     exists = conn.execute(
         "SELECT 1 FROM word_plus_unlocks WHERE user_id = ? AND word_id = ?", (uid, word_id)
     ).fetchone()
-    if exists:
+    if exists:   # ロック待ちの間に別リクエストが開いた(二重チェック)
         return {"mode": "already", "charged_jpy": 0.0, "first_time": False}
     never_paid = _never_paid(conn, uid)
-    if never_paid and _trial_used(conn, uid) < PLUS_FREE_TRIAL:
+    trial_ok = never_paid and _trial_used(conn, uid) < PLUS_FREE_TRIAL
+    actual_cost = 0.0 if trial_ok else PLUS_COST_JPY
+    if expected_cost is not None and abs(float(expected_cost) - actual_cost) > 1e-9:
+        # 画面に表示した費用と実際の費用が食い違う(別タブでチャージした等)ときは、課金せず確認し直してもらう。
+        raise PlusError("3025")
+    if trial_ok:
         conn.execute(
             "INSERT INTO word_plus_unlocks (user_id, word_id, kind, charged_jpy) VALUES (?, ?, 'trial', 0)",
             (uid, word_id))

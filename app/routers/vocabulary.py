@@ -852,8 +852,8 @@ def word_detail(word_id: int, regen: bool = False):
         old = {}
     if isinstance(old, dict):
         for k in ("origin_lang", "origin_lang_name", "native"):
-            if old.get(k) and k not in data:
-                data[k] = old[k]
+            if old.get(k):
+                data[k] = old[k]   # 手動整備の項目は、AIが同名のキーを返しても常に既存を優先する
     with db() as conn:
         conn.execute(
             "UPDATE words SET detail = ? WHERE id = ?",
@@ -902,15 +902,21 @@ def word_plus_status(word_id: int):
                 "cost_jpy": word_plus.PLUS_COST_JPY, "free_trial": word_plus.PLUS_FREE_TRIAL}
 
 
+class PlusOpenIn(BaseModel):
+    expected_cost: float | None = None   # 画面に表示した費用(0=無料お試し/開いた済み・0.25)。食い違えば課金せず3025
+
+
 @router.post("/{word_id}/plus")
-def word_plus_open(word_id: int):
+def word_plus_open(word_id: int, payload: PlusOpenIn | None = None):
     """「詳細plus」を開く。初回だけ0.25pt(または無料お試し枠1つ)を消費し、原語の発音記号・音声を返す。
     同じ語の2回目以降は無料。課金と記録は同じトランザクション(word_plus.unlock)。"""
     from ..services import word_plus
     with db() as conn:
         uid, user, content = _plus_context(conn, word_id)
         try:
-            res = word_plus.unlock(conn, uid, word_id, user)
+            res = word_plus.unlock(
+                conn, uid, word_id, user,
+                expected_cost=(payload.expected_cost if payload else None))
         except word_plus.PlusError as e:
             raise errors.http_error(e.code)
         st = word_plus.status(conn, uid, word_id, user)

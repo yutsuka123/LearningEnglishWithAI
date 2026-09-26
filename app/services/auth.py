@@ -543,6 +543,23 @@ def user_tier(conn: sqlite3.Connection, user_id: int) -> str:
     return "email" if (u.get("email") or "").strip() else "legacy"
 
 
+def has_ever_paid(conn: sqlite3.Connection, user_id: int) -> bool:
+    """課金(ポイント購入・チャージキー償還・管理者の付与)を**一度でも受けたことがあるか**(2026-09-26・詳細plusの
+    お試し枠の判定用)。残高が今0でも、過去に入金があれば真。`uses_free_first_list_sort`(一覧の並び順用・迷う境界は
+    従来側に倒す設計)とは目的が違うため流用しない(敵対的レビュー指摘: 境界の安全側が課金判定では逆向きになる)。
+    真になる条件: 残高>0 / チャージキー償還 / PayPay入金済み / 台帳に正のdeltaがある(チャージ・管理者付与・返金)。"""
+    u = get_user(conn, user_id)
+    if u and (u.get("balance_jpy") or 0) > 0:
+        return True
+    if conn.execute("SELECT 1 FROM charge_keys WHERE used_by_user_id = ? LIMIT 1", (user_id,)).fetchone():
+        return True
+    if conn.execute("SELECT 1 FROM paypay_payments WHERE user_id = ? AND credited_at IS NOT NULL LIMIT 1",
+                    (user_id,)).fetchone():
+        return True
+    return conn.execute(
+        "SELECT 1 FROM balance_ledger WHERE user_id = ? AND delta_jpy > 0 LIMIT 1", (user_id,)).fetchone() is not None
+
+
 def is_charged_or_admin(conn: sqlite3.Connection, user_id: int) -> bool:
     """単語帳・フレーズ帳等、課金ユーザー限定機能のゲートに使う判定。
     管理者(role='admin')は自身のアカウントで機能確認できるよう例外的に許可する。"""

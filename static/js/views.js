@@ -1376,17 +1376,21 @@ function wordPlusBox(wordId) {
     <div><b>${escapeHtml(tx("plus.title"))}</b> <span class="muted">${escapeHtml(tx("plus.subtitle"))}</span></div>
     <div class="plus-body" style="margin-top:6px"></div></div>`);
   const body = box.querySelector(".plus-body");
-  const showError = (msg) => {
+  const showText = (msg) => {
     body.innerHTML = `<p class="muted" style="margin:0">${escapeHtml(msg)}</p>`;
   };
-  const render = (plus) => {
+  const render = (plus, unlock) => {
     const n = plus.native || {};
     const ipa = n.ipa
       ? `<p style="margin:4px 0"><b>${escapeHtml(tx("plus.nativeIpa"))}</b> ${escapeHtml(n.ipa)}`
         + `${n.text ? "　" + escapeHtml(n.text) : ""}${n.romaji ? "（" + escapeHtml(n.romaji) + "）" : ""}</p>`
-      : `<p class="muted" style="margin:4px 0">${escapeHtml(tx("plus.noIpa"))}</p>`;
+      : "";
+    // 押した結果(お試し枠の消費/課金)を明示する。開いた済み・管理者は何も出さない。
+    const used = unlock && unlock.mode === "trial" ? tx("plus.usedTrial")
+      : (unlock && unlock.mode === "paid" ? tx("plus.usedPaid", { cost: unlock.charged_jpy }) : "");
     body.innerHTML = ipa
-      + `<p class="muted" style="margin:4px 0">${escapeHtml(plus.has_audio ? "" : tx("plus.audioSoon"))}</p>`;
+      + (plus.has_audio ? "" : `<p class="muted" style="margin:4px 0">${escapeHtml(tx("plus.audioSoon"))}</p>`)
+      + (used ? `<p class="muted" style="margin:4px 0">${escapeHtml(used)}</p>` : "");
   };
   const label = (st) => {
     if (st.mode === "staff") return tx("plus.btnStaff");
@@ -1394,24 +1398,34 @@ function wordPlusBox(wordId) {
     if (st.mode === "trial") return tx("plus.btnTrial", { n: st.free_trial_left });
     return tx("plus.btnPaid", { cost: st.cost_jpy });
   };
-  api.get(`/api/words/${wordId}/plus`).then((r) => {
-    const btn = el(`<button class="btn good">${escapeHtml(label(r.status))}</button>`);
+  const init = () => api.get(`/api/words/${wordId}/plus`).then((r) => {
+    const st = r.status;
+    body.innerHTML = "";
+    // 課金が必要なのに残高が足りないときは、押させずに先に案内する。
+    if (st.mode === "paid" && (st.balance_jpy || 0) < st.cost_jpy) {
+      showText(tx("plus.needCharge", { cost: st.cost_jpy }));
+      return;
+    }
+    const btn = el(`<button class="btn good">${escapeHtml(label(st))}</button>`);
     btn.addEventListener("click", async () => {
       btn.disabled = true;
       try {
-        const res = await api.post(`/api/words/${wordId}/plus`);
-        render(res.plus);
+        // 表示した費用を一緒に送る(別タブでチャージした等で実際の費用が変わっていたら、課金せず3025で確認し直す)。
+        const res = await api.post(`/api/words/${wordId}/plus`, { expected_cost: st.mode === "staff" ? 0 : st.cost_jpy });
+        render(res.plus, res.unlock);
         if (res.unlock && res.unlock.charged_jpy) refreshCost();   // 残高表示を更新
       } catch (e) {
-        showError(e.message || tx("plus.error"));
+        if (String(e.message || "").includes("E3025")) { toast(e.message); init().catch(() => {}); return; }
+        showText(e.message || tx("plus.error"));
       }
     });
     body.appendChild(btn);
-    if (r.status.mode === "trial" || r.status.mode === "paid") {
+    if (st.mode === "trial" || st.mode === "paid") {
       body.appendChild(el(`<span class="muted" style="margin-left:8px">${escapeHtml(
-        tx(r.status.mode === "trial" ? "plus.hintTrial" : "plus.hintPaid"))}</span>`));
+        tx(st.mode === "trial" ? "plus.hintTrial" : "plus.hintPaid"))}</span>`));
     }
-  }).catch(() => box.remove());   // ゲスト/対象外/公開前は欄ごと出さない
+  });
+  init().catch(() => box.remove());   // ゲスト/対象外(有料の中身が無い語)/公開前は欄ごと出さない
   return box;
 }
 
