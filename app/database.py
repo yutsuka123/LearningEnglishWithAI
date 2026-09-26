@@ -327,6 +327,19 @@ CREATE TABLE IF NOT EXISTS user_word_progress (
     PRIMARY KEY (user_id, word_id)
 );
 
+-- 「詳細plus」(単語詳細の有料級コンテンツ・2026-09-26)を開いた記録。UNIQUE(user_id, word_id)=同じ語は初回だけ
+-- 課金/お試し枠を消費する(app/services/word_plus.py)。word_idはwords(ATTACH先content)を指すためREFERENCESは付けない。
+CREATE TABLE IF NOT EXISTS word_plus_unlocks (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    word_id     INTEGER NOT NULL,
+    kind        TEXT    NOT NULL,               -- 'trial'(無料お試し) | 'paid'(0.25pt課金)
+    charged_jpy REAL    NOT NULL DEFAULT 0,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (user_id, word_id)
+);
+CREATE INDEX IF NOT EXISTS idx_word_plus_unlocks_user ON word_plus_unlocks(user_id, kind);
+
 -- リーディング/リスニング教材の学習履歴（per-user）。教材本文・音声は共有、
 -- 既読/覚えた(mastery)だけ user 別。
 CREATE TABLE IF NOT EXISTS user_material_progress (

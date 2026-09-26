@@ -1286,7 +1286,9 @@ function askFreeRangeChoice(kindKey) {
 // 描画後に linkifyJumps() でクリック可能化し、その語の詳細へジャンプできる。
 // headVoice: 見出し語の男声/女声ボタン(要素)を返す関数。あれば「発音」行に添える
 // (IPAを見ながら英語話者の読みを聞ける・2026-09-26・docs/DESIGN.md §9.8 段階(a))。
-function renderWordDetail(box, d, primaryEn, headVoice) {
+// plusCtx: {wordId} があり、`state.wordPlusEnabled`(機能フラグ/管理者プレビュー)かつ語に原語データ(native)がある
+// ときだけ「詳細plus」欄(原語の発音記号・音声)を出す(2026-09-26・app/services/word_plus.py)。
+function renderWordDetail(box, d, primaryEn, headVoice, plusCtx) {
   box.innerHTML = "";
   const sec = (label, html) => {
     if (!html) return;
@@ -1325,6 +1327,7 @@ function renderWordDetail(box, d, primaryEn, headVoice) {
     const orig = n.text
       ? "　" + escapeHtml(n.text) + (n.romaji ? "（" + escapeHtml(n.romaji) + "）" : "") : "";
     sec(tx("detail.originLangLabel"), escapeHtml(shown) + orig);
+    if (plusCtx && state.wordPlusEnabled && d.native) box.appendChild(wordPlusBox(plusCtx.wordId));
   }
   sec(tx("wordDetail.pos"), d.pos ? escapeHtml(d.pos) : "");
   sec(tx("wordDetail.meanings"), arr(d.meanings));
@@ -1364,6 +1367,52 @@ function renderWordDetail(box, d, primaryEn, headVoice) {
   sec(tx("wordDetail.trivia"), d.trivia ? escapeHtml(d.trivia) : "");
   sec(tx("wordDetail.explanation"), d.explanation ? escapeHtml(d.explanation) : "");
   linkifyJumps(box);
+}
+
+// 「詳細plus」欄(2026-09-26): 原語の発音記号・音声。開くのは初回だけ0.25pt(無課金は10語まで無料お試し・
+// 開いた済みの語は無料)。ボタンに費用を明示してから押してもらい、押した結果(課金/お試し消費)を反映する。
+function wordPlusBox(wordId) {
+  const box = el(`<div class="plus-box" style="margin:10px 0;padding:8px 10px;border:1px solid var(--border, #8884);border-radius:8px">
+    <div><b>${escapeHtml(tx("plus.title"))}</b> <span class="muted">${escapeHtml(tx("plus.subtitle"))}</span></div>
+    <div class="plus-body" style="margin-top:6px"></div></div>`);
+  const body = box.querySelector(".plus-body");
+  const showError = (msg) => {
+    body.innerHTML = `<p class="muted" style="margin:0">${escapeHtml(msg)}</p>`;
+  };
+  const render = (plus) => {
+    const n = plus.native || {};
+    const ipa = n.ipa
+      ? `<p style="margin:4px 0"><b>${escapeHtml(tx("plus.nativeIpa"))}</b> ${escapeHtml(n.ipa)}`
+        + `${n.text ? "　" + escapeHtml(n.text) : ""}${n.romaji ? "（" + escapeHtml(n.romaji) + "）" : ""}</p>`
+      : `<p class="muted" style="margin:4px 0">${escapeHtml(tx("plus.noIpa"))}</p>`;
+    body.innerHTML = ipa
+      + `<p class="muted" style="margin:4px 0">${escapeHtml(plus.has_audio ? "" : tx("plus.audioSoon"))}</p>`;
+  };
+  const label = (st) => {
+    if (st.mode === "staff") return tx("plus.btnStaff");
+    if (st.mode === "already") return tx("plus.btnAlready");
+    if (st.mode === "trial") return tx("plus.btnTrial", { n: st.free_trial_left });
+    return tx("plus.btnPaid", { cost: st.cost_jpy });
+  };
+  api.get(`/api/words/${wordId}/plus`).then((r) => {
+    const btn = el(`<button class="btn good">${escapeHtml(label(r.status))}</button>`);
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      try {
+        const res = await api.post(`/api/words/${wordId}/plus`);
+        render(res.plus);
+        if (res.unlock && res.unlock.charged_jpy) refreshCost();   // 残高表示を更新
+      } catch (e) {
+        showError(e.message || tx("plus.error"));
+      }
+    });
+    body.appendChild(btn);
+    if (r.status.mode === "trial" || r.status.mode === "paid") {
+      body.appendChild(el(`<span class="muted" style="margin-left:8px">${escapeHtml(
+        tx(r.status.mode === "trial" ? "plus.hintTrial" : "plus.hintPaid"))}</span>`));
+    }
+  }).catch(() => box.remove());   // ゲスト/対象外/公開前は欄ごと出さない
+  return box;
 }
 
 // 詳細内の語(.jw)のうちDB登録済みのものをクリック可能にし、その語の詳細へ。
@@ -1533,7 +1582,7 @@ function showWordDetail(w) {
         const r = await api.post(`/api/words/${w.id}/detail`);
         if (r.ok) {
           renderWordDetail(detailBox, r.detail, w.example, () => voiceButtonsItem(
-            "word", w.id, "word", () => w.english, getMode, w.is_free_range));
+            "word", w.id, "word", () => w.english, getMode, w.is_free_range), { wordId: w.id });
           if (w.example && r.detail && r.detail.example_ja) {
             exJa.textContent = tx("wordDetail.exampleJa", { text: r.detail.example_ja });
           }

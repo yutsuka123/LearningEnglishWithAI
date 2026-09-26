@@ -311,7 +311,7 @@ _WITHDRAW_PERSONAL_TABLES = (
     "user_settings_backups", "user_settings",
     "word_attempts", "phrase_attempts", "study_sessions",
     "conversation_log", "deck_progress", "crossword_sessions",
-    "crossword_sample_plays",
+    "crossword_sample_plays", "word_plus_unlocks",
 )
 
 

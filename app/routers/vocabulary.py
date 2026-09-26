@@ -795,9 +795,10 @@ def word_detail(word_id: int, regen: bool = False):
         # ゲスト(①)には許可しない(2026-08-11・ゲスト本実装時に発見)。
         if row["detail"] and not regen:
             try:
+                from ..services import word_plus
                 return {"ok": True, "cached": True,
-                        "detail": _resolve_example_ja(
-                            _json.loads(row["detail"]), row["example"])}
+                        "detail": word_plus.strip_plus_fields(_resolve_example_ja(
+                            _json.loads(row["detail"]), row["example"]))}
             except ValueError:
                 pass
         if is_guest_user_id(conn, current_user_id()):
@@ -843,12 +844,77 @@ def word_detail(word_id: int, regen: bool = False):
     # `_resolve_example_ja` 参照）。
     if (row["example"] or "").strip() and str(data.get("example_ja") or "").strip():
         data["example_ja_src"] = (row["example"] or "").strip()
+    # 再生成(regen)は詳細JSON全体を置き換えるが、AIが作らない手動整備の項目(語源の言語・原語表記/IPA/音声=
+    # 「詳細plus」の中身)は消さずに引き継ぐ(2026-09-26)。
+    try:
+        old = _json.loads(row["detail"] or "{}")
+    except ValueError:
+        old = {}
+    if isinstance(old, dict):
+        for k in ("origin_lang", "origin_lang_name", "native"):
+            if old.get(k) and k not in data:
+                data[k] = old[k]
     with db() as conn:
         conn.execute(
             "UPDATE words SET detail = ? WHERE id = ?",
             (_json.dumps(data, ensure_ascii=False), word_id),
         )
-    return {"ok": True, "cached": False, "detail": data}
+    from ..services import word_plus
+    return {"ok": True, "cached": False, "detail": word_plus.strip_plus_fields(data)}
+
+
+def _plus_context(conn, word_id: int):
+    """「詳細plus」の共通ガード: (uid, user, 中身)を返す。対象外は404相当(7001)・ゲストは要ログイン(2003)。
+    /api/words配下はゲスト用の共有疑似ユーザーに割り当てられるため、ここで明示的に弾く
+    (弾かないと全ゲストが1つのお試し枠・課金対象を共有してしまう)。"""
+    import json as _json
+
+    from ..services import word_plus
+    from ..services.auth import (
+        current_user_allow_banned, current_user_id, get_user, is_guest_user_id,
+    )
+    uid = current_user_id()
+    if is_guest_user_id(conn, uid):
+        raise errors.http_error("2003")
+    user = get_user(conn, uid)
+    if not word_plus.available_for(user):
+        raise errors.http_error("7001", "単語が見つかりません")   # 公開前(フラグOFF)は存在しない扱い
+    row = conn.execute(
+        "SELECT detail, domain FROM words WHERE id = ?", (word_id,)).fetchone()
+    if not row or (row["domain"] == BANNED_DOMAIN and not current_user_allow_banned()):
+        raise errors.http_error("7001", "単語が見つかりません")
+    try:
+        content = word_plus.plus_content(_json.loads(row["detail"] or "{}"))
+    except ValueError:
+        content = None
+    if not content:
+        raise errors.http_error("7001", "単語が見つかりません")
+    return uid, user, content
+
+
+@router.get("/{word_id}/plus")
+def word_plus_status(word_id: int):
+    """「詳細plus」の状態(開いた済みか・今回の扱い=無料お試し/0.25pt/開いた済み・お試しの残り・残高)。課金しない。"""
+    from ..services import word_plus
+    with db() as conn:
+        uid, user, _content = _plus_context(conn, word_id)
+        return {"ok": True, "status": word_plus.status(conn, uid, word_id, user),
+                "cost_jpy": word_plus.PLUS_COST_JPY, "free_trial": word_plus.PLUS_FREE_TRIAL}
+
+
+@router.post("/{word_id}/plus")
+def word_plus_open(word_id: int):
+    """「詳細plus」を開く。初回だけ0.25pt(または無料お試し枠1つ)を消費し、原語の発音記号・音声を返す。
+    同じ語の2回目以降は無料。課金と記録は同じトランザクション(word_plus.unlock)。"""
+    from ..services import word_plus
+    with db() as conn:
+        uid, user, content = _plus_context(conn, word_id)
+        try:
+            res = word_plus.unlock(conn, uid, word_id, user)
+        except word_plus.PlusError as e:
+            raise errors.http_error(e.code)
+        st = word_plus.status(conn, uid, word_id, user)
+    return {"ok": True, "plus": content, "unlock": res, "status": st}
 
 
 class ResolveIn(BaseModel):

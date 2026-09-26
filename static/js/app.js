@@ -548,6 +548,8 @@ export async function refreshCost() {
     // 独自に条件を組み立てるとサーバー側とズレるため)。ゲストは
     // can_paypay_chargeが常にfalseで返る。
     state.canPaypayCharge = !!u.can_paypay_charge;
+    // 単語詳細「詳細plus」の表示可否(機能フラグ・管理者はプレビュー・ゲストは常にfalse・2026-09-26)。
+    state.wordPlusEnabled = !!u.word_plus_enabled;
     // 開発者向け「テスト確認チェックリスト」の表示可否(一般ユーザーには
     // 出さない・admin/テスト許可リストのみ)。
     state.showPaypayDevTools = isAdmin || !!u.paypay_charge_test_allowed;

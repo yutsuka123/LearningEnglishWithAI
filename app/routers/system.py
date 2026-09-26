@@ -525,7 +525,7 @@ def my_usage():
         uses_free_first_list_sort)
 
     from ..config import APP_VERSION
-    from ..services import paypay
+    from ..services import paypay, word_plus
     from ..services.auth import multiuser_enabled
     uid = current_user_id()
     s = load_settings()
@@ -599,6 +599,8 @@ def my_usage():
         # `paypay.can_charge`を呼ぶため、表示可否と実際の可否がズレない)。
         # ゲスト(未登録)は常にFalse。
         "can_paypay_charge": can_paypay_charge,
+        # 単語詳細「詳細plus」の表示可否(機能フラグ・管理者はプレビュー可・2026-09-26)。
+        "word_plus_enabled": (word_plus.available_for(u) and not is_guest),
         # 一覧の既定ソート(2026-09-20)。true=「無料で聞ける順」を既定に
         # する(未登録・未課金)。課金者/管理者/テスターはfalse=従来の既定。
         "default_list_sort_free_first": free_first_sort,
