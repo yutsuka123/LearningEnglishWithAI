@@ -20,6 +20,8 @@ prune cron(03:45)でusage_events 0件削除+growth_daily 41日分保存を確認
 
 3つの並行作業を統合したリリース: ①原語(日本語)音声+TTS品質/課金まわり(旧ブランチ`native-audio`) ②分野/シーン名の4言語表示 ③英会話の応答速度改善+ブラウザ内蔵の声への自動切替の廃止。
 統合後の通しをFableが敵対的にレビュー(BLOCKERなし・指摘は`72bcac7`で反映済み)。公開向けの要約は`release_notes.json`のver1.5.4。
+コミット: `72bcac7`(統合+Fable指摘反映)→`61fca32`(APP_VERSION=ver1.5.4・CHANGELOG統合・release_notes)。
+検証メモ: `scripts/check_tts_group_billing.py`は**`.env`の有るツリーでは3件FAILする**(`.env`の`AI_MAX_CALLS_PER_MIN=100`を`config.py`の`load_dotenv(override=True)`が毎回読み直し、テストが実行時に入れた`2`/`1`を上書きするため=テスト環境の問題でコードの不具合ではない)。`.env`の無いworktree(`.claude/worktrees/v154`)では**ALL OK**。
 
 ### ①原語音声+TTS品質/課金(旧`native-audio`)
 
