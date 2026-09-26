@@ -1391,6 +1391,24 @@ function wordPlusBox(wordId) {
     body.innerHTML = ipa
       + (plus.has_audio ? "" : `<p class="muted" style="margin:4px 0">${escapeHtml(tx("plus.audioSoon"))}</p>`)
       + (used ? `<p class="muted" style="margin:4px 0">${escapeHtml(used)}</p>` : "");
+    if (plus.has_audio && plus.audio) {
+      // 原語の音声(VOICEVOX・男声/女声)。配信は課金の門番を通る専用URL。クレジット「VOICEVOX:キャラ名」は必須表記。
+      const row = el(`<p style="margin:4px 0"><b>${escapeHtml(tx("plus.nativeAudio"))}</b> </p>`);
+      const play = async (sex) => {
+        const ok = await speech.sayNativeAudio(`/api/words/${wordId}/plus/audio/${sex}`);
+        if (!ok) toast(tx("plus.audioError"));
+      };
+      for (const [sex, labelKey] of [["male", "voice.maleLabel"], ["female", "voice.femaleLabel"]]) {
+        const b = el(`<button class="btn" style="margin-right:6px">▶ ${escapeHtml(tx(labelKey))}</button>`);
+        b.addEventListener("click", () => play(sex));
+        row.appendChild(b);
+      }
+      body.appendChild(row);
+      const credits = Array.from(new Set(["male", "female"].map((x) => plus.audio[x] && plus.audio[x].credit).filter(Boolean)));
+      if (credits.length) {
+        body.appendChild(el(`<p class="muted" style="margin:2px 0;font-size:.85em">${escapeHtml(tx("plus.audioCredit", { credits: credits.join(" / ") }))}</p>`));
+      }
+    }
   };
   const label = (st) => {
     if (st.mode === "staff") return tx("plus.btnStaff");

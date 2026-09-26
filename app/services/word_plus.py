@@ -64,15 +64,20 @@ def strip_plus_fields(detail: dict) -> dict:
     return out
 
 
-def plus_content(detail: dict) -> Optional[dict]:
-    """「詳細plus」の中身(=原語の発音記号・音声)。**有料の中身(native.ipaまたはaudio)が実在する語だけ**が対象で、
-    それ以外(原語表記のテキストだけの語)はNone=欄を出さず課金もしない(空の中身に課金しない・敵対的レビュー指摘)。"""
+def plus_content(detail: dict, word_id: Optional[int] = None, english: str = "") -> Optional[dict]:
+    """「詳細plus」の中身(=原語の発音記号・音声)。**有料の中身(native.ipaまたは音声)が実在する語だけ**が対象で、
+    それ以外(原語表記のテキストだけの語)はNone=欄を出さず課金もしない(空の中身に課金しない・敵対的レビュー指摘)。
+    音声はDBには持たず、`native_audio`のmanifestと**語のID・english・原語表記が一致したときだけ**付ける(誤配信防止)。
+    `audio`は{"male":{"credit"},"female":{"credit"}}(URLは含めない。配信は課金の門番を通る専用エンドポイントだけ)。"""
     if not isinstance(detail, dict) or not detail.get("origin_lang"):
         return None
     native = detail.get("native")
     if not isinstance(native, dict) or not native:
         return None
-    audio = native.get("audio") if isinstance(native.get("audio"), dict) else None
+    audio = None
+    if word_id is not None:
+        from . import native_audio
+        audio = native_audio.info(int(word_id), english, native.get("text") or "")
     if not (native.get("ipa") or audio):
         return None
     return {
@@ -83,7 +88,6 @@ def plus_content(detail: dict) -> Optional[dict]:
             "ipa": native.get("ipa") or "",
             "romaji": native.get("romaji") or "",
         },
-        # 原語の音声(男声/女声)はまだ無い(オーナーの確認後に生成)。あれば{"male":..,"female":..}のように入れる。
         "audio": audio,
         "has_audio": bool(audio),
     }

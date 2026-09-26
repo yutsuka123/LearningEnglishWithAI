@@ -363,6 +363,23 @@ export async function sayItem(
   }
 }
 
+// 原語の音声(詳細plus・VOICEVOX・2026-09-26)を専用URL(ログイン・開いた済みの検査つき)から再生する。
+// 成功でtrue・失敗(未開封/要ログイン/ネットワーク等)でfalse。ブラウザ音声へのフォールバックはしない
+// (原語は日本語なのでブラウザの英語音声で鳴らすと誤読になる)。速度は再生速度ボタンに従う。
+export async function sayNativeAudio(url) {
+  const myToken = ++playSeq;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return false;
+    const blob = await res.blob();
+    if (myToken !== playSeq) return true;   // 新しい再生要求が来ていた→古い音声は捨てる
+    await playBlob(blob, undefined, "native");
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 // Play a public sample material(id)の読み上げ(2026-08-13)。サンプル教材は
 // 誰が読んでも同じ固定テキストなので/api/learn/samples/{id}/ttsが未ログイン・
 // 無課金でも無料(サーバー側でis_public_sample検証・単語/フレーズのsayItemと

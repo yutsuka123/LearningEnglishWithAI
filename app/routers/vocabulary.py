@@ -880,11 +880,11 @@ def _plus_context(conn, word_id: int):
     if not word_plus.available_for(user):
         raise errors.http_error("7001", "単語が見つかりません")   # 公開前(フラグOFF)は存在しない扱い
     row = conn.execute(
-        "SELECT detail, domain FROM words WHERE id = ?", (word_id,)).fetchone()
+        "SELECT detail, domain, english FROM words WHERE id = ?", (word_id,)).fetchone()
     if not row or (row["domain"] == BANNED_DOMAIN and not current_user_allow_banned()):
         raise errors.http_error("7001", "単語が見つかりません")
     try:
-        content = word_plus.plus_content(_json.loads(row["detail"] or "{}"))
+        content = word_plus.plus_content(_json.loads(row["detail"] or "{}"), word_id, row["english"] or "")
     except ValueError:
         content = None
     if not content:
@@ -921,6 +921,41 @@ def word_plus_open(word_id: int, payload: PlusOpenIn | None = None):
             raise errors.http_error(e.code)
         st = word_plus.status(conn, uid, word_id, user)
     return {"ok": True, "plus": content, "unlock": res, "status": st}
+
+
+@router.get("/{word_id}/plus/audio/{sex}")
+def word_plus_audio(word_id: int, sex: str):
+    """「詳細plus」の原語音声(VOICEVOX・男声/女声)。**開いた記録がある(または管理者)ときだけ**返す=有料の中身なので、
+    ファイルへの直リンクは無く、必ずここ(ログイン・開いた済みの検査)を通る。未開封は3026。
+    ゲストは要ログイン(2003)・対象外/公開前は7001(`_plus_context`)。"""
+    import json as _json
+
+    from ..services import native_audio, word_plus
+    if sex not in native_audio.SEXES:
+        raise errors.http_error("7001", "単語が見つかりません")
+    with db() as conn:
+        uid, user, content = _plus_context(conn, word_id)
+        if not content.get("audio"):
+            raise errors.http_error("7001", "単語が見つかりません")
+        if not word_plus.is_staff(user) and conn.execute(
+                "SELECT 1 FROM word_plus_unlocks WHERE user_id = ? AND word_id = ?",
+                (uid, word_id)).fetchone() is None:
+            raise errors.http_error("3026")
+        row = conn.execute("SELECT detail, english FROM words WHERE id = ?", (word_id,)).fetchone()
+        try:
+            text = (_json.loads(row["detail"] or "{}").get("native") or {}).get("text") or ""
+        except ValueError:
+            text = ""
+        path = native_audio.file_path(word_id, sex, row["english"] or "", text)
+    if path is None:
+        raise errors.http_error("7001", "単語が見つかりません")
+    try:
+        data = path.read_bytes()
+    except OSError:
+        raise errors.http_error("7001", "単語が見つかりません")
+    # ログイン者専用の有料の中身: 共有キャッシュに載せない(private)。ブラウザ内の再生し直しは許す。
+    return Response(content=data, media_type="audio/mpeg",
+                    headers={"Cache-Control": "private, max-age=3600"})
 
 
 class ResolveIn(BaseModel):
