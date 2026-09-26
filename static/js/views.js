@@ -2494,6 +2494,20 @@ function initCheckDropdown(root, btnId, panelId, groupsGetter, selected,
   onChange, labelKey) {
   const btn = root.querySelector(`#${btnId}`);
   const panel = root.querySelector(`#${panelId}`);
+  // 狭い画面でパネルが右へはみ出して項目名が切れないよう、開いたときに左へずらして
+  // 画面内へ収める(2026-09-26・多言語化で英語などの項目名が長くなり、スマホ幅で
+  // 右端が画面外へ切れていた。日本語でも長い名前で同じ切れが起きていた)。
+  // 幅の上限・項目名の折り返しはCSS(style.css `.cdrop-panel`/`.cd-item`)側で持つ。
+  const fitPanel = () => {
+    if (!panel.classList.contains("open")) return;
+    panel.style.left = "0px";
+    const vw = document.documentElement.clientWidth, margin = 8;
+    const b = btn.getBoundingClientRect(), w = panel.offsetWidth;
+    let left = 0;
+    if (b.left + w > vw - margin) left = vw - margin - w - b.left;
+    if (b.left + left < margin) left = margin - b.left;
+    panel.style.left = left + "px";
+  };
   const refreshLabel = () => {
     const label = tx(labelKey);
     btn.textContent = selected.size
@@ -2546,10 +2560,12 @@ function initCheckDropdown(root, btnId, panelId, groupsGetter, selected,
       onChange();
       renderPanel();
     });
+    fitPanel();
   };
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
     panel.classList.toggle("open");
+    fitPanel();
   });
   document.addEventListener("click", (e) => {
     // 「すべて選択/クリア」ボタン押下時、その場のonChangeでrenderPanel()が

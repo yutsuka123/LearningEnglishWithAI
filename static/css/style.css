@@ -964,6 +964,14 @@ table.rtable .ops-cell .vague-btn { margin-left: 0; }
   padding-bottom: 6px; margin-bottom: 6px; border-bottom: 1px solid var(--line);
 }
 .cd-clear-row .btn { padding: 3px 8px; font-size: 12px; }
+/* スマホ幅: 項目名が長い言語(英語など)でも分野/シーンのドロップダウン・単語帳の
+   チェックボックス一覧が画面外へ切れないよう、幅を画面内に収めて項目名を折り返す
+   (2026-09-26・多言語化。ドロップダウンの左右位置はviews.jsのfitPanelが調整)。 */
+@media (max-width: 760px) {
+  .cdrop-panel { max-width: calc(100vw - 16px); }
+  .cd-item, .chk { white-space: normal; }
+  .chkbox { max-width: 100%; box-sizing: border-box; }
+}
 
 /* 設定画面「表示する分野・シーン」（2026-08-06）。
    2026-08-08: 単語(分野)とフレーズ(シーン)の区切りが分かりづらく、フレーズ
