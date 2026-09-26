@@ -58,7 +58,7 @@ RUN_NAME="eigo-app-content-task"
 # :latestには絶対に触らない専用タグ(Fable指摘C2)。
 TASK_IMAGE="${TASK_IMAGE:-eigo-app:content-task}"
 
-echo "1/2: イメージを再ビルド(タグ=$TASK_IMAGE、:latest・稼働中コンテナは無変更)..."
+echo "1/2: イメージを再ビルド(タグ=${TASK_IMAGE}、:latest・稼働中コンテナは無変更)..."
 ssh -i "$VPS_SSH_KEY" "$VPS_HOST" \
   "cd $VPS_APP_DIR && EIGO_IMAGE=$TASK_IMAGE docker compose -f $COMPOSE_FILE build"
 
