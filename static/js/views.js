@@ -6,7 +6,7 @@ import { quizRunner } from "./quiz.js";
 import {
   el, md, escapeHtml, toast, state, go, refreshCost, refreshAiState,
   showBanned, setShowBanned, testBanned, setTestBanned, onLeaveView,
-  fmtDateJST, refreshMaintenanceBanner, TABS, infoIcon, tx, tabLabel,
+  fmtDateJST, refreshMaintenanceBanner, TABS, infoIcon, tx, tabLabel, taxName,
 } from "./app.js";
 
 // 禁止用語クエリ: include_banned を付ける/付けないを返す小ヘルパー。
@@ -533,7 +533,7 @@ export async function welcome(root) {
       <div class="welcome-sample-word">
         <b class="welcome-sample-en">${escapeHtml(w.english)}</b>
         <span class="welcome-sample-ja">${escapeHtml(w.japanese || "")}</span>
-        <span class="pill">${escapeHtml(w.domain || "")}</span>
+        <span class="pill">${escapeHtml(taxName(w.domain) || "")}</span>
       </div>
       <div class="welcome-sample-play"></div>
       <p class="welcome-sample-note"><b>${escapeHtml(w.note_label)}:</b>
@@ -567,7 +567,7 @@ export async function welcome(root) {
     }
     if (chips) {
       chips.innerHTML = domains.map((d) =>
-        `<span class="pill">${escapeHtml(d)} ${domainCounts[d] ?? 0}</span>`)
+        `<span class="pill">${escapeHtml(taxName(d))} ${domainCounts[d] ?? 0}</span>`)
         .join("");
     }
   }).catch(() => {
@@ -1467,7 +1467,7 @@ function showWordChoices(hits) {
     hits.forEach((h) => {
       const btn = el(`<button class="btn ghost" style="text-align:left">
         ${escapeHtml(h.japanese || "")}
-        <span class="muted">（${escapeHtml(h.domain || tx("common.domainUnset"))}）</span>
+        <span class="muted">（${escapeHtml(taxName(h.domain) || tx("common.domainUnset"))}）</span>
       </button>`);
       btn.addEventListener("click", () => showWordDetail(h));
       list.appendChild(btn);
@@ -1631,7 +1631,7 @@ function showWordDetail(w) {
           if (i > 0) box2.appendChild(document.createTextNode(" / "));
           const link = el(`<span class="jw-link" style="cursor:pointer;
             text-decoration:underline">${escapeHtml(h.japanese || "")}
-            （${escapeHtml(h.domain || tx("common.domainUnset"))}）</span>`);
+            （${escapeHtml(taxName(h.domain) || tx("common.domainUnset"))}）</span>`);
           link.addEventListener("click", () => showWordDetail(h));
           box2.appendChild(link);
         });
@@ -1672,7 +1672,7 @@ function showPhraseDetail(p) {
   openModal(p.english, (body) => {
     body.appendChild(el(`<p class="quiz-answer">${escapeHtml(p.english)}
       <span class="muted">${escapeHtml(p.japanese || "")}
-      ${p.scene ? "・" + escapeHtml(p.scene) : ""}</span></p>`));
+      ${p.scene ? "・" + escapeHtml(taxName(p.scene)) : ""}</span></p>`));
     const memo = adminMemoWidget({
       source: "phrase_detail", kind: "phrase", refId: p.id,
       english: p.english, japanese: p.japanese,
@@ -2029,7 +2029,7 @@ export async function flashcard(root) {
     .join("");
   const catOpts = [`<option value="">${tx("flashcard.allCategories")}</option>`]
     .concat(Object.keys(domainGroups).map((c) =>
-      `<option>${escapeHtml(c)}</option>`))
+      `<option value="${escapeHtml(c)}">${escapeHtml(taxName(c))}</option>`))
     .join("");
   const lvOpts = '<option value="">--</option>' + facets.range_levels
     .map((l) => `<option>${escapeHtml(l)}</option>`).join("");
@@ -2280,7 +2280,7 @@ export async function flashPhrase(root) {
   const sceneGroups = sceneFacets.scene_groups || {};
   const catOpts = [`<option value="">${tx("flashcard.allCategories")}</option>`]
     .concat(Object.keys(sceneGroups).map((c) =>
-      `<option>${escapeHtml(c)}</option>`))
+      `<option value="${escapeHtml(c)}">${escapeHtml(taxName(c))}</option>`))
     .join("");
   const lvOpts = '<option value="">--</option>' + levelFacets.range_levels
     .map((l) => `<option>${escapeHtml(l)}</option>`).join("");
@@ -2520,10 +2520,10 @@ function initCheckDropdown(root, btnId, panelId, groupsGetter, selected,
         </div>` : "";
     panel.innerHTML = btnRow + Object.entries(groups).map(([g, items]) => `
       <div class="cd-group">
-        <div class="cd-group-label">${escapeHtml(g)}</div>
+        <div class="cd-group-label">${escapeHtml(taxName(g))}</div>
         ${items.map((it) => `<label class="cd-item">
           <input type="checkbox" value="${escapeHtml(it)}"
-            ${selected.has(it) ? "checked" : ""}/> ${escapeHtml(it)}</label>`)
+            ${selected.has(it) ? "checked" : ""}/> ${escapeHtml(taxName(it))}</label>`)
           .join("")}
       </div>`).join("");
     panel.querySelectorAll("input[type=checkbox]").forEach((cb) => {
@@ -2596,7 +2596,7 @@ export async function vocab(root) {
         <input id="kw" placeholder="${escapeHtml(tx("filter.searchPlaceholderWord"))}" style="width:140px" />
         <select id="fCategory" title="${escapeHtml(tx("filter.categoryTitle"))}"><option value="">${tx("filter.allCategories")}</option>
           ${Object.keys(domainGroups).map((c) =>
-            `<option>${escapeHtml(c)}</option>`).join("")}</select>
+            `<option value="${escapeHtml(c)}">${escapeHtml(taxName(c))}</option>`).join("")}</select>
         <span class="cdrop">
           <button type="button" class="btn ghost" id="fDomainBtn">${tx("filter.allDropdown")}</button>
           <div class="cdrop-panel" id="fDomainPanel"></div>
@@ -2717,7 +2717,7 @@ export async function vocab(root) {
         <td><div class="detail-cell"></div></td>
         <td class="muted pair2" data-label="Lv">${w.level || ""}</td>
         <td class="pair2" data-label="${escapeHtml(tx("list.colDomain"))}">${w.domain
-          ? `<span class="pill">${escapeHtml(w.domain)}</span>` : ""}</td>
+          ? `<span class="pill">${escapeHtml(taxName(w.domain))}</span>` : ""}</td>
         <td class="pair2" style="min-width:80px" data-mc="1"
           data-label="${escapeHtml(tx("list.colMastery"))}">${masteryCell(w)}</td>
         <td class="pair2" data-label="${escapeHtml(tx("list.colAccuracy"))}">${w.accuracy == null
@@ -2902,7 +2902,7 @@ export async function phrases(root) {
     <div class="row">
       <select id="sceneCategory" title="${escapeHtml(tx("filter.categoryTitle"))}"><option value="">${tx("filter.allCategories")}</option>
         ${Object.keys(sceneGroups).map((c) =>
-          `<option>${escapeHtml(c)}</option>`).join("")}</select>
+          `<option value="${escapeHtml(c)}">${escapeHtml(taxName(c))}</option>`).join("")}</select>
       <span class="cdrop">
         <button type="button" class="btn ghost" id="fSceneBtn">${tx("filter.allDropdown")}</button>
         <div class="cdrop-panel" id="fScenePanel"></div>
@@ -3017,7 +3017,7 @@ export async function phrases(root) {
         <td data-label="${escapeHtml(tx("list.colJapanese"))}">${escapeHtml(p.japanese)}</td>
         <td><div class="detail-cell"></div></td>
         <td data-label="${escapeHtml(tx("list.colScene"))}"><span class="pill">
-          ${escapeHtml(p.scene || "")}</span></td>
+          ${escapeHtml(taxName(p.scene) || "")}</span></td>
         <td data-mc="1" data-label="${escapeHtml(tx("list.colMastery"))}">${masteryCell(p)}</td>
         <td><div class="ops-cell"></div></td>
       </tr>`);
@@ -8256,7 +8256,7 @@ export async function admin(root) {
 function fsetGroupsHtml(groups, hiddenSet, prefix) {
   return Object.entries(groups).map(([cat, items]) => `
     <details class="fset-group">
-      <summary>${escapeHtml(cat)}
+      <summary>${escapeHtml(taxName(cat))}
         <span class="muted">(${items.length})</span></summary>
       <div class="fset-actions">
         <button type="button" class="btn ghost fset-cat-all"
@@ -8271,7 +8271,7 @@ function fsetGroupsHtml(groups, hiddenSet, prefix) {
           <input type="checkbox" class="fset-${prefix}"
             value="${escapeHtml(it)}"
             ${hiddenSet.has(it) ? "" : "checked"} />
-          ${escapeHtml(it)}</label>`).join("")}
+          ${escapeHtml(taxName(it))}</label>`).join("")}
       </div>
     </details>`).join("");
 }
@@ -8424,8 +8424,8 @@ export async function settings(root) {
         <select id="dfWCategory">
           <option value="">${tx("settings.categoryUnspecified")}</option>
           ${Object.keys(domainGroups).map((c) =>
-            `<option ${c === dfw.category ? "selected" : ""}>
-              ${escapeHtml(c)}</option>`).join("")}
+            `<option value="${escapeHtml(c)}" ${c === dfw.category ? "selected" : ""}>
+              ${escapeHtml(taxName(c))}</option>`).join("")}
         </select>
         <select id="dfWLvMin">${lvOptsHtml(wLevels, dfw.level_min)}</select>
         <span class="muted">〜</span>
@@ -8443,8 +8443,8 @@ export async function settings(root) {
         <select id="dfPCategory">
           <option value="">${tx("settings.categoryUnspecified")}</option>
           ${Object.keys(sceneGroups).map((c) =>
-            `<option ${c === dfp.category ? "selected" : ""}>
-              ${escapeHtml(c)}</option>`).join("")}
+            `<option value="${escapeHtml(c)}" ${c === dfp.category ? "selected" : ""}>
+              ${escapeHtml(taxName(c))}</option>`).join("")}
         </select>
         <select id="dfPLvMin">${lvOptsHtml(pLevels, dfp.level_min)}</select>
         <span class="muted">〜</span>
@@ -9311,7 +9311,7 @@ export async function decks(root) {
           ${chkAllClearHtml("ddomains")}
           <div id="ddomains" class="chkbox">${facets.domains.map((d) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(d)}"
-              /> ${escapeHtml(d)}</label>`).join("")}</div></div>
+              /> ${escapeHtml(taxName(d))}</label>`).join("")}</div></div>
         <div><div class="muted">${tx("deck.levelsLabel")}</div>
           ${chkAllClearHtml("dlevels")}
           <div id="dlevels" class="chkbox">${facets.levels.map((l) =>
@@ -9417,7 +9417,7 @@ export async function decks(root) {
           ${chkAllClearHtml("addDomains")}
           <div id="addDomains" class="chkbox">${facets.domains.map((c) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(c)}"
-              /> ${escapeHtml(c)}</label>`).join("")}</div></div>
+              /> ${escapeHtml(taxName(c))}</label>`).join("")}</div></div>
         <div><div class="muted">${tx("deck.levelsLabel")}</div>
           ${chkAllClearHtml("addLevels")}
           <div id="addLevels" class="chkbox">${facets.levels.map((l) =>
@@ -9561,7 +9561,7 @@ export async function phraseDecks(root) {
           ${chkAllClearHtml("pdscenes")}
           <div id="pdscenes" class="chkbox">${sceneFacets.scenes.map((s) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(s)}"
-              /> ${escapeHtml(s)}</label>`).join("")}</div></div>
+              /> ${escapeHtml(taxName(s))}</label>`).join("")}</div></div>
         <div><div class="muted">${tx("phrasedeck.levelsLabel")}</div>
           ${chkAllClearHtml("pdlevels")}
           <div id="pdlevels" class="chkbox">${levelFacets.range_levels.map((l) =>
@@ -9667,7 +9667,7 @@ export async function phraseDecks(root) {
           ${chkAllClearHtml("paddScenes")}
           <div id="paddScenes" class="chkbox">${sceneFacets.scenes.map((s) =>
             `<label class="chk"><input type="checkbox" value="${escapeHtml(s)}"
-              /> ${escapeHtml(s)}</label>`).join("")}</div></div>
+              /> ${escapeHtml(taxName(s))}</label>`).join("")}</div></div>
         <div><div class="muted">${tx("phrasedeck.levelsLabel")}</div>
           ${chkAllClearHtml("paddLevels")}
           <div id="paddLevels" class="chkbox">${levelFacets.range_levels.map((l) =>
@@ -9894,6 +9894,22 @@ const cwEnglishStyleOpts = () => [
   ["rich", tx("games.styleRich"), tx("games.enStyleRichDesc")],
 ];
 
+// 再開一覧の「対象」欄の表示名。サーバーの`source_label`は分野名をカンマで列挙(または
+// 大分類名/「すべて」)した文字列を日本語の分野名のまま返すため、分野名の訳(taxName)を
+// 反映できるよう`source_ref`(=分野名のカンマ区切り)・`category`から組み直す。
+// 日本語UIでは従来のsource_labelと同じ文字列になる(_crossword_source_label参照)。
+function cwSessionTargetLabel(s) {
+  if (s.source_type === "domain") {
+    const doms = (s.source_ref || "").split(",").filter(Boolean);
+    if (doms.length) return doms.map((d) => taxName(d)).join(",");
+    if (s.category) {
+      return tx("games.presetCategoryAll", { cat: taxName(s.category) });
+    }
+    return tx("games.presetAll");
+  }
+  return s.source_label || s.source_ref;
+}
+
 // 履歴テーブル・最近の選択ボタン用に、1件の設定を短い要約文にする。
 function cwPresetSummary(r) {
   // 保存時の表示文ではなく言語非依存のトークン("__all__"/"__cat__:大分類")で
@@ -9903,7 +9919,11 @@ function cwPresetSummary(r) {
   if (r.label === "__all__" || r.label === "すべて") {
     label = tx("games.presetAll");
   } else if ((r.label || "").startsWith("__cat__:")) {
-    label = tx("games.presetCategoryAll", { cat: r.label.slice(8) });
+    label = tx("games.presetCategoryAll", { cat: taxName(r.label.slice(8)) });
+  } else if (Array.isArray(r.domains) && r.domains.length
+    && r.label === r.domains.join("・")) {
+    // 分野名を列挙した履歴: 保存値(日本語)のまま持ち、表示のときだけ訳す。
+    label = r.domains.map((d) => taxName(d)).join("・");
   }
   const parts = [label];
   if (r.wordCount) parts.push(tx("games.wordCountN", { n: r.wordCount }));
@@ -9959,7 +9979,7 @@ async function cwRenderHub(root) {
         <th>${tx("games.colTarget")}</th><th>${tx("games.colStatus")}</th><th>${tx("games.colWordCount")}</th><th>${tx("games.colScore")}</th><th>${tx("games.colDateTime")}</th>
         <th>${tx("games.colSave")}</th><th></th>
       </tr></thead><tbody>${sessions.map((s) => `<tr>
-        <td>${escapeHtml(s.source_label || s.source_ref)}</td>
+        <td>${escapeHtml(cwSessionTargetLabel(s))}</td>
         <td class="muted">${s.status === "completed" ? tx("games.statusCompleted") : tx("games.statusInProgress")}</td>
         <td>${s.word_count ?? "-"}</td>
         <td>${s.score}</td>
@@ -10105,7 +10125,7 @@ async function cwRenderSamples(root) {
       levelText(s) ? ` ・ ${escapeHtml(levelText(s))}` : ""}</p>
     <p>${(s.tags || (s.domains || "").split(","))
       .filter(Boolean).map((d) =>
-        `<span class="pill">${escapeHtml(d)}</span>`).join(" ")}</p>
+        `<span class="pill">${escapeHtml(taxName(d))}</span>`).join(" ")}</p>
     <button type="button" class="btn ${s.guest_locked ? "ghost" : "primary"} mt"
       ${s.guest_locked ? "disabled" : ""}>${
       s.guest_locked ? "🔒 " + tx("games.registeredOnly")
@@ -10244,7 +10264,8 @@ async function cwRenderSetup(root, preset) {
   const answerDifficulty = effective?.answerDifficulty || "normal";
   const catOpts = [`<option value="">${tx("games.allCategories")}</option>`]
     .concat(Object.keys(domainGroups).map((c) => `<option
-      ${c === initialCategory ? "selected" : ""}>${escapeHtml(c)}</option>`))
+      value="${escapeHtml(c)}"
+      ${c === initialCategory ? "selected" : ""}>${escapeHtml(taxName(c))}</option>`))
     .join("");
   const lvOpts = (min) => `<option value="">${tx("games.unspecified")}</option>`
     + (facets.range_levels || []).map((l) => `<option

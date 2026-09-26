@@ -131,6 +131,17 @@
     });
   }
 
+  // 分野(単語のdomain)・シーン(フレーズのscene)・大分類など、DBに日本語で保存されている
+  // 「名前」を、表示用に現在の言語へ写像する(2026-09-26)。保存値・フィルタのvalue・APIへ送る値は
+  // 日本語のまま(変えない)ので、画面に出す文字にだけ使うこと。辞書は"tax."+日本語名のキーで
+  // static/js/i18n_dict_taxonomy.jsに置く(SPAだけが読み込む)。日本語UIと、訳が無い名前は
+  // 引数をそのまま返す(=従来の表示と完全に同じ・新しい分野を足しても壊れない)。
+  function tax(name) {
+    if (name == null || name === "" || currentLang === "ja") return name;
+    var s = (DICT[currentLang] || {})["tax." + name];
+    return s == null ? name : s;
+  }
+
   function setLang(lang) {
     if (LANGS.indexOf(lang) < 0) return;
     currentLang = lang;
@@ -201,7 +212,7 @@
 
   global.I18N = {
     LANGS: LANGS, LANG_LABELS: LANG_LABELS, DICT: DICT,
-    t: t, resolveLang: resolveLang, currentLang: function () { return currentLang; },
+    t: t, tax: tax, resolveLang: resolveLang, currentLang: function () { return currentLang; },
     setLang: setLang, savedLang: savedLang, translateDom: translateDom,
     onChange: onChange, initLangSwitchers: initLangSwitchers,
     // <head>内で最速に呼ぶ用(documentElement.langだけ先に確定。本文の翻訳は

@@ -13,6 +13,14 @@ import * as views from "./views.js";
 export const tx = (key, vars) =>
   (window.I18N ? window.I18N.t(key, vars) : key);
 
+// 分野(単語のdomain)・シーン(フレーズのscene)・大分類の「表示名」を現在の言語へ変換する
+// (2026-09-26)。DBに日本語で保存されている値は変えず、画面に出す文字だけを訳す
+// (<option>やチェックボックスのvalue・APIへ送る値・localStorageの保存値は必ず日本語の
+// まま=この関数を通さない)。日本語UI・訳が無い名前は引数をそのまま返す。
+// 辞書はstatic/js/i18n_dict_taxonomy.js(index.htmlで読み込み)。
+export const taxName = (name) =>
+  (window.I18N && window.I18N.tax ? window.I18N.tax(name) : name);
+
 // ---------------------------------------------------------------------------
 // Global state
 // ---------------------------------------------------------------------------
