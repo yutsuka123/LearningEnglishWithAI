@@ -34,6 +34,8 @@ let paymentRequiredCb = null;
 // （テキストと音声が一致しない不具合の原因）。常に「最後に要求された再生」だけ
 // 実際に鳴らし、古い要求は結果を捨てる。
 let playSeq = 0;
+// 動作中の文単位パイプライン読み上げ(createSegmentSpeaker)。stopSpeaking()から止める。
+let activeSegSpeaker = null;
 
 export function setAiEnabled(v) { aiEnabled = !!v; }
 export function setOpenAIVoices(list) {
@@ -210,6 +212,13 @@ async function playBlob(blob, rate, voice) {
 // --- speaking ---------------------------------------------------------------
 
 export function stopSpeaking() {
+  // 文単位のパイプライン読み上げ(createSegmentSpeaker)が動いていれば、それも
+  // 止める(⏹や画面遷移・別の読み上げの開始で、次の文が勝手に鳴り出さないように)。
+  if (activeSegSpeaker) activeSegSpeaker._abort();
+  stopAudioOnly();
+}
+
+function stopAudioOnly() {
   if (synth) synth.cancel();
   if (audioEl) { try { audioEl.pause(); } catch (e) { /* ignore */ } }
 }
@@ -587,6 +596,168 @@ export function speakAndWait(text, opts = {}) {
         if (usageCb) usageCb();
       }).catch(() => browser()); // ネットワーク到達不能等のみブラウザ音声へ
   });
+}
+
+// --- 文単位のパイプライン読み上げ(2026-09-26・英会話の応答速度改善) -------------
+// 会話の返答(LLM)が全部出るのを待たず、最初の文ができた時点でTTSを始める。
+// add(text)で渡した「区切り(セグメント)」ごとに、その場で/api/learn/ttsを並行して
+// 呼び(合成待ちが重ならない)、順番どおりに1つの<audio>で再生する。前の区切りを
+// 再生している間に次の区切りの合成が終わるので、区切りの間はほぼ途切れない。
+//   add(text)   … 区切りを1つ追加(直ちに合成を開始)
+//   finish()    … もう追加しない(全部再生し終えたらdoneが解決)
+//   cancel()    … 中断(再生中の音声も止める・以後の追加は無視)
+//   done        … 再生が終わった/中断/失敗のいずれかで解決するPromise(ハンズフリーが
+//                 「AIが話し終えてから聞き取りを再開する」ために待つ)
+// 失敗時の扱いはsay()と同じ: サーバーが意図的に拒否(402/422等)したら案内だけ出して
+// ブラウザ音声へは逃げない/ネットワーク到達不能のときだけブラウザ音声で残りを読む。
+// グループID(group)は同じ返答のセグメントを束ねる使い捨ての乱数で、サーバーは
+// 課金・分間レート制限をセグメントに分けなかった場合と同じにそろえる(ai.py参照)。
+export function createSegmentSpeaker() {
+  const useAI = isNatural() && aiEnabled;
+  if (useAI && (!currentIsOpenAI || !currentVoiceName)) pickRoundVoice();
+  const voice = currentVoiceName;
+  const group = "rs" + Math.random().toString(36).slice(2, 12)
+    + Date.now().toString(36);
+  if (activeSegSpeaker) activeSegSpeaker._abort();
+  const myToken = ++playSeq;
+  const segs = [];
+  let finished = false, cancelled = false, pumping = false;
+  let failed = false, fallback = false, noticeShown = false;
+  let started = false, usageReported = false;
+  let wake = null, endPlaying = null;
+  let resolveDone;
+  const done = new Promise((r) => { resolveDone = r; });
+  const owns = () => !cancelled && myToken === playSeq;
+  const notify = () => { if (wake) { const w = wake; wake = null; w(); } };
+
+  function fetchSeg(text) {
+    return fetch("/api/learn/tts", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, voice, group }),
+    }).then(async (res) => {
+      if (!res.ok) return { blocked: true, msg: await res.text().catch(() => "") };
+      return { blob: await res.blob() };
+    }).catch(() => ({ net: true }));
+  }
+
+  function speakBrowserSeg(text) {
+    return new Promise((resolve) => {
+      if (!synth || !text) { resolve(); return; }
+      const u = new SpeechSynthesisUtterance(text);
+      const chosen = !currentIsOpenAI && currentVoiceName
+        ? getEnglishVoices().find((v) => v.name === currentVoiceName) : null;
+      if (chosen) { u.voice = chosen; u.lang = chosen.lang; }
+      else u.lang = "en-US";
+      u.rate = playbackRate || 0.95;
+      u.onend = () => resolve(); u.onerror = () => resolve();
+      endPlaying = resolve;
+      synth.speak(u);
+    });
+  }
+
+  function playBlobSeg(blob) {
+    return new Promise((resolve) => {
+      const a = audioElement();
+      try { if (a._objUrl) URL.revokeObjectURL(a._objUrl); } catch (e) { /* ignore */ }
+      a._objUrl = URL.createObjectURL(blob);
+      endPlaying = resolve;
+      a.onended = () => resolve(); a.onerror = () => resolve();
+      a.src = a._objUrl;
+      a.playbackRate = effectiveRate(voice, undefined);
+      const p = a.play();
+      if (p && p.catch) p.catch(() => resolve());
+    });
+  }
+
+  async function playSeg(seg) {
+    if (!useAI || fallback) {
+      await speakBrowserSeg(seg.text); started = true; return;
+    }
+    const r = await seg.p;
+    if (!owns()) return;
+    if (r.blob) {
+      // 費用表示の更新はsay()と同様、最初の区切りを鳴らし始めた時点で1回
+      // (区切りごとには呼ばない・全部終わった後にもう1回はpumpの最後で)。
+      if (!usageReported) { usageReported = true; if (usageCb) usageCb(); }
+      await playBlobSeg(r.blob); started = true;
+      return;
+    }
+    if (r.blocked) {
+      // 意図的な拒否(要ログイン/要チャージ等)。say()と同じく案内だけ出して終える。
+      if (!noticeShown && paymentRequiredCb) {
+        noticeShown = true;
+        paymentRequiredCb(r.msg || tx("voice.playbackUnavailable"));
+      }
+      failed = true; return;
+    }
+    // ネットワーク到達不能: この区切り以降はブラウザ音声で読む。
+    fallback = true;
+    if (synth) synth.cancel();
+    await speakBrowserSeg(seg.text); started = true;
+  }
+
+  async function pump() {
+    if (pumping) return;
+    pumping = true;
+    try {
+      // 最初の区切りを鳴らす前に、鳴っている前の音声を止める(playBlobと同じ)。
+      stopAudioOnly();
+      let i = 0;
+      while (owns() && !failed) {
+        if (i >= segs.length) {
+          if (finished) break;
+          await new Promise((r) => { wake = r; });
+          continue;
+        }
+        await playSeg(segs[i++]);
+      }
+    } finally {
+      pumping = false; endPlaying = null;
+      if (activeSegSpeaker === api) activeSegSpeaker = null;
+      // 区切りが複数あった分の費用表示を、最後にもう1回更新する。
+      if (segs.length > 1 && usageReported && usageCb) usageCb();
+      resolveDone();
+    }
+  }
+
+  const api = {
+    add(text) {
+      if (cancelled || finished || !text || !text.trim()) return;
+      const seg = { text, p: null };
+      if (useAI) seg.p = fetchSeg(text);
+      segs.push(seg);
+      if (!pumping) pump().catch((e) => console.error("segment speaker", e));
+      else notify();
+    },
+    finish() {
+      if (finished) return done;
+      finished = true;
+      if (!pumping && !segs.length) {
+        if (activeSegSpeaker === api) activeSegSpeaker = null;
+        resolveDone();
+      } else notify();
+      return done;
+    },
+    cancel() {
+      const mine = owns();
+      api._abort();
+      if (mine) stopAudioOnly();
+    },
+    _abort() {
+      if (cancelled) return;
+      cancelled = true;
+      if (endPlaying) endPlaying();
+      notify();
+      if (!pumping) {
+        if (activeSegSpeaker === api) activeSegSpeaker = null;
+        resolveDone();
+      }
+    },
+    get done() { return done; },
+    get started() { return started; },
+  };
+  activeSegSpeaker = api;
+  return api;
 }
 
 // Transcribe an audio Blob via the backend (Whisper). Returns text ("" on

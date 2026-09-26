@@ -11,6 +11,7 @@ the UI can display API consumption (ユーザー要望: API使用量・費用の
 
 from __future__ import annotations
 
+import contextlib
 import sqlite3
 import threading
 import time
@@ -248,6 +249,56 @@ def _temperature_kwarg(model: str, temperature: float) -> dict:
     return {"temperature": temperature}
 
 
+# 推論(reasoning)を既定で行うモデルは、最初の1文字が出るまでに「隠れた思考」の
+# 時間がかかる(2026-09-26実測・英会話の返答・gpt-5.6-luna: 旅行シーン(API直・
+# n=20交互)は最初のチャンクまで中央値1.94→1.46秒。ブラウザと同じ形のリクエスト
+# (シーン「IT・開発/AI」・履歴なし・n=16交互)は中央値3.00→1.39秒・p90 13.05→
+# 1.83秒・5秒超6/16→0/16 =思考の長い尾が消える。出力トークンも73→33と減り費用も
+# 約2割下がる。同じモデルのまま・返答の品質は変わらない印象・安全指示の遵守も
+# 変わらないことを目視確認)。``reasoning_effort``を
+# 受け付けることを確認済みのモデル系列だけに送る。将来モデルを差し替えて
+# 非対応になっても、400(reasoning_effort非対応)を受けたら付けずに1回だけ
+# 再試行し、そのモデルには以後付けない(_create_chat)。
+_REASONING_EFFORT_PREFIXES = ("gpt-5.4", "gpt-5.6")
+_REASONING_EFFORT_VALUES = ("none", "low", "medium", "high")
+_REASONING_UNSUPPORTED: set[str] = set()
+
+
+def _reasoning_kwarg(model: str, effort: str | None) -> dict:
+    """``reasoning_effort``を送ってよいモデルなら{"reasoning_effort": ...}、
+    それ以外(未指定/対象外モデル/非対応と判明済み)は{}を返す。"""
+    e = (effort or "").strip().lower()
+    m = (model or "").lower()
+    if (e not in _REASONING_EFFORT_VALUES
+            or m in _REASONING_UNSUPPORTED
+            or not m.startswith(_REASONING_EFFORT_PREFIXES)):
+        return {}
+    return {"reasoning_effort": e}
+
+
+def _is_reasoning_param_error(exc: Exception) -> bool:
+    return (getattr(exc, "status_code", None) == 400
+            and "reasoning_effort" in str(exc))
+
+
+def _create_chat(client, model: str, effort: str | None, **kwargs):
+    """``client.chat.completions.create``の薄いラッパー。``effort``が有効なら
+    ``reasoning_effort``を付け、そのパラメータが原因の400だけは付けずに
+    再試行する(それ以外の例外はそのまま投げる)。"""
+    extra = _reasoning_kwarg(model, effort)
+    try:
+        return client.chat.completions.create(
+            model=model, **kwargs, **extra)
+    except Exception as exc:
+        if extra and _is_reasoning_param_error(exc):
+            _REASONING_UNSUPPORTED.add((model or "").lower())
+            log.warning(
+                "reasoning_effort非対応のため付けずに再試行します "
+                "(model=%s)", model)
+            return client.chat.completions.create(model=model, **kwargs)
+        raise
+
+
 def estimate_cost(model: str, prompt_tokens: int, output_tokens: int) -> float:
     pin, pout = _price_for(model)
     return prompt_tokens / 1_000_000 * pin + output_tokens / 1_000_000 * pout
@@ -330,24 +381,37 @@ def _compute_charge_jpy(cost_usd: float, rate: float, feature: str) -> float:
 
 def _maybe_deduct_balance(
     conn, uid: int, cost_usd: float, feature: str, s,
-) -> None:
+    prior_cost_usd: float = 0.0,
+) -> bool:
     """チャージ残高は「無料枠（日次/月次上限）に到達した後の利用」でのみ消費
     する（枠とは別管理）。枠内の利用では残高を減らさない。呼び出し元が同じ
     接続内で対象のai_usage行を既にINSERTしている前提
     （`_user_cost_usd`はコミット済み分を見るため、直前＝このコール分を
-    除いた累計になる）。"""
+    除いた累計になる）。
+
+    ``prior_cost_usd``(2026-09-26): 1回の読み上げを文単位で分けた複数のTTS
+    呼び出し(_tts_group_*)用。同じ読み上げの既に課金済みの原価の累計を渡すと、
+    「累計での課金額 − 既に課金済みの課金額」だけを引く。0.5円単位の切り上げが
+    呼び出しごとにかかって合計が増える(分けなかった場合より高くなる)のを防ぎ、
+    合計は1回で読み上げた場合と同じになる。既定0は従来どおり(既存の全呼び出し
+    元は変わらない)。戻り値: 課金対象(枠超過)だったらTrue(残高が0円で実際に
+    引けなかった場合も含む)。"""
     from .auth import add_balance, get_user
 
     u = get_user(conn, uid)
     if not u or u.get("balance_jpy") is None:
-        return
+        return False
     dcap, mcap = _effective_caps(u, s)
     prior_day = _user_cost_usd(uid, "day")
     prior_mon = _user_cost_usd(uid, "month")
     over = prior_day >= dcap or prior_mon >= mcap
     if not over:
-        return
+        return False
     charge = _compute_charge_jpy(cost_usd, s.usd_jpy_rate, feature)
+    if prior_cost_usd > 0:
+        charge = max(0.0, _compute_charge_jpy(
+            prior_cost_usd + cost_usd, s.usd_jpy_rate, feature
+        ) - _compute_charge_jpy(prior_cost_usd, s.usd_jpy_rate, feature))
     # 0円未満にはしない(旧UPDATE文のMAX(0,...)相当)。add_balance()は単純な
     # 加減算のみ行うため、ここで下限をクランプしてから渡す。
     cur = float(u.get("balance_jpy") or 0)
@@ -357,6 +421,7 @@ def _maybe_deduct_balance(
             conn, uid, delta, reason="ai_usage",
             note=f"{feature} (${cost_usd:.5f})",
         )
+    return True
 
 
 # クロスワード1ゲーム分の課金式(2026-09-06確定・語数比例式に変更。
@@ -517,13 +582,16 @@ def chat(
     feature: str = "",
     model: str | None = None,
     rate_limit: bool = True,
+    reasoning_effort: str | None = None,
 ) -> AIResult:
     """Single-turn chat completion. Stateless by design — we never rely on
     server-side chat history; all context is passed in explicitly.
 
     ``model`` overrides the configured chat model (used for判定/教材生成).
     ``rate_limit=False`` skips the per-minute cap for an explicit, authorized
-    batch (the daily cost cap still applies and will stop it once spent)."""
+    batch (the daily cost cap still applies and will stop it once spent).
+    ``reasoning_effort``: 推論を既定で行うモデルの思考量("none"等)。未指定は
+    従来どおりモデルの既定(_reasoning_kwarg参照)。"""
     client, settings = _client()
     if client is None:
         if not settings.ai_enabled:
@@ -548,8 +616,8 @@ def chat(
     # (失敗時は原因調査のため常にelapsedを記録)。
     t0 = time.monotonic()
     try:
-        resp = client.chat.completions.create(
-            model=use_model,
+        resp = _create_chat(
+            client, use_model, reasoning_effort,
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
@@ -639,6 +707,7 @@ def chat_stream(
     max_tokens: int = 800,
     feature: str = "",
     model: str | None = None,
+    reasoning_effort: str | None = None,
 ) -> Iterator[str]:
     """Yield text chunks as they arrive (improves perceived responsiveness).
 
@@ -647,6 +716,8 @@ def chat_stream(
     ``model`` overrides the configured chat model (2026-08-22: 会話の
     「応答速度優先」チェックボックス用に追加。未指定時は従来通り
     ``settings.openai_model``)。
+    ``reasoning_effort``(2026-09-26): 推論を既定で行うモデルの思考量。英会話の
+    返答では"none"にして最初の文字が出るまでの時間を縮める(_reasoning_kwarg参照)。
 
     呼び出し元は必ず先に``chat_stream_precheck()``を呼び、判定できる
     失敗を弾いてから使うこと(2026-09-18)。ここで再度``_client()``/
@@ -659,8 +730,8 @@ def chat_stream(
     use_model = model or settings.openai_model
     t0 = time.monotonic()
     try:
-        stream = client.chat.completions.create(
-            model=use_model,
+        stream = _create_chat(
+            client, use_model, reasoning_effort,
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
@@ -774,10 +845,86 @@ def _tts_cache_path(model: str, voice: str, text: str, instr: str = ""):
     return cache_dir / f"{digest}.mp3"
 
 
+# --- 会話の返答を文単位で分けて読み上げるときの「読み上げグループ」(2026-09-26) ---
+# 英会話の応答速度改善: 返答(LLM)の生成完了を待たず、最初の文ができた時点で
+# TTSを始めるため、1回の返答の読み上げをクライアントが2〜数回のTTS呼び出しに
+# 分ける。1回の読み上げ=1グループとして、次の2点だけ「分けなかった場合」と同じに
+# 揃える(利用者の課金・分間レート制限の消費を増やさない):
+#   ①課金: _maybe_deduct_balance(prior_cost_usd=)の差額方式(合計は1回で読み
+#     上げた場合と同じ)。
+#   ②分間レート制限: グループ内の2回目以降の呼び出しは枠を消費しない
+#     (1回の返答=1枠のまま・英会話のcoachと同じ考え方)。日次/月次の無料枠・
+#     サイト全体の上限は従来どおり毎回判定する。
+# グループIDはクライアントが返答ごとに作る使い捨ての乱数。単一プロセスのメモリ内
+# 管理(_call_times等と同じ)・TTLと回数で頭打ち。IDを使い回されても、①は「累計に
+# 対して1回だけ切り上げる」になるだけ(原価×倍率の課金は維持)、②はグループ当たり
+# 最大_TTS_GROUP_MAX_CALLS回までなので悪用の余地は小さい。
+_TTS_GROUP_TTL_SEC = 180.0
+_TTS_GROUP_MAX_CALLS = 8
+_TTS_GROUP_ID_RE = None  # 遅延コンパイル(reの読み込みを避ける)
+_tts_groups: dict[tuple[int, str], dict] = {}
+_tts_group_lock = threading.Lock()
+_tts_group_charge_lock = threading.Lock()
+
+
+def tts_group_id(raw: str | None) -> str:
+    """クライアントが送ったグループIDを検証して返す。不正・未指定は""(=グループ
+    なし・従来どおり1回ごとに独立)。"""
+    global _TTS_GROUP_ID_RE
+    if not raw:
+        return ""
+    if _TTS_GROUP_ID_RE is None:
+        import re
+        _TTS_GROUP_ID_RE = re.compile(r"^[A-Za-z0-9_-]{6,48}$")
+    return raw if _TTS_GROUP_ID_RE.match(raw) else ""
+
+
+def tts_group_begin(group: str, uid: int | None = None) -> bool:
+    """このユーザーの読み上げグループの呼び出しを1回登録し、「2回目以降
+    (継続)」ならTrueを返す。グループなし/期限切れ/上限超過は最初の呼び出し
+    扱い(False)で、新しいグループとして数え直す。"""
+    if not group:
+        return False
+    if uid is None:
+        from .auth import current_user_id
+        uid = current_user_id()
+    now = time.monotonic()
+    with _tts_group_lock:
+        for k in [k for k, v in _tts_groups.items()
+                  if now - v["t"] >= _TTS_GROUP_TTL_SEC]:
+            del _tts_groups[k]
+        key = (uid, group)
+        g = _tts_groups.get(key)
+        if g is not None and g["n"] < _TTS_GROUP_MAX_CALLS:
+            g["n"] += 1
+            g["t"] = now
+            return True
+        _tts_groups[key] = {"t": now, "n": 1, "charged_cost": 0.0}
+        return False
+
+
+def _tts_group_charged_cost(uid: int, group: str) -> float:
+    if not group:
+        return 0.0
+    with _tts_group_lock:
+        g = _tts_groups.get((uid, group))
+        return float(g["charged_cost"]) if g else 0.0
+
+
+def _tts_group_add_charged_cost(uid: int, group: str, cost: float) -> None:
+    if not group:
+        return
+    with _tts_group_lock:
+        g = _tts_groups.get((uid, group))
+        if g is not None:
+            g["charged_cost"] += cost
+
+
 def synthesize_speech(
     text: str, voice: str = "alloy", *,
     style: str = TTS_STYLE_DEFAULT, rate_limit: bool = True,
     feature: str = "tts", free_range: bool = False,
+    group: str = "", group_continuation: bool = False,
 ) -> tuple[bytes | None, str | None]:
     """Return (audio_mp3_bytes, error). Uses OpenAI's natural TTS voices.
 
@@ -791,6 +938,11 @@ def synthesize_speech(
     「無料範囲」内と判定済み（＝件数上限があり総コストが有界）の場合に
     True。ユーザー別の日次/月次無料枠チェックだけを免除する
     （サイト全体の上限・レート制限は引き続き有効）。
+    ``group``/``group_continuation``: 会話の返答を文単位で分けた読み上げ(上の
+    「読み上げグループ」参照)。``group``は検証済み(tts_group_id)のグループID、
+    ``group_continuation``は呼び出し元が``tts_group_begin``で得た「2回目以降」
+    の判定。2回目以降は分間レート制限の枠を消費せず、課金は累計との差額に
+    なる。既定(なし)は従来どおり。
     """
     client, settings = _client()
     if client is None:
@@ -809,7 +961,9 @@ def synthesize_speech(
         return cache.read_bytes(), None  # cache hit → no API call, no cost
 
     # only a real (paid) synthesis hits the guard
-    refusal = _guard(feature, rate_limit=rate_limit, skip_user_cap=free_range)
+    refusal = _guard(
+        feature, rate_limit=rate_limit and not group_continuation,
+        skip_user_cap=free_range)
     if refusal:
         return None, refusal
 
@@ -853,7 +1007,12 @@ def synthesize_speech(
         logged_cost = cost * attempts
         from .auth import current_ip, current_user_id
         uid = current_user_id()
-        with db() as conn:
+        # グループ内の呼び出しは並行して届く(クライアントが文ごとに同時に
+        # 要求する)ため、課金額の差額計算(prior_cost_usd)が正しく積み上がる
+        # よう、記録〜課金〜グループ累計の更新を直列にする(APIの合成待ちは
+        # この外なので並行のまま・ここは数ms)。グループなしは従来どおり。
+        with (_tts_group_charge_lock if group else contextlib.nullcontext()), \
+                db() as conn:
             conn.execute(
                 "INSERT INTO ai_usage "
                 "(model, prompt_tokens, output_tokens, cost_usd, feature, "
@@ -872,7 +1031,11 @@ def synthesize_speech(
             # べきなのでスキップする(単語/フレーズ・公開サンプルいずれも
             # 「課金ユーザーでも無料」という設計のため)。
             if not free_range and not broken:
-                _maybe_deduct_balance(conn, uid, cost, feature, settings)
+                if _maybe_deduct_balance(
+                    conn, uid, cost, feature, settings,
+                    prior_cost_usd=_tts_group_charged_cost(uid, group),
+                ):
+                    _tts_group_add_charged_cost(uid, group, cost)
         if broken:
             # 再試行しても直らなかった(=ほぼ起きない)。不良音声を返さず・
             # キャッシュも作らない。利用者は再度押せば新しく生成される。
