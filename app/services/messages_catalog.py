@@ -109,11 +109,11 @@ _m("pay.amount_choices",
    "The amount must be one of {amounts}.",
    "金额必须是{amounts}中的一个。",
    "金額必須是{amounts}其中之一。")
-_m("pay.no_url",
-   "PayPayからurlが返りませんでした: {detail}",
-   "PayPay did not return a URL: {detail}",
-   "PayPay没有返回网址: {detail}",
-   "PayPay沒有回傳網址: {detail}")
+_m("pay.no_url",   # 2026-09-26: PayPayの応答(dict)をそのまま利用者に見せていたのをやめた(詳細はログに残る)
+   "PayPayの決済ページを開けませんでした。しばらくしてからもう一度お試しください。",
+   "Could not open the PayPay payment page. Please try again in a moment.",
+   "无法打开PayPay付款页面。请稍后重试。",
+   "無法開啟PayPay付款頁面。請稍後再試。")
 _m("deck.free_limit",
    "無料範囲では単語帳は{n}個までです。追加で作るには設定画面からチャージしてください。",
    "In the free range you can have up to {n} word list(s). To create more, please top up from the Settings screen.",
@@ -170,11 +170,11 @@ _m("ai.stream_error",
    "A communication error occurred. Please try again.",
    "发生通信错误。请重试。",
    "發生通訊錯誤。請再試一次。")
-_m("ai.stt_failed",
-   "文字起こしに失敗しました: {detail}",
-   "Transcription failed: {detail}",
-   "语音转文字失败: {detail}",
-   "語音轉文字失敗: {detail}")
+_m("ai.stt_failed",   # 2026-09-26: 例外の生の文言(APIキーの一部・リクエストID等が入りうる)を利用者に見せていたのをやめた(詳細はログに残る)
+   "文字起こしに失敗しました。もう一度お試しください。",
+   "Transcription failed. Please try again.",
+   "语音转文字失败。请重试。",
+   "語音轉文字失敗。請再試一次。")
 _m("ai.tts_login",
    "この単語・フレーズの音声はログインすると聴けます（無料の会員登録のみで再生できる範囲が広がります）。",
    "You can listen to the audio for this word/phrase once you log in (free registration alone widens the range you can play).",

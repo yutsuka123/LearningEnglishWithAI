@@ -162,8 +162,9 @@ def create(payload: CreateIn, request: Request):
             _record(conn, "create", uid, mpid=merchant_payment_id,
                     amount_jpy=payload.amount_jpy, ok=False,
                     note="PayPayからurlが返らなかった")
-        raise errors.http_error(
-            "3018", messages.tr("pay.no_url", detail=data))
+        log.warning("paypay_charge: PayPayからurlが返りませんでした uid=%s mpid=%s resultInfo=%s",
+                    uid, merchant_payment_id, (data.get("resultInfo") or {}))
+        raise errors.http_error("3018", messages.tr("pay.no_url"))
     with db() as conn:
         conn.execute(
             "UPDATE paypay_payments SET code_id = ?, updated_at = "

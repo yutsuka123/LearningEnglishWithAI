@@ -1082,7 +1082,7 @@ def transcribe(
     except Exception as exc:
         elapsed = time.monotonic() - t0
         log.error("STT 失敗 (elapsed=%.1fs): %s", elapsed, exc)
-        return None, messages.tr("ai.stt_failed", detail=exc)
+        return None, messages.tr("ai.stt_failed")   # 例外の詳細は上でログに出した(利用者には見せない)
 
 
 def usage_summary() -> dict:
