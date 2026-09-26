@@ -15,6 +15,25 @@
  ],
  "versions": [
   {
+   "version": "ver1.5.3",
+   "date": "2026-09-26",
+   "title": "多言語対応の拡充・表示の改善",
+   "public": [
+    "英語・中国語（簡体字・繁体字）に対応する画面と案内文を大幅に増やしました（ライティング・英会話・リスニング・学習履歴・クロスワードなど）。",
+    "エラーやお知らせのメッセージも、選んだ言語で表示されるようになりました。",
+    "単語の詳細画面で、発音記号の横から男声・女声でその場で発音を聞けるようになりました。",
+    "未登録の状態では、残りポイントの表示を出さないようにしました。",
+    "ブラウザの保存機能が使えない環境でも、アプリが起動するようにしました。"
+   ],
+   "admin": [
+    "多言語化の残り: 全18タブ+about詳細+login検証文+PayPay戻りページ+全ページtitleを4言語化(辞書ja/en=1,623・zh=1,603・about.*はi18n_dict_about.jsへ分離)。バックエンドのメッセージもX-Langヘッダ(i18n.jsがfetchを差し替えて付与)→contextvar(app/services/messages.py・エラーコード訳51+個別65)で4言語化(ヘッダ無しは日本語・JSON形/X-Error-Code不変・Vary: X-Lang)。crossword_samples.i18n_json列を自動追加(投入はscripts/set_crossword_sample_translations.pyをデプロイ後に実行)。",
+    "訪問の判定: 同一IPが10分に40回以上着地(kind='visit')したらbot_mark=5(MARK_HEAVY_IP)を記録時に付与(直近分も遡る)。管理画面の訪問推移が記録時のbot_markを見ていなかった不具合も修正。過去分はscripts/mark_heavy_ip_visits_2026_09_26.pyで補正(デプロイ後・dry-runで対象IPの内訳を確認してから)。",
+    "DB更新スクリプト(デプロイ後にオーナー実行・dry-run既定・バックアップは既定でDATA_DIR/script_backups): apply_ja_origin_pronunciation(33語のIPA英語風化・日本語式はnative.ipaへ)・apply_origin_lang(293語・抜取り確認後)。fail2banはdeploy/fail2ban/(VPSへ手動導入・dryrunから)。",
+    "ゲストの残り0pt非表示(body.is-guest)・単語詳細のIPA行の男声/女声ボタンと語源の言語表示・compat-guard.jsのメモリ上localStorage代替。Fable敵対的レビュー指摘を反映済み。",
+    "単語詳細の「語源の言語: 日本語 紅（kurenai）」表示は、DB更新スクリプト(apply_origin_lang等)を実行した語から出る(公開向けの記載は、データ反映後に追記する)。"
+   ]
+  },
+  {
    "version": "ver1.5.2",
    "date": "2026-09-26",
    "title": "古いブラウザ向けの案内・表示の改善",
