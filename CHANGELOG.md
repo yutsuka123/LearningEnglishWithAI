@@ -25,6 +25,7 @@ prune cron(03:45)でusage_events 0件削除+growth_daily 41日分保存を確認
   `app/services/native_audio.py`: manifestの`english`・原語表記が**DBの現在の値と一致したときだけ**音声を出す(ID採番が分岐しても誤配信しない)・ファイル名はID+性別+原語表記のハッシュから自前で組み立て・壊れた/無いmanifestは「音声なし」。
 - **画面**: 詳細plusの欄に「原語の発音 ▶男声 ▶女声」とクレジット(`VOICEVOX:剣崎雌雄 / VOICEVOX:波音リツ`。VOICEVOXの規約で表記必須)を追加(`speech.sayNativeAudio`)。4言語の文言追加。
 - **生成スクリプト**(`scripts/gen_native_audio_voicevox.py`+`scripts/data/native_audio_overrides_2026_09_26.json`): 開発機のVOICEVOX(本体・モデルは再配布禁止のため手元のみ)で315語×男女を生成(費用0)。読みは原語表記を辞書で読ませ、辞書が外れた語(紅=ベニ・色名=〜ショク・玉鋼・百合・七五三 等)は`speak`/`kana`で上書き。
+- **読みの自己照合**(`scripts/check_native_readings.py`): 315語の読みをUniDic・Sudachi(別系統の辞書)と語の綴りで照合→289語が辞書・綴りとも一致・残り26語を個別に判定して誤読は「味玉」(アジダマ→あじたま)1語のみ(他はUniDic/Sudachi側が一般語として読んだ差=七五三・一期一会・常磐色 等でVOICEVOXが正しい)。アクセントもUniDicの型と参考比較(1語1句230語中227語一致)し、百合・玉鋼・京紫はUniDicの型に揃えた。音声630本の長さ(0.39〜1.25秒)・サイズも異常なし。
 - 課金の中身は変えていない(0.25pt・初回のみ・無課金10語無料)。**フラグONの前にFable照査(課金・認可・配信)が必須**。
 
 ## ver1.5.3 (2026-09-26作成・未デプロイ)
