@@ -10,11 +10,24 @@ AUDIT=/var/log/eigo-f2b-audit.log
 [ -f "$AUDIT" ] || { echo "監査ログがありません(導入前?)"; exit 1; }
 echo "== 現在のjail状態"
 for j in eigo-probe eigo-loginflood eigo-loginfail eigo-ratelimited; do
-  printf '  %-17s ' "$j"; fail2ban-client status "$j" 2>&1 | grep -E 'Currently (failed|banned)|Total (failed|banned)' | tr -s ' \t\n' ' '; echo
+  printf '  %-17s ' "$j"; { fail2ban-client status "$j" 2>&1 | grep -E 'Currently (failed|banned)|Total (failed|banned)' | tr -s ' \t\n' ' '; } || true; echo
 done
 echo "== 信頼IP/許可リスト"
-echo "  信頼IP(直近30日ログイン成功): $(grep -vc '^#' /var/lib/eigo-f2b/trusted.txt 2>/dev/null || echo 0) 件 / 許可リスト: $(grep -vc '^\s*#\|^\s*$' /etc/fail2ban/eigo-allowlist.txt 2>/dev/null || echo 0) 件"
-echo "  最後の信頼IP更新: $(grep TRUSTED-REFRESH "$AUDIT" | tail -1)"
+echo "  信頼IP(アカウント2日以上のユーザーが直近30日にログイン成功): $(grep -vc '^#' /var/lib/eigo-f2b/trusted.txt 2>/dev/null || true) 件 / 許可リスト: $(grep -vc '^\s*#\|^\s*$' /etc/fail2ban/eigo-allowlist.txt 2>/dev/null || true) 件"
+LAST_OK="$(grep 'TRUSTED-REFRESH n=' "$AUDIT" | tail -1 || true)"
+echo "  最後の信頼IP更新(成功): ${LAST_OK:-なし}"
+LAST_FAIL="$(grep 'TRUSTED-REFRESH FAILED' "$AUDIT" | tail -1 || true)"
+[ -n "$LAST_FAIL" ] && echo "  ⚠️ 直近の失敗: $LAST_FAIL"
+# 成功記録が30分以上前なら警告(cronが止まっている・DBが読めない)
+python3 - "$AUDIT" <<'PY' || true
+import re, sys, time
+last = None
+for line in open(sys.argv[1], encoding="utf-8", errors="replace"):
+    m = re.match(r"(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d) TRUSTED-REFRESH n=", line)
+    if m: last = m.group(1)
+if last and time.time() - time.mktime(time.strptime(last, "%Y-%m-%d %H:%M:%S")) > 1800:
+    print("  ⚠️ 信頼IPの更新が30分以上止まっています(cron/DBの読み取りを確認)")
+PY
 echo "== 判定(BAN/BANしたはず)の集計と根拠"
 python3 - "$AUDIT" "$RAW" <<'PY'
 import hashlib, re, sys

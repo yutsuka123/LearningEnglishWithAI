@@ -57,7 +57,7 @@ def evidence(ip):
             text = '%s %s %s %s "%s"' % (
                 time.strftime("%H:%M:%S", time.localtime(ts)), req.get("method", "?"), uri, status, ua)
             rows.append((ts, text, status in (401, 403, 404, 429) or bool(SUSPECT.search(uri))))
-    except OSError:
+    except Exception:  # 想定外の行・読み込み失敗でも、BANの実行(アクション)自体は止めない
         return ["(ログを読めませんでした)"]
     suspects = [r for r in rows if r[2]][-4:]
     latest = [r for r in rows[-2:] if r not in suspects]

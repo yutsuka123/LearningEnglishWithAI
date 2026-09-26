@@ -3,9 +3,12 @@
 
 対象外にするIP:
   1. /etc/fail2ban/eigo-allowlist.txt (運営者が手で書く・IP or CIDR・#コメント可)
-  2. /var/lib/eigo-f2b/trusted.txt (直近30日にログイン成功したIP・eigo-f2b-trusted-refreshが10分ごとに更新)
+  2. /var/lib/eigo-f2b/trusted.txt (アカウント作成から2日以上経ったユーザーが直近30日にログイン成功したIP・
+     eigo-f2b-trusted-refreshが10分ごとにDBから更新)。`--allow-only`のときは1だけを見る(eigo-probe用)。
 実ユーザー・運営者・テストを誤ってBANしないための安全弁(2026-09-26)。
-判定に失敗した場合(ファイルが読めない等)は「対象外にする=BANしない」側に倒す。
+スクリプト内の判定に失敗した場合(ファイルが読めない等)は「対象外にする=BANしない」側に倒す。
+ただしpython3が無い/実行権限が無い等でスクリプト自体が起動できない場合、fail2banは「対象外にしない」扱いになる
+(install.shがpython3と実行権限を保証する)。
 """
 import ipaddress
 import os
@@ -29,11 +32,13 @@ def load(path):
 
 
 def main():
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    allow_only = "--allow-only" in sys.argv[1:]
     try:
-        ip = ipaddress.ip_address(sys.argv[1])
+        ip = ipaddress.ip_address(args[0])
     except Exception:
         return 0  # 解釈できないIPはBANしない
-    for entry in load(ALLOW) + load(TRUSTED):
+    for entry in load(ALLOW) + ([] if allow_only else load(TRUSTED)):
         try:
             if ip in ipaddress.ip_network(entry, strict=False):
                 return 0

@@ -17,6 +17,18 @@ F2B=/etc/fail2ban
 echo "== 0/7 事前確認 (mode=$MODE)"
 command -v fail2ban-client >/dev/null || { echo "fail2ban が入っていません(apt install fail2ban)" >&2; exit 1; }
 command -v python3 >/dev/null || { echo "python3 が必要です" >&2; exit 1; }
+APP_CONTAINER="${APP_CONTAINER:-eigo-app}"
+APPDATA="$(docker inspect "$APP_CONTAINER" --format '{{range .Mounts}}{{if eq .Destination "/data"}}{{.Source}}{{end}}{{end}}' 2>/dev/null || true)"
+[ -n "$APPDATA" ] && [ -f "$APPDATA/core.db" ] && [ -f "$APPDATA/logs.db" ] || { echo "アプリのデータ(core.db/logs.db)が見つかりません(container=$APP_CONTAINER)" >&2; exit 1; }
+# 途中で失敗した場合に、置いたjailを外して中止する(jailだけが残って次回のfail2ban再起動で自己テスト無しに有効化されるのを防ぐ)
+JAIL_PLACED=0; INSTALL_OK=0
+cleanup() {
+  if [ "$INSTALL_OK" != 1 ] && [ "$JAIL_PLACED" = 1 ]; then
+    rm -f "$F2B/jail.d/eigo.local"
+    echo "導入が完了しなかったため、eigoのjailを外しました(既存のjailは変更していません)。原因を確認して再実行してください" >&2
+  fi
+}
+trap cleanup EXIT
 LOGDIR="$(docker inspect "$CADDY_CONTAINER" --format '{{range .Mounts}}{{if eq .Destination "/var/log/caddy"}}{{.Source}}{{end}}{{end}}' 2>/dev/null || true)"
 [ -n "$LOGDIR" ] && [ -f "$LOGDIR/study.log" ] || { echo "Caddyのstudy.logが見つかりません(container=$CADDY_CONTAINER)" >&2; exit 1; }
 if [ "$MODE" = ban ]; then
@@ -37,7 +49,7 @@ install -m 644 "$SRC"/filter.d/*.conf "$F2B"/filter.d/
 install -m 644 "$SRC"/action.d/eigo-audit.conf "$F2B"/action.d/
 install -m 755 "$SRC"/bin/eigo-f2b-* /usr/local/sbin/
 install -d -m 755 /var/lib/eigo-f2b
-echo "CADDY_LOG_DIR=$LOGDIR" > /etc/eigo-f2b.conf; chmod 644 /etc/eigo-f2b.conf
+printf 'CADDY_LOG_DIR=%s\nAPP_DATA_DIR=%s\n' "$LOGDIR" "$APPDATA" > /etc/eigo-f2b.conf; chmod 644 /etc/eigo-f2b.conf
 if [ ! -e "$F2B/eigo-allowlist.txt" ]; then
   cat > "$F2B/eigo-allowlist.txt" <<'ALLOW'
 # eigo用fail2banの許可リスト(運営者が手で書く)。ここに書いたIP/CIDRはBANされない。1行1件・#でコメント。
@@ -69,10 +81,11 @@ for line in open(tmpl, encoding="utf-8").read().splitlines():
 open(out, "w", encoding="utf-8").write("\n".join(lines) + "\n")
 PY
 chmod 644 "$F2B/jail.d/eigo.local"
+JAIL_PLACED=1
 
-echo "== 4/7 信頼IP(直近30日にログイン成功したIP)を初回更新"
-/usr/local/sbin/eigo-f2b-trusted-refresh
-echo "  信頼IP: $(grep -vc '^#' /var/lib/eigo-f2b/trusted.txt) 件"
+echo "== 4/7 信頼IP(アカウント作成から2日以上のユーザーが直近30日にログイン成功したIP)を初回更新"
+/usr/local/sbin/eigo-f2b-trusted-refresh || { echo "信頼IPの更新に失敗しました(監査ログを確認: /var/log/eigo-f2b-audit.log)" >&2; exit 1; }
+echo "  信頼IP: $(grep -vc '^#' /var/lib/eigo-f2b/trusted.txt || true) 件"
 
 echo "== 5/7 設定テスト(fail2ban-client -t)"
 if ! fail2ban-client -t >/tmp/eigo-f2b-configtest.log 2>&1; then
@@ -87,17 +100,18 @@ echo "== 6/7 フィルターが実ログに何行マッチするか(fail2ban-reg
 for f in probe loginflood loginfail ratelimited; do
   printf '  eigo-%-12s ' "$f"
   out="$(fail2ban-regex "$LOGDIR/study.log" "$F2B/filter.d/eigo-$f.conf" 2>&1 || true)"
-  echo "$out" | grep -E '^Lines:' | sed 's/^Lines: //' | tr -d '\n'
+  { echo "$out" | grep -E '^Lines:' | sed 's/^Lines: //' | tr -d '\n'; } || true
   # 日時("ts":{EPOCH})を全行で解釈できているか(0だと、判定が時間窓に入らず何も検知しない)
-  echo "  / 日時の解釈: $(echo "$out" | grep -E '"ts":\{EPOCH\}' | grep -oE '\[[0-9]+\]' | head -1 | tr -d '[]')行"
+  echo "  / 日時の解釈: $({ echo "$out" | grep -E '"ts":\{EPOCH\}' | grep -oE '\[[0-9]+\]' | head -1 | tr -d '[]'; } || true)行"
 done
 echo "  ※日時の解釈が0行なら、fail2banがCaddyの\"ts\"を読めていません(その場合は導入を中止してください)"
 
 echo "== 7/7 fail2banに反映(reload)"
 fail2ban-client reload >/dev/null
+INSTALL_OK=1   # reloadまで通った(以降の自己テストの失敗ではjailを外さない)
 sleep 4
 for j in eigo-probe eigo-loginflood eigo-loginfail eigo-ratelimited; do
-  printf '  %-17s ' "$j"; fail2ban-client status "$j" 2>&1 | grep -E 'Currently (failed|banned)' | tr -s ' \t\n' ' '; echo
+  printf '  %-17s ' "$j"; { fail2ban-client status "$j" 2>&1 | grep -E 'Currently (failed|banned)' | tr -s ' \t\n' ' '; } || true; echo
 done
 
 if [ "$MODE" = ban ]; then

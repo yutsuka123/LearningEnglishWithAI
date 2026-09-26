@@ -4,7 +4,9 @@
 使い方: simulate.py <Caddyのstudyログ(.log/.gz)を含むディレクトリ or ファイル...>
 - filter.d/*.conf の failregex を読み、fail2banと同じく「findtime内にmaxretry回」で判定。
 - ログイン成功(POST /api/auth/login 200)のあるIPを「実ユーザー」とみなす。BAN時点の直前30日にログイン成功が
-  あるIPは信頼IPとして無視される(bin/eigo-f2b-ignore)ので、BANされない側に数える。
+  あるIPは信頼IPとして無視される(bin/eigo-f2b-ignore)ので、BANされない側に数える(eigo-probeを除く)。
+  ※本番の信頼IPは「アカウント作成から2日以上のユーザー」に限る(DB参照)ため、Caddyログだけのこの再現より
+    保護がやや狭い=このシミュレーションは保護の上限側。実ユーザーがそのjailに引っかかる頻度は下の数字で見る。
   **信頼IPで守られずにBANされた実ユーザー(=誤BAN)が0件か**を最重要の指標として出す。
   BAN前・BAN後のどちらにログイン成功があっても数える(BAN後にログインできたなら、BAN前は同じ人だった可能性が高い)。
 - IPは短縮ハッシュで出力する(生IPを画面/ログに出さない)。
@@ -13,11 +15,11 @@
 import configparser, glob, gzip, hashlib, json, os, re, sys
 from collections import defaultdict
 
-JAILS = {  # name: (filter, maxretry, findtime秒, bantime秒)  ← jail.d/eigo.local.tmpl と同じ値
-    "eigo-probe":       ("eigo-probe", 3, 600, 12 * 3600),
-    "eigo-loginflood":  ("eigo-loginflood", 40, 300, 6 * 3600),
-    "eigo-loginfail":   ("eigo-loginfail", 12, 600, 3600),
-    "eigo-ratelimited": ("eigo-ratelimited", 60, 600, 3600),
+JAILS = {  # name: (filter, maxretry, findtime秒, bantime秒, 信頼IPを免除するか)  ← jail.d/eigo.local.tmpl と同じ値
+    "eigo-probe":       ("eigo-probe", 3, 600, 12 * 3600, False),   # 探索は信頼IPでも免除しない(--allow-only)
+    "eigo-loginflood":  ("eigo-loginflood", 60, 300, 3 * 3600, True),
+    "eigo-loginfail":   ("eigo-loginfail", 12, 600, 3600, True),
+    "eigo-ratelimited": ("eigo-ratelimited", 60, 600, 3600, True),
 }
 HERE = os.path.dirname(os.path.abspath(__file__))
 FILTER_DIR = os.path.join(HERE, "..", "filter.d")
@@ -75,7 +77,7 @@ def main(paths):
             login_times[ip].append(d.get("ts", 0))
     print(f"読み込み {len(lines)}行 / ログイン成功のあるIP={len(logged_in)}")
     lines.sort(key=lambda l: float(re.search(r'"ts":([0-9.]+)', l).group(1)) if re.search(r'"ts":([0-9.]+)', l) else 0)
-    for name, (flt, maxretry, findtime, bantime) in JAILS.items():
+    for name, (flt, maxretry, findtime, bantime, use_trust) in JAILS.items():
         fre, ignre = load_filter(flt)
         hits = defaultdict(list)
         banned_until = {}
@@ -89,7 +91,7 @@ def main(paths):
             ip = m.group("host")
             if banned_until.get(ip, 0) > ts:
                 continue  # BAN中は(実際にはファイアウォールで遮断され)ログに現れない
-            if protected(login_times, ip, ts):
+            if use_trust and protected(login_times, ip, ts):
                 prot_skipped.add(ip)
                 continue  # 信頼IP(直近にログイン成功): ignorecommandで無視される
             q = hits[ip]

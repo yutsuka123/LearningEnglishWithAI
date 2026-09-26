@@ -27,10 +27,16 @@
 
   // メモリ上のStorage互換オブジェクト(ページを閉じると消える)。getItem/setItem/removeItem/clear/key/lengthのみ。
   function installMemoryStorage() {
+    var native = null;
+    try { native = window.localStorage; } catch (e) { native = null; }
     var mem = {};
     var has = Object.prototype.hasOwnProperty;
     var shim = {
-      getItem: function (k) { return has.call(mem, k) ? mem[k] : null; },
+      // 書き込みだけ失敗する環境(容量超過等)では、読める既存の保存値(テーマ・言語等)を先に返す。
+      getItem: function (k) {
+        if (has.call(mem, k)) return mem[k];
+        try { return native ? native.getItem(k) : null; } catch (e) { return null; }
+      },
       setItem: function (k, v) { mem[k] = String(v); },
       removeItem: function (k) { delete mem[k]; },
       clear: function () { mem = {}; },

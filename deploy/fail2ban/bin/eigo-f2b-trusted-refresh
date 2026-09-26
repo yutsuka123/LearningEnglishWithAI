@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-"""直近30日にログイン成功(POST /api/auth/login → 200)したIPの一覧を作る(cronで10分ごと)。
+"""BANの対象外にする「信頼IP」の一覧を作る(cronで10分ごと)。
 
-fail2banのignorecommand(eigo-f2b-ignore)がこれを読み、実ユーザーのIPをBANの対象外にする。
-登録(signup)成功は含めない(誰でも登録できるため、スキャナーが登録して信頼IPになる抜け道を塞ぐ)。
-元データ=Caddyのstudy.log(+直近のローテート済み.gz)。生IPは/var/lib/eigo-f2b/に置く(root管理・VPS内のみ)。
+信頼IP = **アカウント作成から2日以上経ったユーザー**が、直近30日にログインに成功したIP。
+(誰でもその場で登録してすぐログインできるため、「ログイン成功」だけを条件にすると、スキャナーが登録→ログインの
+ 2リクエストで自分のIPを免除にできてしまう=敵対的レビュー指摘。アカウント年齢を条件に加えて塞ぐ。
+ signup成功は含めない。それでも「登録して2日待つ」攻撃者は通るが、スキャナーの実態(使い捨て・自動巡回)とは合わない。)
+データ元=アプリのDB(core.dbのusers・logs.dbのlogin_log)を**読み取り専用**で参照する。DBが読めない場合は、
+前回の一覧を残して失敗を監査ログに記録し、終了コード1で終わる(一覧を空にして全員を無防備にはしない)。
+ignorecommand(eigo-f2b-ignore)がこのファイルを読む。生IPを含むのでroot専用(0600)。
 """
-import glob
-import gzip
-import json
 import os
+import sqlite3
 import sys
 import tempfile
 import time
@@ -16,59 +18,63 @@ import time
 CONF = os.environ.get("EIGO_F2B_CONF", "/etc/eigo-f2b.conf")  # 環境変数はテスト用
 OUT = os.environ.get("EIGO_F2B_TRUSTED", "/var/lib/eigo-f2b/trusted.txt")
 AUDIT = os.environ.get("EIGO_F2B_AUDIT", "/var/log/eigo-f2b-audit.log")
-DAYS = 30
+DAYS = 30            # ログイン成功を遡る日数
+MIN_ACCOUNT_DAYS = 2  # ログイン時点でアカウントが作成から何日以上経っているか
 
 
-def logdir():
+def conf_value(key):
     with open(CONF, encoding="utf-8") as f:
         for line in f:
-            if line.startswith("CADDY_LOG_DIR="):
+            if line.startswith(key + "="):
                 return line.split("=", 1)[1].strip()
-    raise SystemExit("CADDY_LOG_DIR が /etc/eigo-f2b.conf にありません")
+    return ""
 
 
-def main():
-    d = logdir()
-    cutoff = time.time() - DAYS * 86400
-    files = [os.path.join(d, "study.log")] + sorted(
-        glob.glob(os.path.join(d, "study-*.log.gz")), reverse=True)
-    ips = set()
-    for f in files:
-        try:
-            if os.path.getmtime(f) < cutoff:
-                continue
-            op = gzip.open if f.endswith(".gz") else open
-            with op(f, "rt", encoding="utf-8", errors="replace") as fh:
-                for line in fh:
-                    if '"/api/auth/login"' not in line or '"status":200' not in line:
-                        continue  # 高速化のための前段フィルタ(全行のJSON解析を避ける)
-                    try:
-                        r = json.loads(line)
-                    except ValueError:
-                        continue
-                    req = r.get("request", {})
-                    if (req.get("method") == "POST"
-                            and req.get("uri", "").split("?")[0] == "/api/auth/login"
-                            and r.get("status") == 200 and r.get("ts", 0) >= cutoff):
-                        ip = req.get("remote_ip")
-                        if ip:
-                            ips.add(ip)
-        except (OSError, EOFError):
-            continue  # ローテート中・破損したgzは飛ばす(次回のcronで再集計)
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(OUT))
-    with os.fdopen(fd, "w", encoding="utf-8") as fh:
-        fh.write("# 自動生成: 直近%d日にログイン成功したIP(eigo-f2b-trusted-refresh)\n" % DAYS)
-        for ip in sorted(ips):
-            fh.write(ip + "\n")
-    os.chmod(tmp, 0o644)
-    os.replace(tmp, OUT)  # 原子的に置き換える(読み取り中の不完全なファイルを見せない)
+def audit(msg):
     try:
         with open(AUDIT, "a", encoding="utf-8") as fh:
-            fh.write("%s TRUSTED-REFRESH n=%d\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), len(ips)))
+            fh.write("%s %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), msg))
     except OSError:
         pass
 
 
+def collect(data_dir):
+    logs = "file:%s?mode=ro" % os.path.join(data_dir, "logs.db")
+    core = "file:%s?mode=ro" % os.path.join(data_dir, "core.db")
+    conn = sqlite3.connect(logs, uri=True, timeout=10)
+    try:
+        conn.execute("ATTACH DATABASE ? AS core", (core,))
+        rows = conn.execute(
+            "SELECT DISTINCT l.ip FROM login_log l JOIN core.users u ON u.username = l.username "
+            "WHERE l.success = 1 AND l.ip != '' AND l.created_at >= datetime('now', ?) "
+            "AND u.created_at <= datetime(l.created_at, ?)",
+            ("-%d days" % DAYS, "-%d days" % MIN_ACCOUNT_DAYS)).fetchall()
+    finally:
+        conn.close()
+    return sorted({r[0] for r in rows})
+
+
+def main():
+    try:
+        data_dir = conf_value("APP_DATA_DIR")
+        if not data_dir:
+            raise RuntimeError("APP_DATA_DIR が %s にありません" % CONF)
+        ips = collect(data_dir)
+    except Exception as e:  # DB未接続・ロック・スキーマ違い等。前回の一覧は触らない
+        audit("TRUSTED-REFRESH FAILED %s: %s" % (type(e).__name__, e))
+        return 1
+    os.makedirs(os.path.dirname(OUT), exist_ok=True)
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(OUT))
+    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+        fh.write("# 自動生成: アカウント作成から%d日以上のユーザーが直近%d日にログイン成功したIP(eigo-f2b-trusted-refresh)\n"
+                 % (MIN_ACCOUNT_DAYS, DAYS))
+        for ip in ips:
+            fh.write(ip + "\n")
+    os.chmod(tmp, 0o600)
+    os.replace(tmp, OUT)  # 原子的に置き換える(読み取り中の不完全なファイルを見せない)
+    audit("TRUSTED-REFRESH n=%d" % len(ips))
+    return 0
+
+
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

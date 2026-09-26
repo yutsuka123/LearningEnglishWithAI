@@ -611,7 +611,10 @@ export async function refreshCost() {
     }
     const li = document.getElementById("loginBtn");
     if (li) li.style.display = (u.multiuser && state.isGuest) ? "" : "none";
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    // 取得に失敗した間は、ゲストかどうか分からないので「残り0pt」を出さない(次の成功で正しく戻る)。
+    document.body.classList.add("is-guest");
+  }
 }
 
 async function doLogout() {
