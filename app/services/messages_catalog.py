@@ -199,6 +199,11 @@ _m("learn.parse_failed",
    "The generated result could not be interpreted.",
    "无法解析生成的结果。",
    "無法解析產生的結果。")
+_m("learn.no_study_data",
+   "まだ学習データがありません。クイズや会話をしてください。",
+   "There is no study data yet. Please try a quiz or a conversation first.",
+   "还没有学习数据。请先做测验或进行对话。",
+   "還沒有學習資料。請先做測驗或進行對話。")
 _m("learn.no_advice_input",
    "アドバイスを作れない入力です。",
    "This input cannot be turned into advice.",

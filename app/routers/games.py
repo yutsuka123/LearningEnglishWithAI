@@ -1506,13 +1506,18 @@ def _localize_sample(d: dict) -> dict:
     tags = [t for t in (d.get("domains") or "").split(",") if t]
     lang = messages.current_lang()
     if raw and lang != "ja":
+        # 訳のJSONが壊れている/想定外の形(配列・文字列値等)でも、その行だけ日本語にフォールバックする
+        # (1行の不良で非日本語ユーザー全員のサンプル一覧が500になるのを防ぐ・敵対的レビュー指摘)。
         try:
-            tr = (json.loads(raw) or {}).get(lang) or {}
+            obj = json.loads(raw)
+            tr = obj.get(lang) if isinstance(obj, dict) else None
         except (ValueError, TypeError):
+            tr = None
+        if not isinstance(tr, dict):
             tr = {}
-        if tr.get("title"):
+        if isinstance(tr.get("title"), str) and tr["title"]:
             d["title"] = tr["title"]
-        if tr.get("description"):
+        if isinstance(tr.get("description"), str) and tr["description"]:
             d["description"] = tr["description"]
         t_tags = tr.get("tags")
         if isinstance(t_tags, list) and len(t_tags) == len(tags):

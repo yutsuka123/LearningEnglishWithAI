@@ -63,8 +63,15 @@
     return null;
   }
 
+  // 検索・広告・SNSのクローラー(Googlebot・AdsBot等)は、en-USのブラウザとしてレンダリングされるのが通例で、
+  // ブラウザ言語からの自動判定だと日本語向けのランディングページの<title>/<h1>/本文が英語として評価されてしまう
+  // (敵対的レビュー指摘・2026-09-26)。クローラーには自動判定を使わず日本語(保存された選択が無い時の既定)で見せる。
+  // 保存された選択(利用者が明示的に選んだ言語)は従来どおり尊重する。
+  var BOT_UA = /bot|crawler|spider|slurp|adsbot|mediapartners|inspectiontool|lighthouse|pagespeed|facebookexternalhit|linkedinbot|whatsapp|bytespider/i;
+
   function detectFromBrowser() {
     try {
+      if (BOT_UA.test((global.navigator && global.navigator.userAgent) || "")) return null;
       var tags = (global.navigator && global.navigator.languages)
         || [global.navigator && global.navigator.language];
       for (var i = 0; i < tags.length; i++) {

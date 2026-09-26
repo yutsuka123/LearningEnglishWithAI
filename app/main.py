@@ -202,7 +202,14 @@ async def _auth_context(request, call_next):
     最初に設定する。ヘッダ無し/未対応の言語は日本語(従来どおり)。"""
     lang_token = messages.set_current_lang(request.headers.get("x-lang"))
     try:
-        return await _auth_context_inner(request, call_next)
+        response = await _auth_context_inner(request, call_next)
+        if request.url.path.startswith("/api/"):
+            # 応答の文言が`X-Lang`で変わるため、早期return(レート制限・要ログイン等)を含む
+            # 全ての/api/応答に付ける(中間キャッシュが言語違いの応答を取り違えないように)。
+            vary = response.headers.get("vary")
+            if not vary or "x-lang" not in vary.lower():
+                response.headers["Vary"] = f"{vary}, X-Lang" if vary else "X-Lang"
+        return response
     finally:
         messages.reset_current_lang(lang_token)
 

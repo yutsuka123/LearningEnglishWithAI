@@ -49,6 +49,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from _db_safety import default_backup_dir, key_counts, print_counts, same_counts
 from app.database import db  # noqa: E402
 
 # 分野名(サンプルの`domains`に並ぶ日本語名)→(en, zh-CN, zh-TW)。カンマは含めない
@@ -271,7 +272,9 @@ def main() -> int:
 
     updated = unchanged = 0
     warnings: list[str] = []
+    backup: list[dict] = []
     with db() as conn:
+        before = key_counts(conn)
         cols = {r["name"] for r in conn.execute(
             "PRAGMA table_info(crossword_samples)")}
         if "i18n_json" not in cols:
@@ -311,6 +314,7 @@ def main() -> int:
                 except ValueError:
                     pass
             print(f"{'更新' if args.apply else '更新予定'}: id={r['id']} {title}")
+            backup.append({"id": r["id"], "title": title, "i18n_json": old})
             if args.apply:
                 conn.execute(
                     "UPDATE crossword_samples SET i18n_json = ? WHERE id = ?",
@@ -319,6 +323,21 @@ def main() -> int:
         for t in SAMPLES:
             if t not in db_titles:
                 warnings.append(f"DBに無いタイトル(改名・未登録?・訳は投入しない): {t}")
+    if args.apply:
+        # 書き込んだ行の元のi18n_json(通常はNULL)を、DATA_DIR/script_backups/に残す(手動で戻せるように)。
+        import time
+        bdir = default_backup_dir()
+        bdir.mkdir(parents=True, exist_ok=True)
+        bpath = bdir / f"backup_crossword_i18n_{time.strftime('%Y%m%d_%H%M%S')}.json"
+        bpath.write_text(json.dumps(backup, ensure_ascii=False, indent=1), encoding="utf-8")
+        print(f"バックアップ(更新した行の元のi18n_json): {bpath}")
+        with db() as c2:
+            after = key_counts(c2)
+        print_counts("更新前", before)
+        print_counts("更新後", after)
+        if not same_counts(before, after):
+            print("⚠️ 主要テーブルの件数が更新前後で変わっています。直ちに確認してください。")
+            return 1
     print(f"\n{'書き込み' if args.apply else 'ドライラン'}: 更新{'した' if args.apply else 'される'}={updated} "
           f"変更なし={unchanged} 警告={len(warnings)}")
     for w in warnings:

@@ -843,7 +843,7 @@ def assess():
         return base
     if not studied and not convo:
         base["ok"] = False
-        base["error"] = "まだ学習データがありません。クイズや会話をしてください。"
+        base["error"] = messages.tr("learn.no_study_data")
         return base
 
     lines = []
