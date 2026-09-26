@@ -1,5 +1,5 @@
 # ruff: noqa: E501
-"""日本語由来語34語の発音を「英語風IPAが主・日本語式IPAは原語欄」に整える(2026-09-26・docs/DESIGN.md §9.8 段階(b-1))。
+"""日本語由来語33語の発音を「英語風IPAが主・日本語式IPAは原語欄」に整える(2026-09-26・docs/DESIGN.md §9.8 段階(b-1))。
 
 背景: 色名(-iro系)・将棋用語・Zen・八百万の神などの`detail.pronunciation`が、日本語式の音素記号(ɯ ɾ ɕ ʑ ɸ)や
 ローマ字を/…/で囲んだもの(`/ai iro/`・`/sente/`)になっていた。オーナー決定(2026-09-25): 主表示は「英語話者が
@@ -18,6 +18,10 @@
   python scripts/apply_ja_origin_pronunciation_2026_09_26.py --rollback <バックアップJSON>   # 元に戻す
 本番では deploy/macos/run_script_on_vps.sh 経由で実行し、実行前後にwords件数が変わらないことを確認すること
 (CLAUDE.md「本番DBは丸ごと上書きしない」)。IDだけでなく英語綴りも一致した行だけを更新する(IDのずれによる誤更新の防止)。
+バックアップは既定でDATA_DIR/script_backups/に保存する(本番コンテナでは/dataがホストにマウントされているので、
+`docker compose run --rm`が終わってもバックアップJSONが残り、--rollbackできる)。ロールバックはdetail全体を
+バックアップ時点に戻すため、適用〜ロールバックの間に別経路(管理者の再生成等)で変わったdetailも戻る点に注意。
+実行の前後にwords/phrases/users/paypay_payments/landing_visits/usage_eventsの件数を表示し、変わっていれば非0で終了する。
 """
 
 from __future__ import annotations
@@ -30,6 +34,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from _db_safety import default_backup_dir, key_counts, print_counts, same_counts  # noqa: E402
 from app.database import db  # noqa: E402
 
 # id: (english, 英語風IPA, 原語表記)
@@ -79,6 +84,8 @@ def native_ipa_from(old: str, wid: int) -> str:
         return NATIVE_IPA_OVERRIDE[wid]
     ipa = old.split("（")[0].strip()      # 「/…/（日本語…に由来）」型の注記は落とす
     core = ipa.strip("/")
+    if not core:
+        return ""
     if core.endswith(" iro"):
         core = core[: -len(" iro")] + " iɾo"  # 色名の「いろ」は日本語では弾き音
     return "/" + core + "/"
@@ -88,7 +95,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--apply", action="store_true", help="実際に書き込む(既定はdry-run)")
     ap.add_argument("--rollback", metavar="BACKUP_JSON", help="バックアップJSONから元のdetailに戻す")
-    ap.add_argument("--backup-dir", default="data", help="バックアップJSONの保存先(既定 data/)")
+    ap.add_argument("--backup-dir", default=None, help="バックアップJSONの保存先(既定 DATA_DIR/script_backups)")
     args = ap.parse_args()
 
     if args.rollback:
@@ -107,6 +114,7 @@ def main() -> int:
     plan, backup, skipped = [], [], []
     with db() as conn:
         n_words = conn.execute("SELECT COUNT(*) FROM words").fetchone()[0]
+        before = key_counts(conn)
         for wid, (english, new_ipa, ja_text) in TABLE.items():
             row = conn.execute("SELECT id, english, detail FROM words WHERE id = ?", (wid,)).fetchone()
             if not row or row["english"] != english:
@@ -144,7 +152,8 @@ def main() -> int:
             return 0
         if not plan:
             return 0
-        bdir = Path(args.backup_dir)
+        print_counts("更新前", before)
+        bdir = Path(args.backup_dir) if args.backup_dir else default_backup_dir()
         bdir.mkdir(parents=True, exist_ok=True)
         bpath = bdir / f"backup_ja_pronunciation_{time.strftime('%Y%m%d_%H%M%S')}.json"
         bpath.write_text(json.dumps(backup, ensure_ascii=False, indent=1), encoding="utf-8")
@@ -154,7 +163,12 @@ def main() -> int:
                          (json.dumps(nd, ensure_ascii=False), wid, english))
         conn.commit()
         n_after = conn.execute("SELECT COUNT(*) FROM words").fetchone()[0]
+        after = key_counts(conn)
+    print_counts("更新後", after)
     print(f"反映しました: {len(plan)}語(words件数 {n_words}→{n_after}・変わっていないこと)。")
+    if not same_counts(before, after):
+        print("⚠️ 主要テーブルの件数が更新前後で変わっています。直ちに--rollbackを検討してください。")
+        return 1
     return 0
 
 

@@ -2238,7 +2238,7 @@ def admin_visit_trend(days: int = 30):
     since = f"-{days} days"
     with db() as conn:
         rows = conn.execute(
-            "SELECT ip, user_agent, "
+            "SELECT ip, user_agent, COALESCE(bot_mark, 0) AS bot_mark, "
             "substr(datetime(created_at, '+9 hours'), 1, 10) AS date "
             "FROM landing_visits "
             "WHERE kind='visit' AND created_at >= datetime('now', ?) "
@@ -2285,6 +2285,10 @@ def admin_visit_trend(days: int = 30):
 
     for r in rows:
         mark = ip_mark(r["ip"])
+        if mark == visitor_kind.MARK_NONE and r["bot_mark"]:
+            # UA+接続元の判定では人間でも、記録時に機械的アクセスと印が付いた行(同一IPの大量訪問等・
+            # visitor_kind.is_heavy_ip)は人間に数えない(growth_metrics等の他の集計と揃える)。
+            mark = r["bot_mark"]
         if mark == visitor_kind.MARK_ADMIN:
             continue
         d = _day(r["date"])

@@ -34,7 +34,7 @@ MARK_OTHER_BOT = 4
 # 同一IPの短時間の大量訪問(UAは普通のブラウザでも人間の閲覧ではない)。2026-09-26追加: 9/23に1つのIPが
 # 1時間に364回訪問してbot_mark=0のまま人間の訪問に混ざっていた(UA・接続元は普通の家庭回線)。
 MARK_HEAVY_IP = 5
-HEAVY_IP_LIMIT = 30          # この回数以上の着地記録が
+HEAVY_IP_LIMIT = 40          # この回数以上の着地記録(kind='visit')が
 HEAVY_IP_WINDOW = "-10 minutes"   # この期間内に同一IPから来たら
 
 # --- ※3 AI検索・AI学習クローラー ------------------------------------------
@@ -211,21 +211,25 @@ def classify(
 def is_heavy_ip(conn, ip: str) -> bool:
     """このIPの直近10分の着地記録(自分の端末を除く)が、いまの1件を足すと上限に達するなら真。
 
-    真のときは、直近分(まだbot_mark=0の行)にも同じ印を付け直す(人が数分に30回も着地することは無く、
+    真のときは、直近分(まだbot_mark=0の行)にも同じ印を付け直す(人が10分に40回も着地することは無く、
     大量訪問の最初の数十件だけが人間に混ざるのを防ぐ)。実測(2026-06〜09のCaddyログ)では、実ユーザーの
-    最大は10分に22回(運営者自身の端末)で、上限30回に達した実ユーザーは居ない。呼び出し側は
-    INSERTの直前に呼ぶ(いまの行は数えない)。
+    最大は10分に22回(運営者自身の端末)で、上限40回に達した実ユーザーは居ない。呼び出し側は
+    INSERTの直前に呼ぶ(いまの行は数えない)。登録試行(kind='signup')の行は数えず、印も付けない
+    (登録ファネルから実際の登録が消えないように)。共有IP(学校・職場・携帯回線)から短時間に大量の正規訪問が
+    ある場合は人間の訪問が機械的アクセス扱いになりうる(印はboot分析用で、アクセスを止めるものではない)。
     """
     if not ip:
         return False
     row = conn.execute(
         "SELECT COUNT(*) FROM landing_visits WHERE ip = ? "
-        "AND created_at >= datetime('now', ?) AND is_internal = 0",
+        "AND created_at >= datetime('now', ?) AND is_internal = 0 "
+        "AND COALESCE(kind, 'visit') = 'visit'",
         (ip, HEAVY_IP_WINDOW)).fetchone()
     if (row[0] if row else 0) + 1 < HEAVY_IP_LIMIT:
         return False
     conn.execute(
         "UPDATE landing_visits SET bot_mark = ? WHERE ip = ? "
         "AND created_at >= datetime('now', ?) AND is_internal = 0 "
+        "AND COALESCE(kind, 'visit') = 'visit' "
         "AND COALESCE(bot_mark, 0) = 0", (MARK_HEAVY_IP, ip, HEAVY_IP_WINDOW))
     return True
