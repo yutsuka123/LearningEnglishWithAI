@@ -2736,11 +2736,13 @@ def client_error(payload: ClientErrorIn):
     見えない」穴への対応・2026-08-30)。static/js/error-report.jsの
     window.onerror/unhandledrejectionに加え、2026-09-18〜
     static/js/api.jsのreq()/stream()が非2xx応答を検知した時にも
-    kind="api_error"で送られる(「ボタンでエラーになった」を広く拾う
+    kind="api_error"で送られる。2026-09-26〜: 音声の再生に失敗したとき(通信失敗・再生失敗・AI音声不可・自動再生の
+    制限)はkind="playback_error"(ブラウザ内蔵の声へは逃げず無音+案内にした代わりに、失敗を検知できるようにする)。
+    (「ボタンでエラーになった」を広く拾う
     ため。401/402/429はゲスト操作等の正常なガードなので送信元で除外
     済み)。ゲストも送信対象(_GUEST_READ_PREFIXESに追加済み)。記録失敗が
     画面操作を妨げないよう常に200を返すbest-effort。"""
-    if payload.kind in ("jserror", "unhandledrejection", "api_error"):
+    if payload.kind in ("jserror", "unhandledrejection", "api_error", "playback_error"):
         tracking.record_client_error(
             payload.kind, payload.message, payload.stack, payload.url,
             payload.line, payload.col,

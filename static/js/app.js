@@ -908,6 +908,7 @@ async function boot() {
   refreshMaintenanceBanner();
   speech.onUsage(refreshCost); // refresh cost after paid TTS calls
   speech.onPaymentRequired((msg) => toast(msg)); // 無料範囲外の再生でチャージ不足のとき
+  speech.onPlaybackError((msg) => toast(msg)); // 再生の失敗(通信・再生・AI音声不可)は無音+短い案内(ブラウザ音声へは逃げない・サーバーへもエラー記録)
   // Pre-load voices for TTS.
   speech.getEnglishVoices();
   speech.pickRoundVoice();

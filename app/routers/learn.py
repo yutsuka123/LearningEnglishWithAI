@@ -1087,7 +1087,7 @@ def tts(payload: TtsIn):
     audio, error = ai.synthesize_speech(
         payload.text, payload.voice, feature=feature, group=group)
     if error:
-        # 422 lets the frontend fall back to the browser voice.
+        # 422: フロントは無音+短い案内にする(ブラウザ内蔵の声へは逃げない・2026-09-26)。失敗はここで`play_error`として記録する。
         tracking.log_event(
             "play_error", feature, f"{payload.voice}:{payload.text[:60]}")
         return Response(content=error, status_code=422, media_type="text/plain")
