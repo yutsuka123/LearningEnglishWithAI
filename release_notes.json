@@ -31,7 +31,8 @@
     "DB更新スクリプト(デプロイ後にオーナー実行・dry-run既定・バックアップは既定でDATA_DIR/script_backups): apply_ja_origin_pronunciation(33語のIPA英語風化・日本語式はnative.ipaへ)・apply_origin_lang(293語・抜取り確認後)。fail2banはdeploy/fail2ban/(VPSへ手動導入・dryrunから)。",
     "ゲストの残り0pt非表示(body.is-guest)・単語詳細のIPA行の男声/女声ボタンと語源の言語表示・compat-guard.jsのメモリ上localStorage代替。Fable敵対的レビュー指摘を反映済み。",
     "単語詳細の「語源の言語: 日本語 紅（kurenai）」表示は、DB更新スクリプト(apply_origin_lang等)を実行した語から出る(公開向けの記載は、データ反映後に追記する)。",
-    "単語詳細「詳細plus」(原語の発音記号・音声・1語0.25pt・初回のみ課金・無課金10語まで無料)を実装したが、機能フラグWORD_PLUS_ENABLED=既定OFFのため一般ユーザーには出ない(管理者はプレビュー可)。原語音声の確認後、課金の敵対的レビューを通してからON。"
+    "単語詳細「詳細plus」(原語の発音記号・音声・1語0.25pt・初回のみ課金・無課金10語まで無料)を実装したが、機能フラグWORD_PLUS_ENABLED=既定OFFのため一般ユーザーには出ない(管理者はプレビュー可)。原語音声の確認後、課金の敵対的レビューを通してからON。",
+    "英語側の音声: tts_hintsに日本語由来語13語(sente/gote/kifu/色名)の読み替えを追加(新規に生成される音声から効く)。既存の本番音声の差し替えはオーナーの試聴後に別途スクリプトで実施。詳細plusは課金レビュー(Fable)反映済み・フラグOFFのまま。"
    ]
   },
   {
