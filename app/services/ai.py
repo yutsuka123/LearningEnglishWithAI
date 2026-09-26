@@ -954,7 +954,13 @@ def refund_playback(receipt: dict | None) -> float:
     `receipt`は`charge_playback_if_needed(..., receipt=receipt)`が課金したときに埋める辞書
     ({uid, amount, key, note})。課金が無かった(無料範囲・管理者・直近5分の再課金なし)ときは何もしない。
     同じ領収は1回しか返金しない(冪等)。返金と同時に「直近5分は再課金しない」印も外す(外さないと、
-    返金後の再試行が無課金になり、成功した再生が無料になってしまう)。戻した額(pt)を返す。"""
+    返金後の再試行が無課金になり、成功した再生が無料になってしまう)。戻した額(pt)を返す。
+
+    【範囲・既知の限界(2026-09-26 Fable照査)】①返金するのは**再生課金(約0.5pt)だけ**。合成が成功した後の
+    例外で返せなかった場合、合成側の生成費用の控除(reason='ai_usage')は戻さない(音声は`tts_cache`に保存済みで、
+    再試行では生成費用が発生しないため、2回の操作を合計すれば正当な額になる)。②同じ未キャッシュの有料語を
+    ほぼ同時に2回押し、先着だけが失敗した場合、後着は先着の「直近5分」印で無課金のまま通過して成功するため、
+    印を外すと0.5ptぶん無料になり得る(先着だけを失敗させる手段が利用者側に無く、額も小さいので受容)。"""
     if not receipt or receipt.get("refunded") or not receipt.get("amount"):
         return 0.0
     from .auth import add_balance
@@ -1030,16 +1036,18 @@ def charge_playback_if_needed(
                 "ai.tts_need_credit",
                 need=f"{charge_jpy:.1f}", balance=f"{balance:.1f}")
         delta = -min(charge_jpy, balance)
+        charged_note = f"{item_type}:{item_id}:{kind}"
         if delta != 0:
             add_balance(
-                conn, uid, delta, reason="tts_playback",
-                note=f"{item_type}:{item_id}:{kind}",
+                conn, uid, delta, reason="tts_playback", note=charged_note,
             )
-            if receipt is not None:
-                receipt.update(uid=uid, amount=-delta, key=recent_key,
-                               note=f"{item_type}:{item_id}:{kind}")
-        _recent_charge_mark(uid, recent_key)
-        return None
+    # ★ここは`with db()`を抜けた後=課金がcommit済み。領収(返金の根拠)と「直近5分は再課金しない」印は
+    # **commit成功後にだけ**確定させる。ブロック内で確定すると、commitが失敗(database is locked等)したとき
+    # 控除は巻き戻るのに領収だけが残り、後段の返金で残高が純増する(2026-09-26 Fable照査 M)。
+    if delta != 0 and receipt is not None:
+        receipt.update(uid=uid, amount=-delta, key=recent_key, note=charged_note)
+    _recent_charge_mark(uid, recent_key)
+    return None
 
 
 # 認識言語ヒント: ISO-639-1 コード → Whisper が verbose_json で返す言語名。

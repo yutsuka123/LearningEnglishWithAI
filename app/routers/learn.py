@@ -1180,12 +1180,15 @@ def tts_item(
                 # voice/speedは分析上の優先度が低いため対象外にした)。
                 tracking.log_event("play", item_type, f"{base}:{text[:60]}")
                 _log_item_domain(conn, item_type, item_id)
-                delivered = True
-                return Response(content=cached, media_type="audio/mpeg")
-            from ..services.auth import current_user_id, is_guest_user_id
-            is_guest = is_guest_user_id(conn, current_user_id())
-            free_range = access_tiers.is_free_range(
-                conn, item_type, item_id, guest=is_guest)
+            else:
+                from ..services.auth import current_user_id, is_guest_user_id
+                is_guest = is_guest_user_id(conn, current_user_id())
+                free_range = access_tiers.is_free_range(
+                    conn, item_type, item_id, guest=is_guest)
+        if cached is not None:
+            # `with db()`を抜けた(=ここまでのcommitが成功した)後で「届けた」とする(Fable照査NIT)。
+            delivered = True
+            return Response(content=cached, media_type="audio/mpeg")
 
         audio, error = ai.synthesize_speech(
             text, voice, style=speed, free_range=free_range)
