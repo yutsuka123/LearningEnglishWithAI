@@ -24,8 +24,9 @@ import sqlite3
 # 交互に混ぜ、先頭数語だけ見ても幅が伝わるようにしている。**妖怪の語**
 # (Kappa/Tengu=ショーケース語・無料再生の例外。access_tiers.SHOWCASE_WORDS
 # 参照)と西洋の怪物(werewolf/goblin/mermaid=同じくショーケース語、
-# vampire=元からゲスト範囲内)を上位にまとめて見せる。ショーケース語5語は
-# 必ずここに含める(単体テストで検証)。
+# vampire=元からゲスト範囲内)を上位にまとめて見せる。**妖怪・西洋の怪物の**ショーケース語5語は
+# 必ずここに含める(単体テストで検証)。2026-09-27に発音の宣伝用に足したショーケース語3語
+# (sake/origami/kimono・`access_tiers.SHOWCASE_WORDS`参照)はここには含めない(上限20語・宣伝の記事から直接見せる)。
 MAX_FEATURED_WORDS = 20
 FEATURED_WORDS: list[tuple[str, str]] = [
     ("sad", "基礎語彙"),                              # 基礎: 語源が意外

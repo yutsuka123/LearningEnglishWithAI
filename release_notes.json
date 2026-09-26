@@ -23,7 +23,8 @@
     "音声を再生できなかった場合に、ポイントが消費されないようにしました。",
     "音声を再生できないとき、端末に元から入っている別の声に切り替わることがなくなりました。代わりに短い案内が表示されます。",
     "分野・シーンの名前を、英語・中国語（簡体字・繁体字）でも表示できるようにしました。",
-    "単語・フレーズの音声の品質チェックを強化しました。"
+    "単語・フレーズの音声の品質チェックを強化しました。",
+    "一部の単語(sake・origami・kimonoなど)の音声を、登録なしでも聞けるようにしました。"
    ],
    "admin": [
     "英会話の応答速度(実測: 送信→最初の音声 シーン会話5.98→2.91秒・自由会話9.15→2.98秒): 返答LLMにreasoning_effort=noneを送る(CONVERSATION_REASONING_EFFORT=defaultで従来へ・非対応モデルは400→付けずに再試行)・返答を文単位に切って最初の文から並行TTS(読み上げグループで課金・分間レート枠は「分けなかった場合」と同じ・ai_usageはセグメントごとに1行)・会話コンテキスト作成の軽量化(select_for_review(light=True))。ハンズフリーの無音判定・既定モデルは変更なし(オーナー判断待ち)。",
@@ -31,6 +32,7 @@
     "ブラウザ内蔵の声への自動切替を廃止(オーナー決定): 通信失敗/再生失敗/AI音声不可は無音+理由別の案内(5秒に1回)+/api/system/client-errorへkind='playback_error'(reason=network/autoplay_blocked/play_error/ai_unavailable・同理由15秒に1回)。設定で「自然な音声」をOFFにしたときだけブラウザ音声。管理画面のクライアントエラーログで検知。聞き流しは2回連続失敗で停止・会話画面を離れるとstopSpeaking()。",
     "分野/シーン名の4言語表示(表示のみ・DB値/フィルタvalue/APIは日本語のまま・日本語UIは従来と同一): static/js/i18n_dict_taxonomy.js(481キー×4言語)。検査=scripts/check_taxonomy_i18n.py。390px幅の分野/シーンドロップダウンのはみ出し修正(日本語UIも改善)。",
     "詳細plusの原語音声(フラグWORD_PLUS_ENABLED=OFFのまま・一般には出ない): GET /api/words/{id}/plus/audio/{male|female}(ログイン+開封記録または管理者・未開封3026・Cache-Control: private, no-store)・data/audio_native/(664本+manifest・本番に転送済み)・原語の語源表示はscripts/apply_origin_lang_2026_09_26.py(309語)をデプロイ後にdry-run→--applyで反映。フラグONの前にaboutへ音声クレジット欄+ポイント目安を追加し、課金の再照査を通す。",
+    "ショーケース語に(sake,和食)・(origami,芸術)・(kimono,服飾)を追加(access_tiers.SHOWCASE_WORDS 5→8語・上限10・オーナー決定2026-09-27): 発音の宣伝で紹介する語をゲストでも無料再生に。他の語の課金は不変。",
     "Fable敵対的レビュー(native-audio・統合ブランチv154)の指摘は反映済み(BLOCKERなし)。"
    ]
   },
