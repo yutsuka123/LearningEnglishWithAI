@@ -15,6 +15,17 @@
  ],
  "versions": [
   {
+   "version": "ver1.5.5",
+   "date": "2026-09-28",
+   "title": "単語の詳細画面の表示順を改善",
+   "public": [
+    "単語の詳細画面で、発音記号と発音の再生ボタンを例文より上に表示するようにしました。"
+   ],
+   "admin": [
+    "単語詳細ポップアップの発音記号(IPA)+見出し語の男声/女声ボタンを例文(exLine)より上に表示するよう順序変更(ユーザー要望)。`renderWordDetail`から発音行の描画を`renderPronunciationRow`として分離し`showWordDetail`内の`pronBox`(exLineより前に配置)へ描画。意味・語源・派生語等は従来通り例文の後のまま。フロントJSのみ(`static/js/views.js`)・DBスキーマ変更なし。ローカル(DATA_DIR隔離)でPlaywright確認済み(1280px/480px幅とも表示崩れなし)。"
+   ]
+  },
+  {
    "version": "ver1.5.4",
    "date": "2026-09-27",
    "title": "英会話の応答の高速化・音声まわりの改善",

@@ -1406,13 +1406,30 @@ function askFreeRangeChoice(kindKey) {
   });
 }
 
-// 詳細(JSON)を整形して描画。類義語/対義語/派生語のうちDB登録済みの語は、
-// 描画後に linkifyJumps() でクリック可能化し、その語の詳細へジャンプできる。
+// 発音記号+見出し語の男声/女声ボタンの行だけを描画する(2026-09-28分離・例文より上に
+// 出すため呼び出し側でrenderWordDetailと別のboxに描く)。
 // headVoice: 見出し語の男声/女声ボタン(要素)を返す関数。あれば「発音」行に添える
 // (IPAを見ながら英語話者の読みを聞ける・2026-09-26・docs/DESIGN.md §9.8 段階(a))。
+function renderPronunciationRow(box, d, headVoice) {
+  box.innerHTML = "";
+  if (!d.pronunciation && !headVoice) return;
+  // IPAがある語は同じ行に、無い語は音声だけの行として出す(どちらも見出し語の音声)。
+  const line = box.appendChild(el(`<p style="margin:6px 0"><b>${tx("wordDetail.pronunciation")}</b> ${
+    d.pronunciation ? escapeHtml(d.pronunciation) : ""}</p>`));
+  if (headVoice) {
+    const vc = headVoice();
+    vc.style.display = "inline-flex";
+    vc.style.verticalAlign = "middle";
+    vc.style.marginLeft = "8px";
+    line.appendChild(vc);
+  }
+}
+
+// 詳細(JSON)を整形して描画。類義語/対義語/派生語のうちDB登録済みの語は、
+// 描画後に linkifyJumps() でクリック可能化し、その語の詳細へジャンプできる。
 // plusCtx: {wordId} があり、`state.wordPlusEnabled`(機能フラグ/管理者プレビュー)かつ語に原語データ(native)がある
 // ときだけ「詳細plus」欄(原語の発音記号・音声)を出す(2026-09-26・app/services/word_plus.py)。
-function renderWordDetail(box, d, primaryEn, headVoice, plusCtx) {
+function renderWordDetail(box, d, primaryEn, plusCtx) {
   box.innerHTML = "";
   const sec = (label, html) => {
     if (!html) return;
@@ -1429,18 +1446,6 @@ function renderWordDetail(box, d, primaryEn, headVoice, plusCtx) {
     ? jw(x)
     : `${jw(x.word || "")}${x.note
       ? "（" + escapeHtml(x.note) + "）" : ""}`).join(" / ") : "";
-  sec(tx("wordDetail.pronunciation"), d.pronunciation ? escapeHtml(d.pronunciation) : "");
-  if (headVoice) {
-    // IPAがある語は同じ行に、無い語は音声だけの行として出す(どちらも見出し語の音声)。
-    const line = d.pronunciation
-      ? box.lastElementChild
-      : box.appendChild(el(`<p style="margin:6px 0"><b>${tx("wordDetail.pronunciation")}</b> </p>`));
-    const vc = headVoice();
-    vc.style.display = "inline-flex";
-    vc.style.verticalAlign = "middle";
-    vc.style.marginLeft = "8px";
-    line.appendChild(vc);
-  }
   // 語源の言語と原語表記(日本語由来語・2026-09-26・設計§9.8 段階b-4の無料部分)。原語のIPA・音声は
   // 「詳細plus」(有料級)の範囲なのでここには出さない。
   if (d.origin_lang) {
@@ -1710,6 +1715,10 @@ function showWordDetail(w) {
       english: w.english, japanese: w.japanese,
     });
     if (memo) body.appendChild(memo);
+    // 発音記号+見出し語の男声/女声ボタンは例文より上に出す(2026-09-28ユーザー要望・
+    // 発音→意味→例文という辞書的な順に合わせる)。中身はAI詳細の読み込み後に埋まる。
+    const pronBox = el(`<div></div>`);
+    body.appendChild(pronBox);
     const exLine = el(`<p style="margin-bottom:2px">${w.example
       ? tx("wordDetail.exampleLine", { text: escapeHtml(w.example) })
       : tx("wordDetail.noExample")}</p>`);
@@ -1737,8 +1746,9 @@ function showWordDetail(w) {
       try {
         const r = await api.post(`/api/words/${w.id}/detail`);
         if (r.ok) {
-          renderWordDetail(detailBox, r.detail, w.example, () => voiceButtonsItem(
-            "word", w.id, "word", () => w.english, getMode, w.is_free_range), { wordId: w.id });
+          renderPronunciationRow(pronBox, r.detail, () => voiceButtonsItem(
+            "word", w.id, "word", () => w.english, getMode, w.is_free_range));
+          renderWordDetail(detailBox, r.detail, w.example, { wordId: w.id });
           if (w.example && r.detail && r.detail.example_ja) {
             exJa.textContent = tx("wordDetail.exampleJa", { text: r.detail.example_ja });
           }
