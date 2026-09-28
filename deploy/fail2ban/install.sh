@@ -106,22 +106,43 @@ for f in probe loginflood loginfail ratelimited; do
 done
 echo "  ※日時の解釈が0行なら、fail2banがCaddyの\"ts\"を読めていません(その場合は導入を中止してください)"
 
-echo "== 7/7 fail2banに反映(reload)"
-fail2ban-client reload >/dev/null
-INSTALL_OK=1   # reloadまで通った(以降の自己テストの失敗ではjailを外さない)
+echo "== 7/7 fail2banに反映(サービス再起動)"
+# 2026-09-29判明: `fail2ban-client reload`だと、あるjailのaction一覧に新しいアクションが
+# 増える変更(dryrun→banでiptables-multiportが追加される等)が反映されないバグがある
+# (fail2ban 1.0.2で確認・configファイルは正しいのに`fail2ban-client get <jail> actions`が
+# 新アクションを含まないまま・エラーログも一切出ずサイレント)。`systemctl restart fail2ban`
+# なら確実に反映される(検証済み: 再起動後は正しく2アクションとも登録され、実際にBANできた)。
+# 再起動は数秒未満で完了し、他プロジェクトのjail(sshd等)もすぐ復帰する。
+systemctl restart fail2ban
+sleep 2
+systemctl is-active --quiet fail2ban || { echo "fail2banサービスの再起動に失敗しました" >&2; exit 1; }
+INSTALL_OK=1   # 再起動まで通った(以降の自己テストの失敗ではjailを外さない)
 sleep 4
 for j in eigo-probe eigo-loginflood eigo-loginfail eigo-ratelimited; do
   printf '  %-17s ' "$j"; { fail2ban-client status "$j" 2>&1 | grep -E 'Currently (failed|banned)' | tr -s ' \t\n' ' '; } || true; echo
 done
 
 if [ "$MODE" = ban ]; then
-  echo "== BAN経路の自己テスト(TEST-NET-1の192.0.2.123を仮BAN→DOCKER-USERを確認→解除。実在のIPには影響しない)"
-  fail2ban-client set eigo-probe banip 192.0.2.123 >/dev/null
-  sleep 1
-  if iptables -S | grep -q -- '-s 192.0.2.123'; then echo "  ✅ ファイアウォールにBANルールが入った"; else echo "  ❌ BANルールが見つからない(要調査)" >&2; fi
+  # 2026-09-29判明: 固定IP(192.0.2.123)を使い回すと、過去の導入試行(dryrun<->banの
+  # 切り替えを繰り返した際の同IPでのban/unban)でfail2ban内部の台帳が汚れ、新しいbanipが
+  # 実際にはファイアウォールへ再投入されない(=誤ってこの自己テストが失敗する)ことがある。
+  # 毎回TEST-NET-1(192.0.2.0/24)内でランダムな末尾を使い、汚れを避ける。
+  TESTIP="192.0.2.$((RANDOM % 254 + 1))"
+  echo "== BAN経路の自己テスト(TEST-NET-1の$TESTIPを仮BAN→DOCKER-USERを確認→解除。実在のIPには影響しない)"
+  fail2ban-client set eigo-probe banip "$TESTIP" >/dev/null
+  # 2026-09-29判明: サービス再起動直後の初回actionban(actionstart_on_demandでのチェーン作成込み)は、
+  # `fail2ban-client status`がjailを「稼働中」と報告した後もしばらく(実測で6秒待っても間に合わず、
+  # 10秒強で反映された)ファイアウォールへ反映されないことがある(2回目以降のbanは1秒未満で反映される)。
+  # 固定sleepで賭けるのではなく、最大15秒ポーリングして確認する。
+  FOUND=0
+  for _ in $(seq 1 15); do
+    if iptables -S | grep -q -- "-s $TESTIP"; then FOUND=1; break; fi
+    sleep 1
+  done
+  if [ "$FOUND" = 1 ]; then echo "  ✅ ファイアウォールにBANルールが入った"; else echo "  ❌ BANルールが見つからない(要調査)" >&2; fi
   iptables -S DOCKER-USER | sed 's/^/  DOCKER-USER: /'
-  fail2ban-client set eigo-probe unbanip 192.0.2.123 >/dev/null
-  iptables -S | grep -q -- '-s 192.0.2.123' && echo "  ❌ 解除後もルールが残っている(要調査)" >&2 || echo "  ✅ 解除でルールが消えた"
+  fail2ban-client set eigo-probe unbanip "$TESTIP" >/dev/null
+  iptables -S | grep -q -- "-s $TESTIP" && echo "  ❌ 解除後もルールが残っている(要調査)" >&2 || echo "  ✅ 解除でルールが消えた"
 fi
 
 echo
