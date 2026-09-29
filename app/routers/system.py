@@ -1366,9 +1366,14 @@ _FORM_FIELDS = (
 _FORM_FIELD_KEYS = tuple(k for k, _ in _FORM_FIELDS)
 _FORM_LABEL_RE = re.compile(
     r"opened|first_input|back_to_login|submit_attempt|open:survey"
+    r"|submit_seen"
     r"|(focus|input):(" + "|".join(_FORM_FIELD_KEYS) + r")"
     r"|invalid:(email_mismatch|pw_mismatch|pw_policy)"
     r"|fail:(\d{4}|network|other)")
+# 登録フォームの離脱・滞在時間ビーコン(2026-09-30): login.htmlが
+# kind='leave'・category='login_page'・label='<signup|login>:<hidden|pagehide>'・
+# value=そのフォームを表示してからの滞在msで送る。許可した形のlabel以外は無視。
+_FORM_LEAVE_RE = re.compile(r"(signup|login):(hidden|pagehide)")
 
 
 # --- トップページでの行動・滞在時間(2026-09-21・ユーザー要望) ---------------
@@ -1725,6 +1730,7 @@ def _top_page_behavior(rows, visited: set[str], engaged: set[str],
 
 def _signup_form_breakdown(
     form_events: dict[str, list[str]], succeeded_sids: set[str],
+    dwell_ms: dict[str, float] | None = None,
 ) -> dict:
     """登録フォームの到達/離脱内訳。form_events={guest_sid: 時系列のlabel}。
     - steps: 各段階に到達した人数(ユニークguest_sid)。
@@ -1751,6 +1757,8 @@ def _signup_form_breakdown(
                       "count": n_with(f"input:{k}")})
     steps.append({"key": "open:survey", "label": "アンケート欄を開いた",
                   "count": n_with("open:survey")})
+    steps.append({"key": "submit_seen", "label": "送信ボタンが画面に入った",
+                  "count": n_with("submit_seen")})
     steps.append({"key": "submit_attempt", "label": "送信ボタンを押した",
                   "count": n_with("submit_attempt")})
     steps.append({"key": "success", "label": "登録完了(全体)",
@@ -1760,7 +1768,14 @@ def _signup_form_breakdown(
     for sid, ev in form_events.items():
         if sid in succeeded_sids:
             continue   # 登録に成功した人は「止まった人」ではない
-        last = ev[-1]
+        # submit_seen(送信ボタンが画面に入った・2026-09-30)は「どの欄まで
+        # 進んだか」の判定には使わない(タブが縦に長い画面では何も入力しなくても
+        # 開いた直後に記録され、「何もふれず」を誤って上書きするため)。
+        # first_input(何か入力した)も同様: 実際の記録順は 'input:<欄>' の直後に
+        # 'first_input' が続くため、最後を first_input として読むと「メール欄に
+        # 入力して止まった人」が「どの欄にもふれず」に混ざっていた(2026-09-30修正)。
+        last = ([lb for lb in ev if lb not in ("submit_seen", "first_input")]
+                or ["opened"])[-1]
         if last in ("opened", "first_input"):
             key = "no_field"
         elif last == "back_to_login":
@@ -1808,8 +1823,40 @@ def _signup_form_breakdown(
             name = "サーバーに拒否された: " + errors.ERROR_CODES.get(
                 code, (code, 0))[0]
         errors_list.append({"label": label, "name": name, "count": c})
+    # 滞在時間(2026-09-30): フォームを開いて登録に至らなかった人が、登録フォームに
+    # どれだけいたか(「開いて数秒で戻った」か「開いたまま長くいた」か)。
+    # dwell_ms={guest_sid: 'signup:*'の離脱ビーコンの最大ms}。ビーコンは
+    # 2026-09-30以降のデータのみ・ページを離れる前に送れなかった人は「記録なし」。
+    bucket_defs = (("lt5", "5秒未満", 0, 5), ("5_15", "5〜15秒", 5, 15),
+                   ("15_60", "15〜60秒", 15, 60), ("60_300", "1〜5分", 60, 300),
+                   ("ge300", "5分以上", 300, None))
+    dwell_counts = {k: 0 for k, *_ in bucket_defs}
+    dwell_none = 0
+    dwell_secs: list[float] = []
+    for sid, ev in form_events.items():
+        if "opened" not in ev or sid in succeeded_sids:
+            continue
+        ms = (dwell_ms or {}).get(sid)
+        if ms is None:
+            dwell_none += 1
+            continue
+        sec = ms / 1000.0
+        dwell_secs.append(sec)
+        for k, _name, lo, hi in bucket_defs:
+            if sec >= lo and (hi is None or sec < hi):
+                dwell_counts[k] += 1
+                break
+    dwell = {
+        "buckets": [{"key": k, "label": name, "count": dwell_counts[k]}
+                    for k, name, _lo, _hi in bucket_defs]
+        + [{"key": "none", "count": dwell_none,
+            "label": "記録なし(計測開始前・離れる前に送れなかった等)"}],
+        "n": len(dwell_secs),
+        "median_s": (round(sorted(dwell_secs)[len(dwell_secs) // 2], 1)
+                     if dwell_secs else None),
+    }
     return {"opened": n_opened, "steps": steps, "stalled": stalled,
-            "errors": errors_list}
+            "errors": errors_list, "dwell": dwell}
 
 
 @router.get("/admin/registration-funnel")
@@ -2033,6 +2080,21 @@ def admin_registration_funnel(days: int = 30):
         ).fetchall():
             if _FORM_LABEL_RE.fullmatch(r["label"] or ""):
                 form_events.setdefault(r["guest_sid"], []).append(r["label"])
+        # 登録フォームの滞在時間(2026-09-30): 同じguest_sidの'signup:*'の
+        # leaveのうち最大のms(hiddenの後に戻って最後にpagehideで離れた場合に
+        # 最後の値になる)。ログイン側('login:*')は登録フォームの滞在ではない。
+        form_dwell_ms: dict[str, float] = {}
+        for r in conn.execute(
+            "SELECT guest_sid, label, value FROM usage_events "
+            "WHERE kind='leave' AND category='login_page' "
+            "AND value IS NOT NULL "
+            f"AND guest_sid != '' AND created_at >= datetime('now', ?){excl} "
+            "ORDER BY id", (since,),
+        ).fetchall():
+            lb = r["label"] or ""
+            if _FORM_LEAVE_RE.fullmatch(lb) and lb.startswith("signup:"):
+                g = r["guest_sid"]
+                form_dwell_ms[g] = max(form_dwell_ms.get(g, 0.0), float(r["value"]))
         # トップページでの行動・滞在時間の元データ(2026-09-21)。
         behavior_rows = conn.execute(
             "SELECT guest_sid, kind, category, label, value FROM usage_events "
@@ -2176,7 +2238,7 @@ def admin_registration_funnel(days: int = 30):
         "ad_click_visitors": ad_click_guests,
         # 登録フォームの欄別の到達/離脱(2026-09-20・3-E)。
         "signup_form": _signup_form_breakdown(
-            form_events, signup_succeeded_set),
+            form_events, signup_succeeded_set, form_dwell_ms),
         # トップページでの行動・滞在時間(2026-09-21・ユーザー要望)。
         "top_behavior": _top_page_behavior(
             behavior_rows, visited_set, engaged_set, ua_by_guest),

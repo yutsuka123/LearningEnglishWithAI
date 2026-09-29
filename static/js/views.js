@@ -6824,7 +6824,10 @@ export async function admin(root) {
       const sfOpened = sf.opened || 0;
       const sfStallTotal = (sf.stalled || [])
         .reduce((a, b) => a + b.count, 0);
-      const sfStepRows = (sf.steps || []).map((st) => {
+      // フリガナ欄は2026-09-30から登録フォームで非表示(復活はlogin.htmlの
+      // SHOW_DISPLAY_KANA)。0件のフリガナの行は出さない(復活すれば件数が付いて出る)。
+      const sfStepRows = (sf.steps || []).filter((st) =>
+        !(st.count === 0 && /display_name_furigana/.test(st.key))).map((st) => {
         const showRate = st.key !== "opened" && st.key !== "success";
         const w = sfOpened && showRate
           ? Math.min(100, st.count / sfOpened * 100) : 0;
@@ -6839,6 +6842,9 @@ export async function admin(root) {
       const sfStallRows = (sf.stalled || []).map((st) => `<tr>
         <td>${escapeHtml(st.label)}</td><td>${st.count}</td>
         <td class="muted">${pct(st.count, sfStallTotal)}</td></tr>`).join("");
+      const sfDw = sf.dwell || {};
+      const sfDwellRows = (sfDw.buckets || []).map((b) => `<tr>
+        <td>${escapeHtml(b.label)}</td><td>${b.count}</td></tr>`).join("");
       const sfErrRows = (sf.errors || []).map((er) => `<tr>
         <td>${escapeHtml(er.name)}</td>
         <td class="muted">${escapeHtml(er.label)}</td>
@@ -6848,7 +6854,7 @@ export async function admin(root) {
         <p class="muted" style="font-size:12px">
           登録フォームを開いた人が、どの欄までふれたか/入力を始めたか、どこで
           止まったか。記録しているのは欄の名前と「ふれた・入力を始めた・送信
-          した・エラーになった」の種類だけで、入力した内容・文字数・
+          した・エラーになった・送信ボタンが画面に入った・離れた」の種類と滞在時間だけで、入力した内容・文字数・
           メールアドレス等は取得していません。記録開始前に登録した人は
           各段階に入りません(「登録完了(全体)」は期間内の実数)。</p>
         ${sfOpened
@@ -6860,6 +6866,17 @@ export async function admin(root) {
             <div style="overflow-x:auto"><table class="mt"><thead><tr>
               <th>最後に到達</th><th>人数</th><th>割合</th></tr></thead>
               <tbody>${sfStallRows}</tbody></table></div>
+            ${sfDwellRows
+              ? `<h3 class="mt" style="font-size:14px">登録に至らなかった人の、
+                  登録フォームでの滞在時間（2026-09-30〜記録${
+                    sfDw.median_s != null ? `・中央値${sfDw.median_s}秒` : ""}）</h3>
+                <p class="muted" style="font-size:12px">フォームを開いてから離れる
+                  (タブを隠す・閉じる・戻る)までの時間。「5秒未満」が多ければ開いて
+                  すぐ戻った人、「5分以上」が多ければ開いたまま放置した人。ページを
+                  離れる前に送れなかった場合は「記録なし」になります。</p>
+                <div style="overflow-x:auto"><table class="mt"><thead><tr>
+                  <th>滞在</th><th>人数</th></tr></thead>
+                  <tbody>${sfDwellRows}</tbody></table></div>` : ""}
             ${sfErrRows
               ? `<h3 class="mt" style="font-size:14px">入力エラー・登録拒否
                   （人数・重複あり）</h3>
