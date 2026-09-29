@@ -39,7 +39,9 @@ _UA = "study-nyangailab-geoip/1.0"
 
 # 取得結果。country が空なら「取得できなかった」とみなす（管理画面では
 # 結局「—」表示になるので、backfill の再試行対象にもなる）。
-_Geo = dict[str, str]
+# latitude/longitude は数値または未取得時 None（両事業者ともJSONに
+# 元々含まれている値・地図表示(2026-09-29〜)用に追加で保存する）。
+_Geo = dict[str, object]
 
 
 def _is_public_ip(ip: str) -> bool:
@@ -81,6 +83,8 @@ def _lookup_ipapi(client: httpx.Client, ip: str) -> tuple[_Geo, str]:
         "region": data.get("region") or "",
         "city": data.get("city") or "",
         "org": data.get("org") or "",
+        "latitude": data.get("latitude"),
+        "longitude": data.get("longitude"),
     }, ""
 
 
@@ -98,6 +102,8 @@ def _lookup_ipwhois(client: httpx.Client, ip: str) -> tuple[_Geo, str]:
         # connection.org は「AS所有組織」、isp は「回線事業者」。
         # 管理画面は接続元の会社名が分かればよいので org を優先する。
         "org": conn.get("org") or conn.get("isp") or "",
+        "latitude": data.get("latitude"),
+        "longitude": data.get("longitude"),
     }, ""
 
 
@@ -138,11 +144,21 @@ def enrich_ip(ip: str) -> None:
     error = " / ".join(errors)
     if error:
         log.warning("geoip: lookup failed ip=%s reason=%s", ip, error)
+    lat, lon = _to_float(geo.get("latitude")), _to_float(geo.get("longitude"))
     with db() as conn:
         conn.execute(
             "INSERT OR REPLACE INTO ip_geo_cache "
-            "(ip, country, region, city, org, hostname, error, fetched_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))",
+            "(ip, country, region, city, org, hostname, error, "
+            " latitude, longitude, fetched_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))",
             (ip, geo.get("country", ""), geo.get("region", ""),
-             geo.get("city", ""), geo.get("org", ""), hostname, error),
+             geo.get("city", ""), geo.get("org", ""), hostname, error,
+             lat, lon),
         )
+
+
+def _to_float(v: object) -> float | None:
+    try:
+        return float(v)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None

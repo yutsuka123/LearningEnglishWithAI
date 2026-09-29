@@ -1232,6 +1232,11 @@ def _migrate(conn: sqlite3.Connection) -> None:
     _migrate_analytics_2026_09_19(conn)
     _migrate_admin_memo_status_2026_09_20(conn)
     _migrate_multiuser(conn)
+    # アクセスログの地理的可視化(管理画面の地図表示・2026-09-29〜)用。
+    # ipapi.co/ipwho.isは元々緯度経度もJSONに含めて返しているが今まで
+    # 保存していなかった列を追加(新規の外部問い合わせは増えない)。
+    _add_col(conn, "ip_geo_cache", "latitude", "latitude REAL")
+    _add_col(conn, "ip_geo_cache", "longitude", "longitude REAL")
 
 
 def _migrate_admin_memo_status_2026_09_20(conn: sqlite3.Connection) -> None:

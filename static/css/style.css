@@ -1261,6 +1261,18 @@ table.rtable .ops-cell .vague-btn { margin-left: 0; }
   line-height: 1.5; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,.25);
 }
 
+/* アクセスの地理的分布(地図・2026-09-29)。地図の海岸線パス自体は
+   scripts/build_geo_basemaps.py生成のstatic/js/geo_basemaps.js参照。 */
+.geo-map-svg { width: 100%; height: auto; display: block; max-height: 520px; }
+.geo-map-dot { cursor: pointer; transition: fill-opacity .15s; }
+.geo-map-dot:hover { fill-opacity: .85; }
+.geo-ranking-grid { display: flex; flex-wrap: wrap; gap: 20px; }
+.geo-ranking { flex: 1 1 220px; min-width: 200px; }
+.geo-ranking h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
+.geo-ranking table { width: 100%; font-size: 13px; }
+.geo-ranking td:first-child { color: var(--muted); width: 1.5em; }
+.geo-ranking td:last-child { text-align: right; }
+
 /* ---------------------------------------------------------------------
    🎮 クロスワードゲーム(2026-09-03)。マス目はCSS Gridで組み、DOMの
    出現順(行優先)そのままで自動配置する(明示的なrow/col指定は不要)。

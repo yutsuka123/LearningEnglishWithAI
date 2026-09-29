@@ -5579,6 +5579,42 @@ export async function admin(root) {
         <div id="visitTrendWrap" class="mt"><p class="muted">未読み込み</p></div>
       </details>
 
+      <details class="log-group" id="logGeoMapDetails">
+        <summary>🗺️ アクセスの地理的分布（地図・ランキング）</summary>
+        <p class="muted mt">訪問・再生・閲覧・登録の発生地点を、IPからの
+          推定位置(ip_geo_cache)を元に地図上のドットと、国・都道府県・
+          市区町村ごとのランキング表で表示します。緯度経度は約1km格子に
+          丸めて集約(取得元の外部API自体も粗い推定値・個々のIPの位置を
+          特定させないための最低限の集約)。位置情報が未取得のIPは
+          「不明」として件数のみ集計に含めます。</p>
+        <div class="row">
+          <select id="geoMapKind">
+            <option value="visit">訪問(人間のみ)</option>
+            <option value="visit_all">訪問(ロボット込み)</option>
+            <option value="play">再生</option>
+            <option value="page">閲覧</option>
+            <option value="signup">登録</option>
+          </select>
+          <button class="btn ghost geo-map-range" data-days="7"
+            style="padding:3px 10px">1週間</button>
+          <button class="btn ghost geo-map-range active" data-days="30"
+            style="padding:3px 10px">1ヶ月</button>
+          <button class="btn ghost geo-map-range" data-days="90"
+            style="padding:3px 10px">3ヶ月</button>
+          <button class="btn ghost geo-map-range" data-days="180"
+            style="padding:3px 10px">6ヶ月</button>
+          <button class="btn ghost" id="geoMapReload"
+            style="padding:3px 10px">🔄 再読み込み</button>
+        </div>
+        <div class="row mt">
+          <button class="btn ghost geo-map-scope active" data-scope="world"
+            style="padding:3px 10px">🌏 世界</button>
+          <button class="btn ghost geo-map-scope" data-scope="japan"
+            style="padding:3px 10px">🗾 日本</button>
+        </div>
+        <div id="geoMapWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
+
       <details class="log-group" id="logGrowthDailyDetails">
         <summary>📈 日次スナップショット（成長ログ・集計値を恒久保存）</summary>
         <p class="muted mt">毎日、前日分の集計(訪問・JS到達・操作あり・登録・
@@ -7507,6 +7543,172 @@ export async function admin(root) {
   root.querySelector("#visitTrendShowBot")
     .addEventListener("change", loadVisitTrend);
 
+  // --- アクセスの地理的分布(地図・2026-09-29オーナー提起) -----------------
+  // 地図の背景(海岸線パス)はscripts/build_geo_basemaps.pyがNatural Earth
+  // (パブリックドメイン)から事前生成した静的ファイル(78KB程度)。全ユーザー
+  // の初回読み込みを重くしないよう、この項目を開くまでは読み込まない
+  // (i18n_dict.js等と違い<script>タグをindex.htmlに置かず、動的に注入)。
+  let geoMapDays = 30;
+  let geoMapScope = "world";
+  let geoMapData = null;
+
+  function ensureGeoBasemaps() {
+    if (window.GEO_BASEMAPS) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "/static/js/geo_basemaps.js";
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error("地図データの読み込みに失敗しました"));
+      document.head.appendChild(s);
+    });
+  }
+
+  function projectGeoPoint(proj, lat, lon) {
+    return {
+      x: (lon - proj.lon0) * proj.scale,
+      y: (proj.lat1 - lat) * proj.scale,
+    };
+  }
+
+  function geoDotRadius(count, maxCount) {
+    const ratio = maxCount > 0 ? count / maxCount : 0;
+    return Math.max(3, Math.min(16, 3 + 13 * Math.sqrt(ratio)));
+  }
+
+  function buildGeoMapSvg(data, scope) {
+    const base = window.GEO_BASEMAPS[scope];
+    const pts = (data.points || []).filter((p) =>
+      scope === "japan" ? p.country === "Japan" : true);
+    const maxCount = Math.max(1, ...pts.map((p) => p.count), 0);
+    const dims = base.viewBox.split(" ").slice(2).map(Number);
+    const [vbW, vbH] = dims;
+    const dots = pts.map((p, i) => {
+      const { x, y } = projectGeoPoint(base.proj, p.lat, p.lon);
+      const r = geoDotRadius(p.count, maxCount);
+      return `<circle class="geo-map-dot" data-idx="${i}" cx="${x.toFixed(1)}"
+        cy="${y.toFixed(1)}" r="${r.toFixed(1)}"
+        fill="var(--accent)" fill-opacity="0.55"
+        stroke="var(--accent)" stroke-width="1" />`;
+    }).join("");
+    return {
+      svg: `<svg viewBox="${base.viewBox}" class="geo-map-svg" role="img"
+          aria-label="${scope === "japan" ? "日本" : "世界"}のアクセス分布地図">
+          <path d="${base.path}" fill="var(--panel-2)"
+            stroke="var(--line)" stroke-width="0.6"
+            fill-rule="evenodd" />
+          ${dots}
+        </svg>`,
+      pts, vbW, vbH,
+    };
+  }
+
+  function wireGeoMapHover(wrapEl, pts, vbW, vbH) {
+    const svgEl = wrapEl.querySelector(".geo-map-svg");
+    const tip = wrapEl.querySelector(".geo-map-tooltip");
+    if (!svgEl || !pts.length) return;
+    svgEl.querySelectorAll(".geo-map-dot").forEach((dot) => {
+      const p = pts[Number(dot.dataset.idx)];
+      dot.addEventListener("mousemove", (e) => {
+        const rect = wrapEl.getBoundingClientRect();
+        tip.style.display = "block";
+        tip.style.left = `${e.clientX - rect.left + 10}px`;
+        tip.style.top = `${e.clientY - rect.top - 10}px`;
+        const place = [p.country, p.region, p.city]
+          .filter(Boolean).join(" / ");
+        tip.innerHTML = `<b>${escapeHtml(place || "(不明)")}</b><br>
+          ${p.count.toLocaleString()}件`;
+      });
+      dot.addEventListener("mouseleave", () => { tip.style.display = "none"; });
+    });
+  }
+
+  function buildGeoRankingHtml(title, rows, valueLabel) {
+    if (!rows.length) return "";
+    const body = rows.slice(0, 20).map((r, i) => `<tr>
+      <td class="muted">${i + 1}</td>
+      <td>${escapeHtml(r.name)}</td>
+      <td>${r.count.toLocaleString()}</td>
+    </tr>`).join("");
+    return `<div class="geo-ranking">
+      <h4>${title}</h4>
+      <table><thead><tr><th></th><th>${valueLabel}</th><th>件数</th>
+      </tr></thead><tbody>${body}</tbody></table>
+    </div>`;
+  }
+
+  function renderGeoMap() {
+    const wrap = root.querySelector("#geoMapWrap");
+    const d = geoMapData;
+    if (!d) return;
+    if (!d.total) {
+      wrap.innerHTML = `<p class="muted">この期間のデータはまだありません。</p>`;
+      return;
+    }
+    const { svg, pts, vbW, vbH } = buildGeoMapSvg(d, geoMapScope);
+    const cityRows = geoMapScope === "japan"
+      ? d.city_ranking.filter((r) => r.country === "Japan")
+      : d.city_ranking;
+    const cityRankingHtml = buildGeoRankingHtml(
+      "市区町村別", cityRows.map((r) => ({
+        name: geoMapScope === "japan" ? r.city : `${r.city}(${r.country})`,
+        count: r.count,
+      })), "市区町村");
+    const prefRankingHtml = geoMapScope === "japan"
+      ? buildGeoRankingHtml("都道府県別", d.pref_ranking, "都道府県") : "";
+    const countryRankingHtml = geoMapScope === "world"
+      ? buildGeoRankingHtml("国別", d.country_ranking, "国") : "";
+    wrap.innerHTML = `
+      <p class="muted">対象: ${d.total.toLocaleString()}件
+        (位置情報あり ${d.with_geo.toLocaleString()}件 /
+        不明 ${d.without_geo.toLocaleString()}件)
+        ・地図上の点は${pts.length}地点</p>
+      <div class="geo-map-svg-wrap mt" style="position:relative">
+        ${svg}
+        <div class="geo-map-tooltip" style="display:none; position:absolute;
+          pointer-events:none; background:var(--panel);
+          border:1px solid var(--line); border-radius:6px; padding:6px 10px;
+          font-size:12px; white-space:nowrap;
+          box-shadow:0 2px 8px rgba(0,0,0,.3); z-index:5"></div>
+      </div>
+      <div class="geo-ranking-grid mt">
+        ${countryRankingHtml}${prefRankingHtml}${cityRankingHtml}
+      </div>`;
+    wireGeoMapHover(wrap, pts, vbW, vbH);
+  }
+
+  async function loadGeoMap() {
+    const wrap = root.querySelector("#geoMapWrap");
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    try {
+      await ensureGeoBasemaps();
+      const kind = root.querySelector("#geoMapKind").value;
+      geoMapData = await api.get(
+        `/api/system/admin/geo-map?kind=${kind}&days=${geoMapDays}`);
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+      return;
+    }
+    renderGeoMap();
+  }
+  root.querySelector("#geoMapKind").addEventListener("change", loadGeoMap);
+  root.querySelectorAll(".geo-map-range").forEach((b) => {
+    b.addEventListener("click", () => {
+      geoMapDays = Number(b.dataset.days);
+      root.querySelectorAll(".geo-map-range").forEach((x) =>
+        x.classList.toggle("active", x === b));
+      loadGeoMap();
+    });
+  });
+  root.querySelectorAll(".geo-map-scope").forEach((b) => {
+    b.addEventListener("click", () => {
+      geoMapScope = b.dataset.scope;
+      root.querySelectorAll(".geo-map-scope").forEach((x) =>
+        x.classList.toggle("active", x === b));
+      renderGeoMap();
+    });
+  });
+  root.querySelector("#geoMapReload").addEventListener("click", loadGeoMap);
+
   // --- 日次スナップショット(成長ログ・2026-09-20・計測設計3-F) ------------
   let growthDays = 30;
   async function loadGrowthDaily() {
@@ -8093,6 +8295,7 @@ export async function admin(root) {
     ["#logRegistrantsDetails", loadRegistrants],
     ["#logSurveySummaryDetails", loadSurveySummary],
     ["#logVisitTrendDetails", loadVisitTrend],
+    ["#logGeoMapDetails", loadGeoMap],
     ["#logGrowthDailyDetails", loadGrowthDaily],
     ["#logChargeKeyDetails", loadChargeKeyLog],
     ["#logWithdrawalDetails", loadWithdrawalLog],

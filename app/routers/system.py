@@ -2339,6 +2339,150 @@ def admin_visit_trend(days: int = 30):
     return {"days": days, "summary": summary, "daily": daily}
 
 
+_GEO_MAP_KINDS = ("visit", "visit_all", "play", "page", "signup")
+
+
+@router.get("/admin/geo-map")
+def admin_geo_map(kind: str = "visit", days: int = 30):
+    """アクセスログの地理的可視化(管理画面「ログ」の地図表示・
+    2026-09-29オーナー提起)用の集計。IPごとの訪問/再生/閲覧/登録の
+    件数を ip_geo_cache(国・地域・市区・緯度経度)と突き合わせ、
+    地図に打つ点(点ごとの件数)と国別/都道府県別/市区町村別の
+    ランキングを返す。世界/日本の切り替えはフロント側で
+    country=='Japan'かどうかで振り分ける(往復を増やさないため
+    1回で両方に使えるデータを返す)。
+
+    - kind='visit': 人間の訪問のみ(admin_visit_trendと同じ判定基準
+      = visitor_kind.classify()+bot_markの併用。UAだけでなくアクセス
+      頻度によるヘビーIP判定も除外する)。
+    - kind='visit_all': ボット込みの訪問(TODOの「ロボット込みの訪問」)。
+      管理者自身(ADMIN_KNOWN_IPS)のアクセスのみ除外は共通。
+    - kind='play'/'page': usage_events(音声再生/ページ閲覧)。
+    - kind='signup': 完了した新規登録(landing_visits kind='signup'
+      AND success=1)。
+
+    緯度経度は取得元の外部APIの精度自体が粗く、それをさらに小数点2桁
+    (約1km格子)に丸めて点を統合する。個々の生IPの位置を特定させない
+    ための最低限の集約(1点=複数人が混ざりうる)。"""
+    _require_admin()
+    if kind not in _GEO_MAP_KINDS:
+        raise errors.http_error("7002", "kindの指定が不正です。")
+    days = max(1, min(days, 366))
+    since = f"-{days} days"
+    admin_ips = load_admin_known_ips()
+    ip_counts: collections.Counter = collections.Counter()
+    with db() as conn:
+        if kind in ("visit", "visit_all"):
+            rows = conn.execute(
+                "SELECT ip, user_agent, COALESCE(bot_mark, 0) AS bot_mark "
+                "FROM landing_visits WHERE kind='visit' "
+                "AND created_at >= datetime('now', ?) "
+                "AND ip != '' AND is_internal = 0",
+                (since,),
+            ).fetchall()
+            geo_rows = conn.execute(
+                "SELECT ip, org, hostname FROM ip_geo_cache").fetchall()
+            geo_kind_map = {r["ip"]: dict(r) for r in geo_rows}
+            ua_map: dict[str, list[str]] = {}
+            for r in rows:
+                ua_map.setdefault(r["ip"], []).append(r["user_agent"] or "")
+            mark_cache: dict[str, int] = {}
+
+            def ip_mark(ip: str) -> int:
+                if ip not in mark_cache:
+                    g = geo_kind_map.get(ip, {})
+                    m, _ = visitor_kind.classify(
+                        ua_map.get(ip, []), g.get("org", ""),
+                        g.get("hostname", ""), ip in admin_ips,
+                    )
+                    mark_cache[ip] = m
+                return mark_cache[ip]
+
+            for r in rows:
+                mark = ip_mark(r["ip"])
+                if mark == visitor_kind.MARK_NONE and r["bot_mark"]:
+                    mark = r["bot_mark"]
+                if mark == visitor_kind.MARK_ADMIN:
+                    continue
+                if kind == "visit" and mark != visitor_kind.MARK_NONE:
+                    continue
+                ip_counts[r["ip"]] += 1
+        elif kind == "signup":
+            rows = conn.execute(
+                "SELECT ip FROM landing_visits "
+                "WHERE kind='signup' AND success=1 "
+                "AND created_at >= datetime('now', ?) "
+                "AND ip != '' AND is_internal = 0",
+                (since,),
+            ).fetchall()
+            for r in rows:
+                if r["ip"] not in admin_ips:
+                    ip_counts[r["ip"]] += 1
+        else:  # play / page
+            rows = conn.execute(
+                "SELECT ip FROM usage_events WHERE kind = ? "
+                "AND created_at >= datetime('now', ?) "
+                "AND ip != '' AND is_internal = 0",
+                (kind, since),
+            ).fetchall()
+            for r in rows:
+                if r["ip"] not in admin_ips:
+                    ip_counts[r["ip"]] += 1
+        geo_full = conn.execute(
+            "SELECT ip, country, region, city, latitude, longitude "
+            "FROM ip_geo_cache").fetchall()
+    geo_by_ip = {r["ip"]: dict(r) for r in geo_full}
+
+    points_map: dict[tuple, dict] = {}
+    country_counts: collections.Counter = collections.Counter()
+    pref_counts: collections.Counter = collections.Counter()
+    city_counts: dict[tuple, dict] = {}
+    total = sum(ip_counts.values())
+    without_geo = 0
+    for ip, cnt in ip_counts.items():
+        g = geo_by_ip.get(ip)
+        country = (g or {}).get("country") or ""
+        if not g or not country:
+            without_geo += cnt
+            continue
+        region = g.get("region") or ""
+        city = g.get("city") or ""
+        lat, lon = g.get("latitude"), g.get("longitude")
+        country_counts[country] += cnt
+        if country == "Japan" and region:
+            pref_counts[region] += cnt
+        if city:
+            ck = (country, city)
+            d = city_counts.setdefault(
+                ck, {"country": country, "city": city, "count": 0})
+            d["count"] += cnt
+        if lat is not None and lon is not None:
+            pk = (round(lat, 2), round(lon, 2))
+            p = points_map.setdefault(pk, {
+                "lat": round(lat, 2), "lon": round(lon, 2),
+                "country": country, "region": region, "city": city,
+                "count": 0,
+            })
+            p["count"] += cnt
+
+    points = sorted(points_map.values(), key=lambda p: -p["count"])
+    country_ranking = [{"name": k, "count": v}
+                       for k, v in country_counts.most_common(50)]
+    pref_ranking = [{"name": k, "count": v}
+                    for k, v in pref_counts.most_common(50)]
+    city_ranking = sorted(
+        city_counts.values(), key=lambda d: -d["count"])[:50]
+    return {
+        "kind": kind, "days": days,
+        "total": total, "with_geo": total - without_geo,
+        "without_geo": without_geo,
+        "points": points,
+        "country_ranking": country_ranking,
+        "pref_ranking": pref_ranking,
+        "city_ranking": city_ranking,
+    }
+
+
 # 日次スナップショットの画面に出す指標(流入元別の集計表・期間合計用)。
 _GROWTH_CHANNEL_METRICS = (
     "visitors", "visitors_human", "visitors_js", "visitors_engaged",
