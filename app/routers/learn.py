@@ -1217,8 +1217,10 @@ def tts_item(
             delivered = True
             return Response(content=cached, media_type="audio/mpeg")
 
+        # audio_store.put が永続保存するので、tts_cache への二重保存はしない(2026-09-29)。
         audio, error = ai.synthesize_speech(
-            text, voice, style=speed, free_range=free_range, verify=True)
+            text, voice, style=speed, free_range=free_range, verify=True,
+            persist_cache=False)
         if error:
             tracking.log_event(
                 "play_error", item_type, f"synth_fail:{base}:{text[:60]}")

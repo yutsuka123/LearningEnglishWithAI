@@ -1073,7 +1073,7 @@ def synthesize_speech(
     text: str, voice: str = "alloy", *,
     style: str = TTS_STYLE_DEFAULT, rate_limit: bool = True,
     feature: str = "tts", free_range: bool = False,
-    group: str = "", verify: bool = False,
+    group: str = "", verify: bool = False, persist_cache: bool = True,
 ) -> tuple[bytes | None, str | None]:
     """Return (audio_mp3_bytes, error). Uses OpenAI's natural TTS voices.
 
@@ -1090,6 +1090,11 @@ def synthesize_speech(
     ``group``: 会話の返答を文単位で分けた読み上げ(上の「読み上げグループ」参照)。
     検証済み(tts_group_id)のグループID。グループの2回目以降は分間レート制限の
     枠を消費せず、課金は累計との差額になる。既定(なし)は従来どおり。
+    ``persist_cache``: 合成した音声を tts_cache に保存するか(既定True=従来どおり)。呼び出し側が
+    別の永続ストア(audio_store: `data/audio/`)へ保存する経路(`/tts/item`・音声の事前作成スクリプト)は
+    **False**にする。同じ音声が tts_cache と audio の2か所に二重保存されていた(実測: tts_cache 5.7GBのうち
+    2.8GBが audio と完全重複・再利用はほぼ無し・2026-09-29)のを止めるため。キャッシュの**読み出し**
+    (ヒット時はAPIを呼ばない)は常に行う。
     ``verify``: 合成直後の文字起こし照合(短いテキストのみ・`_speech_score`)を行うか。**永続キャッシュされて
     全員に再利用される単語/フレーズ/例文の音声(`/tts/item`)だけTrue**にする。会話の返答など使い捨ての
     読み上げは、遅延(+約1秒)を増やさないため既定のFalse(2026-09-26)。
@@ -1193,7 +1198,7 @@ def synthesize_speech(
             log.warning("TTS 低速 (voice=%s model=%s elapsed=%.1fs)",
                         voice, settings.tts_model, elapsed)
         broken = _looks_broken(audio, speak)
-        if not broken:
+        if persist_cache and not broken:
             try:
                 cache.write_bytes(audio)
             except Exception:  # caching is best-effort
