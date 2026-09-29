@@ -5582,8 +5582,8 @@ export async function admin(root) {
       <details class="log-group" id="logGeoMapDetails">
         <summary>🗺️ アクセスの地理的分布（地図・ランキング）</summary>
         <p class="muted mt">訪問・再生・閲覧・登録の発生地点を、IPからの
-          推定位置(ip_geo_cache)を元に地図上のドットと、国・都道府県・
-          市区町村ごとのランキング表で表示します。緯度経度は約1km格子に
+          推定位置(ip_geo_cache)を元に地図上の点(色の違いが件数・拡大縮小できます)と、
+          国・都道府県・市区町村ごとのランキング表で表示します。緯度経度は約1km格子に
           丸めて集約(取得元の外部API自体も粗い推定値・個々のIPの位置を
           特定させないための最低限の集約)。位置情報が未取得のIPは
           「不明」として件数のみ集計に含めます。</p>
@@ -7570,64 +7570,269 @@ export async function admin(root) {
     };
   }
 
-  function geoDotRadius(count, maxCount) {
-    const ratio = maxCount > 0 ? count / maxCount : 0;
-    return Math.max(3, Math.min(16, 3 + 13 * Math.sqrt(ratio)));
+  // 点の色=件数(2026-09-30オーナー指示: 大きさではなく色で件数を表す・拡大縮小できる)。
+  // 点は画面上で常に一定の大きさ(半径GEO_DOT_R px)。色は青一色の明暗で最大5段階
+  // (dataviz skillの順序尺度: ライト=多いほど濃い/ダーク=多いほど明るい)。
+  // 段階の色は--geo-c0〜c4(style.css)。validate_palette.js --ordinal で地図の陸/海の
+  // 両背景に対しライト/ダークとも検証済み(全項目PASS)。
+  const GEO_DOT_R = 4;         // 画面上の点の半径(px・約3pt)
+  const GEO_MAX_ZOOM = 80;     // 拡大の上限(全体表示の80倍)
+  const GEO_HIT_R = 12;        // ホバー判定の半径(px)。最も近い点を拾う
+
+  function geoNiceCount(v) {
+    if (v <= 1) return 1;
+    const p = Math.pow(10, Math.floor(Math.log10(v)));
+    const m = v / p;
+    return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p;
+  }
+
+  // 最大件数に合わせて、下限を1・2・5の刻みに丸めた最大5段階に分ける
+  // (件数は少数の地点に偏るので対数的に刻む)。
+  function geoCountBins(maxCount) {
+    const lows = new Set([1]);
+    for (let i = 1; i < 5; i++) {
+      const n = geoNiceCount(Math.pow(maxCount, i / 5));
+      if (n > 1 && n <= maxCount) lows.add(n);
+    }
+    const lo = [...lows].sort((a, b) => a - b);
+    // 段階が5未満のときは、色の両端側を使って段どうしの差を保つ
+    const slot = (i) => (lo.length === 1 ? 2 : Math.round(i * 4 / (lo.length - 1)));
+    return { lo, colorVar: (i) => `var(--geo-c${slot(i)})` };
+  }
+
+  function geoBinIndex(lo, count) {
+    let k = 0;
+    for (let i = 0; i < lo.length; i++) if (count >= lo[i]) k = i;
+    return k;
+  }
+
+  function geoBinLabel(lo, i, maxCount) {
+    const a = lo[i];
+    const b = i + 1 < lo.length ? lo[i + 1] - 1 : maxCount;
+    return a === b ? a.toLocaleString() : `${a.toLocaleString()}〜${b.toLocaleString()}`;
+  }
+
+  function buildGeoLegendHtml(bins, maxCount) {
+    const items = bins.lo.map((_, i) => `<span class="geo-legend-item">
+      <span class="geo-legend-sw" style="background:${bins.colorVar(i)}"></span>${
+        geoBinLabel(bins.lo, i, maxCount)}</span>`).join("");
+    return `<div class="geo-map-legend">
+      <span class="geo-legend-title">1地点あたりの件数(少→多)</span>${items}</div>`;
   }
 
   function buildGeoMapSvg(data, scope) {
     const base = window.GEO_BASEMAPS[scope];
-    const pts = (data.points || []).filter((p) =>
-      scope === "japan" ? p.country === "Japan" : true);
-    const maxCount = Math.max(1, ...pts.map((p) => p.count), 0);
-    const dims = base.viewBox.split(" ").slice(2).map(Number);
-    const [vbW, vbH] = dims;
-    const dots = pts.map((p, i) => {
-      const { x, y } = projectGeoPoint(base.proj, p.lat, p.lon);
-      const r = geoDotRadius(p.count, maxCount);
-      return `<circle class="geo-map-dot" data-idx="${i}" cx="${x.toFixed(1)}"
-        cy="${y.toFixed(1)}" r="${r.toFixed(1)}"
-        fill="var(--accent)" fill-opacity="0.55"
-        stroke="var(--accent)" stroke-width="1" />`;
-    }).join("");
+    // 件数の少ない点から先に描き、多い点を手前に出す(重なっても目立つように)
+    const pts = (data.points || [])
+      .filter((p) => (scope === "japan" ? p.country === "Japan" : true))
+      .sort((a, b) => a.count - b.count);
+    const maxCount = pts.reduce((m, p) => Math.max(m, p.count), 1);
+    const bins = geoCountBins(maxCount);
+    const pos = pts.map((p) => projectGeoPoint(base.proj, p.lat, p.lon));
+    // 半径rは表示倍率に合わせてwireGeoMap()が設定する(画面上で常に一定にするため)
+    const dots = pts.map((p, i) => `<circle class="geo-map-dot" cx="${pos[i].x.toFixed(2)}"
+      cy="${pos[i].y.toFixed(2)}" r="${GEO_DOT_R}"
+      style="fill:${bins.colorVar(geoBinIndex(bins.lo, p.count))}" />`).join("");
     return {
       svg: `<svg viewBox="${base.viewBox}" class="geo-map-svg" role="img"
           aria-label="${scope === "japan" ? "日本" : "世界"}のアクセス分布地図">
           <path d="${base.path}" fill="var(--panel-2)"
-            stroke="var(--line)" stroke-width="0.6"
-            fill-rule="evenodd" />
+            stroke="var(--muted)" stroke-opacity="0.45" stroke-width="0.8"
+            vector-effect="non-scaling-stroke" fill-rule="evenodd" />
           ${dots}
         </svg>`,
-      pts, vbW, vbH,
+      pts, pos, bins, maxCount,
+      viewBox: base.viewBox.split(" ").map(Number),
     };
   }
 
-  function wireGeoMapHover(wrapEl, pts, vbW, vbH) {
+  // 拡大縮小(＋/－/全体表示ボタン・ダブルクリック・Ctrl(⌘)+ホイール・ピンチ)・
+  // ドラッグで移動・最も近い点のツールチップ(小さい点でも当てやすいよう
+  // 半径GEO_HIT_R px以内の最近傍を拾う)。
+  function wireGeoMap(wrapEl, model) {
     const svgEl = wrapEl.querySelector(".geo-map-svg");
     const tip = wrapEl.querySelector(".geo-map-tooltip");
-    if (!svgEl || !pts.length) return;
-    svgEl.querySelectorAll(".geo-map-dot").forEach((dot) => {
-      const p = pts[Number(dot.dataset.idx)];
-      dot.addEventListener("mousemove", (e) => {
-        const rect = wrapEl.getBoundingClientRect();
+    if (!svgEl || !model.pts.length) return;
+    const [bx, by, bw, bh] = model.viewBox;
+    const view = { x: bx, y: by, w: bw };
+    const dots = [...svgEl.querySelectorAll(".geo-map-dot")];
+    const hl = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    hl.setAttribute("class", "geo-map-hl");
+    hl.style.display = "none";
+    svgEl.appendChild(hl);
+    let hot = -1;
+
+    const pxPerUnit = () => {
+      const m = svgEl.getScreenCTM();
+      return m && m.a > 0 ? m.a : 1;
+    };
+    function apply() {
+      svgEl.setAttribute("viewBox",
+        `${view.x} ${view.y} ${view.w} ${view.w * bh / bw}`);
+      const k = 1 / pxPerUnit();
+      const r = (GEO_DOT_R * k).toFixed(3);
+      dots.forEach((d) => d.setAttribute("r", r));
+      hl.setAttribute("r", ((GEO_DOT_R + 3) * k).toFixed(3));
+      svgEl.classList.toggle("is-zoomed", view.w < bw - 1e-6);
+    }
+    function setView(x, y, w) {
+      w = Math.min(bw, Math.max(bw / GEO_MAX_ZOOM, w));
+      const h = w * bh / bw;
+      view.w = w;
+      view.x = Math.min(bx + bw - w, Math.max(bx, x));
+      view.y = Math.min(by + bh - h, Math.max(by, y));
+      apply();
+    }
+    function toUnits(cx, cy) {
+      const m = svgEl.getScreenCTM();
+      if (!m) return { x: view.x + view.w / 2, y: view.y + view.w * bh / bw / 2 };
+      const p = new DOMPoint(cx, cy).matrixTransform(m.inverse());
+      return { x: p.x, y: p.y };
+    }
+    function zoomAt(factor, ux, uy) {
+      const nw = Math.min(bw, Math.max(bw / GEO_MAX_ZOOM, view.w / factor));
+      const k = nw / view.w;
+      setView(ux - (ux - view.x) * k, uy - (uy - view.y) * k, nw);
+    }
+    const zoomCenter = (f) => zoomAt(
+      f, view.x + view.w / 2, view.y + view.w * bh / bw / 2);
+
+    function hideTip() {
+      tip.style.display = "none";
+      hl.style.display = "none";
+      hot = -1;
+    }
+    // ポインタが点の見た目の上にあるときは、いちばん手前に描かれている点
+    // (=件数が多い点・model.ptsは件数の昇順で描画)を選ぶ。どの点にも重なって
+    // いないときは、半径GEO_HIT_R px以内でいちばん近い点。
+    function nearest(cx, cy) {
+      const u = toUnits(cx, cy);
+      const k = 1 / pxPerUnit();
+      const hitLim = (GEO_HIT_R * k) ** 2;
+      const seeLim = ((GEO_DOT_R + 1) * k) ** 2;
+      let best = -1;
+      let bd = hitLim;
+      let top = -1;
+      for (let i = 0; i < model.pos.length; i++) {
+        const dx = model.pos[i].x - u.x;
+        const dy = model.pos[i].y - u.y;
+        const d = dx * dx + dy * dy;
+        if (d <= seeLim) top = i;
+        if (d <= bd) { bd = d; best = i; }
+      }
+      return top >= 0 ? top : best;
+    }
+    function showTip(e) {
+      const i = nearest(e.clientX, e.clientY);
+      if (i < 0) { hideTip(); return; }
+      const p = model.pts[i];
+      if (i !== hot) {
+        hot = i;
+        hl.setAttribute("cx", model.pos[i].x.toFixed(2));
+        hl.setAttribute("cy", model.pos[i].y.toFixed(2));
+        hl.style.display = "";
         const place = [
           p.country_label || p.country, p.region_label || p.region,
           p.city_label || p.city,
         ].filter(Boolean).join(" / ");
-        tip.style.display = "block";
         tip.innerHTML = `<b>${escapeHtml(place || "(不明)")}</b><br>
           ${p.count.toLocaleString()}件`;
-        // 地名が日本語(外国は「カタカナ（英文）」)で長くなったので、右端に
-        // 近いときは点の左側に出して、吹き出しが切れないようにする(2026-09-29)。
-        let left = e.clientX - rect.left + 10;
-        if (left + tip.offsetWidth > rect.width) {
-          left = Math.max(0, e.clientX - rect.left - tip.offsetWidth - 10);
-        }
-        tip.style.left = `${left}px`;
-        tip.style.top = `${e.clientY - rect.top - 10}px`;
-      });
-      dot.addEventListener("mouseleave", () => { tip.style.display = "none"; });
+      }
+      tip.style.display = "block";
+      const rect = wrapEl.getBoundingClientRect();
+      // 地名が日本語(外国は「カタカナ（英文）」)で長くなったので、右端に
+      // 近いときは点の左側に出して、吹き出しが切れないようにする(2026-09-29)。
+      let left = e.clientX - rect.left + 12;
+      if (left + tip.offsetWidth > rect.width) {
+        left = Math.max(0, e.clientX - rect.left - tip.offsetWidth - 12);
+      }
+      tip.style.left = `${left}px`;
+      tip.style.top = `${e.clientY - rect.top - 10}px`;
+    }
+
+    // ポインタ(マウス・タッチ共通)。1本=ドラッグで移動・2本=ピンチで拡大縮小。
+    const ptrs = new Map();
+    let drag = null;
+    let pinchDist = 0;
+    svgEl.addEventListener("pointerdown", (e) => {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      svgEl.setPointerCapture(e.pointerId);
+      ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (ptrs.size === 1) {
+        drag = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y, moved: false };
+        if (e.pointerType !== "mouse") showTip(e);   // タップで吹き出しを出す
+      } else if (ptrs.size === 2) {
+        const [a, b] = [...ptrs.values()];
+        pinchDist = Math.hypot(a.x - b.x, a.y - b.y);
+        drag = null;
+        hideTip();
+      }
     });
+    svgEl.addEventListener("pointermove", (e) => {
+      if (ptrs.has(e.pointerId)) ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (ptrs.size === 2) {
+        const [a, b] = [...ptrs.values()];
+        const d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (pinchDist > 0 && d > 0) {
+          const c = toUnits((a.x + b.x) / 2, (a.y + b.y) / 2);
+          zoomAt(d / pinchDist, c.x, c.y);
+        }
+        pinchDist = d;
+        return;
+      }
+      if (drag) {
+        const dx = e.clientX - drag.x;
+        const dy = e.clientY - drag.y;
+        if (!drag.moved && Math.hypot(dx, dy) < 4) return;
+        if (!drag.moved) { drag.moved = true; svgEl.classList.add("is-dragging"); hideTip(); }
+        const k = 1 / pxPerUnit();
+        setView(drag.vx - dx * k, drag.vy - dy * k, view.w);
+        return;
+      }
+      if (e.pointerType === "mouse") showTip(e);
+    });
+    const endPointer = (e) => {
+      ptrs.delete(e.pointerId);
+      pinchDist = 0;
+      svgEl.classList.remove("is-dragging");
+      if (ptrs.size === 1) {   // ピンチの片指を離した→残った指で続けて移動できるようにする
+        const [r] = [...ptrs.values()];
+        drag = { x: r.x, y: r.y, vx: view.x, vy: view.y, moved: true };
+      } else {
+        drag = null;
+      }
+    };
+    svgEl.addEventListener("pointerup", endPointer);
+    svgEl.addEventListener("pointercancel", endPointer);
+    svgEl.addEventListener("pointerleave", (e) => {
+      if (e.pointerType === "mouse" && !ptrs.size) hideTip();
+    });
+    // 普通のホイールはページのスクロールに任せる(管理画面は縦に長いため)。
+    // Ctrl(⌘)を押しながら・またはトラックパッドのピンチ(ctrlKey付きで届く)で拡大縮小。
+    svgEl.addEventListener("wheel", (e) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      e.preventDefault();
+      const u = toUnits(e.clientX, e.clientY);
+      const dy = Math.max(-60, Math.min(60, e.deltaY));
+      zoomAt(Math.exp(-dy * 0.01), u.x, u.y);
+      hideTip();
+    }, { passive: false });
+    svgEl.addEventListener("dblclick", (e) => {
+      const u = toUnits(e.clientX, e.clientY);
+      zoomAt(2, u.x, u.y);
+      hideTip();
+    });
+    wrapEl.querySelectorAll("[data-geo-zoom]").forEach((b) => {
+      b.addEventListener("click", () => {
+        const a = b.dataset.geoZoom;
+        if (a === "in") zoomCenter(1.6);
+        else if (a === "out") zoomCenter(1 / 1.6);
+        else setView(bx, by, bw);
+        hideTip();
+      });
+    });
+    if (window.ResizeObserver) new ResizeObserver(apply).observe(svgEl);
+    apply();
   }
 
   function buildGeoRankingHtml(title, rows, valueLabel) {
@@ -7652,7 +7857,8 @@ export async function admin(root) {
       wrap.innerHTML = `<p class="muted">この期間のデータはまだありません。</p>`;
       return;
     }
-    const { svg, pts, vbW, vbH } = buildGeoMapSvg(d, geoMapScope);
+    const model = buildGeoMapSvg(d, geoMapScope);
+    const { svg, pts } = model;
     const cityRows = geoMapScope === "japan"
       ? d.city_ranking.filter((r) => r.country === "Japan")
       : d.city_ranking;
@@ -7672,18 +7878,30 @@ export async function admin(root) {
         (位置情報あり ${d.with_geo.toLocaleString()}件 /
         不明 ${d.without_geo.toLocaleString()}件)
         ・地図上の点は${pts.length}地点</p>
+      ${pts.length ? buildGeoLegendHtml(model.bins, model.maxCount) : ""}
       <div class="geo-map-svg-wrap mt" style="position:relative">
         ${svg}
+        ${pts.length ? `<div class="geo-map-ctrl">
+          <button type="button" class="btn ghost" data-geo-zoom="in"
+            aria-label="拡大" title="拡大">＋</button>
+          <button type="button" class="btn ghost" data-geo-zoom="out"
+            aria-label="縮小" title="縮小">－</button>
+          <button type="button" class="btn ghost" data-geo-zoom="reset"
+            aria-label="全体表示に戻す" title="全体表示に戻す">⟲</button>
+        </div>` : ""}
         <div class="geo-map-tooltip" style="display:none; position:absolute;
           pointer-events:none; background:var(--panel);
           border:1px solid var(--line); border-radius:6px; padding:6px 10px;
           font-size:12px; white-space:nowrap;
           box-shadow:0 2px 8px rgba(0,0,0,.3); z-index:5"></div>
       </div>
+      ${pts.length ? `<p class="muted geo-map-hint">拡大: ＋ボタン・
+        ダブルクリック・Ctrl(⌘)+ホイール(トラックパッドはピンチ) /
+        移動: ドラッグ</p>` : ""}
       <div class="geo-ranking-grid mt">
         ${countryRankingHtml}${prefRankingHtml}${cityRankingHtml}
       </div>`;
-    wireGeoMapHover(wrap, pts, vbW, vbH);
+    wireGeoMap(wrap, model);
   }
 
   async function loadGeoMap() {

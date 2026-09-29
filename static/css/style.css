@@ -1263,9 +1263,47 @@ table.rtable .ops-cell .vague-btn { margin-left: 0; }
 
 /* アクセスの地理的分布(地図・2026-09-29)。地図の海岸線パス自体は
    scripts/build_geo_basemaps.py生成のstatic/js/geo_basemaps.js参照。 */
-.geo-map-svg { width: 100%; height: auto; display: block; max-height: 520px; }
-.geo-map-dot { cursor: pointer; transition: fill-opacity .15s; }
-.geo-map-dot:hover { fill-opacity: .85; }
+.geo-map-svg {
+  width: 100%; height: auto; display: block; max-height: 520px;
+  cursor: grab; user-select: none; -webkit-user-select: none;
+}
+.geo-map-svg.is-zoomed { touch-action: none; }   /* 拡大中だけ指のドラッグ=地図の移動 */
+.geo-map-svg.is-dragging { cursor: grabbing; }
+/* 点=件数の色(2026-09-30)。青一色の明暗5段階(dataviz順序尺度・
+   validate_palette.js --ordinalで地図の陸(--panel-2)/海(--panel)の両背景に対し
+   ライト/ダークとも全項目PASS)。ダークは多いほど明るく・ライトは多いほど濃い。 */
+:root {
+  --geo-c0: #256abf; --geo-c1: #3987e5; --geo-c2: #6da7ec;
+  --geo-c3: #9ec5f4; --geo-c4: #cde2fb;
+}
+:root[data-theme="light"] {
+  --geo-c0: #6da7ec; --geo-c1: #3987e5; --geo-c2: #256abf;
+  --geo-c3: #184f95; --geo-c4: #0d366b;
+}
+/* 点どうしが重なっても見分けられるよう背景色のリングをつける(塗りの下に描く) */
+.geo-map-dot {
+  stroke: var(--panel-2); stroke-width: 4px; paint-order: stroke;
+  vector-effect: non-scaling-stroke;
+}
+.geo-map-hl {
+  fill: none; stroke: var(--text); stroke-width: 2px;
+  vector-effect: non-scaling-stroke; pointer-events: none;
+}
+.geo-map-ctrl {
+  position: absolute; top: 8px; right: 8px; z-index: 4;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.geo-map-ctrl .btn { padding: 2px 10px; min-width: 36px; line-height: 1.4; }
+.geo-map-legend {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: 6px 14px; font-size: 12px; margin-top: 8px;
+}
+.geo-legend-title { color: var(--muted); }
+.geo-legend-item { display: inline-flex; align-items: center; gap: 5px; }
+.geo-legend-sw {
+  width: 12px; height: 12px; border-radius: 50%; display: inline-block;
+}
+.geo-map-hint { font-size: 12px; margin: 6px 0 0; }
 .geo-ranking-grid { display: flex; flex-wrap: wrap; gap: 20px; }
 .geo-ranking { flex: 1 1 220px; min-width: 200px; }
 .geo-ranking h4 { margin: 0 0 6px; font-size: 13px; color: var(--muted); }
