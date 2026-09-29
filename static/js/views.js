@@ -7610,13 +7610,21 @@ export async function admin(root) {
       const p = pts[Number(dot.dataset.idx)];
       dot.addEventListener("mousemove", (e) => {
         const rect = wrapEl.getBoundingClientRect();
+        const place = [
+          p.country_label || p.country, p.region_label || p.region,
+          p.city_label || p.city,
+        ].filter(Boolean).join(" / ");
         tip.style.display = "block";
-        tip.style.left = `${e.clientX - rect.left + 10}px`;
-        tip.style.top = `${e.clientY - rect.top - 10}px`;
-        const place = [p.country, p.region, p.city]
-          .filter(Boolean).join(" / ");
         tip.innerHTML = `<b>${escapeHtml(place || "(不明)")}</b><br>
           ${p.count.toLocaleString()}件`;
+        // 地名が日本語(外国は「カタカナ（英文）」)で長くなったので、右端に
+        // 近いときは点の左側に出して、吹き出しが切れないようにする(2026-09-29)。
+        let left = e.clientX - rect.left + 10;
+        if (left + tip.offsetWidth > rect.width) {
+          left = Math.max(0, e.clientX - rect.left - tip.offsetWidth - 10);
+        }
+        tip.style.left = `${left}px`;
+        tip.style.top = `${e.clientY - rect.top - 10}px`;
       });
       dot.addEventListener("mouseleave", () => { tip.style.display = "none"; });
     });
@@ -7626,7 +7634,7 @@ export async function admin(root) {
     if (!rows.length) return "";
     const body = rows.slice(0, 20).map((r, i) => `<tr>
       <td class="muted">${i + 1}</td>
-      <td>${escapeHtml(r.name)}</td>
+      <td>${escapeHtml(r.label || r.name)}</td>
       <td>${r.count.toLocaleString()}</td>
     </tr>`).join("");
     return `<div class="geo-ranking">
@@ -7650,7 +7658,9 @@ export async function admin(root) {
       : d.city_ranking;
     const cityRankingHtml = buildGeoRankingHtml(
       "市区町村別", cityRows.map((r) => ({
-        name: geoMapScope === "japan" ? r.city : `${r.city}(${r.country})`,
+        name: geoMapScope === "japan"
+          ? (r.label || r.city)
+          : `${r.label || r.city} / ${r.country_ja || r.country}`,
         count: r.count,
       })), "市区町村");
     const prefRankingHtml = geoMapScope === "japan"

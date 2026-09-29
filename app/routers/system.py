@@ -21,8 +21,8 @@ from ..config import ROOT_DIR, load_admin_known_ips, load_settings, log, paths
 from ..database import ACCENTS, NEWS_FIELDS, db
 from ..schemas import MemoryUpdateIn, SettingsIn
 from ..services import (
-    ai, auth, growth_metrics, persistence, traffic_source, tracking,
-    ua_parse, visitor_kind,
+    ai, auth, geo_names, growth_metrics, persistence, traffic_source,
+    tracking, ua_parse, visitor_kind,
 )
 
 router = APIRouter(prefix="/api/system", tags=["system"])
@@ -2445,6 +2445,9 @@ def admin_geo_map(kind: str = "visit", days: int = 30):
         if not g or not country:
             without_geo += cnt
             continue
+        # 「The Netherlands」と「Netherlands」等の表記ゆれを1つにまとめる
+        # (ランキングで同じ国が2行に分かれないように・2026-09-29)。
+        country = geo_names.canonical_country(country)
         region = g.get("region") or ""
         city = g.get("city") or ""
         lat, lon = g.get("latitude"), g.get("longitude")
@@ -2466,12 +2469,27 @@ def admin_geo_map(kind: str = "visit", days: int = 30):
             p["count"] += cnt
 
     points = sorted(points_map.values(), key=lambda p: -p["count"])
-    country_ranking = [{"name": k, "count": v}
+    # 表示用の日本語名(2026-09-29・オーナー指示): 日本の地名=日本語、外国の地名=
+    # 「カタカナ（英文）」。判定に使う元の英語の値(country=='Japan'等)は変えず、
+    # *_label / label を足すだけにする(app/services/geo_names.py)。
+    for p in points:
+        p["country_label"] = geo_names.country_label(p["country"])
+        p["region_label"] = geo_names.region_label(p["country"], p["region"])
+        p["city_label"] = geo_names.city_label(
+            p["country"], p["region"], p["city"])
+    country_ranking = [{"name": k, "label": geo_names.country_label(k),
+                        "count": v}
                        for k, v in country_counts.most_common(50)]
-    pref_ranking = [{"name": k, "count": v}
+    pref_ranking = [{"name": k,
+                     "label": geo_names.region_label("Japan", k),
+                     "count": v}
                     for k, v in pref_counts.most_common(50)]
     city_ranking = sorted(
         city_counts.values(), key=lambda d: -d["count"])[:50]
+    for d in city_ranking:
+        d["label"] = geo_names.city_label(d["country"], "", d["city"])
+        d["country_label"] = geo_names.country_label(d["country"])
+        d["country_ja"] = geo_names.country_ja(d["country"])
     return {
         "kind": kind, "days": days,
         "total": total, "with_geo": total - without_geo,
