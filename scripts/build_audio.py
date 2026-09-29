@@ -45,8 +45,9 @@ def _gen_one(conn, item_type, item_id, skind, style, text, voices, force):
         if not force and audio_store.get(
                 conn, item_type, item_id, skind, v, text) is not None:
             continue  # 既に保存済み → スキップ（無料）
+        # audio_store.put が永続保存するので、tts_cache への二重保存はしない(2026-09-29)。
         audio, err = ai.synthesize_speech(
-            text, v, style=style, rate_limit=False)
+            text, v, style=style, rate_limit=False, persist_cache=False)
         if err:
             if "上限" in err:
                 return made, "cap"
