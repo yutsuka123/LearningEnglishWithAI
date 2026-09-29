@@ -54,6 +54,9 @@ cron `eigo-f2b-unban-poller` が1分以内に反映)。
 - **IPv6** は実ログで 0 件のため未対応(必要になったら nftables 系のアクションを検討)。
 - **fail2ban が Docker より先に起動すると `DOCKER-USER` が無く BAN アクションの起動に失敗しうる**(推測)。実 BAN に切り替えるときは
   systemd の drop-in(`After=docker.service`)を入れることを推奨する(この導入スクリプトは systemd の設定は変更しない)。
+  **2026-09-29に本番へ導入済み**: `/etc/systemd/system/fail2ban.service.d/after-docker.conf`(`[Unit]` に
+  `After=docker.service` と `Wants=docker.service`)+ `systemctl daemon-reload`(fail2ban自体は再起動していない)。
+  VPSを作り直す・別のVPSに入れる場合は同じ drop-in を入れること(`install.sh` は入れない)。
 
 ## 導入・運用(VPS 上で root)
 `deploy/` は通常の同期(`sync_code.sh`)の対象外なので、手元から手動で転送する(追加のみ・`--delete` なし):
