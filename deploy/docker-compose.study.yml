@@ -49,7 +49,7 @@ services:
       - "127.0.0.1:8001:8000"   # ローカル限定（FW変更不要）。検証用・外部非公開
     networks:
       - shared
-    mem_limit: 512m            # n8n を守るための上限（uvicorn+SQLite は十分軽い）
+    mem_limit: 600m            # 2026-09-29 512m→600m(30日で最大501MB・上限に近かったため。n8n を守る上限は維持)
     cpus: "1.0"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0) if urllib.request.urlopen('http://127.0.0.1:8000/api/health',timeout=3).status==200 else sys.exit(1)"]
