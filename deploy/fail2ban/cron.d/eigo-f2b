@@ -1,2 +1,6 @@
 # 直近30日のログイン成功IP(=BAN対象外にする信頼IP)を10分ごとに更新する(eigo-f2b用)。
 */10 * * * * root /usr/local/sbin/eigo-f2b-trusted-refresh >/dev/null 2>&1
+# 管理画面の「今すぐ解除」を1分以内に反映する(2026-09-29)。アプリの応答が
+# 遅い場合に多重起動しないよう flock -n で1個までに制限する(2026-09-29
+# Fable指摘M2)。
+* * * * * root flock -n /run/eigo-f2b-unban.lock /usr/local/sbin/eigo-f2b-unban-poller >/dev/null 2>&1

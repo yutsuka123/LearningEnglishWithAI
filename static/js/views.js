@@ -5661,6 +5661,27 @@ export async function admin(root) {
         <div id="clientErrorLogWrap" class="mt"><p class="muted">未読み込み</p></div>
       </details>
 
+      <details class="log-group" id="logSecurityEventsDetails">
+        <summary>🚧 アクセス制限（fail2ban・2026-09-29）</summary>
+        <p class="muted mt">本番VPSのfail2banが検知した不審アクセス。「実際に遮断」は
+          eigo-probe/eigo-ratelimited(明確に悪意があるパターンのみ・すぐ管理画面へ
+          表示され、いつでもこの画面から解除できる)。「候補（未遮断）」は
+          eigo-loginflood/eigo-loginfail(ログイン関連・無関係な人が動的IP等で
+          後から巻き込まれる可能性があるため、しばらく様子見で自動遮断はしない
+          設定・2026-09-29オーナー方針)。</p>
+        <div class="row">
+          <label>直近:
+            <select id="secEvDays">
+              <option value="1">1日</option>
+              <option value="7" selected>7日</option>
+              <option value="30">30日</option>
+            </select></label>
+          <button class="btn ghost" id="secEvReload"
+            style="padding:3px 10px">再読み込み</button>
+        </div>
+        <div id="securityEventsWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
+
       <details class="log-group" id="logAccessDetails">
         <summary>📈 アクセスログ集計（日別）</summary>
         <p class="muted mt">Caddyのアクセスログをscripts/analyze_access_log.py
@@ -7154,6 +7175,69 @@ export async function admin(root) {
   root.querySelector("#clientErrLogDays")
     .addEventListener("change", loadClientErrorLog);
 
+  async function loadSecurityEvents() {
+    const wrap = root.querySelector("#securityEventsWrap");
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    const days = root.querySelector("#secEvDays").value;
+    try {
+      const res = await api.get(`/api/system/admin/security-events?days=${days}`);
+      if (!res.events.length) {
+        wrap.innerHTML = `<p class="muted">この期間はまだありません。</p>`;
+        return;
+      }
+      const summaryRows = res.summary.map((s) => `<tr>
+        <td class="muted">${escapeHtml(s.jail)}</td>
+        <td>${s.mode === "ban" ? "実際に遮断" : "候補（未遮断）"}</td>
+        <td>${s.n}</td>
+      </tr>`).join("");
+      const rows = res.events.map((e) => {
+        const isRealBan = e.mode === "ban" && e.action === "ban";
+        const unbanCell = !isRealBan ? `<span class="muted">—</span>`
+          : e.unban_done_at ? `<span class="muted">解除済み</span>`
+          : e.unban_requested_at ? `<span class="muted">解除処理中…</span>`
+          : !e.still_banned ? `<span class="muted">解除済み（自動失効等）</span>`
+          : `<button class="btn ghost sec-ev-unban" data-id="${e.id}"
+              style="padding:2px 8px">今すぐ解除</button>`;
+        return `<tr>
+          <td class="muted">${fmtDate(e.created_at)}</td>
+          <td>${escapeHtml(e.jail)}</td>
+          <td>${e.action === "ban" ? (isRealBan ? "🚫実際に遮断" : "候補（未遮断）") : "解除"}</td>
+          <td class="muted">${escapeHtml(e.ip)}</td>
+          <td class="muted">${e.bantime_seconds ? Math.round(e.bantime_seconds / 60) + "分" : ""}</td>
+          <td>${unbanCell}</td>
+          <td><details><summary class="muted">根拠</summary>
+            <pre class="mt" style="white-space:pre-wrap">${escapeHtml(e.evidence || "")}</pre>
+          </details></td>
+        </tr>`;
+      }).join("");
+      wrap.innerHTML = `
+        <h3>件数（期間内・遮断/候補のみ）</h3>
+        <table><thead><tr><th>jail</th><th>種別</th><th>件数</th></tr></thead>
+          <tbody>${summaryRows}</tbody></table>
+        <table class="mt"><thead><tr>
+          <th>日時</th><th>jail</th><th>種別</th><th>IP</th><th>遮断時間</th><th>解除</th><th></th>
+        </tr></thead><tbody>${rows}</tbody></table>`;
+      wrap.querySelectorAll(".sec-ev-unban").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          if (!confirm("このIPの遮断を解除します。よろしいですか？")) return;
+          btn.disabled = true;
+          try {
+            await api.post(`/api/system/admin/security-events/${btn.dataset.id}/request-unban`, {});
+            toast("解除を依頼しました(1分以内に反映されます)");
+            loadSecurityEvents();
+          } catch (e) {
+            toast("失敗: " + e.message);
+            btn.disabled = false;
+          }
+        });
+      });
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  root.querySelector("#secEvReload").addEventListener("click", loadSecurityEvents);
+  root.querySelector("#secEvDays").addEventListener("change", loadSecurityEvents);
+
   async function loadAccessLog() {
     const wrap = root.querySelector("#accessLogWrap");
     wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
@@ -8014,6 +8098,7 @@ export async function admin(root) {
     ["#logWithdrawalDetails", loadWithdrawalLog],
     ["#logErrorDetails", loadErrorLog],
     ["#logClientErrorDetails", loadClientErrorLog],
+    ["#logSecurityEventsDetails", loadSecurityEvents],
     ["#logAccessDetails", loadAccessLog],
     ["#logUsageAnalyticsDetails", loadUsageAnalytics],
     ["#logPowerUsersDetails", loadPowerUsers],

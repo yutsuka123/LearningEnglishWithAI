@@ -15,6 +15,17 @@
  ],
  "versions": [
   {
+   "version": "ver1.5.6",
+   "date": "2026-09-29",
+   "title": "システムの安定性向上",
+   "public": [
+    "システムの堅牢性・安定性の向上のための改善を行いました。"
+   ],
+   "admin": [
+    "本番VPSのfail2banの検知結果(BAN・候補)を管理画面のログ一覧「アクセス制限」から確認できるようにした(2026-09-29オーナー要望)。eigo-probe/eigo-ratelimited(明確に悪意があるパターン)は従来どおり実際に遮断してよいが、eigo-loginflood/eigo-loginfail(ログイン関連・無関係な人が動的IP等で巻き込まれる可能性がある)は、しばらく実際には遮断せず検知のみ記録する方針に変更。ホスト側のfail2banスクリプトが新設の内部API(POST /api/system/security-events・FAIL2BAN_NOTIFY_TOKENで認証)へ通知し、新テーブルsecurity_events(logs.db)に記録。実際に遮断された行は管理画面の「今すぐ解除」ボタンから解除できる(ホスト側cronのeigo-f2b-unban-poller・1分毎ポーリングで反映・コンテナから直接ホストを操作する経路は作らない設計)。IP保存期間(360日ハッシュ化)の対象にsecurity_eventsも追加。Fable敵対的レビュー実施(本番の認証ミドルウェアで401になり機能しなくなる不具合を含むBLOCKER〜LOWを修正・詳細はCHANGELOG.md ver1.5.6参照)。"
+   ]
+  },
+  {
    "version": "ver1.5.5",
    "date": "2026-09-28",
    "title": "単語の詳細画面の表示順を改善",

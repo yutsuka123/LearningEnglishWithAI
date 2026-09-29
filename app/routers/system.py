@@ -3,16 +3,19 @@
 from __future__ import annotations
 
 import collections
+import hmac
+import ipaddress
 import json
+import os
 import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Literal
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 from starlette.concurrency import run_in_threadpool
 
 from ..services import errors
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ..config import ROOT_DIR, load_admin_known_ips, load_settings, log, paths
 from ..database import ACCENTS, NEWS_FIELDS, db
@@ -2747,6 +2750,190 @@ def client_error(payload: ClientErrorIn):
             payload.kind, payload.message, payload.stack, payload.url,
             payload.line, payload.col,
         )
+    return {"ok": True}
+
+
+def _require_f2b_token(request: Request) -> None:
+    """本番VPSのfail2ban(ホスト側スクリプト)専用の内部エンドポイントのガード。
+    管理者ログインではなく`.env.study`の`FAIL2BAN_NOTIFY_TOKEN`と一致する
+    ヘッダーを要求する(このエンドポイントはCaddy経由で外部からも到達できる
+    パスのため、トークン無しなら誰でも偽の記録を送れてしまう)。未設定/
+    不一致は存在しないふりをする(7001=404。エンドポイントの存在を教えない)。
+    FastAPIの依存性(Depends)として使い、パス/ボディの検証より先に走らせる
+    (2026-09-29 Fable指摘M1: 呼び出し側でawaitしないとpydanticの422エラーが
+    先に出てトークン無しでもエンドポイントの存在・パラメータ名が漏れる)。
+    比較はhmac.compare_digest(タイミング攻撃対策・同指摘)。"""
+    token = os.getenv("FAIL2BAN_NOTIFY_TOKEN", "").strip()
+    given = request.headers.get("X-F2B-Token", "")
+    if not token or not hmac.compare_digest(given, token):
+        raise errors.http_error("7001")
+
+
+_F2B_DEP = Depends(_require_f2b_token)
+
+# fail2banが実際に触るjailだけを受け付ける(2026-09-29 Fable指摘H1: 有効な
+# トークンを持つ呼び出し元でも、相乗りの他プロジェクトのjail名(例: sshd)を
+# 指定させない=このトークンがeigo以外のjailへのレバーにならないように)。
+_KNOWN_JAILS = {"eigo-probe", "eigo-loginflood", "eigo-loginfail", "eigo-ratelimited"}
+
+
+def _valid_ip(ip: str) -> bool:
+    try:
+        ipaddress.ip_address(ip)
+        return True
+    except ValueError:
+        return False
+
+
+class SecurityEventIn(BaseModel):
+    ip: str
+    jail: str
+    action: str       # 'ban' | 'unban'
+    mode: str          # 'ban'(実際に遮断) | 'dryrun'(候補のみ)
+    failures: int = Field(default=0, ge=0, le=1_000_000)
+    bantime_seconds: int = Field(default=0, ge=0, le=365 * 24 * 3600)
+    evidence: str = ""
+
+
+@router.post("/security-events", dependencies=[_F2B_DEP])
+def ingest_security_event(payload: SecurityEventIn):
+    """本番VPSのfail2ban(eigo-f2b-auditスクリプト)から、判定のたびに送られる
+    (2026-09-29・オーナー要望「BANが起きたら管理画面で見えるように」)。
+    mode='dryrun'のjail(eigo-loginflood/eigo-loginfail)は実際には遮断して
+    いない「候補」として記録するだけ(実際にBANするかはしばらく様子見という
+    オーナー方針・下のadmin_security_eventsで確認する)。"""
+    if payload.action not in ("ban", "unban") or payload.mode not in ("ban", "dryrun"):
+        raise errors.http_error("7002")
+    if payload.jail not in _KNOWN_JAILS or not _valid_ip(payload.ip):
+        raise errors.http_error("7002")
+    with db() as conn:
+        # 2026-09-29 Fable指摘L2: fail2banサービス再起動のたびに、その時点で
+        # 実際にBAN中の全IPへactionunban→actionban(再登録)が走り、同じ内容の
+        # 行が量産される。直近55秒以内に同じ(ip, jail, action, mode)があれば
+        # 積み増さない(1分毎のcronの間隔より短く・通常のBANの連打とは区別)。
+        dup = conn.execute(
+            "SELECT 1 FROM security_events WHERE ip = ? AND jail = ? "
+            "AND action = ? AND mode = ? "
+            "AND created_at >= datetime('now', '-55 seconds') LIMIT 1",
+            (payload.ip, payload.jail, payload.action, payload.mode),
+        ).fetchone()
+        if dup:
+            return {"ok": True, "deduped": True}
+        conn.execute(
+            "INSERT INTO security_events "
+            "(ip, jail, action, mode, failures, bantime_seconds, evidence) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (payload.ip, payload.jail, payload.action, payload.mode,
+             payload.failures, payload.bantime_seconds, payload.evidence[:2000]),
+        )
+        conn.commit()
+    return {"ok": True}
+
+
+@router.get("/security-events/pending-unbans", dependencies=[_F2B_DEP])
+def pending_unbans():
+    """本番VPSのcron(eigo-f2b-unban-poller)が1分毎に呼ぶ。管理画面で
+    「今すぐ解除」を押された(unban_requested_atがある・まだunban_done_atが
+    無い)行を返す(2026-09-29)。"""
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT id, ip, jail FROM security_events "
+            "WHERE unban_requested_at IS NOT NULL AND unban_done_at IS NULL "
+            "AND action = 'ban' AND mode = 'ban'"
+        ).fetchall()
+    # 2026-09-29 Fable指摘H1: IP保存期間(ip_retention)経過後は`h:...`という
+    # ハッシュ値に置き換わる。万一そのような行が残っていても、有効なIP
+    # 形式でなければfail2ban-clientへは渡さない(防御的二重チェック)。
+    pending = [dict(r) for r in rows if _valid_ip(r["ip"]) and r["jail"] in _KNOWN_JAILS]
+    return {"pending": pending}
+
+
+@router.post("/security-events/{event_id}/unban-done", dependencies=[_F2B_DEP])
+def unban_done(event_id: int):
+    """上のpending-unbansを処理したあと、cronが結果を報告する(2026-09-29)。"""
+    with db() as conn:
+        conn.execute(
+            "UPDATE security_events SET unban_done_at = datetime('now') "
+            "WHERE id = ? AND unban_requested_at IS NOT NULL", (event_id,),
+        )
+        conn.commit()
+    return {"ok": True}
+
+
+@router.get("/admin/security-events")
+def admin_security_events(days: int = 7, limit: int = 200):
+    """fail2banの検知・BAN一覧(管理画面用・2026-09-29)。mode='ban'=実際に
+    遮断・mode='dryrun'=候補のみ(まだ遮断していない)。`still_banned`は、
+    同じip+jailで、このBAN行より後に'unban'行(手動解除・自動失効・
+    fail2ban再起動時の再読込のいずれか)が無いかで判定する(2026-09-29
+    Fable指摘L3: 以前はunban_requested_at/unban_done_atだけを見ており、
+    自動失効や再起動での解除を反映できていなかった)。"""
+    _require_admin()
+    days = max(1, min(days, 90))
+    limit = max(1, min(limit, 1000))
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT id, ip, jail, action, mode, failures, bantime_seconds, "
+            "evidence, created_at, reviewed_at, unban_requested_at, unban_done_at, "
+            "NOT EXISTS ("
+            "  SELECT 1 FROM security_events u"
+            "  WHERE u.ip = security_events.ip AND u.jail = security_events.jail"
+            "    AND u.action = 'unban' AND u.id > security_events.id"
+            ") AS still_banned "
+            "FROM security_events WHERE created_at >= datetime('now', ?) "
+            "ORDER BY id DESC LIMIT ?",
+            (f"-{days} days", limit),
+        ).fetchall()
+        summary = conn.execute(
+            "SELECT jail, mode, COUNT(*) AS n FROM security_events "
+            "WHERE created_at >= datetime('now', ?) AND action = 'ban' "
+            "GROUP BY jail, mode", (f"-{days} days",),
+        ).fetchall()
+    return {
+        "days": days,
+        "summary": [dict(r) for r in summary],
+        "events": [dict(r) for r in rows],
+    }
+
+
+@router.post("/admin/security-events/{event_id}/review")
+def admin_review_security_event(event_id: int):
+    """確認済みの印を付ける(2026-09-29・一覧を追った跡を残すだけ)。"""
+    _require_admin()
+    with db() as conn:
+        cur = conn.execute(
+            "UPDATE security_events SET reviewed_at = datetime('now') "
+            "WHERE id = ?", (event_id,),
+        )
+        if cur.rowcount == 0:
+            raise errors.http_error("7001")
+        conn.commit()
+    return {"ok": True}
+
+
+@router.post("/admin/security-events/{event_id}/request-unban")
+def admin_request_unban(event_id: int):
+    """本番VPSのfail2banで実際に遮断されたIPを、管理画面から解除依頼する
+    (2026-09-29)。VPS上のcron(eigo-f2b-unban-poller、1分毎)がこの印を見て
+    `fail2ban-client unbanip`を実行する(コンテナから直接ホストを操作する
+    経路は作らず、非同期のポーリングにする=安全側)。mode='dryrun'(まだ
+    実際には遮断していない候補)の行は対象外。"""
+    _require_admin()
+    with db() as conn:
+        row = conn.execute(
+            "SELECT id, mode, action FROM security_events WHERE id = ?",
+            (event_id,),
+        ).fetchone()
+        if not row:
+            raise errors.http_error("7001")
+        if row["mode"] != "ban" or row["action"] != "ban":
+            raise errors.http_error(
+                "7002", "実際に遮断された記録のみ解除依頼できます。")
+        conn.execute(
+            "UPDATE security_events SET unban_requested_at = datetime('now') "
+            "WHERE id = ? AND unban_requested_at IS NULL", (event_id,),
+        )
+        conn.commit()
     return {"ok": True}
 
 

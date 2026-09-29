@@ -339,6 +339,13 @@ async def _auth_context_inner(request, call_next):
                 # 相当の公開コンテンツ）。
                 or path.startswith("/glossary") or path.startswith("/phrasebook")
                 or path.startswith("/crossword")
+                # 2026-09-29: 本番VPSのfail2ban(ホスト側スクリプト)が
+                # 検知・BAN通知/解除依頼の確認に叩く内部エンドポイント。
+                # セッションではなく`X-F2B-Token`(FAIL2BAN_NOTIFY_TOKEN)で
+                # 認証する(_require_f2b_token・app/routers/system.py)ため
+                # ここではログイン必須にしない(guest_readableにも入れない
+                # =ゲスト疑似ユーザーを無駄に割り当てない)。
+                or path.startswith("/api/system/security-events")
             )
             guest_readable = any(
                 path.startswith(p) for p in _GUEST_READ_PREFIXES)

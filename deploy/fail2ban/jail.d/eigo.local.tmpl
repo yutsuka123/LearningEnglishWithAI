@@ -1,5 +1,6 @@
-# eigo(study.nyangailab.com)用のfail2ban jail(2026-09-26)。install.shがlogpath行とaction行の
-# プレースホルダーを埋めて /etc/fail2ban/jail.d/eigo.local に置く(コメント行は置換しない)。しきい値の根拠=tools/simulate.py(実ログ3か月分で誤BAN0件)。
+# eigo(study.nyangailab.com)用のfail2ban jail(2026-09-26作成・2026-09-29改訂)。install.shがlogpath行と
+# action行のプレースホルダーを埋めて /etc/fail2ban/jail.d/eigo.local に置く(コメント行は置換しない)。
+# しきい値の根拠=tools/simulate.py(実ログ3か月分で誤BAN0件)。
 # ・対象はstudy.logだけ(相乗りの他プロジェクトのログ・jailには触れない)。
 # ・ignorecommand=eigo-f2b-ignore: 運営者の許可リスト+「アカウント作成から2日以上経ったユーザーが直近30日にログイン成功した
 #   IP」(信頼IP)はBANしない。**eigo-probeだけは信頼IPを免除しない**(--allow-only=許可リストのみ)。
@@ -7,6 +8,13 @@
 # ・ignoreip: ローカル/Docker/プライベート帯はBANしない。
 # ・BANはDocker公開ポート(80/443)に効くようDOCKER-USERチェーンを使う(通常のINPUTでは効かない)。
 # ・IPv6は実ログで0件のため未対応(必要になったらnftables系のアクションを検討)。
+# ・2026-09-29 オーナー方針: 「明確に悪意があるとわかるもの(eigo-probe・eigo-ratelimited)」は
+#   install.shの引数どおり実際にBANしてよい(__ACTIONS_ENFORCE__)。「それ以外(eigo-loginflood・
+#   eigo-loginfail=ログイン関連、動的IP再割当等で無関係な人が後から巻き込まれ得る)」は、しばらく
+#   様子見のため**常にdryrun(検知のみ・実際には遮断しない)**とし、管理画面の「アクセス制限」一覧に
+#   「候補」として出す(__ACTIONS_CANDIDATE__。install.shの引数(dryrun/ban)に関わらず固定)。
+#   どちらのアクションも eigo-audit 経由でアプリへ通知される(app/routers/system.py
+#   ingest_security_event・FAIL2BAN_NOTIFY_TOKENで認証)。
 
 [eigo-probe]
 enabled = true
@@ -20,7 +28,7 @@ port = http,https
 ignoreip = 127.0.0.0/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
 ignorecommand = /usr/local/sbin/eigo-f2b-ignore --allow-only <ip>
 ignorecache = key="<ip>", max-count=100, max-time=5m
-action = __ACTIONS__
+action = __ACTIONS_ENFORCE__
 
 [eigo-loginflood]
 enabled = true
@@ -34,7 +42,7 @@ port = http,https
 ignoreip = 127.0.0.0/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
 ignorecommand = /usr/local/sbin/eigo-f2b-ignore <ip>
 ignorecache = key="<ip>", max-count=100, max-time=5m
-action = __ACTIONS__
+action = __ACTIONS_CANDIDATE__
 
 [eigo-loginfail]
 enabled = true
@@ -48,7 +56,7 @@ port = http,https
 ignoreip = 127.0.0.0/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
 ignorecommand = /usr/local/sbin/eigo-f2b-ignore <ip>
 ignorecache = key="<ip>", max-count=100, max-time=5m
-action = __ACTIONS__
+action = __ACTIONS_CANDIDATE__
 
 [eigo-ratelimited]
 enabled = true
@@ -62,4 +70,4 @@ port = http,https
 ignoreip = 127.0.0.0/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
 ignorecommand = /usr/local/sbin/eigo-f2b-ignore <ip>
 ignorecache = key="<ip>", max-count=100, max-time=5m
-action = __ACTIONS__
+action = __ACTIONS_ENFORCE__

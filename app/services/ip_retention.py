@@ -40,6 +40,8 @@ _IP_TABLES = (
     ("client_errors", "created_at"),
     ("ai_usage", "created_at"),
     ("charge_key_attempts", "created_at"),
+    # fail2banの検知・BAN記録(2026-09-29追加・security_events)。
+    ("security_events", "created_at"),
 )
 _GEO_CACHE = ("ip_geo_cache", "fetched_at")
 

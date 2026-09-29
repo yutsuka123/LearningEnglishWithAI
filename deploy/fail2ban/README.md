@@ -1,16 +1,23 @@
-# eigo 用 fail2ban(2026-09-26)
+# eigo 用 fail2ban(2026-09-26作成・2026-09-29改訂)
 
 study.nyangailab.com へのスキャン・総当たり・過剰アクセスを、Caddy のアクセスログ(JSON)から検知して遮断する。
 **誤って正規ユーザーを止めないこと**を最優先に設計してあり、最初は「BAN しない(dryrun)」で運用して判定内容を確認する。
 実IP・ホスト名・鍵パスはここに書かない(VPS 上で実行時に取得する)。
 
+**2026-09-29 オーナー方針変更**: 「明確に悪意があるとわかるもの」だけ実際に BAN し、それ以外は検知だけしてアプリの
+管理画面(ログ→アクセス制限)で「候補」として様子見する方式に変更。`install.sh ban` を実行しても、
+eigo-loginflood/eigo-loginfail は**常に dryrun のまま**(install.sh の引数に関わらず)で、実際の遮断は行わない。
+どちらのモードでも、判定のたびにアプリへ通知が届き(`FAIL2BAN_NOTIFY_TOKEN`で認証)、管理画面の一覧に出る。
+実際に遮断された行(eigo-probe/eigo-ratelimited)は、管理画面の「今すぐ解除」ボタンからも解除できる(ホスト側の
+cron `eigo-f2b-unban-poller` が1分以内に反映)。
+
 ## しくみ
-| jail | 検知するもの | しきい値 | BAN 時間 | 信頼IPの免除 |
-|---|---|---|---|---|
-| eigo-probe | 存在しないはずの URL(`/wp-login.php`・`/.env`・`/.git/`・phpMyAdmin 等)を叩く(status 307/4xx・クエリ文字列は見ない) | 10分に3回 | 12時間 | **しない**(許可リストのみ) |
-| eigo-loginflood | `/login` への短時間の大量 GET | 5分に60回 | 3時間 | する |
-| eigo-loginfail | ログイン失敗(401/403)の連続 | 10分に12回 | 1時間 | する |
-| eigo-ratelimited | アプリのレート制限(429)に当たり続ける(`/api/words`・`/api/phrases` の429は数えない) | 10分に60回 | 1時間 | する |
+| jail | 検知するもの | しきい値 | BAN 時間 | 信頼IPの免除 | 実際に遮断するか |
+|---|---|---|---|---|---|
+| eigo-probe | 存在しないはずの URL(`/wp-login.php`・`/.env`・`/.git/`・phpMyAdmin 等)を叩く(status 307/4xx・クエリ文字列は見ない) | 10分に3回 | 12時間 | **しない**(許可リストのみ) | `install.sh` の引数どおり(ban 指定で実遮断) |
+| eigo-loginflood | `/login` への短時間の大量 GET | 5分に60回 | 3時間 | する | **常にしない**(候補のみ・2026-09-29〜) |
+| eigo-loginfail | ログイン失敗(401/403)の連続 | 10分に12回 | 1時間 | する | **常にしない**(候補のみ・2026-09-29〜) |
+| eigo-ratelimited | アプリのレート制限(429)に当たり続ける(`/api/words`・`/api/phrases` の429は数えない) | 10分に60回 | 1時間 | する | `install.sh` の引数どおり(ban 指定で実遮断) |
 
 **採用しなかったもの**: 404 の連発(404 の 95% は `/favicon.ico` で、正規ユーザーも踏むため)・全リクエスト数(ページ表示だけで1分に数十件になり、実ユーザーと区別できない)。
 
@@ -36,8 +43,12 @@ study.nyangailab.com へのスキャン・総当たり・過剰アクセスを�
 - **BAN は同じ Caddy 配下の他サイトにも及ぶ**: Caddy は Docker の公開ポート(80/443)で動いているため `DOCKER-USER` チェーンで遮断する。
   同じ VPS の他サイト(同じ Caddy 配下のプロジェクト)にも、その IP からのアクセスは届かなくなる(80/443 のみ・他のポートには影響しない)。
   **実 BAN に切り替える前に、相乗り先の運営者へこの影響範囲を共有すること。**
-- **`fail2ban-client reload` は全 jail(sshd 等)を再読込する**。設定テスト(`fail2ban-client -t`)を先に通すので壊れる可能性は低いが、
-  他プロジェクトの jail 設定に問題があれば導入が止まる(それ自体は安全側)。
+- **`install.sh`は最後に`systemctl restart fail2ban`でサービス全体を再起動する**(2026-09-29判明: `fail2ban-client reload`だと
+  jailのアクション一覧に新しいアクションが増える変更を反映しないサイレントな不具合があったため)。設定テスト(`fail2ban-client -t`)を
+  先に通すので壊れる可能性は低いが、他プロジェクトの jail(sshd 等)も含めて数秒間 fail2ban が止まる(監視が止まるだけで、
+  保護対象のサービス自体には影響しない)。他プロジェクトの jail 設定に問題があれば導入が止まる(それ自体は安全側)。
+  再起動のたびに、その時点でBAN中だった全IPのunban→ban記録がアプリへ再送されるため、管理画面には同じIPの行が
+  複数回出ることがある(55秒以内の重複は自動で除外される)。
 - **Caddy の JSON ログの形式(キー順)に依存**する。Caddy の更新で形式が変わると、無音で検知が0になる。`install.sh` の「実ログに何行マッチするか」と
   `review.sh` で件数を確認すること。
 - **IPv6** は実ログで 0 件のため未対応(必要になったら nftables 系のアクションを検討)。
@@ -59,9 +70,13 @@ sudo bash uninstall.sh          # jail を外す(BAN 中の IP は全て解除)�
 ```
 - **個別解除**: `sudo fail2ban-client set <jail> unbanip <ip>` / 恒久的に除外するなら許可リストへ追記(再起動不要)。
 - **緊急停止**: `sudo bash uninstall.sh`(jail を外して reload=即時に全解除)。
-- **実BANへの切替の手順**: dryrun を 3〜7 日運用し、`review.sh` で(a)判定された IP が全てスキャナー/攻撃らしいこと(b)運営者・テスト・広告の審査元が
+- **実BANへの切替の手順(eigo-probe/eigo-ratelimitedのみ・2026-09-29〜)**: dryrun を 3〜7 日運用し、`review.sh` で(a)判定された IP が全てスキャナー/攻撃らしいこと(b)運営者・テスト・広告の審査元が
   混ざっていないこと(c)件数が想定内(実ログ換算で 1日あたり数件〜十数件)(d)「最後の信頼IP更新」が新しいことを確認する。
   切替後は、**自分の携帯回線(Wi-Fi を切った状態)で1回だけ実際に遮断される**ことを確認する:
   `sudo fail2ban-client set eigo-probe banip <その回線の現在のIP>` → 携帯からサイトが開けないこと → `unbanip` で解除。
+  eigo-loginflood/eigo-loginfail はこの手順の対象外(2026-09-29オーナー方針で常にdryrunに固定済み)。
+- **通知トークンの設定**: `FAIL2BAN_NOTIFY_TOKEN`(アプリの`.env.study`に`openssl rand -hex 32`等で追記→**コンテナを
+  再作成**(`docker restart`では反映されない)→`install.sh`実行)。未設定でもfail2ban自体は今まで通り動く
+  (アプリへの通知だけが無効になり、`/var/log/eigo-f2b-audit.log`への記録は変わらず続く)。
 - ログ: `/var/log/eigo-f2b-audit.log`(判定と根拠・8世代)/`/var/log/fail2ban.log`(fail2ban 本体の Found/Ban/Ignore)。
   監査ログに Cookie・クエリ文字列(gclid 等)は出さない(パスとUA60字のみ)。

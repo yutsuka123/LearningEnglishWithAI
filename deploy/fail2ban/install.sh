@@ -49,7 +49,24 @@ install -m 644 "$SRC"/filter.d/*.conf "$F2B"/filter.d/
 install -m 644 "$SRC"/action.d/eigo-audit.conf "$F2B"/action.d/
 install -m 755 "$SRC"/bin/eigo-f2b-* /usr/local/sbin/
 install -d -m 755 /var/lib/eigo-f2b
-printf 'CADDY_LOG_DIR=%s\nAPP_DATA_DIR=%s\n' "$LOGDIR" "$APPDATA" > /etc/eigo-f2b.conf; chmod 644 /etc/eigo-f2b.conf
+# 2026-09-29: アプリへの通知(POST /api/system/security-events)用トークンをコンテナのenvから複製する
+# (docker inspectで取得=.env.studyの生ファイルは読まない)。未設定なら通知は無効(監査ログのみ継続)。
+# ⚠️ .env.studyへトークンを追記しただけでは反映されない: `docker restart`はenv_fileを再読込しない。
+#    `docker compose up -d`でコンテナを作り直した後にこのinstall.shを実行すること(2026-09-29 Fable指摘M4)。
+NOTIFY_TOKEN="$(docker exec "$APP_CONTAINER" printenv FAIL2BAN_NOTIFY_TOKEN 2>/dev/null || true)"
+[ -z "$NOTIFY_TOKEN" ] && echo "  ⚠️ FAIL2BAN_NOTIFY_TOKEN未設定(アプリの.env.studyに追記後、コンテナを再作成したか確認)。管理画面への通知は無効のまま進めます" >&2
+APP_PORT="$(docker inspect "$APP_CONTAINER" --format '{{(index (index .NetworkSettings.Ports "8000/tcp") 0).HostPort}}' 2>/dev/null || true)"
+# 2026-09-29 Fable指摘L1: ポートが取れないまま既定値(8001)にフォールバックすると、
+# 相乗りの他プロジェクトが偶然そのポートを使っていた場合にトークン付きリクエストを誤送信しうる。
+# 取れなければ通知を諦める(空URL=eigo-f2b-audit/poller側がAPP_URL未設定として何もしない)。
+if [ -z "$APP_PORT" ] && [ -n "$NOTIFY_TOKEN" ]; then
+  echo "  ⚠️ アプリのポートをdocker inspectで特定できませんでした。通知は無効のまま進めます" >&2
+  NOTIFY_TOKEN=""
+fi
+APP_URL=""; [ -n "$APP_PORT" ] && APP_URL="http://127.0.0.1:${APP_PORT}"
+printf 'CADDY_LOG_DIR=%s\nAPP_DATA_DIR=%s\nAPP_URL=%s\nNOTIFY_TOKEN=%s\n' \
+  "$LOGDIR" "$APPDATA" "$APP_URL" "$NOTIFY_TOKEN" > /etc/eigo-f2b.conf
+chmod 600 /etc/eigo-f2b.conf  # NOTIFY_TOKEN(秘密情報)を含むためroot専用に(以前は644)
 if [ ! -e "$F2B/eigo-allowlist.txt" ]; then
   cat > "$F2B/eigo-allowlist.txt" <<'ALLOW'
 # eigo用fail2banの許可リスト(運営者が手で書く)。ここに書いたIP/CIDRはBANされない。1行1件・#でコメント。
@@ -63,20 +80,28 @@ touch /var/log/eigo-f2b-audit.log; chown root:adm /var/log/eigo-f2b-audit.log; c
 install -m 644 "$SRC"/cron.d/eigo-f2b /etc/cron.d/eigo-f2b
 install -m 644 "$SRC"/logrotate/eigo-f2b /etc/logrotate.d/eigo-f2b
 
-echo "== 3/7 jailを生成(mode=$MODE)"
+echo "== 3/7 jailを生成(mode=$MODE・eigo-loginflood/eigo-loginfailは常にdryrun=候補のみ・2026-09-29オーナー方針)"
 python3 - "$SRC/jail.d/eigo.local.tmpl" "$F2B/jail.d/eigo.local" "$LOGDIR/study.log" "$MODE" <<'PY'
 import sys
 tmpl, out, logpath, mode = sys.argv[1:5]
-audit = "eigo-audit[name=%(__name__)s, mode=" + mode + "]"
-if mode == "ban":
-    actions = ("iptables-multiport[name=%(__name__)s, port=\"http,https\", protocol=tcp, chain=DOCKER-USER]\n"
-               "         " + audit)
-else:
-    actions = audit
+
+
+def actions_for(m):
+    audit = "eigo-audit[name=%(__name__)s, mode=" + m + "]"
+    if m == "ban":
+        return ("iptables-multiport[name=%(__name__)s, port=\"http,https\", protocol=tcp, chain=DOCKER-USER]\n"
+                 "         " + audit)
+    return audit
+
+
+actions_enforce = actions_for(mode)     # eigo-probe/eigo-ratelimited: install.shの引数どおり
+actions_candidate = actions_for("dryrun")  # eigo-loginflood/eigo-loginfail: 常にdryrun(様子見・2026-09-29)
 lines = []
 for line in open(tmpl, encoding="utf-8").read().splitlines():
     if not line.lstrip().startswith("#"):  # コメント行は置換しない(複数行の値が混ざって設定が壊れるのを防ぐ)
-        line = line.replace("__LOGPATH__", logpath).replace("__ACTIONS__", actions)
+        line = (line.replace("__LOGPATH__", logpath)
+                .replace("__ACTIONS_ENFORCE__", actions_enforce)
+                .replace("__ACTIONS_CANDIDATE__", actions_candidate))
     lines.append(line)
 open(out, "w", encoding="utf-8").write("\n".join(lines) + "\n")
 PY

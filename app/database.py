@@ -716,6 +716,31 @@ CREATE TABLE IF NOT EXISTS logs.client_errors (
 CREATE INDEX IF NOT EXISTS logs.idx_client_errors_created
     ON client_errors(created_at);
 
+-- 本番VPSのfail2ban(eigo専用jail)からの通知を記録する(2026-09-29・
+-- オーナー要望「BANが起きたことを管理画面で見えるようにしたい」)。
+-- ホスト側のeigo-f2b-auditスクリプトが、判定のたび(dryrun/実BANどちらも)
+-- POST /api/system/admin/security-events(FAIL2BAN_NOTIFY_TOKENで認証)で送る。
+-- mode='ban'=実際に遮断された(eigo-probe/eigo-ratelimited)。
+-- mode='dryrun'=検知しただけで遮断はしていない候補(eigo-loginflood/
+-- eigo-loginfail・2026-09-29オーナー方針「実際にBANするかはしばらく様子見」)。
+CREATE TABLE IF NOT EXISTS logs.security_events (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    ip          TEXT    NOT NULL,
+    jail        TEXT    NOT NULL,
+    action      TEXT    NOT NULL,   -- 'ban' | 'unban'
+    mode        TEXT    NOT NULL,   -- 'ban'(実際に遮断) | 'dryrun'(候補のみ)
+    failures    INTEGER,
+    bantime_seconds INTEGER,
+    evidence    TEXT    DEFAULT '', -- 根拠(直近リクエストの要約・改行区切り)
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    reviewed_at TEXT,
+    unban_requested_at TEXT,        -- 管理画面で「今すぐ解除」を押した時刻(ホスト側cronが処理)
+    unban_done_at       TEXT
+);
+CREATE INDEX IF NOT EXISTS logs.idx_security_events_created
+    ON security_events(created_at);
+CREATE INDEX IF NOT EXISTS logs.idx_security_events_ip ON security_events(ip);
+
 -- 広告費の実額(2026-09-19・計測設計フェーズ1 3-C)。管理画面「実収支」
 -- から手入力する(Ads APIは使わない)。日付はJST暦日(YYYY-MM-DD)。実額が
 -- ある日は実額、無い日は予算スケジュール(app/routers/system.pyの

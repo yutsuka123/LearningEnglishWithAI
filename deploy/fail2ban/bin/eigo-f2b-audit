@@ -6,24 +6,63 @@
 - BAN時は、そのIPの直近のリクエスト(時刻・メソッド・URI・status・UA)を最大6件、根拠として添える。
   ヘッダー全体(Cookie等)は出力しない。UAは60字まで。URIのクエリ(gclid等)は落とす。
 出力先: /var/log/eigo-f2b-audit.log(root:adm 640・logrotateで8世代)。
+2026-09-29〜: ban/unban時はアプリの内部API(POST /api/system/security-events)にも通知し、
+管理画面の「アクセス制限」一覧に出す(オーナー要望)。通知はbest-effort
+(アプリが落ちていてもfail2ban本体のBAN動作は止めない・監査ログへの記録は独立して必ず行う)。
 """
 import json
 import os
 import re
 import sys
 import time
+import urllib.error
+import urllib.request
 
 CONF = os.environ.get("EIGO_F2B_CONF", "/etc/eigo-f2b.conf")  # 環境変数はテスト用
 AUDIT = os.environ.get("EIGO_F2B_AUDIT", "/var/log/eigo-f2b-audit.log")
 TAIL_BYTES = 24 * 1024 * 1024
 
 
-def logdir():
-    with open(CONF, encoding="utf-8") as f:
-        for line in f:
-            if line.startswith("CADDY_LOG_DIR="):
-                return line.split("=", 1)[1].strip()
+def conf_value(key):
+    try:
+        with open(CONF, encoding="utf-8") as f:
+            for line in f:
+                if line.startswith(key + "="):
+                    return line.split("=", 1)[1].strip()
+    except OSError:
+        pass
     return ""
+
+
+def logdir():
+    return conf_value("CADDY_LOG_DIR")
+
+
+def notify(jail, ip, action, mode, failures, bantime, evidence_lines):
+    """アプリへPOST(best-effort・2〜3秒でタイムアウト・失敗は監査ログにだけ残す)。"""
+    token = conf_value("NOTIFY_TOKEN")
+    url = conf_value("APP_URL")
+    if not token or not url:
+        return
+    payload = json.dumps({
+        "ip": ip, "jail": jail, "action": action, "mode": mode,
+        "failures": int(failures) if str(failures).isdigit() else 0,
+        "bantime_seconds": int(bantime) if str(bantime).isdigit() else 0,
+        "evidence": "\n".join(evidence_lines),
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        url.rstrip("/") + "/api/system/security-events", data=payload,
+        headers={"Content-Type": "application/json", "X-F2B-Token": token},
+        method="POST")
+    try:
+        urllib.request.urlopen(req, timeout=3).read()
+    except (urllib.error.URLError, OSError) as e:
+        try:
+            with open(AUDIT, "a", encoding="utf-8") as fh:
+                fh.write("%s NOTIFY-FAILED %s ip=%s err=%s\n" % (
+                    time.strftime("%Y-%m-%d %H:%M:%S"), jail, ip, e))
+        except OSError:
+            pass
 
 
 SUSPECT = re.compile(
@@ -69,9 +108,11 @@ def main():
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     tag = "DRYRUN" if mode == "dryrun" else "BAN-ON"
     lines = []
+    evid = []
     if action == "ban":
+        evid = evidence(ip)
         lines.append("%s %-6s BAN    %s ip=%s failures=%s bantime=%ss" % (now, tag, jail, ip, failures, bantime))
-        lines += ["    根拠: " + e for e in evidence(ip)]
+        lines += ["    根拠: " + e for e in evid]
     elif action == "unban":
         lines.append("%s %-6s UNBAN  %s ip=%s" % (now, tag, jail, ip))
     else:
@@ -81,6 +122,8 @@ def main():
             fh.write("\n".join(lines) + "\n")
     except OSError as e:
         print("audit log write failed: %s" % e, file=sys.stderr)
+    if action in ("ban", "unban"):
+        notify(jail, ip, action, mode, failures, bantime, evid)
     return 0
 
 
