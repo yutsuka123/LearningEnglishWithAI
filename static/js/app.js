@@ -502,8 +502,17 @@ function syncHistory(tab, prevTab) {
   } catch (e) { /* 履歴APIが使えなくても画面遷移は続ける */ }
 }
 window.addEventListener("popstate", (ev) => {
-  const t = ev.state && ev.state.eigoTab;
+  let t = ev.state && ev.state.eigoTab;
   if (!t || !ROUTES[t]) return;   // このアプリが積んだエントリ以外は何もしない
+  // ログアウト/ログインをまたいだ「戻る/進む」で、いまの権限では使えないタブ(ゲストの
+  // 設定・管理者タブ等)や、ログイン済みでの未登録者向けウェルカム画面を描かない
+  // (boot()のディープリンクと同じ判定・独立レビュー指摘: ログアウト後に「戻る」を2回押すと
+  // ゲストなのに管理画面/設定が描画されて「要ログイン」のエラー画面になった)。
+  if ((state.isGuest && GUEST_HIDDEN_TABS.has(t)) || (t === "admin" && !state.isAdmin)) {
+    t = state.isGuest ? "welcome" : "dashboard";
+  } else if (t === "welcome" && !state.isGuest) {
+    t = "dashboard";
+  }
   // 開いたままのモーダル(単語詳細等)は、✕と同じ経路で閉じてから前のタブを
   // 描く(body直下のオーバーレイだけが取り残されるのを防ぐ)。
   document.querySelectorAll(".modal-ov #mClose").forEach((b) => b.click());

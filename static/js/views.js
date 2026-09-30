@@ -4254,6 +4254,12 @@ export async function conversation(root) {
     window.removeEventListener("beforeunload", beforeUnload);
     if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
     if (autoLogOn() && history.length && !finalLogged) doSave(true);
+    // ハンズフリー会話のマイク(VAD)の録音を止める。go()のstopSpeaking()は読み上げしか
+    // 止めず、別画面へ移ってもマイクと「録音→文字起こし→AI→読み上げ」(課金)の処理が
+    // 動き続けていた。ブラウザの戻る/進む対応(ver1.5.9)で端のスワイプ等でも離れやすく
+    // なるため止める(独立レビュー指摘)。stopHFはこの下で定義される(離れるのは後なので
+    // 通常は定義済み。万一定義前なら握りつぶす)。保存の後に置く。
+    try { stopHF(); } catch (e) { /* 定義前に離れた場合 */ }
   });
 
   // ✓「自動で記録」: 状態を localStorage に保存。ONにした時点で一度保存。
