@@ -27,8 +27,10 @@ enrich_ip() でキャッシュ済みだった行は、外部APIのJSONに緯度�
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 import time
+import unicodedata
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -50,15 +52,38 @@ def count_candidates() -> int:
             "WHERE COALESCE(country, '') != '' AND latitude IS NULL").fetchone()[0]
 
 
-def _candidates(limit: int) -> list[tuple[str, str]]:
-    """(ip, 保存済みのcountry)。毎回ランダムな順で取る(取れないIPが先頭に居座って
-    他の行が後回しにならないようにするため)。"""
+def _candidates(limit: int) -> list[tuple[str, str, str, str]]:
+    """(ip, 保存済みのcountry, region, city)。毎回ランダムな順で取る(取れないIPが先頭に
+    居座って他の行が後回しにならないようにするため)。"""
     with db() as conn:
         rows = conn.execute(
-            "SELECT ip, country FROM ip_geo_cache "
+            "SELECT ip, country, region, city FROM ip_geo_cache "
             "WHERE COALESCE(country, '') != '' AND latitude IS NULL "
             "ORDER BY RANDOM() LIMIT ?", (limit,)).fetchall()
-    return [(r["ip"], r["country"]) for r in rows]
+    return [(r["ip"], r["country"], r["region"] or "", r["city"] or "") for r in rows]
+
+
+_PLACE_NOISE = {"prefecture", "province", "state", "region", "county", "oblast", "city",
+                "metropolis", "district"}
+
+
+def _norm_place(s: str | None) -> str:
+    """地名の比較用の正規化(記号・アクセント・「Prefecture」等の語を除き小文字化)。
+    例: 'Ōsaka Prefecture' と 'Osaka' を同じにする。"""
+    t = unicodedata.normalize("NFKD", str(s or "")).encode("ascii", "ignore").decode("ascii").lower()
+    words = [w for w in re.sub(r"[^a-z0-9]+", " ", t).split() if w not in _PLACE_NOISE]
+    return "".join(words)
+
+
+def same_place(cached_region: str, cached_city: str, got_region: str, got_city: str) -> bool | None:
+    """保存済みの地域/市区町村と、応答の地域/市区町村が「同じ場所」か。
+    True=地域か市区町村が一致 / False=比べられるのにどちらも食い違う / None=どちらも比べられない
+    (保存済みか応答のどちらかが空=判定できないので、呼び出し側は国の一致だけで判断する)。"""
+    cr, cc, gr, gc = (_norm_place(x) for x in (cached_region, cached_city, got_region, got_city))
+    comparable = bool(cr and gr) or bool(cc and gc)
+    if not comparable:
+        return None
+    return (bool(cr and gr and cr == gr)) or (bool(cc and gc and cc == gc))
 
 
 def _sane(lat: float, lon: float) -> bool:
@@ -67,10 +92,17 @@ def _sane(lat: float, lon: float) -> bool:
     return not (lat == 0.0 and lon == 0.0)   # (0,0)は「不明」の代わりに返されがち
 
 
-def fetch_latlon(client: httpx.Client, ip: str, cached_country: str
+def fetch_latlon(client: httpx.Client, ip: str, cached_country: str,
+                 cached_region: str = "", cached_city: str = ""
                  ) -> tuple[float | None, float | None, str]:
-    """緯度経度だけを取得して (lat, lon, error) を返す。error が空でなければ「更新しない」。"""
+    """緯度経度だけを取得して (lat, lon, error) を返す。error が空でなければ「更新しない」。
+
+    **2026-10-01: 国だけでなく地域/市区町村も照合する**(初版は国だけで、保存済みの市区町村とは
+    別の推定の座標が混ざり、「東京」の点が北陸に出る等の位置ずれが起きた)。応答の国が違う、
+    または保存済みの地域・市区町村とどちらも食い違う場合は採用せず、次の事業者を試す。
+    全事業者が食い違えば更新しない(座標が無いままなら、地図に出さないだけで安全)。"""
     errors: list[str] = []
+    mismatched: list[str] = []
     for name, lookup in geoip._PROVIDERS:
         try:
             geo, err = lookup(client, ip)
@@ -83,8 +115,15 @@ def fetch_latlon(client: httpx.Client, ip: str, cached_country: str
             continue
         got_country = str(geo.get("country") or "").strip()
         if got_country and got_country.casefold() != cached_country.strip().casefold():
-            return None, None, f"国が食い違う({name})のため更新しない"
+            mismatched.append(f"国が食い違う({name})")
+            continue
+        if same_place(cached_region, cached_city, str(geo.get("region") or ""),
+                      str(geo.get("city") or "")) is False:
+            mismatched.append(f"地域・市区町村が食い違う({name})")
+            continue
         return lat, lon, ""
+    if mismatched:
+        return None, None, " / ".join(mismatched) + "のため更新しない"
     return None, None, " / ".join(errors) or "緯度経度なし"
 
 
@@ -101,9 +140,9 @@ def run(limit: int = _DEFAULT_LIMIT, sleep: float = _DEFAULT_SLEEP,
     consecutive = 0
     try:
         targets = _candidates(limit)
-        for i, (ip, country) in enumerate(targets, 1):
+        for i, (ip, country, region, city) in enumerate(targets, 1):
             stats["tried"] += 1
-            lat, lon, err = fetch_latlon(client, ip, country)
+            lat, lon, err = fetch_latlon(client, ip, country, region, city)
             if err:
                 stats["mismatch" if "食い違う" in err else "failed"] += 1
                 consecutive += 1

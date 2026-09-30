@@ -21,7 +21,7 @@ from ..config import ROOT_DIR, load_admin_known_ips, load_settings, log, paths
 from ..database import ACCENTS, NEWS_FIELDS, db
 from ..schemas import MemoryUpdateIn, SettingsIn
 from ..services import (
-    ai, auth, geo_names, growth_metrics, persistence, traffic_source,
+    ai, auth, geo_consistency, geo_names, growth_metrics, persistence, traffic_source,
     tracking, ua_parse, visitor_kind,
 )
 
@@ -2494,6 +2494,14 @@ def admin_geo_map(kind: str = "visit", days: int = 30):
             "SELECT ip, country, region, city, latitude, longitude "
             "FROM ip_geo_cache").fetchall()
     geo_by_ip = {r["ip"]: dict(r) for r in geo_full}
+    # 緯度経度が、同じ市区町村/地域の多数派の位置から大きく外れた行は地図の点にしない
+    # (2026-10-01・オーナー指摘「東京ラベルの点が北陸に出る」等の位置ずれ。後追い補完で
+    # 別の推定の座標が混ざったため。件数は国別/地域別/市区町村別のランキングには
+    # 従来どおり数える。app/services/geo_consistency.py)。
+    bad_ips = geo_consistency.inconsistent_ips(
+        [g for g in geo_by_ip.values()
+         if g.get("latitude") is not None and g.get("longitude") is not None])
+    inconsistent_visits = 0
 
     points_map: dict[tuple, dict] = {}
     country_counts: collections.Counter = collections.Counter()
@@ -2521,16 +2529,24 @@ def admin_geo_map(kind: str = "visit", days: int = 30):
             d = city_counts.setdefault(
                 ck, {"country": country, "city": city, "count": 0})
             d["count"] += cnt
-        if lat is not None and lon is not None:
+        if lat is not None and lon is not None and ip in bad_ips:
+            inconsistent_visits += cnt
+        elif lat is not None and lon is not None:
             pk = (round(lat, 2), round(lon, 2))
             p = points_map.setdefault(pk, {
                 "lat": round(lat, 2), "lon": round(lon, 2),
                 "country": country, "region": region, "city": city,
-                "count": 0,
+                "count": 0, "_best": cnt,
             })
             p["count"] += cnt
+            # 同じ座標に複数のIPが入るとき、吹き出しの地名は件数がいちばん多いIPのものにする
+            # (従来は最初に来たIPの地名で、少数のIPの地名が点の名前になり得た)。
+            if cnt > p["_best"]:
+                p.update({"_best": cnt, "country": country, "region": region, "city": city})
 
     points = sorted(points_map.values(), key=lambda p: -p["count"])
+    for p in points:
+        p.pop("_best", None)
     # 表示用の日本語名(2026-09-29・オーナー指示): 日本の地名=日本語、外国の地名=
     # 「カタカナ（英文）」。判定に使う元の英語の値(country=='Japan'等)は変えず、
     # *_label / label を足すだけにする(app/services/geo_names.py)。
@@ -2556,6 +2572,7 @@ def admin_geo_map(kind: str = "visit", days: int = 30):
         "kind": kind, "days": days,
         "total": total, "with_geo": total - without_geo,
         "without_geo": without_geo,
+        "inconsistent_visits": inconsistent_visits,
         "points": points,
         "country_ranking": country_ranking,
         "pref_ranking": pref_ranking,

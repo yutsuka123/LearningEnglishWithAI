@@ -875,6 +875,15 @@ def _looks_broken(audio: bytes, spoken: str) -> bool:
 #   learn  … 学習用。落ち着いた一定ペース・やや遅め・明瞭（指示なしだと文の
 #            抑揚が過剰・不自然になるのを防ぐ）。
 #   native … ネイティブの自然な速さ・リズム・リンキング（少し速い）。
+#
+# ⚠️ この指示文(と settings.tts_model・tts_hints.spoken_text の読み替え)は、音声
+# キャッシュのキー(_tts_cache_path: model|voice|instr|text のsha256)に入っている。
+# **変更すると、既に作り置きした音声が全て使われなくなる**(2026-09-13にlearnの指示文を
+# 変えた際、単語/フレーズは作り直したが、公開サンプル教材40件×2声の在庫を作り直し忘れ、
+# 2026-09-30に初めて再生した訪問者が約26秒待たされた・全件の再生成は約$3)。
+# 変更したら必ず `scripts/build_sample_audio.py`(公開サンプル教材。声 ash,nova)も
+# 実行して在庫を作り直すこと。欠けの確認は docs/ops/morning_check.sh の「公開サンプル
+# 音声のキャッシュ欠け」。
 TTS_STYLES = {
     "learn": (
         "You are a clear, friendly English teacher reading for a learner. "

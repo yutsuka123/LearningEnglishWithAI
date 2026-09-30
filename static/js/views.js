@@ -7756,7 +7756,10 @@ export async function admin(root) {
           ${p.count.toLocaleString()}件`;
       }
       tip.style.display = "block";
-      const rect = wrapEl.getBoundingClientRect();
+      // 吹き出しは.geo-map-svg-wrap(position:relative)の中に置くので、位置の基準も
+      // それにする(従来はその外側の#geoMapWrap基準で、説明文・凡例の高さ分
+      // =約80px 吹き出しがポインタ/点より下にずれていた・2026-10-01修正)。
+      const rect = (wrapEl.querySelector(".geo-map-svg-wrap") || wrapEl).getBoundingClientRect();
       // 地名が日本語(外国は「カタカナ（英文）」)で長くなったので、右端に
       // 近いときは点の左側に出して、吹き出しが切れないようにする(2026-09-29)。
       let left = e.clientX - rect.left + 12;
@@ -7894,7 +7897,9 @@ export async function admin(root) {
       <p class="muted">対象: ${d.total.toLocaleString()}件
         (位置情報あり ${d.with_geo.toLocaleString()}件 /
         不明 ${d.without_geo.toLocaleString()}件)
-        ・地図上の点は${pts.length}地点</p>
+        ・地図上の点は${pts.length}地点${d.inconsistent_visits
+          ? `<br>※ 位置が地域・市区町村と食い違うため地図には出していない件数:
+            ${d.inconsistent_visits.toLocaleString()}件(ランキングには含む)` : ""}</p>
       ${pts.length ? buildGeoLegendHtml(model.bins, model.maxCount) : ""}
       <div class="geo-map-svg-wrap mt" style="position:relative">
         ${svg}

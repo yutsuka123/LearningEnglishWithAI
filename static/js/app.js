@@ -481,14 +481,45 @@ export function onLeaveView(fn) { leaveHook = fn; }
 // my-usage等)にかかった時間と、その間の離脱が分かる。
 let appReadySent = false;
 
-export async function go(tab) {
+// ブラウザの「戻る/進む」対応(2026-09-30・オーナー指示)。従来はタブ切替が履歴に
+// 積まれず、「戻る」を押すとサイトごと離れて(広告経由だと検索結果へ)、戻ると
+// トップが丸ごと再読み込みになっていた(1人が7分で10回再読み込みした実例)。
+// タブ切替(go)のたびhistory.pushStateで1件積み、popstateで前/次のタブへ
+// 描画し直す。URL(クエリ・gclid等)は変えない(stateだけ積む)。
+//   - 最初のgo()は「現在のエントリ」のstateを置き換えるだけ(積まない)ので、
+//     最初のタブで「戻る」を押せば従来どおりサイトの外へ出る。
+//   - 同じタブの再描画(言語切替・表示の更新などgo(currentTab))は積まない。
+//   - popstateからの描画(fromPopstate)は履歴を触らない(無限に積まない)。
+let historyInited = false;
+function syncHistory(tab, prevTab) {
+  try {
+    if (!historyInited) {
+      historyInited = true;
+      history.replaceState({ eigoTab: tab }, "");
+    } else if (tab !== prevTab) {
+      history.pushState({ eigoTab: tab }, "");
+    }
+  } catch (e) { /* 履歴APIが使えなくても画面遷移は続ける */ }
+}
+window.addEventListener("popstate", (ev) => {
+  const t = ev.state && ev.state.eigoTab;
+  if (!t || !ROUTES[t]) return;   // このアプリが積んだエントリ以外は何もしない
+  // 開いたままのモーダル(単語詳細等)は、✕と同じ経路で閉じてから前のタブを
+  // 描く(body直下のオーバーレイだけが取り残されるのを防ぐ)。
+  document.querySelectorAll(".modal-ov #mClose").forEach((b) => b.click());
+  go(t, { fromPopstate: true });
+});
+
+export async function go(tab, opts = {}) {
   userNavigated = true;
   if (!ROUTES[tab]) tab = "dashboard";
   if (leaveHook) {
     const fn = leaveHook; leaveHook = null;
     try { fn(); } catch (e) { /* ignore */ }
   }
+  const prevTab = currentTab;
   currentTab = tab;
+  if (!opts.fromPopstate) syncHistory(tab, prevTab);
   document.body.classList.toggle("tab-welcome", tab === "welcome");
   speech.stopSpeaking();
   document.querySelectorAll(".nav-item").forEach((b) =>
