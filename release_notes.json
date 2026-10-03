@@ -17,11 +17,13 @@
   {
    "version": "ver1.5.10",
    "date": "2026-10-03",
-   "title": "表示の安定性向上",
+   "title": "表示と発音の改善",
    "public": [
+    "一部の英語表現(「a cappella」「à la carte」「roman à clef」)の発音を、より自然な読み方に修正しました。",
     "画面が正しく読み込まれなかったときに、自動で一度だけ読み込み直すようにしました。"
    ],
    "admin": [
+    "外来表現の発音ミスを修正(管理者メモ#7・2026-10-03)。「a cappella」の女声(nova)が「エイカペラ」だった=先頭のaを冠詞(/eɪ/)に読むため。母音F2の音響分析で男声=/ɑː/・女声=/eɪ/(F2が約2800Hzまで上昇)を確認し、同型を「à la carte」(フレーズの女声・例文のネイティブ速度の女声)でも確認。「roman à clef」は男女とも`clef`を/klɛf/(音楽用語)で読んでいた(辞書は/kleɪ/)。tts_hints.pyに合成時だけの読み替えを追加(a cappella→ah cappella・à la carte→ah lah carte・roman à clef→roh-mahn ah klay)。全語彙・例文・フレーズ77,968件に適用して変わるのは意図した12件だけ。作り置き音声は不合格だったものだけ作り直して差し替え(docs/ops/replace_a_audio_20261003.sh)。",
     "JSモジュールの読み込み失敗を自動で直す(2026-10-03)。ver1.5.9デプロイ後の10/3 10:44 JSTに実ユーザー1件(Mac Safari)で「Importing binding name 'tabLabel' is not found」が記録され、画面が起動しなかった。Caddyログ上、views.jsは200で取得・app.jsは要求なし=ブラウザに古いapp.js(ver1.5.0より前)が残ったまま新しいviews.jsだけ取得されたと判断(履歴移動/タブ復元はno-cacheでも再検証されない)。error-report.jsが該当エラーを検知したらモジュール5本をcache:'reload'で取り直し、1回だけ再読込する(直近5分に実施済みなら何もしない=ループ防止・sessionStorageのmodule_heal_at)。検査scripts/check_module_self_heal.py(Chromium/WebKit・修正前は失敗し起動しないことも確認)。",
     "座標補完スクリプトの中断条件を修正。10/1の厳格版補完が、食い違いで見送る行が5件続いただけで「連続失敗」として149/767で中断し、約700件が放置されていた(外部APIは正常)。連続失敗は応答が得られなかった行だけ数えるよう変更。検査に食い違い30件連続のケースを追加。"
    ]

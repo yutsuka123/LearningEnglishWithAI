@@ -90,9 +90,43 @@ def _respell_ja_loan(text: str) -> str:
     return _JA_LOAN_RE.sub(sub, text)
 
 
+# --- 外来表現の "a" / "à"(イタリア語・フランス語の前置詞): 冠詞の読みにしない(2026-10-03) ----------------
+# 管理者メモ#7: 「a cappella」を女声(nova)で再生すると「アカペラ」でなく「エイカペラ」になっていた(男声は正しい)。
+# 綴りだけを渡すと、先頭の"a"を英語の冠詞(/eɪ/や弱い/ə/)に読んでしまう。音響分析(F2の上昇=二重母音/eɪ/)で
+# 本番の音声を測り、見出し語の女声と、フレーズ「Could I order à la carte instead?」の女声・"à la carte"例文の
+# ネイティブ速度(女声)で同じ誤読を確認した。辞書の読みは/ɑː/(アー)なので、"ah"に置き換えて固定する。
+# 対象は「冠詞と紛れる前置詞のa/à」を持つ外来表現だけ(下の正規表現に当たらない文は一切変わらない)。
+_FOREIGN_A = re.compile(
+    r"(?<![\w-])(?P<a>[aà])(?P<sp>\s+)(?P<rest>(?:cappella|capella|la\s+(?:carte|mode)))\b",
+    re.I)
+# "roman à clef"(実話小説): "clef"は音楽用語のクレフ(/klɛf/)と同じ綴りだが、ここはフランス語で/kleɪ/(クレー)。
+# 男女どちらの声も「klef」と読んでいた(2026-10-03・ブラインド判定の3票とも)。
+_ROMAN_A_CLEF = re.compile(r"(?<![\w-])(?P<roman>roman)(?P<pl>s?)[\s-]+[aà][\s-]+clefs?(?![\w-])", re.I)
+
+
+def _has_foreign_a(text: str) -> bool:
+    return bool(_FOREIGN_A.search(text) or _ROMAN_A_CLEF.search(text))
+
+
+def _respell_foreign_a(text: str) -> str:
+    def sub_a(m: re.Match) -> str:
+        ah = "Ah" if m.group("a") in "AÀ" else "ah"
+        rest = m.group("rest")
+        if rest[:2].lower() == "la":          # "la carte" → "lah carte"(辞書 /lɑː/)
+            rest = rest[:2] + ("H" if rest[:2].isupper() else "h") + rest[2:]
+        return ah + m.group("sp") + rest
+
+    def sub_roman(m: re.Match) -> str:
+        head = "Roh-mahn" if m.group("roman")[0].isupper() else "roh-mahn"
+        return head + ("z" if m.group("pl") else "") + " ah klay"
+
+    return _ROMAN_A_CLEF.sub(sub_roman, _FOREIGN_A.sub(sub_a, text))
+
+
 RULES: list[tuple[Callable[[str], bool], Callable[[str], str]]] = [
     (_is_japanese_sake, _respell_sake),
     (_has_ja_loan, _respell_ja_loan),
+    (_has_foreign_a, _respell_foreign_a),
 ]
 
 

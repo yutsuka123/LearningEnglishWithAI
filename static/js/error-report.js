@@ -12,6 +12,7 @@
     try {
       fetch("/api/system/client-error", {
         method: "POST",
+        keepalive: true,   // 直後の自己修復の再読込で送信が中断されないように
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           kind, message: String(message || ""), stack: String(stack || ""),
@@ -29,10 +30,11 @@
   // 対処: 該当するエラーのときだけ、モジュール群をキャッシュを使わず取り直してから1回だけ再読込する。
   //   直近5分に再読込済みなら何もしない(取り直しても直らない場合の無限ループ防止)。
   //   sessionStorage に印を残せない環境でも、ループを避けるため何もしない。
+  // 「新旧のファイルが混ざった」ことを示す静的importの解決失敗だけを対象にする(Safari/Chrome/Firefoxの文言)。
+  // 動的import()の「Failed to fetch dynamically imported module」等は回線断でも出るため含めない
+  // (含めると、回線が不安定な人が会話/クイズ中に全画面リロードされる。独立照査 2026-10-03)。
   const MODULE_LOAD_ERROR = new RegExp(
-    "Importing binding name|provide an export named|import not found|" +
-    "Failed to fetch dynamically imported module|error loading dynamically imported module|" +
-    "Importing a module script failed", "i");
+    "Importing binding name|provide an export named|import not found", "i");
   // app.js のimport先(app.jsの先頭のimportと揃えること)。
   const MODULE_FILES = ["app.js", "views.js", "api.js", "speech.js", "quiz.js"];
 

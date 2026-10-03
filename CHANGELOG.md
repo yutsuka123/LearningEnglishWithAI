@@ -27,11 +27,25 @@ prune cron(03:45)でusage_events 0件削除+growth_daily 41日分保存を確認
 - **対応**(`static/js/error-report.js`のみ): モジュール読み込み失敗のエラー(`Importing binding name`/`provide an export named`/`import not found`/
   `Failed to fetch dynamically imported module`等)を検知したら、`app.js`/`views.js`/`api.js`/`speech.js`/`quiz.js`をキャッシュを使わず(`fetch(cache:"reload")`)取り直してから
   **1回だけ`location.reload()`**する。直近5分に再読込済みなら何もしない(直らない場合の無限ループ防止・`sessionStorage`の`module_heal_at`)。印を記録できない環境でも何もしない。
-  従来のエラー報告(`client_errors`への記録)はそのまま行う。モジュールと無関係のエラーでは再読込しない。
+  従来のエラー報告(`client_errors`への記録)はそのまま行う(再読込で送信が中断されないよう`keepalive`)。モジュールと無関係のエラーでは再読込しない。
+  動的`import()`の失敗(回線断でも出る)は対象外にした(独立照査の指摘・誤って全画面リロードしないため)。
 - **検証**(`scripts/check_module_self_heal.py`・隔離DB+Playwright Chromium/WebKit・自サーバー以外の通信は全て遮断): 正常時は再読込なし/古い`app.js`が1回だけ混ざる→
   自動で1回再読込して起動・エラーは1件記録/毎回古い→再読込は1回だけで止まる(ループなし)/無関係のJSエラーでは再読込しない。**修正前のコードでは同じ検査が失敗し画面が起動しない**
   (実ユーザーの症状を再現)ことも確認。
 - **既知の限界**: エラーが出るのは`error-report.js`が読み込めた場合のみ(そのファイル自体が古くても、この修正が入る前の版には無い)。この修正の恩恵はデプロイ後に`index.html`を新しく取得した人から。
+
+**外来表現の発音ミスを修正: 「a cappella」を女声で再生すると「エイカペラ」になる**(2026-10-03・管理者メモ#7)。
+
+- **原因**: 音声は綴りだけをTTSに渡して作るため、先頭の`a`を英語の冠詞(/eɪ/や弱い/ə/)に読んでしまう。辞書の読みは/ɑː/(アー)。
+  gpt-audioのブラインド書き起こしは「a」が曖昧で区別できなかったため、**母音のフォルマント(F2)を音響分析で測った**: 男声(ash)は約1130Hzで安定した/ɑː/、
+  女声(nova)の見出し語は**F1が下がりF2が約2800Hzまで上昇する/eɪ/**(メモの報告どおり)。同じ誤読を「Could I order à la carte instead?」の女声と
+  「à la carte」例文のネイティブ速度(女声)でも確認。さらに「roman à clef」は**男女とも`clef`を音楽用語のクレフ(/klɛf/)と読んでいた**(辞書は/kleɪ/)。
+- **対応**(`app/services/tts_hints.py`): 合成時の入力だけを読み替える(`a cappella`→`ah cappella`・`à la carte`→`ah lah carte`・`roman à clef`→`roh-mahn ah klay`)。
+  表示・DB・音声ファイル名(元の綴りのハッシュ)は不変。**全語彙・例文・フレーズ77,968件に適用して、変わるのは意図した12件だけ**(他は1文字も変わらない=既存のtts_cacheキー・音声在庫は不変)
+  であることを確認。単体検査`scripts/check_tts_hints.py`(誤爆しない例を含む)。見出し語・例文・フレーズの作り置き音声のうち**同じ基準(母音F2/clefの読み/文字起こし一致)で不合格だったものだけ**
+  作り直して差し替える(手順は`docs/ops/replace_a_audio_20261003.sh`・本番の音声ファイルのみ・再起動不要)。詳細ページの追加例文など作り置きの無い文は、このデプロイ後は新ルールで合成される。
+- **独立照査(Fable・敵対的)**: 全語彙への総当たり・60ケースの誤爆/取りこぼし試験でブロッカーなし。指摘のうち、`roman-à-clef`(ハイフン綴り)の取りこぼしと全大文字`LA CARTE`の`LAh`を修正。
+- **判定ツール**(開発用・本番アプリからは使わない): `scripts/tts_vowel_f2.py`(母音F2による分類・parselmouth)・`scripts/tts_blind_judge.py`(ブラインド書き起こし/母音選択式/合成)。
 
 **座標補完スクリプトの中断条件を修正**(`scripts/backfill_geoip_latlon_2026_09_29.py`)。
 
