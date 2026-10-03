@@ -24,9 +24,12 @@ Goal (ユーザー要望): 再生のたびに音声を保存していき、次�
 from __future__ import annotations
 
 import hashlib
+import logging
 import sqlite3
 
 from ..config import load_settings, paths
+
+log = logging.getLogger(__name__)
 
 VALID_TYPES = ("word", "phrase")
 # 基本種別。速度(native)は kind に "_native" を付けて区別する
@@ -129,15 +132,22 @@ def put(
     voice: str,
     text: str,
     mp3: bytes,
-) -> None:
-    """音声を保存（方式に応じて file / db / 両方）。"""
+) -> bool:
+    """音声を保存（方式に応じて file / db / 両方）。
+
+    どの保存先にも書けなかった(fileの書き込みが失敗した)ときだけFalseを返す(2026-10-04)。
+    呼び出し側が別の受け皿(tts_cache)を使う判断に使う。書き込み失敗は警告ログに残す
+    (従来は黙って無視していたため、保存できていないことに気づけなかった)。"""
     thash = text_hash(text)
     mode = load_settings().audio_storage
+    stored = False
     if mode in ("file", "hybrid"):
         try:
             _file_path(item_type, item_id, kind, voice, thash).write_bytes(mp3)
-        except OSError:
-            pass
+            stored = True
+        except OSError as e:
+            log.warning("audio_store: 音声ファイルを保存できません(%s %s%s %s): %s",
+                        type(e).__name__, item_type, item_id, kind, e.strerror or "")
     if mode in ("db", "hybrid"):
         conn.execute(
             "INSERT OR REPLACE INTO audio_blobs "
@@ -145,6 +155,8 @@ def put(
             "VALUES (?, ?, ?, ?, ?, ?)",
             (item_type, item_id, kind, voice, thash, sqlite3.Binary(mp3)),
         )
+        stored = True
+    return stored
 
 
 def stats(conn: sqlite3.Connection) -> dict:

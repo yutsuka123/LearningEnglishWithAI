@@ -176,12 +176,18 @@ RULES: list[tuple[Callable[[str], bool], Callable[[str], str]]] = [
     (_is_japanese_sake, _respell_sake),
     (_has_ja_loan, _respell_ja_loan),
     (_has_foreign_a, _respell_foreign_a),
-    (_is_headword, _respell_headword),
-]
+]   # 見出し語の規則は`spoken_text`の先頭で別に判定する
 
 
 def spoken_text(text: str) -> str:
-    """TTSに渡す綴り。読み替えが要る語を含まなければ`text`をそのまま返す。"""
+    """TTSに渡す綴り。読み替えが要る語を含まなければ`text`をそのまま返す。
+
+    見出し語そのもの(テキスト全体が表の語と一致)は、他の規則で書き換えられる前の綴りで先に判定する
+    (将来`sente`等を表に足しても先行規則に食われないように・2026-10-04独立レビューLOW-3)。
+    なお`/api/learn/tts`(自由テキストの読み上げ)にも同じ規則が効く: 利用者が1語だけ(例: "bow")を
+    読ませたときは、表の読みになる(文・フレーズの中の同じ綴りは変わらない)。"""
+    if _is_headword(text):
+        return _respell_headword(text)
     for match, respell in RULES:
         if match(text):
             text = respell(text)

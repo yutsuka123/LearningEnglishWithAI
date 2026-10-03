@@ -1227,7 +1227,10 @@ def tts_item(
             return Response(content=error, status_code=422,
                             media_type="text/plain")
         with db() as conn:
-            audio_store.put(conn, item_type, item_id, skind, voice, text, audio)
+            if not audio_store.put(conn, item_type, item_id, skind, voice, text, audio):
+                # 永続保存に失敗した(権限・ディスク等)ときだけ、従来どおり tts_cache に残す。
+                # 残さないと再生のたびに合成費がかかる(2026-10-04・独立レビューMEDIUM-1)。
+                ai.save_tts_cache(text, voice, audio, style=speed)
             tracking.log_event("play", item_type, f"{base}:{text[:60]}")
             _log_item_domain(conn, item_type, item_id)
         delivered = True

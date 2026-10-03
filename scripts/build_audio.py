@@ -55,7 +55,8 @@ def _gen_one(conn, item_type, item_id, skind, style, text, voices, force):
                 return made, "aierr"
             # その他(一時的エラー等)はこの声だけ飛ばす
             continue
-        audio_store.put(conn, item_type, item_id, skind, v, text, audio)
+        if not audio_store.put(conn, item_type, item_id, skind, v, text, audio):
+            ai.save_tts_cache(text, v, audio, style=style)   # 保存失敗時の受け皿(2026-10-04)
         made += 1
     return made, "ok"
 

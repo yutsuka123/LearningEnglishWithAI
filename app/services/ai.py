@@ -1069,6 +1069,25 @@ def _tts_group_record_charge(uid: int, group: str, over: bool, cost: float) -> N
             g["charged_cost"] += cost
 
 
+def save_tts_cache(text: str, voice: str, audio: bytes,
+                   style: str = TTS_STYLE_DEFAULT) -> bool:
+    """合成済みの音声を tts_cache にだけ保存する(`synthesize_speech`と同じキー)。
+
+    `/tts/item`・`scripts/build_audio.py`は`persist_cache=False`で合成して audio_store に保存するが、
+    audio_store への保存に**失敗した**ときは、音声が失われて再生のたびに合成費がかかる(範囲外の有料語では
+    利用者の残高からも毎回控除される)のを避けるため、従来どおり tts_cache に残す受け皿として使う(2026-10-04)。
+    """
+    try:
+        settings = load_settings()
+        speak = tts_hints.spoken_text(text[:4000])
+        _tts_cache_path(settings.tts_model, voice, speak,
+                        _tts_instructions(style)).write_bytes(audio)
+        return True
+    except Exception:  # caching is best-effort
+        log.warning("tts_cache への保存にも失敗しました", exc_info=True)
+        return False
+
+
 def synthesize_speech(
     text: str, voice: str = "alloy", *,
     style: str = TTS_STYLE_DEFAULT, rate_limit: bool = True,
@@ -1320,8 +1339,11 @@ def refund_playback(receipt: dict | None) -> float:
     返金後の再試行が無課金になり、成功した再生が無料になってしまう)。戻した額(pt)を返す。
 
     【範囲・既知の限界(2026-09-26 Fable照査)】①返金するのは**再生課金(約0.5pt)だけ**。合成が成功した後の
-    例外で返せなかった場合、合成側の生成費用の控除(reason='ai_usage')は戻さない(音声は`tts_cache`に保存済みで、
-    再試行では生成費用が発生しないため、2回の操作を合計すれば正当な額になる)。②同じ未キャッシュの有料語を
+    例外で返せなかった場合、合成側の生成費用の控除(reason='ai_usage')は戻さない(音声は`tts_cache`または
+    audio_storeに保存済みで、再試行では生成費用が発生しないため、2回の操作を合計すれば正当な額になる。
+    ※2026-10-04〜`/tts/item`は`persist_cache=False`でaudio_storeだけに保存する。合成後〜保存までの間に例外が
+    起きた場合は音声が失われ、再試行で再度控除される(極めて稀・保存の失敗自体は`audio_store.put`がFalseを返し
+    tts_cacheへ残す))。②同じ未キャッシュの有料語を
     ほぼ同時に2回押し、先着だけが失敗した場合、後着は先着の「直近5分」印で無課金のまま通過して成功するため、
     印を外すと0.5ptぶん無料になり得る(先着だけを失敗させる手段が利用者側に無く、額も小さいので受容)。"""
     if not receipt or receipt.get("refunded") or not receipt.get("amount"):

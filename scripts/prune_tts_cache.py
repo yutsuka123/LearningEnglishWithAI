@@ -18,9 +18,13 @@
   --mode delete    tts_cache 側の重複ファイルを削除する(既定・オーナー決定)
   --mode hardlink  削除せず、audio と同じ実体を共有(ハードリンク)にする(同じ容量の節約・何も失わない)
 
-使い方(VPS上、eigo-appコンテナの中で・低優先度で):
-  docker exec eigo-app nice -n 19 python3 scripts/prune_tts_cache.py                    # 件数と容量の確認のみ
+使い方(VPS上、eigo-appコンテナの中で・低優先度で。バイト比較は重複候補ごとに両ファイルを全部読むのでディスクI/Oが重い=
+`--limit`で分けて、アクセスの少ない時間帯に。`nice`はCPUだけなので`ionice -c3`があれば併用):
+  docker exec eigo-app nice -n 19 python3 scripts/prune_tts_cache.py                    # 件数と容量の確認のみ(dry-run・全件を走査する)
   docker exec eigo-app nice -n 19 python3 scripts/prune_tts_cache.py --execute --limit 5000   # 削除(1回最大5000件・繰り返し実行できる)
+
+注意: 読み替え(`tts_hints`)を足す前の綴りで作られたtts_cacheは、新しいキーとは名前が合わないので
+`no_cache_twin`扱いで**消さない**(安全側・容量はわずか)。
 """
 
 from __future__ import annotations

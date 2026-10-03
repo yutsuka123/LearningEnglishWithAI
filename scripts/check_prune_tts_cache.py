@@ -10,13 +10,16 @@
 
 from __future__ import annotations
 
+import atexit
 import os
+import shutil
 import sys
 import tempfile
 import time
 from pathlib import Path
 
 _TMP = tempfile.mkdtemp(prefix="check_prune_tts_")
+atexit.register(shutil.rmtree, _TMP, ignore_errors=True)   # 実行ごとに/tmpへ残さない
 os.environ["DATA_DIR"] = _TMP
 os.environ["ALLOW_FRESH_DB"] = "1"
 os.environ["OPENAI_API_KEY"] = "sk-test-not-a-real-key"
@@ -188,6 +191,32 @@ check("persist_cache=False は音声を返すが tts_cache に保存しない", 
 n = calls[0]
 a3, e3 = ai.synthesize_speech(t1, "nova", rate_limit=False, persist_cache=False)
 check("保存済みのキャッシュは persist_cache=False でも読み出す(APIを呼ばない)", e3 is None and a3 == a1 and calls[0] == n)
+
+print("== 5. 保存失敗時の受け皿(2026-10-04・独立レビューMEDIUM-1): audio_storeに書けないときだけtts_cacheに残す")
+import stat  # noqa: E402
+from app.config import paths as _paths  # noqa: E402
+from app.services import audio_store as _astore  # noqa: E402
+from app.database import db as _db  # noqa: E402
+
+_adir = _paths.data_dir / "audio"
+_adir.mkdir(parents=True, exist_ok=True)
+t3 = "fallback test sentence three"
+with _db() as _conn:
+    ok_put = _astore.put(_conn, "word", 999991, "word", "nova", t3, b"\x01" * 20000)
+    check("audio_store.put: 書けたらTrue", ok_put is True and (_astore.get(_conn, "word", 999991, "word", "nova", t3) is not None))
+    _adir.chmod(stat.S_IRUSR | stat.S_IXUSR)            # 読み取り専用にして保存失敗を再現
+    try:
+        bad_put = _astore.put(_conn, "word", 999992, "word", "nova", t3, b"\x01" * 20000)
+    finally:
+        _adir.chmod(stat.S_IRWXU)
+    check("audio_store.put: 書けなければFalse(例外にしない・警告ログ)", bad_put is False)
+    check("書けなかった音声はaudio_storeに無い", _astore.get(_conn, "word", 999992, "word", "nova", t3) is None)
+c3 = ai._tts_cache_path(MODEL, "nova", t3, ai._tts_instructions("learn"))
+check("save_tts_cache前はtts_cacheに無い", not c3.exists())
+check("save_tts_cache: tts_cacheに保存してTrue", ai.save_tts_cache(t3, "nova", b"\x02" * 20000) is True and c3.exists())
+n = calls[0]
+a4, e4 = ai.synthesize_speech(t3, "nova", rate_limit=False, persist_cache=False)
+check("受け皿に残した音声は次の再生でAPIを呼ばず返る(合成費の再発生なし)", e4 is None and a4 == b"\x02" * 20000 and calls[0] == n)
 
 print()
 if FAILS:
