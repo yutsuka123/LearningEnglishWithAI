@@ -25,6 +25,7 @@ tts_cacheキーは不変)。
 from __future__ import annotations
 
 import re
+import unicodedata
 from typing import Callable
 
 # --- 日本酒の"sake" -------------------------------------------------------
@@ -123,10 +124,59 @@ def _respell_foreign_a(text: str) -> str:
     return _ROMAN_A_CLEF.sub(sub_roman, _FOREIGN_A.sub(sub_a, text))
 
 
+# --- 見出し語そのものの読み替え(2026-10-04・ver1.5.11) ---------------------------------------------------------
+# 9/20の音声⇔IPA調査(`docs/AUDIO_IPA_SCAN_2026-09-20.md`)で読み替え案が合格した47語を、2026-10-04に現行の本番音声と
+# 同じ基準で再判定した(ブラインド書き起こし3票+独立の再確認3票・複数テイク・必要な語は読み替え案を比較)。その結果、
+# **現行の音声が実際に誤読していて、読み替えで直せると確認できた語だけ**を下の表に入れた(他の語は9/26の日本語由来語の
+# 差し替え等で既に正しく読めており、規則を足す必要がない=足さない)。lead(鉛)=「リード」→「レッド」、bow(弓)=
+# 「バウ」→「ボウ」、geisha=「デイシャ」→「ゲイシャ」、ema=「エマ」→「エイマ」 等。
+# ★適用は「テキスト全体がその語と一致するとき」だけ(大小文字・前後の空白は無視)。例文・フレーズの中の同じ綴りは一切変えない
+#   (lead=「鉛」は/lɛd/だが"lead the team"は/liːd/・"bow"は「弓/お辞儀」で読みが違うなど、綴り単位の置換は文中で誤爆する。
+#    検証した条件=見出し語単独の音声、とも一致させる)。
+# 除外(判断の記録): sake・sake brewer=日本酒の規則で適用済み / 人種差別語1語=音声を作り直す対象にしない(オーナー判断待ち) /
+#   bear=現行が合格で、読み替え"bayr"は男声が「ベイ」になる / live load(/laɪv/)=読み替えでも自動判定で「give」と「five」を
+#   区別できず検証できなかった(現行は誤読の疑い・オーナーの耳で確認する) / 他は現行が合格のため不要。
+# 値は「読み通りの綴り」(sakeの`sah-kee`と同じ型)。大文字は強勢の位置。追加するときはIPAと矛盾しないこと・
+# 実際に合成してブラインド判定で確認すること(`scripts/tts_blind_judge.py`)。
+_HEADWORD_RESPELL: dict[str, str] = {
+    "bow":                "boh",                          # /boʊ/
+    "lead":               "led",                          # /lɛd/
+    "lead-acid battery":  "led-ass-id bat-uh-ree",        # /lɛd ˈæsɪd ˈbætəri/
+    "geisha":             "gay-shuh",                     # /ˈɡeɪʃə/
+    "poka-yoke":          "poh-kuh yoh-kay-ee",           # /ˌpoʊkəˈjoʊkeɪ/
+    "neta":               "neh-tah",                      # /ˈnɛtɑː/
+    "ho-o":               "hoh-oh",                       # /ˈhoʊ oʊ/
+    "ema":                "ay-mah",                       # /ˈeɪmɑː/
+    "chawan":             "chah-wahn",                    # /ˈtʃɑːwɑːn/
+    "moe":                "moh-ay",                       # /ˈmoʊeɪ/
+    "seinen":             "say-nen",                      # /ˈseɪnɛn/
+    "jamon":              "hah-mohn",                     # /hɑːˈmoʊn/
+    "tostones":           "tah-stoh-nayz",                # /tɒˈstoʊneɪz/
+    "patina":             "pat-in-uh",                    # /ˈpætɪnə/
+    "crema":              "kray-muh",                     # /ˈkreɪmə/
+    "en passant":         "ahn pah-sahn",                 # /ɒ̃ pæˈsɒ̃/
+    "levain":             "luh-van(g)",                   # /ləˈvæ̃/
+    "rnav":               "ar-navv",                      # /ˈɑːrnæv/
+}
+
+
+def _headword_key(text: str) -> str:
+    return " ".join(unicodedata.normalize("NFC", text).split()).casefold()
+
+
+def _is_headword(text: str) -> bool:
+    return _headword_key(text) in _HEADWORD_RESPELL
+
+
+def _respell_headword(text: str) -> str:
+    return _HEADWORD_RESPELL[_headword_key(text)]
+
+
 RULES: list[tuple[Callable[[str], bool], Callable[[str], str]]] = [
     (_is_japanese_sake, _respell_sake),
     (_has_ja_loan, _respell_ja_loan),
     (_has_foreign_a, _respell_foreign_a),
+    (_is_headword, _respell_headword),
 ]
 
 
