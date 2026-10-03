@@ -1366,7 +1366,7 @@ _FORM_FIELDS = (
 _FORM_FIELD_KEYS = tuple(k for k, _ in _FORM_FIELDS)
 _FORM_LABEL_RE = re.compile(
     r"opened|first_input|back_to_login|submit_attempt|open:survey"
-    r"|submit_seen"
+    r"|submit_seen|try_without_signup"
     r"|(focus|input):(" + "|".join(_FORM_FIELD_KEYS) + r")"
     r"|invalid:(email_mismatch|pw_mismatch|pw_policy)"
     r"|fail:(\d{4}|network|other)")
@@ -1780,6 +1780,8 @@ def _signup_form_breakdown(
             key = "no_field"
         elif last == "back_to_login":
             key = "back_to_login"
+        elif last == "try_without_signup":
+            key = "try_without_signup"
         elif last == "submit_attempt":
             key = "submit_attempt"
         elif last.startswith(("invalid:", "fail:")):
@@ -1792,13 +1794,15 @@ def _signup_form_breakdown(
     stall_labels = {
         "no_field": "どの欄にもふれず(フォームを開いただけ)",
         "back_to_login": "ログイン画面へ戻った",
+        # 登録フォーム内の副導線「登録せずに、まず単語と無料の音声を試す」(2026-10-04・ver1.5.11)
+        "try_without_signup": "「登録せずに試す」へ進んだ",
         "submit_attempt": "送信後(結果の記録なし)",
         "error": "入力エラー/登録拒否で止まった",
         "open:survey": "アンケート欄を開いた所",
         **{k: f"{name}欄まで" for k, name in _FORM_FIELDS},
     }
     order = ["no_field", *_FORM_FIELD_KEYS, "open:survey", "submit_attempt",
-             "error", "back_to_login"]
+             "error", "back_to_login", "try_without_signup"]
     stalled = [{"key": k, "label": stall_labels[k], "count": stalled_counts[k]}
                for k in order if k in stalled_counts]
 

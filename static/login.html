@@ -2,7 +2,11 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- interactive-widget=resizes-content(2026-10-04・登録フォーム見直し): AndroidのChromeで
+       ソフトキーボードを出したとき画面(レイアウトの高さ)をキーボードの分だけ縮め、下に固定した
+       送信ボタン(.submit-bar)がキーボードの上に残るようにする。未対応のブラウザ(iOS Safari等)は
+       この指定を無視するだけで従来どおり。 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
   <!-- 非対応ブラウザ向けの案内(2026-09-26)。ES5のみ・他のスクリプトより前に置く。 -->
   <script src="/static/js/compat-guard.js"></script>
   <script>
@@ -32,11 +36,13 @@
       --bg: #161c23; --card: #1f2733; --text: #e6edf3; --sub: #d5dde6;
       --border: #3d4a5e; --accent: #4da3ff; --accent-hover: #6db4ff;
       --err: #ff6b6b; --shadow: rgba(0,0,0,.4);
+      --warn: #f0b429; --ok: #5fd08a;
     }
     :root[data-theme="light"] {
       --bg: #eef1f6; --card: #f9fafc; --text: #223; --sub: #556;
       --border: #ccd; --accent: #3b6fd4; --accent-hover: #2f5cb8;
       --err: #c0392b; --shadow: rgba(0,0,0,.08);
+      --warn: #9a5b00; --ok: #1e7a46;
     }
     /* 文字の大きさ（メインアプリと同じzoom方式・localStorageの
        "fontSize"キーも共通化）。 */
@@ -108,6 +114,39 @@
     .toggle a:hover { text-decoration: underline; }
     .hint { font-size: 12px; color: var(--sub); margin: 4px 0 0; }
     .hidden { display: none; }
+    /* 登録フォームの見直し(2026-10-04・ver1.5.11): 項目が多くスマホ・PCとも送信ボタンが
+       画面の外に出ていたため、送信ボタンを画面の下端に固定(sticky)する。フォームの終わり
+       (下の補足・リンク)に近づくと通常の位置に収まる。エラー文はボタンの上に出す(下に出すと
+       ボタンが指の下から動くため)。 */
+    .submit-bar { position: sticky; bottom: 0; z-index: 5;
+      margin: 14px -32px 0; padding: 10px 32px;
+      background: var(--card); border-top: 1px solid var(--border);
+      box-shadow: 0 -6px 10px -8px var(--shadow); }
+    .submit-bar button[type="submit"] { margin-top: 0; }
+    .submit-bar .err { margin: 0 0 8px; min-height: 0; }
+    .submit-bar .err:empty { display: none; }
+    /* 固定した送信ボタンの裏に入力欄が隠れないよう、フォーカス移動・必須エラーの
+       スクロール位置を、画面の下端から送信ボタン(文字サイズ特大でも収まる高さ)の分だけ
+       空ける(登録フォームを出している間だけ)。 */
+    html.signup-open { scroll-padding-bottom: 120px; }
+    /* 確認欄の不一致などをその場で知らせる控えめな一行(空の間は場所を取らない)。 */
+    .live-msg { margin: 4px 0 0; font-size: 12px; line-height: 1.5; }
+    .live-msg:empty { display: none; }
+    .live-msg.warn { color: var(--warn); }
+    .live-msg.ok { color: var(--ok); }
+    /* 「登録せずに試す」副導線(目立たせすぎない・文字リンク)。 */
+    .try-link { margin: 10px 0 0; font-size: 13px; }
+    .try-link a { color: var(--accent); text-decoration: none; }
+    .try-link a:hover { text-decoration: underline; }
+    /* スマホ幅: 余白を詰めて、最初の画面に見える欄を増やす(文言は変えない)。 */
+    @media (max-width: 480px) {
+      #fSignup { padding: 20px 18px; }
+      #fSignup label { margin-top: 9px; }
+      #fSignup .free-note { font-size: 12.5px; line-height: 1.5; }
+      #fSignup .hint { margin-top: 3px; line-height: 1.45; }
+      #fSignup .submit-bar { margin-left: -18px; margin-right: -18px;
+        padding-left: 18px; padding-right: 18px; }
+    }
     .foot { text-align: center; margin-top: 14px; }
     .foot a { font-size: 12px; color: var(--sub); text-decoration: none; }
     .foot a:hover { text-decoration: underline; }
@@ -181,12 +220,25 @@
       ・📁 自分だけの単語帳・フレーズ帳が作れます<br/>
       ・🔊 音声で聞ける範囲が広がります<br/>
       ✅ カード不要・確認メールなし・そのまますぐ使えます</p>
+    <!-- 登録をためらう人向けの副導線(2026-10-04・ver1.5.11): 登録せずに、トップの「登録せず単語を
+         見る」と同じ画面(未登録のまま単語一覧を開く。音声は無料範囲のものが聞ける・
+         app/services/access_tiers.py)へ進める。同一タブ。 -->
+    <p class="try-link"><a href="/?tab=vocab" id="tryWithoutSignup"
+      data-i18n="signup.tryWithoutSignup">登録せずに、まず単語と無料の音声を試す →</a></p>
     <label for="su" data-i18n="signup.emailLabel">メールアドレス（必須）</label>
+    <!-- type=textのままにしている(type=emailだとブラウザ固有の検証メッセージ(端末の言語・
+         文言)が出て、サイト側の案内・エラー表示と食い違うため)。キーボードは
+         inputmode=emailでメール用になる。iOSの先頭大文字化・自動修正はautocapitalize/
+         autocorrectで止める。 -->
     <input id="su" name="email" type="text" inputmode="email"
-      autocomplete="email" required />
+      autocomplete="email" autocapitalize="none" autocorrect="off"
+      spellcheck="false" required />
+    <p class="live-msg warn" id="suMsg" aria-live="polite"></p>
     <label for="su2" data-i18n="signup.emailConfirmLabel">メールアドレス（確認・必須）</label>
     <input id="su2" name="email_confirm" type="text" inputmode="email"
-      autocomplete="email" required />
+      autocomplete="email" autocapitalize="none" autocorrect="off"
+      spellcheck="false" required />
+    <p class="live-msg" id="su2Msg" aria-live="polite"></p>
     <p class="hint" data-i18n="signup.emailHint">入力ミスがあると、チャージキーなどのご連絡が届かなく
       なります。営業・勧誘・宣伝のメールをお送りすることはありません。</p>
     <label for="sp" data-i18n="signup.passwordLabel">パスワード（必須）</label>
@@ -194,7 +246,8 @@
       組み合わせてください。</p>
     <div class="pwd-wrap">
       <input id="sp" name="new_password" type="password" minlength="8"
-        maxlength="32" autocomplete="new-password" disabled required />
+        maxlength="32" autocomplete="new-password" autocapitalize="none"
+        autocorrect="off" spellcheck="false" disabled required />
       <button type="button" class="pwd-toggle" data-target="sp"
         data-i18n-aria="login.showPassword"
         aria-label="パスワードを表示"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg></button>
@@ -202,11 +255,13 @@
     <label for="sp2" data-i18n="signup.passwordConfirmLabel">パスワード（確認・必須）</label>
     <div class="pwd-wrap">
       <input id="sp2" name="password_confirm" type="password" minlength="8"
-        maxlength="32" autocomplete="new-password" disabled required />
+        maxlength="32" autocomplete="new-password" autocapitalize="none"
+        autocorrect="off" spellcheck="false" disabled required />
       <button type="button" class="pwd-toggle" data-target="sp2"
         data-i18n-aria="login.showPassword"
         aria-label="パスワードを表示"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg></button>
     </div>
+    <p class="live-msg" id="sp2Msg" aria-live="polite"></p>
     <label for="sdisplay" data-i18n="signup.displayNameLabel">呼んでほしいお名前（必須）</label>
     <input id="sdisplay" name="display_name" autocomplete="nickname"
       required data-i18n-placeholder="signup.displayNamePlaceholder"
@@ -290,8 +345,11 @@
       <textarea id="s_free" name="survey_free_text"></textarea>
     </details>
 
-    <button type="submit" data-i18n="signup.submit">登録してはじめる</button>
-    <div class="err" id="se"></div>
+    <!-- 送信ボタンは画面の下端に固定(sticky・2026-10-04)。エラー文(#se)はボタンの上。 -->
+    <div class="submit-bar" id="submitBar">
+      <div class="err" id="se" role="alert"></div>
+      <button type="submit" data-i18n="signup.submit">登録してはじめる</button>
+    </div>
     <p class="hint" data-i18n-html="signup.chargeHint">チャージ(pt購入)は登録後、設定画面からいつでも
       行えます。PayPayなら購入後すぐに残高へ反映され、「<a href="https://thebase.in/"
       target="_blank" rel="noopener">BASE</a>」(BASE株式会社の登録商標。本サービスとの
@@ -475,9 +533,12 @@
     // 走査し、ログイン欄と登録欄が同一ページに同居していることで自動生成・
     // 自動入力を誤爆させる問題があったため・2026-09-01)。
     // 現在の表示言語の文言(i18n.js未読込なら日本語の既定文)。
-    function i18nT(key, fallback) {
-      try { return window.I18N ? window.I18N.t(key) : fallback; }
-      catch (e) { return fallback; }
+    function i18nT(key, fallback, vars) {
+      try {
+        if (window.I18N) return window.I18N.t(key, vars);
+      } catch (e) { /* 辞書が使えなければ既定文 */ }
+      return vars ? fallback.replace(/\{(\w+)\}/g, (m, k) =>
+        (Object.prototype.hasOwnProperty.call(vars, k) ? vars[k] : m)) : fallback;
     }
     // 2026-08-18〜: リリース前最終テストのため新規登録を再開。
     // 「戻る」でサイトごと離脱してしまう問題への対応(2026-09-05opus照査
@@ -489,6 +550,7 @@
       fSignup.classList.remove('hidden');
       pLogin.disabled = true;
       pSignup.forEach((el) => { el.disabled = false; });
+      document.documentElement.classList.add('signup-open');
       document.title = i18nT('meta.signupTitle', '新規登録｜nyangailab');
       if (push) history.pushState({ form: 'signup' }, '', '/login#signup');
       currentForm = 'signup';
@@ -500,6 +562,7 @@
       fLogin.classList.remove('hidden');
       pSignup.forEach((el) => { el.disabled = true; });
       pLogin.disabled = false;
+      document.documentElement.classList.remove('signup-open');
       document.title = i18nT('meta.loginTitle', 'ログイン / 新規登録｜nyangailab');
       if (push) history.pushState({ form: 'login' }, '', '/login');
       currentForm = 'login';
@@ -512,6 +575,10 @@
         track('click', 'signup_form', 'back_to_login');
         showLogin(true);
       });
+    // 「登録せずに試す」副導線(2026-10-04・ver1.5.11)を押したことの記録(固定のlabelのみ・
+    // 入力内容は含まない。同一タブで/?tab=vocabへ移る。keepaliveで遷移直前でも送られる)。
+    document.getElementById('tryWithoutSignup')
+      .addEventListener('click', () => track('click', 'signup_form', 'try_without_signup'));
     window.addEventListener('popstate', (ev) => {
       if (ev.state && ev.state.form === 'signup') showSignup(false);
       else showLogin(false);
@@ -585,17 +652,108 @@
       '21.8 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 ' +
       '8a21.77 21.77 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>' +
       '<line x1="1" y1="1" x2="23" y2="23"/></svg>';
+    // 登録フォームの2つのパスワード欄(sp=パスワード・sp2=確認)は表示/非表示を連動させる
+    // (2026-10-04・ver1.5.11: 一致しないと言われたとき、両方を見比べて直せるように)。
+    // ログイン欄(p)は従来どおり単独。
+    const PWD_LINKED = { sp: ['sp', 'sp2'], sp2: ['sp', 'sp2'] };
+    function setPwdVisible(id, show) {
+      const inp = document.getElementById(id);
+      const btn = document.querySelector('.pwd-toggle[data-target="' + id + '"]');
+      if (inp) inp.type = show ? 'text' : 'password';
+      if (!btn) return;
+      btn.innerHTML = show ? EYE_OFF_ICON : EYE_ICON;
+      btn.setAttribute('aria-label',
+        show ? i18nT('login.hidePassword', 'パスワードを隠す')
+          : i18nT('login.showPassword', 'パスワードを表示'));
+    }
     document.querySelectorAll('.pwd-toggle').forEach((btn) => {
       btn.addEventListener('click', () => {
         const inp = document.getElementById(btn.dataset.target);
         const show = inp.type === 'password';
-        inp.type = show ? 'text' : 'password';
-        btn.innerHTML = show ? EYE_OFF_ICON : EYE_ICON;
-        btn.setAttribute('aria-label',
-          show ? i18nT('login.hidePassword', 'パスワードを隠す')
-            : i18nT('login.showPassword', 'パスワードを表示'));
+        (PWD_LINKED[btn.dataset.target] || [btn.dataset.target])
+          .forEach((id) => setPwdVisible(id, show));
       });
     });
+
+    // 確認欄の「その場」チェック(2026-10-04・ver1.5.11): 送信する前に、確認欄が上の欄と
+    // 違っていることに気づけるようにする。入力の途中(確認欄が上の欄の先頭部分と一致して
+    // いる間)は何も出さず、欄を離れたとき・上の欄より先まで打ったとき・違う文字を打った
+    // ときに、責めない言い方で一行だけ知らせる(赤ではなく控えめな色)。一致したら✓。
+    // 送信時の検証(submitハンドラ)は従来どおり残してあり、これは前倒しの案内のみ。
+    // 入力内容はこの端末の中で比べるだけで、どこにも送らない・保存しない。
+    function bindConfirmCheck(firstId, confirmId, msgId, norm, diffKey, diffFallback) {
+      const first = document.getElementById(firstId);
+      const conf = document.getElementById(confirmId);
+      const msg = document.getElementById(msgId);
+      if (!first || !conf || !msg) return;
+      function set(kind, text) {
+        msg.className = 'live-msg' + (kind ? ' ' + kind : '');
+        msg.textContent = text;
+      }
+      function update(fromBlur) {
+        const a = norm(first.value);
+        const b = norm(conf.value);
+        if (!b) { set('', ''); return; }
+        if (a === b) {
+          set('ok', '✓ ' + i18nT('signup.confirmMatch', '一致しています'));
+          return;
+        }
+        // 打ちかけ(いま確認欄を打っていて、まだ上の欄の先頭部分と一致している)は黙っておく。
+        if (!fromBlur && document.activeElement === conf && a.startsWith(b)) {
+          set('', '');
+          return;
+        }
+        set('warn', i18nT(diffKey, diffFallback));
+      }
+      first.addEventListener('input', () => update(false));
+      conf.addEventListener('input', () => update(false));
+      conf.addEventListener('blur', () => update(true));
+      if (window.I18N) window.I18N.onChange(() => { if (msg.textContent) update(true); });
+    }
+    bindConfirmCheck('su', 'su2', 'su2Msg',
+      (v) => v.trim().toLowerCase(), 'signup.emailConfirmDiff',
+      '上のメールアドレスと違うようです。もう一度ご確認ください。');
+    bindConfirmCheck('sp', 'sp2', 'sp2Msg',
+      (v) => v, 'signup.pwConfirmDiff',
+      '上のパスワードと違うようです。もう一度ご確認ください。');
+
+    // メールアドレスのドメインの打ち間違い(gmial.com等)への「もしかして」(2026-10-04)。
+    // 確認欄は同じ打ち間違いを2回繰り返すと素通りするため。**登録を止めない・自動で直さない
+    // 一行の案内のみ**。誤検知で正しい人を困らせないよう、よくある打ち間違いの完全一致
+    // だけを対象にする(あいまい一致はしない)。実在する別ドメインになり得るものは入れない。
+    const EMAIL_DOMAIN_TYPOS = {
+      'gmial.com': 'gmail.com', 'gmai.com': 'gmail.com', 'gamil.com': 'gmail.com',
+      'gmaill.com': 'gmail.com', 'gmali.com': 'gmail.com', 'gmail.con': 'gmail.com',
+      'gmail.cmo': 'gmail.com', 'gmail.comm': 'gmail.com',
+      'yaho.co.jp': 'yahoo.co.jp', 'yahho.co.jp': 'yahoo.co.jp',
+      'yahoo.co.jo': 'yahoo.co.jp', 'yahoo.co.pj': 'yahoo.co.jp',
+      'hotmial.com': 'hotmail.com', 'hotmai.com': 'hotmail.com',
+      'hotmail.con': 'hotmail.com', 'outlok.com': 'outlook.com',
+      'outlook.con': 'outlook.com', 'iclod.com': 'icloud.com',
+      'icloud.con': 'icloud.com', 'icoud.com': 'icloud.com',
+      'docomo.ne.j': 'docomo.ne.jp', 'softbank.ne.j': 'softbank.ne.jp',
+    };
+    function emailDomainTypo(value) {
+      const m = /^[^@\s]+@([^@\s]+)$/.exec(String(value).trim().toLowerCase());
+      if (!m || !Object.prototype.hasOwnProperty.call(EMAIL_DOMAIN_TYPOS, m[1])) {
+        return null;
+      }
+      return { typed: m[1], suggest: EMAIL_DOMAIN_TYPOS[m[1]] };
+    }
+    (function () {
+      const su = document.getElementById('su');
+      const msg = document.getElementById('suMsg');
+      if (!su || !msg) return;
+      function show() {
+        const t = emailDomainTypo(su.value);
+        msg.textContent = t ? i18nT('signup.emailTypoHint',
+          '「@{typed}」は「@{suggest}」の打ち間違いではありませんか？' +
+          '（違っていればそのままで大丈夫です）', t) : '';
+      }
+      su.addEventListener('blur', show);
+      su.addEventListener('input', () => { msg.textContent = ''; });
+      if (window.I18N) window.I18N.onChange(() => { if (msg.textContent) show(); });
+    })();
 
     // サーバー側(app/services/auth.py password_policy_error)と同じルール。
     // すぐに気づけるようクライアント側でも軽く事前チェックする。
@@ -821,6 +979,10 @@
     window.addEventListener('pagehide', () => sendLeave('pagehide'));
     // 送信ボタンが画面に入ったか(スマホでは送信ボタンが画面より下にあるため、
     // 「そこまで見ていない」のか「見たうえで押さなかった」のかを分ける)。
+    // ※2026-10-04(ver1.5.11)から送信ボタンを画面の下端に固定(.submit-bar)したため、
+    // フォームを開けば最初から画面に入る=このビーコンは「フォームを開いた」とほぼ同時に
+    // 記録される。管理画面の「送信ボタンが画面に入った」は、この日以降は「開いた」と
+    // ほぼ同数になる(それ以前のデータとは意味が違う)。
     (function () {
       try {
         const btn = fSignup.querySelector('button[type="submit"]');
