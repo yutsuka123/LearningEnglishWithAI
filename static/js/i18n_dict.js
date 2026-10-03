@@ -1449,6 +1449,12 @@
     "signup.emailMismatch": "メールアドレスが一致しません。",
     "signup.pwMismatch": "パスワードが一致しません。",
     "signup.failed": "登録に失敗しました。",
+    // ---- 登録フォーム見直し(ver1.5.11) 2026-10-04 ----
+    "signup.tryWithoutSignup": "登録せずに、まず単語と無料の音声を試す →",
+    "signup.emailConfirmDiff": "上のメールアドレスと違うようです。もう一度ご確認ください。",
+    "signup.pwConfirmDiff": "上のパスワードと違うようです。もう一度ご確認ください。",
+    "signup.confirmMatch": "一致しています",
+    "signup.emailTypoHint": "「@{typed}」は「@{suggest}」の打ち間違いではありませんか？（違っていればそのままで大丈夫です）",
   });
 
   Object.assign(D.en, {
@@ -2886,6 +2892,12 @@
     "signup.emailMismatch": "The email addresses do not match.",
     "signup.pwMismatch": "The passwords do not match.",
     "signup.failed": "Registration failed.",
+    // ---- 登録フォーム見直し(ver1.5.11) 2026-10-04 ----
+    "signup.tryWithoutSignup": "Try words and free audio first, without signing up →",
+    "signup.emailConfirmDiff": "This doesn't match the email address above. Please check it again.",
+    "signup.pwConfirmDiff": "This doesn't match the password above. Please check it again.",
+    "signup.confirmMatch": "Matches",
+    "signup.emailTypoHint": "Did you mean “@{suggest}” instead of “@{typed}”? (If it's correct as it is, you can leave it.)",
   });
 
   Object.assign(D["zh-CN"], {
@@ -4303,6 +4315,12 @@
     "signup.emailMismatch": "邮箱地址不一致。",
     "signup.pwMismatch": "两次输入的密码不一致。",
     "signup.failed": "注册失败。",
+    // ---- 登録フォーム見直し(ver1.5.11) 2026-10-04 ----
+    "signup.tryWithoutSignup": "先不注册，试试单词和免费语音 →",
+    "signup.emailConfirmDiff": "与上面的邮箱地址似乎不一致，请再确认一下。",
+    "signup.pwConfirmDiff": "与上面的密码似乎不一致，请再确认一下。",
+    "signup.confirmMatch": "一致",
+    "signup.emailTypoHint": "“@{typed}”是不是“@{suggest}”的输入错误？（如果没有错，保持原样即可。）",
   });
 
   Object.assign(D["zh-TW"], {
@@ -5720,5 +5738,11 @@
     "signup.emailMismatch": "電子郵件地址不一致。",
     "signup.pwMismatch": "兩次輸入的密碼不一致。",
     "signup.failed": "註冊失敗。",
+    // ---- 登録フォーム見直し(ver1.5.11) 2026-10-04 ----
+    "signup.tryWithoutSignup": "先不註冊，試試單字和免費語音 →",
+    "signup.emailConfirmDiff": "與上方的電子郵件地址似乎不一致，請再確認一次。",
+    "signup.pwConfirmDiff": "與上方的密碼似乎不一致，請再確認一次。",
+    "signup.confirmMatch": "一致",
+    "signup.emailTypoHint": "「@{typed}」是不是「@{suggest}」的輸入錯誤？（如果沒有錯，保持原樣即可。）",
   });
 })();
