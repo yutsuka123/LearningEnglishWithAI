@@ -1757,7 +1757,7 @@ def _signup_form_breakdown(
                       "count": n_with(f"input:{k}")})
     steps.append({"key": "open:survey", "label": "アンケート欄を開いた",
                   "count": n_with("open:survey")})
-    steps.append({"key": "submit_seen", "label": "送信ボタンが画面に入った",
+    steps.append({"key": "submit_seen", "label": "送信ボタンが画面に入った(2026-10-04以降は開いた直後に記録)",
                   "count": n_with("submit_seen")})
     steps.append({"key": "submit_attempt", "label": "送信ボタンを押した",
                   "count": n_with("submit_attempt")})

@@ -128,7 +128,7 @@
     /* 固定した送信ボタンの裏に入力欄が隠れないよう、フォーカス移動・必須エラーの
        スクロール位置を、画面の下端から送信ボタン(文字サイズ特大でも収まる高さ)の分だけ
        空ける(登録フォームを出している間だけ)。 */
-    html.signup-open { scroll-padding-bottom: 120px; }
+    html.signup-open { scroll-padding-bottom: var(--bar-h, 120px); }
     /* 確認欄の不一致などをその場で知らせる控えめな一行(空の間は場所を取らない)。 */
     .live-msg { margin: 4px 0 0; font-size: 12px; line-height: 1.5; }
     .live-msg:empty { display: none; }
@@ -579,6 +579,24 @@
     // 入力内容は含まない。同一タブで/?tab=vocabへ移る。keepaliveで遷移直前でも送られる)。
     document.getElementById('tryWithoutSignup')
       .addEventListener('click', () => track('click', 'signup_form', 'try_without_signup'));
+    // 固定した送信バーの高さに合わせて、フォーカス移動のスクロール余白(--bar-h)を更新する(2026-10-04・独立照査MEDIUM-1:
+    // エラー文が折り返したり文字サイズが大きいとバーが固定の120pxを超え、移動した入力欄がバーの裏に隠れたため)。
+    // 120px未満にはしない(従来の固定値=文字サイズ特大のzoomでも検証済み)。使えない環境(ResizeObserverなし)では120pxのまま。
+    (function () {
+      try {
+        const bar = document.getElementById('submitBar');
+        if (!bar || typeof ResizeObserver === 'undefined') return;
+        new ResizeObserver(() => {
+          const h = Math.ceil(bar.getBoundingClientRect().height);
+          if (h > 0) document.documentElement.style.setProperty('--bar-h', Math.max(120, h + 32) + 'px');
+        }).observe(bar);
+      } catch (e) { /* 既定の余白のまま */ }
+    })();
+    // 入力を再開したら、前回の送信エラーの文は消す(残っているとバーが高いままになり、入力欄を覆うため・同照査)。
+    fSignup.addEventListener('input', () => {
+      const e = document.getElementById('se');
+      if (e && e.textContent) e.textContent = '';
+    });
     window.addEventListener('popstate', (ev) => {
       if (ev.state && ev.state.form === 'signup') showSignup(false);
       else showLogin(false);
@@ -705,8 +723,11 @@
         }
         set('warn', i18nT(diffKey, diffFallback));
       }
-      first.addEventListener('input', () => update(false));
-      conf.addEventListener('input', () => update(false));
+      // IME変換中(isComposing)は判定しない=変換が終わるまで警告が点滅しないように(2026-10-04・独立照査LOW-1)。
+      first.addEventListener('input', (ev) => { if (!ev.isComposing) update(false); });
+      conf.addEventListener('input', (ev) => { if (!ev.isComposing) update(false); });
+      first.addEventListener('compositionend', () => update(false));
+      conf.addEventListener('compositionend', () => update(false));
       conf.addEventListener('blur', () => update(true));
       if (window.I18N) window.I18N.onChange(() => { if (msg.textContent) update(true); });
     }
@@ -720,16 +741,17 @@
     // メールアドレスのドメインの打ち間違い(gmial.com等)への「もしかして」(2026-10-04)。
     // 確認欄は同じ打ち間違いを2回繰り返すと素通りするため。**登録を止めない・自動で直さない
     // 一行の案内のみ**。誤検知で正しい人を困らせないよう、よくある打ち間違いの完全一致
-    // だけを対象にする(あいまい一致はしない)。実在する別ドメインになり得るものは入れない。
+    // だけを対象にする(あいまい一致はしない)。メールを受け取れる別ドメイン(typo-squat等)になっていることがあるため、
+    // 案内は「違っていればそのままで大丈夫」と添えて登録は止めない。他社が実運用していそうなドメイン(yahho.co.jp・iclod.com等)は入れない(2026-10-04照査)。
     const EMAIL_DOMAIN_TYPOS = {
       'gmial.com': 'gmail.com', 'gmai.com': 'gmail.com', 'gamil.com': 'gmail.com',
       'gmaill.com': 'gmail.com', 'gmali.com': 'gmail.com', 'gmail.con': 'gmail.com',
       'gmail.cmo': 'gmail.com', 'gmail.comm': 'gmail.com',
-      'yaho.co.jp': 'yahoo.co.jp', 'yahho.co.jp': 'yahoo.co.jp',
+      'yaho.co.jp': 'yahoo.co.jp',
       'yahoo.co.jo': 'yahoo.co.jp', 'yahoo.co.pj': 'yahoo.co.jp',
       'hotmial.com': 'hotmail.com', 'hotmai.com': 'hotmail.com',
       'hotmail.con': 'hotmail.com', 'outlok.com': 'outlook.com',
-      'outlook.con': 'outlook.com', 'iclod.com': 'icloud.com',
+      'outlook.con': 'outlook.com',
       'icloud.con': 'icloud.com', 'icoud.com': 'icloud.com',
       'docomo.ne.j': 'docomo.ne.jp', 'softbank.ne.j': 'softbank.ne.jp',
     };
