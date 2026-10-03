@@ -137,6 +137,21 @@ s2 = bf.run(limit=100, sleep=0, execute=True, client=object(), quiet=True)
 check("5件連続失敗で打ち切る", s2["aborted"] and s2["tried"] == 5 and s2["updated"] == 0, str(s2))
 check("打ち切っても既存の行は全て不変", snapshot() == before2)
 
+print("== 2b. 食い違いで見送る行が連続しても打ち切らない(外部APIは正常に答えている)")
+for n in range(100, 130):
+    RESP[str(n)] = ({"country": "United States", "latitude": 40.7, "longitude": -74.0}, "")   # 国が食い違う
+RESP["130"] = ({"country": "Japan", "latitude": 35.0, "longitude": 135.0}, "")                # 成功(順番はランダム)
+with db() as conn:
+    conn.execute("DELETE FROM ip_geo_cache")
+for n in range(100, 131):
+    put(f"198.51.100.{n}", org=f"Org{n}", host=f"h{n}")
+before2b = snapshot()
+s2b = bf.run(limit=100, sleep=0, execute=True, client=object(), quiet=True)
+check("食い違い30件が続いても打ち切らず全31件を試す", not s2b["aborted"] and s2b["tried"] == 31, str(s2b))
+check("食い違い30件は見送り・成功1件は更新", s2b["mismatch"] == 30 and s2b["updated"] == 1 and s2b["failed"] == 0, str(s2b))
+after2b = snapshot()
+check("食い違いの行は完全に不変", all(after2b[ip] == before2b[ip] for ip in before2b if not ip.endswith(".130")))
+
 print("== 3. 実行しても他のテーブルには触れない")
 with db() as conn:
     n_tables = conn.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table'").fetchone()[0]

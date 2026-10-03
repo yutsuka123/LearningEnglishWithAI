@@ -21,9 +21,39 @@
     } catch (e) { /* 報告自体の失敗はUIに影響させない */ }
   }
 
+  // JSモジュールの読み込み失敗(新旧のファイルが混ざった状態)を自分で直す(2026-10-03)。
+  // 背景: ブラウザの履歴移動・タブ復元は、サーバーが no-cache を返していても保存済みのファイルを
+  //   再検証せずに使う。ブラウザに古い app.js が残ったまま新しい views.js だけ取得されると、
+  //   「Importing binding name 'tabLabel' is not found」(Safari)等で起動できず、画面が動かない
+  //   (2026-10-03 Mac Safari の実ユーザー1件・client_errors に記録)。
+  // 対処: 該当するエラーのときだけ、モジュール群をキャッシュを使わず取り直してから1回だけ再読込する。
+  //   直近5分に再読込済みなら何もしない(取り直しても直らない場合の無限ループ防止)。
+  //   sessionStorage に印を残せない環境でも、ループを避けるため何もしない。
+  const MODULE_LOAD_ERROR = new RegExp(
+    "Importing binding name|provide an export named|import not found|" +
+    "Failed to fetch dynamically imported module|error loading dynamically imported module|" +
+    "Importing a module script failed", "i");
+  // app.js のimport先(app.jsの先頭のimportと揃えること)。
+  const MODULE_FILES = ["app.js", "views.js", "api.js", "speech.js", "quiz.js"];
+
+  function healStaleModules(message) {
+    if (!MODULE_LOAD_ERROR.test(String(message || ""))) return;
+    const key = "module_heal_at";
+    try {
+      const last = Number(sessionStorage.getItem(key) || 0);
+      if (Date.now() - last < 5 * 60 * 1000) return;
+      sessionStorage.setItem(key, String(Date.now()));
+    } catch (e) { return; }
+    const reload = function () { location.reload(); };
+    Promise.all(MODULE_FILES.map(function (f) {
+      return fetch("/static/js/" + f, { cache: "reload" }).catch(function () {});
+    })).then(reload, reload);
+  }
+
   window.addEventListener("error", function (e) {
     report("jserror", e.message, e.error && e.error.stack,
       e.filename, e.lineno, e.colno);
+    healStaleModules(e.message);
   });
 
   window.addEventListener("unhandledrejection", function (e) {
@@ -35,5 +65,6 @@
     const message = reason && reason.message ? reason.message : String(reason);
     const stack = reason && reason.stack ? reason.stack : "";
     report("unhandledrejection", message, stack, _noQuery(location.href), 0, 0);
+    healStaleModules(message);
   });
 })();

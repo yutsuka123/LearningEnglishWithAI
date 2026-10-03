@@ -144,8 +144,12 @@ def run(limit: int = _DEFAULT_LIMIT, sleep: float = _DEFAULT_SLEEP,
             stats["tried"] += 1
             lat, lon, err = fetch_latlon(client, ip, country, region, city)
             if err:
-                stats["mismatch" if "食い違う" in err else "failed"] += 1
-                consecutive += 1
+                is_mismatch = "食い違う" in err
+                stats["mismatch" if is_mismatch else "failed"] += 1
+                # 外部APIが正常に答えたうえで、ラベルが食い違うので採用しないだけの行は「失敗」ではない
+                # (2026-10-03: 10/1の補完は食い違いが5件続いただけで149/767のまま中断し、残り約700件が
+                # 放置された)。レート制限/障害の目安にする連続失敗は、応答が得られなかった行だけ数える。
+                consecutive = 0 if is_mismatch else consecutive + 1
                 if not quiet:
                     print(f"  [{i}/{len(targets)}] {country}: 更新しない({err})")
                 if consecutive >= _MAX_CONSECUTIVE:
