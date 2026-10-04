@@ -7249,7 +7249,7 @@ export async function admin(root) {
       }
       const summaryRows = res.summary.map((s) => `<tr>
         <td class="muted">${escapeHtml(s.jail)}</td>
-        <td>${s.mode === "ban" ? "実際に遮断" : "候補（未遮断）"}</td>
+        <td>${s.jail === "eigo-probe-trusted" ? "信頼IPの探索（記録のみ）" : s.mode === "ban" ? "実際に遮断" : "候補（未遮断）"}</td>
         <td>${s.n}</td>
       </tr>`).join("");
       const rows = res.events.map((e) => {
@@ -7263,8 +7263,8 @@ export async function admin(root) {
         return `<tr>
           <td class="muted">${fmtDate(e.created_at)}</td>
           <td>${escapeHtml(e.jail)}</td>
-          <td>${e.action === "ban" ? (isRealBan ? "🚫実際に遮断" : "候補（未遮断）") : "解除"}</td>
-          <td class="muted">${escapeHtml(e.ip)}</td>
+          <td>${e.action === "ban" ? (isRealBan ? "🚫実際に遮断" : e.jail === "eigo-probe-trusted" ? "⚠️信頼IPの探索（記録のみ・心当たりを確認）" : "候補（未遮断）") : "解除"}</td>
+          <td class="muted">${escapeHtml(e.ip)}${/^192\.0\.2\./.test(e.ip || "") ? "（導入時の自己テスト用アドレス）" : ""}</td>
           <td class="muted">${e.bantime_seconds ? Math.round(e.bantime_seconds / 60) + "分" : ""}</td>
           <td>${unbanCell}</td>
           <td><details><summary class="muted">根拠</summary>

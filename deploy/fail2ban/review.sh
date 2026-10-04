@@ -51,5 +51,5 @@ if not ev: print("  (まだ判定はありません=誤検知も無し)")
 PY
 echo
 echo "== 直近のfail2ban本体ログ(eigo関連のBan/Ignore・最新15行)"
-grep -E "eigo-(probe|probe-trusted|loginflood|loginfail|ratelimited)" /var/log/fail2ban.log 2>/dev/null | grep -E " (Ban|Unban|Ignore) " | tail -15 | \
+grep -E "eigo-(probe|probe-trusted|loginflood|loginfail|ratelimited)" /var/log/fail2ban.log 2>/dev/null | grep -v "eigo-probe-trusted\] Ignore" | grep -E " (Ban|Unban|Ignore) " | tail -15 | \
   { if [ "$RAW" = 1 ]; then cat; else sed -E 's/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/<ip>/g'; fi; } || true

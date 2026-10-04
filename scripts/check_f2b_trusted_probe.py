@@ -70,6 +70,18 @@ for args, want, desc in CASES:
     got = ign(*args)
     check(f"{desc}  {' '.join(args)} → {got}", got == want, f"want {want}")
 missing = Path(_TMP) / "nothing.txt"
+# 信頼IPは単一アドレスの完全一致のみ(自動生成ファイルに広い範囲が紛れても全員を免除しない)
+BROAD = Path(_TMP) / "trusted_broad.txt"
+BROAD.write_text("0.0.0.0/0\n198.18.0.0/16\n203.0.113.5\n", encoding="utf-8")
+check("信頼IPファイルのCIDR(0.0.0.0/0)は無効=他のIPは数える", ign("192.0.2.9", trusted=BROAD) == 1)
+check("信頼IPファイルの単一アドレスは有効", ign("203.0.113.5", trusted=BROAD) == 0)
+check("許可リストのCIDRは有効(運営者が手で書く)", ign("198.51.100.200") == 0)
+# 想定外の失敗(信頼IPファイルがディレクトリ等で読めない)=無視(0)+監査ログに痕跡
+AUD = Path(_TMP) / "audit.log"
+bad = Path(_TMP) / "trusted_dir"; bad.mkdir()
+rc = subprocess.run([sys.executable, str(SCRIPT), "203.0.113.5"], env={**os.environ, "EIGO_F2B_ALLOW": str(ALLOW), "EIGO_F2B_TRUSTED": str(bad), "EIGO_F2B_AUDIT": str(AUD)}).returncode
+check("想定外の失敗は無視(0)=BANしない側", rc == 0, str(rc))
+check("想定外の失敗は監査ログに痕跡が残る(IGNORE-CMD-ERROR)", AUD.exists() and "IGNORE-CMD-ERROR" in AUD.read_text(encoding="utf-8"))
 check("ファイルが無いとき: 通常は数える(1)", ign("203.0.113.5", allow=missing, trusted=missing) == 1)
 check("ファイルが無いとき: 記録専用は無視(0)", ign("--only-exempt", "203.0.113.5", allow=missing, trusted=missing) == 0)
 
@@ -118,9 +130,9 @@ with db() as conn:
     visit(TRUST); visit(OTHER)
 
 
-def ev(ip, jail, action="ban", mode="ban"):
+def ev(ip, jail, action="ban", mode="ban", failures=3):
     return system.ingest_security_event(system.SecurityEventIn(
-        ip=ip, jail=jail, action=action, mode=mode, failures=3, bantime_seconds=43200, evidence="x"))
+        ip=ip, jail=jail, action=action, mode=mode, failures=failures, bantime_seconds=43200, evidence="x"))
 
 
 def marks(ip):
@@ -154,7 +166,38 @@ except HTTPException:
     check("未知のjail(sshd)は拒否", True)
 with db() as conn:
     n = conn.execute("SELECT COUNT(*) FROM security_events WHERE jail = 'eigo-probe-trusted'").fetchone()[0]
-check("security_eventsにeigo-probe-trustedが記録される", n == 1, str(n))
+check("security_eventsにeigo-probe-trustedが記録される(mode=ban拒否分は除く)", n == 1, str(n))
+# 手動のbanip(failures=0・自己テスト/運営者の確認手順)は探索の検知ではない=印を付けない(携帯回線等の共有IPの巻き込み防止)
+MANUAL = "198.18.0.40"
+with db() as conn:
+    conn.execute("INSERT INTO landing_visits (ip, path, user_agent, guest_sid, is_internal, bot_mark) VALUES (?, '/', 'Mozilla/5.0 Chrome/120', 'g', 0, 0)", (MANUAL,))
+r = ev(MANUAL, "eigo-probe", "ban", failures=0)
+check("手動BAN(failures=0)では印を付けない・is_scanner_ipも偽", r.get("marked_visits") == 0 and marks(MANUAL) == [("visit", 0, 0)], f"{r} {marks(MANUAL)}")
+with db() as conn:
+    check("is_scanner_ip: 手動BAN(failures=0)だけでは偽", vk.is_scanner_ip(conn, MANUAL) is False)
+# 30日より前のBANは対象外(動的IP・携帯回線の持ち主が変わっている可能性)
+OLD = "198.18.0.50"
+with db() as conn:
+    conn.execute("INSERT INTO security_events (ip, jail, action, mode, failures, bantime_seconds, evidence, created_at) VALUES (?, 'eigo-probe', 'ban', 'ban', 5, 43200, 'x', datetime('now', '-40 days'))", (OLD,))
+    check("is_scanner_ip: 40日前のBANは偽(期限30日)", vk.is_scanner_ip(conn, OLD) is False)
+    conn.execute("INSERT INTO security_events (ip, jail, action, mode, failures, bantime_seconds, evidence, created_at) VALUES (?, 'eigo-probe', 'ban', 'ban', 5, 43200, 'x', datetime('now', '-10 days'))", (OLD,))
+    check("is_scanner_ip: 10日前の実検知のBANは真", vk.is_scanner_ip(conn, OLD) is True)
+# 記録専用jailはdryrunのみ受け付ける(実BAN扱いの行を作らない)
+try:
+    ev(TRUST, "eigo-probe-trusted", "ban", "ban")
+    check("eigo-probe-trusted を mode=ban で送っても拒否", False)
+except HTTPException:
+    check("eigo-probe-trusted を mode=ban で送っても拒否", True)
+# 印付けが失敗しても、BANの記録(INSERT)は消さない
+_orig = vk.mark_scanner_ip
+vk.mark_scanner_ip = lambda conn, ip: (_ for _ in ()).throw(RuntimeError("boom"))
+try:
+    r = ev("198.18.0.60", "eigo-probe", "ban")
+    with db() as conn:
+        kept = conn.execute("SELECT COUNT(*) FROM security_events WHERE ip = '198.18.0.60'").fetchone()[0]
+    check("印付けが例外でも、通知(BANの記録)は保存される", r.get("ok") is True and kept == 1, f"{r} kept={kept}")
+finally:
+    vk.mark_scanner_ip = _orig
 main_src = (ROOT / "app" / "main.py").read_text(encoding="utf-8")
 check("訪問の記録時にis_scanner_ipで印を付けている(main.py)", "visitor_kind.is_scanner_ip(conn, client_ip)" in main_src and "MARK_SCANNER_IP" in main_src)
 

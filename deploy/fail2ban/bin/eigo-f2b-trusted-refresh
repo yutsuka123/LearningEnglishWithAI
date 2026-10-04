@@ -9,6 +9,7 @@
 前回の一覧を残して失敗を監査ログに記録し、終了コード1で終わる(一覧を空にして全員を無防備にはしない)。
 ignorecommand(eigo-f2b-ignore)がこのファイルを読む。生IPを含むのでroot専用(0600)。
 """
+import ipaddress
 import os
 import sqlite3
 import sys
@@ -38,6 +39,15 @@ def audit(msg):
         pass
 
 
+def _valid(ip):
+    """単一の有効なIPアドレスだけを信頼IPにする(login_log.ipは記録されたままの文字列=想定外の値・範囲指定を弾く・2026-10-04独立照査L8)。"""
+    try:
+        ipaddress.ip_address(ip)
+        return True
+    except ValueError:
+        return False
+
+
 def collect(data_dir):
     logs = "file:%s?mode=ro" % os.path.join(data_dir, "logs.db")
     core = "file:%s?mode=ro" % os.path.join(data_dir, "core.db")
@@ -51,7 +61,7 @@ def collect(data_dir):
             ("-%d days" % DAYS, "-%d days" % MIN_ACCOUNT_DAYS)).fetchall()
     finally:
         conn.close()
-    return sorted({r[0] for r in rows})
+    return sorted({ip for ip in (r[0] for r in rows) if _valid(ip)})
 
 
 def main():

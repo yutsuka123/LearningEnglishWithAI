@@ -41,13 +41,21 @@ def load(path):
 
 
 def is_exempt(ip, allow_only=False):
-    """許可リスト(+信頼IP)に当たるか。"""
-    for entry in load(ALLOW) + ([] if allow_only else load(TRUSTED)):
+    """許可リスト(+信頼IP)に当たるか。許可リストはIP/CIDR(運営者が手で書く)。信頼IPは**単一アドレスの完全一致のみ**
+    (自動生成のファイルに「0.0.0.0/0」のような広い範囲が紛れても全員を免除しないため・2026-10-04独立照査L8)。"""
+    for entry in load(ALLOW):
         try:
             if ip in ipaddress.ip_network(entry, strict=False):
                 return True
         except ValueError:
             continue
+    if not allow_only:
+        for entry in load(TRUSTED):
+            try:
+                if ip == ipaddress.ip_address(entry):
+                    return True
+            except ValueError:
+                continue
     return False
 
 
@@ -66,8 +74,19 @@ def main():
     return 0 if exempt else 1
 
 
+def _note_error(e):
+    """想定外の失敗を監査ログへ1行残す(best-effort)。失敗時は無視(=BANも記録もしない)側に倒すので、
+    eigo-probe等が黙って働かなくなったことに後から気づけるように(2026-10-04独立照査L8)。"""
+    try:
+        with open(os.environ.get("EIGO_F2B_AUDIT", "/var/log/eigo-f2b-audit.log"), "a", encoding="utf-8") as fh:
+            fh.write("%s IGNORE-CMD-ERROR %s\n" % (__import__("time").strftime("%Y-%m-%d %H:%M:%S"), type(e).__name__))
+    except Exception:
+        pass
+
+
 if __name__ == "__main__":
     try:
         sys.exit(main())
-    except Exception:
+    except Exception as e:
+        _note_error(e)
         sys.exit(0)  # 想定外の失敗はBANしない側に倒す

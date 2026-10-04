@@ -3053,6 +3053,10 @@ def ingest_security_event(payload: SecurityEventIn):
         raise errors.http_error("7002")
     if payload.jail not in _KNOWN_JAILS or not _valid_ip(payload.ip):
         raise errors.http_error("7002")
+    # 記録専用jail(信頼IPの探索)は実際にはBANしない=常にdryrun。mode='ban'で送られても受け付けない
+    # (実BAN扱いの行ができると管理画面の「今すぐ解除」が解除不能のまま毎分失敗し続けるため・2026-10-04独立照査L6)。
+    if payload.jail == "eigo-probe-trusted" and payload.mode != "dryrun":
+        raise errors.http_error("7002")
     with db() as conn:
         # 2026-09-29 Fable指摘L2: fail2banサービス再起動のたびに、その時点で
         # 実際にBAN中の全IPへactionunban→actionban(再登録)が走り、同じ内容の
@@ -3076,9 +3080,15 @@ def ingest_security_event(payload: SecurityEventIn):
         # 探索(eigo-probe)でBANされたIP=人間でない確率が高い→その既存の訪問記録にbot印を付ける
         # (2026-10-04オーナー決定)。信頼IPの探索検知(eigo-probe-trusted)では付けない(同じ回線の
         # 実ユーザーの訪問を巻き込まないため)。
+        # failures=0の通知は手動のbanip(自己テスト・運営者の確認手順)=探索の検知ではないので印を付けない
+        # (携帯回線等の共有IPを手動BANしただけで他人の訪問を人間に数えなくなるのを避ける・独立照査M1)。
+        # 印付けは補助(best-effort): 失敗してもこのBAN記録(INSERT)は消さない(独立照査L5)。
         marked = 0
-        if payload.jail == "eigo-probe" and payload.action == "ban":
-            marked = visitor_kind.mark_scanner_ip(conn, payload.ip)
+        if payload.jail == "eigo-probe" and payload.action == "ban" and payload.failures > 0:
+            try:
+                marked = visitor_kind.mark_scanner_ip(conn, payload.ip)
+            except Exception:  # noqa: BLE001
+                log.warning("探索IPの訪問への印付けに失敗(BAN記録は保存)", exc_info=True)
         conn.commit()
     return {"ok": True, "marked_visits": marked}
 

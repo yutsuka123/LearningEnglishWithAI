@@ -10,6 +10,8 @@
   ※3 AI検索クローラーの可能性
   ※4 その他、普通のユーザーではないものの可能性
   (印なし) … たまたま/興味を持って等を問わず、人間が意識的に閲覧したもの
+  ※記録時のbot_markには上の4種のほか、5=同一IPの大量訪問(MARK_HEAVY_IP)・6=fail2banが探索と判定してBANしたIP(MARK_SCANNER_IP・2026-10-04)がある
+  (5・6は画面の※印ではなく、人間に数えないための印)。
 
 **あくまで推定**である点に注意。判定材料は User-Agent と、IPの接続元組織
 (ip_geo_cache.org / PTRホスト名)しかない。UAは詐称できるし、逆に
@@ -241,14 +243,17 @@ def is_heavy_ip(conn, ip: str) -> bool:
 
 
 def is_scanner_ip(conn, ip: str) -> bool:
-    """このIPをfail2ban(eigo-probe)が探索と判定してBANしたことがあるか(security_eventsの記録で判断)。
-    訪問の記録時に呼ぶ(BAN解除後に戻ってきた同じIPの訪問にも印を付けるため)。表が無い・読めないときは偽。"""
+    """このIPをfail2ban(eigo-probe)が探索と判定してBANしたことが**直近30日以内**にあるか(security_eventsの記録で判断)。
+    訪問の記録時に呼ぶ(BAN解除後に戻ってきた同じIPの訪問にも印を付けるため)。表が無い・読めないときは偽。
+    次は対象外(2026-10-04独立照査M1): `failures=0`の通知=手動のbanip(自己テスト・READMEの確認手順で自分の携帯回線のIPを
+    手動BANする等)は探索の検知ではない/30日より前のBAN=動的IP・携帯回線(CGNAT)の持ち主が変わっている可能性が高い。"""
     if not ip:
         return False
     try:
         row = conn.execute(
             "SELECT 1 FROM security_events WHERE ip = ? AND jail = 'eigo-probe' "
-            "AND action = 'ban' LIMIT 1", (ip,)).fetchone()
+            "AND action = 'ban' AND failures > 0 "
+            "AND created_at >= datetime('now', '-30 days') LIMIT 1", (ip,)).fetchone()
     except Exception:  # noqa: BLE001 — 古いDB等でも訪問の記録を止めない
         return False
     return bool(row)

@@ -22,7 +22,8 @@ import urllib.request
 
 CONF = os.environ.get("EIGO_F2B_CONF", "/etc/eigo-f2b.conf")  # 環境変数はテスト用
 AUDIT = os.environ.get("EIGO_F2B_AUDIT", "/var/log/eigo-f2b-audit.log")
-# eigo-f2b-audit(app/routers/system.pyの_KNOWN_JAILS)と同じ一覧。アプリ側の
+# app/routers/system.pyの_KNOWN_JAILSから、解除ボタンの対象になりうるjailだけを抜いた一覧(記録専用の
+# eigo-probe-trustedは実際にはBANしない=解除の対象ではないので意図的に含めない・2026-10-04)。アプリ側の
 # 応答を信用しきらず、実際にホストコマンドを叩く直前でも検証する
 # (2026-09-29 Fable指摘H1: 相乗りの他jail(sshd等)を操作するレバーに
 # ならないように・多重防御)。

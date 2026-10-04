@@ -63,9 +63,16 @@ prune cron(03:45)でusage_events 0件削除+growth_daily 41日分保存を確認
   監査ログ(`DRYRUN BAN eigo-probe-trusted`)と管理画面「アクセス制限」に出す(信頼IPのふり・同じ回線の第三者・端末の乗っ取りに後から気づけるように)。
   通知の受け口(`_KNOWN_JAILS`)にjail名を追加。`install.sh`に自己テスト(ignorecommandの向き・記録専用jailが実BANしないこと)を追加。
 - **探索でBANされたIPは人間に数えない**: `visitor_kind.MARK_SCANNER_IP`(=6)。eigo-probeのban通知を受けたら、そのIPの既存の訪問記録(未印・自分の端末でない・登録試行でない行)に
-  bot印を付け、BAN解除後に戻ってきた同じIPの訪問も記録時に印を付ける。**信頼IPの探索検知(eigo-probe-trusted)では付けない**(同じ回線の実ユーザーを巻き込まないため)。
+  bot印を付け(直近30日のBANだけ有効)、BAN解除後に戻ってきた同じIPの訪問も記録時に印を付ける。**信頼IPの探索検知(eigo-probe-trusted)では付けない**(同じ回線の実ユーザーを巻き込まないため)。
   ※ダッシュボードの集計は元々UA+接続元の事業者で再判定しており、探索IPを人間に数えていなかった(実測0件)=生の`bot_mark`列(21件が0)を揃える補強。
-- 検査: `scripts/check_f2b_trusted_probe.py`(ignorecommandの向き13項目・jail設定10項目・通知の受け口と印の付け方13項目=全て成功)。
+- **独立照査(Fable)の指摘を反映**: 印の対象は「実際の検知(failures>0)かつ直近30日のBAN」だけ(手動の`banip`=自己テスト・READMEの確認手順では付けない・携帯回線(CGNAT)等の共有IPを巻き込まない)。
+  印付けが失敗してもBANの記録は保存(best-effort)。記録専用jailはmode=dryrunのみ受け付ける。信頼IPは**単一アドレスの完全一致のみ**(自動生成ファイルに広い範囲が紛れても全員を免除しない)・
+  `eigo-f2b-trusted-refresh`は書く前にIP形式を検証・`eigo-f2b-ignore`の想定外の失敗は監査ログに`IGNORE-CMD-ERROR`を残す。`install.sh`の自己テストを堅牢化
+  (banip前後の**新しい行だけ**を見る・here-stringで判定=pipefail/SIGPIPEの誤判定を避ける・変数の波括弧・banip失敗の表示・fail2banに登録されたignorecommandの表示)。
+  管理画面は記録専用jailを「⚠️信頼IPの探索（記録のみ・心当たりを確認）」・導入時の自己テスト用アドレス(192.0.2.x)に注記を表示。旧記述(filter.d・README)を修正。
+  **既存分(過去にBANされた3 IPと軽い探索IPの訪問21件)はデプロイでは遡って付かない=一回限りの手順(`docs/ops/mark_scanner_ips_20261004.sh`・バックアップ+更新前後の照合つき)で付ける。**
+- 検査: `scripts/check_f2b_trusted_probe.py`(ignorecommandの向きと信頼IPの扱い・jail設定・通知の受け口と印の付け方=48項目全て成功)。
+
 
 **4. 座標補完の再実行(コード無変更・手順のみ)**: `docs/ops/backfill_geo_20261003.sh`(本番logs.dbのip_geo_cacheの緯度経度2列だけ・バックアップ+snapshot+事後検証つき)。外部APIの無料枠の都合で10/4 JST 9:10の再照合cronの後に実行。
 

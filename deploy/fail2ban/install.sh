@@ -154,20 +154,20 @@ if [ "$MODE" = ban ]; then
   # 毎回TEST-NET-1(192.0.2.0/24)内でランダムな末尾を使い、汚れを避ける。
   TESTIP="192.0.2.$((RANDOM % 254 + 1))"
   echo "== BAN経路の自己テスト(TEST-NET-1の$TESTIPを仮BAN→DOCKER-USERを確認→解除。実在のIPには影響しない)"
-  fail2ban-client set eigo-probe banip "$TESTIP" >/dev/null
+  fail2ban-client set eigo-probe banip "$TESTIP" >/dev/null || echo "  ❌ fail2ban-clientのbanipに失敗(要調査)" >&2
   # 2026-09-29判明: サービス再起動直後の初回actionban(actionstart_on_demandでのチェーン作成込み)は、
   # `fail2ban-client status`がjailを「稼働中」と報告した後もしばらく(実測で6秒待っても間に合わず、
   # 10秒強で反映された)ファイアウォールへ反映されないことがある(2回目以降のbanは1秒未満で反映される)。
   # 固定sleepで賭けるのではなく、最大15秒ポーリングして確認する。
   FOUND=0
   for _ in $(seq 1 15); do
-    if iptables -S | grep -q -- "-s $TESTIP"; then FOUND=1; break; fi
+    if grep -q -- "-s $TESTIP/" <<<"$(iptables -S 2>/dev/null || true)"; then FOUND=1; break; fi
     sleep 1
   done
   if [ "$FOUND" = 1 ]; then echo "  ✅ ファイアウォールにBANルールが入った"; else echo "  ❌ BANルールが見つからない(要調査)" >&2; fi
   iptables -S DOCKER-USER | sed 's/^/  DOCKER-USER: /'
   fail2ban-client set eigo-probe unbanip "$TESTIP" >/dev/null
-  iptables -S | grep -q -- "-s $TESTIP" && echo "  ❌ 解除後もルールが残っている(要調査)" >&2 || echo "  ✅ 解除でルールが消えた"
+  if grep -q -- "-s $TESTIP/" <<<"$(iptables -S 2>/dev/null || true)"; then echo "  ❌ 解除後もルールが残っている(要調査)" >&2; else echo "  ✅ 解除でルールが消えた"; fi
 fi
 
 # 2026-10-04: 信頼IPの扱いの自己テスト(ignorecommandの向き=eigo-probeは信頼IPを免除し、eigo-probe-trustedは信頼IPだけを数える)と、
@@ -179,18 +179,22 @@ R1="$(ign 192.0.2.77)"; R2="$(ign 192.0.2.88)"; R3="$(ign --only-exempt 192.0.2.
 rm -f "$TEST_T" "$TEST_A"
 [ "$R1" = 0 ] && [ "$R2" = 1 ] && [ "$R3" = 1 ] && [ "$R4" = 0 ] \
   && echo "  ✅ eigo-probe: 信頼IPは無視(0)・他は数える(1) / eigo-probe-trusted: 信頼IPだけ数える(1)・他は無視(0)" \
-  || echo "  ❌ ignorecommandの向きが想定と違う(信頼IP=$R1/他=$R2/記録専用の信頼IP=$R3/他=$R4・要調査)" >&2
+  || echo "  ❌ ignorecommandの向きが想定と違う(信頼IP=${R1}/他=${R2}/記録専用の信頼IP=${R3}/他=${R4}・要調査)" >&2
+echo "  fail2banに登録されたignorecommand: eigo-probe=$(fail2ban-client get eigo-probe ignorecommand 2>&1 | tr -d '\n') / eigo-probe-trusted=$(fail2ban-client get eigo-probe-trusted ignorecommand 2>&1 | tr -d '\n')"
 echo "== 記録専用jail(eigo-probe-trusted)の自己テスト(TEST-NET-1の仮IPで判定の記録だけが残り、実BANされないこと)"
 TESTIP2="192.0.2.$((RANDOM % 254 + 1))"
-fail2ban-client set eigo-probe-trusted banip "$TESTIP2" >/dev/null
+# 監査ログは過去の自己テストの行も残るので、banip前の行数を控え、新しく増えた行だけを見る(前方一致・古い行での誤判定を避ける・独立照査M2)
+AUD=/var/log/eigo-f2b-audit.log; BEFORE_LINES="$(wc -l < "$AUD" 2>/dev/null || echo 0)"
+fail2ban-client set eigo-probe-trusted banip "$TESTIP2" >/dev/null || echo "  ❌ fail2ban-clientのbanipに失敗(jailが動いていない?・要調査)" >&2
 FOUND2=0
 for _ in $(seq 1 10); do
-  if grep -q "DRYRUN BAN .*eigo-probe-trusted ip=$TESTIP2" /var/log/eigo-f2b-audit.log 2>/dev/null; then FOUND2=1; break; fi
+  if tail -n +"$((BEFORE_LINES + 1))" "$AUD" 2>/dev/null | grep -qF "eigo-probe-trusted ip=$TESTIP2 "; then FOUND2=1; break; fi
   sleep 1
 done
 [ "$FOUND2" = 1 ] && echo "  ✅ 監査ログに記録された(DRYRUN BAN eigo-probe-trusted)" || echo "  ❌ 監査ログに記録が無い(要調査)" >&2
-if iptables -S 2>/dev/null | grep -q -- "-s $TESTIP2"; then echo "  ❌ 記録専用なのにファイアウォールにルールが入った(要調査)" >&2; else echo "  ✅ ファイアウォールにルールは入っていない(実BANしない)"; fi
-fail2ban-client set eigo-probe-trusted unbanip "$TESTIP2" >/dev/null
+RULES2="$(iptables -S 2>/dev/null || true)"   # here-stringで判定(grep -qとのパイプはpipefail+SIGPIPEで誤判定しうる・独立照査L1)
+if grep -q -- "-s $TESTIP2/" <<<"$RULES2"; then echo "  ❌ 記録専用なのにファイアウォールにルールが入った(要調査)" >&2; else echo "  ✅ ファイアウォールにルールは入っていない(実BANしない)"; fi
+fail2ban-client set eigo-probe-trusted unbanip "$TESTIP2" >/dev/null || true
 
 echo
 echo "完了(mode=$MODE)。監査ログ: /var/log/eigo-f2b-audit.log / 判定の確認: sudo bash $SRC/review.sh"
