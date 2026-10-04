@@ -303,6 +303,11 @@ async def _auth_context_inner(request, call_next):
                         # UAが普通でも、同一IPの短時間の大量訪問は人間の閲覧ではない
                         # (2026-09-26・visitor_kind.is_heavy_ip)。
                         mark = visitor_kind.classify_ua(ua)[0]
+                        # fail2banが探索(脆弱性スキャン)と判定してBANしたIPは、UAが普通でも
+                        # 人間の閲覧ではない(2026-10-04・visitor_kind.is_scanner_ip)。
+                        if (mark == visitor_kind.MARK_NONE and not is_internal
+                                and visitor_kind.is_scanner_ip(conn, client_ip)):
+                            mark = visitor_kind.MARK_SCANNER_IP
                         if (mark == visitor_kind.MARK_NONE and not is_internal
                                 and visitor_kind.is_heavy_ip(conn, client_ip)):
                             mark = visitor_kind.MARK_HEAVY_IP

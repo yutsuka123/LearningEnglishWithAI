@@ -4,7 +4,7 @@
 使い方: simulate.py <Caddyのstudyログ(.log/.gz)を含むディレクトリ or ファイル...>
 - filter.d/*.conf の failregex を読み、fail2banと同じく「findtime内にmaxretry回」で判定。
 - ログイン成功(POST /api/auth/login 200)のあるIPを「実ユーザー」とみなす。BAN時点の直前30日にログイン成功が
-  あるIPは信頼IPとして無視される(bin/eigo-f2b-ignore)ので、BANされない側に数える(eigo-probeを除く)。
+  あるIPは信頼IPとして無視される(bin/eigo-f2b-ignore)ので、BANされない側に数える(eigo-probeも含む・2026-10-04〜。信頼IPの探索はBANせず、記録専用のeigo-probe-trustedが残す)。
   ※本番の信頼IPは「アカウント作成から2日以上のユーザー」に限る(DB参照)ため、Caddyログだけのこの再現より
     保護がやや狭い=このシミュレーションは保護の上限側。実ユーザーがそのjailに引っかかる頻度は下の数字で見る。
   **信頼IPで守られずにBANされた実ユーザー(=誤BAN)が0件か**を最重要の指標として出す。
@@ -16,7 +16,7 @@ import configparser, glob, gzip, hashlib, json, os, re, sys
 from collections import defaultdict
 
 JAILS = {  # name: (filter, maxretry, findtime秒, bantime秒, 信頼IPを免除するか)  ← jail.d/eigo.local.tmpl と同じ値
-    "eigo-probe":       ("eigo-probe", 3, 600, 12 * 3600, False),   # 探索は信頼IPでも免除しない(--allow-only)
+    "eigo-probe":       ("eigo-probe", 3, 600, 12 * 3600, True),    # 2026-10-04〜: 探索も信頼IPは免除(BANしない)。記録はeigo-probe-trusted
     "eigo-loginflood":  ("eigo-loginflood", 60, 300, 3 * 3600, True),
     "eigo-loginfail":   ("eigo-loginfail", 12, 600, 3600, True),
     "eigo-ratelimited": ("eigo-ratelimited", 60, 600, 3600, True),

@@ -1,14 +1,23 @@
 #!/usr/bin/env python3
-"""fail2banのignorecommand: 引数のIPを「BANの対象外」にするなら終了コード0、そうでなければ1。
+"""fail2banのignorecommand: 引数のIPを「対象外(無視)」にするなら終了コード0、そうでなければ1。
 
-対象外にするIP:
+通常モード(`eigo-f2b-ignore <ip>`): 次のIPを対象外=BANしない(終了コード0):
   1. /etc/fail2ban/eigo-allowlist.txt (運営者が手で書く・IP or CIDR・#コメント可)
   2. /var/lib/eigo-f2b/trusted.txt (アカウント作成から2日以上経ったユーザーが直近30日にログイン成功したIP・
-     eigo-f2b-trusted-refreshが10分ごとにDBから更新)。`--allow-only`のときは1だけを見る(eigo-probe用)。
-実ユーザー・運営者・テストを誤ってBANしないための安全弁(2026-09-26)。
-スクリプト内の判定に失敗した場合(ファイルが読めない等)は「対象外にする=BANしない」側に倒す。
-ただしpython3が無い/実行権限が無い等でスクリプト自体が起動できない場合、fail2banは「対象外にしない」扱いになる
+     eigo-f2b-trusted-refreshが10分ごとにDBから更新)。
+  → 全てのjail(eigo-probe含む。2026-10-04〜)がこのモード。信頼IPは探索でもBANしない(運営者や自動テストが
+    うっかり探索パスに触れても自分のIPが12時間BANされないように・2026-10-04オーナー決定)。
+
+記録専用モード(`eigo-f2b-ignore --only-exempt <ip>`・2026-10-04〜): **上の逆**。許可リスト/信頼IPに**当たるIPだけ**を
+数える(終了コード1=無視しない)。当たらないIPは無視する(終了コード0)。eigo-probe-trustedジェイル専用で、
+「BANはしないが、信頼IP/許可リストのIPが探索パスを叩いたことは記録に残す」ために使う(信頼IPのふりをした
+なりすまし・同じ回線の第三者・端末の乗っ取り等を後から気づけるように)。実際のBANは行わない(dryrunのアクションのみ)。
+
+`--allow-only`(許可リストだけを見る・旧eigo-probe用)は互換のために残してあるが、現在は使っていない。
+スクリプト内の判定に失敗した場合(ファイルが読めない等)は「無視する(終了コード0)=BANも記録もしない」側に倒す。
+ただしpython3が無い/実行権限が無い等でスクリプト自体が起動できない場合、fail2banは「無視しない」扱いになる
 (install.shがpython3と実行権限を保証する)。
+実ユーザー・運営者・テストを誤ってBANしないための安全弁(2026-09-26)。
 """
 import ipaddress
 import os
@@ -31,20 +40,30 @@ def load(path):
     return out
 
 
-def main():
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    allow_only = "--allow-only" in sys.argv[1:]
-    try:
-        ip = ipaddress.ip_address(args[0])
-    except Exception:
-        return 0  # 解釈できないIPはBANしない
+def is_exempt(ip, allow_only=False):
+    """許可リスト(+信頼IP)に当たるか。"""
     for entry in load(ALLOW) + ([] if allow_only else load(TRUSTED)):
         try:
             if ip in ipaddress.ip_network(entry, strict=False):
-                return 0
+                return True
         except ValueError:
             continue
-    return 1
+    return False
+
+
+def main():
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    allow_only = "--allow-only" in sys.argv[1:]
+    only_exempt = "--only-exempt" in sys.argv[1:]
+    try:
+        ip = ipaddress.ip_address(args[0])
+    except Exception:
+        return 0  # 解釈できないIPはBANも記録もしない
+    exempt = is_exempt(ip, allow_only)
+    if only_exempt:
+        # 記録専用: 免除されるIPだけを数える(=無視しない=1)。それ以外は無視(=0)。
+        return 1 if exempt else 0
+    return 0 if exempt else 1
 
 
 if __name__ == "__main__":

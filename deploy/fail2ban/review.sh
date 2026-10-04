@@ -9,8 +9,8 @@ RAW=0; [ "${1:-}" = "--raw" ] && RAW=1
 AUDIT=/var/log/eigo-f2b-audit.log
 [ -f "$AUDIT" ] || { echo "監査ログがありません(導入前?)"; exit 1; }
 echo "== 現在のjail状態"
-for j in eigo-probe eigo-loginflood eigo-loginfail eigo-ratelimited; do
-  printf '  %-17s ' "$j"; { fail2ban-client status "$j" 2>&1 | grep -E 'Currently (failed|banned)|Total (failed|banned)' | tr -s ' \t\n' ' '; } || true; echo
+for j in eigo-probe eigo-probe-trusted eigo-loginflood eigo-loginfail eigo-ratelimited; do
+  printf '  %-19s ' "$j"; { fail2ban-client status "$j" 2>&1 | grep -E 'Currently (failed|banned)|Total (failed|banned)' | tr -s ' \t\n' ' '; } || true; echo
 done
 echo "== 信頼IP/許可リスト"
 echo "  信頼IP(アカウント2日以上のユーザーが直近30日にログイン成功): $(grep -vc '^#' /var/lib/eigo-f2b/trusted.txt 2>/dev/null || true) 件 / 許可リスト: $(grep -vc '^\s*#\|^\s*$' /etc/fail2ban/eigo-allowlist.txt 2>/dev/null || true) 件"
@@ -51,5 +51,5 @@ if not ev: print("  (まだ判定はありません=誤検知も無し)")
 PY
 echo
 echo "== 直近のfail2ban本体ログ(eigo関連のBan/Ignore・最新15行)"
-grep -E "eigo-(probe|loginflood|loginfail|ratelimited)" /var/log/fail2ban.log 2>/dev/null | grep -E " (Ban|Unban|Ignore) " | tail -15 | \
+grep -E "eigo-(probe|probe-trusted|loginflood|loginfail|ratelimited)" /var/log/fail2ban.log 2>/dev/null | grep -E " (Ban|Unban|Ignore) " | tail -15 | \
   { if [ "$RAW" = 1 ]; then cat; else sed -E 's/[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/<ip>/g'; fi; } || true

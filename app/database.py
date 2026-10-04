@@ -720,7 +720,7 @@ CREATE INDEX IF NOT EXISTS logs.idx_client_errors_created
 -- オーナー要望「BANが起きたことを管理画面で見えるようにしたい」)。
 -- ホスト側のeigo-f2b-auditスクリプトが、判定のたび(dryrun/実BANどちらも)
 -- POST /api/system/admin/security-events(FAIL2BAN_NOTIFY_TOKENで認証)で送る。
--- mode='ban'=実際に遮断された(eigo-probe/eigo-ratelimited)。
+-- mode='ban'=実際に遮断された(eigo-probe/eigo-ratelimited)。eigo-probe-trusted=信頼IPの探索の記録専用(2026-10-04)。
 -- mode='dryrun'=検知しただけで遮断はしていない候補(eigo-loginflood/
 -- eigo-loginfail・2026-09-29オーナー方針「実際にBANするかはしばらく様子見」)。
 CREATE TABLE IF NOT EXISTS logs.security_events (

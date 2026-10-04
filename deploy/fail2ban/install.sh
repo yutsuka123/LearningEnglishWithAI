@@ -80,7 +80,7 @@ touch /var/log/eigo-f2b-audit.log; chown root:adm /var/log/eigo-f2b-audit.log; c
 install -m 644 "$SRC"/cron.d/eigo-f2b /etc/cron.d/eigo-f2b
 install -m 644 "$SRC"/logrotate/eigo-f2b /etc/logrotate.d/eigo-f2b
 
-echo "== 3/7 jailを生成(mode=$MODE・eigo-loginflood/eigo-loginfailは常にdryrun=候補のみ・2026-09-29オーナー方針)"
+echo "== 3/7 jailを生成(mode=$MODE・eigo-loginflood/eigo-loginfail/eigo-probe-trustedは常にdryrun=候補のみ・2026-09-29/10-04オーナー方針)"
 python3 - "$SRC/jail.d/eigo.local.tmpl" "$F2B/jail.d/eigo.local" "$LOGDIR/study.log" "$MODE" <<'PY'
 import sys
 tmpl, out, logpath, mode = sys.argv[1:5]
@@ -143,8 +143,8 @@ sleep 2
 systemctl is-active --quiet fail2ban || { echo "fail2banサービスの再起動に失敗しました" >&2; exit 1; }
 INSTALL_OK=1   # 再起動まで通った(以降の自己テストの失敗ではjailを外さない)
 sleep 4
-for j in eigo-probe eigo-loginflood eigo-loginfail eigo-ratelimited; do
-  printf '  %-17s ' "$j"; { fail2ban-client status "$j" 2>&1 | grep -E 'Currently (failed|banned)' | tr -s ' \t\n' ' '; } || true; echo
+for j in eigo-probe eigo-probe-trusted eigo-loginflood eigo-loginfail eigo-ratelimited; do
+  printf '  %-19s ' "$j"; { fail2ban-client status "$j" 2>&1 | grep -E 'Currently (failed|banned)' | tr -s ' \t\n' ' '; } || true; echo
 done
 
 if [ "$MODE" = ban ]; then
@@ -169,6 +169,28 @@ if [ "$MODE" = ban ]; then
   fail2ban-client set eigo-probe unbanip "$TESTIP" >/dev/null
   iptables -S | grep -q -- "-s $TESTIP" && echo "  ❌ 解除後もルールが残っている(要調査)" >&2 || echo "  ✅ 解除でルールが消えた"
 fi
+
+# 2026-10-04: 信頼IPの扱いの自己テスト(ignorecommandの向き=eigo-probeは信頼IPを免除し、eigo-probe-trustedは信頼IPだけを数える)と、
+# 記録専用jailが実際にはBANしないこと(dryrunの記録だけが残り、DOCKER-USERにルールが入らない)の確認。TEST-NET-1の仮IPを使い、実在のIPには影響しない。
+echo "== 信頼IPの扱いの自己テスト(終了コード: 0=無視 / 1=数える)"
+TEST_T="$(mktemp)"; TEST_A="$(mktemp)"; echo "192.0.2.77" > "$TEST_T"; : > "$TEST_A"
+ign() { local rc=0; EIGO_F2B_TRUSTED="$TEST_T" EIGO_F2B_ALLOW="$TEST_A" /usr/local/sbin/eigo-f2b-ignore "$@" >/dev/null 2>&1 || rc=$?; echo "$rc"; }
+R1="$(ign 192.0.2.77)"; R2="$(ign 192.0.2.88)"; R3="$(ign --only-exempt 192.0.2.77)"; R4="$(ign --only-exempt 192.0.2.88)"
+rm -f "$TEST_T" "$TEST_A"
+[ "$R1" = 0 ] && [ "$R2" = 1 ] && [ "$R3" = 1 ] && [ "$R4" = 0 ] \
+  && echo "  ✅ eigo-probe: 信頼IPは無視(0)・他は数える(1) / eigo-probe-trusted: 信頼IPだけ数える(1)・他は無視(0)" \
+  || echo "  ❌ ignorecommandの向きが想定と違う(信頼IP=$R1/他=$R2/記録専用の信頼IP=$R3/他=$R4・要調査)" >&2
+echo "== 記録専用jail(eigo-probe-trusted)の自己テスト(TEST-NET-1の仮IPで判定の記録だけが残り、実BANされないこと)"
+TESTIP2="192.0.2.$((RANDOM % 254 + 1))"
+fail2ban-client set eigo-probe-trusted banip "$TESTIP2" >/dev/null
+FOUND2=0
+for _ in $(seq 1 10); do
+  if grep -q "DRYRUN BAN .*eigo-probe-trusted ip=$TESTIP2" /var/log/eigo-f2b-audit.log 2>/dev/null; then FOUND2=1; break; fi
+  sleep 1
+done
+[ "$FOUND2" = 1 ] && echo "  ✅ 監査ログに記録された(DRYRUN BAN eigo-probe-trusted)" || echo "  ❌ 監査ログに記録が無い(要調査)" >&2
+if iptables -S 2>/dev/null | grep -q -- "-s $TESTIP2"; then echo "  ❌ 記録専用なのにファイアウォールにルールが入った(要調査)" >&2; else echo "  ✅ ファイアウォールにルールは入っていない(実BANしない)"; fi
+fail2ban-client set eigo-probe-trusted unbanip "$TESTIP2" >/dev/null
 
 echo
 echo "完了(mode=$MODE)。監査ログ: /var/log/eigo-f2b-audit.log / 判定の確認: sudo bash $SRC/review.sh"

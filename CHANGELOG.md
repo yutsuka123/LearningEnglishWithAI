@@ -54,6 +54,19 @@ prune cron(03:45)でusage_events 0件削除+growth_daily 41日分保存を確認
 - **独立照査(Fable)の指摘を反映**: 固定バーの高さに追従するスクロール余白(エラー文で折り返してバーが高くなっても、移動した入力欄が隠れにくい)・入力を再開したら前回のエラー文を消す・IME変換中は確認欄の警告を出さない・打ち間違い辞書から他社が運用していそうなドメイン2件を外す・管理画面の行ラベルに`submit_seen`の意味変更を明記。**既知の制限**: 文字サイズ「特大」+キーボード表示で画面の高さが半分以下+長いエラー文が同時に出る極端な場合、WebKitでTab移動直後の欄が固定バーに重なることがある(入力を始めればエラー文が消えてバーが低くなる)。
 - 既存の別件(未対応): zh-CN/zh-TWに`release.*`の20キーが無く日本語にフォールバックする。狭い画面でfixedの`.pagebar`が見出しに重なる。
 
+**5. アクセス制限(fail2ban)の見直し(2026-10-04オーナー決定・未デプロイの間にver1.5.11へ追記)**(`deploy/fail2ban/`・`app/services/visitor_kind.py`・`app/routers/system.py`・`app/main.py`・`static/js/views.js`)
+
+- **信頼IPは探索(eigo-probe)でもBANしない**: 運営者や自動テストが探索パス(`/.env`・`/.git/`・phpinfo等)にうっかり触れて自分のIPが12時間BANされるのを避ける
+  (以前は探索だけ信頼IPを免除しなかった)。`eigo-f2b-ignore`の通常モードが信頼IP+許可リストを無視する(全jail共通)。
+- **BANしないが記録は必ず残す**: 同じフィルター・しきい値(10分に3回)の記録専用jail **`eigo-probe-trusted`**(常にdryrun=iptablesを使わない)を追加。
+  `eigo-f2b-ignore --only-exempt`(通常と逆向き=信頼IP/許可リストに当たるIPだけを数える)で、信頼IP/許可リストのIPによる探索を「候補」として
+  監査ログ(`DRYRUN BAN eigo-probe-trusted`)と管理画面「アクセス制限」に出す(信頼IPのふり・同じ回線の第三者・端末の乗っ取りに後から気づけるように)。
+  通知の受け口(`_KNOWN_JAILS`)にjail名を追加。`install.sh`に自己テスト(ignorecommandの向き・記録専用jailが実BANしないこと)を追加。
+- **探索でBANされたIPは人間に数えない**: `visitor_kind.MARK_SCANNER_IP`(=6)。eigo-probeのban通知を受けたら、そのIPの既存の訪問記録(未印・自分の端末でない・登録試行でない行)に
+  bot印を付け、BAN解除後に戻ってきた同じIPの訪問も記録時に印を付ける。**信頼IPの探索検知(eigo-probe-trusted)では付けない**(同じ回線の実ユーザーを巻き込まないため)。
+  ※ダッシュボードの集計は元々UA+接続元の事業者で再判定しており、探索IPを人間に数えていなかった(実測0件)=生の`bot_mark`列(21件が0)を揃える補強。
+- 検査: `scripts/check_f2b_trusted_probe.py`(ignorecommandの向き13項目・jail設定10項目・通知の受け口と印の付け方13項目=全て成功)。
+
 **4. 座標補完の再実行(コード無変更・手順のみ)**: `docs/ops/backfill_geo_20261003.sh`(本番logs.dbのip_geo_cacheの緯度経度2列だけ・バックアップ+snapshot+事後検証つき)。外部APIの無料枠の都合で10/4 JST 9:10の再照合cronの後に実行。
 
 ## ver1.5.10 (2026-10-03作成・**2026-10-04 03:00 JSTの自動デプロイで反映済み**=所要約45秒・healthy・主要テーブル件数不変・WARNING以上0件・Caddy 5xx=0・OS更新(カーネル146・Docker 29.8.2)を同じ夜に完了・コミット 869a2f6(自己修復+補完修正)+77c59c4(発音修正+独立照査の指摘反映))

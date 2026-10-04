@@ -3019,7 +3019,9 @@ _F2B_DEP = Depends(_require_f2b_token)
 # fail2banが実際に触るjailだけを受け付ける(2026-09-29 Fable指摘H1: 有効な
 # トークンを持つ呼び出し元でも、相乗りの他プロジェクトのjail名(例: sshd)を
 # 指定させない=このトークンがeigo以外のjailへのレバーにならないように)。
-_KNOWN_JAILS = {"eigo-probe", "eigo-loginflood", "eigo-loginfail", "eigo-ratelimited"}
+# eigo-probe-trusted=信頼IP/許可リストのIPによる探索の記録専用(BANしない・2026-10-04)。
+_KNOWN_JAILS = {"eigo-probe", "eigo-probe-trusted", "eigo-loginflood", "eigo-loginfail",
+                "eigo-ratelimited"}
 
 
 def _valid_ip(ip: str) -> bool:
@@ -3071,8 +3073,14 @@ def ingest_security_event(payload: SecurityEventIn):
             (payload.ip, payload.jail, payload.action, payload.mode,
              payload.failures, payload.bantime_seconds, payload.evidence[:2000]),
         )
+        # 探索(eigo-probe)でBANされたIP=人間でない確率が高い→その既存の訪問記録にbot印を付ける
+        # (2026-10-04オーナー決定)。信頼IPの探索検知(eigo-probe-trusted)では付けない(同じ回線の
+        # 実ユーザーの訪問を巻き込まないため)。
+        marked = 0
+        if payload.jail == "eigo-probe" and payload.action == "ban":
+            marked = visitor_kind.mark_scanner_ip(conn, payload.ip)
         conn.commit()
-    return {"ok": True}
+    return {"ok": True, "marked_visits": marked}
 
 
 @router.get("/security-events/pending-unbans", dependencies=[_F2B_DEP])

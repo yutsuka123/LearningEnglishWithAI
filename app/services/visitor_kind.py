@@ -36,6 +36,11 @@ MARK_OTHER_BOT = 4
 MARK_HEAVY_IP = 5
 HEAVY_IP_LIMIT = 40          # この回数以上の着地記録(kind='visit')が
 HEAVY_IP_WINDOW = "-10 minutes"   # この期間内に同一IPから来たら
+# fail2banが「探索(脆弱性スキャン)」と判定してBANしたIP(eigo-probe)。2026-10-04追加: UAが普通のブラウザでも、
+# 存在しないはずの秘密情報のURL(.env・wp-login・phpinfo等)を数十件叩くIPは人間の閲覧ではない。ダッシュボードの集計は
+# UA+接続元の事業者で再判定するため元から人間に数えていなかったが、生のbot_mark列では「人間」(0)のまま残っていた。
+# 信頼IP(登録ユーザーの回線)の探索検知(eigo-probe-trusted)では付けない=同じ回線の実ユーザーの訪問を巻き込まないため。
+MARK_SCANNER_IP = 6
 
 # --- ※3 AI検索・AI学習クローラー ------------------------------------------
 # 生成AIの検索/学習用クローラー。2026-08-21時点で実際に本番へ来ていたのは
@@ -233,3 +238,30 @@ def is_heavy_ip(conn, ip: str) -> bool:
         "AND COALESCE(kind, 'visit') = 'visit' "
         "AND COALESCE(bot_mark, 0) = 0", (MARK_HEAVY_IP, ip, HEAVY_IP_WINDOW))
     return True
+
+
+def is_scanner_ip(conn, ip: str) -> bool:
+    """このIPをfail2ban(eigo-probe)が探索と判定してBANしたことがあるか(security_eventsの記録で判断)。
+    訪問の記録時に呼ぶ(BAN解除後に戻ってきた同じIPの訪問にも印を付けるため)。表が無い・読めないときは偽。"""
+    if not ip:
+        return False
+    try:
+        row = conn.execute(
+            "SELECT 1 FROM security_events WHERE ip = ? AND jail = 'eigo-probe' "
+            "AND action = 'ban' LIMIT 1", (ip,)).fetchone()
+    except Exception:  # noqa: BLE001 — 古いDB等でも訪問の記録を止めない
+        return False
+    return bool(row)
+
+
+def mark_scanner_ip(conn, ip: str) -> int:
+    """このIPの既存の訪問記録(まだbot_mark=0・自分の端末ではない・登録試行ではない行)に探索IPの印を付ける。
+    付けた行数を返す。登録試行(kind='signup')の行は印を付けない(登録ファネルから実際の登録が消えないように・
+    is_heavy_ipと同じ方針)。"""
+    if not ip:
+        return 0
+    cur = conn.execute(
+        "UPDATE landing_visits SET bot_mark = ? WHERE ip = ? AND is_internal = 0 "
+        "AND COALESCE(kind, 'visit') != 'signup' AND COALESCE(bot_mark, 0) = 0",
+        (MARK_SCANNER_IP, ip))
+    return cur.rowcount or 0

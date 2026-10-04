@@ -3,7 +3,10 @@
 # しきい値の根拠=tools/simulate.py(実ログ3か月分で誤BAN0件)。
 # ・対象はstudy.logだけ(相乗りの他プロジェクトのログ・jailには触れない)。
 # ・ignorecommand=eigo-f2b-ignore: 運営者の許可リスト+「アカウント作成から2日以上経ったユーザーが直近30日にログイン成功した
-#   IP」(信頼IP)はBANしない。**eigo-probeだけは信頼IPを免除しない**(--allow-only=許可リストのみ)。
+#   IP」(信頼IP)はBANしない。**eigo-probeも同じ(2026-10-04〜・オーナー決定)**: 以前は探索だけ信頼IPを免除しなかったが、
+#   運営者や自動テストが探索パスにうっかり触れて自分のIPが12時間BANされるのを避けるため、免除する。
+#   その代わり**eigo-probe-trusted(同じフィルター・BANはしない・記録だけ)**が、信頼IP/許可リストのIPによる探索を
+#   「候補」として監査ログと管理画面に残す(信頼IPのふり・同じ回線の第三者・端末の乗っ取りに後から気づけるように)。
 #   ignorecache=同じIPの判定結果を5分キャッシュ(攻撃時にマッチ行ごとにpythonが起動するのを防ぐ)。
 # ・ignoreip: ローカル/Docker/プライベート帯はBANしない。
 # ・BANはDocker公開ポート(80/443)に効くようDOCKER-USERチェーンを使う(通常のINPUTでは効かない)。
@@ -26,9 +29,26 @@ findtime = 10m
 bantime = 12h
 port = http,https
 ignoreip = 127.0.0.0/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
-ignorecommand = /usr/local/sbin/eigo-f2b-ignore --allow-only <ip>
+ignorecommand = /usr/local/sbin/eigo-f2b-ignore <ip>
 ignorecache = key="<ip>", max-count=100, max-time=5m
 action = __ACTIONS_ENFORCE__
+
+# 信頼IP/許可リストのIPが探索パスを叩いたことの記録専用(BANしない・2026-10-04)。eigo-probeと同じフィルター・しきい値。
+# ignorecommandの--only-exemptは通常と逆で、信頼IP/許可リストに『当たるIPだけ』を数える(それ以外は無視)。
+# 常にdryrun(__ACTIONS_CANDIDATE__)=iptablesは使わない。bantimeは同じ判定を繰り返し記録しないための長さ。
+[eigo-probe-trusted]
+enabled = true
+filter = eigo-probe
+logpath = __LOGPATH__
+backend = auto
+maxretry = 3
+findtime = 10m
+bantime = 12h
+port = http,https
+ignoreip = 127.0.0.0/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+ignorecommand = /usr/local/sbin/eigo-f2b-ignore --only-exempt <ip>
+ignorecache = key="<ip>", max-count=100, max-time=5m
+action = __ACTIONS_CANDIDATE__
 
 [eigo-loginflood]
 enabled = true
