@@ -1313,6 +1313,9 @@ def _migrate_analytics_2026_09_19(conn: sqlite3.Connection) -> None:
     _add_col(conn, "login_log", "guest_sid", "guest_sid TEXT DEFAULT ''")
     _add_col(conn, "users", "signup_guest_sid",
              "signup_guest_sid TEXT DEFAULT ''")
+    # d6fd123(ver1.5.12の初版)で作られたDB向け: 使用時のIPの変換値の列(後から追加した・再照査N-7)
+    _add_col(conn, "password_reset_tokens", "used_ip_hash",
+             "used_ip_hash TEXT NOT NULL DEFAULT ''")
     conn.execute(
         "CREATE INDEX IF NOT EXISTS logs.idx_usage_events_guest "
         "ON usage_events(guest_sid, created_at)")

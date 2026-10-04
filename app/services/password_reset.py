@@ -20,7 +20,7 @@ from typing import Optional
 
 from ..config import log
 from ..database import OWNER_USER_ID
-from . import auth
+from . import auth, ip_retention
 
 ALLOWED_HOURS = (1, 24, 72)
 DEFAULT_HOURS = 24
@@ -90,9 +90,15 @@ def is_valid(conn: sqlite3.Connection, token: str) -> bool:
     return bool(row) and issue_blocker(conn, dict(row, id=row["user_id"])) is None
 
 
-def ip_hash(ip: str) -> str:
-    """調査用のIPの短縮ハッシュ(生のIPは保存しない・ip_retentionの対象外にするため)。"""
-    return hashlib.sha256(("pwreset|" + (ip or "")).encode("utf-8")).hexdigest()[:16] if ip else ""
+def ip_hash(conn: sqlite3.Connection, ip: str) -> str:
+    """調査用のIPの変換値(生のIPは保存しない)。`ip_retention`と同じ鍵・同じ変換(HMAC)なので、古くなって変換された
+    ログインログのIPと突き合わせられる。総当たりでは元のIPに戻せない。鍵が取れない環境では空文字(何も保存しない)。"""
+    if not ip:
+        return ""
+    try:
+        return ip_retention.hash_ip(ip, ip_retention.derive_key(conn))
+    except ip_retention.NoKeyError:
+        return ""
 
 
 def consume(conn: sqlite3.Connection, token: str, new_password: str, ip: str = "") -> tuple[str, str]:
@@ -108,7 +114,7 @@ def consume(conn: sqlite3.Connection, token: str, new_password: str, ip: str = "
     cur = conn.execute(
         "UPDATE password_reset_tokens SET used_at = datetime('now'), used_ip_hash = ? "
         "WHERE id = ? AND used_at IS NULL AND revoked_at IS NULL "
-        "AND expires_at > datetime('now')", (ip_hash(ip), row["id"]))
+        "AND expires_at > datetime('now')", (ip_hash(conn, ip), row["id"]))
     if cur.rowcount != 1:
         return "invalid", ""
     uid = int(row["user_id"])
@@ -123,24 +129,35 @@ def _like_escape(s: str) -> str:
     return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
+# 依頼の本文の先頭2行はサーバーが作る(利用者の入力は入らない)。突き合わせはこの先頭の完全一致で行う
+# (ニックネーム・補足に同じ文字列を書いても他人の依頼として数えられない・2026-10-04再照査N-1)。
+REQUEST_HEAD = "【パスワード再発行の依頼】\n"
 _REQ_EMAIL = "登録したメールアドレス: "
+
+
+def request_prefix(email: str) -> str:
+    return REQUEST_HEAD + _REQ_EMAIL + email + "\n"
+
+
+def _user_mails(user: dict) -> set[str]:
+    return {m.strip().lower() for m in (user.get("username"), user.get("email")) if m and "@" in m}
 
 
 def _requests_for(conn: sqlite3.Connection, user: dict) -> list[dict]:
     """そのユーザーの登録メールについて、直近30日に届いた「パスワード再発行」の依頼(新しい順・最大5件)。
     **返信先が登録メールと違うか**・依頼のニックネームが登録のお名前と合うかを添える(依頼者が他人の登録メールを
     書いて返信先を自分のアドレスにする攻撃を、管理者が見落とさないため・2026-10-04独立照査H-1)。"""
-    mails = {m.strip().lower() for m in (user.get("username"), user.get("email")) if m and "@" in m}
+    mails = _user_mails(user)
     out = []
     for m in sorted(mails):
         rows = conn.execute(
             "SELECT id, created_at, name, email, content, status FROM inquiries "
             "WHERE kind = 'パスワード再発行' AND created_at >= datetime('now', '-30 days') "
-            "AND content LIKE ? ESCAPE '\\' ORDER BY id DESC LIMIT 5",
-            ("%" + _like_escape(_REQ_EMAIL + m) + "\n%",)).fetchall()
+            "AND instr(content, ?) = 1 ORDER BY id DESC LIMIT 5",
+            (request_prefix(m),)).fetchall()
         for r in rows:
             note = ""
-            for line in (r["content"] or "").splitlines():
+            for line in (r["content"] or "").split("\n"):
                 if line.startswith("補足(登録時期・チャージの有無など): "):
                     note = line.split(": ", 1)[1]
             reply = (r["email"] or "").strip().lower()
@@ -153,6 +170,29 @@ def _requests_for(conn: sqlite3.Connection, user: dict) -> list[dict]:
             })
     out.sort(key=lambda x: -x["id"])
     return out[:5]
+
+
+def reply_differs_count(conn: sqlite3.Connection, user: dict) -> int:
+    """直近30日の依頼のうち、返信先が登録メールと違うものの件数(全件を数える。表示は最新5件だけなので、相違のある依頼の
+    後に同じ返信先の依頼を積んでも警告が消えないように・2026-10-04再照査N-6)。"""
+    mails = sorted(_user_mails(user))
+    if not mails:
+        return 0
+    ph = ",".join("?" * len(mails))
+    total = 0
+    for m in mails:
+        total += conn.execute(
+            "SELECT COUNT(*) FROM inquiries WHERE kind = 'パスワード再発行' "
+            "AND created_at >= datetime('now', '-30 days') AND instr(content, ?) = 1 "
+            f"AND lower(trim(COALESCE(email, ''))) NOT IN ({ph})",
+            (request_prefix(m), *mails)).fetchone()[0]
+    return total
+
+
+def ack_required_message(differs: int) -> str:
+    """返信先が登録メールと異なる依頼があるのに確認(ack)なしで発行しようとしたときの、管理者向けの文言。"""
+    return (f"この登録メールには、返信先が登録メールと異なる依頼が直近30日に{differs}件あります。"
+            "画面を検索し直して内容を確認し、確認のうえで発行してください。")
 
 
 def lookup(conn: sqlite3.Connection, query: str) -> list[dict]:
@@ -197,6 +237,7 @@ def lookup(conn: sqlite3.Connection, query: str) -> list[dict]:
                         "recent": [dict(x) for x in recent]},
             "disposable_email": auth.is_disposable_email_domain(u["username"] if "@" in (u["username"] or "") else (u["email"] or "")),
             "requests": _requests_for(conn, u),
+            "reply_differs_count": reply_differs_count(conn, u),
             "reset_links": [dict(t) for t in tokens],
             "can_issue": blocker is None, "blocker": blocker,
         })

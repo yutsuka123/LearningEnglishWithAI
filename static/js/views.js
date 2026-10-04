@@ -8945,7 +8945,7 @@ export async function admin(root) {
       if (!users.length) { prResult.innerHTML = `<p class="muted">該当するユーザーがいません。</p>`; return; }
       prResult.innerHTML = users.map((u) => `
         <div class="card" style="margin:8px 0" data-uid="${u.id}"
-          ${(u.requests || []).some((r) => r.reply_differs) ? "data-reply-differs=\"1\"" : ""}>
+          ${(u.reply_differs_count || 0) > 0 || (u.requests || []).some((r) => r.reply_differs) ? "data-reply-differs=\"1\"" : ""}>
           <b>${escapeHtml(u.display_name || "(お名前なし)")}</b>
           <span class="muted"> / ${escapeHtml(u.username)} / ID ${u.id}</span>
           ${u.is_active ? "" : '<span class="badge-off">無効・退会</span>'}
@@ -8960,7 +8960,8 @@ export async function admin(root) {
             <tr><td class="muted">チャージ履歴(増加分)</td><td>${u.charges.count}件 / 合計 ${Math.round(u.charges.sum_jpy)}pt / 最終 ${fmtJ(u.charges.last)}
               ${u.charges.recent && u.charges.recent.length ? "<br>" + u.charges.recent.map((c) =>
                 `${fmtJ(c.created_at)} +${Math.round(c.delta_jpy)}pt(${escapeHtml(c.reason || "")})`).join("<br>") : ""}</td></tr>
-            <tr><td class="muted">この登録メールの依頼(直近30日)</td><td>${u.requests && u.requests.length
+            <tr><td class="muted">この登録メールの依頼(直近30日)</td><td>${(u.reply_differs_count || 0) > 0
+              ? `<b style="color:var(--bad,#c0392b)">⚠ 直近30日の依頼のうち ${u.reply_differs_count} 件は、返信先が登録メールと異なります</b><br>` : ""}${u.requests && u.requests.length
               ? u.requests.map((r) => `${fmtJ(r.created_at)} ${escapeHtml(r.status)}<br>
                 返信先: <b>${escapeHtml(r.reply_to)}</b>${r.reply_differs
                   ? ' <b style="color:var(--bad,#c0392b)">⚠ 登録メールと異なります</b>' : " (登録メールと同じ)"}<br>
@@ -9025,7 +9026,7 @@ export async function admin(root) {
         const noteText = (box.querySelector(".pr-note").value || "").trim();
         const r = await api.post("/api/auth/admin/password-reset/link", {
           user_id: uid, hours: parseInt(box.querySelector(".pr-hours").value, 10),
-          note: (diff ? "[返信先相違あり] " : "") + noteText });
+          note: noteText, ack_reply_differs: diff });      // 「[返信先相違あり]」の印は控えへサーバーが付ける
         out.innerHTML = `
           <p><b>再設定リンクを作りました。</b>本人にだけ渡してください。<b>この画面を閉じると再表示できません</b>(紛失したら作り直してください)。
             有効期限: ${fmtDate(r.expires_at)}(JST・${r.hours}時間)</p>

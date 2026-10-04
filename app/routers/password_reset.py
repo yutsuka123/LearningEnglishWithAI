@@ -15,6 +15,7 @@ import hashlib
 import os
 import re
 import time
+import unicodedata
 
 from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
@@ -41,6 +42,9 @@ def _rate_limited(key: str, limit: int, window: float) -> bool:
     if len(_HITS) > 5000:           # 古いキーを掃除(それぞれの窓の長さを過ぎて何もないキーだけ・メモリの肥大防止)
         for k in [k for k, (w, v) in _HITS.items() if not v or now - v[-1] > w]:
             _HITS.pop(k, None)
+        if len(_HITS) > 20000:      # それでも多い(窓の内側のキーが大量=分散した荒らし)ときは、最後の記録が古い順に捨てる(上限の保険)
+            for k, _ in sorted(_HITS.items(), key=lambda kv: kv[1][1][-1] if kv[1][1] else 0.0)[:len(_HITS) - 15000]:
+                _HITS.pop(k, None)
     return False
 
 
@@ -53,21 +57,44 @@ def _require_admin(conn) -> int:
 
 # 空白・制御文字・複数の@を許さない(依頼本文に偽の行を差し込ませない・2026-10-04独立照査M-1)。
 _EMAIL_RE = re.compile(r"[^\s@]+@[^\s@]+\.[^\s@]+")
-_CTRL_RE = re.compile(r"[\x00-\x08\x0b-\x1f\x7f\u2028\u2029\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]")
+# 見えない・幅のない・行を区切る文字(Cf=書式制御/Co=私用/Cs=サロゲート)と、見た目が空白に近い「フィラー」類
+# (結合書字素ジョイナー・ハングル/クメールのフィラー等)。メールの突き合わせや本文の見出し行の偽装に使わせない
+# (2026-10-04再照査N-5)。異体字セレクタ(FE00-FE0F・E0100-E01EF)は絵文字の表示に使うので、メール/返信先(strict)だけ除く。
+_STRIP_CP = {0x034F, 0x115F, 0x1160, 0x17B4, 0x17B5, 0x3164, 0xFFA0}
+
+
+def _strip_invisible(text: str, keep_newline: bool = False, strict: bool = False) -> str:
+    """見えない文字を除く。空白・改行・行区切り(\t \r \x0b \x0c NEL U+2028/2029 等)は空白に置き換え、
+    `keep_newline`のときだけ\nを残す。`strict`(メール・返信先)は異体字セレクタも除き、NFKCで正規化する。"""
+    out: list[str] = []
+    for ch in (unicodedata.normalize("NFKC", text) if strict and text else (text or "")):
+        o = ord(ch)
+        cat = unicodedata.category(ch)
+        if ch == "\n":
+            out.append("\n" if keep_newline else " ")
+        elif ch.isspace() or cat in ("Cc", "Zl", "Zp"):
+            out.append(" ")
+        elif (cat in ("Cf", "Co", "Cs") or o in _STRIP_CP or 0x180B <= o <= 0x180E or 0xE0000 <= o <= 0xE007F
+              or (strict and (0xFE00 <= o <= 0xFE0F or 0xE0100 <= o <= 0xE01EF))):
+            continue
+        else:
+            out.append(ch)
+    return "".join(out)
 
 
 def _email_ok(email: str) -> bool:
     return bool(email) and len(email) <= 254 and _EMAIL_RE.fullmatch(email) is not None
 
 
-def _clean_line(text: str, limit: int) -> str:
-    """1行の文字列に整える(制御文字・方向制御文字を除き、空白を詰める)。"""
-    return " ".join(_CTRL_RE.sub("", text or "").split())[:limit]
+def _clean_line(text: str, limit: int, strict: bool = False) -> str:
+    """1行の文字列に整える(見えない文字を除き、空白を詰める)。"""
+    return " ".join(_strip_invisible(text, strict=strict).split())[:limit]
 
 
 def _clean_note(text: str, limit: int) -> str:
-    """補足(複数行可)。制御文字を除き、行頭に「> 」を付けて、利用者の入力と本文の見出し行を見分けやすくする。"""
-    lines = [_CTRL_RE.sub("", ln).rstrip() for ln in (text or "").replace("\r\n", "\n").replace("\r", "\n").split("\n")]
+    """補足(複数行可)。見えない文字を除き、行頭に「> 」を付けて、利用者の入力と本文の見出し行を見分けやすくする。"""
+    raw = (text or "").replace("\r\n", "\n").replace("\r", "\n")
+    lines = [ln.rstrip() for ln in _strip_invisible(raw, keep_newline=True).split("\n")]
     kept: list[str] = []
     for ln in lines:
         if ln or (kept and kept[-1]):      # 連続する空行は1つに
@@ -84,8 +111,32 @@ class PasswordHelpIn(BaseModel):
     website: str = Field(default="", max_length=200)        # ハニーポット(人間には見えない欄・入っていたらボット)
 
 
-_HELP_DAILY_CAP = 100       # プロセス全体で1日(24時間)に保存する依頼の上限(分散した荒らしで管理画面を埋められないように)
+_HELP_DAILY_CAP = 300       # 見知らぬIPからの依頼をプロセス全体で1日(24時間)に保存する上限(分散した荒らしで管理画面を埋められないように)
 _HELP_PER_EMAIL_CAP = 10    # 同じ登録メールの依頼の上限(24時間)
+_STORED: dict[str, float] = {}      # 重複判定: 保存に成功した依頼のキー -> 時刻(保存後にだけ記録する)
+_DUP_WINDOW = 600.0
+
+
+def _recently_stored(key: str) -> bool:
+    t = _STORED.get(key)
+    return t is not None and time.monotonic() - t < _DUP_WINDOW
+
+
+def _remember_stored(key: str) -> None:
+    now = time.monotonic()
+    _STORED[key] = now
+    if len(_STORED) > 5000:
+        for k in [k for k, t in _STORED.items() if now - t >= _DUP_WINDOW]:
+            _STORED.pop(k, None)
+
+
+def _ip_known(conn, ip: str) -> bool:
+    """このIPから直近30日にログイン成功があるか(忘れた本人は、いつもの回線から依頼することが多い)。"""
+    if not ip:
+        return False
+    return conn.execute(
+        "SELECT 1 FROM login_log WHERE ip = ? AND success = 1 AND created_at >= datetime('now', '-30 days') LIMIT 1",
+        (ip,)).fetchone() is not None
 
 
 @router.post("/password-help")
@@ -93,45 +144,48 @@ def password_help(payload: PasswordHelpIn, request: Request):
     ip = auth.real_client_ip(request)
     if _rate_limited(f"help-ip|{ip}", 5, 3600.0):
         return errors.error_response("2002")
-    if payload.website.strip():           # ボット(人間には見えない欄に入力している)は、保存せず同じ応答を返す
-        return {"ok": True}
-    email = _clean_line(payload.email, 300).lower()
+    email = _clean_line(payload.email, 300, strict=True).lower()
     if not _email_ok(email):
         return errors.error_response("2010")
-    contact = _clean_line(payload.contact, 300).lower()
+    contact = _clean_line(payload.contact, 300, strict=True).lower()
     reply = contact if _email_ok(contact) else email
     nickname = _clean_line(payload.nickname, 100)
     note = _clean_note(payload.note, 1500)
-    # 全く同じ依頼(同じ登録メール・返信先・IP)の10分以内の連打は、保存済みなので同じ応答だけ返す(重複を積まない)。
-    # **それ以外は捨てない**: 「受け付けました」と返す以上、本人の依頼が攻撃者の先回りで消えないようにする
-    # (2026-10-04独立照査H-2)。代わりに連投の件数を本文に残し、管理者が気づけるようにする。
-    if _rate_limited(f"help-dup|{email}|{reply}|{ip}", 1, 600.0):
+    # ハニーポット(人間には見えない欄)に入力があっても**捨てない**: ブラウザの自動入力が埋めることがあり、本人の依頼が
+    # 「受け付けました」と返されたまま消えるのを防ぐ。代わりに本文へ印を付けて保存する(回数の上限は他と同じ・再照査N-2)。
+    bot = bool(payload.website.strip())
+    dup_key = f"{email}|{reply}|{ip}"
+    # 全く同じ依頼(同じ登録メール・返信先・IP)の10分以内の再送は、保存済みなので同じ応答だけ返す(重複を積まない)。
+    # 記録は**保存に成功したあとだけ**(上限で断られた依頼の再送を「受け付けました」で消さないため・再照査N-2)。
+    if _recently_stored(dup_key):
         return {"ok": True}
-    if _rate_limited("help-global-day", _HELP_DAILY_CAP, 86400.0):
-        log.warning("password-help: daily cap reached (not stored)")
-        return errors.error_response("2002")
     with db() as conn:
         n24 = conn.execute(
             "SELECT COUNT(*) FROM inquiries WHERE kind = 'パスワード再発行' "
-            "AND created_at >= datetime('now', '-1 day') AND content LIKE ? ESCAPE '\\'",
-            ("%" + password_reset._like_escape("登録したメールアドレス: " + email) + "\n%",)).fetchone()[0]
+            "AND created_at >= datetime('now', '-1 day') AND instr(content, ?) = 1",
+            (password_reset.request_prefix(email),)).fetchone()[0]
         if n24 >= _HELP_PER_EMAIL_CAP:
             return errors.error_response("2002")          # 黙って捨てず、利用者に「しばらく待って」と伝える
+        # プロセス全体の上限は、直近30日にログイン成功のあるIPには適用しない(荒らしに枯らされても本人は依頼できる・再照査N-3)
+        if not _ip_known(conn, ip) and _rate_limited("help-global-day", _HELP_DAILY_CAP, 86400.0):
+            log.warning("password-help: daily cap reached (not stored)")
+            return errors.error_response("2002")
         multi = (f"同じ登録メールの依頼: 24時間で{n24 + 1}件目(返信先が違う依頼が混ざっていないか確認してください)\n"
                  if n24 >= 1 else "")
         content = (
-            "【パスワード再発行の依頼】\n"
-            f"登録したメールアドレス: {email}\n"
-            f"ニックネーム: {nickname or '(未記入)'}\n"
+            password_reset.request_prefix(email)                  # 先頭2行(見出し+登録メール)はサーバーだけが作る
+            + f"ニックネーム: {nickname or '(未記入)'}\n"
             f"連絡先(返信先): {reply}{'  ※登録メールと異なります' if reply != email else ''}\n"
             f"{multi}"
-            "補足(登録時期・チャージの有無など): " + (note.replace("\n", " / ") if note else "(未記入)") + "\n"
+            + ("※自動入力の疑い(人間には見えない欄に入力あり・ボットの可能性があります)\n" if bot else "")
+            + "補足(登録時期・チャージの有無など): " + (note.replace("\n", " / ") if note else "(未記入)") + "\n"
             "--- 補足の原文 ---\n" + (note or "(未記入)"))
         conn.execute(
             "INSERT INTO inquiries (user_id, kind, name, email, content) VALUES (?, ?, ?, ?, ?)",
             # user_idは空にする: 認証不要のパスでは`current_user_id()`が運営者(id=1)になる仕様のため、使わない
             (None, "パスワード再発行", nickname, reply, content))
-    log.info("password-help: request stored ip=%s", ip)   # メールアドレス・本文はログに出さない
+    _remember_stored(dup_key)
+    log.info("password-help: request stored ip=%s bot_suspect=%s", ip, bot)   # メールアドレス・本文はログに出さない
     return {"ok": True}
 
 
@@ -200,6 +254,7 @@ class IssueIn(BaseModel):
     user_id: int
     hours: int = password_reset.DEFAULT_HOURS
     note: str = Field(default="", max_length=200)      # 何を根拠に本人と判断したか(監査用の控え)
+    ack_reply_differs: bool = False                     # 「返信先が登録メールと異なる依頼がある」警告を見て続行する(画面の確認ダイアログ後にtrue)
 
 
 @router.post("/admin/password-reset/link")
@@ -212,8 +267,17 @@ def admin_issue(payload: IssueIn, request: Request):
         blocker = password_reset.issue_blocker(conn, target)
         if blocker:
             raise errors.http_error("2018", blocker)
+        # 返信先が登録メールと異なる依頼が直近30日にあるときは、警告を見たこと(ack)をサーバーでも要求し、控えにも
+        # サーバー側で印を残す(クライアントの表示や接頭辞に頼らない・再照査N-4)。検索から時間が経って新しい依頼が
+        # 届いていた場合も、ここで止まって再確認になる。
+        differs = password_reset.reply_differs_count(conn, target)
+        if differs and not payload.ack_reply_differs:
+            raise errors.http_error("2018", password_reset.ack_required_message(differs))     # 管理者向けの文言
+        note = payload.note.strip()
+        if differs:
+            note = ("[返信先相違あり] " + note)[:200]
         token, expires = password_reset.create_link(
-            conn, admin_id, payload.user_id, payload.hours, payload.note)
+            conn, admin_id, payload.user_id, payload.hours, note)
     path = f"/reset-password#t={token}"
     base = _public_base(request)
     return {"ok": True, "path": path, "url": base + path, "expires_at": expires,
