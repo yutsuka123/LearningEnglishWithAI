@@ -9103,6 +9103,7 @@ export async function settings(root) {
     <div class="card" id="chargeCard" style="display:none">
       <h2>💳 ${tx("settings.chargeTitle")}</h2>
       <p>${tx("settings.currentBalance")}: <b id="ptBalance">-</b> pt</p>
+      <p class="muted" style="font-size:12px;line-height:1.6;margin:2px 0 8px">${tx("settings.chargeSafeNote")}</p>
       ${state.canPaypayCharge ? `
       <div id="paypayChargeBlock" class="mt">
         <h3 style="margin-bottom:4px">${tx("settings.paypayBuyTitle")}</h3>

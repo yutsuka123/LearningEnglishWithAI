@@ -477,6 +477,7 @@
     "settings.backupTitle": "設定のバックアップ",
     "settings.backupNote": "設定を保存するたび、直前の内容を自動で残します（直近3件まで）。誤操作等で設定がおかしくなったら、ここから戻せます。",
     "settings.chargeTitle": "チャージ",
+    "settings.chargeSafeNote": "🔒 カード番号・PayPayの口座情報などの決済情報は、当サイトでは取得・保存しません。決済はPayPay・BASEの画面で行われ、当サイトには「決済が完了した」という結果の通知が届きます（BASEでのご購入では、キーをお届けするため、ご注文時のお名前・メールアドレスも通知されます）。詳しくは<a href=\"/static/privacy.html\" target=\"_blank\" rel=\"noopener\">プライバシーポリシー</a>をご覧ください。<br/>※パスワードの再設定機能はまだありません。残高はアカウントに紐づくので、パスワードはお控えください。",
     "settings.currentBalance": "現在の残高",
     "settings.paypayBuyTitle": "① PayPayで購入(即時反映)",
     "settings.paypayBuyNote": "支払いが完了すると、キーの発行・入力なしでそのまま残高に反映されます。",
@@ -1451,6 +1452,7 @@
     "signup.failed": "登録に失敗しました。",
     // ---- 登録フォーム見直し(ver1.5.11) 2026-10-04 ----
     "signup.tryWithoutSignup": "登録せずに、まず単語と無料の音声を試す →",
+    "signup.safeNote": "・必要なのは<b>メールアドレス・パスワード・ニックネーム</b>だけ（メールは使い捨て・サブのアドレスでもOK・確認メールは送りません。パスワードの再設定機能はまだないため、控えておいてください）<br/>・🔒 <b>カード番号などの決済情報は、当サイトでは取得・保存しません</b>（決済はPayPay・BASEの画面で行われます）<br/>まずは気軽にお試しいただき、課金はそのあとでご検討ください。",
     "signup.emailConfirmDiff": "上のメールアドレスと違うようです。もう一度ご確認ください。",
     "signup.pwConfirmDiff": "上のパスワードと違うようです。もう一度ご確認ください。",
     "signup.confirmMatch": "一致しています",
@@ -1920,6 +1922,7 @@
     "settings.backupTitle": "Settings backup",
     "settings.backupNote": "Every time you save settings, the previous version is automatically kept (up to the last 3). If a mistake leaves your settings in a bad state, you can restore from here.",
     "settings.chargeTitle": "Add credit",
+    "settings.chargeSafeNote": "🔒 We don’t collect or store card numbers, PayPay account details or other payment information. Payment is handled on the PayPay / BASE screens, and we only receive a notification that the payment was completed (for BASE purchases, the name and email address from the order are also passed on so the key can be delivered). See the <a href=\"/static/privacy.html\" target=\"_blank\" rel=\"noopener\">Privacy Policy</a> for details.<br/>Note: there is no password-reset feature yet. Your balance is tied to your account, so please keep your password somewhere safe.",
     "settings.currentBalance": "Current balance",
     "settings.paypayBuyTitle": "① Pay with PayPay (reflected instantly)",
     "settings.paypayBuyNote": "Once payment is complete, it's reflected directly in your balance — no key to issue or enter.",
@@ -2894,6 +2897,7 @@
     "signup.failed": "Registration failed.",
     // ---- 登録フォーム見直し(ver1.5.11) 2026-10-04 ----
     "signup.tryWithoutSignup": "Try words and free audio first, without signing up →",
+    "signup.safeNote": "・All you need is an <b>email address, a password and a nickname</b> (a throwaway or secondary email is fine; no confirmation email is sent. There is no password-reset feature yet, so please keep your password somewhere safe).<br/>・🔒 <b>We don’t collect or store card numbers or other payment details</b> (payments are handled on the PayPay / BASE screens).<br/>Feel free to try it out first — you can decide about adding credit later.",
     "signup.emailConfirmDiff": "This doesn't match the email address above. Please check it again.",
     "signup.pwConfirmDiff": "This doesn't match the password above. Please check it again.",
     "signup.confirmMatch": "Matches",
@@ -3363,6 +3367,7 @@
     "settings.backupTitle": "设置备份",
     "settings.backupNote": "每次保存设置时,系统会自动保留之前的内容(最多保留最近3次)。如因误操作导致设置出错,可从此处恢复。",
     "settings.chargeTitle": "充值",
+    "settings.chargeSafeNote": "🔒 卡号、PayPay账户信息等支付信息，本网站不会获取或保存。支付在PayPay・BASE的页面完成，本网站只会收到“支付已完成”的结果通知（通过BASE购买时，为了发送密钥，订单中的姓名和邮箱地址也会被告知）。详情请见<a href=\"/static/privacy.html\" target=\"_blank\" rel=\"noopener\">隐私政策</a>。<br/>※目前还没有重置密码的功能。余额与账号绑定，请记好密码。",
     "settings.currentBalance": "当前余额",
     "settings.paypayBuyTitle": "①使用PayPay购买(即时到账)",
     "settings.paypayBuyNote": "支付完成后,无需发放或输入密钥,会直接反映到余额中。",
@@ -4317,6 +4322,7 @@
     "signup.failed": "注册失败。",
     // ---- 登録フォーム見直し(ver1.5.11) 2026-10-04 ----
     "signup.tryWithoutSignup": "先不注册，试试单词和免费语音 →",
+    "signup.safeNote": "・只需要<b>邮箱地址、密码和昵称</b>(邮箱可以是一次性邮箱或备用邮箱；不会发送确认邮件。目前还没有重置密码的功能，请记好密码)<br/>・🔒 <b>卡号等支付信息，本网站不会获取或保存</b>(支付在PayPay・BASE的页面完成)<br/>请先轻松试用，之后再考虑是否充值。",
     "signup.emailConfirmDiff": "与上面的邮箱地址似乎不一致，请再确认一下。",
     "signup.pwConfirmDiff": "与上面的密码似乎不一致，请再确认一下。",
     "signup.confirmMatch": "一致",
@@ -4786,6 +4792,7 @@
     "settings.backupTitle": "設定備份",
     "settings.backupNote": "每次儲存設定時,系統會自動保留先前的內容(最多保留最近3次)。如因誤操作導致設定出錯,可從此處復原。",
     "settings.chargeTitle": "儲值",
+    "settings.chargeSafeNote": "🔒 卡號、PayPay帳戶資訊等付款資訊，本網站不會取得或儲存。付款在PayPay・BASE的頁面完成，本網站只會收到「付款已完成」的結果通知（透過BASE購買時，為了寄送金鑰，訂單中的姓名與電子郵件地址也會被告知）。詳情請見<a href=\"/static/privacy.html\" target=\"_blank\" rel=\"noopener\">隱私權政策</a>。<br/>※目前尚無重設密碼的功能。餘額與帳號綁定，請記好密碼。",
     "settings.currentBalance": "目前餘額",
     "settings.paypayBuyTitle": "①使用PayPay購買(即時到帳)",
     "settings.paypayBuyNote": "付款完成後,無需發放或輸入金鑰,會直接反映到餘額中。",
@@ -5740,6 +5747,7 @@
     "signup.failed": "註冊失敗。",
     // ---- 登録フォーム見直し(ver1.5.11) 2026-10-04 ----
     "signup.tryWithoutSignup": "先不註冊，試試單字和免費語音 →",
+    "signup.safeNote": "・只需要<b>電子郵件地址、密碼與暱稱</b>(信箱可以是拋棄式信箱或備用信箱；不會寄送確認信。目前尚無重設密碼的功能，請記好密碼)<br/>・🔒 <b>卡號等付款資訊，本網站不會取得或儲存</b>(付款在PayPay・BASE的頁面完成)<br/>請先輕鬆試用，之後再考慮是否儲值。",
     "signup.emailConfirmDiff": "與上方的電子郵件地址似乎不一致，請再確認一次。",
     "signup.pwConfirmDiff": "與上方的密碼似乎不一致，請再確認一次。",
     "signup.confirmMatch": "一致",
