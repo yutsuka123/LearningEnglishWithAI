@@ -22,8 +22,8 @@ from .config import load_tokushoho_info, log, paths
 from .database import OWNER_USER_ID, db, init_db
 from .routers import (
     admin_memos, auth_routes, base_oauth, billing, categories, decks,
-    fulfillment, games, inquiries, learn, paypay_charge, paypay_test,
-    phrase_decks, phrases, seo_pages, system, vocabulary,
+    fulfillment, games, inquiries, learn, password_reset, paypay_charge,
+    paypay_test, phrase_decks, phrases, seo_pages, system, vocabulary,
 )
 from .services import auth as auth_svc
 from .services import geoip, messages, traffic_source, visitor_kind
@@ -34,6 +34,9 @@ from .services.spaced_repetition import apply_forgetting_decay
 # 注: /static 配下は下の判定で別途常に許可される（terms.html もそこに置く）。
 _AUTH_ALLOW = {
     "/login", "/api/auth/login", "/api/auth/signup", "/api/health",
+    # パスワード再発行(2026-10-04・ver1.5.12): 忘れた人が未ログインで使う。管理者用(/api/auth/admin/...)は含めない。
+    "/reset-password", "/api/auth/password-help", "/api/auth/password-reset",
+    "/api/auth/password-reset/check",
     "/favicon.ico", "/tokushoho", "/robots.txt", "/api/system/taxonomy",
     "/sitemap.xml", "/llms.txt",
     # PayPayからのredirect復帰(2026-09-01)。セッション切れの状態で戻って
@@ -448,6 +451,7 @@ app.include_router(phrase_decks.router)
 app.include_router(auth_routes.router)
 app.include_router(billing.router)
 app.include_router(inquiries.router)
+app.include_router(password_reset.router)
 app.include_router(admin_memos.router)
 app.include_router(fulfillment.router)
 app.include_router(base_oauth.router)
@@ -485,6 +489,8 @@ def robots_txt():
         "User-agent: *",
         "Disallow: /api/",
         "Disallow: /admin",
+        "Disallow: /reset-password",
+        "Disallow: /static/password-help.html",
         "Disallow: /static/js/",
         "Disallow: /static/css/",
         "Disallow: /static/index.html",
@@ -643,6 +649,17 @@ def llms_txt():
 def login_page():
     """ログイン画面（MULTIUSER=1 用）。単一ユーザー時は使われない。"""
     return FileResponse(str(paths.static_dir / "login.html"))
+
+
+@app.api_route("/reset-password", methods=["GET", "HEAD"])
+def reset_password_page():
+    """パスワードの再設定画面(2026-10-04・ver1.5.12)。リンクのトークンはURLの`#`以降(フラグメント)に
+    入っていてサーバーへは送られない(アクセスログ・Refererに残らない)。検索に載せず、キャッシュもさせない。"""
+    resp = FileResponse(str(paths.static_dir / "reset-password.html"))
+    resp.headers["Cache-Control"] = "no-store"
+    resp.headers["Referrer-Policy"] = "no-referrer"
+    resp.headers["X-Robots-Tag"] = "noindex, nofollow"
+    return resp
 
 
 @app.api_route("/tokushoho", methods=["GET", "HEAD"])

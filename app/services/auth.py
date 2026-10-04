@@ -816,6 +816,17 @@ def clear_login_failures(username: str, ip: str) -> None:
     _LOGIN_FAILS.pop(_login_key(username, ip), None)
 
 
+def clear_all_login_failures_for_username(username: str) -> None:
+    """そのusernameへの失敗の記録を、全IP分まとめて消す(パスワード再設定の完了時・2026-10-04)。
+    再設定した本人が、直前の失敗(忘れたパスワードでの試行)でロックされたまま入れない状態を避ける。
+    IP単位のsprayカウント(_IP_FAILS)は他のusernameへの攻撃の証拠なので消さない。"""
+    key = _username_key(username)
+    _USERNAME_FAILS.pop(key, None)
+    prefix = key + "|"
+    for k in [k for k in _LOGIN_FAILS if k.startswith(prefix)]:
+        _LOGIN_FAILS.pop(k, None)
+
+
 def lockout_status() -> dict:
     """現在のログインロック状況（管理者ダッシュボード用）。プロセス内メモリ。"""
     now = _time.monotonic()

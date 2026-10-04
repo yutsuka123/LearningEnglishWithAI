@@ -616,6 +616,24 @@ CREATE TABLE IF NOT EXISTS account_withdrawals (
     created_at             TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 
+-- パスワード再発行リンク(2026-10-04・ver1.5.12): パスワードを忘れた利用者に、管理者が本人確認のうえ発行する
+-- 使い捨てのリンク(メール送信基盤が無い・使い捨てメールで登録した人も復旧できるように)。トークン本体は保存せず
+-- sha256のハッシュだけを持つ(DBが漏れてもリンクとして使えない)。有効期限付き・1回限り・同じユーザーに新しく発行すると
+-- 古いものは失効する。usedは再設定の完了、revokedは管理者の取り消しまたは再発行による失効。
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL,
+    token_hash  TEXT    NOT NULL UNIQUE,
+    created_by  INTEGER NOT NULL,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    expires_at  TEXT    NOT NULL,
+    used_at     TEXT,
+    revoked_at  TEXT,
+    note        TEXT    NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user
+    ON password_reset_tokens(user_id, created_at);
+
 -- BASE API連携のOAuthトークン保管（2026-08-18・注文自動検知用）。
 -- 単一ショップ運用のため1行のみ想定(id=1固定)。平文で保持するが本テーブルは
 -- 管理者専用API/内部処理からしか読めない(通常のuser向けAPIには一切露出しない)。

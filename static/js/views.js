@@ -5932,10 +5932,29 @@ export async function admin(root) {
             <td class="iq-status" data-id="${q.id}">${escapeHtml(q.status)}</td>
             <td>${q.status === "対応済み" ? "" :
               `<button class="btn ghost iq-done" data-id="${q.id}"
-                style="padding:3px 8px">対応済みにする</button>`}</td>
+                style="padding:3px 8px">対応済みにする</button>`}
+              ${q.kind === "パスワード再発行" ? (() => {
+                const m = /登録したメールアドレス: (\S+)/.exec(q.content || "");
+                return m ? `<button class="btn good pr-from-inq" data-q="${escapeHtml(m[1])}"
+                  style="padding:3px 8px">再発行へ</button>` : "";
+              })() : ""}</td>
           </tr>`).join("") :
           `<tr><td colspan="8" class="muted">まだありません。</td></tr>`}
         </tbody></table>
+      </div>
+      <div class="card">
+        <h2>🔑 パスワード再発行</h2>
+        <p class="muted">パスワードを忘れた利用者に、<b>本人確認のうえ</b>、使い捨ての再設定リンクを発行します
+          (ログイン画面の「パスワードを忘れた方」からの依頼は上の表に「パスワード再発行」で届きます)。
+          確認の手がかり: 登録メール・ニックネーム・登録日・最終ログイン・チャージ履歴。
+          <b>残高やチャージ履歴のあるアカウントは、PayPayの決済番号・BASEの注文番号など、より確実な情報で確認してください</b>。
+          リンクは本人にだけ渡し(返信先へメール等)、画面共有やチャットに貼らないでください。
+          リンクは1回限り・期限つきで、使われると全端末がログアウトされます。</p>
+        <div class="row">
+          <input id="prQ" placeholder="登録メール / ユーザー名 / ニックネーム / ID" style="width:280px" />
+          <button class="btn good" id="prSearch">検索</button>
+        </div>
+        <div id="prResult" class="mt"><p class="muted">未検索</p></div>
       </div>
     </div>
 
@@ -8911,6 +8930,89 @@ export async function admin(root) {
       btn.remove();
     });
   });
+
+  // パスワード再発行(2026-10-04・ver1.5.12): 検索→本人確認の手がかりを表示→リンク発行(1回だけ表示)→コピー/取り消し。
+  {
+    const prQ = root.querySelector("#prQ");
+    const prResult = root.querySelector("#prResult");
+    const fmtJ = (x) => (x ? fmtDate(x) : "—");
+    const linkState = (l) => l.used_at ? "使用済み" : l.revoked_at ? "取り消し/失効"
+      : new Date(l.expires_at.replace(" ", "T") + "Z") < new Date() ? "期限切れ" : "有効";
+    const renderUsers = (users) => {
+      if (!users.length) { prResult.innerHTML = `<p class="muted">該当するユーザーがいません。</p>`; return; }
+      prResult.innerHTML = users.map((u) => `
+        <div class="card" style="margin:8px 0" data-uid="${u.id}">
+          <b>${escapeHtml(u.display_name || "(お名前なし)")}</b>
+          <span class="muted"> / ${escapeHtml(u.username)} / ID ${u.id}</span>
+          ${u.is_active ? "" : '<span class="badge-off">無効・退会</span>'}
+          ${u.role === "admin" ? '<span class="badge-warn">管理者</span>' : ""}
+          <table class="mt" style="max-width:560px"><tbody>
+            <tr><td class="muted">登録日(JST)</td><td>${fmtJ(u.created_at)}</td></tr>
+            <tr><td class="muted">最終ログイン(JST)</td><td>${fmtJ(u.last_login)}</td></tr>
+            <tr><td class="muted">直近30日のログイン成功</td><td>${u.logins_30d}回</td></tr>
+            <tr><td class="muted">残高</td><td>${u.balance_jpy == null ? "—" : Math.round(u.balance_jpy) + "pt"}</td></tr>
+            <tr><td class="muted">チャージ履歴(増加分)</td><td>${u.charges.count}件 / 合計 ${Math.round(u.charges.sum_jpy)}pt / 最終 ${fmtJ(u.charges.last)}</td></tr>
+            <tr><td class="muted">これまでの再設定リンク</td><td>${u.reset_links.length
+              ? u.reset_links.map((l) => `${fmtJ(l.created_at)} ${linkState(l)}`).join("<br>") : "なし"}</td></tr>
+          </tbody></table>
+          ${u.can_issue ? `
+            <div class="row mt">
+              <select class="pr-hours"><option value="1">有効 1時間</option>
+                <option value="24" selected>有効 24時間</option><option value="72">有効 72時間</option></select>
+              <input class="pr-note" placeholder="本人と判断した根拠(控え・200字まで)" maxlength="200" style="width:260px" />
+              <button class="btn good pr-issue" data-uid="${u.id}">再設定リンクを作る</button>
+              <button class="btn ghost pr-revoke" data-uid="${u.id}">有効なリンクを取り消す</button>
+            </div>
+            <div class="pr-out mt"></div>`
+          : `<p class="muted mt">リンクを作れません: ${escapeHtml(u.blocker || "")}</p>`}
+        </div>`).join("");
+    };
+    const search = async () => {
+      const q = (prQ.value || "").trim();
+      if (!q) { toast("検索語を入力"); return; }
+      prResult.innerHTML = `<p class="muted">検索中…</p>`;
+      try {
+        const r = await api.get(`/api/auth/admin/password-reset/lookup?q=${encodeURIComponent(q)}`);
+        renderUsers(r.users || []);
+      } catch (e) { prResult.innerHTML = `<p class="muted">失敗: ${escapeHtml(e.message)}</p>`; }
+    };
+    root.querySelector("#prSearch")?.addEventListener("click", search);
+    prQ?.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); search(); } });
+    root.querySelectorAll(".pr-from-inq").forEach((btn) => btn.addEventListener("click", () => {
+      prQ.value = btn.dataset.q; prQ.scrollIntoView({ behavior: "smooth", block: "center" }); search();
+    }));
+    prResult?.addEventListener("click", async (ev) => {
+      const issue = ev.target.closest(".pr-issue");
+      const revoke = ev.target.closest(".pr-revoke");
+      const copy = ev.target.closest(".pr-copy");
+      if (copy) {
+        const inp = copy.parentElement.querySelector(".pr-url");
+        try { await navigator.clipboard.writeText(inp.value); toast("リンクをコピーしました"); }
+        catch (_) { inp.select(); document.execCommand("copy"); toast("コピーしました"); }
+        return;
+      }
+      if (!issue && !revoke) return;
+      const box = (issue || revoke).closest(".card[data-uid]");
+      const uid = parseInt((issue || revoke).dataset.uid, 10);
+      const out = box.querySelector(".pr-out");
+      try {
+        if (revoke) {
+          const r = await api.post("/api/auth/admin/password-reset/revoke", { user_id: uid });
+          out.innerHTML = `<p class="muted">有効なリンクを ${r.revoked} 件取り消しました。</p>`;
+          return;
+        }
+        if (!confirm("本人確認ができていることを確認しました。このユーザーに再設定リンクを作ります(以前のリンクは無効になります)。")) return;
+        const r = await api.post("/api/auth/admin/password-reset/link", {
+          user_id: uid, hours: parseInt(box.querySelector(".pr-hours").value, 10),
+          note: box.querySelector(".pr-note").value });
+        out.innerHTML = `
+          <p><b>再設定リンクを作りました。</b>本人にだけ渡してください。<b>この画面を閉じると再表示できません</b>(紛失したら作り直してください)。
+            有効期限: ${fmtDate(r.expires_at)}(JST・${r.hours}時間)</p>
+          <div class="row"><input class="pr-url" readonly value="${escapeHtml(r.url)}" style="width:100%;max-width:560px" />
+            <button class="btn good pr-copy">コピー</button></div>`;
+      } catch (e) { toast("失敗: " + e.message); }
+    });
+  }
 
   // 残高の手動調整（±10,000ptまで・理由必須・万が一の是正用）。
   root.querySelectorAll(".chg-btn").forEach((btn) => {

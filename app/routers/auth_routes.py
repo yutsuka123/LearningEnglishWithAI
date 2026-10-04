@@ -312,6 +312,7 @@ _WITHDRAW_PERSONAL_TABLES = (
     "word_attempts", "phrase_attempts", "study_sessions",
     "conversation_log", "deck_progress", "crossword_sessions",
     "crossword_sample_plays", "word_plus_unlocks",
+    "password_reset_tokens",
 )
 
 
