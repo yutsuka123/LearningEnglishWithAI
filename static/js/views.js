@@ -5927,7 +5927,9 @@ export async function admin(root) {
             <td>${escapeHtml(q.display_name || q.username || "—")}</td>
             <td>${escapeHtml(q.kind)}</td>
             <td>${escapeHtml(q.name || "—")}</td>
-            <td>${escapeHtml(q.email || "—")}</td>
+            <td>${escapeHtml(q.email || "—")}${q.kind === "パスワード再発行"
+              && (q.content || "").includes("※登録メールと異なります")
+              ? '<br><b style="color:var(--bad,#c0392b)">⚠ 返信先が登録メールと異なります</b>' : ""}</td>
             <td style="white-space:pre-wrap">${escapeHtml(q.content)}</td>
             <td class="iq-status" data-id="${q.id}">${escapeHtml(q.status)}</td>
             <td>${q.status === "対応済み" ? "" :
@@ -5946,10 +5948,11 @@ export async function admin(root) {
         <h2>🔑 パスワード再発行</h2>
         <p class="muted">パスワードを忘れた利用者に、<b>本人確認のうえ</b>、使い捨ての再設定リンクを発行します
           (ログイン画面の「パスワードを忘れた方」からの依頼は上の表に「パスワード再発行」で届きます)。
-          確認の手がかり: 登録メール・ニックネーム・登録日・最終ログイン・チャージ履歴。
-          <b>残高やチャージ履歴のあるアカウントは、PayPayの決済番号・BASEの注文番号など、より確実な情報で確認してください</b>。
-          リンクは本人にだけ渡し(返信先へメール等)、画面共有やチャットに貼らないでください。
-          リンクは1回限り・期限つきで、使われると全端末がログアウトされます。</p>
+          <b>注意: 依頼者が他人の登録メールを書き、返信先を自分のアドレスにして乗っ取ろうとする可能性があります。</b>
+          リンクは<b>原則として登録メールアドレス宛</b>に送ります。登録メールが使い捨て等で受け取れない場合に限り依頼の返信先へ送り、
+          その場合は登録時期・ニックネーム・チャージ履歴(いつ・いくら・どの方法か)を依頼者に尋ねて、下の表示と照合してください
+          (<b>残高やチャージ履歴のあるアカウントは特に厳しく</b>。PayPayの決済番号・BASEの注文番号などの確実な情報が望ましい)。
+          リンクは本人にだけ渡し、画面共有やチャットに貼らないでください。1回限り・期限つきで、使われると全端末がログアウトされます。</p>
         <div class="row">
           <input id="prQ" placeholder="登録メール / ユーザー名 / ニックネーム / ID" style="width:280px" />
           <button class="btn good" id="prSearch">検索</button>
@@ -8941,7 +8944,8 @@ export async function admin(root) {
     const renderUsers = (users) => {
       if (!users.length) { prResult.innerHTML = `<p class="muted">該当するユーザーがいません。</p>`; return; }
       prResult.innerHTML = users.map((u) => `
-        <div class="card" style="margin:8px 0" data-uid="${u.id}">
+        <div class="card" style="margin:8px 0" data-uid="${u.id}"
+          ${(u.requests || []).some((r) => r.reply_differs) ? "data-reply-differs=\"1\"" : ""}>
           <b>${escapeHtml(u.display_name || "(お名前なし)")}</b>
           <span class="muted"> / ${escapeHtml(u.username)} / ID ${u.id}</span>
           ${u.is_active ? "" : '<span class="badge-off">無効・退会</span>'}
@@ -8951,7 +8955,19 @@ export async function admin(root) {
             <tr><td class="muted">最終ログイン(JST)</td><td>${fmtJ(u.last_login)}</td></tr>
             <tr><td class="muted">直近30日のログイン成功</td><td>${u.logins_30d}回</td></tr>
             <tr><td class="muted">残高</td><td>${u.balance_jpy == null ? "—" : Math.round(u.balance_jpy) + "pt"}</td></tr>
-            <tr><td class="muted">チャージ履歴(増加分)</td><td>${u.charges.count}件 / 合計 ${Math.round(u.charges.sum_jpy)}pt / 最終 ${fmtJ(u.charges.last)}</td></tr>
+            <tr><td class="muted">登録メールの種類</td><td>${u.disposable_email
+              ? "<b>使い捨て(受け取れない可能性が高い)</b>" : "通常のメールアドレス(原則このアドレス宛に送る)"}</td></tr>
+            <tr><td class="muted">チャージ履歴(増加分)</td><td>${u.charges.count}件 / 合計 ${Math.round(u.charges.sum_jpy)}pt / 最終 ${fmtJ(u.charges.last)}
+              ${u.charges.recent && u.charges.recent.length ? "<br>" + u.charges.recent.map((c) =>
+                `${fmtJ(c.created_at)} +${Math.round(c.delta_jpy)}pt(${escapeHtml(c.reason || "")})`).join("<br>") : ""}</td></tr>
+            <tr><td class="muted">この登録メールの依頼(直近30日)</td><td>${u.requests && u.requests.length
+              ? u.requests.map((r) => `${fmtJ(r.created_at)} ${escapeHtml(r.status)}<br>
+                返信先: <b>${escapeHtml(r.reply_to)}</b>${r.reply_differs
+                  ? ' <b style="color:var(--bad,#c0392b)">⚠ 登録メールと異なります</b>' : " (登録メールと同じ)"}<br>
+                ニックネーム: ${escapeHtml(r.nickname || "(未記入)")}${r.nickname_matches === true ? " ✓登録のお名前と一致"
+                  : r.nickname_matches === false ? ' <b style="color:var(--bad,#c0392b)">✗登録のお名前と違います</b>' : ""}<br>
+                補足: ${escapeHtml(r.note || "(未記入)")}`).join("<hr>")
+              : "届いていません(依頼なしで発行する場合は、連絡の経路を別途確認してください)"}</td></tr>
             <tr><td class="muted">これまでの再設定リンク</td><td>${u.reset_links.length
               ? u.reset_links.map((l) => `${fmtJ(l.created_at)} ${linkState(l)}`).join("<br>") : "なし"}</td></tr>
           </tbody></table>
@@ -9001,10 +9017,15 @@ export async function admin(root) {
           out.innerHTML = `<p class="muted">有効なリンクを ${r.revoked} 件取り消しました。</p>`;
           return;
         }
-        if (!confirm("本人確認ができていることを確認しました。このユーザーに再設定リンクを作ります(以前のリンクは無効になります)。")) return;
+        const diff = box.matches("[data-reply-differs='1']");   // 枠自身の属性
+        const msg = (diff ? "⚠ 依頼の返信先が登録メールと異なります(他人が登録メールを書いて自分宛に送らせようとしている可能性があります)。\n"
+          + "登録メール宛に送る、または別の方法で本人確認ができた場合だけ続けてください。\n\n" : "")
+          + "本人確認ができていることを確認しました。このユーザーに再設定リンクを作ります(以前のリンクは無効になります)。";
+        if (!confirm(msg)) return;
+        const noteText = (box.querySelector(".pr-note").value || "").trim();
         const r = await api.post("/api/auth/admin/password-reset/link", {
           user_id: uid, hours: parseInt(box.querySelector(".pr-hours").value, 10),
-          note: box.querySelector(".pr-note").value });
+          note: (diff ? "[返信先相違あり] " : "") + noteText });
         out.innerHTML = `
           <p><b>再設定リンクを作りました。</b>本人にだけ渡してください。<b>この画面を閉じると再表示できません</b>(紛失したら作り直してください)。
             有効期限: ${fmtDate(r.expires_at)}(JST・${r.hours}時間)</p>

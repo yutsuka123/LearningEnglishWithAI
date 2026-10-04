@@ -19,6 +19,7 @@ import sqlite3
 from typing import Optional
 
 from ..config import log
+from ..database import OWNER_USER_ID
 from . import auth
 
 ALLOWED_HOURS = (1, 24, 72)
@@ -36,6 +37,8 @@ def issue_blocker(conn: sqlite3.Connection, user: Optional[dict]) -> Optional[st
         return "ユーザーが見つかりません。"
     if user.get("role") == "admin":
         return "管理者アカウントには発行できません(サーバー側で個別に対応します)。"
+    if int(user["id"]) == OWNER_USER_ID:
+        return "運営者(オーナー)のアカウントには発行できません(サーバー側で個別に対応します)。"
     if auth.is_guest_user_id(conn, int(user["id"])):
         return "ゲストの疑似ユーザーには発行できません。"
     if not user.get("is_active"):
@@ -87,7 +90,12 @@ def is_valid(conn: sqlite3.Connection, token: str) -> bool:
     return bool(row) and issue_blocker(conn, dict(row, id=row["user_id"])) is None
 
 
-def consume(conn: sqlite3.Connection, token: str, new_password: str) -> tuple[str, str]:
+def ip_hash(ip: str) -> str:
+    """調査用のIPの短縮ハッシュ(生のIPは保存しない・ip_retentionの対象外にするため)。"""
+    return hashlib.sha256(("pwreset|" + (ip or "")).encode("utf-8")).hexdigest()[:16] if ip else ""
+
+
+def consume(conn: sqlite3.Connection, token: str, new_password: str, ip: str = "") -> tuple[str, str]:
     """リンクを使ってパスワードを設定する。戻り値は(結果, 補足):
     ('ok', username) / ('invalid', '') / ('policy', messagesのキー)。
     1回限りの使用は`UPDATE ... WHERE used_at IS NULL`の件数で原子的に保証する(同時に2回押されても片方だけ成功)。"""
@@ -98,9 +106,9 @@ def consume(conn: sqlite3.Connection, token: str, new_password: str) -> tuple[st
     if key:
         return "policy", key
     cur = conn.execute(
-        "UPDATE password_reset_tokens SET used_at = datetime('now') "
+        "UPDATE password_reset_tokens SET used_at = datetime('now'), used_ip_hash = ? "
         "WHERE id = ? AND used_at IS NULL AND revoked_at IS NULL "
-        "AND expires_at > datetime('now')", (row["id"],))
+        "AND expires_at > datetime('now')", (ip_hash(ip), row["id"]))
     if cur.rowcount != 1:
         return "invalid", ""
     uid = int(row["user_id"])
@@ -115,6 +123,38 @@ def _like_escape(s: str) -> str:
     return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
+_REQ_EMAIL = "登録したメールアドレス: "
+
+
+def _requests_for(conn: sqlite3.Connection, user: dict) -> list[dict]:
+    """そのユーザーの登録メールについて、直近30日に届いた「パスワード再発行」の依頼(新しい順・最大5件)。
+    **返信先が登録メールと違うか**・依頼のニックネームが登録のお名前と合うかを添える(依頼者が他人の登録メールを
+    書いて返信先を自分のアドレスにする攻撃を、管理者が見落とさないため・2026-10-04独立照査H-1)。"""
+    mails = {m.strip().lower() for m in (user.get("username"), user.get("email")) if m and "@" in m}
+    out = []
+    for m in sorted(mails):
+        rows = conn.execute(
+            "SELECT id, created_at, name, email, content, status FROM inquiries "
+            "WHERE kind = 'パスワード再発行' AND created_at >= datetime('now', '-30 days') "
+            "AND content LIKE ? ESCAPE '\\' ORDER BY id DESC LIMIT 5",
+            ("%" + _like_escape(_REQ_EMAIL + m) + "\n%",)).fetchall()
+        for r in rows:
+            note = ""
+            for line in (r["content"] or "").splitlines():
+                if line.startswith("補足(登録時期・チャージの有無など): "):
+                    note = line.split(": ", 1)[1]
+            reply = (r["email"] or "").strip().lower()
+            nick = (r["name"] or "").strip()
+            out.append({
+                "id": r["id"], "created_at": r["created_at"], "status": r["status"], "nickname": nick,
+                "reply_to": reply, "reply_differs": reply not in mails,
+                "nickname_matches": (nick == (user.get("display_name") or "").strip()) if nick else None,
+                "note": note[:300],
+            })
+    out.sort(key=lambda x: -x["id"])
+    return out[:5]
+
+
 def lookup(conn: sqlite3.Connection, query: str) -> list[dict]:
     """管理者が本人確認の材料にする情報つきで候補ユーザーを返す(最大10件)。
     検索: ユーザー名/メールアドレス(大文字小文字を区別しない完全一致)・呼んでほしいお名前(部分一致)・数字ならユーザーID。"""
@@ -125,7 +165,8 @@ def lookup(conn: sqlite3.Connection, query: str) -> list[dict]:
         "SELECT id, username, email, display_name, role, is_active, created_at, balance_jpy "
         "FROM users WHERE lower(username) = lower(?) OR lower(email) = lower(?) "
         "OR display_name LIKE ? ESCAPE '\\' OR id = ? ORDER BY id LIMIT ?",
-        (q, q, "%" + _like_escape(q) + "%", int(q) if q.isdigit() else -1, LOOKUP_LIMIT)).fetchall()
+        (q, q, "%" + _like_escape(q) + "%",
+         int(q) if (q.isascii() and q.isdigit() and len(q) <= 9) else -1, LOOKUP_LIMIT)).fetchall()
     out = []
     for r in rows:
         u = dict(r)
@@ -140,6 +181,9 @@ def lookup(conn: sqlite3.Connection, query: str) -> list[dict]:
         ch = conn.execute(
             "SELECT COUNT(*), COALESCE(SUM(delta_jpy), 0), MAX(created_at) FROM balance_ledger "
             "WHERE user_id = ? AND delta_jpy > 0", (u["id"],)).fetchone()
+        recent = conn.execute(
+            "SELECT created_at, delta_jpy, reason FROM balance_ledger "
+            "WHERE user_id = ? AND delta_jpy > 0 ORDER BY id DESC LIMIT 3", (u["id"],)).fetchall()
         tokens = conn.execute(
             "SELECT created_at, expires_at, used_at, revoked_at FROM password_reset_tokens "
             "WHERE user_id = ? ORDER BY id DESC LIMIT 3", (u["id"],)).fetchall()
@@ -149,7 +193,10 @@ def lookup(conn: sqlite3.Connection, query: str) -> list[dict]:
             "display_name": u["display_name"], "role": u["role"], "is_active": bool(u["is_active"]),
             "created_at": u["created_at"], "last_login": last[0] if last else None,
             "logins_30d": n30, "balance_jpy": u["balance_jpy"],
-            "charges": {"count": ch[0], "sum_jpy": ch[1], "last": ch[2]},
+            "charges": {"count": ch[0], "sum_jpy": ch[1], "last": ch[2],
+                        "recent": [dict(x) for x in recent]},
+            "disposable_email": auth.is_disposable_email_domain(u["username"] if "@" in (u["username"] or "") else (u["email"] or "")),
+            "requests": _requests_for(conn, u),
             "reset_links": [dict(t) for t in tokens],
             "can_issue": blocker is None, "blocker": blocker,
         })

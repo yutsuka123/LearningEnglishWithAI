@@ -58,6 +58,10 @@ def _require_admin(conn) -> None:
         raise errors.http_error("2004", "管理者のみ閲覧できます。")
 
 
+# 管理画面を開くたびに全件を読み込まないための上限(認証不要の「パスワード再発行」の依頼が積まれても重くならないように・2026-10-04)。
+_LIST_LIMIT = 300
+
+
 @router.get("")
 def list_inquiries():
     """管理者専用: 全件を新しい順で返す。"""
@@ -67,7 +71,7 @@ def list_inquiries():
             "SELECT i.id, i.kind, i.name, i.email, i.content, i.status, "
             " i.created_at, u.username, u.display_name "
             "FROM inquiries i LEFT JOIN users u ON u.id = i.user_id "
-            "ORDER BY i.id DESC"
+            "ORDER BY i.id DESC LIMIT ?", (_LIST_LIMIT,)
         ).fetchall()
     return {"inquiries": [dict(r) for r in rows]}
 

@@ -655,7 +655,7 @@ def login_page():
 def reset_password_page():
     """パスワードの再設定画面(2026-10-04・ver1.5.12)。リンクのトークンはURLの`#`以降(フラグメント)に
     入っていてサーバーへは送られない(アクセスログ・Refererに残らない)。検索に載せず、キャッシュもさせない。"""
-    resp = FileResponse(str(paths.static_dir / "reset-password.html"))
+    resp = FileResponse(str(paths.root / "templates" / "reset_password.html"))   # static/の外=直接URLでは配信されず、下のヘッダを必ず付ける
     resp.headers["Cache-Control"] = "no-store"
     resp.headers["Referrer-Policy"] = "no-referrer"
     resp.headers["X-Robots-Tag"] = "noindex, nofollow"

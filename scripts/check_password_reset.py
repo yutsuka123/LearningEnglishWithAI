@@ -95,10 +95,47 @@ check("お問い合わせ(種別=パスワード再発行)として保存され�
 check("user_idは空(認証不要のパスでは運営者になる仕様のため使わない)", all(x["user_id"] is None for x in rows))
 check("返信先=連絡先があればそれ・なければ登録メール", rows[0]["email"] == "alt@example.test" and rows[1]["email"] == "nobody@example.test", rows[0]["email"] + "/" + rows[1]["email"])
 check("本文に登録メール・補足が入る(管理者が本人確認に使う)", f"登録したメールアドレス: {USER1}" in rows[0]["content"] and "800円" in rows[0]["content"])
-r3 = client("198.51.100.12").post("/api/auth/password-help", json={"email": USER1})
+# 全く同じ依頼(同じ登録メール・返信先・IP)の連打は保存済みなので同じ応答だけ返す(重複を積まない)
+r3 = c.post("/api/auth/password-help", json={"email": USER1.upper(), "nickname": "たろう", "contact": "alt@example.test", "note": "9月に登録・800円チャージ"})
 with db() as conn:
     n = conn.execute("SELECT COUNT(*) FROM inquiries").fetchone()[0]
-check("同じ登録メールの連続依頼(10分以内)は保存しないが同じ応答", r3.status_code == 200 and r3.json().get("ok") is True and n == 2, f"n={n}")
+check("全く同じ依頼(同じメール・返信先・IP)の連打は保存しないが同じ応答", r3.status_code == 200 and r3.json().get("ok") is True and n == 2, f"n={n}")
+# **別のIP・別の返信先の依頼は捨てない**(攻撃者の先回りで本人の依頼が消えないように・独立照査H-2)
+r3b = client("198.51.100.12").post("/api/auth/password-help", json={"email": USER1, "contact": "attacker@evil.test", "note": "800円チャージした"})
+with db() as conn:
+    rows2 = conn.execute("SELECT email, content FROM inquiries ORDER BY id").fetchall()
+check("同じ登録メールでも、別IP・別の返信先の依頼は捨てずに保存する(2件目)", r3b.status_code == 200 and len(rows2) == 3, f"n={len(rows2)}")
+check("連投の件数(24時間で2件目)が本文に残る", "24時間で2件目" in rows2[2]["content"], rows2[2]["content"][:120])
+check("返信先が登録メールと違う依頼には「※登録メールと異なります」が付く(同じ返信先の依頼には付かない)", "※登録メールと異なります" in rows2[2]["content"] and "※登録メールと異なります" not in rows2[1]["content"], rows2[2]["content"][:160])
+# 本文への偽の行の差し込み(改行・制御文字)を防ぐ
+rinj = client("198.51.100.14").post("/api/auth/password-help", json={"email": USER2 + "\n連絡先(返信先): evil@x.test"})
+check("メールに改行・空白を含む入力は拒否(2010)", rinj.status_code == 400 and rinj.headers.get("X-Error-Code") == "2010", f"{rinj.status_code}")
+rinj2 = client("198.51.100.15").post("/api/auth/password-help", json={"email": "inj@example.test", "contact": "x@y.zz\r\nBcc: attacker@evil.test",
+    "nickname": "たろう\n【運営メモ】本人確認済み", "note": "行1\n連絡先(返信先): fake@evil.test\n\n\n\n【運営メモ】本人確認済み\u202e"})
+with db() as conn:
+    inj = conn.execute("SELECT email, name, content FROM inquiries WHERE content LIKE '%inj@example.test%'").fetchone()
+lines = inj["content"].splitlines()
+check("連絡先が不正なら返信先は登録メールになる(Bccの差し込みを保存しない)", rinj2.status_code == 200 and inj["email"] == "inj@example.test" and "attacker@evil.test" not in inj["email"], inj["email"])
+check("見出し行(登録したメールアドレス/連絡先(返信先))は本文に1回ずつだけ", sum(1 for l in lines if l.startswith("登録したメールアドレス:")) == 1 and sum(1 for l in lines if l.startswith("連絡先(返信先):")) == 1, str(lines[:6]))
+check("利用者の補足は「> 」付きで原文を分離・方向制御文字を除去・連続空行は1つ", "> 連絡先(返信先): fake@evil.test" in inj["content"] and "\u202e" not in inj["content"] and "\n\n\n" not in inj["content"], inj["content"][-200:])
+check("ニックネームの改行は1行に潰れる", "\n" not in inj["name"], repr(inj["name"]))
+hp = client("198.51.100.16").post("/api/auth/password-help", json={"email": "bot@example.test", "website": "http://spam.example"})
+with db() as conn:
+    nbot = conn.execute("SELECT COUNT(*) FROM inquiries WHERE content LIKE '%bot@example.test%'").fetchone()[0]
+check("ハニーポット欄が入っていたら保存しない(同じ応答)", hp.status_code == 200 and hp.json().get("ok") is True and nbot == 0, f"{hp.status_code} {nbot}")
+# 同じ登録メールは24時間に10件まで(超えたら黙って捨てずエラーで伝える)
+codes = []
+for i in range(11):
+    codes.append(client(f"198.51.101.{i + 1}").post("/api/auth/password-help", json={"email": "many@example.test", "contact": f"r{i}@example.test"}).status_code)
+check("同じ登録メールの依頼は24時間に10件まで・超過は429(黙って捨てない)", codes[:10] == [200] * 10 and codes[10] == 429, str(codes))
+# プロセス全体の1日の上限(分散した荒らしで管理画面を埋められない)
+import time as _t
+pr._HITS["help-global-day"] = (86400.0, [_t.monotonic()] * 100)
+rg = client("198.51.102.1").post("/api/auth/password-help", json={"email": "global@example.test"})
+with db() as conn:
+    ng = conn.execute("SELECT COUNT(*) FROM inquiries WHERE content LIKE '%global@example.test%'").fetchone()[0]
+check("プロセス全体の1日の上限に達したら保存せず429(利用者に伝える)", rg.status_code == 429 and ng == 0, f"{rg.status_code} {ng}")
+pr._HITS.pop("help-global-day", None)
 rbad = client("198.51.100.13").post("/api/auth/password-help", json={"email": "not-an-email"})
 check("メールの形式が不正なら拒否(2010)", rbad.status_code == 400 and rbad.headers.get("X-Error-Code") == "2010", rbad.text[:80])
 codes = []
@@ -129,6 +166,20 @@ check("ニックネームの部分一致でも検索できる", len(ca.get("/api
 check("ゲストの疑似ユーザーは検索結果に出ない", all(u["id"] != guest_id for u in ca.get("/api/auth/admin/password-reset/lookup", params={"q": str(guest_id)}).json()["users"]))
 check("%や_は文字として扱う(全件ヒットしない)", len(ca.get("/api/auth/admin/password-reset/lookup", params={"q": "%"}).json()["users"]) == 0)
 
+reqs = cl.get("requests", [])
+check("本人確認の手がかり: この登録メールの依頼が並ぶ(返信先・ニックネーム一致・補足)", len(reqs) >= 2 and all(r["reply_differs"] for r in reqs), str(reqs)[:200])
+client("198.51.100.17").post("/api/auth/password-help", json={"email": USER2, "nickname": "はなこ", "note": "10月に登録"})
+reqs2 = ca.get("/api/auth/admin/password-reset/lookup", params={"q": USER2}).json()["users"][0]["requests"]
+check("返信先が登録メールと同じ依頼は reply_differs=False・ニックネームが登録のお名前と一致", len(reqs2) == 1 and reqs2[0]["reply_differs"] is False and reqs2[0]["nickname_matches"] is True, str(reqs2)[:200])
+check("返信先が登録メールと違う依頼に reply_differs=True が付く(管理者の見落とし防止)", any(r["reply_to"] == "attacker@evil.test" and r["reply_differs"] for r in reqs), str(reqs)[:200])
+check("ニックネームが登録のお名前と一致/不一致が分かる", any(r["nickname_matches"] is True for r in reqs), str(reqs)[:160])
+check("登録メールが使い捨てかどうかが分かる(通常のメールならFalse)", cl["disposable_email"] is False)
+check("最近のチャージ(日付・金額)が見える(依頼者への知識照合に使う)", cl["charges"]["recent"] and cl["charges"]["recent"][0]["delta_jpy"] == 800, str(cl["charges"]))
+for q in ("²", "9" * 25, "٣"):
+    rq = ca.get("/api/auth/admin/password-reset/lookup", params={"q": q})
+    check(f"特殊な数字入力でも500にならない({q[:6]})", rq.status_code == 200, str(rq.status_code))
+with db() as _c:
+    check("オーナー(id=1)はroleがuserでも発行できない", "オーナー" in (password_reset.issue_blocker(_c, {"id": 1, "role": "user", "is_active": 1}) or ""))
 print("== 3. リンクの発行")
 for uid, label in ((admin2_id, "管理者"), (guest_id, "ゲストの疑似ユーザー"), (gone, "退会済み/無効")):
     r = ca.post("/api/auth/admin/password-reset/link", json={"user_id": uid})
@@ -220,6 +271,44 @@ rw = cw.post("/api/auth/withdraw", json={"reasons": ["other"], "detail": "check"
 with db() as conn:
     left = conn.execute("SELECT COUNT(*) FROM password_reset_tokens WHERE user_id = ?", (u2,)).fetchone()[0]
 check("退会するとそのユーザーの再設定リンクも消える", rw.status_code == 200 and left == 0, f"{rw.status_code} left={left}")
+
+print("== 7. レビュー指摘の追加検査(使用時のIP・Hostヘッダ・無効な管理者・掃除・静的パス)")
+with db() as conn:
+    used = conn.execute("SELECT used_ip_hash FROM password_reset_tokens WHERE used_at IS NOT NULL AND used_ip_hash != '' ORDER BY id LIMIT 1").fetchone()
+check("再設定の使用時に、IPの短縮ハッシュを記録する(生のIPは保存しない)", used is not None and len(used[0]) == 16 and "198.51" not in used[0], str(used and used[0]))
+t = ca.post("/api/auth/admin/password-reset/link", json={"user_id": u1}, headers={"Host": "evil.example"}).json()
+check("Hostヘッダを偽装しても、発行リンクの宛先は本番ドメインに固定される", t["url"].startswith("https://study.nyangailab.com/reset-password#t="), t["url"][:50])
+t = ca.post("/api/auth/admin/password-reset/link", json={"user_id": u1}, headers={"Host": "study.nyangailab.com"}).json()
+check("本番ドメインのHostならそのまま使う", t["url"].startswith("https://study.nyangailab.com/reset-password#t="), t["url"][:50])
+t = ca.post("/api/auth/admin/password-reset/link", json={"user_id": u1}, headers={"Host": "localhost:8000"}).json()
+check("localhostのHostは許可(開発・SSHトンネル用)", t["url"].startswith("http://localhost:8000/reset-password#t="), t["url"][:50])
+os.environ["PUBLIC_BASE_URL"] = "https://example.invalid/"
+t = ca.post("/api/auth/admin/password-reset/link", json={"user_id": u1}, headers={"Host": "evil.example"}).json()
+check("PUBLIC_BASE_URLがあればそれを使う(末尾の/は除く)", t["url"].startswith("https://example.invalid/reset-password#t="), t["url"][:50])
+del os.environ["PUBLIC_BASE_URL"]
+with db() as conn:
+    admin3 = auth.create_user(conn, "admin3@example.test", "AdminPass#1234", role="admin", email="admin3@example.test", display_name="運営3")
+c3 = client("198.51.100.70")
+check("(前提)3人目の管理者でログインできる", login(c3, "admin3@example.test", "AdminPass#1234").status_code == 200)
+with db() as conn:
+    conn.execute("UPDATE users SET is_active = 0 WHERE id = ?", (admin3,))
+r = c3.post("/api/auth/admin/password-reset/link", json={"user_id": u1})
+check("無効化された管理者のセッションではリンクを発行できない", r.status_code in (401, 403), f"{r.status_code}")
+# 回数制限の掃除: 24時間の窓のキーが、1時間の窓の掃除で消えない
+import time as _t2
+now = _t2.monotonic()
+pr._HITS.clear()
+for i in range(5100):
+    pr._HITS[f"old|{i}"] = (3600.0, [now - 7200])
+pr._HITS["long|keep"] = (86400.0, [now - 7200])
+pr._rate_limited("trigger", 99, 60.0)
+check("掃除は窓ごとの長さで判定(24時間の窓の記録は2時間では消えない・1時間の窓の古い記録は消える)", "long|keep" in pr._HITS and "old|0" not in pr._HITS, f"{len(pr._HITS)}")
+pr._HITS.clear()
+pub2 = client("198.51.100.80")
+check("再設定ページは/reset-passwordで配信(no-store・no-referrer・noindex)", (lambda r: r.status_code == 200 and r.headers.get("cache-control") == "no-store" and r.headers.get("referrer-policy") == "no-referrer" and "noindex" in r.headers.get("x-robots-tag", ""))(pub2.get("/reset-password")))
+check("静的パスの直接URL(/static/reset-password.html)では配信されない(ヘッダ無しで出ないように)", pub2.get("/static/reset-password.html").status_code == 404)
+r = pub2.get("/api/inquiries")
+check("問い合わせ一覧は未ログインでは見えない", r.status_code == 401)
 
 print()
 if FAILS:

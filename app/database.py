@@ -629,7 +629,8 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
     expires_at  TEXT    NOT NULL,
     used_at     TEXT,
     revoked_at  TEXT,
-    note        TEXT    NOT NULL DEFAULT ''
+    note        TEXT    NOT NULL DEFAULT '',
+    used_ip_hash TEXT   NOT NULL DEFAULT ''   -- 使用時のIPの短縮ハッシュ(調査用・生のIPは保存しない)
 );
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user
     ON password_reset_tokens(user_id, created_at);
