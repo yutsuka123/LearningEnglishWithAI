@@ -24,6 +24,7 @@ tts_cacheキーは不変)。
 
 from __future__ import annotations
 
+import hashlib
 import re
 import unicodedata
 from typing import Callable
@@ -133,7 +134,7 @@ def _respell_foreign_a(text: str) -> str:
 # ★適用は「テキスト全体がその語と一致するとき」だけ(大小文字・前後の空白は無視)。例文・フレーズの中の同じ綴りは一切変えない
 #   (lead=「鉛」は/lɛd/だが"lead the team"は/liːd/・"bow"は「弓/お辞儀」で読みが違うなど、綴り単位の置換は文中で誤爆する。
 #    検証した条件=見出し語単独の音声、とも一致させる)。
-# 除外(判断の記録): sake・sake brewer=日本酒の規則で適用済み / 人種差別語1語=音声を作り直す対象にしない(オーナー判断待ち) /
+# 除外(判断の記録): sake・sake brewer=日本酒の規則で適用済み / 差別語1語(禁止用語)=下の`_HEADWORD_RESPELL_SHA256`(綴りを直書きしない・2026-10-04オーナー決定) /
 #   bear=現行が合格で、読み替え"bayr"は男声が「ベイ」になる / live load(/laɪv/)=読み替えでも自動判定で「give」と「five」を
 #   区別できず検証できなかった(現行は誤読の疑い・オーナーの耳で確認する) / 他は現行が合格のため不要。
 # 値は「読み通りの綴り」(sakeの`sah-kee`と同じ型)。大文字は強勢の位置。追加するときはIPAと矛盾しないこと・
@@ -160,16 +161,35 @@ _HEADWORD_RESPELL: dict[str, str] = {
 }
 
 
+# --- 禁止用語(差別語)の見出し語: 綴りをコードに直書きしない(SHA-256で照合・2026-10-04オーナー決定) -------------------
+# 「禁止用語」区分(許可された管理者だけが表示/再生できる)の差別語1語(words.id=1274)は、TTSがその綴りの入力を**拒否**し、
+# 「I'm sorry, but I can't assist with that request.」という拒否文を読み上げた音声が保存されていた(男女とも・2026-10-04に発覚)。
+# 教材として発音は正確であるべき(オーナー決定)なので、辞書どおりの読みになる読み通りの綴りを合成時の入力にだけ渡す
+# (表示・DB・音声のキャッシュキーは元の綴りのまま)。公開リポジトリに綴りを直書きしないよう、キーは正規化した綴りのSHA-256。
+# 読みはDBのIPAどおり(第1音節は短いi・語尾は-er)。書き起こしが本来の語と完全一致することを複数回確認済み(男声・女声)。
+_HEADWORD_RESPELL_SHA256: dict[str, str] = {
+    "120f6e5b4ea32f65bda68452fcfaaef06b0136e1d0e4a6f60bc3771fa0936dd6": "nih-ger",
+}
+
+
 def _headword_key(text: str) -> str:
     return " ".join(unicodedata.normalize("NFC", text).split()).casefold()
 
 
+def _headword_sha(text: str) -> str:
+    return hashlib.sha256(_headword_key(text).encode("utf-8")).hexdigest()
+
+
 def _is_headword(text: str) -> bool:
-    return _headword_key(text) in _HEADWORD_RESPELL
+    return (_headword_key(text) in _HEADWORD_RESPELL
+            or _headword_sha(text) in _HEADWORD_RESPELL_SHA256)
 
 
 def _respell_headword(text: str) -> str:
-    return _HEADWORD_RESPELL[_headword_key(text)]
+    k = _headword_key(text)
+    if k in _HEADWORD_RESPELL:
+        return _HEADWORD_RESPELL[k]
+    return _HEADWORD_RESPELL_SHA256[_headword_sha(text)]
 
 
 RULES: list[tuple[Callable[[str], bool], Callable[[str], str]]] = [

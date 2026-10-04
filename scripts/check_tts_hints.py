@@ -79,6 +79,19 @@ check("大文字始まり・全大文字・前後の空白も同じ読み", spok
 check("内部の空白の揺れ(lead-acid  battery)も一致", spoken_text("lead-acid   battery") == "led-ass-id bat-uh-ree")
 check("略語は大文字小文字を問わない", spoken_text("rnav") == "ar-navv" and spoken_text("RNAV") == "ar-navv")
 
+print("== 禁止用語の見出し語(綴りは直書きせずSHA-256で照合)")
+import hashlib as _hl  # noqa: E402
+from app.services import tts_hints as _th  # noqa: E402
+
+check("SHA-256表のキーは64桁の16進で、値は読み通りの綴り(ASCII)",
+      all(len(k) == 64 and all(c in "0123456789abcdef" for c in k) and v.isascii() and v == v.strip() for k, v in _th._HEADWORD_RESPELL_SHA256.items()) and len(_th._HEADWORD_RESPELL_SHA256) == 1)
+_orig = dict(_th._HEADWORD_RESPELL_SHA256)
+_th._HEADWORD_RESPELL_SHA256["%s" % _hl.sha256(b"zzprobe").hexdigest()] = "zz-probe-spoken"
+check("SHA-256経路: 見出し語そのもの(大小文字・空白は無視)は読み替わる", spoken_text("zzprobe") == "zz-probe-spoken" and spoken_text(" ZZProbe ") == "zz-probe-spoken")
+check("SHA-256経路: 文中・別の語は不変", spoken_text("a zzprobe here") == "a zzprobe here" and spoken_text("zzprobes") == "zzprobes")
+check("SHA-256経路: 値は他の規則で変わらない(冪等)", spoken_text("zz-probe-spoken") == "zz-probe-spoken")
+_th._HEADWORD_RESPELL_SHA256.clear(); _th._HEADWORD_RESPELL_SHA256.update(_orig)
+
 print("== 文・フレーズの中の同じ綴りは不変(文中の読みは用法で変わるため)")
 SENT = [
     "The lead singer joined the band.", "Please lead the way.", "She took a bow after the show.", "Bow your head.",
