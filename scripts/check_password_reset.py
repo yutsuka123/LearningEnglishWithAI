@@ -136,11 +136,12 @@ with db() as conn:
     ng = conn.execute("SELECT COUNT(*) FROM inquiries WHERE content LIKE '%global@example.test%'").fetchone()[0]
 check("プロセス全体の1日の上限(300件)に達したら、見知らぬIPの依頼は保存せず429(利用者に伝える)", rg.status_code == 429 and ng == 0, f"{rg.status_code} {ng}")
 with db() as conn:
-    conn.execute("INSERT INTO login_log (username, ip, success) VALUES (?, ?, 1)", (USER2, "198.51.102.9"))
+    auth.create_user(conn, "known-ip@example.test", PW_OLD, email="known-ip@example.test", display_name="既知")   # この検査専用(他の検査の依頼件数を変えない)
+    conn.execute("INSERT INTO login_log (username, ip, success) VALUES (?, ?, 1)", ("known-ip@example.test", "198.51.102.9"))
 rk = client("198.51.102.9").post("/api/auth/password-help", json={"email": "known-ip@example.test"})
 with db() as conn:
     nk = conn.execute("SELECT COUNT(*) FROM inquiries WHERE content LIKE '%known-ip@example.test%'").fetchone()[0]
-check("直近30日にログイン成功のあるIPは、全体の上限に達していても依頼できる(荒らしに枯らされても本人は復旧できる)", rk.status_code == 200 and nk == 1, f"{rk.status_code} {nk}")
+check("その登録メール自身のアカウントが直近30日にログイン成功したIPは、全体の上限に達していても依頼できる(荒らしに枯らされても本人は復旧できる)", rk.status_code == 200 and nk >= 1, f"{rk.status_code} {nk}")
 pr._HITS.pop("help-global-day", None)
 rbad = client("198.51.100.13").post("/api/auth/password-help", json={"email": "not-an-email"})
 check("メールの形式が不正なら拒否(2010)", rbad.status_code == 400 and rbad.headers.get("X-Error-Code") == "2010", rbad.text[:80])
@@ -402,6 +403,79 @@ for i in range(21000):
     pr._HITS[f"live|{i}"] = (86400.0, [now - i * 0.001])
 pr._rate_limited("trigger2", 99, 60.0)
 check("窓の内側のキーが2万を超えたら、古い順に捨てて上限を保つ(最新は残る)", len(pr._HITS) <= 15001 and "trigger2" in pr._HITS and "live|0" in pr._HITS, f"{len(pr._HITS)}")
+pr._HITS.clear(); pr._STORED.clear()
+
+print("== 9. 第3回照査の指摘: 汎用お問い合わせ経由の偽造・免除の悪用・一覧の隠れ")
+pr._HITS.clear(); pr._STORED.clear()
+with db() as conn:
+    vic2 = auth.create_user(conn, "victim2@example.test", PW_OLD, email="victim2@example.test", display_name="ひがい二")
+    atk = auth.create_user(conn, "attacker@example.test", PW_OLD, email="attacker@example.test", display_name="あらし")
+VIC2 = "victim2@example.test"
+ca_atk = client("203.0.113.200")
+check("(前提)攻撃者(一般の登録ユーザー)でログインできる", login(ca_atk, "attacker@example.test", PW_OLD).status_code == 200)
+# H-A: 汎用お問い合わせで「パスワード再発行」の種別・先頭行を偽造しても、依頼として扱われない
+forged = password_reset.request_prefix(VIC2) + "ニックネーム: ひがい二\n連絡先(返信先): evil@x.test  ※登録メールと異なります\n補足: 偽造"
+codes_f = [ca_atk.post("/api/inquiries", json={"kind": "パスワード再発行", "name": "ひがい二", "email": VIC2, "content": forged}).status_code for _ in range(12)]
+check("汎用の送信口は200で受け付けるが(通常の問い合わせとして)", codes_f == [200] * 12, str(codes_f))
+with db() as conn:
+    fk = {r["kind"] for r in conn.execute("SELECT kind FROM inquiries WHERE content LIKE '%補足: 偽造%'")}
+    nforged = conn.execute("SELECT COUNT(*) FROM inquiries WHERE content LIKE '%補足: 偽造%'").fetchone()[0]
+check("種別「パスワード再発行」は汎用の送信口では受け付けず、「その他」になる(依頼ページ専用)", nforged == 12 and fk == {"その他"}, str(fk))
+rv2 = client("203.0.113.201").post("/api/auth/password-help", json={"email": VIC2, "nickname": "ひがい二", "note": "9月に登録"})
+check("偽造の依頼を12件積まれても、被害者本人の依頼は429にならず保存される(復旧妨害できない)", rv2.status_code == 200, f"{rv2.status_code} {rv2.text[:60]}")
+vu2 = {"username": VIC2, "email": VIC2, "display_name": "ひがい二"}
+with db() as conn:
+    vreq2 = password_reset._requests_for(conn, vu2)
+    vdiff2 = password_reset.reply_differs_count(conn, vu2)
+check("被害者のカードには本人の依頼だけが並び、偽造の補足(誘導文)は混ざらない", len(vreq2) == 1 and "偽造" not in vreq2[0]["note"] and vreq2[0]["reply_differs"] is False, str(vreq2)[:200])
+check("相違件数に偽造が混ざらない(0件のまま・赤警告を偽造で増減できない)", vdiff2 == 0, str(vdiff2))
+# 多重防御: たとえ同じ種別・先頭行の行が(user_id付きで)DBに入っても、user_id IS NULL(依頼ページ経由)でない行は数えない
+with db() as conn:
+    for _ in range(12):
+        conn.execute("INSERT INTO inquiries (user_id, kind, name, email, content) VALUES (?, 'パスワード再発行', 'x', 'evil@x.test', ?)", (atk, forged))
+    n_cnt = conn.execute("SELECT COUNT(*) FROM inquiries WHERE kind = 'パスワード再発行' AND user_id IS NULL AND instr(content, ?) = 1", (password_reset.request_prefix(VIC2),)).fetchone()[0]
+    vreq2b = password_reset._requests_for(conn, vu2)
+    vdiff2b = password_reset.reply_differs_count(conn, vu2)
+check("(多重防御)user_id付きの行は24時間の上限・カード・相違件数のどれにも数えない", n_cnt == 1 and len(vreq2b) == 1 and vdiff2b == 0, f"{n_cnt} {len(vreq2b)} {vdiff2b}")
+rv2b = client("203.0.113.202").post("/api/auth/password-help", json={"email": VIC2, "contact": "other@example.test"})
+check("(多重防御)user_id付きの行を積まれても、被害者の2件目の依頼は429にならない", rv2b.status_code == 200, str(rv2b.status_code))
+
+# M-B: 全体上限の免除は「依頼のメール自身のアカウント」のログインに限る(荒らしが自分のログインで迂回できない)
+pr._HITS.clear(); pr._STORED.clear()
+pr._HITS["help-global-day"] = (86400.0, [_t.monotonic()] * 300)
+with db() as conn:
+    conn.execute("INSERT INTO login_log (username, ip, success) VALUES (?, ?, 1)", ("attacker@example.test", "203.0.113.210"))
+rmb = client("203.0.113.210").post("/api/auth/password-help", json={"email": "target-mb@example.test"})
+with db() as conn:
+    nmb = conn.execute("SELECT COUNT(*) FROM inquiries WHERE content LIKE '%target-mb@example.test%'").fetchone()[0]
+check("荒らし自身のアカウントでログイン成功したIPでも、他人のメールの依頼は全体の上限を迂回できない(429・保存0)", rmb.status_code == 429 and nmb == 0, f"{rmb.status_code} {nmb}")
+with db() as conn:
+    conn.execute("INSERT INTO login_log (username, ip, success) VALUES (?, ?, 1)", (VIC2.upper(), "203.0.113.211"))
+rmb2 = client("203.0.113.211").post("/api/auth/password-help", json={"email": VIC2.upper(), "contact": "x2@example.test"})
+check("被害者本人のアカウントでログイン成功したIPからの依頼は、上限に達していても通る(大文字小文字は区別しない)", rmb2.status_code == 200, f"{rmb2.status_code} {rmb2.text[:60]}")
+with db() as conn:
+    conn.execute("INSERT INTO login_log (username, ip, success) VALUES (?, ?, 0)", (VIC2, "203.0.113.212"))
+rmb3 = client("203.0.113.212").post("/api/auth/password-help", json={"email": VIC2})
+check("ログイン失敗の記録だけのIPは免除されない", rmb3.status_code == 429, str(rmb3.status_code))
+pr._HITS.pop("help-global-day", None)
+
+# M-C: 問い合わせ一覧は300件を超えても未対応を優先して返し、全件数を添える
+with db() as conn:
+    conn.execute("DELETE FROM inquiries")
+    for i in range(5):
+        conn.execute("INSERT INTO inquiries (user_id, kind, name, email, content, status) VALUES (?, '要望', ?, 'a@example.test', ?, '未対応')", (atk, f"old{i}", f"古い未対応{i}"))
+    for i in range(345):
+        conn.execute("INSERT INTO inquiries (user_id, kind, name, email, content, status) VALUES (?, '要望', ?, 'a@example.test', ?, '対応済み')", (atk, f"done{i}", f"対応済み{i}"))
+c_adm = client("198.51.100.250")
+login(c_adm, ADMIN, "AdminPass#1234")
+li = c_adm.get("/api/inquiries").json()
+rows_li = li.get("inquiries", [])
+names = {r["name"] for r in rows_li}
+check("一覧は上限(300件)で止まり、全件数(350)と上限を返す", len(rows_li) == 300 and li.get("total") == 350 and li.get("limit") == 300, f"{len(rows_li)} {li.get('total')} {li.get('limit')}")
+check("上限を超えても古い未対応の問い合わせが隠れない(未対応5件がすべて含まれる)", all(f"old{i}" in names for i in range(5)))
+check("表示は新しい順(idの降順)", [r["id"] for r in rows_li] == sorted((r["id"] for r in rows_li), reverse=True))
+with db() as conn:
+    conn.execute("DELETE FROM inquiries")
 pr._HITS.clear(); pr._STORED.clear()
 
 if FAILS:

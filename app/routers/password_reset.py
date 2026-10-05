@@ -130,13 +130,18 @@ def _remember_stored(key: str) -> None:
             _STORED.pop(k, None)
 
 
-def _ip_known(conn, ip: str) -> bool:
-    """このIPから直近30日にログイン成功があるか(忘れた本人は、いつもの回線から依頼することが多い)。"""
-    if not ip:
+def _ip_known(conn, ip: str, email: str) -> bool:
+    """このIPから直近30日に、**依頼で指定された登録メールのアカウント自身**のログイン成功があるか
+    (忘れた本人は、いつもの回線から依頼することが多い)。誰のログインでもよいことにすると、無料登録した荒らしが
+    各IPで1回ログインするだけで全体の上限を迂回できる(2026-10-04第3回照査M-B)。
+    ユーザー名かメールが依頼のメールと一致するアカウントに限る(メールは登録時に重複不可)。"""
+    if not ip or not email:
         return False
     return conn.execute(
-        "SELECT 1 FROM login_log WHERE ip = ? AND success = 1 AND created_at >= datetime('now', '-30 days') LIMIT 1",
-        (ip,)).fetchone() is not None
+        "SELECT 1 FROM login_log l JOIN users u ON lower(u.username) = lower(l.username) "
+        "WHERE l.ip = ? AND l.success = 1 AND l.created_at >= datetime('now', '-30 days') "
+        "AND (lower(u.username) = ? OR lower(u.email) = ?) LIMIT 1",
+        (ip, email, email)).fetchone() is not None
 
 
 @router.post("/password-help")
@@ -161,13 +166,13 @@ def password_help(payload: PasswordHelpIn, request: Request):
         return {"ok": True}
     with db() as conn:
         n24 = conn.execute(
-            "SELECT COUNT(*) FROM inquiries WHERE kind = 'パスワード再発行' "
+            "SELECT COUNT(*) FROM inquiries WHERE kind = 'パスワード再発行' AND user_id IS NULL "
             "AND created_at >= datetime('now', '-1 day') AND instr(content, ?) = 1",
             (password_reset.request_prefix(email),)).fetchone()[0]
         if n24 >= _HELP_PER_EMAIL_CAP:
             return errors.error_response("2002")          # 黙って捨てず、利用者に「しばらく待って」と伝える
         # プロセス全体の上限は、直近30日にログイン成功のあるIPには適用しない(荒らしに枯らされても本人は依頼できる・再照査N-3)
-        if not _ip_known(conn, ip) and _rate_limited("help-global-day", _HELP_DAILY_CAP, 86400.0):
+        if not _ip_known(conn, ip, email) and _rate_limited("help-global-day", _HELP_DAILY_CAP, 86400.0):
             log.warning("password-help: daily cap reached (not stored)")
             return errors.error_response("2002")
         multi = (f"同じ登録メールの依頼: 24時間で{n24 + 1}件目(返信先が違う依頼が混ざっていないか確認してください)\n"

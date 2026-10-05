@@ -21,7 +21,10 @@ KINDS = {
     "要望", "お問い合わせ", "ログインできない", "技術的トラブル",
     "課金トラブル", "機能に関する要望", "訳・音声の間違えに関する報告",
     "応援メッセージ", "感想", "その他",
-    "パスワード再発行",   # 2026-10-04: ログイン画面の「パスワードを忘れた方」から(app/routers/password_reset.py)
+    # 「パスワード再発行」はここに入れない(2026-10-04・第3回照査H-A): 依頼は`app/routers/password_reset.py`が
+    # サーバーで本文を作って直接保存する。汎用の送信口で受け付けると、登録した人が先頭行(見出し+登録メール)まで
+    # 偽造した依頼を何件でも作れてしまい、他人の依頼の上限を食う・相違の赤警告を迂回する、ことができる。
+    # 未知の種別は「その他」に落ちる。
 }
 
 
@@ -64,16 +67,20 @@ _LIST_LIMIT = 300
 
 @router.get("")
 def list_inquiries():
-    """管理者専用: 全件を新しい順で返す。"""
+    """管理者専用: 新しい順で返す(最大_LIST_LIMIT件)。上限を超えるときは**未対応を優先**して選ぶ
+    (荒らしの依頼で未対応の問い合わせが一覧から黙って消えないように・2026-10-04第3回照査M-C)。
+    表示順は常に新しい順。`total`=全件数、`limit`=上限(画面が「全N件のうち…」と案内できるように)。"""
     with db() as conn:
         _require_admin(conn)
         rows = conn.execute(
             "SELECT i.id, i.kind, i.name, i.email, i.content, i.status, "
             " i.created_at, u.username, u.display_name "
             "FROM inquiries i LEFT JOIN users u ON u.id = i.user_id "
-            "ORDER BY i.id DESC LIMIT ?", (_LIST_LIMIT,)
+            "WHERE i.id IN (SELECT id FROM inquiries ORDER BY (status = '対応済み'), id DESC LIMIT ?) "
+            "ORDER BY i.id DESC", (_LIST_LIMIT,)
         ).fetchall()
-    return {"inquiries": [dict(r) for r in rows]}
+        total = conn.execute("SELECT COUNT(*) FROM inquiries").fetchone()[0]
+    return {"inquiries": [dict(r) for r in rows], "total": total, "limit": _LIST_LIMIT}
 
 
 class StatusIn(BaseModel):

@@ -129,7 +129,8 @@ def _like_escape(s: str) -> str:
     return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
 
 
-# 依頼の本文の先頭2行はサーバーが作る(利用者の入力は入らない)。突き合わせはこの先頭の完全一致で行う
+# 依頼の本文の先頭2行はサーバーが作る(利用者の入力は入らない)。突き合わせはこの先頭の完全一致+`user_id IS NULL`
+# (依頼ページ経由の行だけ。汎用の問い合わせ`POST /api/inquiries`の行はuser_idが必ず入る・第3回照査H-A)で行う
 # (ニックネーム・補足に同じ文字列を書いても他人の依頼として数えられない・2026-10-04再照査N-1)。
 REQUEST_HEAD = "【パスワード再発行の依頼】\n"
 _REQ_EMAIL = "登録したメールアドレス: "
@@ -152,7 +153,7 @@ def _requests_for(conn: sqlite3.Connection, user: dict) -> list[dict]:
     for m in sorted(mails):
         rows = conn.execute(
             "SELECT id, created_at, name, email, content, status FROM inquiries "
-            "WHERE kind = 'パスワード再発行' AND created_at >= datetime('now', '-30 days') "
+            "WHERE kind = 'パスワード再発行' AND user_id IS NULL AND created_at >= datetime('now', '-30 days') "
             "AND instr(content, ?) = 1 ORDER BY id DESC LIMIT 5",
             (request_prefix(m),)).fetchall()
         for r in rows:
@@ -182,7 +183,7 @@ def reply_differs_count(conn: sqlite3.Connection, user: dict) -> int:
     total = 0
     for m in mails:
         total += conn.execute(
-            "SELECT COUNT(*) FROM inquiries WHERE kind = 'パスワード再発行' "
+            "SELECT COUNT(*) FROM inquiries WHERE kind = 'パスワード再発行' AND user_id IS NULL "
             "AND created_at >= datetime('now', '-30 days') AND instr(content, ?) = 1 "
             f"AND lower(trim(COALESCE(email, ''))) NOT IN ({ph})",
             (request_prefix(m), *mails)).fetchone()[0]

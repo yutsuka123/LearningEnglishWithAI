@@ -5287,6 +5287,9 @@ export async function admin(root) {
   const d = dRes.value;
   const inquiries = inquiriesRes.status === "fulfilled"
     ? (inquiriesRes.value.inquiries || []) : [];
+  // 上限を超える分は一覧に出ない(未対応を優先して選ぶ)。隠れている件数を案内する(2026-10-04第3回照査M-C)
+  const inquiriesTotal = inquiriesRes.status === "fulfilled"
+    ? (Number(inquiriesRes.value.total) || inquiries.length) : inquiries.length;
   const pendingOrders = ordersRes.status === "fulfilled"
     ? (ordersRes.value.pending || 0) : 0;
   const sec = d.security || {};
@@ -5917,7 +5920,9 @@ export async function admin(root) {
     <div class="admin-sec" data-sec="inquiries" style="display:none">
       <div class="card">
         <h2>📮 お問い合わせ・ご要望</h2>
-        <p class="muted">ユーザーからの送信を新しい順に表示（手動対応）。</p>
+        <p class="muted">ユーザーからの送信を新しい順に表示（手動対応）。${
+          inquiriesTotal > inquiries.length
+            ? `<br><b>全${inquiriesTotal}件のうち${inquiries.length}件を表示中</b>（未対応を優先して表示しています。残りは古い順に隠れています）。` : ""}</p>
         <table class="mt"><thead><tr>
           <th>日時(JST)</th><th>ログインID</th><th>種別</th><th>お名前</th>
           <th>メール</th><th>内容</th><th>状態</th><th>操作</th>
