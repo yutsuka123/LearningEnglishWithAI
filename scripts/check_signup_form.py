@@ -214,6 +214,61 @@ def check_layout(s: Session, label: str, is_mobile: bool, vw: int, vh0: int):
         s.page.evaluate("localStorage.removeItem('fontSize')")
 
 
+ORDER_JS = (
+    "() => { const q = (s) => document.querySelector(s);"
+    " const info = q('#signupInfo'), su = q('#su'), su2 = q('#su2'), bar = q('#submitBar'),"
+    " sv = q('details.survey'), tr = q('p.try-link');"
+    " const before = (a, b) => !!(a && b && (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING));"
+    " return {"
+    "  emailBeforeInfo: before(su, info), infoBeforeBar: before(info, bar),"
+    "  surveyBeforeInfo: before(sv, info), infoBeforeEmail: before(info, su),"
+    "  infoBeforeTry: before(info, tr), infoNextIsTry: !!info && info.nextElementSibling === tr,"
+    "  benefits: !!q('#signupInfo [data-i18n-html=\"signup.benefits\"]'),"
+    "  safeNote: !!q('#signupInfo [data-i18n-html=\"signup.safeNote\"]'),"
+    "  outsideInfo: document.querySelectorAll('#fSignup > [data-i18n-html=\"signup.benefits\"],"
+    " #fSignup > [data-i18n-html=\"signup.safeNote\"]').length }; }")
+
+
+def check_info_position(s: Session, label: str):
+    """ver1.5.13: 説明文2つ(#signupInfo)は入力欄の後ろ・送信ボタンの直前。最初の画面に入力欄が入る。"""
+    s.open_signup()
+    o = s.page.evaluate(ORDER_JS)
+    check(f"[{label}] 説明文(登録でできること・安心の案内)は入力欄より後ろ・アンケートの後・送信ボタンの前",
+          o["emailBeforeInfo"] and o["surveyBeforeInfo"] and o["infoBeforeBar"], str(o))
+    check(f"[{label}] 説明文2つの文言(辞書キー)は#signupInfoの中にあり、フォーム直下には残っていない",
+          o["benefits"] and o["safeNote"] and o["outsideInfo"] == 0, str(o))
+    vh = s.inner_h()
+    r1, r2 = s.rect("#su"), s.rect("#su2")
+    check(f"[{label}] 開いた直後の最初の画面にメール欄とメール確認欄が入る",
+          bool(r1 and r2 and r1["top"] >= 0 and r2["bottom"] <= vh),
+          f"su={r1} su2={r2} innerHeight={vh}")
+
+
+def check_info_restore(pw, base: str):
+    """SIGNUP_INFO_ON_TOP=true にすると、説明文が元の位置(見出しの直下・副導線の前)に戻る。"""
+    s = Session(pw, base, "chromium", dict(pw.devices["Pixel 5"]))
+    hit = {"n": 0}
+
+    def tweak(route):
+        resp = route.fetch()
+        body = resp.text()
+        if "const SIGNUP_INFO_ON_TOP = false;" in body:
+            hit["n"] += 1
+            body = body.replace("const SIGNUP_INFO_ON_TOP = false;", "const SIGNUP_INFO_ON_TOP = true;")
+        route.fulfill(response=resp, body=body)
+
+    try:
+        s.ctx.route("**/login", tweak)   # 後から登録した経路が先に呼ばれる
+        s.open_signup()
+        check("[restore] login.htmlに定数 SIGNUP_INFO_ON_TOP(既定false)がある", hit["n"] == 1, str(hit))
+        o = s.page.evaluate(ORDER_JS)
+        check("[restore] SIGNUP_INFO_ON_TOP=true で説明文が見出しの直下(副導線の前・入力欄の前)に戻る",
+              o["infoBeforeEmail"] and o["infoBeforeTry"] and o["infoNextIsTry"], str(o))
+        check("[restore] 戻した状態でも説明文2つの文言が揃っている", o["benefits"] and o["safeNote"], str(o))
+    finally:
+        s.close()
+
+
 def check_password_toggles(s: Session, label: str):
     s.open_signup()
     p = s.page
@@ -552,6 +607,7 @@ def main() -> int:
             try:
                 vp = kw.get("viewport") or {"width": 390, "height": 664}
                 check_layout(s, label, mobile, vp["width"], vp["height"])
+                check_info_position(s, label)
                 check_password_toggles(s, label)
                 check_live_messages(s, label)
                 check_validation_errors(s, label)
@@ -564,6 +620,8 @@ def main() -> int:
                       all("googletagmanager.com" in u and "/gtag/js" in u for u in ext), str(ext))
             finally:
                 s.close()
+        print("== restore(SIGNUP_INFO_ON_TOP)")
+        check_info_restore(pw, base)
         print("== login")
         check_login_flow(pw, base, last_email)
         print("== i18n")

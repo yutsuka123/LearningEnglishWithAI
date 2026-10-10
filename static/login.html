@@ -216,18 +216,12 @@
 
   <form class="card hidden" id="fSignup">
     <h1>🐱 <span data-i18n="signup.title">新規登録</span></h1>
-    <p class="free-note" style="margin-top:0;text-align:left" data-i18n-html="signup.benefits">
-      登録（無料・1分）でできるようになること<br/>
-      ・📈 覚えた単語がずっと積み上がります（習熟度を自動で記録）<br/>
-      ・📁 自分だけの単語帳・フレーズ帳が作れます<br/>
-      ・🔊 音声で聞ける範囲が広がります<br/>
-      ✅ カード不要・確認メールなし・そのまますぐ使えます</p>
-    <!-- 安心のための案内(2026-10-04オーナー指示): 登録に必要なもの・使い捨てメールOK・決済情報は取得/保存しない・まず無料で試す。
-         決済の記述はプライバシーポリシー§5と同じ範囲(カード番号等は取得しない)。パスワード再設定機能は現状無いため、その旨も添える。 -->
-    <p class="free-note" style="margin-top:8px;text-align:left" data-i18n-html="signup.safeNote">
-      ・必要なのは<b>メールアドレス・パスワード・ニックネーム</b>だけ（メールは使い捨て・サブのアドレスでもOK・確認メールは送りません。パスワードの再設定機能はまだないため、控えておいてください）<br/>
-      ・🔒 <b>カード番号などの決済情報は、当サイトでは取得・保存しません</b>（決済はPayPay・BASEの画面で行われます）<br/>
-      まずは気軽にお試しいただき、課金はそのあとでご検討ください。</p>
+    <!-- 登録でできること・安心のための案内の2つの説明文(#signupInfo)は、入力欄より後ろ
+         (送信ボタンの直前)に置いている(ver1.5.13・2026-10-10オーナー許可「並び変え」)。
+         以前は見出しの直下にあり、スマホの最初の画面が説明文で埋まって入力欄が見えず、
+         登録ボタンを押した人が数秒で戻っていたため(入力欄が最初の画面に入るようにした)。
+         **元の位置(見出しの直下)に戻すには、下のscriptの SIGNUP_INFO_ON_TOP を true にするだけ**。
+         文言・辞書キー・欄はそのまま。 -->
     <!-- 登録をためらう人向けの副導線(2026-10-04・ver1.5.11): 登録せずに、トップの「登録せず単語を
          見る」と同じ画面(未登録のまま単語一覧を開く。音声は無料範囲のものが聞ける・
          app/services/access_tiers.py)へ進める。同一タブ。 -->
@@ -352,6 +346,22 @@
       <label for="s_free" data-i18n="signup.freeTextLabel">ご自由にどうぞ（ご要望・ご意見など）</label>
       <textarea id="s_free" name="survey_free_text"></textarea>
     </details>
+
+    <div id="signupInfo" style="margin-top:16px">
+      <p class="free-note" style="margin-top:0;text-align:left" data-i18n-html="signup.benefits">
+        登録（無料・1分）でできるようになること<br/>
+        ・📈 覚えた単語がずっと積み上がります（習熟度を自動で記録）<br/>
+        ・📁 自分だけの単語帳・フレーズ帳が作れます<br/>
+        ・🔊 音声で聞ける範囲が広がります<br/>
+        ✅ カード不要・確認メールなし・そのまますぐ使えます</p>
+      <!-- 安心のための案内(2026-10-04オーナー指示): 登録に必要なもの・使い捨てメールOK・決済情報は取得/保存しない・まず無料で試す。
+           決済の記述はプライバシーポリシー§5と同じ範囲(カード番号等は取得しない)。パスワードを忘れた場合は
+           ログイン画面の「パスワードを忘れた方」から依頼(ver1.5.12で追加・文言は辞書signup.safeNoteと同じ)。 -->
+      <p class="free-note" style="margin-top:8px;text-align:left" data-i18n-html="signup.safeNote">
+        ・必要なのは<b>メールアドレス・パスワード・ニックネーム</b>だけ（メールは使い捨て・サブのアドレスでもOK・確認メールは送りません。パスワードを忘れた場合は、ログイン画面の「パスワードを忘れた方」から運営者へご依頼ください。本人確認のうえ再設定します）<br/>
+        ・🔒 <b>カード番号などの決済情報は、当サイトでは取得・保存しません</b>（決済はPayPay・BASEの画面で行われます）<br/>
+        まずは気軽にお試しいただき、課金はそのあとでご検討ください。</p>
+    </div>
 
     <!-- 送信ボタンは画面の下端に固定(sticky・2026-10-04)。エラー文(#se)はボタンの上。 -->
     <div class="submit-bar" id="submitBar">
@@ -532,6 +542,18 @@
       if (!row || !inp) return;
       row.style.display = SHOW_DISPLAY_KANA ? '' : 'none';
       inp.disabled = !SHOW_DISPLAY_KANA;
+    })();
+    // 登録フォームの2つの説明文(#signupInfo: 登録でできること・安心のための案内)の位置
+    // (ver1.5.13・2026-10-10オーナー許可「並び変え」)。false=入力欄の後ろ・送信ボタンの
+    // 直前(既定。スマホの最初の画面に入力欄が入る)。**true にするとver1.5.12までと同じ
+    // 見出しの直下(登録せずに試すリンクの前)に戻る**(文言・辞書キーはそのまま)。
+    const SIGNUP_INFO_ON_TOP = false;
+    (function () {
+      const info = document.getElementById('signupInfo');
+      const anchor = fSignup.querySelector('p.try-link');
+      if (!info || !anchor || !SIGNUP_INFO_ON_TOP) return;
+      info.style.marginTop = '0';
+      anchor.parentNode.insertBefore(info, anchor);
     })();
     // 離脱計測用: いま表示中のフォーム('signup'|'login')と、それを表示した時刻。
     let currentForm = 'login';
