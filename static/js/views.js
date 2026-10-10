@@ -6844,7 +6844,7 @@ export async function admin(root) {
           ${seo.seo_landed ?? 0}人のうちアプリ等へも遷移: ${seo.seo_then_app ?? 0}人</p>
         <p class="muted" style="font-size:12px">
           <b>試した後に登録フォームを開いた人</b>(登録せずに学習内容に触れた=単語/フレーズ等の学習画面を開いた・
-          音声を再生した人): ${tryToSignup.tried ?? 0}人のうち登録フォームを開いた人
+          音声を再生した人。ログイン済みの人の操作も含みます): ${tryToSignup.tried ?? 0}人のうち登録フォームを開いた人
           <b>${tryToSignup.tried_and_opened ?? 0}人</b>
           (登録フォームを開いた全員: ${tryToSignup.form_opened ?? 0}人。同じ人が両方に当てはまるかだけを数え、順序は見ていません)。
           ゲスト向け登録案内(学習画面で5回操作すると出るお知らせ)の表示:

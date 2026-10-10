@@ -101,33 +101,56 @@ let toastTimer = null;
 
 export function toast(msg, ms = 2200) {
   const t = document.getElementById("toast");
-  t.classList.remove("has-link");
   t.textContent = msg;
   t.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove("show"), ms);
 }
 
-// ゲストへの登録案内トースト(2026-10-10・ver1.5.14)。従来の案内は2.2秒で消える
-// 文字だけのトーストで、読む前に消えタップもできなかったため、①10秒表示 ②登録画面
-// (/login#signup)へのリンクつきにした。トースト本体はタップを素通しし(下のボタンを
-// 邪魔しない)、リンク部分だけがタップできる(.toast.has-link .toast-link)。
+// ゲストへの登録案内(2026-10-10・ver1.5.14)。従来はトースト(2.2秒で消える文字だけ)で、
+// 読む前に消えタップもできなかった。①10秒表示 ②登録画面へのリンクつき ③**トーストとは別の
+// 専用要素(#guestNudge)**にした(同じ#toastを共用すると、5回目の操作が「再生」や「採点」だと
+// 直後の失敗/案内トーストに上書きされて案内が消えるのに、表示の記録だけ残るため・独立照査
+// MEDIUM-1)。本体はタップを素通しし(下のボタンを邪魔しない)、リンク部分だけがタップできる。
 // 表示(boot/guest_nudge/shown)とリンクのタップ(click/guest_nudge/signup)を記録する
 // (管理画面の「試した後に登録フォームを開いた人」の手がかり)。
+let nudgeTimer = null;
+
 export function toastSignupNudge(msg, linkText, href, ms = 10000) {
-  const t = document.getElementById("toast");
-  t.textContent = "";
-  t.append(document.createTextNode(msg + " "));
+  let n = document.getElementById("guestNudge");
+  if (!n) {
+    n = document.createElement("div");
+    n.id = "guestNudge";
+    n.className = "guest-nudge";
+    n.setAttribute("role", "status");
+    n.setAttribute("aria-live", "polite");
+    document.body.append(n);
+  }
+  n.textContent = "";
+  n.append(document.createTextNode(msg + " "));
   const a = document.createElement("a");
-  a.className = "toast-link";
+  a.className = "guest-nudge-link";
   a.href = href;
   a.textContent = linkText;
   a.addEventListener("click", () => api.track("click", "guest_nudge", "signup"));
-  t.append(a);
-  t.classList.add("has-link", "show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("show"), ms);
+  n.append(a);
+  n.classList.add("show");
+  clearTimeout(nudgeTimer);
+  nudgeTimer = setTimeout(() => n.classList.remove("show"), ms);
   api.track("boot", "guest_nudge", "shown");
+}
+
+// サーバーの拒否本文(再生の401/402等)をトーストに出せる文にする。素のJSON
+// (`{"ok":false,"error":"要ログイン","code":"2003"}`)が生のまま出ていたため(ゲストの
+// クイズで再現・独立照査の別件)、JSONなら`error`の文だけ、読めなければ汎用の案内にする。
+function friendlyPlaybackMessage(msg) {
+  const s = String(msg || "").trim();
+  if (!s.startsWith("{")) return s;
+  try {
+    const j = JSON.parse(s);
+    if (j && typeof j.error === "string" && j.error.trim()) return j.error.trim();
+  } catch (_) { /* 下の汎用文へ */ }
+  return tx("voice.playbackUnavailable");
 }
 
 export function escapeHtml(s) {
@@ -859,8 +882,9 @@ function initClickTracking() {
       guestStudyClicks++;
       if (guestStudyClicks >= 5) {
         guestNudgeShown = true;
-        toastSignupNudge("💡 " + tx("topbar.guestNudge"),
-          tx("welcome.ctaSignup"), "/login#signup");
+        // 登録後は今いたタブへ戻る(?next=は固定の相対パスで、login.htmlのsafeNextUrlが検証する)。
+        toastSignupNudge("💡 " + tx("topbar.guestNudge"), tx("welcome.ctaSignup"),
+          "/login?next=" + encodeURIComponent("/?tab=" + currentTab) + "#signup");
       }
     }
   });
@@ -976,7 +1000,7 @@ async function boot() {
   initHintIcons();
   refreshMaintenanceBanner();
   speech.onUsage(refreshCost); // refresh cost after paid TTS calls
-  speech.onPaymentRequired((msg) => toast(msg)); // 無料範囲外の再生でチャージ不足のとき
+  speech.onPaymentRequired((msg) => toast(friendlyPlaybackMessage(msg))); // 無料範囲外の再生でチャージ不足のとき
   speech.onPlaybackError((msg) => toast(msg)); // 再生の失敗(通信・再生・AI音声不可)は無音+短い案内(ブラウザ音声へは逃げない・サーバーへもエラー記録)
   // Pre-load voices for TTS.
   speech.getEnglishVoices();

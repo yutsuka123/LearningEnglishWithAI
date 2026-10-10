@@ -660,10 +660,21 @@ table.rtable tbody tr.featured-row td:first-child {
   transition: opacity .25s, bottom .2s ease; z-index: 50;
 }
 .toast.show { opacity: 1; }
-/* ゲストへの登録案内トースト(ver1.5.14)。トースト本体はタップを素通しのまま(下のボタンを
-   邪魔しない)、リンク部分だけをタップできるようにする。非表示のとき(.showなし)は
-   opacity:0のまま見えない+タップも受けない(pointer-eventsを出すのは.show時だけ)。 */
-.toast.has-link.show .toast-link {
+/* ゲストへの登録案内(ver1.5.14・#guestNudge)。トースト(#toast)とは別の要素=後から出る短い
+   トーストに上書きされない。通常のトーストの少し上に出す(重ならない)・幅は内容に合わせ画面の
+   92%か420pxまで(細長い箱にならない)。本体はタップを素通し(下のボタンを邪魔しない)、リンク
+   部分だけタップできる。非表示のときはvisibility:hiddenで、リンクにフォーカスも当たらない。 */
+.guest-nudge {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(var(--toast-bottom, 22px) + 64px);
+  width: max-content; max-width: min(92vw, 420px); box-sizing: border-box;
+  background: var(--panel-2); border: 1px solid var(--line);
+  padding: 10px 16px; border-radius: 10px; z-index: 51;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .25s, visibility 0s linear .25s, bottom .2s ease;
+}
+.guest-nudge.show { opacity: 1; visibility: visible; transition-delay: 0s; }
+.guest-nudge .guest-nudge-link {
   pointer-events: auto; display: inline-block; padding: 6px 4px;
   color: var(--accent); font-weight: 700; text-decoration: underline;
 }

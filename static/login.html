@@ -413,9 +413,14 @@
         // (例: "/\evil.example" → "//evil.example" → 外部オリジンへの
         // オープンリダイレクト)、"/"始まりチェックだけでは不十分。
         // バックスラッシュを含む時点で拒否する(2026-09-08 Fable監査指摘)。
+        // ver1.5.14(独立照査HIGH-1): TAB/LF/CR等の制御文字も拒否する。URL解析は解析前にこれらを
+        // 取り除くため、"/<TAB>/evil.example/" は上のチェックを通っても "//evil.example/" として
+        // 外部へ飛ぶ。加えて、解決後のオリジンが自サイトであることを確かめ、解決後のパス
+        // (pathname+search+hash)だけを使う。
         if (next && next.startsWith('/') && !next.startsWith('//')
-            && !next.includes('\\')) {
-          return next;
+            && !/[\\\x00-\x1f\x7f]/.test(next)) {
+          const u = new URL(next, location.origin);
+          if (u.origin === location.origin) return u.pathname + u.search + u.hash;
         }
       } catch (_) { /* ignore */ }
       return fallback || '/';
@@ -640,10 +645,10 @@
     // /login#signup で新規登録フォームを直接開けるようにする(このアプリ
     // についてページ等から一発リンクしたいという要望・2026-08-19)。
     // 初回表示は既存のhistoryエントリを置き換えるだけ(pushしない)。
-    // ver1.5.14: 検索部分(?next=…)を落とさない。従来(ver1.5.9の戻る対応以降)は
-    // ここで'/login#signup'や'location.pathname'に置き換えていたため、PayPay決済から
-    // 戻ってきてセッションが無かった場合などの「ログイン/登録後の戻り先(next)」が、
-    // 送信する時点では既に失われ、いつもトップへ進んでいた。
+    // ver1.5.14: 検索部分(?next=…)を落とさない。従来はここ(と上の切り替え)で'/login#signup'や
+    // 'location.pathname'に置き換えていたため(2026-09-05から。safeNextUrlを入れた2026-09-07以降も
+    // 一度も届いていなかった)、PayPay決済から戻ってきてセッションが無かった場合などの
+    // 「ログイン/登録後の戻り先(next)」が、送信する時点では既に失われ、いつもトップへ進んでいた。
     if (location.hash === '#signup') {
       history.replaceState({ form: 'signup' }, '', '/login' + location.search + '#signup');
       showSignup(false);
