@@ -2109,6 +2109,25 @@ def admin_registration_funnel(days: int = 30):
             f"AND created_at >= datetime('now', ?){excl} ORDER BY id",
             (since,),
         ).fetchall()
+        # 「試した後に登録フォームを開いた人」(2026-10-10・Fable計画#4②)。登録せずに
+        # 学習内容に触れた(単語/フレーズ等の学習画面を開いた・音声を再生した)人のうち、
+        # 登録フォームを開いた人の数。登録数が少なすぎて転換率では判定できないため、
+        # 数が少なくても動く先行指標として見る。順序(試した→開いた)までは見ず、
+        # 同じ人が両方に当てはまるかだけを数える。ゲスト向けの登録案内トースト(5回操作後)
+        # の表示/リンクのタップも併せて返す。
+        tried_set = guest_set(
+            "usage_events",
+            "(kind='play' OR (kind='page' AND category IN ("
+            "'vocab','phrases','flashcard','flashphrase','quiz',"
+            "'word_detail','phrase_detail')))")
+        form_opened_set = {
+            g for g, labels in form_events.items() if "opened" in labels}
+        nudge_shown_set = guest_set(
+            "usage_events",
+            "kind='boot' AND category='guest_nudge' AND label='shown'")
+        nudge_clicked_set = guest_set(
+            "usage_events",
+            "kind='click' AND category='guest_nudge' AND label='signup'")
     # guest_sidごとに最後のイベントだけ残す(created_at昇順で走査して
     # 上書きしていくため、最後に残った値が最新になる)。
     last_event: dict[str, dict] = {}
@@ -2251,6 +2270,14 @@ def admin_registration_funnel(days: int = 30):
         "via_seo": {
             "seo_landed": len(seo_guests),
             "seo_then_app": len(seo_guests & app_guests),
+        },
+        # 試した後に登録フォームを開いた人(2026-10-10・Fable計画#4②)。
+        "try_to_signup": {
+            "tried": len(tried_set),
+            "form_opened": len(form_opened_set),
+            "tried_and_opened": len(tried_set & form_opened_set),
+            "nudge_shown": len(nudge_shown_set),
+            "nudge_clicked": len(nudge_clicked_set),
         },
     }
 

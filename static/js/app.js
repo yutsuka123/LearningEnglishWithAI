@@ -95,11 +95,39 @@ export function el(html) {
   return t.content.firstElementChild;
 }
 
+// 直前のトーストの消去タイマー。新しいトーストを出すときに必ず止める(止めないと、
+// 先に出した短いトーストのタイマーが、後から出した長いトーストを途中で消す)。
+let toastTimer = null;
+
 export function toast(msg, ms = 2200) {
   const t = document.getElementById("toast");
+  t.classList.remove("has-link");
   t.textContent = msg;
   t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), ms);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), ms);
+}
+
+// ゲストへの登録案内トースト(2026-10-10・ver1.5.14)。従来の案内は2.2秒で消える
+// 文字だけのトーストで、読む前に消えタップもできなかったため、①10秒表示 ②登録画面
+// (/login#signup)へのリンクつきにした。トースト本体はタップを素通しし(下のボタンを
+// 邪魔しない)、リンク部分だけがタップできる(.toast.has-link .toast-link)。
+// 表示(boot/guest_nudge/shown)とリンクのタップ(click/guest_nudge/signup)を記録する
+// (管理画面の「試した後に登録フォームを開いた人」の手がかり)。
+export function toastSignupNudge(msg, linkText, href, ms = 10000) {
+  const t = document.getElementById("toast");
+  t.textContent = "";
+  t.append(document.createTextNode(msg + " "));
+  const a = document.createElement("a");
+  a.className = "toast-link";
+  a.href = href;
+  a.textContent = linkText;
+  a.addEventListener("click", () => api.track("click", "guest_nudge", "signup"));
+  t.append(a);
+  t.classList.add("has-link", "show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), ms);
+  api.track("boot", "guest_nudge", "shown");
 }
 
 export function escapeHtml(s) {
@@ -831,7 +859,8 @@ function initClickTracking() {
       guestStudyClicks++;
       if (guestStudyClicks >= 5) {
         guestNudgeShown = true;
-        toast("💡 " + tx("topbar.guestNudge"));
+        toastSignupNudge("💡 " + tx("topbar.guestNudge"),
+          tx("welcome.ctaSignup"), "/login#signup");
       }
     }
   });

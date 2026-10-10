@@ -401,7 +401,12 @@
     // (mpid付き)へ戻し、支払い確認・pt反映を見せる。オープンリダイレクト
     // 対策として「/」始まり・「//」始まりでない同一オリジンの相対パスのみ
     // 許可し、それ以外(未指定・不正値)は従来通りトップへ。
-    function safeNextUrl() {
+    // fallback(ver1.5.14・2026-10-10): nextが無い/不正なときの行き先。ログインは従来どおり
+    // トップ('/')。**登録完了だけ**は単語一覧('/?tab=vocab'・未登録/未課金は「無料で聞ける順」が
+    // 既定)へ渡す=登録直後に空のダッシュボード(「—」と0の羅列)を見せず、すぐ触れる画面へ
+    // (唯一の実顧客は登録直後のダッシュボードから44秒で離れ、学習機能を使わなかった)。
+    // 固定の相対パスなのでオープンリダイレクトの心配は無い。
+    function safeNextUrl(fallback) {
       try {
         const next = new URLSearchParams(location.search).get('next');
         // "\"を含む値はブラウザのURL正規化で「/」扱いされ得るため
@@ -413,7 +418,7 @@
           return next;
         }
       } catch (_) { /* ignore */ }
-      return '/';
+      return fallback || '/';
     }
 
     // テーマ/文字サイズはメインアプリ(static/js/app.js)と同じ
@@ -582,7 +587,8 @@
       pSignup.forEach((el) => { el.disabled = false; });
       document.documentElement.classList.add('signup-open');
       document.title = i18nT('meta.signupTitle', '新規登録｜nyangailab');
-      if (push) history.pushState({ form: 'signup' }, '', '/login#signup');
+      // 検索部分(?next=…)は引き継ぐ(ver1.5.14: 落とすとログイン/登録後の戻り先が失われる)。
+      if (push) history.pushState({ form: 'signup' }, '', '/login' + location.search + '#signup');
       currentForm = 'signup';
       formShownAt = performance.now();
       track('click', 'signup_form', 'opened');
@@ -594,7 +600,7 @@
       pLogin.disabled = false;
       document.documentElement.classList.remove('signup-open');
       document.title = i18nT('meta.loginTitle', 'ログイン / 新規登録｜nyangailab');
-      if (push) history.pushState({ form: 'login' }, '', '/login');
+      if (push) history.pushState({ form: 'login' }, '', '/login' + location.search);
       currentForm = 'login';
       formShownAt = performance.now();
     }
@@ -634,11 +640,15 @@
     // /login#signup で新規登録フォームを直接開けるようにする(このアプリ
     // についてページ等から一発リンクしたいという要望・2026-08-19)。
     // 初回表示は既存のhistoryエントリを置き換えるだけ(pushしない)。
+    // ver1.5.14: 検索部分(?next=…)を落とさない。従来(ver1.5.9の戻る対応以降)は
+    // ここで'/login#signup'や'location.pathname'に置き換えていたため、PayPay決済から
+    // 戻ってきてセッションが無かった場合などの「ログイン/登録後の戻り先(next)」が、
+    // 送信する時点では既に失われ、いつもトップへ進んでいた。
     if (location.hash === '#signup') {
-      history.replaceState({ form: 'signup' }, '', '/login#signup');
+      history.replaceState({ form: 'signup' }, '', '/login' + location.search + '#signup');
       showSignup(false);
     } else {
-      history.replaceState({ form: 'login' }, '', location.pathname);
+      history.replaceState({ form: 'login' }, '', location.pathname + location.search);
       document.title = i18nT('meta.loginTitle', 'ログイン / 新規登録｜nyangailab');
     }
 
@@ -1118,7 +1128,7 @@
         const d = await r.json();
         if (d.ok) {
           reportSignupConversion();
-          location.href = safeNextUrl();
+          location.href = safeNextUrl('/?tab=vocab');
         }
         else {
           se.textContent = d.error || i18nT('signup.failed', '登録に失敗しました。');

@@ -464,12 +464,17 @@ def signup_and_login(s: Session, label: str, tag: str):
     p.fill("#sp2", PASSWORD)
     p.fill("#sdisplay", "claude-verify")
     p.click("#fSignup button[type=submit]")
-    p.wait_for_url(s.base + "/", timeout=20000)
-    p.wait_for_timeout(500)
+    # ver1.5.14: 登録完了後の着地は単語一覧(/?tab=vocab)。従来は空のダッシュボード(/)。
+    p.wait_for_url(s.base + "/?tab=vocab", timeout=20000)
+    p.wait_for_timeout(1500)
     me = p.evaluate("fetch('/api/auth/me').then(r => r.json())")
     user = (me or {}).get("user") or me
-    check(f"[{label}] 登録が完了し、ログイン状態でトップへ進む",
+    check(f"[{label}] 登録が完了し、ログイン状態で単語一覧(/?tab=vocab)へ進む",
           bool(user) and (user.get("email") == email or user.get("username") == email), str(me)[:200])
+    active = p.evaluate(
+        "() => { const b = document.querySelector('#nav .nav-item.active, .nav-item.active');"
+        " return b ? (b.dataset.tab || '') : ''; }")
+    check(f"[{label}] 登録直後に開いているのは単語一覧タブ(ダッシュボードではない)", active == "vocab", repr(active))
     lb = s.labels()
     need = ["opened", "focus:email", "input:email", "first_input", "submit_seen", "submit_attempt"]
     miss = [x for x in need if x not in lb]

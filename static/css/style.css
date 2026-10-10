@@ -206,10 +206,21 @@ body.is-guest #usageBalanceInfo {
   body.tab-welcome #langSwitch { max-width: 92px; padding: 4px 4px; }
   body.tab-welcome .topbar-right { flex-wrap: nowrap; gap: 6px; }
   body.tab-welcome .topbar-left { gap: 8px; min-width: 0; }
+  /* 「ログイン/登録」ボタンがスマホ幅で「ログイ/ン/登録」と単語の途中で2行に折れていた
+     (2026-10-10・iPhone 13で確認)。折り返さず1行のまま縮めない。代わりに左側(ブランド)
+     が縮む(.topbar-leftはmin-width:0)。 */
+  body.tab-welcome #loginBtn { white-space: nowrap; flex: none; }
   body.tab-welcome .nav-fontsize {
     display: block; margin: 0 4px 10px; color: var(--muted); font-size: 13px;
   }
   body.tab-welcome .nav-fontsize select { margin-left: 6px; }
+}
+/* 幅400px以下のようこそ画面では、トップバーのブランド名(📘 nyangailab)を隠す。ボタンを1行に
+   保つと(上の#loginBtn)ブランド名が言語選択と重なる(320〜375pxで15〜83px)ため。ブランド名は
+   すぐ下のヒーローにアイコン付きで出ている。**戻すにはこの1ブロックを消すだけ**。
+   詳細度を上げて、後ろにある`body.sidebar-collapsed .topbar-brand`等に負けないようにしている。 */
+@media (max-width: 400px) {
+  body.tab-welcome .topbar .topbar-brand { display: none; }
 }
 
 .toggle { color: var(--muted); font-size: 13px; }
@@ -644,6 +655,13 @@ table.rtable tbody tr.featured-row td:first-child {
   transition: opacity .25s, bottom .2s ease; z-index: 50;
 }
 .toast.show { opacity: 1; }
+/* ゲストへの登録案内トースト(ver1.5.14)。トースト本体はタップを素通しのまま(下のボタンを
+   邪魔しない)、リンク部分だけをタップできるようにする。非表示のとき(.showなし)は
+   opacity:0のまま見えない+タップも受けない(pointer-eventsを出すのは.show時だけ)。 */
+.toast.has-link.show .toast-link {
+  pointer-events: auto; display: inline-block; padding: 6px 4px;
+  color: var(--accent); font-weight: 700; text-decoration: underline;
+}
 
 /* ⓘ説明ヒント(2026-08-30)。選択肢/制限がある項目の意味を、クリック/タップ
    (PCはマウスホバーのtitleでも)で見られるようにする小さなポップオーバー。
