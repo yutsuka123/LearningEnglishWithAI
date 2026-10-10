@@ -52,31 +52,33 @@ HEADER_JS = """() => {
 
 
 def check_header(pw, base: str):
-    for br in ("webkit", "chromium"):
-        for w in (320, 340, 360, 375, 390, 400, 412, 430, 600, 760):
-            s = Session(pw, base, br, {"viewport": {"width": w, "height": 700}, "is_mobile": True,
-                                      "has_touch": True, "device_scale_factor": 2})
-            try:
-                s.page.goto(base + "/", wait_until="networkidle")
-                s.page.wait_for_timeout(700)
-                r = s.page.evaluate(HEADER_JS)
-                items = [(k, r[k]) for k in ("nav", "brand", "lang", "theme", "login")
-                         if r[k] and r[k]["d"] != "none"]
-                items.sort(key=lambda kv: kv[1]["l"])
-                overlaps = []
-                for (k1, a), (k2, c) in zip(items, items[1:]):
-                    if a["r"] > c["l"] + 1 and not (a["b"] <= c["t"] or c["b"] <= a["t"]):
-                        overlaps.append(f"{k1}/{k2}:{a['r'] - c['l']}px")
-                login = r["login"]
-                one_line = login["b"] - login["t"] < 36
-                check(f"[header {br}/{w}] 「ログイン/登録」が1行で、他の項目と重ならず、横にはみ出さない",
-                      one_line and not overlaps and r["sw"] <= r["iw"] and login["r"] <= r["iw"],
-                      f"loginH={login['b'] - login['t']} overlaps={overlaps} scroll={r['sw']}/{r['iw']}")
-                if w <= 400:
-                    check(f"[header {br}/{w}] 幅400px以下ではブランド名を隠している(重なり防止)",
-                          r["brand"] is None or r["brand"]["d"] == "none")
-            finally:
-                s.close()
+    # 4言語(ボタンの文言の長さが違う: 「ログイン/登録」「Log in / Sign up」「登录/注册」「登入/註冊」)。
+    for lang in ("ja", "en", "zh-CN", "zh-TW"):
+        for br in ("webkit", "chromium"):
+            for w in (320, 340, 360, 375, 390, 400, 412, 430, 440, 600, 760):
+                s = Session(pw, base, br, {"viewport": {"width": w, "height": 700}, "is_mobile": True,
+                                          "has_touch": True, "device_scale_factor": 2}, lang=lang)
+                try:
+                    s.page.goto(base + "/", wait_until="networkidle")
+                    s.page.wait_for_timeout(700)
+                    r = s.page.evaluate(HEADER_JS)
+                    items = [(k, r[k]) for k in ("nav", "brand", "lang", "theme", "login")
+                             if r[k] and r[k]["d"] != "none"]
+                    items.sort(key=lambda kv: kv[1]["l"])
+                    overlaps = []
+                    for (k1, a), (k2, c) in zip(items, items[1:]):
+                        if a["r"] > c["l"] + 1 and not (a["b"] <= c["t"] or c["b"] <= a["t"]):
+                            overlaps.append(f"{k1}/{k2}:{a['r'] - c['l']}px")
+                    login = r["login"]
+                    one_line = login["b"] - login["t"] < 36
+                    check(f"[header {lang}/{br}/{w}] 「ログイン/登録」が1行で、他の項目と重ならず、横にはみ出さない",
+                          one_line and not overlaps and r["sw"] <= r["iw"] and login["r"] <= r["iw"],
+                          f"loginH={login['b'] - login['t']} overlaps={overlaps} scroll={r['sw']}/{r['iw']}")
+                    if w <= 440:
+                        check(f"[header {lang}/{br}/{w}] 幅440px以下ではブランド名を隠している(重なり防止)",
+                              r["brand"] is None or r["brand"]["d"] == "none")
+                finally:
+                    s.close()
 
 
 def check_nudge(pw, base: str):

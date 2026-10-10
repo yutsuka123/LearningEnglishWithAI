@@ -215,12 +215,17 @@ body.is-guest #usageBalanceInfo {
   }
   body.tab-welcome .nav-fontsize select { margin-left: 6px; }
 }
-/* 幅400px以下のようこそ画面では、トップバーのブランド名(📘 nyangailab)を隠す。ボタンを1行に
-   保つと(上の#loginBtn)ブランド名が言語選択と重なる(320〜375pxで15〜83px)ため。ブランド名は
-   すぐ下のヒーローにアイコン付きで出ている。**戻すにはこの1ブロックを消すだけ**。
+/* 幅440px以下のようこそ画面では、トップバーのブランド名(📘 nyangailab)を隠す。ボタンを1行に
+   保つと(上の#loginBtn)ブランド名が言語選択と重なる(日本語で320〜375pxに15〜83px・英語の
+   「Log in / Sign up」はボタンが長く412pxでも17px)ため。ブランド名はすぐ下のヒーローに
+   アイコン付きで出ている。幅340px以下(旧型の小さい画面)では英語のボタンの長さでも
+   ハンバーガーと重ならないよう、言語選択を少し狭める。**戻すにはこの2ブロックを消すだけ**。
    詳細度を上げて、後ろにある`body.sidebar-collapsed .topbar-brand`等に負けないようにしている。 */
-@media (max-width: 400px) {
+@media (max-width: 440px) {
   body.tab-welcome .topbar .topbar-brand { display: none; }
+}
+@media (max-width: 340px) {
+  body.tab-welcome #langSwitch { max-width: 72px; }
 }
 
 .toggle { color: var(--muted); font-size: 13px; }
