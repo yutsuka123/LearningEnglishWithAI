@@ -1102,6 +1102,11 @@ def _migrate(conn: sqlite3.Connection) -> None:
         conn.execute("ALTER TABLE phrases ADD COLUMN level TEXT DEFAULT ''")
     if "detail" not in pcols:  # 詳細情報(JSON)のキャッシュ（フレーズ版）
         conn.execute("ALTER TABLE phrases ADD COLUMN detail TEXT DEFAULT ''")
+    # 公開の用語集・フレーズ集(seo_pages)が毎回 分野/シーン別の集計と絞り込みを
+    # 全件走査していた(2026-10-12独立照査MEDIUM-2: 語14,000件で1回30〜45ms)。
+    # 列の追加(上の移行)より後に作る=古いDBでも失敗しない。ファイルはcontent側。
+    conn.execute("CREATE INDEX IF NOT EXISTS content.idx_words_domain ON words(domain)")
+    conn.execute("CREATE INDEX IF NOT EXISTS content.idx_phrases_scene ON phrases(scene)")
     mcols = {r["name"] for r in conn.execute("PRAGMA table_info(materials)")}
     if "mastery" not in mcols:
         conn.execute(

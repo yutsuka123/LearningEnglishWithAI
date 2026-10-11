@@ -55,6 +55,11 @@ BANNED = ["禁止用語", "禁止用語（薬物）"]
 SCENE_SAME = BIG             # 単語分野と同名のシーン(相互リンクの検査)
 SCENE_B = "検査シーンB"
 BANNED_SCENE = "禁止用語（注意喚起）"
+TAGGED = "検査タグ分野"          # 主分類は公開だが一部の語に「禁止用語」の複数分野タグが付く
+VARIANTS = ["禁\u2f4c用語", "禁止 用語", "禁止\u200b用語"]   # 表記揺れ(康熙部首・空白・ゼロ幅)の禁止用語名
+NOEX = "検査欠落分野"        # 例文が無い分野(「例文つき」と書かない)
+NONUANCE = "検査ニュアンスなしシーン"
+GLOSS0 = "検査空括弧分野"
 NOIPA = "検査句動詞分野"        # 発音記号が無い分野(「発音記号つき」と書かない)
 SLASH = "検査/スラッシュ名"       # 名前に/を含む(本番に3シーン実在: 例 IT・ビルド/エラー)
 
@@ -99,6 +104,22 @@ def seed() -> None:
         for i in range(4):
             conn.execute("INSERT INTO words (english, japanese, part_of_speech, example, domain, detail) VALUES (?,?,?,?,?,?)",
                          (f"get over {i}", f"乗り越える{i}", "句動詞", f"I got over it {i}.", NOIPA, json.dumps({"example_ja": "x", "example_ja_src": f"I got over it {i}."}, ensure_ascii=False)))
+        for i, (eng, ja) in enumerate((("taggedok1", "通常1"), ("taggedok2", "通常2"), ("taggedbanned", "タグ付き禁止"))):
+            cur = conn.execute("INSERT INTO words (english, japanese, part_of_speech, example, domain, detail) VALUES (?,?,?,?,?,?)",
+                               (eng, ja, "名詞", f"Tagged example {i}.", TAGGED, "{}"))
+            if eng == "taggedbanned":
+                conn.execute("INSERT INTO word_domain_tags (word_id, domain) VALUES (?, ?)", (cur.lastrowid, "禁止用語"))
+        for v in VARIANTS:
+            conn.execute("INSERT INTO words (english, japanese, part_of_speech, example, domain, detail) VALUES (?,?,?,?,?,?)",
+                         ("variantword", "表記揺れ禁止語", "名詞", "Variant example.", v, "{}"))
+            conn.execute("INSERT INTO phrases (english, japanese, scene, detail) VALUES (?,?,?,?)", ("Variant phrase", "表記揺れ禁止フレーズ", v, "{}"))
+        for i in range(3):
+            conn.execute("INSERT INTO words (english, japanese, part_of_speech, example, domain, detail) VALUES (?,?,?,?,?,?)",
+                         (f"noexample{i}", f"欠落{i}", "名詞", "", NOEX, "{}"))
+            conn.execute("INSERT INTO phrases (english, japanese, scene, detail) VALUES (?,?,?,?)", (f"No nuance {i}.", f"ニュアンスなし{i}", NONUANCE, "{}"))
+        for i, ja in enumerate(("（注）空の訳が先頭に来る", "、読点から始まる", "（注）また別の")):
+            conn.execute("INSERT INTO words (english, japanese, part_of_speech, example, domain, detail) VALUES (?,?,?,?,?,?)",
+                         (f"glossword{i}", ja, "名詞", f"Gloss example {i}.", GLOSS0, "{}"))
         conn.execute("INSERT INTO phrases (english, japanese, scene, detail) VALUES (?,?,?,?)", ("Slash scene phrase.", "スラッシュ", SLASH, "{}"))
         conn.execute("INSERT INTO words (english, japanese, part_of_speech, example, domain, detail) VALUES (?,?,?,?,?,?)", ("slashword", "スラッシュ語", "名詞", "A slash example.", SLASH, "{}"))
         for i in range(2):
@@ -183,11 +204,15 @@ def main() -> int:
         check(f"禁止: /glossary/{dom} は404", c.get(f"/glossary/{quote(dom)}").status_code == 404)
     check("禁止: /phrasebook/禁止用語（注意喚起） は404", c.get(f"/phrasebook/{quote(BANNED_SCENE)}").status_code == 404)
     leaks = []
-    pages = ["/glossary", "/phrasebook", f"/glossary/{quote(BIG)}", f"/glossary/{quote(SMALL)}",
+    for v in VARIANTS:
+        check(f"禁止(表記揺れ {v!r}): 分野・シーンとも404", c.get(f"/glossary/{quote(v)}").status_code == 404 and c.get(f"/phrasebook/{quote(v)}").status_code == 404)
+    check("禁止(複数分野タグ): 主分類が公開でも、タグ付きの語は出さない・件数にも入れない",
+          "taggedbanned" not in c.get(f"/glossary/{quote(TAGGED)}").text and "全2語" in c.get(f"/glossary/{quote(TAGGED)}").text)
+    pages = [f"/glossary/{quote(TAGGED)}", "/glossary", "/phrasebook", f"/glossary/{quote(BIG)}", f"/glossary/{quote(SMALL)}",
              f"/phrasebook/{quote(SCENE_SAME)}", f"/phrasebook/{quote(SCENE_B)}", "/sitemap.xml", "/crossword"]
     for p in pages:
         t = c.get(p).text
-        for needle in ("禁止用語", quote("禁止用語"), "bannedword", "禁止の語", "Banned phrase", "禁止フレーズ"):
+        for needle in ("禁止用語", quote("禁止用語"), "bannedword", "禁止の語", "Banned phrase", "禁止フレーズ", "taggedbanned", "variantword", "表記揺れ禁止", quote(VARIANTS[0]), quote(VARIANTS[1]), quote(VARIANTS[2])):
             if needle in t:
                 leaks.append((p, needle))
     check("禁止: 一覧・分野・シーン・サイトマップのどこにも出ない", not leaks, str(leaks))
@@ -214,6 +239,27 @@ def main() -> int:
           and "発音記号" not in re.sub(r"<[^>]+>", "", hn.split('<h1>')[1].split('<ul')[0]), f"{tn} / {dn}")
     check("発音記号なし分野: 例文つきと書く", "例文つき" in tn)
     check("発音記号あり分野(大)は「発音記号・例文つき」", "発音記号・例文つき" in re.search(r"<title>(.*?)</title>", c.get(f"/glossary/{quote(BIG)}").text).group(1))
+
+    # ---- 事実と合う文言(例文/ニュアンスが無いときは書かない)・空の括弧 ----
+    hx = c.get(f"/glossary/{quote(NOEX)}").text
+    tx = re.search(r"<title>(.*?)</title>", hx).group(1)
+    dx = re.search(r'<meta name="description" content="(.*?)" />', hx).group(1)
+    check("例文なし分野: 「例文」と書かない(title/description/本文)", "例文" not in tx and "例文" not in dx and "例文つき" not in hx, f"{tx} / {dx}")
+    hs = c.get(f"/phrasebook/{quote(NONUANCE)}").text
+    ts = re.search(r"<title>(.*?)</title>", hs).group(1)
+    ds = re.search(r'<meta name="description" content="(.*?)" />', hs).group(1)
+    check("ニュアンスなしシーン: 「ニュアンスの説明つき」と書かない", "ニュアンスの説明つき" not in hs and "ニュアンスの説明つき" not in ds, f"{ts} / {ds}")
+    check("ニュアンスありシーン(大)は「ニュアンスの説明つき」と書く", "ニュアンスの説明つき" in c.get(f"/phrasebook/{quote(SCENE_SAME)}").text)
+    hg = c.get(f"/glossary/{quote(GLOSS0)}").text
+    dg = re.search(r'<meta name="description" content="(.*?)" />', hg).group(1)
+    check("訳が空になる語でも説明文に空の「（）」を出さない", "（）" not in dg, dg)
+    for u in (f"/glossary/{quote(BIG)}", "/glossary", "/phrasebook", f"/phrasebook/{quote(SCENE_B)}"):
+        rh = c.head(u)
+        check(f"HEAD {u[:24]}… は200で本文なし", rh.status_code == 200 and rh.text == "", str(rh.status_code))
+    with db() as conn:
+        idx_w = {r[1] for r in conn.execute("PRAGMA content.index_list(words)")}
+        idx_p = {r[1] for r in conn.execute("PRAGMA content.index_list(phrases)")}
+    check("索引(分野・シーン)が作られている", "idx_words_domain" in idx_w and "idx_phrases_scene" in idx_p, f"{idx_w} {idx_p}")
 
     # ---- 名前に/を含む分野/シーン・末尾スラッシュ ----
     check("スラッシュ入りシーン: 200", c.get(f"/phrasebook/{quote(SLASH)}").status_code == 200)
