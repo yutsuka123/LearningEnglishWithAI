@@ -15,16 +15,27 @@ SPA本体は語彙・例文がJS描画の内側にあり、JavaScriptを実行�
 from __future__ import annotations
 
 import html as html_lib
+import json
+import re
 from urllib.parse import quote
 
 from fastapi import APIRouter
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 
 from ..database import db
+from .vocabulary import _resolve_example_ja
 
 router = APIRouter()
 
 BASE_URL = "https://study.nyangailab.com"
+
+# 1ページに載せる件数の上限(2026-10-12: 40→150。検索の受け皿として中身を
+# 厚くする。全分野の約8割(234分野中の約200)はこの上限に収まる)。
+# 超える分はアプリ内で学べる旨を案内する。
+MAX_WORDS_PER_PAGE = 150
+MAX_PHRASES_PER_PAGE = 150
+# 「関連する分野/シーン」リンクの最大数(内部リンク・同じ大分類から)。
+MAX_RELATED_LINKS = 12
 
 # 公開してはいけないドメイン/シーン。「禁止用語」を含むものは全て除外
 # する（部分一致・2026-09-07修正: 完全一致だけだと`禁止用語（薬物）`の
@@ -195,7 +206,73 @@ _BOOT_BEACON = """<script>
 </script>"""
 
 
-def _page(title: str, description: str, canonical: str, body: str) -> str:
+def _json_ld(obj: dict) -> str:
+    """構造化データ(JSON-LD)の`<script>`。`</script>`で抜けられないよう
+    `<`・`>`・`&`をJSONのエスケープに置き換える(値は全てDB由来のため)。"""
+    raw = json.dumps(obj, ensure_ascii=False)
+    raw = raw.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+    return f'<script type="application/ld+json">{raw}</script>'
+
+
+def _breadcrumbs(items: list[tuple[str, str]]) -> tuple[str, str]:
+    """パンくず。[(表示名, 絶対URL), ...]（最後が現在のページ）→
+    (見えるナビのHTML, JSON-LDのscript)。"""
+    links = []
+    for i, (name, url) in enumerate(items):
+        n = html_lib.escape(name)
+        if i < len(items) - 1:
+            links.append(f'<a href="{html_lib.escape(url)}">{n}</a>')
+        else:
+            links.append(f'<span aria-current="page">{n}</span>')
+    nav = '<nav class="gl-bc" aria-label="パンくず">' + " › ".join(links) + "</nav>"
+    ld = _json_ld({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": i + 1, "name": name, "item": url}
+            for i, (name, url) in enumerate(items)
+        ],
+    })
+    return nav, ld
+
+
+def _gloss(text: str, limit: int = 14) -> str:
+    """説明文用に、日本語訳の最初の意味だけを短く取り出す。"""
+    first = re.split(r"[、，,;；(（]", text or "")[0].strip()
+    return first[:limit]
+
+
+def _title(core: str, extra: str, brand: str = "｜nyangailab", limit: int = 60) -> str:
+    """検索結果で切れにくいタイトル。長い分野名のときは補足(件数・特徴)を落とす。"""
+    full = f"{core}｜{extra}{brand}" if extra else f"{core}{brand}"
+    return full if len(full) <= limit else f"{core}{brand}"
+
+
+def _short(text: str, limit: int) -> str:
+    text = " ".join((text or "").split())
+    return text if len(text) <= limit else text[: limit - 1] + "…"
+
+
+def _load_detail(raw: str | None) -> dict:
+    try:
+        d = json.loads(raw) if raw else {}
+    except (ValueError, TypeError):
+        return {}
+    return d if isinstance(d, dict) else {}
+
+
+def _related_links(items: list[tuple[str, int]], base: str, unit: str) -> str:
+    """同じ大分類の他の分野/シーンへの内部リンク(件数の多い順)。"""
+    if not items:
+        return ""
+    links = "".join(
+        f'<a href="{base}/{quote(name)}">{html_lib.escape(name)}（{count}{unit}）</a>'
+        for name, count in items[:MAX_RELATED_LINKS])
+    return f'<p class="glossary-links gl-related">{links}</p>'
+
+
+def _page(title: str, description: str, canonical: str, body: str,
+          jsonld: str = "") -> str:
     return f"""<!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -218,7 +295,13 @@ def _page(title: str, description: str, canonical: str, body: str) -> str:
 .glossary-links a{{display:inline-block;margin:.2em .6em .2em 0}}
 .glossary-bridge{{margin-top:2em;padding:1em;border-radius:8px;
   background:rgba(128,128,128,.08)}}
+.gl-ipa{{opacity:.75;white-space:nowrap}}
+.gl-ex,.gl-note{{margin-top:.25em;font-size:.95em}}
+.gl-exja,.gl-note{{opacity:.8}}
+.gl-bc{{font-size:.9em;margin-bottom:.8em;opacity:.85}}
+.gl-related a{{margin:.25em .7em .25em 0}}
 </style>
+{jsonld}
 </head>
 <body>
 {_BOOT_BEACON}
@@ -249,12 +332,19 @@ def glossary_index():
     by_cat: dict[str, list[tuple[str, int]]] = {}
     for domain, count in domains.items():
         by_cat.setdefault(_categorize_word(domain), []).append((domain, count))
+    total_words = sum(domains.values())
+    nav, ld = _breadcrumbs([
+        ("nyangailab", f"{BASE_URL}/"),
+        ("英単語 分野別用語集", f"{BASE_URL}/glossary"),
+    ])
     parts = [
+        nav,
         "<h1>英単語 分野別用語集</h1>",
         "<p>nyangailabに収録されている英単語を分野別に一覧できます。"
         "日常会話やTOEIC対策の基礎語彙に加え、専門用語やアマチュア無線・"
         "アニメ・世界各国の料理などニッチな分野まで、"
-        f"{len(domains)}分野を掲載しています。</p>",
+        f"{len(domains)}分野・{total_words:,}語を掲載しています。"
+        "各語に日本語訳と例文があり、ほとんどの語に発音記号もついています。</p>",
     ]
     for cat in _WORD_CATEGORY_ORDER:
         items = sorted(by_cat.get(cat, []), key=lambda x: -x[1])
@@ -271,18 +361,26 @@ def glossary_index():
     parts.append(_BRIDGE_CTA)
     body = "\n".join(parts)
     return HTMLResponse(_page(
-        "英単語 分野別用語集｜nyangailab",
-        "専門用語からアマチュア無線・アニメ・世界各国の料理まで、"
-        "nyangailabの英単語を分野別に無料で閲覧できる用語集です。",
+        f"英単語 分野別用語集（{len(domains)}分野・{total_words:,}語）｜日本語訳・例文つき｜nyangailab",
+        "専門用語・アマチュア無線・航空・アニメ・世界各国の料理まで、"
+        f"{len(domains)}分野{total_words:,}語の英単語を、日本語訳・例文・"
+        "発音記号つきで無料で閲覧できる分野別用語集です。",
         f"{BASE_URL}/glossary",
         body,
+        ld,
     ))
 
 
-@router.get("/glossary/{domain}", response_class=HTMLResponse)
+@router.get("/glossary/{domain:path}", response_class=HTMLResponse)
 def glossary_domain(domain: str):
     with db() as conn:
         domains = public_word_domains(conn)
+        if not domain.strip("/"):
+            return RedirectResponse("/glossary", status_code=301)
+        if domain not in domains and domain.rstrip("/") in domains:
+            # 末尾スラッシュ付きは正規のURLへ(パス型にしたため従来の自動補正が効かない)
+            return RedirectResponse(
+                f"/glossary/{quote(domain.rstrip('/'))}", status_code=301)
         if domain not in domains:
             not_found_body = (
                 "<h1>ページが見つかりません</h1>"
@@ -293,43 +391,87 @@ def glossary_domain(domain: str):
                 status_code=404,
             )
         rows = conn.execute(
-            "SELECT english, japanese, part_of_speech, example FROM words "
-            "WHERE domain = ? ORDER BY id LIMIT 40",
-            (domain,),
+            "SELECT english, japanese, part_of_speech, example, detail "
+            "FROM words WHERE domain = ? ORDER BY id LIMIT ?",
+            (domain, MAX_WORDS_PER_PAGE),
         ).fetchall()
+        scenes = public_phrase_scenes(conn)
     total = domains[domain]
-    parts = [
-        f"<h1>「{html_lib.escape(domain)}」の英単語一覧</h1>",
-        f"<p>nyangailabに収録されている「{html_lib.escape(domain)}」分野の"
-        f"英単語は全{total}語です。代表的な単語を紹介します。</p>",
-        '<ul class="glossary-list">',
-    ]
+    esc = html_lib.escape
+    cat = _categorize_word(domain)
+    related = sorted(
+        ((d, c) for d, c in domains.items()
+         if d != domain and _categorize_word(d) == cat),
+        key=lambda x: -x[1])
+    nav, ld = _breadcrumbs([
+        ("nyangailab", f"{BASE_URL}/"),
+        ("英単語 分野別用語集", f"{BASE_URL}/glossary"),
+        (f"「{domain}」の英単語一覧", f"{BASE_URL}/glossary/{quote(domain)}"),
+    ])
+    shown = len(rows)
+    items: list[str] = []
+    samples = []
+    ipa_count = 0
     for r in rows:
+        detail = _resolve_example_ja(_load_detail(r["detail"]), r["example"] or "")
+        ipa = detail.get("pronunciation")
+        has_ipa_word = isinstance(ipa, str) and bool(ipa.strip())
+        ipa_count += has_ipa_word
+        ipa_html = (
+            f' <span class="gl-ipa">{esc(_short(ipa, 60))}</span>'
+            if has_ipa_word else "")
         pos_raw = r["part_of_speech"]
-        pos = f"（{html_lib.escape(pos_raw)}）" if pos_raw else ""
-        example = html_lib.escape(r["example"] or "")
-        parts.append(
+        pos = f"（{esc(pos_raw)}）" if pos_raw else ""
+        example = esc(r["example"] or "")
+        ex_ja = detail.get("example_ja")
+        ex_html = ""
+        if example:
+            ex_html = f'<div class="gl-ex">例文: {example}'
+            if isinstance(ex_ja, str) and ex_ja.strip():
+                ex_html += f'<br><span class="gl-exja">{esc(ex_ja.strip())}</span>'
+            ex_html += "</div>"
+        items.append(
             '<li class="glossary-item">'
-            f"<b>{html_lib.escape(r['japanese'])}</b>は英語で"
-            f"<b>{html_lib.escape(r['english'])}</b>{pos}。"
-            + (f" 例文: {example}" if example else "")
-            + "</li>"
+            f"<b>{esc(r['japanese'])}</b>は英語で"
+            f"<b>{esc(r['english'])}</b>{ipa_html}{pos}。"
+            f"{ex_html}</li>"
         )
-    parts.append("</ul>")
-    if total > len(rows):
+        if len(samples) < 3:
+            samples.append(f"{r['english']}（{_gloss(r['japanese'])}）")
+    # 発音記号が付いているのが半数未満の分野(句動詞など)では「発音記号つき」と書かない
+    feat = "発音記号・例文つき" if ipa_count * 2 >= shown else "例文つき"
+    parts = [
+        nav,
+        f"<h1>「{esc(domain)}」の英単語一覧</h1>",
+        f"<p>nyangailabに収録されている「{esc(domain)}」分野の"
+        f"英単語は全{total}語です。"
+        + (f"このページでは先頭の{shown}語を" if total > shown else "全語を")
+        + f"日本語訳・{feat}で紹介します。</p>",
+        '<ul class="glossary-list">',
+        *items,
+        "</ul>",
+    ]
+    if total > shown:
         parts.append(
-            f"<p>他{total - len(rows)}語はアプリ内でフラッシュカード・"
+            f"<p>他{total - shown}語はアプリ内でフラッシュカード・"
             "音声つきで学べます。</p>")
+    if domain in scenes:
+        parts.append(
+            f'<p>この分野の会話フレーズ: <a href="/phrasebook/{quote(domain)}">'
+            f"「{esc(domain)}」の英語フレーズ（{scenes[domain]}フレーズ）</a></p>")
+    if related:
+        parts.append(f"<h2 class=\"glossary-cat\">「{esc(cat)}」の他の分野</h2>")
+        parts.append(_related_links(related, "/glossary", "語"))
     parts.append(_BRIDGE_CTA)
     parts.append('<p><a href="/glossary">→ 用語集トップ（他の分野を見る）</a></p>')
     body = "\n".join(parts)
-    title = f"「{domain}」の英単語一覧｜nyangailab"
-    description = (
-        f"「{domain}」に関する英単語を意味・例文つきで紹介。"
-        "nyangailabで音声つきフラッシュカード学習もできます。"
-    )
+    title = _title(f"「{domain}」の英単語一覧（{total}語）", feat)
+    description = _short(
+        f"「{domain}」の英単語{total}語を日本語訳・{feat}で一覧。"
+        + ("、".join(samples) + "など。" if samples else "")
+        + "ログイン不要で無料で閲覧できます。", 150)
     return HTMLResponse(_page(
-        title, description, f"{BASE_URL}/glossary/{quote(domain)}", body))
+        title, description, f"{BASE_URL}/glossary/{quote(domain)}", body, ld))
 
 
 @router.get("/phrasebook", response_class=HTMLResponse)
@@ -340,10 +482,17 @@ def phrasebook_index():
     for scene, count in scenes.items():
         by_cat.setdefault(_categorize_phrase(scene), []).append((scene, count))
     order = _WORD_CATEGORY_ORDER[:-1] + ["会話の言い回し・マナー", "その他"]
+    total_phrases = sum(scenes.values())
+    nav, ld = _breadcrumbs([
+        ("nyangailab", f"{BASE_URL}/"),
+        ("英語フレーズ集（シーン別）", f"{BASE_URL}/phrasebook"),
+    ])
     parts = [
+        nav,
         "<h1>英語フレーズ集（シーン別）</h1>",
         "<p>nyangailabに収録されている英語フレーズをシーン別に一覧できます。"
-        f"{len(scenes)}シーンを掲載しています。</p>",
+        f"{len(scenes)}シーン・{total_phrases:,}フレーズを掲載し、"
+        "各フレーズに日本語訳とニュアンスの説明がついています。</p>",
     ]
     for cat in order:
         items = sorted(by_cat.get(cat, []), key=lambda x: -x[1])
@@ -360,18 +509,25 @@ def phrasebook_index():
     parts.append(_BRIDGE_CTA)
     body = "\n".join(parts)
     return HTMLResponse(_page(
-        "英語フレーズ集（シーン別）｜nyangailab",
-        "日常会話からアマチュア無線交信、妖怪・伝承の話まで、"
-        "nyangailabの英語フレーズをシーン別に無料で閲覧できます。",
+        f"英語フレーズ集（{len(scenes)}シーン・{total_phrases:,}フレーズ）｜日本語訳つき｜nyangailab",
+        "日常会話・ビジネス・旅行からアマチュア無線の交信、妖怪・伝承の話まで、"
+        f"{len(scenes)}シーン{total_phrases:,}フレーズの英語表現を日本語訳と"
+        "ニュアンスの説明つきで無料で閲覧できます。",
         f"{BASE_URL}/phrasebook",
         body,
+        ld,
     ))
 
 
-@router.get("/phrasebook/{scene}", response_class=HTMLResponse)
+@router.get("/phrasebook/{scene:path}", response_class=HTMLResponse)
 def phrasebook_scene(scene: str):
     with db() as conn:
         scenes = public_phrase_scenes(conn)
+        if not scene.strip("/"):
+            return RedirectResponse("/phrasebook", status_code=301)
+        if scene not in scenes and scene.rstrip("/") in scenes:
+            return RedirectResponse(
+                f"/phrasebook/{quote(scene.rstrip('/'))}", status_code=301)
         if scene not in scenes:
             not_found_body = (
                 "<h1>ページが見つかりません</h1>"
@@ -382,37 +538,67 @@ def phrasebook_scene(scene: str):
                 status_code=404,
             )
         rows = conn.execute(
-            "SELECT english, japanese FROM phrases "
-            "WHERE scene = ? ORDER BY id LIMIT 40",
-            (scene,),
+            "SELECT english, japanese, detail FROM phrases "
+            "WHERE scene = ? ORDER BY id LIMIT ?",
+            (scene, MAX_PHRASES_PER_PAGE),
         ).fetchall()
+        domains = public_word_domains(conn)
     total = scenes[scene]
+    esc = html_lib.escape
+    cat = _categorize_phrase(scene)
+    related = sorted(
+        ((sc, c) for sc, c in scenes.items()
+         if sc != scene and _categorize_phrase(sc) == cat),
+        key=lambda x: -x[1])
+    nav, ld = _breadcrumbs([
+        ("nyangailab", f"{BASE_URL}/"),
+        ("英語フレーズ集（シーン別）", f"{BASE_URL}/phrasebook"),
+        (f"「{scene}」の英語フレーズ", f"{BASE_URL}/phrasebook/{quote(scene)}"),
+    ])
+    shown = len(rows)
     parts = [
-        f"<h1>「{html_lib.escape(scene)}」の英語フレーズ</h1>",
-        f"<p>nyangailabに収録されている「{html_lib.escape(scene)}」の"
-        f"英語フレーズは全{total}件です。代表的なフレーズを紹介します。</p>",
+        nav,
+        f"<h1>「{esc(scene)}」の英語フレーズ</h1>",
+        f"<p>nyangailabに収録されている「{esc(scene)}」の"
+        f"英語フレーズは全{total}件です。"
+        + (f"このページでは先頭の{shown}件を" if total > shown else "全件を")
+        + "日本語訳とニュアンスの説明つきで紹介します。</p>",
         '<ul class="glossary-list">',
     ]
+    samples = []
     for r in rows:
+        nuance = _load_detail(r["detail"]).get("nuance")
+        note = (
+            f'<div class="gl-note">ニュアンス: {esc(_short(nuance, 200))}</div>'
+            if isinstance(nuance, str) and nuance.strip() else "")
         parts.append(
             '<li class="glossary-item">'
-            f"<b>{html_lib.escape(r['english'])}</b><br>"
-            f"{html_lib.escape(r['japanese'])}</li>"
+            f"<b>{esc(r['english'])}</b><br>"
+            f"{esc(r['japanese'])}{note}</li>"
         )
+        if len(samples) < 2:
+            samples.append(f"「{_short(r['english'], 40)}」")
     parts.append("</ul>")
-    if total > len(rows):
+    if total > shown:
         parts.append(
-            f"<p>他{total - len(rows)}件はアプリ内で音声つきで学べます。</p>")
+            f"<p>他{total - shown}件はアプリ内で音声つきで学べます。</p>")
+    if scene in domains:
+        parts.append(
+            f'<p>この分野の英単語: <a href="/glossary/{quote(scene)}">'
+            f"「{esc(scene)}」の英単語一覧（{domains[scene]}語）</a></p>")
+    if related:
+        parts.append(f"<h2 class=\"glossary-cat\">「{esc(cat)}」の他のシーン</h2>")
+        parts.append(_related_links(related, "/phrasebook", "フレーズ"))
     parts.append(_BRIDGE_CTA)
     parts.append('<p><a href="/phrasebook">→ フレーズ集トップ（他のシーンを見る）</a></p>')
     body = "\n".join(parts)
-    title = f"「{scene}」の英語フレーズ｜nyangailab"
-    description = (
-        f"「{scene}」で使う英語フレーズを日本語訳つきで紹介。"
-        "nyangailabで音声つき学習もできます。"
-    )
+    title = _title(f"「{scene}」の英語フレーズ・例文集（{total}件）", "日本語訳つき")
+    description = _short(
+        f"「{scene}」で使う英語フレーズ{total}件を日本語訳・ニュアンスの説明つきで紹介。"
+        + ("、".join(samples) + "など。" if samples else "")
+        + "ログイン不要で無料で閲覧できます。", 150)
     return HTMLResponse(_page(
-        title, description, f"{BASE_URL}/phrasebook/{quote(scene)}", body))
+        title, description, f"{BASE_URL}/phrasebook/{quote(scene)}", body, ld))
 
 
 @router.get("/crossword", response_class=HTMLResponse)
