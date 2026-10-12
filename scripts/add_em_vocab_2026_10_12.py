@@ -19,6 +19,7 @@
 使い方:
   python scripts/add_em_vocab_2026_10_12.py              # dry-run(何も書かない)
   python scripts/add_em_vocab_2026_10_12.py --apply
+  python scripts/add_em_vocab_2026_10_12.py --data /tmp/em/add_em_vocab_2026_10_12.json   # 本番: 稼働中コンテナへ一時コピーしたJSONを使う
   python scripts/add_em_vocab_2026_10_12.py --rollback <data/script_backups/..._inserted_ids.json>
 
 仕上げ(別手順): 音声は`scripts/build_audio.py`(新規分だけが未生成として拾われる)。
@@ -45,8 +46,8 @@ ALLOWED_DOMAINS = {"数学", "物理", "電気電子", "半導体"}
 ALLOWED_SCENES = {"物理学の英語", "電気・電子"}
 
 
-def _load() -> tuple[list[dict], list[dict]]:
-    data = json.loads(DATA_JSON.read_text(encoding="utf-8"))
+def _load(path: Path = DATA_JSON) -> tuple[list[dict], list[dict]]:
+    data = json.loads(path.read_text(encoding="utf-8"))
     words, phrases = data["words"], data["phrases"]
     for w in words:
         assert w["domain"] in ALLOWED_DOMAINS, w["english"]
@@ -75,6 +76,7 @@ def main() -> int:
     ap.add_argument("--apply", action="store_true", help="実際に書き込む(既定はdry-run)")
     ap.add_argument("--rollback", metavar="INSERTED_IDS_JSON")
     ap.add_argument("--backup-dir", default=None, help="既定 DATA_DIR/script_backups")
+    ap.add_argument("--data", default=str(DATA_JSON), help="本文JSON(既定=このスクリプトの隣)。本番で一時コピーを使うとき用")
     args = ap.parse_args()
     backup_dir = Path(args.backup_dir) if args.backup_dir else default_backup_dir()
 
@@ -91,7 +93,7 @@ def main() -> int:
             print_counts("after", key_counts(conn))
         return 0
 
-    words, phrases = _load()
+    words, phrases = _load(Path(args.data))
     with db() as conn:
         before = key_counts(conn)
         print_counts("before", before)

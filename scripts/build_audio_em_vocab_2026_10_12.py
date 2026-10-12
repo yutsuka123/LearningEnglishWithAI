@@ -35,10 +35,11 @@ def main() -> int:
     ap.add_argument("--voices", default="ash,nova")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--dry-run", action="store_true", help="対象の特定と未生成数の表示だけ(生成しない)")
+    ap.add_argument("--data", default=str(DATA_JSON), help="本文JSON(既定=このスクリプトの隣)。本番で一時コピーを使うとき用")
     args = ap.parse_args()
     voices = [v.strip() for v in args.voices.split(",") if v.strip()]
 
-    data = json.loads(DATA_JSON.read_text(encoding="utf-8"))
+    data = json.loads(Path(args.data).read_text(encoding="utf-8"))
     if not args.dry_run and not ai.is_enabled():
         print("OPENAI_API_KEY が未設定のため音声生成できません。")
         return 1
