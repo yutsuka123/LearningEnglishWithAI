@@ -227,7 +227,9 @@ def main() -> int:
 
     # ---- サイトマップ ----
     sm = c.get("/sitemap.xml").text
-    check("サイトマップ: lastmodは更新済み(2026-10-19)で古い9/7は残らない", "<lastmod>2026-10-19</lastmod>" in sm and "2026-09-07" not in sm)
+    from app.main import _SITEMAP_LASTMOD  # デプロイ日を前倒し/延期したときに検査も一緒に追従させる
+    check(f"サイトマップ: lastmodは更新済み({_SITEMAP_LASTMOD})で古い9/7は残らない",
+          f"<lastmod>{_SITEMAP_LASTMOD}</lastmod>" in sm and "2026-09-07" not in sm)
     check("サイトマップ: 検査分野が入る", quote(BIG) in sm and quote(SCENE_B) in sm)
     check("サイトマップ: 全URLが絶対URL", all(u.startswith("https://study.nyangailab.com/") for u in re.findall(r"<loc>(.*?)</loc>", sm)))
 
