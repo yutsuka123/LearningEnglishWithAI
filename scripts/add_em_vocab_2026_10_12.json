@@ -101,7 +101,7 @@
    "part_of_speech": "名詞",
    "domain": "数学",
    "level": "800",
-   "example": "The symbol nabla, written as an inverted triangle, represents the vector differential operator used in gradient, divergence and curl.",
+   "example": "The symbol nabla, written as an inverted triangle, represents the vector differential operator used to form the gradient, divergence and curl.",
    "detail": {
     "pronunciation": "/ˈnæblə/",
     "pos": "名詞",
@@ -112,15 +112,15 @@
     ],
     "examples": [
      {
-      "en": "Applying nabla to the potential V gives its gradient, and the electric field is E = −∇V.",
+      "en": "Applying nabla to the potential V gives its gradient, and the electric field is E equals minus nabla V.",
       "ja": "ナブラを電位 V に作用させると勾配が得られ、電場は E = −∇V となる。"
      },
      {
-      "en": "Maxwell's equations look much shorter when they are written with nabla, for example ∇·B = 0.",
+      "en": "Maxwell's equations look much shorter when they are written with nabla, for example nabla dot B equals zero.",
       "ja": "マクスウェル方程式は、ナブラを使うと ∇·B = 0 のようにずっと短く書ける。"
      }
     ],
-    "example_ja": "逆三角形で書かれるナブラの記号は、勾配・発散・回転で使われるベクトル微分演算子を表す。",
+    "example_ja": "逆三角形で書かれるナブラの記号は、勾配・発散・回転をつくるのに使われるベクトル微分演算子を表す。",
     "derivatives": [
      {
       "word": "gradient",
@@ -153,7 +153,7 @@
     "origin": "nabla は、古代ギリシャ語で竪琴(ハープ)に似た弦楽器を指す語に由来し、∇ の形がその楽器に似ていることから名づけられたとされる。",
     "trivia": "∇ は普通のベクトルではなく「右に書いた量に作用する演算子」なので、∇·F と F·∇ は別のものになる。英語では ∇ を del と呼ぶが、偏微分記号 ∂ を del と読む人もいるので、文脈で区別する。",
     "explanation": "ナブラ ∇ は、ベクトル微分演算子 ∇ = i ∂/∂x + j ∂/∂y + k ∂/∂z を表す逆三角形の記号である。スカラー場 f に作用させると勾配 ∇f、ベクトル場 F との内積で発散 ∇·F、外積で回転 ∇×F になる。マクスウェル方程式は ∇ を使うと、∇·E = ρ/ε₀ や ∇×E = −∂B/∂t のように簡潔に書ける。",
-    "example_ja_src": "The symbol nabla, written as an inverted triangle, represents the vector differential operator used in gradient, divergence and curl."
+    "example_ja_src": "The symbol nabla, written as an inverted triangle, represents the vector differential operator used to form the gradient, divergence and curl."
    }
   },
   {
@@ -173,7 +173,7 @@
     ],
     "examples": [
      {
-      "en": "The electric field is the negative gradient of the electric potential, E = −∇V.",
+      "en": "The electric field is the negative gradient of the electric potential, that is, E equals minus nabla V.",
       "ja": "電場は電位の勾配に負号を付けたもの、E = −∇V である。"
      },
      {
@@ -224,8 +224,8 @@
     ],
     "examples": [
      {
-      "en": "In Cartesian coordinates, the divergence of F is the sum of ∂Fx/∂x, ∂Fy/∂y and ∂Fz/∂z.",
-      "ja": "直交座標では、F の発散は ∂Fx/∂x、∂Fy/∂y、∂Fz/∂z の和である。"
+      "en": "In Cartesian coordinates, the divergence of F is the sum of the partial derivative of its x component with respect to x, its y component with respect to y, and its z component with respect to z.",
+      "ja": "直交座標では、F の発散は、x成分のxについての偏微分、y成分のyについての偏微分、z成分のzについての偏微分の和である(∂Fx/∂x + ∂Fy/∂y + ∂Fz/∂z)。"
      },
      {
       "en": "Because the divergence of the magnetic flux density is always zero, magnetic field lines never start or end at a point.",
@@ -491,7 +491,7 @@
    "level": "750",
    "example": "The work done by an electric field on a charge is the line integral of the force along its path.",
    "detail": {
-    "pronunciation": "/laɪn ˈɪntəɡrəl/",
+    "pronunciation": "/ˈlaɪn ˈɪntəɡrəl/",
     "pos": "名詞句",
     "meanings": [
      "線積分",
@@ -503,7 +503,7 @@
       "ja": "2点間の電位差は、電場の線積分に負号を付けたものである。"
      },
      {
-      "en": "Ampère's law says that the line integral of B around a closed loop equals μ₀ times the enclosed current.",
+      "en": "Ampere's law says that the line integral of B around a closed loop equals μ₀ times the enclosed current.",
       "ja": "アンペールの法則は、閉じた経路に沿った B の線積分が、経路が囲む電流の μ₀ 倍に等しいと述べる。"
      }
     ],
@@ -604,7 +604,7 @@
     ],
     "examples": [
      {
-      "en": "Applying the divergence theorem to the integral form of Gauss's law gives the differential form ∇·E = ρ/ε₀.",
+      "en": "Applying the divergence theorem to the integral form of Gauss's law gives the differential form: the divergence of E equals rho over epsilon zero.",
       "ja": "ガウスの法則の積分形に発散定理を適用すると、微分形 ∇·E = ρ/ε₀ が得られる。"
      },
      {
@@ -655,7 +655,7 @@
    "level": "850",
    "example": "Stokes' theorem relates the line integral of a field around a closed loop to the surface integral of its curl.",
    "detail": {
-    "pronunciation": "/stoʊks ˈθiːrəm/",
+    "pronunciation": "/ˈstoʊks ˈθiːrəm/",
     "pos": "名詞句",
     "meanings": [
      "ストークスの定理",
@@ -723,7 +723,7 @@
       "ja": "場は、あらゆる閉じた経路に沿った線積分が0であるとき、保存場である。"
      },
      {
-      "en": "A conservative field can be written as the gradient of a scalar potential, as in E = −∇V.",
+      "en": "A conservative field can be written as the gradient of a scalar potential, as in E equals minus nabla V.",
       "ja": "保存場は、E = −∇V のように、スカラーポテンシャルの勾配として書ける。"
      }
     ],
@@ -844,7 +844,7 @@
       "ja": "非圧縮性流体の速度場は発散なしの場である。どの点でも流体が湧き出したり消えたりしないからだ。"
      },
      {
-      "en": "In a suitable region such as all of space, a solenoidal field can be written as the curl of a vector potential, as in B = ∇×A.",
+      "en": "In a suitable region such as all of space, a solenoidal field can be written as the curl of a vector potential, as in B equals nabla cross A.",
       "ja": "空間全体のような適切な領域では、発散なしの場はベクトルポテンシャルの回転として書ける(B = ∇×A)。"
      }
     ],
@@ -896,7 +896,7 @@
     "examples": [
      {
       "en": "Cylindrical coordinates are convenient for a long straight wire, since the magnetic field depends only on the distance from the wire.",
-      "ja": "円柱座標は長い直線導線の問題に便利で、磁場は導線からの距離だけに依存する。"
+      "ja": "磁場が導線からの距離だけに依存するので、円柱座標は長い直線導線の問題に便利である。"
      },
      {
       "en": "In cylindrical coordinates (ρ, φ, z), the volume element is ρ dρ dφ dz.",
@@ -1065,7 +1065,7 @@
      },
      {
       "en": "The inverse-square dependence in Coulomb's law is the electric counterpart of Newton's law of gravitation.",
-      "ja": "クーロンの法則に現れる逆2乗の関係は、ニュートンの万有引力の法則に対応する、電気の側の対応物である。"
+      "ja": "クーロンの法則に現れる逆2乗の関係は、ニュートンの万有引力の法則の、電気における対応物である。"
      }
     ],
     "example_ja": "クーロンの法則は、2つの点電荷の間に働く力が両者の距離の2乗に反比例すると述べている。",
@@ -1812,8 +1812,8 @@
       "ja": "磁気に関するガウスの法則と整合して、棒磁石を半分に切っても孤立した磁極はできず、より小さな磁石が2つできる。"
      },
      {
-      "en": "In differential form, Gauss's law for magnetism is written as the divergence of B equals zero.",
-      "ja": "微分形では、磁気に関するガウスの法則は「B の発散がゼロ」と書かれる。"
+      "en": "In differential form, Gauss's law for magnetism says that the divergence of B is zero.",
+      "ja": "微分形では、磁気に関するガウスの法則は「B の発散はゼロ」と述べる。"
      }
     ],
     "example_ja": "磁気に関するガウスの法則は、任意の閉曲面を貫く正味の磁束が常にゼロであると述べている。",
@@ -2053,7 +2053,7 @@
      },
      {
       "en": "Inside glass, light travels more slowly than the speed of light in a vacuum, by a factor equal to the refractive index.",
-      "ja": "ガラスの中では、光は真空中の光速より、屈折率に等しい倍率だけ遅く進む。"
+      "ja": "ガラスの中では、光は真空中の光速を屈折率で割った速さで進む。"
      }
     ],
     "example_ja": "真空中の光速は、ちょうど毎秒299,792,458メートルである。",
@@ -2272,7 +2272,7 @@
    "part_of_speech": "名詞句",
    "domain": "物理",
    "level": "900",
-   "example": "In the far field, the radiation from an antenna looks like a plane wave whose amplitude decreases with distance as one over r.",
+   "example": "In the far field, the radiation from an antenna looks locally like a plane wave, and its amplitude decreases with distance as one over r.",
    "detail": {
     "pronunciation": "/ˈfɑːr ˈfiːld/",
     "pos": "名詞句",
@@ -2289,7 +2289,7 @@
       "ja": "遠方界では、放射された波の電力密度は距離の2乗に反比例して減少する。"
      }
     ],
-    "example_ja": "遠方界では、アンテナからの放射は、振幅が距離 r に反比例して小さくなる平面波のように見える。",
+    "example_ja": "遠方界では、アンテナからの放射は局所的には平面波のように見え、振幅は距離 r に反比例して小さくなる。",
     "derivatives": [
      {
       "word": "radiation pattern",
@@ -2326,7 +2326,7 @@
     "origin": "far(遠い)と field(場)をつなげた語。波源から遠く離れると放射成分だけが残り、局所的に平面波として伝わることから、波源のごく近くとは区別して呼ぶ。",
     "trivia": "アンテナの大きさ D が波長に比べて大きいときは、r > 2D²/λ が遠方界の目安として使われる。ただし、これは目安であって、はっきりした境界があるわけではない。",
     "explanation": "波源から十分離れた領域で、放射成分が支配的な場。電場と磁場は距離に反比例(1/r)して小さくなり、同位相で互いに直交し、進行方向とも直交する横波になって、局所的には平面波とみなせる。そのため電力密度は距離の2乗に反比例し、真空中では E/H が約377Ωになる。放射パターンの形は距離によらず、角度だけで決まる。",
-    "example_ja_src": "In the far field, the radiation from an antenna looks like a plane wave whose amplitude decreases with distance as one over r."
+    "example_ja_src": "In the far field, the radiation from an antenna looks locally like a plane wave, and its amplitude decreases with distance as one over r."
    }
   },
   {
@@ -2337,7 +2337,7 @@
    "level": "750",
    "example": "The electric field of a point charge falls off as the inverse square of the distance from it.",
    "detail": {
-    "pronunciation": "/pɔɪnt tʃɑːrdʒ/",
+    "pronunciation": "/ˈpɔɪnt ˈtʃɑːrdʒ/",
     "pos": "名詞句",
     "meanings": [
      "点電荷",
@@ -2387,7 +2387,7 @@
    "level": "800",
    "example": "A uniformly charged sphere has a constant charge density, so the total charge equals the density times the volume.",
    "detail": {
-    "pronunciation": "/tʃɑːrdʒ ˈdɛnsəti/",
+    "pronunciation": "/ˈtʃɑːrdʒ ˈdɛnsəti/",
     "pos": "名詞句",
     "meanings": [
      "電荷密度"
@@ -2541,7 +2541,7 @@
       "ja": "回路図の矢印は、たいてい電流の向きの約束(正電荷の流れる向き)を示している。"
      }
     ],
-    "example_ja": "電池の外側では、電流の向きの約束(正電荷の流れ)は正極から負極へ向かい、電子の流れとは逆向きである。",
+    "example_ja": "電池の外側では、約束上の電流(正電荷の流れ)は正極から負極へ流れ、電子の流れとは逆向きである。",
     "derivatives": [
      {
       "word": "conventional current direction",
@@ -2570,7 +2570,7 @@
    "level": "850",
    "example": "The drift velocity of electrons in a copper wire is often well below one millimeter per second.",
    "detail": {
-    "pronunciation": "/drɪft vəˈlɑːsəti/",
+    "pronunciation": "/ˈdrɪft vəˈlɑːsəti/",
     "pos": "名詞句",
     "meanings": [
      "ドリフト速度",
@@ -2615,7 +2615,7 @@
    "level": "700",
    "example": "A metal contains free electrons that are not bound to any single atom and can move through the whole crystal.",
    "detail": {
-    "pronunciation": "/friː ɪˈlɛktrɑːn/",
+    "pronunciation": "/ˈfriː ɪˈlɛktrɑːn/",
     "pos": "名詞句",
     "meanings": [
      "自由電子"
@@ -2773,7 +2773,7 @@
    "level": "800",
    "example": "The rate of Joule heating in a resistor equals the current squared times the resistance, so doubling the current quadruples the heat.",
    "detail": {
-    "pronunciation": "/dʒuːl ˈhiːtɪŋ/",
+    "pronunciation": "/ˈdʒuːl ˈhiːtɪŋ/",
     "pos": "名詞句",
     "meanings": [
      "ジュール熱",
@@ -2889,8 +2889,8 @@
       "ja": "誘電分極は物質の表面に束縛電荷を生じ、それが内部の電場を弱める。"
      },
      {
-      "en": "Water has a high relative permittivity because its molecules are permanent dipoles that line up with the field.",
-      "ja": "水の分子は永久双極子で電場に沿って並ぶため、水は高い比誘電率をもつ。"
+      "en": "The dielectric polarization of water is large because its molecules are permanent dipoles that line up with the field.",
+      "ja": "水の分子は永久双極子で電場に沿って並ぶため、水の誘電分極は大きい。"
      }
     ],
     "example_ja": "誘電分極は、加えた電場が原子内の電荷をずらしたり、分子のもつ永久双極子を電場の向きに向けたりするときに起こる。",
@@ -2976,7 +2976,7 @@
    "level": "850",
    "example": "Filling a capacitor with a dielectric of relative permittivity 4 makes its capacitance four times larger.",
    "detail": {
-    "pronunciation": "/ˈrɛlətɪv ˌpɜːrmɪˈtɪvəti/",
+    "pronunciation": "/ˈrɛlətɪv ˌpɜːrməˈtɪvəti/",
     "pos": "名詞句",
     "meanings": [
      "比誘電率"
@@ -3372,7 +3372,7 @@
    "level": "950",
    "example": "A negative stepped leader descends from the cloud in short, branching steps toward the ground.",
    "detail": {
-    "pronunciation": "/stɛpt ˈliːdər/",
+    "pronunciation": "/ˈstɛpt ˈliːdər/",
     "pos": "名詞句",
     "meanings": [
      "ステップトリーダー(雷の先駆放電)",
@@ -3762,8 +3762,8 @@
       "ja": "山の多い国では、電気のかなりの割合を水力発電でまかなえる。"
      },
      {
-      "en": "Water falls through a pipe, spins the turbine, and the attached generator produces electricity.",
-      "ja": "水は管を落下して水車を回し、つながれた発電機が電気をつくる。"
+      "en": "In a hydroelectric power station, water falls through a pipe and spins the turbine, and the attached generator produces electricity.",
+      "ja": "水力発電所では、水が管を落下して水車を回し、つながれた発電機が電気をつくる。"
      }
     ],
     "example_ja": "水力発電は、ダムにためた水の位置エネルギーを利用して水車を回す。",
@@ -3855,14 +3855,14 @@
    "level": "850",
    "example": "In a balanced star connection, the line voltage equals the square root of three times the phase voltage.",
    "detail": {
-    "pronunciation": "/feɪz ˈvoʊltɪdʒ/",
+    "pronunciation": "/ˈfeɪz ˈvoʊltɪdʒ/",
     "pos": "名詞句",
     "meanings": [
      "相電圧"
     ],
     "examples": [
      {
-      "en": "In a 200 V three-phase system, the phase voltage of a star-connected load is about 115 V.",
+      "en": "In a 200-volt three-phase system, the phase voltage of a star-connected load is about 115 volts.",
       "ja": "200 Vの三相回路では、スター結線の負荷の相電圧は約115 Vである。"
      },
      {
@@ -3909,7 +3909,7 @@
    "level": "850",
    "example": "The line voltage of a balanced three-phase system is measured between any two of the three conductors.",
    "detail": {
-    "pronunciation": "/laɪn ˈvoʊltɪdʒ/",
+    "pronunciation": "/ˈlaɪn ˈvoʊltɪdʒ/",
     "pos": "名詞句",
     "meanings": [
      "線間電圧",
@@ -3921,7 +3921,7 @@
       "ja": "平衡負荷では、全電力は線間電圧と線電流と力率の積の√3倍に等しい。"
      },
      {
-      "en": "The nameplate of this three-phase motor shows a rated line voltage of 400 V.",
+      "en": "The nameplate of this three-phase motor shows a rated line voltage of 400 volts.",
       "ja": "この三相電動機の銘板には、定格の線間電圧として400 Vが示されている。"
      }
     ],
@@ -3964,7 +3964,7 @@
    "level": "850",
    "example": "In a star connection, one end of each of the three windings is joined at a common neutral point.",
    "detail": {
-    "pronunciation": "/stɑːr kəˈnɛkʃən/",
+    "pronunciation": "/ˈstɑːr kəˈnɛkʃən/",
     "pos": "名詞句",
     "meanings": [
      "スター結線(Y結線)"
@@ -4093,7 +4093,7 @@
     ],
     "examples": [
      {
-      "en": "A household outlet rated at 100 V RMS in Japan has a peak voltage of about 141 V.",
+      "en": "A household outlet rated at 100 volts RMS in Japan has a peak voltage of about 141 volts.",
       "ja": "日本の家庭用コンセントの電圧は実効値で100 Vで、最大値はおよそ141 Vである。"
      },
      {
@@ -4147,7 +4147,7 @@
     ],
     "examples": [
      {
-      "en": "A load drawing 10 A at 100 V with a power factor of 0.8 consumes 800 W of active power.",
+      "en": "A load drawing 10 amperes at 100 volts with a power factor of 0.8 consumes 800 watts of active power.",
       "ja": "100 Vで10 Aを流し力率が0.8の負荷は、800 Wの有効電力を消費する。"
      },
      {
@@ -4264,7 +4264,7 @@
     ],
     "examples": [
      {
-      "en": "If the active power is 800 W and the reactive power is 600 var, the apparent power is 1,000 VA.",
+      "en": "If the active power is 800 watts and the reactive power is 600 vars, the apparent power is 1,000 volt-amperes.",
       "ja": "有効電力が800 Wで無効電力が600 varなら、皮相電力は1,000 VAである。"
      },
      {
@@ -4354,7 +4354,7 @@
    "part_of_speech": "名詞句",
    "domain": "電気電子",
    "level": "700",
-   "example": "In Japan, power distribution to neighborhoods is typically at 6.6 kV, which is stepped down to 100 V or 200 V near the home.",
+   "example": "In Japan, power distribution to neighborhoods is typically at 6.6 kilovolts, which is stepped down to 100 or 200 volts near the home.",
    "detail": {
     "pronunciation": "/ˈpaʊər ˌdɪstrɪˈbjuːʃən/",
     "pos": "名詞句",
@@ -4395,7 +4395,7 @@
     "origin": "distribute は、ラテン語の dis-(別々に)と tribuere(割り当てる)に由来し、「分けて配る」の意味である。",
     "trivia": "電柱の上にある円筒形の機器は、多くが配電用の柱上変圧器で、高圧の電気を家庭用の電圧に下げている。送電が「運ぶ」段階であるのに対し、配電は「届ける」段階にあたる。",
     "explanation": "変電所から需要家(家庭・工場・ビルなど)まで、電気を降圧して配ることである。日本の高圧配電は6.6 kV (6600 V)で、柱上変圧器で100 V/200 Vに下げて家庭に届けられる。一般家庭には単相3線式で供給されることが多い。ここでは電力会社の「配電」の意味で、サーバー室などの電源分配装置(PDU)の意味とは区別する。",
-    "example_ja_src": "In Japan, power distribution to neighborhoods is typically at 6.6 kV, which is stepped down to 100 V or 200 V near the home."
+    "example_ja_src": "In Japan, power distribution to neighborhoods is typically at 6.6 kilovolts, which is stepped down to 100 or 200 volts near the home."
    }
   },
   {
@@ -4906,7 +4906,7 @@
    "level": "800",
    "example": "An ideal transformer with a turns ratio of ten to one steps 2000 volts down to 200 volts.",
    "detail": {
-    "pronunciation": "/tɜːrnz ˈreɪʃioʊ/",
+    "pronunciation": "/ˈtɜːrnz ˈreɪʃioʊ/",
     "pos": "名詞句",
     "meanings": [
      "巻数比",
@@ -4961,7 +4961,7 @@
    "level": "850",
    "example": "Core loss consists of hysteresis loss and eddy current loss in the iron core, and it occurs even at no load.",
    "detail": {
-    "pronunciation": "/kɔːr lɔːs/",
+    "pronunciation": "/ˈkɔːr ˈlɔːs/",
     "pos": "名詞句",
     "meanings": [
      "鉄損",
@@ -5379,8 +5379,8 @@
       "ja": "工場で使われる電動機の多くは三相誘導電動機である。"
      },
      {
-      "en": "If you turn the shaft of a permanent-magnet motor by hand, it generates a small voltage, just like a generator.",
-      "ja": "永久磁石式のモーターの軸を手で回すと、発電機と同じように小さな電圧が発生する。"
+      "en": "If you turn the shaft of a permanent-magnet electric motor by hand, it generates a small voltage, just like a generator.",
+      "ja": "永久磁石式の電気モーターの軸を手で回すと、発電機と同じように小さな電圧が発生する。"
      }
     ],
     "example_ja": "電動機は電気エネルギーを機械的なエネルギー、通常は回転運動に変える。",
@@ -7641,7 +7641,7 @@
    "level": "800",
    "example": "In an n-type semiconductor the majority charge carriers are electrons, while in a p-type they are holes.",
    "detail": {
-    "pronunciation": "/tʃɑːrdʒ ˈkæriər/",
+    "pronunciation": "/ˈtʃɑːrdʒ ˈkæriər/",
     "pos": "名詞句",
     "meanings": [
      "キャリア(電荷担体)",
@@ -7970,7 +7970,7 @@
   },
   {
    "english": "The drift velocity is tiny, yet the signal travels at a large fraction of the speed of light.",
-   "japanese": "ドリフト速度はごく小さいが、信号は光速に近い速さで伝わる。",
+   "japanese": "ドリフト速度はごく小さいが、信号は光速のかなりの割合の速さで伝わる。",
    "scene": "物理学の英語",
    "level": "800",
    "detail": {
@@ -8430,7 +8430,7 @@
   },
   {
    "english": "Don't close the breaker until the synchroscope shows the synchronous generator is in step with the grid.",
-   "japanese": "同期検定器が発電機と系統の同期を示すまで、遮断器を投入してはいけない。",
+   "japanese": "同期検定器が同期発電機と系統の同期を示すまで、遮断器を投入してはいけない。",
    "scene": "電気・電子",
    "level": "800",
    "detail": {
