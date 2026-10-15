@@ -3343,10 +3343,13 @@ export async function quiz(root) {
       </div>
     </div>`;
 
+  // ゲスト(未ログイン)は、無料で🔊再生できる範囲(単語1,000・フレーズ750)からだけ出題する。
+  // 範囲外だと出題の大半(約94%)で音声が鳴らず、クイズが無音の体験になるため(2026-10-15・ver1.5.15)。
+  const guestFree = state.isGuest ? "&free_range_only=true" : "";
   root.querySelector("#quizWord").addEventListener("click", async () => {
     const tb = testBanned() ? "&include_banned=true" : "";
     const mb = hideMasteredDefault ? "&mastered=hide" : "";
-    const items = await api.get("/api/words/quiz?limit=10" + tb + mb);
+    const items = await api.get("/api/words/quiz?limit=10" + tb + mb + guestFree);
     root.innerHTML = `<h1>${tx("quiz.wordQuizHeading")}</h1>`;
     const holder = el(`<div></div>`); root.appendChild(holder);
     quizRunner({ container: holder, items, kind: "word", appState: state,
@@ -3358,7 +3361,7 @@ export async function quiz(root) {
   root.querySelector("#quizPhrase").addEventListener("click", async () => {
     const tb = testBanned() ? "&include_banned=true" : "";
     const mb = hideMasteredDefault ? "&mastered=hide" : "";
-    const items = await api.get("/api/phrases/quiz?limit=10" + tb + mb);
+    const items = await api.get("/api/phrases/quiz?limit=10" + tb + mb + guestFree);
     root.innerHTML = `<h1>${tx("quiz.phraseQuizHeading")}</h1>`;
     const holder = el(`<div></div>`); root.appendChild(holder);
     quizRunner({ container: holder, items, kind: "phrase", appState: state,

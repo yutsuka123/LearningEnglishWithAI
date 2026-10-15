@@ -77,7 +77,26 @@ export function quizRunner(config) {
   let idx = 0;
   let correctCount = 0;
   let skippedCount = 0; // ノーカウント（集計から除外）
-  const voiceName = speech.pickRoundVoice(); // one voice for this round
+  // ゲスト(未ログイン)は任意テキストの音声合成(/api/learn/tts・要ログイン)を使えない。一覧・フラッシュカードと
+  // 同じ「項目ID指定」(/api/learn/tts/item・無料範囲なら誰でも可)で読み上げる(2026-10-15・ver1.5.15。
+  // 10/14に検索広告から来た訪問者がクイズ開始の1秒後に再生を拒否(401)され、3秒でクイズを離れた)。
+  // 声は事前に作成済みのash/novaから1ラウンドで1つ。ログイン済みは従来どおり(下のhear())。
+  const guestItemAudio = !!appState.isGuest && speech.isNatural();
+  const voiceName = guestItemAudio
+    ? (Math.random() < 0.5 ? "ash" : "nova")
+    : speech.pickRoundVoice(); // one voice for this round
+  // part: 'word'|'example'。ゲストでアイテム自体の英文を読むときだけ項目ID経由にする。
+  function hear(item, text, part) {
+    if (!text) return;
+    const canByItem = guestItemAudio && item && item.id
+      && !(kind === "phrase" && part === "example");
+    if (canByItem) {
+      speech.sayItem(kind === "phrase" ? "phrase" : "word", item.id,
+        kind === "phrase" ? "phrase" : (part || "word"), voiceName, text);
+      return;
+    }
+    speech.speak(text);
+  }
 
   function finish() {
     container.innerHTML = "";
@@ -123,9 +142,9 @@ export function quizRunner(config) {
     container.appendChild(card);
 
     // Speak the English prompt for en2ja immediately.
-    if (isEn2ja) speech.speak(item.english);
+    if (isEn2ja) hear(item, item.english);
     card.querySelector("#hear").addEventListener("click", () =>
-      speech.speak(item.english));
+      hear(item, item.english));
 
     renderAnswerInput(card.querySelector("#answerArea"), item, direction,
       answerLang);
@@ -188,7 +207,7 @@ export function quizRunner(config) {
       <div id="exArea" class="mt"></div>
       <p>${auto ? "✅ " + tx("quiz.autoJudgeCorrect") : "❌ " + tx("quiz.autoJudgeWrong")}${tx("quiz.autoJudgeNote")}</p>
       <div class="row center" style="justify-content:center"></div>`;
-    speech.speak(item.english);
+    hear(item, item.english);
     renderExample(area.querySelector("#exArea"), item);
     const row = area.querySelector(".row");
     const ok = el(`<button class="btn good">⭕ ${tx("quiz.correctBtn")}</button>`);
@@ -218,7 +237,9 @@ export function quizRunner(config) {
 
     const speakable = () => line.dataset.en || phrase;
     say.addEventListener("click", () => {
-      const t = speakable(); if (t) speech.speak(t);
+      const t = speakable(); if (!t) return;
+      // line.dataset.en=「例文を作る」で生成した文(項目の音声ではない)。項目自身の例文だけ項目ID経由。
+      if (line.dataset.en) speech.speak(t); else hear(item, t, "example");
     });
     jp.addEventListener("click", async () => {
       const t = speakable(); if (!t) return;
