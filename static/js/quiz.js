@@ -86,6 +86,8 @@ export function quizRunner(config) {
     ? (Math.random() < 0.5 ? "ash" : "nova")
     : speech.pickRoundVoice(); // one voice for this round
   // part: 'word'|'example'。ゲストでアイテム自体の英文を読むときだけ項目ID経由にする。
+  // フレーズに項目の例文は無い(例文ボタンは「例文を作る」で生成した文=dataset.enのときだけ出る→従来の経路)ので、
+  // phrase+exampleは項目ID経由にしない(防御)。
   function hear(item, text, part) {
     if (!text) return;
     const canByItem = guestItemAudio && item && item.id

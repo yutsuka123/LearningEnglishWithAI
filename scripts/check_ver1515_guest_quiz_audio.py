@@ -10,6 +10,8 @@
      「要ログイン」の拒否トーストは出ない
   B. 範囲を絞らないと範囲外が混ざる(絞る意味がある)ことの確認(ゲストの`/api/words/quiz`を範囲指定なしで20回)
   C. 任意テキストの合成(`POST /api/learn/tts`)はゲストには従来どおり401のまま(門番は変えていない)
+  B2. ゲストの出題は毎回同じ10件に固定されない(進捗が保存されないゲストは全語が同点=表の先頭N件になっていた。同点をランダムに)。
+     ログイン済みの出題は従来どおり(同点は表の順=2回続けて同じ並び)
   D. ログイン済みユーザーのクイズは従来どおり(`POST /api/learn/tts`を呼ぶ・`/tts/item`は呼ばない・出題の範囲は絞らない)
 
 使い方(.envの無いツリーで隔離サーバー。単語を1,300・フレーズを900まで増やし、全ての音声を偽の無音MP3で用意する):
@@ -18,7 +20,7 @@
   ALLOW_FRESH_DB=1 MULTIUSER=1 SESSION_SECRET=preview OPENAI_API_KEY=preview-not-used \\
     DATA_DIR=$S .venv/bin/python -m uvicorn app.main:app --port 8795
   .venv/bin/python scripts/check_ver1515_guest_quiz_audio.py --prepare --data-dir $S   # 起動して空DBができてから(再実行しても安全)
-  .venv/bin/python scripts/check_ver1515_guest_quiz_audio.py --base http://127.0.0.1:8795
+  .venv/bin/python scripts/check_ver1515_guest_quiz_audio.py --base http://127.0.0.1:8795 --data-dir $S
 Googleタグが入ったページを動かすため、check_signup_form.pyのSessionと同じ遮断をかける。テスト用の登録メールは
 `claude-verify-`接頭辞(@example.test)。
 """
@@ -101,6 +103,35 @@ def prepare(data_dir: str) -> None:
     print(f"prepared: words={1300} phrases={900} audio_files={n}")
 
 
+LEVEL_ORDER = ["300-", "300", "350", "400", "450", "500", "550", "600", "650",
+               "700", "750", "800", "850", "900", "950", "990", "990+"]
+
+
+def guest_range(data_dir: str, table: str, limit: int) -> set[int]:
+    """ゲストの無料範囲を、サーバーのコードを使わずにDBのlevelから独立に計算する(レベル昇順→id昇順の先頭limit件)。"""
+    con = sqlite3.connect(f"file:{data_dir}/content.db?mode=ro", uri=True)
+    rank = {lv: i for i, lv in enumerate(LEVEL_ORDER)}
+    rows = con.execute(f"SELECT id, level FROM {table}").fetchall()
+    con.close()
+    rows.sort(key=lambda r: (rank.get(r[1] or "", len(LEVEL_ORDER) + 1), r[0]))
+    return {r[0] for r in rows[:limit]}
+
+
+TOAST_RECORDER = """
+(function () {
+  window.__toasts = [];
+  function start() {
+    var t = document.getElementById('toast');
+    if (!t) return false;
+    var rec = function () { if (t.classList.contains('show') && t.textContent) window.__toasts.push(t.textContent); };
+    new MutationObserver(rec).observe(t, {attributes: true, childList: true, characterData: true, subtree: true});
+    return true;
+  }
+  if (!start()) document.addEventListener('DOMContentLoaded', start);
+})();
+"""
+
+
 class Spy:
     """ページの通信を記録する(クイズ出題API・音声API)。"""
 
@@ -143,33 +174,38 @@ def toast_text(p) -> str:
 
 
 def run_quiz(s: Session, spy: Spy, start_label: str, kind: str):
-    """クイズを1問進める: 開始→「英語を聞く」→「わからない」(答え表示で自動再生)→「例文を聞く」。"""
+    """クイズを2問進める: 開始→「英語を聞く」→「わからない」(答え表示で自動再生)→「例文を聞く」→⭕→2問目→「英語を聞く」。
+    表示されたトーストは全てMutationObserverで記録する(サンプリングではない)。"""
     p = s.page
+    s.ctx.add_init_script(TOAST_RECORDER)
     p.goto(s.base + "/?tab=quiz", wait_until="networkidle")
     p.wait_for_timeout(1000)
     spy.reset()
+    p.evaluate("window.__toasts = []")
     p.click(f"text={start_label}")
     p.wait_for_selector("#hear", timeout=10000)
     p.wait_for_timeout(1200)
-    toasts = [toast_text(p)]
     p.click("#hear")
     p.wait_for_timeout(800)
-    toasts.append(toast_text(p))
     p.click("button:has-text('わからない')")
     p.wait_for_selector("#exArea", timeout=10000)
     p.wait_for_timeout(1000)
-    toasts.append(toast_text(p))
     ex = p.query_selector("button:has-text('例文を聞く')")
     if ex:
         ex.click()
         p.wait_for_timeout(800)
-        toasts.append(toast_text(p))
-    return [t for t in toasts if t]
+    p.click("button:has-text('⭕')")          # 次の問題へ(2問目)
+    p.wait_for_selector("#hear", timeout=10000)
+    p.wait_for_timeout(1200)
+    p.click("#hear")
+    p.wait_for_timeout(800)
+    return list(p.evaluate("window.__toasts") or [])
 
 
-def check_guest(pw, base: str):
+def check_guest(pw, base: str, data_dir: str):
     for kind, label, limit in (("word", "クイズ開始 (10語)", GUEST_WORDS),
                                ("phrase", "クイズ開始 (10フレーズ)", GUEST_PHRASES)):
+        in_range = guest_range(data_dir, "words" if kind == "word" else "phrases", limit)
         s = Session(pw, base, "chromium", dict(pw.devices["Pixel 5"]))
         try:
             spy = Spy(s.page)
@@ -177,13 +213,12 @@ def check_guest(pw, base: str):
             tag = f"[guest {kind}]"
             check(f"{tag} 出題の取得に free_range_only=true が付く(無料範囲だけから出題)",
                   bool(spy.quiz_urls) and all("free_range_only=true" in u for u in spy.quiz_urls), str(spy.quiz_urls))
-            check(f"{tag} 出題されたID全てが無料範囲内(<= {limit}・範囲外の先頭10件は出ない)",
-                  bool(spy.quiz_ids) and max(spy.quiz_ids) <= limit + 10 and min(spy.quiz_ids) > 10,
-                  f"min={min(spy.quiz_ids) if spy.quiz_ids else None} max={max(spy.quiz_ids) if spy.quiz_ids else None} "
-                  f"n={len(spy.quiz_ids)}")
+            check(f"{tag} 出題されたID全てが無料範囲内(DBのlevelから独立に計算・範囲外の先頭10件は出ない)",
+                  bool(spy.quiz_ids) and set(spy.quiz_ids) <= in_range and not (set(spy.quiz_ids) & set(range(1, 11))),
+                  f"out={sorted(set(spy.quiz_ids) - in_range)[:10]} n={len(spy.quiz_ids)}")
             check(f"{tag} 任意テキストの合成 POST /api/learn/tts を呼ばない", not spy.raw_tts, str(spy.raw_tts))
-            check(f"{tag} 項目ID指定の音声 /api/learn/tts/item が呼ばれる(英語を聞く+答え表示で2回以上)",
-                  len(spy.items) >= 2, str(spy.items))
+            check(f"{tag} 項目ID指定の音声 /api/learn/tts/item が呼ばれる(2問分の「英語を聞く」+答え表示で3回以上)",
+                  len(spy.items) >= 3, str(spy.items))
             check(f"{tag} 音声の種別が項目の種類と合っている",
                   all(i["type"] == kind for i in spy.items), str(spy.items))
             check(f"{tag} 声はash/novaのどちらか1つだけ(事前作成済みの声)",
@@ -191,36 +226,39 @@ def check_guest(pw, base: str):
             check(f"{tag} 音声の応答は全て200(無料範囲なので拒否されない)",
                   all(i["status"] == 200 for i in spy.items), str(spy.items))
             check(f"{tag} 再生する項目のIDも無料範囲内(範囲外の先頭10件ではない)",
-                  all(10 < i["id"] <= limit + 10 for i in spy.items), str(spy.items))
+                  all(i["id"] in in_range for i in spy.items), str(spy.items))
             if kind == "word":
                 check(f"{tag} 「例文を聞く」は項目の例文(kind=example)で再生される",
                       any(i["kind"] == "example" for i in spy.items), str(spy.items))
             bad = [t for t in toasts if re.search(r"要ログイン|Sign-in required|需要登", t) or t.lstrip().startswith("{")]
-            check(f"{tag} 「要ログイン」や生のJSONのトーストが出ない", not bad, f"toasts={toasts}")
+            check(f"{tag} 「要ログイン」や生のJSONのトーストが一度も出ない(全トーストを記録)", not bad, f"toasts={toasts}")
         finally:
             s.close()
 
 
-def check_range_matters(pw, base: str):
+def quiz_ids(page, base: str, path: str) -> list[int]:
+    data = page.request.get(base + path).json()
+    return [int(x["id"]) for x in (data if isinstance(data, list) else data.get("items", []))]
+
+
+def check_range_matters(pw, base: str, data_dir: str):
     s = Session(pw, base, "chromium", dict(pw.devices["Pixel 5"]))
     try:
         s.page.goto(base + "/?tab=quiz", wait_until="networkidle")
-        outside = 0
-        for _ in range(20):
-            r = s.page.request.get(base + "/api/words/quiz?limit=10")
-            data = r.json()
-            items = data if isinstance(data, list) else data.get("items", [])
-            outside += sum(1 for x in items if not x.get("is_free_range"))
+        w_range = guest_range(data_dir, "words", GUEST_WORDS)
+        ph_range = guest_range(data_dir, "phrases", GUEST_PHRASES)
+        # 範囲を絞らない出題は、進捗の無いゲストでは範囲外の語(先頭10件)になる(本番の10/15確認と同じ)
+        plain = [i for _ in range(10) for i in quiz_ids(s.page, base, "/api/words/quiz?limit=10")]
         check("[range] 範囲を絞らない出題は、進捗の無いゲストでは範囲外の語になる(本番の10/15確認と同じ・絞る意味がある)",
-              outside > 0, f"outside={outside}/200")
-        # 絞った出題は範囲内だけ(API直接・50回)
-        out2 = 0
-        for _ in range(50):
-            r = s.page.request.get(base + "/api/words/quiz?limit=10&free_range_only=true")
-            data = r.json()
-            items = data if isinstance(data, list) else data.get("items", [])
-            out2 += sum(1 for x in items if not x.get("is_free_range"))
-        check("[range] free_range_only=true の出題(50回×10)に範囲外が混ざらない", out2 == 0, f"outside={out2}")
+              any(i not in w_range for i in plain), f"outside={sum(i not in w_range for i in plain)}/{len(plain)}")
+        for kind, api, rng in (("単語", "words", w_range), ("フレーズ", "phrases", ph_range)):
+            sets = [tuple(sorted(quiz_ids(s.page, base, f"/api/{api}/quiz?limit=10&free_range_only=true"))) for _ in range(15)]
+            allids = {i for t in sets for i in t}
+            check(f"[range] {kind}: free_range_only=true の出題(15回×10)は全て無料範囲内(DBのlevelから独立に計算)",
+                  allids <= rng, f"out={sorted(allids - rng)[:10]}")
+            check(f"[variety] {kind}: ゲストの出題が毎回同じ10件に固定されない(15回で3種類以上の組・延べ30件以上の異なる項目)",
+                  len(set(sets)) >= 3 and len(allids) >= 30, f"distinct_sets={len(set(sets))} distinct_ids={len(allids)}")
+            check(f"[variety] {kind}: 1回の出題に重複が無く、ちょうど10件", all(len(set(t)) == 10 for t in sets), str(sets[:2]))
         r = s.page.request.post(base + "/api/learn/tts", data={"text": "hello", "voice": "ash"})
         check("[gate] ゲストの任意テキスト合成 POST /api/learn/tts は従来どおり401(門番は変えていない)", r.status == 401, str(r.status))
         r = s.page.request.get(base + f"/api/learn/tts/item?item_type=word&item_id={GUEST_WORDS + 50}&voice=ash&kind=word")
@@ -249,6 +287,11 @@ def check_logged_in(pw, base: str):
         check("[user] ログイン済みのクイズは /tts/item を呼ばない", not spy.items, str(spy.items))
         check("[user] ログイン済みの出題は範囲を絞らない(free_range_onlyが付かない)",
               bool(spy.quiz_urls) and all("free_range_only" not in u for u in spy.quiz_urls), str(spy.quiz_urls))
+        for api in ("words", "phrases"):
+            a = quiz_ids(p, base, f"/api/{api}/quiz?limit=10")
+            b = quiz_ids(p, base, f"/api/{api}/quiz?limit=10")
+            check(f"[user] ログイン済みの{api}の出題は従来どおり(同点は表の順=2回続けて同じ並び・乱数化していない)",
+                  len(a) == 10 and a == b, f"{a} / {b}")
     finally:
         s.close()
 
@@ -262,11 +305,17 @@ def main() -> int:
     if a.prepare:
         prepare(a.data_dir)
         return 0
+    if not a.data_dir:
+        print("中止: --data-dir(隔離サーバーのDATA_DIR・無料範囲の独立計算に使う)が必要です")
+        return 2
+    if urlparse(a.base).hostname not in ("127.0.0.1", "localhost"):
+        print("中止: 127.0.0.1/localhost の隔離サーバーのみ(本番には向けない)")
+        return 2
     with sync_playwright() as pw:
         print("== A. ゲストのクイズ(単語/フレーズ)")
-        check_guest(pw, a.base)
+        check_guest(pw, a.base, a.data_dir)
         print("== B/C. 出題範囲と門番")
-        check_range_matters(pw, a.base)
+        check_range_matters(pw, a.base, a.data_dir)
         print("== D. ログイン済みは従来どおり")
         check_logged_in(pw, a.base)
     ng = [r for r in RESULTS if not r[0]]

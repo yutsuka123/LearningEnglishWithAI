@@ -155,6 +155,7 @@ def select_for_review(
     params_extra: tuple = (),
     cfg: MasteryConfig | None = None,
     light: bool = False,
+    shuffle_due: bool = False,
 ) -> list[sqlite3.Row]:
     """Pick up to ``limit`` items for ``user_id``, prioritising due ones, then
     weighting the rest by (threshold - mastery). 進捗は per-user テーブルから
@@ -172,6 +173,10 @@ def select_for_review(
     先頭だけ使っていた)。同点(mastery/next_review が同じ行)の選ばれ方は
     従来も未定義だったので結果の意味は変わらない。既定Falseは従来動作
     (フラッシュカード等の他の呼び出し元は一切変わらない)。
+
+    ``shuffle_due``(2026-10-15・ver1.5.15): 期限切れ候補の「同点(mastery/next_reviewが同じ行)」を
+    ランダムに並べる。進捗が保存されないゲスト(共有の疑似ユーザー)は全語が同点のため、従来は
+    全員・毎回「表の先頭のN件」が出ていた(本番で確認)。既定Falseは従来動作(ログイン済みは変えない)。
     """
     from .progress import user_items_subquery
 
@@ -187,7 +192,7 @@ def select_for_review(
     due = conn.execute(
         f"SELECT * FROM {src} AS t "
         f"WHERE (next_review IS NULL OR next_review <= ?){ban}{extra} "
-        f"ORDER BY mastery ASC, next_review ASC{sql_limit}",
+        f"ORDER BY mastery ASC, next_review ASC{', RANDOM()' if shuffle_due else ''}{sql_limit}",
         (user_id, today, *ep),
     ).fetchall()
 

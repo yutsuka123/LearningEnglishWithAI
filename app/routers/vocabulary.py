@@ -579,6 +579,8 @@ def quiz(
             user_id=uid,
             where_extra=where_extra, params_extra=tuple(params),
             cfg=cfg,
+            # ゲストは進捗が保存されず全語が同点=毎回「表の先頭のN件」になるため、同点をランダムに(ログイン済みは従来どおり)。
+            shuffle_due=is_guest,
         )
         free_ids = access_tiers.free_range_ids(conn, "word", guest=is_guest)
         return [_word_dict(r, free_ids, cfg) for r in rows]
