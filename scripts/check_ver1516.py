@@ -230,6 +230,20 @@ def unit_fix_script() -> None:
         except SystemExit as e:
             aborted = "出現数が想定と違う" in str(e)
     check("[S2] 想定外の118.9(タワーに触れた補足)が増えていたら、1行も書かずに中止する", aborted)
+    # 118.95のような近い数値は置換しない(正規表現で数値の途中に一致させない)
+    d1b = {"note": "周波数は118.95ではない", "similar_expressions": [{"ja": "グラウンド118.9を聴取"}], "explanation": "グラウンド周波数118.9へ"}
+    with db() as conn:
+        conn.execute("UPDATE phrases SET detail = ? WHERE english = ?", (json.dumps(d1b, ensure_ascii=False), E1))
+        plan2 = fx._plan(conn, fx.TARGETS)
+    nd = plan2[0]["new_detail"]
+    check("[S5] 118.95は置換されない(118.9だけが121.9になる)", "118.95" in nd and nd.count("121.9") == 2 and "121.95" not in nd, nd)
+    # 件数チェック: 運用中に増える表(visitor等)の増加では中止しない/words・phrasesの変化や生きている表の減少では中止する
+    b0 = {"words": 10, "phrases": 5, "users": 3, "paypay_payments": 2, "landing_visits": 100, "usage_events": 50}
+    check("[S6] 件数チェック: 訪問記録(landing_visits/usage_events)が増えただけなら通る",
+          fx._counts_ok(b0, {**b0, "landing_visits": 101, "usage_events": 53}))
+    check("[S6] 件数チェック: words/phrasesが変われば止まる", not fx._counts_ok(b0, {**b0, "phrases": 6}) and not fx._counts_ok(b0, {**b0, "words": 9}))
+    check("[S6] 件数チェック: 生きている表が減れば止まる(users/landing_visits)",
+          not fx._counts_ok(b0, {**b0, "users": 2}) and not fx._counts_ok(b0, {**b0, "landing_visits": 99}))
     # 英文の完全一致が2行あれば中止
     with db() as conn:
         conn.execute("INSERT INTO phrases (english, japanese, scene, level, detail) VALUES (?,?,?,?,?)",
