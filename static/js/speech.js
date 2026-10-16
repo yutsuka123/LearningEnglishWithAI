@@ -43,6 +43,7 @@ export function setOpenAIVoices(list) {
 }
 export function listOpenAIVoices() { return openaiVoices.slice(); }
 export function onUsage(cb) { usageCb = cb; }
+// cb(msg, status): statusは項目ID指定の再生(sayItem/sayItemAndWait)の拒否のときだけ付く(402=無料範囲外・要チャージ等)。
 export function onPaymentRequired(cb) { paymentRequiredCb = cb; }
 
 // natural-voice preference (localStorage)
@@ -427,7 +428,7 @@ export async function sayItem(
         // （2026-08-11: 「ログインすると聴けます」固定だと、ログイン済み
         // ユーザーの要チャージのケースまで誤って「要ログイン」と案内して
         // しまい苦情の原因になるため）。
-        paymentRequiredCb(msg || tx("voice.playbackUnavailable"));
+        paymentRequiredCb(msg || tx("voice.playbackUnavailable"), res.status);
       }
       return;
     }
@@ -524,7 +525,7 @@ export function sayItemAndWait(itemType, id, kind, voice, fallbackText, opts = {
             // （2026-08-11: 「ログインすると聴けます」固定だと、ログイン済み
             // ユーザーの要チャージのケースまで誤って「要ログイン」と案内して
             // しまい苦情の原因になるため）。
-            paymentRequiredCb(msg || tx("voice.playbackUnavailable"));
+            paymentRequiredCb(msg || tx("voice.playbackUnavailable"), res.status);
           }
           const err = new Error("payment required");
           err.paymentRequired = true;

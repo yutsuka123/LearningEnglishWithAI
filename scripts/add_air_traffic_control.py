@@ -192,7 +192,7 @@ PHRASES_BY_SCENE: dict[str, list[tuple[str, str]]] = {
         # --- 出発準備・地上走行 ---
         ("Ground, request IFR clearance to Denver.", "グラウンド、デンバーまでの計器飛行方式の許可を要求します。"),
         ("Cleared to Denver as filed, climb and maintain five thousand, expect one two thousand ten minutes after departure.", "デンバーまで申請通り許可、5,000フィートまで上昇、離陸10分後に12,000フィートを予期してください。"),
-        ("Readback correct, contact ground point niner when ready to taxi.", "復唱正確、地上走行の準備ができたらグラウンド118.9で連絡してください。"),
+        ("Readback correct, contact ground point niner when ready to taxi.", "復唱正確、地上走行の準備ができたらグラウンド121.9で連絡してください。"),
         ("Ground, request pushback and start.", "グラウンド、プッシュバックと始動を要求します。"),
         ("Pushback and start approved, expect a ten-minute delay.", "プッシュバックと始動を承認、10分の遅延を見込んでください。"),
         ("Taxi to runway two seven via taxiway alpha, hold short of runway one eight.", "誘導路アルファ経由で滑走路27へ地上走行、滑走路18の手前で待機してください。"),
@@ -268,7 +268,7 @@ PHRASES_BY_SCENE: dict[str, list[tuple[str, str]]] = {
         ("Braking action reported good by the aircraft ahead.", "先行機の報告によりブレーキング状態は良好です。"),
         ("Exit at the next taxiway when able.", "できるだけ早く次の誘導路で滑走路を離脱してください。"),
         ("Vacated the runway.", "滑走路を離脱しました。"),
-        ("Contact ground point niner.", "グラウンド118.9へ連絡してください。"),
+        ("Contact ground point niner.", "グラウンド121.9へ連絡してください。"),
         ("Welcome to the ground frequency, taxi to the gate via alpha.", "グラウンド周波数へようこそ、アルファ経由でゲートへ地上走行してください。"),
         ("Can you accept a land and hold short clearance, runway one eight?", "滑走路18の手前で停止する条件付き着陸は可能ですか。"),
         ("Unable to hold short, standard full length landing required.", "手前での停止は不可能、通常の滑走路全長での着陸が必要です。"),

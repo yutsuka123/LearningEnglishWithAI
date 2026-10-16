@@ -77,20 +77,29 @@ export function quizRunner(config) {
   let idx = 0;
   let correctCount = 0;
   let skippedCount = 0; // ノーカウント（集計から除外）
-  // ゲスト(未ログイン)は任意テキストの音声合成(/api/learn/tts・要ログイン)を使えない。一覧・フラッシュカードと
-  // 同じ「項目ID指定」(/api/learn/tts/item・無料範囲なら誰でも可)で読み上げる(2026-10-15・ver1.5.15。
-  // 10/14に検索広告から来た訪問者がクイズ開始の1秒後に再生を拒否(401)され、3秒でクイズを離れた)。
-  // 声は事前に作成済みのash/novaから1ラウンドで1つ。ログイン済みは従来どおり(下のhear())。
-  const guestItemAudio = !!appState.isGuest && speech.isNatural();
-  const voiceName = guestItemAudio
-    ? (Math.random() < 0.5 ? "ash" : "nova")
-    : speech.pickRoundVoice(); // one voice for this round
-  // part: 'word'|'example'。ゲストでアイテム自体の英文を読むときだけ項目ID経由にする。
+  // 音声は全員「項目ID指定」(/api/learn/tts/item)で読み上げる。ゲストは2026-10-15(ver1.5.15)から、ログイン済みは
+  // 2026-10-16(ver1.5.16)から。従来のログイン済みは任意テキスト合成(/api/learn/tts)で、①声が毎ラウンド10種から
+  // ランダム=保存済みでない声ばかりで合成待ちと合成費が出る ②無料枠0円の無料登録ユーザーは無料範囲の語でも「無料枠に
+  // 達しました」で断られうる ③無料範囲(範囲外は再生ごとに少額のpt)の考え方が一覧・フラッシュカードと食い違う、
+  // という問題があった。項目ID指定なら、事前に作成済みの声(ash/nova)が即鳴り、範囲外だけ一覧と同じく再生課金になる。
+  // ブラウザ音声を選んでいる人(設定で自然な声OFF)は従来どおりブラウザ音声(sayItemが担当)。
+  const PRECREATED_VOICES = ["ash", "nova"]; // サーバーのai.PRECREATED_TTS_VOICESと同じ
+  const itemAudio = speech.isNatural();
+  let voiceName;
+  if (itemAudio) {
+    // 設定で有効にしてある声のうち事前作成済みのものから1ラウンドで1つ(どちらも無効なら両方から)。
+    const enabled = PRECREATED_VOICES.filter((v) => speech.isOpenAIVoiceEnabled(v));
+    const pool = enabled.length ? enabled : PRECREATED_VOICES;
+    voiceName = pool[Math.floor(Math.random() * pool.length)];
+  } else {
+    voiceName = speech.pickRoundVoice(); // one voice for this round
+  }
+  // part: 'word'|'example'。項目自身の英文を読むときだけ項目ID経由にする。
   // フレーズに項目の例文は無い(例文ボタンは「例文を作る」で生成した文=dataset.enのときだけ出る→従来の経路)ので、
   // phrase+exampleは項目ID経由にしない(防御)。
   function hear(item, text, part) {
     if (!text) return;
-    const canByItem = guestItemAudio && item && item.id
+    const canByItem = itemAudio && item && item.id
       && !(kind === "phrase" && part === "example");
     if (canByItem) {
       speech.sayItem(kind === "phrase" ? "phrase" : "word", item.id,
@@ -225,6 +234,19 @@ export function quizRunner(config) {
     row.append(ok, vague, ng, known, skip);
   }
 
+  // ゲストは翻訳・例文づくり(AI機能)を使えない。押しても「失敗」と出るだけだったので(2026-10-16・ver1.5.16)、
+  // APIは呼ばず理由と登録リンクを出す。無料登録だけでは使えない(無料枠0円・チャージしたptで使う)ので、
+  // 「ログインすれば使える」とは書かない。
+  function guestAiNote(p) {
+    p.textContent = "";
+    p.append(document.createTextNode(tx("quiz.guestAiNote") + " "));
+    const a = document.createElement("a");
+    a.href = "/login#signup";
+    a.textContent = tx("quiz.guestAiLink");
+    a.addEventListener("click", () => api.track("click", "guest_quiz_ai", "signup"));
+    p.append(a);
+  }
+
   function renderExample(box, item) {
     // 例文（フレーズ）＋読み上げ＋日本語訳。例文が無ければAIで生成。
     const phrase = (item.example || "").trim();
@@ -245,6 +267,7 @@ export function quizRunner(config) {
     });
     jp.addEventListener("click", async () => {
       const t = speakable(); if (!t) return;
+      if (appState.isGuest) { guestAiNote(tr); return; }
       tr.textContent = tx("quiz.translating");
       try {
         const r = await api.post("/api/learn/translate", { text: t });
@@ -254,6 +277,7 @@ export function quizRunner(config) {
       } catch (e) { tr.textContent = tx("quiz.translationFailed"); }
     });
     gen.addEventListener("click", async () => {
+      if (appState.isGuest) { guestAiNote(tr); return; }
       line.textContent = tx("quiz.generatingExample");
       try {
         const r = await api.post("/api/learn/example",

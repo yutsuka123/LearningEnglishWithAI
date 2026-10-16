@@ -229,6 +229,22 @@ body.is-guest #usageBalanceInfo {
 }
 
 .toggle { color: var(--muted); font-size: 13px; }
+/* 「🔊再生できるものだけ」(2026-10-16・ver1.5.16): 全部は再生できない利用者にはONにする入口を目立たせる。
+   既定はOFFのまま。再生を断られた瞬間は.free-only-pulseで数回光らせる。 */
+.toggle.free-only-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 12px; color: var(--text);
+  border: 1.5px solid var(--accent); border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.free-only-pulse { animation: freeOnlyPulse 1.1s ease-in-out 3; }
+@keyframes freeOnlyPulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); }
+  50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--accent) 0%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .free-only-pulse { animation: none; outline: 3px solid var(--accent); outline-offset: 2px; }
+}
 .toggle select, select, input, textarea {
   background: var(--panel-2);
   color: var(--text);
@@ -677,6 +693,11 @@ table.rtable tbody tr.featured-row td:first-child {
 .guest-nudge .guest-nudge-link {
   pointer-events: auto; display: inline-block; padding: 6px 4px;
   color: var(--accent); font-weight: 700; text-decoration: underline;
+}
+/* 「再生できるものだけ」の案内(2026-10-16・ver1.5.16)。断りの文+ボタン。ボタンはリンクと同じ見た目 */
+.guest-nudge .nudge-msg { margin-bottom: 6px; }
+.guest-nudge .free-only-nudge-btn {
+  background: none; border: 0; cursor: pointer; font: inherit; font-weight: 700; min-height: 36px;
 }
 
 /* ⓘ説明ヒント(2026-08-30)。選択肢/制限がある項目の意味を、クリック/タップ

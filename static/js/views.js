@@ -21,7 +21,10 @@ function freeOnlyToggle(id, kind) {
   // kind: "word" | "phrase"（2026-09-23多言語化・以前は呼び出し側が
   // 日本語文言("単語"/"フレーズ"等)を直接渡していた）。
   const kindKey = kind === "phrase" ? "filter.kindPhrase" : "filter.kindWord";
-  return `<label class="toggle" title="${escapeHtml(
+  // 全部は再生できない利用者(未登録・残高なしの無料登録)には、ONにする入口を目立つ見た目にする
+  // (2026-10-16・ver1.5.16。既定はOFFのまま=初めての人の一覧を勝手に狭めない)。
+  const chip = state.hasAiBalance ? "" : " free-only-chip";
+  return `<label class="toggle${chip}" title="${escapeHtml(
       tx("filter.freeOnlyTitle", { kind: tx(kindKey) }))}">
     <input type="checkbox" id="${id}" />
     <b style="font-size:15px">${tx("filter.freeOnlyLabel")}</b></label>

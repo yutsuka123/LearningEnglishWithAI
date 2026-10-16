@@ -180,6 +180,11 @@ _m("ai.tts_login",
    "You can listen to the audio for this word/phrase once you log in (free registration alone widens the range you can play).",
    "登录后即可收听此单词/短语的语音（仅需免费注册，即可扩大可播放的范围）。",
    "登入後即可收聽此單字/短語的語音（僅需免費註冊，即可擴大可播放的範圍）。")
+_m("ai.tts_voice_login",   # 2026-10-16: ゲストが事前作成のない声を指定したとき(有料合成を走らせない)
+   "この声はログインすると選べます（無料の会員登録で利用できます）。",
+   "This voice is available after you log in (free registration is enough).",
+   "登录后即可选择此声音（免费注册即可使用）。",
+   "登入後即可選擇此聲音（免費註冊即可使用）。")
 _m("ai.tts_outside_free",
    "この単語・フレーズの音声は無料の範囲外です。ログイン（無料の会員登録）だけでは聴けず、少額のチャージが必要になります。",
    "The audio for this word/phrase is outside the free range. Logging in (free registration) alone is not enough; a small top-up is needed.",

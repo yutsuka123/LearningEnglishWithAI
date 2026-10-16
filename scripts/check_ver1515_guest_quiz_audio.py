@@ -12,7 +12,7 @@
   C. 任意テキストの合成(`POST /api/learn/tts`)はゲストには従来どおり401のまま(門番は変えていない)
   B2. ゲストの出題は毎回同じ10件に固定されない(進捗が保存されないゲストは全語が同点=表の先頭N件になっていた。同点をランダムに)。
      ログイン済みの出題は従来どおり(同点は表の順=2回続けて同じ並び)
-  D. ログイン済みユーザーのクイズは従来どおり(`POST /api/learn/tts`を呼ぶ・`/tts/item`は呼ばない・出題の範囲は絞らない)
+  D. ログイン済みユーザーのクイズ: 出題の範囲は絞らない。音声はver1.5.16から`/tts/item`(それまでは`POST /api/learn/tts`)
 
 使い方(.envの無いツリーで隔離サーバー。単語を1,300・フレーズを900まで増やし、全ての音声を偽の無音MP3で用意する):
   S=/tmp/quiz1515_data
@@ -282,9 +282,11 @@ def check_logged_in(pw, base: str):
         p.wait_for_timeout(500)
         p.click("#hear")
         p.wait_for_timeout(800)
-        check("[user] ログイン済みのクイズは従来どおり POST /api/learn/tts を呼ぶ(挙動を変えていない)",
-              len(spy.raw_tts) >= 1, str(spy.raw_tts))
-        check("[user] ログイン済みのクイズは /tts/item を呼ばない", not spy.items, str(spy.items))
+        # ver1.5.16〜: ログイン済みのクイズも項目ID指定(/tts/item)で読み上げる(任意テキスト合成はやめた)。
+        # 詳細な確認は scripts/check_ver1516.py。
+        check("[user] ログイン済みのクイズは POST /api/learn/tts を呼ばない(ver1.5.16〜)",
+              not spy.raw_tts, str(spy.raw_tts))
+        check("[user] ログイン済みのクイズは /tts/item を呼ぶ(ver1.5.16〜)", len(spy.items) >= 1, str(spy.items))
         check("[user] ログイン済みの出題は範囲を絞らない(free_range_onlyが付かない)",
               bool(spy.quiz_urls) and all("free_range_only" not in u for u in spy.quiz_urls), str(spy.quiz_urls))
         for api in ("words", "phrases"):

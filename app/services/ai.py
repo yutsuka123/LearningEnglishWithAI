@@ -783,6 +783,13 @@ TTS_VOICES = [
     "fable", "nova", "onyx", "sage", "shimmer",
 ]
 
+# 単語・フレーズ・例文の音声を事前に作成してある声(scripts/build_audio.py の既定 --voices ash,nova・
+# 学習/ネイティブ両速度で全件作成済み)。未ログインのゲストは誰でも押せるため、保存済みでない音声の
+# **新規の有料合成**はこの声に限る(2026-10-16・ver1.5.16。従来は`/api/learn/tts/item`の`voice`を
+# 好きに指定でき、無料範囲の項目でも声×速度×種別ごとに合成費が運営に発生していた)。
+# 保存済みの音声を返すだけなら(合成費ゼロ)どの声でも許す。ログイン済みの声の選択は従来どおり。
+PRECREATED_TTS_VOICES = ("ash", "nova")
+
 # Rough TTS cost estimate (USD per 1000 characters). gpt-4o-mini-tts is
 # billed by tokens; we approximate from text length for the usage display.
 _TTS_USD_PER_1K_CHARS = 0.015
@@ -1093,6 +1100,7 @@ def synthesize_speech(
     style: str = TTS_STYLE_DEFAULT, rate_limit: bool = True,
     feature: str = "tts", free_range: bool = False,
     group: str = "", verify: bool = False, persist_cache: bool = True,
+    refuse_if_uncached: str | None = None,
 ) -> tuple[bytes | None, str | None]:
     """Return (audio_mp3_bytes, error). Uses OpenAI's natural TTS voices.
 
@@ -1114,6 +1122,9 @@ def synthesize_speech(
     **False**にする。同じ音声が tts_cache と audio の2か所に二重保存されていた(実測: tts_cache 5.7GBのうち
     2.8GBが audio と完全重複・再利用はほぼ無し・2026-09-29)のを止めるため。キャッシュの**読み出し**
     (ヒット時はAPIを呼ばない)は常に行う。
+    ``refuse_if_uncached``: 文言を渡すと、保存済みの音声(tts_cache)が**無いとき**は有料の合成をせずに
+    その文言をエラーとして返す(保存済みなら通常どおり無料で返す)。未ログインのゲストに、事前作成の
+    ない声での新規合成をさせないための印(2026-10-16・ver1.5.16・`PRECREATED_TTS_VOICES`参照)。
     ``verify``: 合成直後の文字起こし照合(短いテキストのみ・`_speech_score`)を行うか。**永続キャッシュされて
     全員に再利用される単語/フレーズ/例文の音声(`/tts/item`)だけTrue**にする。会話の返答など使い捨ての
     読み上げは、遅延(+約1秒)を増やさないため既定のFalse(2026-09-26)。
@@ -1133,6 +1144,8 @@ def synthesize_speech(
     cache = _tts_cache_path(settings.tts_model, voice, speak, instr)
     if cache.exists():
         return cache.read_bytes(), None  # cache hit → no API call, no cost
+    if refuse_if_uncached:
+        return None, refuse_if_uncached
 
     # only a real (paid) synthesis hits the guard
     guid = 0

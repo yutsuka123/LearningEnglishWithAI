@@ -140,6 +140,62 @@ export function toastSignupNudge(msg, linkText, href, ms = 10000) {
   api.track("boot", "guest_nudge", "shown");
 }
 
+// 「🔊再生できるものだけ」(id末尾FreeOnly: 一覧・フラッシュの計4画面)の案内(2026-10-16・ver1.5.16)。
+// 再生を無料範囲外で断られた(402)ときに、画面に**未ONの**トグルがあれば、1タップでONにできる案内を出す。
+// スマホ(幅760px以下)では絞り込みのパネルが畳まれていてトグルが見えないため、見た目を目立たせるだけでは
+// 気づけない。案内のボタンを押したときだけONにする(勝手には変えない)。既定はOFFのまま。
+let freeOnlyNudgeTimer = null;
+function pulseLabel(cb) {
+  const label = cb.closest("label");
+  if (!label || label.offsetParent === null) return;   // 畳まれた中のものは光らせても見えない
+  label.classList.remove("free-only-pulse");
+  void label.offsetWidth;                              // アニメーションを毎回やり直す
+  label.classList.add("free-only-pulse");
+  setTimeout(() => label.classList.remove("free-only-pulse"), 4000);
+}
+function nudgeFreeOnly(refusalText) {
+  const cb = [...document.querySelectorAll('input[type="checkbox"][id$="FreeOnly"]')]
+    .find((c) => !c.checked);
+  if (!cb) return false;
+  let n = document.getElementById("freeOnlyNudge");
+  if (!n) {
+    n = document.createElement("div");
+    n.id = "freeOnlyNudge";
+    n.className = "guest-nudge";
+    n.setAttribute("role", "status");
+    n.setAttribute("aria-live", "polite");
+    document.body.append(n);
+  }
+  // 断りの文(サーバーの案内)と「絞り込む」を1つの吹き出しにまとめる(トーストと別々に出すと重なって読めない)。
+  n.textContent = "";
+  const m = document.createElement("div");
+  m.className = "nudge-msg";
+  m.textContent = refusalText;
+  n.append(m, document.createTextNode(tx("filter.freeOnlyNudge") + " "));
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "guest-nudge-link free-only-nudge-btn";
+  b.textContent = tx("filter.freeOnlyNudgeBtn");
+  b.addEventListener("click", () => {
+    const target = [...document.querySelectorAll('input[type="checkbox"][id$="FreeOnly"]')]
+      .find((c) => !c.checked) || cb;
+    const det = target.closest("details");
+    if (det) det.open = true;                          // 畳まれた絞り込みパネルを開く
+    target.checked = true;
+    target.dispatchEvent(new Event("change", { bubbles: true }));
+    pulseLabel(target);
+    n.classList.remove("show");
+    api.track("click", "free_only_nudge", "on");
+  });
+  n.append(b);
+  n.classList.add("show");
+  clearTimeout(freeOnlyNudgeTimer);
+  freeOnlyNudgeTimer = setTimeout(() => n.classList.remove("show"), 9000);
+  pulseLabel(cb);                                      // 見えている(PC等)なら光らせる
+  api.track("boot", "free_only_nudge", "shown");
+  return true;
+}
+
 // サーバーの拒否本文(再生の401/402等)をトーストに出せる文にする。素のJSON
 // (`{"ok":false,"error":"要ログイン","code":"2003"}`)が生のまま出ていたため(ゲストの
 // クイズで再現・独立照査の別件)、JSONなら`error`の文だけ、読めなければ汎用の案内にする。
@@ -1000,7 +1056,12 @@ async function boot() {
   initHintIcons();
   refreshMaintenanceBanner();
   speech.onUsage(refreshCost); // refresh cost after paid TTS calls
-  speech.onPaymentRequired((msg) => toast(friendlyPlaybackMessage(msg))); // 無料範囲外の再生でチャージ不足のとき
+  speech.onPaymentRequired((msg, status) => { // 無料範囲外の再生でチャージ不足のとき
+    const text = friendlyPlaybackMessage(msg);
+    // 402(無料範囲外・要チャージ)で、画面に未ONの「🔊再生できるものだけ」があれば、断りの文に1タップでONにできる案内を
+    // 添えた1つの吹き出しにする(既定はOFFのまま・ONにする入口を目立たせる方針・2026-10-16 ver1.5.16)。
+    if (!(status === 402 && nudgeFreeOnly(text))) toast(text);
+  });
   speech.onPlaybackError((msg) => toast(msg)); // 再生の失敗(通信・再生・AI音声不可)は無音+短い案内(ブラウザ音声へは逃げない・サーバーへもエラー記録)
   // Pre-load voices for TTS.
   speech.getEnglishVoices();

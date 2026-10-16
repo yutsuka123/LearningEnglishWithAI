@@ -350,8 +350,18 @@ def sample_material_tts(material_id: int, voice: str = "ash"):
                         status_code=422, media_type="text/plain")
     feature = ("listening_tts" if row["area"] == "listening"
                else "reading_tts")
+    # 声は既知の10種だけ(未知の声は合成側でalloyに読み替えられるため、ゲストの声の制限と食い違う)。
+    # ゲストは事前作成の声(ash/nova)だけ新規合成できる(保存済みならどの声でも無料で返す・2026-10-16)。
+    if voice not in ai.TTS_VOICES:
+        voice = "ash"
+    from ..services.auth import current_user_id, is_guest_user_id
+    with db() as conn:
+        is_guest = is_guest_user_id(conn, current_user_id())
+    refuse = (messages.tr("ai.tts_voice_login")
+              if is_guest and voice not in ai.PRECREATED_TTS_VOICES else None)
     audio, error = ai.synthesize_speech(
-        text, voice, feature=feature, free_range=True)
+        text, voice, feature=feature, free_range=True,
+        refuse_if_uncached=refuse)
     if error:
         tracking.log_event(
             "play_error", f"sample_{feature}", f"{voice}:{text[:60]}")
@@ -1175,6 +1185,11 @@ def tts_item(
         "phrase" if item_type == "phrase" else "word")
     speed = "native" if speed == "native" else "learn"
     skind = audio_store.storage_kind(base, speed)
+    # 声は既知の10種だけ(2026-10-16)。従来は任意の文字列が保存キーにそのまま使われ、未知の声は
+    # 合成側でalloyに読み替えられるのに、声の文字列ごとに別の保存ファイルができていた
+    # (=`voice=a`,`voice=b`…と変えるたびに有料合成+ディスク消費)。未知の声は既定のashにそろえる。
+    if voice not in ai.TTS_VOICES:
+        voice = "ash"
 
     from ..services.auth import current_user_allow_banned
     # 再生課金の領収。音声を届けられなかった(合成失敗・途中の例外)ときは、`finally`でptを返金する
@@ -1210,6 +1225,13 @@ def tts_item(
             else:
                 from ..services.auth import current_user_id, is_guest_user_id
                 is_guest = is_guest_user_id(conn, current_user_id())
+                if is_guest and voice not in ai.PRECREATED_TTS_VOICES:
+                    # 保存済みでない音声の新規合成は有料。ゲストには事前作成の声(ash/nova)だけ許し、
+                    # それ以外の声はログイン(無料)を案内する(2026-10-16・ver1.5.16)。
+                    tracking.log_event(
+                        "play_error", item_type, f"guest_voice:{base}:{voice}")
+                    return Response(content=messages.tr("ai.tts_voice_login"),
+                                    status_code=402, media_type="text/plain")
                 free_range = access_tiers.is_free_range(
                     conn, item_type, item_id, guest=is_guest)
         if cached is not None:
