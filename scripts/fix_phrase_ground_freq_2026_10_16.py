@@ -41,14 +41,17 @@ from _db_safety import default_backup_dir, key_counts, print_counts, same_counts
 from app.config import paths  # noqa: E402
 from app.database import db  # noqa: E402
 
-# (英文の完全一致, 置換前, 置換後)
+# (英文の完全一致, 置換前, 置換後, japaneseに期待する出現数, detailに期待する出現数)
+# **期待する出現数と実際が違えば、1行も書かずに中止する**(2026-10-16・独立照査M4): 本番の2行を読み取りで確認した値
+# (6704=japanese1+detail2[類似表現の「グラウンド118.9を聴取」と説明の「グラウンド周波数118.9」]・6776=japanese1)。
+# 想定外の「118.9」(例: タワーの周波数に触れた補足文)が増えていたら、機械的な置換で壊さず人が見る。
 TARGETS = (
-    ("Readback correct, contact ground point niner when ready to taxi.", "118.9", "121.9"),
-    ("Contact ground point niner.", "118.9", "121.9"),
+    ("Readback correct, contact ground point niner when ready to taxi.", "118.9", "121.9", 1, 2),
+    ("Contact ground point niner.", "118.9", "121.9", 1, 0),
 )
 # オーナー指示の2件ではない(--with-ramp-phrase のときだけ)。detailの類似表現の「グラウンド118.6」だけを直す。
 EXTRA_TARGETS = (
-    ("Contact ramp control once clear of the runway.", "グラウンド118.6", "グラウンド121.6"),
+    ("Contact ramp control once clear of the runway.", "グラウンド118.6", "グラウンド121.6", 0, 1),
 )
 
 
@@ -64,11 +67,20 @@ def _backup_content_db(backup_dir: Path) -> Path:
     return dst
 
 
+def _contexts(text: str, needle: str, width: int = 24) -> list[str]:
+    """出現箇所ごとの前後(±width字)。dry-runで「何が変わるか」を人が目で確かめるため。"""
+    out, i = [], 0
+    while (j := text.find(needle, i)) != -1:
+        out.append("…" + text[max(0, j - width):j] + "【" + needle + "】" + text[j + len(needle):j + len(needle) + width] + "…")
+        i = j + len(needle)
+    return out
+
+
 def _plan(conn, targets) -> list[dict]:
     """対象行ごとに {id, english, japanese, detail, new_japanese, new_detail, n_ja, n_detail} を作る。
-    英文の完全一致が1行でなければ中止(想定外のデータには書かない)。"""
+    英文の完全一致が1行でなければ中止(想定外のデータには書かない)。出現数が期待と違っても中止。"""
     plan = []
-    for en, OLD, NEW in targets:
+    for en, OLD, NEW, exp_ja, exp_detail in targets:
         rows = conn.execute(
             "SELECT id, english, japanese, detail FROM phrases WHERE english = ?", (en,)
         ).fetchall()
@@ -78,9 +90,12 @@ def _plan(conn, targets) -> list[dict]:
         ja, detail = r["japanese"] or "", r["detail"] or ""
         item = {
             "id": r["id"], "english": r["english"], "japanese": ja, "detail": detail,
+            "raw_japanese": r["japanese"], "raw_detail": r["detail"],     # 元のNULLを保つ(ロールバック用)
             "old": OLD, "new": NEW,
             "n_ja": ja.count(OLD), "n_detail": detail.count(OLD),
-            "new_japanese": ja.replace(OLD, NEW), "new_detail": detail.replace(OLD, NEW),
+            # 元がNULLの列は、書き戻してもNULLのまま(空文字に変えない)
+            "new_japanese": None if r["japanese"] is None else ja.replace(OLD, NEW),
+            "new_detail": None if r["detail"] is None else detail.replace(OLD, NEW),
         }
         if item["n_ja"] + item["n_detail"] == 0 and NEW in (ja + detail):
             item["state"] = "済み"
@@ -88,6 +103,12 @@ def _plan(conn, targets) -> list[dict]:
             raise SystemExit(f"中止: id={r['id']} に {OLD} も {NEW} も見当たらない(想定外の内容)")
         else:
             item["state"] = "要修正"
+            if (item["n_ja"], item["n_detail"]) != (exp_ja, exp_detail):
+                raise SystemExit(
+                    f"中止: id={r['id']} の{OLD}の出現数が想定と違う(japanese {item['n_ja']}/想定{exp_ja}・detail {item['n_detail']}/想定{exp_detail})。"
+                    "本番の内容が変わっているか、想定外の箇所に同じ数値がある。人が確認してから")
+        item["ctx_ja"] = _contexts(ja, OLD)
+        item["ctx_detail"] = _contexts(detail, OLD)
         if detail:
             json.loads(item["new_detail"])   # detail が壊れたJSONにならないこと
         plan.append(item)
@@ -110,11 +131,16 @@ def main() -> int:
             before = key_counts(conn)
             print_counts("before", before)
             for o in originals:
-                conn.execute("UPDATE phrases SET japanese = ?, detail = ? WHERE id = ? AND english = ?",
-                             (o["japanese"], o["detail"], o["id"], o["english"]))
+                cur = conn.execute("UPDATE phrases SET japanese = ?, detail = ? WHERE id = ? AND english = ?",
+                                   (o["japanese"], o["detail"], o["id"], o["english"]))
+                if cur.rowcount != 1:
+                    raise SystemExit(f"中止(ここまでの更新は取り消し): id={o['id']} を戻せなかった(rowcount={cur.rowcount})")
             after = key_counts(conn)
             print_counts("after", after)
-            print("件数チェック:", "OK" if same_counts(before, after) else "NG ← 想定外。直ちに調査")
+            ok = same_counts(before, after)
+            print("件数チェック:", "OK" if ok else "NG ← 想定外。直ちに調査")
+            if not ok:
+                raise SystemExit("中止(更新は取り消し): 件数が変わった")
         return 0
 
     with db() as conn:
@@ -124,8 +150,10 @@ def main() -> int:
         for p in plan:
             print(f"id={p['id']} [{p['state']}] {p['english']}")
             print(f"    japanese: {p['japanese']}  ({p['old']}が{p['n_ja']}箇所)")
-            print(f"    → {p['new_japanese']}")
+            print(f"    → {p['new_japanese'] or ''}")
             print(f"    detail内の{p['old']}: {p['n_detail']}箇所")
+            for c in p["ctx_ja"] + p["ctx_detail"]:
+                print(f"      {c}")
         todo = [p for p in plan if p["state"] == "要修正"]
         if not args.apply:
             print(f"dry-run のため書き込みません(修正対象 {len(todo)}行)。--apply で実行。")
@@ -138,19 +166,23 @@ def main() -> int:
         print(f"content DB バックアップ: {bk}")
         orig_file = backup_dir / f"ground_freq_originals_{time.strftime('%Y%m%d_%H%M%S')}.json"
         orig_file.write_text(
-            json.dumps([{k: p[k] for k in ("id", "english", "japanese", "detail")} for p in todo],
-                       ensure_ascii=False, indent=1), encoding="utf-8")
+            json.dumps([{"id": p["id"], "english": p["english"], "japanese": p["raw_japanese"], "detail": p["raw_detail"]}
+                        for p in todo], ensure_ascii=False, indent=1), encoding="utf-8")
         for p in todo:
             cur = conn.execute(
                 "UPDATE phrases SET japanese = ?, detail = ? WHERE id = ? AND english = ?",
                 (p["new_japanese"], p["new_detail"], p["id"], p["english"]))
-            assert cur.rowcount == 1, p["id"]
+            if cur.rowcount != 1:
+                raise SystemExit(f"中止(ここまでの更新は取り消し): id={p['id']} の更新が1行ではない(rowcount={cur.rowcount})")
         after = key_counts(conn)
         print_counts("after", after)
         ok = same_counts(before, after)
-        print("件数チェック:", f"OK(行数は不変・該当{len(todo)}行の本文だけが変わった)" if ok else "NG ← 想定外。直ちに調査")
+        if not ok:
+            # `with db()`は例外で巻き戻す。NGのまま確定(commit)させない。
+            raise SystemExit("中止(更新は取り消し): 主要テーブルの件数が変わった ← 想定外。調査")
+        print(f"件数チェック: OK(行数は不変・該当{len(todo)}行の本文だけが変わった)")
         print(f"元に戻す: --rollback {orig_file}")
-        return 0 if ok else 2
+        return 0
 
 
 if __name__ == "__main__":

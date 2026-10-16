@@ -4,7 +4,7 @@
 グラウンド118.9→121.9を修正しましょう」+「既定をOFF→ONにすると体験が変わる。ONを目立たせればOFFのままでよいのでは」):
 
   U (コード単体・--unit): `GET /api/learn/tts/item` と `GET /api/learn/samples/{id}/tts` の声の扱い
-     U1 ゲスト+事前作成のない声(echo)+保存なし → 402でログインを案内・合成は一切走らない(合成関数が呼ばれない)・ファイルも作られない
+     U1 ゲスト+事前作成のない声(echo)+保存なし → 403でログインを案内・合成は一切走らない(合成関数が呼ばれない)・ファイルも作られない
      U2 ゲスト+事前作成の声(ash)+保存なし → 合成される(新しい語を追加した直後の取りこぼしを防ぐ・従来どおり)
      U3 未知の声(zzz9)→ ashにそろえる。保存ファイルが声の文字列ごとに増えない
      U4 ゲスト+echo+保存済み → 無料で返る(合成なし)
@@ -95,7 +95,8 @@ def unit() -> None:
         calls.clear()
         r = learn.tts_item(item_type="word", item_id=w1, voice="echo", kind="word", speed="learn")
         body = r.body.decode("utf-8", "replace")
-        check("[U1] ゲスト+事前作成のない声(echo)+保存なし → 402", r.status_code == 402, f"{r.status_code} {body[:60]}")
+        check("[U1] ゲスト+事前作成のない声(echo)+保存なし → 403(402ではない: 402は『無料範囲外・要チャージ』で絞り込み案内の対象になるため)",
+              r.status_code == 403, f"{r.status_code} {body[:60]}")
         check("[U1] 案内はログインを促す文言", "ログイン" in body, body)
         check("[U1] 合成関数は呼ばれない(有料合成が走らない)", not calls, str(calls))
         check("[U1] echoの保存ファイルが作られない", not files(f"word{w1}_word_echo_*"), str(files("*echo*")))
@@ -127,6 +128,23 @@ def unit() -> None:
         r = learn.tts_item(item_type="word", item_id=w4, voice="echo", kind="word", speed="learn")
         check("[U4] ゲスト+echo+保存済み → 無料で返る(保存済みの中身がそのまま)",
               r.status_code == 200 and r.body == b"cached-echo" and not calls, f"{r.status_code} calls={calls}")
+        # U7 種別(kind)の食い違いで保存キーを増やせない(独立照査M1)
+        with db() as conn:
+            pid = conn.execute("SELECT id FROM phrases ORDER BY id LIMIT 1").fetchone()["id"]
+        calls.clear()
+        r1 = learn.tts_item(item_type="phrase", item_id=pid, voice="ash", kind="example", speed="learn")
+        n1 = len(calls)
+        r2 = learn.tts_item(item_type="phrase", item_id=pid, voice="ash", kind="word", speed="learn")
+        r3 = learn.tts_item(item_type="phrase", item_id=pid, voice="ash", kind="phrase", speed="learn")
+        check("[U7] フレーズに kind=example/word を付けても保存キーは phrase に統一(合成は最初の1回だけ・以後は保存済み)",
+              r1.status_code == 200 and n1 == 1 and len(calls) == 1 and r2.status_code == 200 and r3.status_code == 200,
+              f"{r1.status_code} {r2.status_code} {r3.status_code} synth={len(calls)}")
+        check("[U7] 保存ファイルは phrase{id}_phrase_ash_* の1つだけ(_example_・_word_が増えない)",
+              files(f"phrase{pid}_*") == files(f"phrase{pid}_phrase_ash_*") and len(files(f"phrase{pid}_*")) == 1, str(files(f"phrase{pid}_*")))
+        calls.clear()
+        learn.tts_item(item_type="word", item_id=w1, voice="ash", kind="phrase", speed="learn")
+        check("[U7] 単語に kind=phrase を付けても word 扱い(_phrase_ のファイルができない)",
+              not files(f"word{w1}_phrase_*") and bool(files(f"word{w1}_word_ash_*")), str(files(f"word{w1}_*")))
         # U6 公開サンプル教材(実際の合成関数を使う=refuse_if_uncachedの経路)
         ai.synthesize_speech = real_synth
         r = learn.sample_material_tts(mid, voice="echo")
@@ -150,6 +168,78 @@ def unit() -> None:
               r.status_code == 200 and len(calls) == 1 and calls[0]["voice"] == "echo", f"{r.status_code} {calls}")
     finally:
         ai.synthesize_speech = real_synth
+    unit_fix_script()
+
+
+def unit_fix_script() -> None:
+    """scripts/fix_phrase_ground_freq_2026_10_16.py(本番の航空管制フレーズ2件の修正)の安全装置(独立照査M4と NIT)。"""
+    import json
+    import fix_phrase_ground_freq_2026_10_16 as fx
+    from app.database import db
+    E1, E2 = fx.TARGETS[0][0], fx.TARGETS[1][0]
+    d1 = {"similar_expressions": [{"en": "x", "ja": "地上走行の際はグラウンド118.9を聴取してください。"}],
+          "explanation": "グラウンド周波数118.9へ連絡するよう指示している。"}
+    with db() as conn:
+        conn.execute("INSERT INTO phrases (english, japanese, scene, level, detail) VALUES (?,?,?,?,?)",
+                     (E1, "復唱正確、地上走行の準備ができたらグラウンド118.9で連絡してください。", "航空管制・無線交信", "",
+                      json.dumps(d1, ensure_ascii=False)))
+        conn.execute("INSERT INTO phrases (english, japanese, scene, level, detail) VALUES (?,?,?,?,NULL)",
+                     (E2, "グラウンド118.9へ連絡してください。", "航空管制・無線交信", ""))
+        plan = fx._plan(conn, fx.TARGETS)
+    check("[S1] 想定どおりの内容(出現数 1+2 / 1+0)なら2行とも要修正", [p["state"] for p in plan] == ["要修正", "要修正"], str(plan and [p["state"] for p in plan]))
+    check("[S1] dry-run用に出現箇所の前後が取れる(3箇所+1箇所)", len(plan[0]["ctx_ja"] + plan[0]["ctx_detail"]) == 3 and len(plan[1]["ctx_ja"]) == 1,
+          str([p["ctx_ja"] + p["ctx_detail"] for p in plan]))
+    check("[S1] 元がNULLのdetailは、書き戻す値もNULL(空文字にしない)", plan[1]["new_detail"] is None and plan[1]["raw_detail"] is None, str(plan[1]["new_detail"]))
+    # 実行(--apply)→元の値(NULLを含む)に戻す(--rollback)まで通す
+    import glob
+    import tempfile
+    tmp = tempfile.mkdtemp(prefix="gf_")
+    argv0 = sys.argv
+    try:
+        sys.argv = ["fix", "--apply", "--backup-dir", tmp]
+        rc = fx.main()
+        with db() as conn:
+            rows = {r["english"]: dict(r) for r in conn.execute(
+                "SELECT english, japanese, detail FROM phrases WHERE english IN (?, ?)", (E1, E2))}
+        check("[S4] --apply: 終了コード0・どちらも121.9になり118.9は残らない・英文は不変",
+              rc == 0 and all("118.9" not in (r["japanese"] or "") + (r["detail"] or "") for r in rows.values())
+              and "121.9" in rows[E2]["japanese"] and rows[E1]["detail"].count("121.9") == 2, str(rows)[:300])
+        check("[S4] --apply: 元がNULLのdetailはNULLのまま", rows[E2]["detail"] is None, repr(rows[E2]["detail"]))
+        check("[S4] --apply: detailは壊れたJSONにならない", isinstance(json.loads(rows[E1]["detail"]), dict))
+        check("[S4] --apply: 実行前のバックアップ(content_before_ground_freq_*.db)ができる", bool(glob.glob(f"{tmp}/content_before_ground_freq_*.db")))
+        orig = sorted(glob.glob(f"{tmp}/ground_freq_originals_*.json"))[-1]
+        sys.argv = ["fix", "--apply", "--backup-dir", tmp]
+        rc2 = fx.main()
+        check("[S4] 再実行は済みなので何もしない(終了コード0)", rc2 == 0)
+        sys.argv = ["fix", "--rollback", orig]
+        fx.main()
+        with db() as conn:
+            back = {r["english"]: dict(r) for r in conn.execute(
+                "SELECT english, japanese, detail FROM phrases WHERE english IN (?, ?)", (E1, E2))}
+        check("[S4] --rollback: 元の値(NULLを含む)に戻る", back[E2]["detail"] is None and "118.9" in back[E2]["japanese"]
+              and back[E1]["detail"].count("118.9") == 2, str(back)[:300])
+    finally:
+        sys.argv = argv0
+    # 想定外の「118.9」(タワーに触れた補足)が増えていたら、書かずに中止する
+    d1["note"] = "タワー118.9ではなく、グラウンドは121.9帯です。"
+    with db() as conn:
+        conn.execute("UPDATE phrases SET detail = ? WHERE english = ?", (json.dumps(d1, ensure_ascii=False), E1))
+        try:
+            fx._plan(conn, fx.TARGETS)
+            aborted = False
+        except SystemExit as e:
+            aborted = "出現数が想定と違う" in str(e)
+    check("[S2] 想定外の118.9(タワーに触れた補足)が増えていたら、1行も書かずに中止する", aborted)
+    # 英文の完全一致が2行あれば中止
+    with db() as conn:
+        conn.execute("INSERT INTO phrases (english, japanese, scene, level, detail) VALUES (?,?,?,?,?)",
+                     (E2, "別の行", "x", "", "{}"))
+        try:
+            fx._plan(conn, (fx.TARGETS[1],))       # 2つ目(Contact ground point niner.)だけで確かめる
+            aborted = False
+        except SystemExit as e:
+            aborted = "2件" in str(e)
+    check("[S3] 英文の完全一致が2行あれば中止する", aborted)
 
 
 # ----------------------------------------------------------------------------- B: ブラウザ
@@ -376,6 +466,93 @@ def check_nudge(s: Session, who: str, expect: bool, turn_on: bool = False):
           str(after["urls"][-3:]))
 
 
+def voice_options(p, sel: str) -> list[str]:
+    return p.evaluate("(s) => { const e = document.querySelector(s); return e ? [...e.options].map(o => o.value) : null; }", sel)
+
+
+def check_guest_misc(pw, base: str):
+    """独立照査の反映: ゲストの声の選択・声の拒否(403)・フラッシュ実行中/登録案内との重なり。"""
+    s = Session(pw, base, "chromium", dict(pw.devices["Pixel 5"]))
+    try:
+        p = s.page
+        # 保存してあった声がonyxでも、ゲストのフラッシュの声はnovaにそろう(空の声を送らない)
+        s.ctx.add_init_script("try { localStorage.setItem('fc_voice', 'onyx'); localStorage.setItem('fp_voice', 'echo'); } catch (e) {}")
+        open_tab(p, base, "flashcard")
+        fc = voice_options(p, "#fcVoice")
+        check("[M2] ゲストのフラッシュ単語の声の選択肢はash/novaだけ(事前作成の声)", fc is not None and sorted(fc) == ["ash", "nova"], str(fc))
+        check("[M2] 保存してあった声(onyx)が選べない値でも、選択はnovaにそろう(空にならない)",
+              p.evaluate("document.querySelector('#fcVoice').value") == "nova")
+        open_tab(p, base, "flashphrase")
+        fp = voice_options(p, "#fpVoice")
+        check("[M2] ゲストのフラッシュフレーズの声の選択肢もash/novaだけ・選択はnova",
+              fp is not None and sorted(fp) == ["ash", "nova"] and p.evaluate("document.querySelector('#fpVoice').value") == "nova", str(fp))
+        # 声の拒否(403)は『再生できるものだけ』の案内を出さない(絞り込んでも直らないため)
+        open_tab(p, base, "vocab")
+        p.evaluate("window.__toasts = []")
+        res = p.evaluate("""async () => {
+            const m = await import('/static/js/speech.js');
+            await m.sayItem('word', 20, 'word', 'echo', 'x');         // 無料範囲内(id 20)・echoは事前作成なし=未保存
+            await new Promise(r => setTimeout(r, 700));
+            const t = document.getElementById('toast'); const n = document.getElementById('freeOnlyNudge');
+            return {toast: t ? t.textContent : '', nudge: !!(n && n.classList.contains('show'))};
+        }""")
+        check("[M2] ゲストが事前作成のない声(echo)を頼むと403でログイン案内のトースト・『再生できるものだけ』の案内は出ない",
+              "ログイン" in res["toast"] and not res["nudge"], str(res))
+        # フラッシュ実行中(設定パネルが非表示)は、押しても何も見えない案内を出さない
+        open_tab(p, base, "flashcard")
+        p.click("#fcStart")
+        # 開始前に「無料で聴ける範囲のみ/聴けないものも含める」を選ぶダイアログ(2026-09-15〜・課金者以外)。範囲外も含める方を選ぶ
+        p.click("#frcAll")
+        p.wait_for_timeout(1800)
+        setup_hidden = p.evaluate("document.getElementById('fcSetup').offsetParent === null")
+        res = p.evaluate("""async () => {
+            const m = await import('/static/js/speech.js');
+            await m.sayItem('word', 5, 'word', 'ash', 'x');           // 範囲外(id 5)=402
+            await new Promise(r => setTimeout(r, 700));
+            const t = document.getElementById('toast'); const n = document.getElementById('freeOnlyNudge');
+            return {toast: t ? t.textContent : '', nudge: !!(n && n.classList.contains('show'))};
+        }""")
+        check("[M3] フラッシュ実行中は設定パネルが非表示", setup_hidden)
+        check("[M3] 実行中は『絞り込む』案内を出さず、断りの文は従来のトーストで出る(押しても変わらない行き止まりを作らない)",
+              (not res["nudge"]) and bool(res["toast"]), str(res))
+        # 登録案内(#guestNudge)との重なり: 登録案内が出ている間は絞り込み案内を出さない/後から出た登録案内は絞り込み案内を閉じる
+        open_tab(p, base, "vocab")
+        res = p.evaluate("""async () => {
+            const a = await import('/static/js/app.js');
+            const sp = await import('/static/js/speech.js');
+            a.toastSignupNudge('登録案内', '登録', '/login#signup', 8000);
+            await sp.sayItem('word', 5, 'word', 'ash', 'x');
+            await new Promise(r => setTimeout(r, 700));
+            const g = document.getElementById('guestNudge'), n = document.getElementById('freeOnlyNudge');
+            return {guest: g.classList.contains('show'), free: !!(n && n.classList.contains('show'))};
+        }""")
+        check("[L1] 登録案内が出ている間は『絞り込む』案内を重ねない(登録案内が残る)", res["guest"] and not res["free"], str(res))
+        open_tab(p, base, "vocab")
+        res = p.evaluate("""async () => {
+            const a = await import('/static/js/app.js');
+            const sp = await import('/static/js/speech.js');
+            await sp.sayItem('word', 5, 'word', 'ash', 'x');
+            await new Promise(r => setTimeout(r, 700));
+            const before = document.getElementById('freeOnlyNudge').classList.contains('show');
+            a.toastSignupNudge('登録案内', '登録', '/login#signup', 8000);
+            const g = document.getElementById('guestNudge'), n = document.getElementById('freeOnlyNudge');
+            return {before, guest: g.classList.contains('show'), free: n.classList.contains('show')};
+        }""")
+        check("[L1] 『絞り込む』案内の後に登録案内が出たら、絞り込み案内は閉じて重ならない",
+              res["before"] and res["guest"] and not res["free"], str(res))
+    finally:
+        s.close()
+    # ログイン済みはフラッシュの声を10種から選べる(変えていない)
+    s = Session(pw, base, "chromium", dict(pw.devices["Pixel 5"]))
+    try:
+        signup_and_login(s, "声の選択", "c1516v")
+        open_tab(s.page, base, "flashcard")
+        v = voice_options(s.page, "#fcVoice")
+        check("[M2] ログイン済みのフラッシュの声の選択肢は従来どおり10種", v is not None and len(v) == 10, str(v))
+    finally:
+        s.close()
+
+
 def check_browser(pw, base: str, data_dir: str):
     w_free = in_range(data_dir, "words", FREE_WORDS)
     ph_free = in_range(data_dir, "phrases", FREE_PHRASES)
@@ -510,6 +687,7 @@ def main() -> int:
         from playwright.sync_api import sync_playwright
         with sync_playwright() as pw:
             check_browser(pw, a.base, a.data_dir)
+            check_guest_misc(pw, a.base)
     ng = [r for r in RESULTS if not r[0]]
     print(f"\n合計 {len(RESULTS)} 項目 / NG {len(ng)}")
     return 1 if ng else 0

@@ -979,6 +979,19 @@ async function writingStep(area, next) {
 // 男声=ash(青) / 女声=nova(赤)。一覧の2つの再生ボタンに対応。
 const MALE_VOICE = "ash";
 const FEMALE_VOICE = "nova";
+// ゲスト(未ログイン)が選べるフラッシュの声は、事前に音声を作成済みのash/novaだけ(2026-10-16・ver1.5.16)。
+// サーバーは、ゲストが事前作成のない声で保存済みでない音声を頼むと合成せず拒否する(app/services/ai.pyのPRECREATED_TTS_VOICES)ため、
+// 選べるのに毎回断られる選択肢を出さない。ログイン済みは従来どおり全ての声。
+const GUEST_VOICES = [MALE_VOICE, FEMALE_VOICE];
+function guestVoiceList(list) {
+  return state.isGuest ? list.filter((v) => GUEST_VOICES.includes(v)) : list;
+}
+// 保存してあった声(localStorage)が選択肢に無い(ゲストに戻した等)ときは、novaにそろえる(空の声を送らない)。
+function fallbackVoice(sel) {
+  if (!sel || sel.value) return;
+  const nova = [...sel.options].find((o) => o.value === FEMALE_VOICE);
+  sel.value = nova ? nova.value : (sel.options[0] ? sel.options[0].value : "");
+}
 
 // 2つの再生ボタン(男声=青 / 女声=赤)を作って返す。getText() は再生する英文。
 function voiceButtons(getText) {
@@ -2188,7 +2201,7 @@ export async function flashcard(root) {
     .join("");
   const lvOpts = '<option value="">--</option>' + facets.range_levels
     .map((l) => `<option>${escapeHtml(l)}</option>`).join("");
-  const voiceOpts = speech.listOpenAIVoices().map((vn) => {
+  const voiceOpts = guestVoiceList(speech.listOpenAIVoices()).map((vn) => {
     const g = speech.voiceGender(vn);
     return `<option value="${vn}">${tx("settings.voiceTestPrefix")}${vn}${g ? "（" + g + "）" : ""}</option>`;
   }).join("");
@@ -2337,6 +2350,7 @@ export async function flashcard(root) {
   setVal("#fcSpeed", localStorage.getItem("fc_speed") || "std");
   setVal("#fcVoice", localStorage.getItem("fc_voice")
     || speech.loadPreferredVoice() || "nova");
+  fallbackVoice(root.querySelector("#fcVoice"));
   // 既定OFF(2026-08-12〜): 開始した瞬間に音声が鳴って驚く、という指摘のため
   // （電車内等での利用を想定）。一度でも明示的に選んだ値はそちらを優先する。
   root.querySelector("#fcAuto").checked =
@@ -2439,7 +2453,7 @@ export async function flashPhrase(root) {
     .join("");
   const lvOpts = '<option value="">--</option>' + levelFacets.range_levels
     .map((l) => `<option>${escapeHtml(l)}</option>`).join("");
-  const voiceOpts = speech.listOpenAIVoices().map((vn) => {
+  const voiceOpts = guestVoiceList(speech.listOpenAIVoices()).map((vn) => {
     const g = speech.voiceGender(vn);
     return `<option value="${vn}">${tx("settings.voiceTestPrefix")}${vn}${g ? "（" + g + "）" : ""}</option>`;
   }).join("");
@@ -2579,6 +2593,7 @@ export async function flashPhrase(root) {
   setVal("#fpSpeed", localStorage.getItem("fp_speed") || "std");
   setVal("#fpVoice", localStorage.getItem("fp_voice")
     || speech.loadPreferredVoice() || "nova");
+  fallbackVoice(root.querySelector("#fpVoice"));
   // 既定OFF(2026-08-12〜): フラッシュ単語と同じ理由(開始直後に音声が鳴って
   // 驚くという指摘)。一度でも明示的に選んだ値はそちらを優先する。
   root.querySelector("#fpAuto").checked =

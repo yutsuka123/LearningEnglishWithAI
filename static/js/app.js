@@ -134,6 +134,8 @@ export function toastSignupNudge(msg, linkText, href, ms = 10000) {
   a.textContent = linkText;
   a.addEventListener("click", () => api.track("click", "guest_nudge", "signup"));
   n.append(a);
+  const fo = document.getElementById("freeOnlyNudge");
+  if (fo) fo.classList.remove("show");   // 同じ位置に重ならないよう、登録案内を優先する
   n.classList.add("show");
   clearTimeout(nudgeTimer);
   nudgeTimer = setTimeout(() => n.classList.remove("show"), ms);
@@ -153,10 +155,21 @@ function pulseLabel(cb) {
   label.classList.add("free-only-pulse");
   setTimeout(() => label.classList.remove("free-only-pulse"), 4000);
 }
+// 見えているか、または「畳まれた<details>の中にあるだけ」のトグル(スマホの絞り込みパネル)だけを対象にする。
+// フラッシュカードの実行中は設定パネル(#fcSetup)ごと非表示で、ボタンを押しても何も見えない行き止まりになるため除く(独立照査M3)。
+function freeOnlyCandidate(c) {
+  if (c.checked) return false;
+  if (c.offsetParent !== null) return true;
+  const d = c.closest("details");
+  return !!(d && !d.open && d.offsetParent !== null);
+}
 function nudgeFreeOnly(refusalText) {
-  const cb = [...document.querySelectorAll('input[type="checkbox"][id$="FreeOnly"]')]
-    .find((c) => !c.checked);
+  const all = () => [...document.querySelectorAll('input[type="checkbox"][id$="FreeOnly"]')];
+  const cb = all().find(freeOnlyCandidate);
   if (!cb) return false;
+  // 登録案内(#guestNudge)が出ている間は重ねない(同じ位置・同じ重なり順のため。登録案内を優先し、断りは従来のトーストで出す)。
+  const gn = document.getElementById("guestNudge");
+  if (gn && gn.classList.contains("show")) return false;
   let n = document.getElementById("freeOnlyNudge");
   if (!n) {
     n = document.createElement("div");
@@ -177,8 +190,7 @@ function nudgeFreeOnly(refusalText) {
   b.className = "guest-nudge-link free-only-nudge-btn";
   b.textContent = tx("filter.freeOnlyNudgeBtn");
   b.addEventListener("click", () => {
-    const target = [...document.querySelectorAll('input[type="checkbox"][id$="FreeOnly"]')]
-      .find((c) => !c.checked) || cb;
+    const target = all().find(freeOnlyCandidate) || cb;
     const det = target.closest("details");
     if (det) det.open = true;                          // 畳まれた絞り込みパネルを開く
     target.checked = true;

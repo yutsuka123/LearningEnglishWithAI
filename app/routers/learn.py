@@ -1181,8 +1181,13 @@ def tts_item(
     有無=API課金とは別軸の収益化）。管理者は課金対象外。
     """
     item_type = item_type if item_type in audio_store.VALID_TYPES else "word"
-    base = kind if kind in ("word", "example", "phrase") else (
-        "phrase" if item_type == "phrase" else "word")
+    # 種別(kind)は項目の種類で決まる形にそろえる(2026-10-16・独立照査M1): フレーズは常に"phrase"、単語は"word"か"example"。
+    # 従来は`item_type=phrase&kind=example`のような食い違いも通り、`_item_text`は本文を同じ英文で返すのに保存キーだけが
+    # 別(phraseN_example_…)になる=保存済みでない扱いで有料合成+新しいファイルができた(ゲストの未保存の合成を塞ぐ意味が薄れる)。
+    if item_type == "phrase":
+        base = "phrase"
+    else:
+        base = "example" if kind == "example" else "word"
     speed = "native" if speed == "native" else "learn"
     skind = audio_store.storage_kind(base, speed)
     # 声は既知の10種だけ(2026-10-16)。従来は任意の文字列が保存キーにそのまま使われ、未知の声は
@@ -1230,8 +1235,10 @@ def tts_item(
                     # それ以外の声はログイン(無料)を案内する(2026-10-16・ver1.5.16)。
                     tracking.log_event(
                         "play_error", item_type, f"guest_voice:{base}:{voice}")
+                    # 403(402ではない): 402は「無料範囲外・要チャージ」で、フロントは未ONの『再生できるものだけ』を案内する。
+                    # 声の拒否は項目が無料範囲内でも起きるので、その案内(絞り込み)は的外れになる(独立照査M2)。
                     return Response(content=messages.tr("ai.tts_voice_login"),
-                                    status_code=402, media_type="text/plain")
+                                    status_code=403, media_type="text/plain")
                 free_range = access_tiers.is_free_range(
                     conn, item_type, item_id, guest=is_guest)
         if cached is not None:
