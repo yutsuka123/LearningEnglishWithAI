@@ -48,9 +48,7 @@ def _pt_and_pattern(amount_jpy: int) -> tuple[int, str]:
 
 def _require_admin(conn) -> None:
     from ..services import auth
-    me = auth.get_user(conn, current_user_id())
-    if not me or me.get("role") != "admin":
-        raise errors.http_error("2004", "管理者のみ操作できます。")
+    auth.require_admin(conn, "管理者のみ操作できます。")
 
 
 def _row_to_dict(r) -> dict:

@@ -53,10 +53,7 @@ _ID_PATTERN = r"^[A-Za-z0-9_-]{1,64}$"
 
 
 def _require_admin(conn) -> dict:
-    me = get_user(conn, current_user_id())
-    if not me or me.get("role") != "admin":
-        raise errors.http_error("2004", "管理者のみ操作できます。")
-    return me
+    return auth.require_admin(conn, "管理者のみ操作できます。")
 
 
 def _require_admin_or_test_allowed(conn) -> dict:

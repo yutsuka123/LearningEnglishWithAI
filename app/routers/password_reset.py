@@ -49,9 +49,8 @@ def _rate_limited(key: str, limit: int, window: float) -> bool:
 
 
 def _require_admin(conn) -> int:
-    me = auth.get_user(conn, auth.current_user_id())
-    if not me or me.get("role") != "admin" or not me.get("is_active"):
-        raise errors.http_error("2004", "管理者のみ利用できます。")
+    me = auth.require_admin(
+        conn, "管理者のみ利用できます。", require_active=True)
     return int(me["id"])
 
 

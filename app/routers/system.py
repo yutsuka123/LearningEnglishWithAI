@@ -43,9 +43,7 @@ def _latest_changelog_date() -> str | None:
 def _require_admin() -> None:
     """管理者専用エンドポイントのガード（未管理者は403）。"""
     with db() as conn:
-        me = auth.get_user(conn, auth.current_user_id())
-    if not me or me.get("role") != "admin":
-        raise errors.http_error("2004", "管理者のみ利用できます。")
+        auth.require_admin(conn, "管理者のみ利用できます。")
 
 
 def _user_filter_sql(

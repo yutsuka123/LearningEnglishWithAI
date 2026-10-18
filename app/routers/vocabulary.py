@@ -370,9 +370,7 @@ def _require_admin(conn) -> None:
     表示だが、API直叩きを塞ぐサーバー側の強制がなかった(delete_wordと
     同種の問題)。"""
     from ..services import auth
-    me = auth.get_user(conn, auth.current_user_id())
-    if not me or me.get("role") != "admin":
-        raise errors.http_error("2004", "単語の追加・変更は管理者のみ行えます。")
+    auth.require_admin(conn, "単語の追加・変更は管理者のみ行えます。")
 
 
 @router.post("", status_code=201)

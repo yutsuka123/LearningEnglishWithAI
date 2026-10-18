@@ -10,7 +10,7 @@ from urllib.parse import quote
 
 import html as html_lib
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi import Response
 from fastapi.responses import (
     FileResponse, HTMLResponse, JSONResponse, PlainTextResponse,
@@ -488,7 +488,6 @@ def robots_txt():
     lines = [
         "User-agent: *",
         "Disallow: /api/",
-        "Disallow: /admin",
         "Disallow: /reset-password",
         "Disallow: /static/password-help.html",
         "Disallow: /static/js/",
@@ -692,11 +691,12 @@ def tokushoho_page():
 @app.get("/admin/fulfillment")
 def admin_fulfillment_page():
     """フルフィルメント管理画面（管理者専用）。未ログインは middleware が
-    /login へ誘導。ログイン済みでも role=admin でなければ弾く。"""
+    /login へ誘導。ログイン済みでも role=admin でなければ、存在しない
+    パスと同じ404を返す(2026-10-18・/loginへ誘導して画面の存在を教えない)。"""
     with db() as conn:
         me = auth_svc.get_user(conn, auth_svc.current_user_id())
     if not me or me.get("role") != "admin":
-        return RedirectResponse("/login")
+        raise HTTPException(status_code=404)
     return FileResponse(
         str(paths.root / "templates" / "admin_fulfillment.html"))
 
@@ -707,7 +707,7 @@ def admin_paypay_test_page():
     with db() as conn:
         me = auth_svc.get_user(conn, auth_svc.current_user_id())
     if not me or me.get("role") != "admin":
-        return RedirectResponse("/login")
+        raise HTTPException(status_code=404)
     return FileResponse(
         str(paths.root / "templates" / "admin_paypay_test.html"))
 

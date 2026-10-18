@@ -191,6 +191,21 @@ def get_user(conn: sqlite3.Connection, user_id: int) -> Optional[dict]:
     return dict(row) if row else None
 
 
+def require_admin(
+    conn: sqlite3.Connection, message: str, *, require_active: bool = False
+) -> dict:
+    """管理者専用エンドポイントの共通ガード(2026-10-18・9つのルーターに重複して
+    いた「role=adminか」の判定を1か所に集約)。管理者でなければ2004(403)を投げ、
+    管理者なら本人のユーザー行を返す。`message`は従来どおり各エンドポイントの
+    文言(表示は変えない)。`require_active=True`は無効化済み管理者も弾く。"""
+    from . import errors
+    me = get_user(conn, current_user_id())
+    if (not me or me.get("role") != "admin"
+            or (require_active and not me.get("is_active"))):
+        raise errors.http_error("2004", message)
+    return me
+
+
 def get_user_by_name(
     conn: sqlite3.Connection, username: str
 ) -> Optional[dict]:

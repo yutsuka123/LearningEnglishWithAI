@@ -382,10 +382,7 @@ def withdraw(payload: WithdrawIn):
 
 
 def _require_admin(conn) -> None:
-    me_row = auth.get_user(conn, auth.current_user_id())
-    if not me_row or me_row.get("role") != "admin":
-        from ..services import errors
-        raise errors.http_error("2004", "管理者のみ閲覧できます。")
+    auth.require_admin(conn, "管理者のみ閲覧できます。")
 
 
 @router.get("/withdrawals")

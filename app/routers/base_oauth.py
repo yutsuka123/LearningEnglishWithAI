@@ -29,7 +29,6 @@ from fastapi.responses import RedirectResponse
 
 from ..config import log
 from ..database import db
-from ..services.auth import current_user_id, get_user
 
 router = APIRouter(prefix="/admin/base-oauth", tags=["base-oauth"])
 
@@ -45,10 +44,8 @@ _STATE_TTL = 600.0
 
 
 def _require_admin(conn) -> dict:
-    me = get_user(conn, current_user_id())
-    if not me or me.get("role") != "admin":
-        raise errors.http_error("2004", "管理者のみ操作できます。")
-    return me
+    from ..services import auth
+    return auth.require_admin(conn, "管理者のみ操作できます。")
 
 
 def _cleanup_states() -> None:

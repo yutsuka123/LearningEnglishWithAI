@@ -56,9 +56,7 @@ def create_inquiry(payload: InquiryIn):
 
 def _require_admin(conn) -> None:
     from ..services import auth
-    me = auth.get_user(conn, current_user_id())
-    if not me or me.get("role") != "admin":
-        raise errors.http_error("2004", "管理者のみ閲覧できます。")
+    auth.require_admin(conn, "管理者のみ閲覧できます。")
 
 
 # 管理画面を開くたびに全件を読み込まないための上限(認証不要の「パスワード再発行」の依頼が積まれても重くならないように・2026-10-04)。

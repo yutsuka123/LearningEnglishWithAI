@@ -57,9 +57,7 @@ LIST_LIMIT_MAX = 500
 
 
 def _require_admin(conn) -> None:
-    me = auth.get_user(conn, current_user_id())
-    if not me or me.get("role") != "admin":
-        raise errors.http_error("2004", "管理者のみ利用できます。")
+    auth.require_admin(conn, "管理者のみ利用できます。")
 
 
 def normalize_tag(raw: str) -> str:
