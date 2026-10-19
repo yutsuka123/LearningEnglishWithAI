@@ -114,11 +114,11 @@ def create(payload: CreateIn, request: Request):
         log.warning("paypay_charge: create rate-limited uid=%s", uid)
         raise errors.http_error("3003")
     merchant_payment_id = f"charge-{uuid.uuid4()}"
-    # request.base_urlは常にhttp(本番はCaddy経由のDocker内接続のため)。
-    # external_schemeで実際のスキームに直す(paypay_test.pyと同じ理由)。
-    scheme = auth.external_scheme(request)
+    # 戻りURLの土台は固定の公開URL(env PUBLIC_BASE_URL)を優先し、Hostヘッダ由来に
+    # しない(2026-10-19・セキュリティ向上P4)。未設定時は従来どおりX-Forwarded-Proto+Host
+    # (request.base_urlは本番だとCaddy経由のDocker内接続で常にhttpになるため)。
     redirect_url = (
-        f"{scheme}://{request.url.netloc}/api/paypay/return"
+        f"{auth.public_base_url(request)}/api/paypay/return"
         f"?mpid={merchant_payment_id}")
     with db() as conn:
         conn.execute(

@@ -120,13 +120,12 @@ def create(payload: CreateIn, request: Request):
     with db() as conn:
         me = _require_admin(conn)
     merchant_payment_id = f"test-{uuid.uuid4()}"
-    # request.base_urlは常にhttp(本番はCaddy経由のDocker内接続のため)。
-    # external_scheme([[real_client_ip]]と同じ理由)で実際のスキームに直す
-    # (2026-08-27発見・修正。ただし実機決済エラーの直接原因はこれとは
-    # 別だったと後日判明・docs/TODO.md参照。httpsにする対応自体は
-    # 公式ドキュメントの用法に合わせた正当な修正として維持)。
-    scheme = auth.external_scheme(request)
-    redirect_url = f"{scheme}://{request.url.netloc}" \
+    # 戻りURLの土台は固定の公開URL(env PUBLIC_BASE_URL)を優先し、Hostヘッダ由来に
+    # しない(2026-10-19・セキュリティ向上P4)。未設定時は従来どおりX-Forwarded-Proto+Host
+    # (2026-08-27: request.base_urlは本番だとCaddy経由のDocker内接続で常にhttpのため
+    # external_schemeで直した経緯。実機決済エラーの直接原因は別だったと後日判明・
+    # docs/TODO.md参照。httpsにする対応自体は公式ドキュメントの用法に合わせて維持)。
+    redirect_url = f"{auth.public_base_url(request)}" \
         f"/api/paypay-test/return?mpid={merchant_payment_id}"
     log.info(
         "paypay_test: create admin=%s(id=%s) amount=%s mpid=%s",

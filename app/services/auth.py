@@ -892,6 +892,18 @@ def external_scheme(request) -> str:
     return xfp or request.url.scheme
 
 
+def public_base_url(request) -> str:
+    """決済の戻りURLなど「自分の公開URL」を作る土台(2026-10-19・セキュリティ向上P4)。
+    env PUBLIC_BASE_URL(例 https://study.nyangailab.com)があればそれを使う。Hostヘッダは
+    リクエスト側が決められる値のため、決済の戻り先をHost由来にしない(Host偽装で戻り先を
+    すり替えられる型の問題を避ける)。未設定(ローカル開発・移行前)は従来どおり
+    X-Forwarded-Proto+Hostから組み立てる。末尾の/は除く。"""
+    base = os.getenv("PUBLIC_BASE_URL", "").strip().rstrip("/")
+    if base.startswith(("https://", "http://")):
+        return base
+    return f"{external_scheme(request)}://{request.url.netloc}"
+
+
 # 汎用 IP レート制限（DDoS/濫用の速度制限）。RATE_LIMIT_PER_MIN で調整。
 # 0/未設定=無効（ローカル単一ユーザーは既定で無効＝通常利用に影響なし）。
 # 公開時は env で 300 程度を推奨。真のDDoSは前段(Cloudflare/Caddy/fail2ban)で防ぐ。

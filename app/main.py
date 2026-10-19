@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import secrets
 import time
 from contextlib import asynccontextmanager
@@ -17,6 +18,7 @@ from fastapi.responses import (
     RedirectResponse,
 )
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .config import load_tokushoho_info, log, paths
 from .database import OWNER_USER_ID, db, init_db
@@ -185,7 +187,7 @@ async def _unhandled_exception_handler(request: Request, exc: Exception):
     発覚した穴）。クライアントへは内部詳細を返さず、共通エラーコード
     7999(アプリ/未分類の内部エラー)のみ返す。"""
     log.error(
-        "unhandled exception path=%s method=%s", request.url.path,
+        "unhandled exception path=%s method=%s", request.scope["path"],
         request.method, exc_info=exc,
     )
     # このハンドラは外側(ServerErrorMiddleware)で動き、_auth_contextが載せた
@@ -206,7 +208,7 @@ async def _auth_context(request, call_next):
     lang_token = messages.set_current_lang(request.headers.get("x-lang"))
     try:
         response = await _auth_context_inner(request, call_next)
-        if request.url.path.startswith("/api/"):
+        if request.scope["path"].startswith("/api/"):
             # 応答の文言が`X-Lang`で変わるため、早期return(レート制限・要ログイン等)を含む
             # 全ての/api/応答に付ける(中間キャッシュが言語違いの応答を取り違えないように)。
             vary = response.headers.get("vary")
@@ -230,7 +232,7 @@ async def _auth_context_inner(request, call_next):
             {"ok": False, "error": messages.tr("rate.too_many")},
             status_code=429)
     if (request.method == "GET"
-            and request.url.path in auth_svc.HEAVY_GET_PATHS
+            and request.scope["path"] in auth_svc.HEAVY_GET_PATHS
             and auth_svc.heavy_ip_rate_limited(client_ip)):
         return JSONResponse(
             {"ok": False, "error": messages.tr("rate.too_many")},
@@ -274,7 +276,7 @@ async def _auth_context_inner(request, call_next):
                     if auth_svc.get_session_epoch(conn, p_uid) == p_epoch:
                         uid = p_uid
         if (uid is not None and not is_internal
-                and request.method == "GET" and request.url.path == "/"):
+                and request.method == "GET" and request.scope["path"] == "/"):
             # 既にログイン済み(30日セッション)の管理者/テストアカウントは
             # 再ログインするまで内部Cookieが付かないため、トップページ表示
             # 時に一度だけ役割を見て付与する（一般ユーザーは毎回1回の
@@ -287,7 +289,7 @@ async def _auth_context_inner(request, call_next):
             except Exception:
                 log.warning("内部Cookie判定に失敗", exc_info=True)
         if uid is None:
-            path = request.url.path
+            path = request.scope["path"]
             if _is_landing_log_path(path):
                 # 未ログインの訪問をIPで軽く記録する（2026-08-11・B1本
                 # 実装、2026-08-20にabout.html閲覧も対象に拡張。ログ
@@ -396,7 +398,7 @@ async def _auth_context_inner(request, call_next):
         if elapsed >= _SLOW_REQUEST_SEC:
             log.warning(
                 "slow request: %s %s elapsed=%.1fs",
-                request.method, request.url.path, elapsed)
+                request.method, request.scope["path"], elapsed)
         auth_svc.reset_current_user_id(token)
         auth_svc.reset_current_ip(ip_token)
         auth_svc.reset_current_guest_sid(gsid_token)
@@ -421,7 +423,7 @@ async def _auth_context_inner(request, call_next):
     response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
     response.headers.setdefault(
         "Content-Security-Policy", "frame-ancestors 'self'")
-    path = request.url.path
+    path = request.scope["path"]
     if path.startswith("/api/"):
         # 応答の文言が`X-Lang`で変わる(messages.py)ため、中間キャッシュが
         # 言語違いの応答を取り違えないよう明示する。
@@ -437,6 +439,20 @@ async def _auth_context_inner(request, call_next):
     elif path == "/" or path.startswith("/static"):
         response.headers["Cache-Control"] = "no-cache, must-revalidate"
     return response
+
+
+# 許可するHost以外を拒否する(2026-10-19・セキュリティ向上P4)。env ALLOWED_HOSTS
+# (カンマ区切り・例 study.nyangailab.com)があるときだけ有効。未設定=従来どおり
+# 何も拒否しない(ローカル開発・移行前)。本番はCaddyがHostで振り分けるので今は
+# 悪用できないが、パス判定・URL組み立てをHostに頼る型の問題(Starlette BadHost系)を
+# アプリ側でも断つ多重防御。ループバック(Dockerのヘルスチェック=127.0.0.1)は常に許可。
+# 最後に追加=最も外側で動くので、認証などの処理に入る前に弾く。
+_allowed_hosts = [h.strip() for h in os.getenv("ALLOWED_HOSTS", "").split(",")
+                  if h.strip()]
+if _allowed_hosts:
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=_allowed_hosts + ["127.0.0.1", "localhost"])
 
 
 # API routers
