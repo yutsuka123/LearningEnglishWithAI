@@ -892,16 +892,48 @@ def external_scheme(request) -> str:
     return xfp or request.url.scheme
 
 
+_DEFAULT_PUBLIC_BASE = "https://study.nyangailab.com"
+_KNOWN_PUBLIC_HOSTS = {"study.nyangailab.com", "localhost", "127.0.0.1"}
+_warned_bad_public_base = False
+
+
+def _valid_public_base(value: str) -> str:
+    """env PUBLIC_BASE_URLの検証。`https://host[:port]`の形(パス・クエリ・ユーザー情報なし)だけを通し、
+    正規化した値を返す。不正なら空文字。"""
+    from urllib.parse import urlsplit
+    try:
+        u = urlsplit(value)
+        if (u.scheme in ("http", "https") and u.netloc and not u.path
+                and not u.query and not u.fragment and u.username is None
+                and u.password is None and " " not in value):
+            return f"{u.scheme}://{u.netloc}"
+    except ValueError:
+        pass
+    return ""
+
+
 def public_base_url(request) -> str:
-    """決済の戻りURLなど「自分の公開URL」を作る土台(2026-10-19・セキュリティ向上P4)。
-    env PUBLIC_BASE_URL(例 https://study.nyangailab.com)があればそれを使う。Hostヘッダは
-    リクエスト側が決められる値のため、決済の戻り先をHost由来にしない(Host偽装で戻り先を
-    すり替えられる型の問題を避ける)。未設定(ローカル開発・移行前)は従来どおり
-    X-Forwarded-Proto+Hostから組み立てる。末尾の/は除く。"""
-    base = os.getenv("PUBLIC_BASE_URL", "").strip().rstrip("/")
-    if base.startswith(("https://", "http://")):
-        return base
-    return f"{external_scheme(request)}://{request.url.netloc}"
+    """パスワード再発行リンクや決済の戻りURLなど「自分の公開URL」(スキーム+ホスト)を作る土台
+    (2026-10-19・セキュリティ向上P4。パスワード再発行(2026-10-04独立照査L-2)と決済で別々だった
+    組み立てをここに一本化)。env PUBLIC_BASE_URL(例 https://study.nyangailab.com)が正しい形で
+    あればそれを使う。無い/不正な値のときは、Hostヘッダが既知のホスト(本番ドメイン・localhost)の
+    ときだけそれに従い、それ以外は本番ドメインに固定する(Hostヘッダ注入で宛先を偽装されない・
+    SSHトンネル等で壊れたURLを配らない)。"""
+    global _warned_bad_public_base
+    raw = os.getenv("PUBLIC_BASE_URL", "").strip().rstrip("/")
+    if raw:
+        base = _valid_public_base(raw)
+        if base:
+            return base
+        if not _warned_bad_public_base:
+            _warned_bad_public_base = True
+            from ..config import log
+            log.warning("PUBLIC_BASE_URLの形が不正なため無視します(https://ホスト の形で指定してください)")
+    host = request.headers.get("host", "").strip().lower()
+    if host.rsplit(":", 1)[0] in _KNOWN_PUBLIC_HOSTS:
+        scheme = external_scheme(request) if host.startswith("study.") else "http"
+        return f"{scheme}://{host}"
+    return _DEFAULT_PUBLIC_BASE
 
 
 # 汎用 IP レート制限（DDoS/濫用の速度制限）。RATE_LIMIT_PER_MIN で調整。

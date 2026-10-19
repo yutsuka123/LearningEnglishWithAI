@@ -236,22 +236,10 @@ def admin_lookup(q: str = ""):
         return {"users": password_reset.lookup(conn, q)}
 
 
-_DEFAULT_PUBLIC_BASE = "https://study.nyangailab.com"
-_ALLOWED_HOSTS = {"study.nyangailab.com", "localhost", "127.0.0.1"}
-
-
 def _public_base(request: Request) -> str:
-    """発行するリンクの先頭(スキーム+ホスト)。環境変数PUBLIC_BASE_URLがあればそれ。無ければ、Hostヘッダが既知のホスト
-    (本番ドメイン・localhost)のときだけ従い、それ以外は本番ドメインに固定する(Hostヘッダ注入でリンクの宛先を偽装されない・
-    SSHトンネル等で壊れたURLを配らない・2026-10-04独立照査L-2)。"""
-    base = os.getenv("PUBLIC_BASE_URL", "").strip().rstrip("/")
-    if base:
-        return base
-    host = request.headers.get("host", "").strip().lower()
-    if host.rsplit(":", 1)[0] in _ALLOWED_HOSTS:
-        scheme = auth.external_scheme(request) if host.startswith("study.") else "http"
-        return f"{scheme}://{host}"
-    return _DEFAULT_PUBLIC_BASE
+    """発行するリンクの先頭(スキーム+ホスト)。組み立ては決済の戻りURLと共通
+    (`auth.public_base_url`・2026-10-19に一本化。元の仕様は2026-10-04独立照査L-2)。"""
+    return auth.public_base_url(request)
 
 
 class IssueIn(BaseModel):

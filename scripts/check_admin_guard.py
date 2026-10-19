@@ -44,10 +44,21 @@ with TestClient(m.app, follow_redirects=False) as c:
     for path in ("/admin/fulfillment", "/admin/paypay-test"):
         a = c.get(path); b = c.get("/zzz-not-exist")
         check(f"一般ユーザー {path} は存在しないパスと同じ404", a.status_code == 404 and (a.status_code, a.text, a.headers.get("content-type")) == (b.status_code, b.text, b.headers.get("content-type")), (a.status_code, a.text[:60], b.status_code, b.text[:60]))
+    # 一般ユーザー: 末尾スラッシュ・非GET・/admin配下の他のパスも、存在しないパスと全く同じ応答(照査指摘2026-10-19)
+    def sig(r): return (r.status_code, r.text, r.headers.get("content-type"), r.headers.get("allow"), r.headers.get("location"),
+                        r.headers.get("x-frame-options"), r.headers.get("content-security-policy"))
+    for method in ("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"):
+        for path, ref in (("/admin/fulfillment", "/zzz-not-exist"), ("/admin/fulfillment/", "/zzz-not-exist/"),
+                          ("/admin/paypay-test/", "/zzz-not-exist/"), ("/admin/base-oauth/status", "/zzz-not-exist/a"),
+                          ("/admin", "/zzz"), ("/admin/", "/zzz/")):
+            a = c.request(method, path); b = c.request(method, ref)
+            check(f"一般ユーザー {method} {path} は存在しないパスと同一応答", sig(a) == sig(b) and a.status_code == 404, (sig(a), sig(b)))
     # 管理者: 開ける
     c.cookies.clear(); c.cookies.update(cookie(admin))
     for path in ("/admin/fulfillment", "/admin/paypay-test"):
         check(f"管理者 {path} は200", c.get(path).status_code == 200)
+    check("管理者 /admin/base-oauth/status は404にならない(従来どおり到達できる)", c.get("/admin/base-oauth/status").status_code != 404)
+    check("管理者 POST /admin/fulfillment は従来どおり405", c.post("/admin/fulfillment").status_code == 405)
     # robots.txt
     rb = c.get("/robots.txt").text
     check("robots.txtに/adminを載せない", "/admin" not in rb and "Disallow: /api/" in rb)

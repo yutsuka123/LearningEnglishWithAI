@@ -9,8 +9,9 @@ CHILD = len(sys.argv) > 1 and sys.argv[1] == "child"
 tmp = tempfile.mkdtemp(prefix="eigo_hard_")
 os.environ["DATA_DIR"] = tmp
 os.environ["MULTIUSER"] = "1"
-os.environ.pop("PUBLIC_BASE_URL", None)
-os.environ.pop("ALLOWED_HOSTS", None)
+# 空文字で上書き(popだと app.config の load_dotenv が親ディレクトリの.envから補ってしまう)
+os.environ["PUBLIC_BASE_URL"] = ""
+os.environ["ALLOWED_HOSTS"] = ""
 if CHILD:
     os.environ["ALLOWED_HOSTS"] = "study.nyangailab.com"
     os.environ["PUBLIC_BASE_URL"] = "https://study.nyangailab.com/"
@@ -51,16 +52,27 @@ def fake_request(headers: dict, scheme="http", host="testserver"):
 # --- A. public_base_url(PayPay戻りURLの土台) ---
 def pb(req): return auth.public_base_url(req)
 if not CHILD:
-    check("未設定: X-Forwarded-Proto+Hostから組み立てる(従来どおり)",
+    check("未設定: 本番ドメインのHost+X-Forwarded-Protoから組み立てる(従来どおり)",
           pb(fake_request({"x-forwarded-proto": "https"}, host="study.nyangailab.com")) == "https://study.nyangailab.com")
-    check("未設定: プロキシヘッダ無しは直接のスキーム", pb(fake_request({}, host="localhost:8000")) == "http://localhost:8000")
+    check("未設定: localhostは直接のスキーム(http)", pb(fake_request({}, host="localhost:8000")) == "http://localhost:8000")
+    check("未設定: 知らないHostは本番ドメインに固定(Host偽装で戻り先をすり替えられない)",
+          pb(fake_request({"x-forwarded-proto": "https"}, host="evil.example")) == "https://study.nyangailab.com")
     os.environ["PUBLIC_BASE_URL"] = "https://study.nyangailab.com/"
     check("設定あり: 末尾/を除いた固定URLを返す",
           pb(fake_request({"x-forwarded-proto": "http"}, host="evil.example")) == "https://study.nyangailab.com")
-    os.environ["PUBLIC_BASE_URL"] = "study.nyangailab.com"
-    check("スキーム無しの誤設定は無視して従来の組み立てへ戻る(決済を壊さない)",
-          pb(fake_request({"x-forwarded-proto": "https"}, host="study.nyangailab.com")) == "https://study.nyangailab.com")
-    os.environ.pop("PUBLIC_BASE_URL")
+    os.environ["PUBLIC_BASE_URL"] = "HTTPS://Study.Nyangailab.com:8443"
+    check("大文字のスキームも受け付け、正規化して返す", pb(fake_request({}, host="x")) == "https://Study.Nyangailab.com:8443")
+    for bad in ("study.nyangailab.com", "https://study.nyangailab.com/app", "https://u:p@study.nyangailab.com",
+                "https://study.nyangailab.com?x=1", "https://study nyangailab.com", "ftp://study.nyangailab.com"):
+        os.environ["PUBLIC_BASE_URL"] = bad
+        got = pb(fake_request({"x-forwarded-proto": "https"}, host="evil.example"))
+        check(f"不正な設定 '{bad}' は無視して本番ドメインに固定(壊れたリンクを配らない)", got == "https://study.nyangailab.com", got)
+    os.environ["PUBLIC_BASE_URL"] = ""
+    from app.routers import password_reset
+    os.environ["PUBLIC_BASE_URL"] = "https://study.nyangailab.com"
+    check("パスワード再発行リンクと決済の戻りURLが同じ組み立て",
+          password_reset._public_base(fake_request({}, host="evil.example")) == pb(fake_request({}, host="evil.example")))
+    os.environ["PUBLIC_BASE_URL"] = ""
 
 # --- B. PayPayの作成APIが渡す戻りURL(エンドツーエンド・外部APIは差し替え) ---
 captured = []
@@ -85,9 +97,9 @@ with TestClient(m.app, base_url=base, follow_redirects=False) as c:
             check(f"固定URL設定あり: {label}の戻りURLはHost/プロキシヘッダに左右されない",
                   url is not None and url.startswith("https://study.nyangailab.com" + ret + "?mpid="), (r.status_code, url))
         else:
-            # 未設定の従来挙動: Host+X-Forwarded-Protoのまま(本番の挙動を変えない確認)
-            check(f"未設定: {label}の戻りURLは従来どおりHost由来(挙動不変)",
-                  url is not None and url.startswith("https://evil.example" + ret + "?mpid="), (r.status_code, url))
+            # 未設定: 知らないHostは本番ドメインに固定される(Host偽装で戻り先を変えられない)
+            check(f"未設定: {label}の戻りURLは知らないHostでも本番ドメイン",
+                  url is not None and url.startswith("https://study.nyangailab.com" + ret + "?mpid="), (r.status_code, url))
 
     # --- C. 認可のパス判定: 変なHostでも通常のHostと同じ判定 ---
     c.cookies.clear()

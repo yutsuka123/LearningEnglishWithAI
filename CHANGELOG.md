@@ -18,11 +18,14 @@ prune cron(03:45)でusage_events 0件削除+growth_daily 41日分保存を確認
 
 ## ver1.5.17 (2026-10-18作成・**未デプロイ・独立照査前**・ブランチ`ver1.5.17`・オーナー指示10/18「お勧めの順で」=セキュリティ向上P4の一部)
 
-**管理画面の隠蔽と管理者判定の集約(挙動は管理者以外への応答だけ変わる)**
+**管理画面の隠蔽・管理者判定の集約・Host/パス判定の多重防御(挙動は管理者以外への応答と、環境変数を設定したときだけ変わる)**
 
-- **管理画面ページを管理者以外には404に**: `/admin/fulfillment`・`/admin/paypay-test`は、管理者でない人(ログイン済みの一般ユーザー)には**存在しないパスと同じ404**を返す(従来は`/login`へ誘導=画面の存在が分かった)。未ログインは従来どおりmiddlewareが`/login`へ(存在しないパスと同じ扱い)。`robots.txt`から`Disallow: /admin`を外した(場所を教えない)。
-- **管理者判定を1か所に**: 9つのルーター(`base_oauth`/`system`/`inquiries`/`password_reset`/`vocabulary`/`fulfillment`/`auth_routes`/`admin_memos`/`paypay_test`)に重複していた`_require_admin`の判定を`auth.require_admin`に集約。各エンドポイントの**文言・戻り値・403は従来どおり**(`password_reset`の無効化済み管理者拒否も維持)。
-- **検査**: 一時データ領域のTestClientで26項目OK(管理者は通る/一般は403+従来の文言/ページは管理者200・一般は404が存在しないパスと完全一致/robots)。本番や開発DBには触れていない。
+- **`/admin`配下を管理者以外には存在しないパスと同じ応答に**: `/admin/fulfillment`・`/admin/paypay-test`・`/admin/base-oauth/*`は、管理者でない人(ログイン済みの一般ユーザー)には**存在しないパスと同じ404**を返す(メソッド・末尾スラッシュに関係なく。2026-10-19の独立照査で、ハンドラだけの404だと`/admin/fulfillment/`が307・POSTが405になり存在が分かると指摘され、middlewareでパスを差し替えて通常の404処理に任せる形にした)(従来は`/login`へ誘導=画面の存在が分かった)。未ログインは従来どおりmiddlewareが`/login`へ(存在しないパスと同じ扱い)。`robots.txt`から`Disallow: /admin`を外した(場所を教えない)。
+- **管理者判定の重複を集約**: 9つのルーター(`base_oauth`/`system`/`inquiries`/`password_reset`/`vocabulary`/`fulfillment`/`auth_routes`/`admin_memos`/`paypay_test`)に重複していた`_require_admin`の判定を`auth.require_admin`に集約。各エンドポイントの**文言・戻り値・403は従来どおり**(`password_reset`の無効化済み管理者拒否も維持)。
+- **認可・振り分けのパス判定を`request.scope["path"]`へ**(`app/main.py`の7か所・`request.url.path`をやめる=Hostヘッダ由来のURL解釈に左右されない。`/api/health%23x`のような`#`/`?`を含む細工でも判定が変わらない)。
+- **許可するHost以外を400で拒否(env `ALLOWED_HOSTS`・カンマ区切り)**: 設定した時だけ有効(未設定=従来どおり何も拒否しない)。`127.0.0.1`/`localhost`は常に許可(Dockerのヘルスチェック用)。最も外側のミドルウェアなので認証処理の前に弾く。有効な一覧は起動ログに残す。Starlette標準の`TrustedHostMiddleware`のため、大文字・末尾ドット・IPv6直書き・Host無しは400(ブラウザ・Caddy経由では起きない)。**設定ミスだと実アクセスだけ全て400でヘルスチェックは通る**ため、反映後は`curl -H 'Host: study.nyangailab.com' http://127.0.0.1:8001/api/health`が200・`-H 'Host: evil.example'`が400になることを確認する。
+- **公開URLの組み立てを一本化(`auth.public_base_url`)**: パスワード再発行リンクと決済(PayPay)の戻りURLで別々だった組み立てを統一。env `PUBLIC_BASE_URL`が`https://ホスト`の形(パス・クエリ・ユーザー情報なし)ならそれ、無い/不正ならHostが既知(本番ドメイン・localhost)のときだけ従い、それ以外は本番ドメインに固定(Hostヘッダ注入で決済の戻り先をすり替えられない)。不正な値は警告ログを1回出して無視する。本番ドメインへの通常アクセスでは従来と同じURLになる。
+- **検査**: `scripts/check_admin_guard.py`=64項目OK(管理者は通る/一般は403+従来の文言/ページは管理者200・一般は全メソッド×末尾スラッシュ×`/admin`配下で存在しないパスと完全一致/robots)・`scripts/check_hardening.py`=32項目OK(未設定=従来の挙動・変なHost・許可Host制限・固定URL・不正な設定の無視・PayPay作成APIの戻りURL)・`check_password_reset.py`/`check_message_i18n.py`も合格。一時データ領域のTestClientで実施(管理者は通る/一般は403+従来の文言/ページは管理者200・一般は404が存在しないパスと完全一致/robots)。本番や開発DBには触れていない。
 - **未対応**: 独立照査・本番デプロイ(メンテ枠)・管理API(`/api/**/admin/**`)の403→404の検討(フロントの扱いを確認してから)・管理系をまとめて拒否する構造。詳細は非公開の`docs/TODO.md`参照。
 
 ## ver1.5.16 (2026-10-16作成・**2026-10-17(土)03:00に臨時枠で自動デプロイ済み**(03:00:23 success・朝チェック13項目正常)=オーナー指示10/16「準備できたら自動デプロイ 明日3-メンテ設定願います」・ブランチ`ver1.5.16`(worktree=`.claude/worktrees/ver1.5.16`)→mainへfast-forward・ver1.5.15の未対応5件「→修正しましょう」)

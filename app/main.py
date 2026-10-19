@@ -379,6 +379,17 @@ async def _auth_context_inner(request, call_next):
                 query = f"?{request.url.query}" if request.url.query else ""
                 next_url = quote(f"{path}{query}", safe="")
                 return RedirectResponse(f"/login?next={next_url}")
+    if multiuser and uid is not None:
+        _p = request.scope["path"]
+        if _p == "/admin" or _p.startswith("/admin/"):
+            # /admin配下は管理者専用(2026-10-19・独立照査指摘)。管理者以外には、メソッド・
+            # 末尾スラッシュの違いを含め、存在しないパスと全く同じ応答にする(各ハンドラの404だけだと
+            # `/admin/fulfillment/`が307・POSTが405になり、画面の存在が分かってしまう)。パスを
+            # 存在しないものに差し替えて通常の404処理に任せるので、ヘッダ・本文も同一になる。
+            with db() as conn:
+                _me = auth_svc.get_user(conn, uid)
+            if not _me or _me.get("role") != "admin":
+                request.scope["path"] = "/__no_such_path__"
     token = auth_svc.set_current_user_id(
         uid if uid is not None else OWNER_USER_ID)
     ip_token = auth_svc.set_current_ip(client_ip)
@@ -453,6 +464,9 @@ if _allowed_hosts:
     app.add_middleware(
         TrustedHostMiddleware,
         allowed_hosts=_allowed_hosts + ["127.0.0.1", "localhost"])
+    # 設定ミスだとヘルスチェック(ループバック)は通ったまま実アクセスが全て400になるため、
+    # 有効な一覧を起動ログに残す(デプロイ後の確認は`docs/ops`の手順参照・2026-10-19照査)。
+    log.info("ALLOWED_HOSTS有効: %s (+127.0.0.1, localhost)", ", ".join(_allowed_hosts))
 
 
 # API routers
