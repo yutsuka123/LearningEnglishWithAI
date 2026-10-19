@@ -75,6 +75,10 @@ export const TABS = [
   // バージョン情報（更新履歴・メンテナンス予定）。未ログインでも見られる
   // ようにする（2026-08-22ユーザー要望）。
   ["release", "🆕", "nav.release"],
+  // 関連リンク（2026-10-19・ver1.5.18）。同じ運営者のほかのサービス（サイエンスラボ）への
+  // リンク集。トップ(ようこそ)の本文には載せず、このタブの中だけに置く（オーナー指示）。
+  // 未ログインでも見られる。
+  ["links", "🔗", "nav.links"],
   ["admin", "👑", "nav.admin"],   // 管理者のみ表示（boot で非adminは隠す）
 ];
 
@@ -568,6 +572,7 @@ const ROUTES = {
   games: views.games,
   settings: views.settings,
   release: views.release,
+  links: views.links,
   admin: views.admin,
 };
 

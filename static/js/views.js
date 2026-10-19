@@ -5195,6 +5195,41 @@ export async function release(root) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 関連リンク（2026-10-19・ver1.5.18）
+//
+// 同じ運営者(nyangailab)のほかのサービスへのリンク集。サイエンスラボとの相互リンク
+// （オーナー指示「トップページは避けて、関連リンクというタブを設けてその中に入れる」）。
+// ようこそ画面・ダッシュボードなどの本文には載せず、メニューのこのタブの中だけに置く。
+// 項目を足すときは RELATED_LINKS に1件足し、辞書(i18n_dict.js)に links.<id>.* の
+// 3キー(title/desc/note)を4言語で足す。リンク先の事実(α版・日本語のみ等)は、
+// 載せる前にリンク先の公開ページで確かめること。
+// ---------------------------------------------------------------------------
+
+// url末尾の`?src=study-tab`は、リンク先(サイエンスラボ)のアクセス記録が「宣伝用の印」として拾う
+// 流入元の名前(先方の仕様: 半角英数字と . _ - だけ・1〜40文字。先方の担当と合意済み・2026-10-19)。
+// この名前を変えるときは先方の集計の見え方が変わるので、先に相談すること。
+const RELATED_LINKS = [
+  { id: "science", emoji: "🔬", url: "https://science.nyangailab.com/?src=study-tab" },
+];
+
+export async function links(root) {
+  const cards = RELATED_LINKS.map((l) => `<div class="card">
+      <h2>${l.emoji} ${tx(`links.${l.id}.title`)}</h2>
+      <p>${tx(`links.${l.id}.desc`)}</p>
+      <p class="muted" style="font-size:.9em">${tx(`links.${l.id}.note`)}</p>
+      <p><a class="btn" data-link-id="${l.id}" href="${escapeHtml(l.url)}"
+        target="_blank" rel="noopener">${tx("links.open")} ↗</a></p>
+    </div>`).join("");
+  root.innerHTML = `<h1>🔗 ${tx("links.title")}</h1>
+    <p class="sub">${tx("links.subtitle")}</p>
+    ${cards}
+    <p class="muted" style="font-size:.9em">${tx("links.externalNote")}</p>`;
+  root.querySelectorAll("a[data-link-id]").forEach((a) =>
+    a.addEventListener("click", () =>
+      api.track("click", "related_links", a.dataset.linkId)));
+}
+
 // 管理者用のメンテナンス予定エディタ。保存はDBに書くだけなので
 // **アプリの再起動なしで**利用者側に反映される（2026-08-22の要件）。
 function maintenanceEditorHtml(m) {
