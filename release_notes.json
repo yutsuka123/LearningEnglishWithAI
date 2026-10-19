@@ -16,13 +16,19 @@
  "versions": [
   {
    "version": "ver1.5.17",
-   "date": "2026-10-18",
-   "title": "管理者向け画面の保護を強化",
+   "date": "2026-10-19",
+   "title": "安全性の強化",
    "public": [
-    "管理者向けの画面とその判定まわりを見直し、より安全に保つようにしました。"
+    "内部の安全対策を見直し、より安全に保つようにしました。"
    ],
    "admin": [
-    "【未デプロイ・独立照査前】管理画面ページ(/admin/fulfillment・/admin/paypay-test)は、管理者以外には存在しないパスと同じ404を返す(従来は/loginへ誘導)。robots.txtから/adminを外した。9つのルーターに重複していた管理者判定をauth.require_adminに集約(文言・戻り値は従来どおり=挙動不変)。ローカル検査26項目OK。"
+    "【挙動が変わるのは管理者以外の/admin配下の応答だけ】/admin配下(/admin/fulfillment・/admin/paypay-test・/admin/base-oauth/*)は、管理者以外(ログイン済みの一般ユーザー)には全メソッド・末尾スラッシュ付きでも存在しないパスと同じ404を返す(従来は/loginへ誘導=画面の存在が分かった)。未ログインは従来どおり/loginへ。robots.txtからDisallow: /adminを外した。",
+    "管理者判定を集約: 9つのルーターに重複していた_require_adminをauth.require_adminに(文言・戻り値・403は従来どおり)。",
+    "認可・振り分けのパス判定をrequest.url.pathからrequest.scope[\"path\"]へ(main.pyの7か所)。",
+    "許可Host制限(env ALLOWED_HOSTS): 設定したときだけ有効(本番は未設定=デプロイ直後は挙動不変)。設定後は許可Host以外を400で拒否(127.0.0.1/localhostは常に許可=Dockerのヘルスチェック)。設定ミスだとヘルスチェックは通ったまま実アクセスが全て400になるため、反映後は curl -H 'Host: study.nyangailab.com' http://127.0.0.1:8001/api/health が200・-H 'Host: evil.example' が400を確認すること。",
+    "公開URLの組み立てを一本化(auth.public_base_url): パスワード再発行リンクと決済(PayPay)の戻りURL。env PUBLIC_BASE_URL(本番は未設定)が正しい形ならそれ、無い/不正ならHostが既知(本番ドメイン・localhost)のときだけ従い、それ以外は本番ドメイン固定。本番ドメインへの通常アクセスでは従来と同じURL。",
+    "検査: check_admin_guard.py 64項目・check_hardening.py 32項目・check_password_reset.py・check_message_i18n.pyすべて合格(一時データ領域・本番や開発DBには触れていない)。独立照査(Fable・10/19)でBLOCKER/HIGHなし・MEDIUM2・LOW3を反映済み。DB変更なし・コード同期後に再ビルド+再起動(約20〜30秒)。",
+    "デプロイ: 2026-10-20(火)03:00〜03:30の臨時枠で自動デプロイを予約(オーナー指示10/19)。本番の事前確認(10/19・読み取り): CaddyはHostをそのまま上流へ渡す・ポート付きHost(:443/:80)はTrustedHostでも通る・PUBLIC_BASE_URL/ALLOWED_HOSTSとも未設定。ALLOWED_HOSTSの有効化は別途(オーナー許可の上.env.studyに追記+コンテナ再作成)。"
    ]
   },
   {
