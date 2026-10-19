@@ -79,9 +79,9 @@ def check_nav_and_isolation(pw, base: str, who: str):
         check(f"[{who}] C. 別タブで開き、rel=noopener", bool(a) and a.get_attribute("target") == "_blank"
               and "noopener" in (a.get_attribute("rel") or ""))
         check(f"[{who}] C. 外部サイトである旨の注意書きがある", "リンク先は別のサイト" in view, view[:120])
-        check(f"[{who}] C. 紹介文は先方の事実の範囲(無料・日本語のみ・α版・未確認/未レビュー)。版番号・「広告なし」は書かない",
-              all(w in view for w in ("無料", "日本語のみ", "α版", "未確認・未レビュー"))
-              and not re.search(r"alpha\d|ver\d|広告(は|が)?(なし|ありません|出ません)", view), view[:200])
+        check(f"[{who}] C. 紹介文は変わりうる事実を断定しない(「無料で見られます」「現在は日本語のみ」。すべて無料等の断定・版番号・広告への言及なし)",
+              all(w in view for w in ("無料で見られます", "現在は日本語のみ", "α版", "未確認・未レビュー"))
+              and not re.search(r"alpha\d|ver\d|広告|完全無料|すべて無料|ずっと無料|永久", view), view[:200])
         check(f"[{who}] B. リンクは「#view」の中だけ(メニューには載らない)",
               s.page.evaluate("document.querySelectorAll('a[href*=\"science.nyangailab.com\"]').length") == 1
               and s.page.evaluate("document.querySelectorAll('#view a[href*=\"science.nyangailab.com\"]').length") == 1)
