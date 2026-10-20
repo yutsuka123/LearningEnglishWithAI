@@ -159,7 +159,10 @@
       width: min(100%, 460px); max-height: 100%; overflow: hidden;
       background: var(--card); border: 1px solid var(--border);
       border-radius: 12px; box-shadow: 0 8px 30px var(--shadow); }
-    .stepup-panel iframe { display: block; width: 100%; height: min(70vh, 560px);
+    /* iframeの中身(確認の画面)は600px超になることがある。画面に収まる範囲で高く取り、収まらない狭い
+       画面では中(iframe)でスクロールさせる(dvh未対応のブラウザは前の行のvhのまま)。 */
+    .stepup-panel iframe { display: block; width: 100%; min-height: 320px;
+      height: min(calc(100vh - 110px), 720px); height: min(calc(100dvh - 110px), 720px);
       border: 0; background: var(--card); }
     .stepup-panel .stepup-cancel { width: auto; align-self: flex-end;
       margin: 8px 12px; padding: 6px 14px; font-size: 14px; }

@@ -173,6 +173,22 @@ try:
         check(P + "6 確認済みの端末: iframeなしで入れる(サーバーが確かめた結果)", auth.SESSION_COOKIE in cookie_names(ctx) and len(reqs) == 1)
         ctx.close()
 
+        # 7b. 確認の画面は600px超になることがある: デスクトップ幅ではiframeを640px以上に取る
+        state.update(mode="pass", delay=3000); ctx, page, reqs = new_page()
+        fill_submit(page, "ui_admin", PW)
+        page.wait_for_selector(".stepup-box iframe", timeout=5000)
+        fh = page.evaluate("() => document.querySelector('.stepup-box iframe').getBoundingClientRect().height")
+        check(P + f"7b デスクトップ(1100x800): iframeの高さが640px以上(確認の画面が600px超でも収まる): {fh:.0f}px", fh >= 640, fh)
+        page.keyboard.press("Escape"); ctx.close()
+        ctx, page, reqs = new_page(viewport={"width": 390, "height": 560})
+        fill_submit(page, "ui_admin", PW)
+        page.wait_for_selector(".stepup-box iframe", timeout=5000)
+        g2 = page.evaluate("""() => { const p = document.querySelector('.stepup-panel').getBoundingClientRect();
+          const f = document.querySelector('.stepup-box iframe').getBoundingClientRect();
+          return {top: p.top, bottom: p.bottom, vh: window.innerHeight, fh: f.height}; }""")
+        check(P + "7c 低い画面(390x560): 枠が画面に収まる(収まらない中身はiframe内でスクロール)", g2["top"] >= 0 and g2["bottom"] <= g2["vh"] + 1 and g2["fh"] >= 320, g2)
+        page.keyboard.press("Escape"); ctx.close()
+
         # 8. 4言語・スマホ幅
         for lang, cancel, locked in (("ja", "キャンセル", "しばらく"), ("en", "Cancel", "Please wait"),
                                      ("zh-CN", "取消", "请稍候"), ("zh-TW", "取消", "請稍候")):
