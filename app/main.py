@@ -28,7 +28,7 @@ from .routers import (
     paypay_test, phrase_decks, phrases, seo_pages, system, vocabulary,
 )
 from .services import auth as auth_svc
-from .services import geoip, messages, traffic_source, visitor_kind
+from .services import geoip, login_stepup, messages, traffic_source, visitor_kind
 from .services.errors import error_response
 from .services.spaced_repetition import apply_forgetting_decay
 
@@ -467,6 +467,10 @@ if _allowed_hosts:
     # 設定ミスだとヘルスチェック(ループバック)は通ったまま実アクセスが全て400になるため、
     # 有効な一覧を起動ログに残す(デプロイ後の確認は`docs/ops`の手順参照・2026-10-19照査)。
     log.info("ALLOWED_HOSTS有効: %s (+127.0.0.1, localhost)", ", ".join(_allowed_hosts))
+
+# ログインの追加確認フックの状態を起動ログに1行残す(キーは出さない)。誤設定(URLの形・キー欠け)に
+# 気づけるように(2026-10-21 独立照査2回目L-3)。
+log.info("login step-up: %s", login_stepup.describe())
 
 
 # API routers

@@ -1,0 +1,562 @@
+"""ver1.5.19 ログインの追加確認(step-up)の受け口(app/services/login_stepup.py・/api/auth/login のフック)の検査。
+
+一時データ領域(DATA_DIR)で動かし、本番にも開発DBにも触れない。確認サービスは scripts/stepup_stub_gate.py の
+偽物(何も聞かない・採点しない・形だけ同じ)をこのプロセス内で動かす。外部通信はしない。
+使い方: リポジトリ直下で `.venv/bin/python scripts/check_login_stepup.py`(全項目OKなら終了コード0)。
+
+確かめること:
+  A. 未設定なら従来どおり(管理者もパスワードだけで入れる・確認サービスには一切触れない)
+  B. 名簿(管理者・無効な管理者・おとり名・大文字小文字違い)は、パスワードの正誤にかかわらず同じ応答で確認へ進む
+     (正誤の合図にならない)。実在する一般ユーザー(おとり名と同じ綴りでも)は従来どおり
+  C. 確認サービスへの要求の形(Bearer・X-Forwarded-Forなし・ip/host/bind/proto・Cookieのノイズ除去)
+  D. 通過→パスワード正→成功(セッション+確認サービスのCookieを値も属性もそのまま)/ 通過+パスワード誤・未通過・
+     使い回し・IP違い・無効な管理者は全て同じ2001でCookieなし・失敗は従来どおり数える・ロックはstep-upより先
+  E. 「確認済みの端末」はサーバー側で毎回確かめ直す(ブラウザの申告では通れない)
+  F. 相手が落ちている/遅い/キーが違う/変な応答(危険なsrc・不正なCookie等)は全て2001(fail-closed)・一般ユーザーは無影響
+  G. 多層防御(名簿の判定が空振りしても、有効時に確認なしで管理者は通らない)・signupで管理者は作れない
+  H. ログに共有キー・チケット・Cookie値が出ない
+  I. 公開コードの衛生(ゲートの形を示す語がコード・公開ファイルに無い)・ログイン画面のJSの安全な受け取り・辞書4言語
+"""
+import hashlib, logging, os, re, sys, tempfile, time
+from pathlib import Path
+
+tmp = tempfile.mkdtemp(prefix="eigo_stepup_")
+os.environ["DATA_DIR"] = tmp
+os.environ["MULTIUSER"] = "1"
+# 空文字で上書き(app.config の load_dotenv が親ディレクトリの.envから補うのを防ぐ)
+for k in ("LOGIN_STEPUP_URL", "LOGIN_STEPUP_KEY", "LOGIN_STEPUP_DECOYS", "ALLOWED_HOSTS", "PUBLIC_BASE_URL"):
+    os.environ[k] = ""
+REPO = os.environ.get("REPO") or str(Path(__file__).resolve().parents[1])
+sys.path.insert(0, REPO)
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from fastapi.testclient import TestClient
+import app.main as m
+from app.config import log as app_log
+from app.database import db, init_db
+from app.routers import auth_routes
+from app.services import auth, login_stepup
+import stepup_stub_gate as stub
+
+init_db()
+ok = fail = 0
+def check(label, cond, extra=""):
+    global ok, fail
+    if cond: ok += 1; print("OK  ", label)
+    else: fail += 1; print("FAIL", label, extra)
+
+class Capture(logging.Handler):
+    def __init__(self): super().__init__(); self.msgs = []
+    def emit(self, rec): self.msgs.append(rec.getMessage())
+cap = Capture(); app_log.addHandler(cap)
+
+PW = "Passw0rd!x1"
+def mk(name, role="user", active=True):
+    with db() as conn:
+        r = auth.create_user(conn, name, PW, role=role)
+        uid = r["id"] if isinstance(r, dict) else r
+        if not active: conn.execute("UPDATE users SET is_active=0 WHERE id=?", (uid,))
+    return uid
+mk("adm_su", "admin"); mk("adm_off", "admin", active=False)
+mk("usr_su"); mk("decoyuser")          # decoyuser: おとり名と同じ綴りの実在する一般ユーザー
+
+gate, url, srv = stub.serve()
+_n = iter(range(1, 250))
+def new_ip(): return f"203.0.113.{next(_n)}"
+def reset_locks():
+    auth._LOGIN_FAILS.clear(); auth._IP_FAILS.clear(); auth._USERNAME_FAILS.clear()
+    login_stepup._ask_hits.clear()
+def set_env(enabled=True, decoys="ghostadmin,decoyuser"):
+    os.environ["LOGIN_STEPUP_URL"] = url if enabled else ""
+    os.environ["LOGIN_STEPUP_KEY"] = gate.key
+    os.environ["LOGIN_STEPUP_DECOYS"] = decoys
+
+def login(username, password=PW, ticket=None, ip=None, https=False, cookie=None, host="study.nyangailab.com"):
+    c = TestClient(m.app)          # 呼び出しごとに新しい(Cookieを引き継がない)
+    h = {"X-Forwarded-For": ip or new_ip(), "Host": host}
+    if https: h["X-Forwarded-Proto"] = "https"
+    if cookie: h["Cookie"] = cookie
+    body = {"username": username, "password": password}
+    if ticket is not None: body["ticket"] = ticket
+    return c.post("/api/auth/login", json=body, headers=h)
+
+def setcookies(r): return r.headers.get_list("set-cookie")
+def authck(r):
+    """ゲストの識別Cookie(ela_gsid・失敗の応答にも従来から付く)を除いたSet-Cookie。"""
+    return [x for x in setcookies(r) if not x.startswith(auth.GUEST_SID_COOKIE + "=")]
+def no_fail_counts(*users):
+    return (all(len(v) == 0 for v in auth._LOGIN_FAILS.values()) and all(len(v) == 0 for v in auth._IP_FAILS.values())
+            and all(len(v) == 0 for v in auth._USERNAME_FAILS.values()))
+def has_cookie(r, name): return any(x.startswith(name + "=") for x in setcookies(r))
+def shape(r):
+    j = r.json()
+    return (r.status_code, tuple(sorted(j)), tuple(sorted(j.get("stepup", {}))),
+            r.headers.get("content-type"), r.headers.get("cache-control"),
+            bool(re.fullmatch(r"/g-stub/e\?c=[A-Za-z0-9_\-]+", j.get("stepup", {}).get("src", ""))),
+            len(authck(r)))
+def err_code(r):
+    try: return r.json().get("code")
+    except Exception: return None
+
+# ---------------- A. 未設定なら従来どおり ----------------
+print("== A. 未設定(従来どおり)")
+set_env(enabled=False)
+r = login("adm_su")
+check("A1 未設定: 管理者はパスワードだけで入れる(従来どおり)", r.status_code == 200 and r.json().get("ok") is True and has_cookie(r, auth.SESSION_COOKIE))
+r = login("usr_su")
+check("A2 未設定: 一般ユーザーも従来どおり", r.status_code == 200 and r.json().get("ok") is True)
+r = login("usr_su", "wrong")
+check("A3 未設定: 誤パスワードは従来どおり2001/401", r.status_code == 401 and err_code(r) == "2001")
+check("A4 未設定: 確認サービスには一切触れない", len(gate.log) == 0)
+check("A5 enabled()はURL未設定でFalse", login_stepup.enabled() is False)
+
+# ---------------- B. 名簿の応答は正誤で変わらない ----------------
+print("== B. 名簿(正誤の合図にならない)")
+reset_locks(); set_env()
+check("B0 enabled()はURL設定でTrue", login_stepup.enabled() is True)
+r_ok = login("adm_su", PW)
+check("B1 管理者+正しいパスワード(ticketなし)=確認へ進む(200・ok:false・stepup.src・Cookieなし)",
+      r_ok.status_code == 200 and r_ok.json().get("ok") is False and shape(r_ok)[5] and shape(r_ok)[6] == 1
+      and not has_cookie(r_ok, auth.SESSION_COOKIE), r_ok.text)
+bc = [x for x in setcookies(r_ok) if x.startswith("gbstub=")]
+check("B1b ask応答に、ブラウザを確認に束縛するCookieが付く(相手が決めた値・属性のまま: Max-Age=300・Path=/g-stub・HttpOnly・SameSite=lax・Secure・Domainなし)",
+      len(bc) == 1 and "Max-Age=300" in bc[0] and "Path=/g-stub" in bc[0] and "HttpOnly" in bc[0] and "SameSite=lax" in bc[0]
+      and "Secure" in bc[0] and "Domain" not in bc[0] and len(bc[0].split(";")[0].split("=", 1)[1]) >= 16, bc)
+base = shape(r_ok)
+check("B2 管理者+誤ったパスワード=正しいパスワードと同じ形・同じ応答", shape(login("adm_su", "wrong-pass")) == base)
+check("B3 おとり名(実在しない)=同じ形", shape(login("ghostadmin", PW)) == base)
+check("B4 無効な管理者名=同じ形", shape(login("adm_off", PW)) == base)
+check("B5 管理者名の大文字小文字違い=同じ形(取りこぼし防止)", shape(login("ADM_SU", PW)) == base)
+check("B6 前後に空白のある管理者名=同じ形", shape(login("  adm_su ", PW)) == base)
+check("B7 ticketなしの確認開始は失敗に数えない(ロック対象外)", no_fail_counts())
+n_begin = len(gate.calls("/internal/begin"))
+r = login("decoyuser", PW)
+check("B8 おとり名と同じ綴りの実在する一般ユーザーは従来どおり入れる・確認サービスに触れない",
+      r.status_code == 200 and r.json().get("ok") is True and len(gate.calls("/internal/begin")) == n_begin)
+r = login("usr_su", PW)
+check("B9 一般ユーザーは従来どおり入れる・確認サービスに触れない",
+      r.status_code == 200 and r.json().get("ok") is True and len(gate.calls("/internal/begin")) == n_begin)
+r = login("usr_su", "wrong")
+check("B10 一般ユーザーの誤パスワードは従来どおり2001/401", r.status_code == 401 and err_code(r) == "2001")
+r = login("nobody_xyz", PW)
+check("B11 名簿にも実在もしない名前は従来どおり2001/401(確認へ進まない)", r.status_code == 401 and err_code(r) == "2001")
+
+# ---------------- C. 確認サービスへの要求の形 ----------------
+print("== C. 確認サービスへの要求")
+gate.log.clear()
+ip = new_ip()
+r = login("adm_su", PW, ip=ip, https=True, cookie="_ga=GA1; ela_session=zzz; gx=abc; _gcl_au=2; ela_gsid=g1")
+b = gate.calls("/internal/begin")
+check("C1 beginが1回呼ばれる", len(b) == 1)
+if b:
+    h, body = b[0]["headers"], b[0]["body"]
+    check("C2 Authorization: Bearer <共有キー>", h.get("authorization") == "Bearer " + gate.key)
+    check("C3 X-Forwarded-Forを付けない", "x-forwarded-for" not in h)
+    check("C4 ip=X-Forwarded-Forの一番右(real_client_ip)", body["ip"] == ip)
+    check("C5 host=Hostヘッダ(小文字・ポート無し)", body["host"] == "study.nyangailab.com")
+    check("C6 bind=ユーザー名のSHA-256", body["bind"] == hashlib.sha256(b"adm_su").hexdigest())
+    check("C7 cookie=広告タグ・このアプリ自身のCookieを除いた残り", body["cookie"] == "gx=abc", body["cookie"])
+check("C8 cookie_for_gate: 4KBを超えても通す(相手の上限は12KB)・12KBを超えたら空(あふれて毎回失敗するより安全側)",
+      login_stepup.cookie_for_gate("a=" + "x" * 4000) == "a=" + "x" * 4000 and login_stepup.cookie_for_gate("a=" + "x" * 13000) == "")
+check("C8b 相手のCookie値の許可文字: 英数字と _ - . : ~ は通る・/ = + ( ) 空白 ; \" は通らない(引用符で壊れない範囲だけ)",
+      all(login_stepup._valid_cookie({"name": "g1", "value": v, "max_age": 60, "path": "/", "samesite": "lax", "httponly": True, "secure": True}) for v in ("AbC_-.def", "a.b", "x:y~z"))
+      and not any(login_stepup._valid_cookie({"name": "g1", "value": v, "max_age": 60, "path": "/", "samesite": "lax", "httponly": True, "secure": True}) for v in ("a/b", "a=b", "a+b", "a(b)", "a b", "a;b", 'a"b')))
+check("C9 bind_for: 前後の空白は除く・大文字小文字は区別(get_user_by_nameに合わせる)",
+      login_stepup.bind_for(" Admin ") == hashlib.sha256(b"Admin").hexdigest() != login_stepup.bind_for("admin"))
+
+# ---------------- D. 通過→成功/失敗 ----------------
+print("== D. チケットを使った最終判定")
+def ask(username="adm_su", password=PW, ip=None, https=False, cookie=None):
+    ip = ip or new_ip()
+    r = login(username, password, ip=ip, https=https, cookie=cookie)
+    return ip, gate.ticket_from_src(r.json().get("stepup", {}).get("src", "")), r
+
+reset_locks(); gate.log.clear()
+ip, t, _ = ask(https=True)
+gate.complete(t, True)
+r = login("adm_su", PW, ticket=t, ip=ip, https=True)
+check("D1 通過+正しいパスワード=成功(ok:true・管理者)", r.status_code == 200 and r.json().get("ok") is True and r.json()["user"]["role"] == "admin", r.text)
+check("D2 セッションCookieが付く", has_cookie(r, auth.SESSION_COOKIE))
+gc = [x for x in setcookies(r) if x.startswith("gtest=")]
+check("D3 確認サービスのCookieが付く(値も属性もそのまま: Max-Age=2592000・Path=/・HttpOnly・SameSite=lax・Secure(https)・Domainなし)",
+      len(gc) == 1 and "Max-Age=2592000" in gc[0] and "Path=/" in gc[0] and "HttpOnly" in gc[0]
+      and "SameSite=lax" in gc[0] and "Secure" in gc[0] and "Domain" not in gc[0] and gc[0].split("=", 1)[1].startswith("signed"), gc)
+rd = gate.calls("/internal/redeem")[-1]["body"]
+check("D4 redeem: ticket/ip/host/accepted=true・bindはbeginと同じ・protoは送らない",
+      rd["ticket"] == t and rd["ip"] == ip and rd["host"] == "study.nyangailab.com" and "proto" not in rd and rd["accepted"] is True
+      and rd["bind"] == gate.calls("/internal/begin")[-1]["body"]["bind"])
+r2 = login("adm_su", PW, ticket=t, ip=ip)
+check("D5 同じチケットの使い回しは失敗(2001・Cookieなし)", r2.status_code == 401 and err_code(r2) == "2001" and not has_cookie(r2, auth.SESSION_COOKIE) and not has_cookie(r2, "gtest"))
+
+# 属性は相手が決めた値のまま(アプリ側がhttp/httpsで変えない)
+ip, t, _ = ask(https=False); gate.complete(t, True)
+r = login("adm_su", PW, ticket=t, ip=ip)
+gc = [x for x in setcookies(r) if x.startswith("gtest=")]
+check("D6 httpで来ても、Secure等の属性は相手が決めたとおり(アプリ側で変えない)", len(gc) == 1 and "Secure" in gc[0], gc)
+
+# 通過+パスワード誤り
+reset_locks()
+ip, t, _ = ask(); gate.complete(t, True)
+r = login("adm_su", "wrong-pass", ticket=t, ip=ip)
+plain = login("usr_su", "wrong-pass")
+check("D7 通過+誤ったパスワード=一般の誤パスワードと同じ2001/401(本文も同じ)", r.status_code == 401 and err_code(r) == "2001" and r.json() == plain.json(), r.text)
+check("D8 そのときCookieは何も付かない(確認サービスのCookieも付けない)", not authck(r))
+check("D9 redeemにはaccepted=falseが渡る", gate.calls("/internal/redeem")[-1]["body"]["accepted"] is False)
+check("D10 失敗は従来どおり数える(user×IP・IP)。確認を通ったあとの誤パスワード(=正誤が応答から分かる失敗)はユーザー名単位(複数IPの合算)にも数える(分散した当て推量を止める・照査M-1)",
+      len(auth._LOGIN_FAILS.get(auth._login_key("adm_su", ip), [])) == 1 and len(auth._IP_FAILS.get(ip, [])) == 1 and len(auth._USERNAME_FAILS.get("adm_su", [])) == 1)
+ev = None
+with db() as conn:
+    ev = conn.execute("SELECT success FROM login_log WHERE username='adm_su' ORDER BY id DESC LIMIT 1").fetchone()
+check("D11 login_logに失敗として記録される", ev is not None and ev["success"] == 0)
+
+# 未通過
+reset_locks()
+ip, t, _ = ask(); gate.complete(t, False)
+r = login("adm_su", PW, ticket=t, ip=ip)
+check("D12 確認を通っていない(相手がok:false)+正しいパスワード=2001・Cookieなし", r.status_code == 401 and err_code(r) == "2001" and not authck(r))
+check("D13 そのときaccepted=true(パスワードは合っていたので相手の失敗数を取り消せる側に倒さない=相手の仕様どおり渡す)", gate.calls("/internal/redeem")[-1]["body"]["accepted"] is True)
+# 通過+無効な管理者
+ip, t, _ = ask("adm_off"); gate.complete(t, True)
+r = login("adm_off", PW, ticket=t, ip=ip)
+check("D14 通過+正しいパスワードでも、無効な管理者は2001", r.status_code == 401 and err_code(r) == "2001" and not authck(r))
+check("D15 無効な管理者ではaccepted=false(実在する有効なadminだけtrue)", gate.calls("/internal/redeem")[-1]["body"]["accepted"] is False)
+# おとり名で通過
+ip, t, _ = ask("ghostadmin"); gate.complete(t, True)
+r = login("ghostadmin", PW, ticket=t, ip=ip)
+check("D16 おとり名は通過しても必ず2001", r.status_code == 401 and err_code(r) == "2001" and not authck(r))
+# IP違い(相手がbindの不一致で落とす)
+ip, t, _ = ask(); gate.complete(t, True)
+r = login("adm_su", PW, ticket=t, ip=new_ip())
+check("D17 発行したIPと違うIPからの引き換えは失敗(2001)", r.status_code == 401 and err_code(r) == "2001")
+# 別ユーザー名でチケットを使う
+ip, t, _ = ask("adm_su"); gate.complete(t, True)
+mk("adm_two", "admin")
+r = login("adm_two", PW, ticket=t, ip=ip)
+check("D18 別のユーザー名(bind違い)でチケットを使えない", r.status_code == 401 and err_code(r) == "2001")
+# ロックはstep-upより先
+reset_locks()
+ip = new_ip()
+for _ in range(3):
+    _, t, _ = ask("adm_su", PW, ip=ip); gate.complete(t, True)
+    login("adm_su", "wrong-pass", ticket=t, ip=ip)
+n_begin = len(gate.calls("/internal/begin"))
+r = login("adm_su", PW, ip=ip)
+check("D19 3回失敗するとロック(2002/429)・確認サービスにも触れない(ロック判定はstep-upより先)",
+      r.status_code == 429 and err_code(r) == "2002" and len(gate.calls("/internal/begin")) == n_begin)
+reset_locks()
+
+# ---------------- E. 確認済みの端末はサーバーで毎回確かめ直す ----------------
+print("== E. skip(確認済みの端末)")
+gate.log.clear()
+ip = new_ip()
+r = login("adm_su", PW, ip=ip, cookie=gate.valid_cookie)
+check("E1 確認済みCookie+正しいパスワード=ticketなしでも成功(サーバーがbeginでskipと確認→引き換え)",
+      r.status_code == 200 and r.json().get("ok") is True and has_cookie(r, auth.SESSION_COOKIE), r.text)
+check("E2 skipのときは確認サービスのCookieを付け直さない(cookie=null)・束縛Cookieも付かない", not has_cookie(r, "gtest") and not has_cookie(r, "gbstub"))
+check("E3 begin→redeemの順に1回ずつ呼ばれる", len(gate.calls("/internal/begin")) == 1 and len(gate.calls("/internal/redeem")) == 1)
+r = login("adm_su", "wrong-pass", ip=new_ip(), cookie=gate.valid_cookie)
+check("E4 確認済みでも誤ったパスワードは2001", r.status_code == 401 and err_code(r) == "2001" and not authck(r))
+r = login("adm_su", PW, ip=new_ip(), cookie="gatetest=NG")
+check("E5 確認済みCookieが無効ならskipにならず確認へ(ブラウザの申告では通れない)", r.status_code == 200 and r.json().get("ok") is False and "stepup" in r.json())
+r = login("adm_su", PW, ip=new_ip(), ticket="")
+check("E6 ticketを空で送っても通れない(確認へ進む)", r.json().get("ok") is False and "stepup" in r.json())
+r = login("adm_su", PW, ip=new_ip(), ticket="A" * 40)
+check("E7 でたらめなticketでは通れない(2001)", r.status_code == 401 and err_code(r) == "2001")
+
+# ---------------- F. 相手の不調・誤動作(fail-closed) ----------------
+print("== F. fail-closed")
+def expect_fail(label, **kw):
+    t0 = time.monotonic()
+    r = login("adm_su", PW, **kw)
+    check(label, r.status_code == 401 and err_code(r) == "2001" and not authck(r), (r.status_code, r.text, authck(r)))
+    return time.monotonic() - t0
+for ov, label in (("bad_src_slashes", "F1 srcが//で始まる(別サイトへ誘導)"), ("bad_src_absolute", "F2 srcが絶対URL"),
+                  ("bad_src_backslash", "F3 srcにバックスラッシュ"), ("no_mode", "F4 modeが無い応答"),
+                  ("bad_ticket_chars", "F5 skipのticketが不正な文字"), ("http500", "F6 相手が500"),
+                  ("no_bind_cookie", "F6b askに束縛Cookieが無い"), ("bad_bind_cookie", "F6c 束縛Cookieの値が不正(;を含む)"),
+                  ("reserved_bind_cookie", "F6d 束縛Cookieの名前がこのアプリのセッションCookieと同じ(上書きさせない)"),
+                  ("quoted_bind_cookie", "F6e 束縛Cookieの値に/や=を含む(SimpleCookieが\"で囲み、相手が自分のCookieと認識できず画面が固まるのを防ぐ)")):
+    reset_locks(); gate.override = ov
+    expect_fail(label + " → 2001(ブラウザに中継しない)")
+    gate.override = None
+for ov, label in (("bad_cookie_value", "F7 redeemのCookie値に;を含む"), ("bad_cookie_missing", "F8 redeemのCookieに属性が欠ける"),
+                  ("bad_cookie_name", "F9 redeemのCookie名が不正"), ("bad_cookie_age", "F10 redeemのCookieのmax_ageが不正"),
+                  ("reserved_cookie_name", "F10b redeemのCookie名がこのアプリのセッションCookieと同じ(上書きさせない)"),
+                  ("quoted_cookie_value", "F10c redeemのCookie値に/や=を含む(引用符で囲まれて壊れる)")):
+    reset_locks(); gate.override = None
+    ip, t, _ = ask(); gate.complete(t, True); gate.override = ov
+    expect_fail(label + " → 2001(不正な値をブラウザに渡さない・セッションも発行しない)", ticket=t, ip=ip)
+    gate.override = None
+reset_locks(); gate.override = "slow"
+dt = expect_fail("F11 相手が遅い(3秒)→ 2001")
+check("F11b タイムアウトは2秒前後で打ち切る(3.0秒未満)", dt < 3.0, f"{dt:.2f}s")
+gate.override = None
+reset_locks(); os.environ["LOGIN_STEPUP_KEY"] = "wrong-key"
+expect_fail("F12 共有キーが違う(相手は404)→ 2001")
+r = login("usr_su"); check("F12b そのとき一般ユーザーは無影響", r.status_code == 200 and r.json().get("ok") is True)
+os.environ["LOGIN_STEPUP_KEY"] = ""
+reset_locks(); expect_fail("F13 共有キーが未設定(URLだけ有効)→ 2001(素通しにならない)")
+os.environ["LOGIN_STEPUP_KEY"] = gate.key
+
+# ---------------- G. 多層防御 ----------------
+print("== G. 多層防御")
+reset_locks()
+orig = login_stepup.in_roster
+login_stepup.in_roster = lambda conn, u: False
+r = login("adm_su", PW)
+check("G1 名簿の判定が空振りしても、有効時は確認なしで管理者を通さない(2001)", r.status_code == 401 and err_code(r) == "2001" and not has_cookie(r, auth.SESSION_COOKIE))
+r = login("usr_su", PW)
+check("G2 そのとき一般ユーザーは通る", r.status_code == 200 and r.json().get("ok") is True)
+login_stepup.in_roster = orig
+import inspect
+check("G3 signupはroleを受け取らない・渡さない(管理者を作れない)",
+      "role" not in auth_routes.SignupIn.model_fields and "role=" not in inspect.getsource(auth_routes.signup))
+check("G4 create_userの既定はrole=user", inspect.signature(auth.create_user).parameters["role"].default == "user")
+
+# ---------------- J. 独立照査(M-2・URL誤設定)で見つかった点 ----------------
+print("== J. 確認の開始の上限・同時呼び出しの上限・URL誤設定・締め出し")
+import threading
+reset_locks(); set_env()
+# J1 URLの誤設定は500でなく失敗(2001)。フック無効にもならない(管理者は入れない)
+for bad in ("svc-host", "svc-host:8080/x", "http//svc-host:8080", "ftp://127.0.0.1/x", "file:///etc/hosts"):
+    os.environ["LOGIN_STEPUP_URL"] = bad
+    try:
+        r = login("adm_su", PW)
+        good = r.status_code == 401 and err_code(r) == "2001" and not authck(r)
+    except Exception as e:      # 500(未処理の例外)
+        good = False; r = e
+    check(f"J1 URLの誤設定 '{bad}' → 500にならず失敗(2001)・フック無効にもならない(管理者は入れない)", good, r)
+    reset_locks()
+os.environ["LOGIN_STEPUP_URL"] = ""
+check("J1b URLが空ならフック無効(従来どおり)・一般ユーザーは常に無影響", login("adm_su").json().get("ok") is True)
+set_env()
+check("J1c 誤設定のときも一般ユーザーは無影響", (lambda: (os.environ.__setitem__("LOGIN_STEPUP_URL", "svc-host"), login("usr_su").json().get("ok") is True)[1])())
+set_env()
+# J2 確認の開始のIP別の上限(失敗としては数えない・超えたら2002)
+reset_locks(); gate.log.clear()
+ip_a, ip_b = new_ip(), new_ip()
+codes = [login("adm_su", PW, ip=ip_a).status_code for _ in range(login_stepup._ASK_MAX)]
+check(f"J2a 確認の開始は同じIPから{login_stepup._ASK_MAX}回まで通る(ロック対象外・失敗に数えない)", codes == [200] * login_stepup._ASK_MAX and no_fail_counts(), codes)
+r = login("adm_su", PW, ip=ip_a)
+check("J2b 上限を超えると通常のロックと同じ2002/429・相手サービスにも触れない", r.status_code == 429 and err_code(r) == "2002" and len(gate.calls("/internal/begin")) == login_stepup._ASK_MAX)
+check("J2c 別のIPは影響なし", login("adm_su", PW, ip=ip_b).status_code == 200)
+login_stepup._ask_hits[ip_a] = [t - login_stepup._ASK_WINDOW_SEC - 1 for t in login_stepup._ask_hits[ip_a]]
+check("J2d 時間が過ぎれば(窓の外)また通る", login("adm_su", PW, ip=ip_a).status_code == 200)
+check("J2e 確認の開始は記録に残る(IP・ユーザー名のみ・秘密は出さない)", any("step-up start" in x for x in cap.msgs) and any("step-up start rate-limited" in x for x in cap.msgs))
+# J3 同時呼び出しの上限(相手が遅いとき、多数の同時ログインでスレッドを占有し続けない)
+reset_locks(); gate.override = "slow"
+results = []
+def worker(i): results.append(login("adm_su", PW, ip=f"198.51.100.{i}"))
+ths = [threading.Thread(target=worker, args=(i,)) for i in range(1, 21)]
+t0 = time.monotonic()
+for t in ths: t.start()
+for t in ths: t.join()
+dt = time.monotonic() - t0
+check("J3a 相手が遅い(3秒)状態で20件の同時ログイン: 全て失敗(401/2001)・500なし", len(results) == 20 and all(x.status_code in (401, 429) for x in results), [x.status_code for x in results])
+check("J3b 全て数秒以内に返る(枠が空かないものは待たずに失敗にする・最悪でも2秒+1秒+余裕)", dt < 6.0, f"{dt:.1f}s")
+time.sleep(1.2)
+check("J3c 終わったら枠は全て返っている(リークなし)", login_stepup._gate_slots._value == 8, login_stepup._gate_slots._value)
+gate.override = None
+# J4 締め出し: 答えを知らない第三者が、管理者名で失敗を積んでも本人を締め出せない
+reset_locks()
+codes = [login("adm_su", PW, ticket="AAAAAAAAAAAAAAAA", ip=f"198.51.100.{100+i}").status_code for i in range(12)]
+check("J4a 管理者名にでたらめなチケットを12個の別IPから送っても、ユーザー名単位のロックにならない(全て401)", codes == [401] * 12, codes)
+r = login("adm_su", PW, ip=new_ip())
+check("J4b そのあとの本物の管理者(新しいIP)は、確認へ進める(締め出されない)", r.status_code == 200 and "stepup" in r.json(), r.text)
+check("J4c ただしuser×IPのロックは従来どおり(同じIPから3回失敗でロック)", (lambda ipx: [login("adm_su", PW, ticket="AAAAAAAAAAAAAAAA", ip=ipx) for _ in range(3)] and login("adm_su", PW, ip=ipx).status_code == 429)(new_ip()))
+reset_locks()
+codes = [login("usr_su", "wrong", ip=f"198.51.100.{150+i}").status_code for i in range(12)]
+check("J4d 名簿外(一般ユーザー)の従来のユーザー名単位ロックは変えていない(分散した失敗で429になる)", 429 in codes, codes)
+reset_locks()
+
+# ---------------- K. 独立照査2回目(2026-10-21)の反映 ----------------
+print("== K. 独立照査2回目の反映(M-1/M-2/M-3/L-1/L-2/L-3/L-6/N-6)")
+import http.server
+reset_locks(); set_env(); gate.log.clear()
+# K1 (M-1) 確認済みの端末(skip)+誤パスワードを別々のIPから: ユーザー名単位(8回/15分)で止まる
+codes = [login("adm_su", "wrong-pass", ip=f"192.0.2.{10+i}", cookie=gate.valid_cookie).status_code for i in range(9)]
+check("K1a 確認済み端末(skip)+誤パスワードを9個の別IPから: 8回目まで401・9回目は429(分散した当て推量がユーザー名単位で止まる)", codes[:8] == [401] * 8 and codes[8] == 429, codes)
+check("K1b skip経路の失敗はユーザー名単位に数えられている(8件)", len(auth._USERNAME_FAILS.get("adm_su", [])) == 8, auth._USERNAME_FAILS.get("adm_su"))
+reset_locks()
+codes = [login("adm_su", PW, ticket="AAAAAAAAAAAAAAAA", ip=f"192.0.2.{40+i}").status_code for i in range(12)]
+check("K1c でたらめなチケット(確認を通っていない失敗)は引き続きユーザー名単位に数えない(12個の別IPでも全て401・本物の管理者は締め出されない)",
+      codes == [401] * 12 and len(auth._USERNAME_FAILS.get("adm_su", [])) == 0, codes)
+reset_locks()
+gate.override = "http500"
+for i in range(4): login("adm_su", PW, ip=f"192.0.2.{60+i}")
+check("K1d 相手が落ちて確認が始められない失敗もユーザー名単位には数えない", len(auth._USERNAME_FAILS.get("adm_su", [])) == 0)
+gate.override = None
+reset_locks()
+
+# K2 (M-2) 確認の開始の上限は、重いパスワード検証(pbkdf2)より前に判定する
+calls = []
+orig_cp = login_stepup.check_password
+login_stepup.check_password = lambda user, pw: (calls.append(1), orig_cp(user, pw))[1]
+ipk = new_ip()
+codes = [login("adm_su", PW, ip=ipk).status_code for _ in range(login_stepup._ASK_MAX + 5)]
+check("K2a 上限を超えた要求(5件)はパスワード検証(pbkdf2)を走らせない(上限内の要求だけ検証する=仕様§5どおり名簿の名前では常に実行)", len(calls) == login_stepup._ASK_MAX, len(calls))
+check("K2b 上限を超えた分は429(2002)", codes[login_stepup._ASK_MAX:] == [429] * 5, codes)
+n0 = len(calls)
+ip2, t2, _ = ask(); gate.complete(t2, True)
+n1 = len(calls)
+login("adm_su", PW, ticket=t2, ip=ip2)
+check("K2c 開始(ticketなし)でも最終判定(ticket付き)でも、パスワード検証は1回ずつ走る(時間を揃える仕様どおり)", n1 - n0 == 1 and len(calls) - n1 == 1, (n1 - n0, len(calls) - n1))
+login_stepup.check_password = orig_cp
+reset_locks()
+
+# K3 (M-3) 上限のキーはIPv6を/64でまとめる(同じ/64内でアドレスを変えても回避できない)
+rk = login_stepup._rate_key
+check("K3a _rate_key: 同じ/64は同じキー・別の/64は別・IPv4はそのまま・IPv4射影は4に寄せる・解釈できない文字列はそのまま",
+      rk("2001:db8:1:2::1") == rk("2001:db8:1:2:ffff:eeee:dddd:cccc") != rk("2001:db8:1:3::1")
+      and rk("203.0.113.5") == "203.0.113.5" and rk("::ffff:203.0.113.5") == "203.0.113.5" and rk("not-an-ip") == "not-an-ip"
+      and rk("fe80::1%eth0") == rk("fe80::2"), (rk("2001:db8:1:2::1"), rk("::ffff:203.0.113.5")))
+reset_locks(); gate.log.clear()
+codes = [login("adm_su", PW, ip=f"2001:db8:1:2::{i:x}").status_code for i in range(1, 31)]
+check(f"K3b 同じ/64の30アドレスから確認を始めても、{login_stepup._ASK_MAX}回で止まる(21回目以降は429)",
+      codes[:login_stepup._ASK_MAX] == [200] * login_stepup._ASK_MAX and set(codes[login_stepup._ASK_MAX:]) == {429}, codes)
+check("K3c 相手サービスへ送るipは生の文字列のまま(丸めない)", all(x["body"]["ip"].startswith("2001:db8:1:2::") for x in gate.calls("/internal/begin")))
+check("K3d 別の/64は影響を受けない", login("adm_su", PW, ip="2001:db8:1:9::1").status_code == 200)
+reset_locks()
+
+# K4 (L-1) 相手が3xxを返しても追従しない(共有キーを転送先へ送らない・転送先の答えを受け入れない)
+class _Sink(http.server.BaseHTTPRequestHandler):
+    seen = []
+    def log_message(self, *a): pass
+    def _any(self):
+        _Sink.seen.append((self.command, self.path, self.headers.get("Authorization")))
+        raw = b'{"mode":"skip","ticket":"' + b"B" * 30 + b'"}'
+        self.send_response(200); self.send_header("Content-Type", "application/json"); self.send_header("Content-Length", str(len(raw))); self.end_headers(); self.wfile.write(raw)
+    do_GET = do_POST = _any
+sink = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _Sink); sink.daemon_threads = True
+threading.Thread(target=sink.serve_forever, daemon=True).start()
+gate.redirect_to = f"http://127.0.0.1:{sink.server_address[1]}/internal/begin"
+gate.override = "redirect"
+r = login("adm_su", PW)
+check("K4a 相手が302を返す → 2001(転送先の答えをログインに使わない)", r.status_code == 401 and err_code(r) == "2001" and not authck(r), r.text)
+check("K4b 転送先には一切届かない(共有キーも付かない)", _Sink.seen == [], _Sink.seen)
+gate.override = None; sink.shutdown(); sink.server_close()
+reset_locks()
+
+# K5 (L-2) 1バイトずつ細切れに返す相手でも総時間で打ち切る
+reset_locks(); gate.override = "drip"
+t0 = time.monotonic()
+r = login("adm_su", PW)
+dt = time.monotonic() - t0
+check("K5a 細切れに返す相手(約5秒かけて返す)→ 2001(素通しにならない)", r.status_code == 401 and err_code(r) == "2001" and not authck(r), r.text)
+check("K5b 総時間(2.5秒)で打ち切る(4秒未満)", dt < 4.0, f"{dt:.2f}s")
+time.sleep(0.5)
+gate.override = None
+check("K5c 枠は返っている(リークなし)", login_stepup._gate_slots._value == 8, login_stepup._gate_slots._value)
+reset_locks()
+
+# K6 (L-3) 値が空でない誤設定は黙ってフック無効にしない・起動ログ用の状態表示
+for bad in ("/", "///", "  /  "):
+    os.environ["LOGIN_STEPUP_URL"] = bad
+    check(f"K6a URL='{bad.strip()}' でもenabled()=True(黙って無効にしない)", login_stepup.enabled() is True)
+    r = login("adm_su", PW); check(f"K6b URL='{bad.strip()}' → 管理者は2001(フック無効=パスワードだけで入れる状態にならない)", r.status_code == 401 and err_code(r) == "2001")
+    reset_locks()
+os.environ["LOGIN_STEPUP_URL"] = url.replace("http://", "HTTP://")
+r = login("adm_su", PW)
+check("K6c スキームが大文字(HTTP://)でも動く(小文字化して判定)", r.status_code == 200 and "stepup" in r.json(), r.text)
+reset_locks(); set_env()
+d = login_stepup.describe()
+check("K6d describe(): 有効・宛先ホスト名のみ・キーの値は出ない", "127.0.0.1" in d and gate.key not in d and "有効" in d, d)
+os.environ["LOGIN_STEPUP_URL"] = "svc-host:8080"
+check("K6e describe(): URLの形が不正なことが分かる", "不正" in login_stepup.describe())
+os.environ["LOGIN_STEPUP_URL"] = ""
+check("K6f describe(): 未設定は無効", "無効" in login_stepup.describe())
+set_env()
+os.environ["LOGIN_STEPUP_KEY"] = ""
+check("K6g describe(): キー未設定が分かる", "なし" in login_stepup.describe())
+os.environ["LOGIN_STEPUP_KEY"] = gate.key
+
+# K7 (N-6) samesite=none でsecure=falseのCookieは拒否
+base_ck = {"name": "g1", "value": "abc", "max_age": 60, "path": "/", "httponly": True}
+check("K7 samesite=none+secure=falseは拒否・secure=trueなら通る・lax+secure=falseは通る(検査用スタブの都合)",
+      login_stepup._valid_cookie({**base_ck, "samesite": "none", "secure": False}) is None
+      and login_stepup._valid_cookie({**base_ck, "samesite": "none", "secure": True}) is not None
+      and login_stepup._valid_cookie({**base_ck, "samesite": "lax", "secure": False}) is not None)
+
+# K9 (N-3) 確認済みの端末(skip)は確認の開始の上限を消費しない
+reset_locks(); gate.log.clear()
+ipr = new_ip()
+codes = [login("adm_su", PW, ip=ipr, cookie=gate.valid_cookie).status_code for _ in range(login_stepup._ASK_MAX + 5)]
+check(f"K9a 確認済みの端末で同じIPから{login_stepup._ASK_MAX + 5}回続けてログインしても全て成功(skipは開始の上限を消費しない)", codes == [200] * (login_stepup._ASK_MAX + 5), codes)
+codes = [login("adm_su", PW, ip=ipr).status_code for _ in range(login_stepup._ASK_MAX + 2)]
+check("K9b そのあとの確認の開始(ask)は従来どおり上限まで通り、超えると429", codes[:login_stepup._ASK_MAX] == [200] * login_stepup._ASK_MAX and codes[login_stepup._ASK_MAX:] == [429] * 2, codes)
+reset_locks()
+
+# K10 (N-9) 解釈できない文字列のキーは64文字に切る
+check("K10 _rate_key: 解釈できない長大な文字列は64文字に切る", len(login_stepup._rate_key("x" * 5000)) == 64)
+
+# K8 (L-6) 上限を数えるIPの数に硬い上限(窓内に生きているIPが際限なく増えない)
+login_stepup._ask_hits.clear()
+nowt = time.monotonic()
+for i in range(login_stepup._ASK_KEYS_HARD + 1000):
+    login_stepup._ask_hits[f"k{i}"] = [nowt - (i % 100) * 0.001]
+login_stepup.ask_allowed("198.51.100.77")
+check("K8 窓内に生きたIPが硬い上限を超えていても、次の呼び出しで上限以下に刈られる(新しいキーは残る)",
+      len(login_stepup._ask_hits) <= login_stepup._ASK_KEYS_HARD and "198.51.100.77" in login_stepup._ask_hits, len(login_stepup._ask_hits))
+reset_locks()
+
+# ---------------- 最後に落ちている相手 ----------------
+print("== F'. 相手が落ちている")
+srv.shutdown(); srv.server_close()
+reset_locks()
+t0 = time.monotonic()
+r = login("adm_su", PW)
+check("F14 相手が落ちている → 管理者は2001(素通しにならない)・数秒以内", r.status_code == 401 and err_code(r) == "2001" and time.monotonic() - t0 < 3.5)
+r = login("usr_su"); check("F15 相手が落ちていても一般ユーザーは無影響", r.status_code == 200 and r.json().get("ok") is True)
+set_env(enabled=False)
+r = login("adm_su"); check("F16 URLを外すとフック無効(従来どおり=ブレーキの手順)", r.status_code == 200 and r.json().get("ok") is True)
+
+# ---------------- H. ログ ----------------
+print("== H. ログ")
+secrets_seen = {gate.key, "wrong-key"}
+for x in gate.log:
+    b = x["body"]
+    if isinstance(b.get("ticket"), str): secrets_seen.add(b["ticket"])
+joined = "\n".join(cap.msgs)
+check("H1 ログに共有キー・チケット・パスワードが出ていない", not any(s and s in joined for s in secrets_seen) and PW not in joined)
+check("H2 ログに確認サービスのCookie値が出ていない", "signed" not in joined)
+
+# ---------------- I. 公開コードの衛生・ログイン画面 ----------------
+print("== I. 公開コードの衛生・画面")
+root = Path(REPO)
+# 「ゲートの形を示す語」の一覧は公開リポジトリに置かない(一覧自体が手がかりになるため)。非公開の語リスト
+# (1行1語)のパスを環境変数 STEPUP_HYGIENE_WORDS で渡す。未指定ならこの項目だけ飛ばす(OK/FAILに数えない)。
+words_file = os.environ.get("STEPUP_HYGIENE_WORDS", "")
+if words_file and Path(words_file).is_file():
+    banned = [w.strip() for w in Path(words_file).read_text(encoding="utf-8").splitlines() if w.strip()]
+    # scripts/ には一般の単語を含む語彙の追加スクリプトが大量にあるので、このログイン統合の
+    # 新規ファイルだけを対象にする(app/static/templates/deployは全体)。
+    scan = [root / "app", root / "static", root / "templates", root / "README.md", root / "deploy", root / ".env.example",
+            root / "scripts/check_login_stepup.py", root / "scripts/check_login_stepup_ui.py",
+            root / "scripts/stepup_stub_gate.py", root / "CHANGELOG.md", root / "release_notes.json"]
+    hits = []
+    for base in scan:
+        files = [base] if base.is_file() else [p for p in base.rglob("*") if p.is_file() and p.suffix in (".py", ".js", ".html", ".md", ".sh", ".yml", ".snippet", ".json", ".txt", ".example")]
+        for p in files:
+            try: txt = p.read_text(encoding="utf-8")
+            except Exception: continue
+            for w in banned:
+                if w in txt: hits.append((str(p.relative_to(root)), w))
+    check(f"I1 公開コード・公開ファイル(app/static/templates/deploy/このログイン統合のscripts/CHANGELOG/release_notes)に、非公開の語リスト{len(banned)}語が1つも無い", not hits, hits[:5])
+else:
+    print("SKIP I1 公開コードの語の混入検査(STEPUP_HYGIENE_WORDS=非公開の語リストのパスが未指定)")
+leak = [str(p.relative_to(root)) for base in (root / ".env.example", root / "README.md", root / "deploy") if base.exists()
+        for p in ([base] if base.is_file() else base.rglob("*")) if p.is_file() and "LOGIN_STEPUP" in p.read_text(encoding="utf-8", errors="ignore")]
+check("I2 環境変数名(LOGIN_STEPUP_*)は.env.example・README・deployに載せていない", not leak, leak)
+html = (root / "static/login.html").read_text(encoding="utf-8")
+check("I3 画面: iframeからのメッセージは origin と source を両方検査する", "ev.origin !== location.origin" in html and "ev.source !== stepupFrame.contentWindow" in html)
+check("I4 画面: srcは同一オリジンの相対パスだけ・ticketは形を検査", "STEPUP_SRC_RE" in html and "STEPUP_TICKET_RE" in html and r"^\/(?!\/)" in html)
+check("I5 画面: iframeはno-referrer・キャンセルとEscで閉じられる", "no-referrer" in html and "closeStepup" in html and "Escape" in html)
+d = (root / "static/js/i18n_dict.js").read_text(encoding="utf-8")
+for key in ("login.stepup.title", "login.stepup.cancel", "login.stepup.locked"):
+    check(f"I6 辞書に{key}が4言語ぶんある", d.count(f'"{key}"') == 4)
+zh_cn_locked = re.search(r'"login\.stepup\.locked": "([^"]+)"', d.split('"login.networkError": "发生通信错误。"')[1]).group(1)
+check("I7 簡体字の文言に繁体字が混ざらない(稍候/过/会儿)", "請" not in zh_cn_locked and "過" not in zh_cn_locked and "會" not in zh_cn_locked, zh_cn_locked)
+check("I8 日本語以外の辞書にかなが混ざらない", not re.search(r"[぀-ヿ]", "".join(re.findall(r'"login\.stepup\.[a-z]+": "([^"]+)"', d)[3:])))
+
+print(f"\n== 結果: OK {ok} / FAIL {fail}")
+sys.exit(0 if fail == 0 else 1)

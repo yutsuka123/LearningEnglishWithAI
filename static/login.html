@@ -150,6 +150,22 @@
     .foot { text-align: center; margin-top: 14px; }
     .foot a { font-size: 12px; color: var(--sub); text-decoration: none; }
     .foot a:hover { text-decoration: underline; }
+    /* 追加確認の画面(2026-10-20・ver1.5.19): サーバーが求めたときだけ、同一オリジンの
+       iframeで開く。中身はサーバー側が出す。 */
+    .stepup-box { position: fixed; inset: 0; z-index: 50; display: flex;
+      align-items: center; justify-content: center; padding: 12px;
+      background: rgba(0,0,0,.55); }
+    .stepup-panel { display: flex; flex-direction: column;
+      width: min(100%, 460px); max-height: 100%; overflow: hidden;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; box-shadow: 0 8px 30px var(--shadow); }
+    /* iframeの中身(確認の画面)は600px超になることがある。画面に収まる範囲で高く取り、収まらない狭い
+       画面では中(iframe)でスクロールさせる(dvh未対応のブラウザは前の行のvhのまま)。 */
+    .stepup-panel iframe { display: block; width: 100%; min-height: 320px;
+      height: min(calc(100vh - 110px), 720px); height: min(calc(100dvh - 110px), 720px);
+      border: 0; background: var(--card); }
+    .stepup-panel .stepup-cancel { width: auto; align-self: flex-end;
+      margin: 8px 12px; padding: 6px 14px; font-size: 14px; }
   </style>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17457232912"></script>
@@ -994,24 +1010,154 @@
       });
     });
 
-    fLogin.addEventListener('submit', async (ev) => {
-      ev.preventDefault();
-      const e = document.getElementById('e');
-      e.textContent = '';
-      try {
-        const r = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username: document.getElementById('u').value,
-            password: document.getElementById('p').value,
-          }),
-        });
-        const d = await r.json();
-        if (d.ok) { location.href = safeNextUrl(); }
-        else { e.textContent = d.error || i18nT('login.failed', 'ログインに失敗しました。'); }
-      } catch (_) { e.textContent = i18nT('login.networkError', '通信エラーが発生しました。'); }
-    });
+    // 追加確認(2026-10-20・ver1.5.19): サーバーが {stepup:{src}} を返したときだけ、その相対パスを
+    // 同一オリジンのiframeで開く(中身はサーバー側が出す)。終わると iframe から postMessage で
+    // 不透明な値(ticket)だけ届くので、同じ入力に付けて再送する。合否はここでは分からない。
+    // 2026-10-21(独立照査2回目M-4・N-1): iframeは同一オリジンなので、親の入力欄をDOM経由で読めてしまう
+    // (仕様「ブラウザ経由でもパスワードを受け取らない」)。確認中は、入力した値を関数の中(閉じた変数)に
+    // 写して欄のパスワードを空にし、欄を無効化する。再送はその写しから行う(確認中の編集で食い違わない)。
+    // 全体を関数で包むのは、トップレベルのlet/constだと別のスクリプトから名前で辿れるため。
+    (function () {
+      const STEPUP_SRC_RE = /^\/(?!\/)[A-Za-z0-9_\-.\/~%=&?]{1,500}$/;
+      const STEPUP_TICKET_RE = /^[A-Za-z0-9_\-]{8,200}$/;
+      const fU = document.getElementById('u');
+      const fP = document.getElementById('p');
+      const submitBtn = fLogin.querySelector('button[type="submit"]');
+      // 再送で使う関数は、ページ読み込み時(確認の画面を開く前)に束縛しておく。あとから同一オリジンの
+      // 画面が window.fetch / JSON.stringify を差し替えても、再送の本文は経由しない(2026-10-21 照査3回目L-2・
+      // 部分的な対策)。同一オリジンの枠は信頼境界にならない(悪意ある画面はDOMも書き換えられる)ので、
+      // 守りの前提は「枠の中身は自分たちのゲートが出す画面だけ」であること(別オリジン化は仕様変更)。
+      const nativeFetch = window.fetch.bind(window);
+      const toJson = JSON.stringify.bind(JSON);
+      let stepupBox = null;
+      let stepupFrame = null;
+      let held = null;      // 確認中の {username, password} の写し(この関数の外からは辿れない)
+      let busy = false;
+      function setBusy(b) {
+        busy = b;
+        if (submitBtn) submitBtn.disabled = b;
+      }
+      function lockFields() {
+        fP.value = '';
+        fU.disabled = true;
+        fP.disabled = true;
+      }
+      function restoreFields() {
+        // 確認中に「戻る」等でログインフォームが隠れていたら、非表示側のパスワード欄は空・無効のままにする
+        // (2026-09-01の規則。パスワード管理ソフトの誤爆の防止。2026-10-21 照査3回目N-2)。
+        const visible = currentForm === 'login';
+        if (held) { fU.value = held.username; if (visible) fP.value = held.password; }
+        held = null;
+        fU.disabled = false;
+        fP.disabled = !visible;
+      }
+      function closeStepup() {
+        if (stepupBox) { stepupBox.remove(); }
+        stepupBox = null;
+        stepupFrame = null;
+      }
+      function cancelStepup() {
+        closeStepup();
+        restoreFields();
+      }
+      function openStepup(src) {
+        closeStepup();
+        const box = document.createElement('div');
+        box.className = 'stepup-box';
+        box.setAttribute('role', 'dialog');
+        box.setAttribute('aria-modal', 'true');
+        const panel = document.createElement('div');
+        panel.className = 'stepup-panel';
+        const frame = document.createElement('iframe');
+        frame.setAttribute('title', i18nT('login.stepup.title', '追加の確認'));
+        frame.setAttribute('referrerpolicy', 'no-referrer');
+        frame.src = src;
+        const cancel = document.createElement('button');
+        cancel.type = 'button';
+        cancel.className = 'btn-secondary stepup-cancel';
+        cancel.textContent = i18nT('login.stepup.cancel', 'キャンセル');
+        cancel.addEventListener('click', cancelStepup);
+        panel.appendChild(frame);
+        panel.appendChild(cancel);
+        box.appendChild(panel);
+        document.body.appendChild(box);
+        stepupBox = box;
+        stepupFrame = frame;
+      }
+      window.addEventListener('message', (ev) => {
+        // 自分が開いたiframeからの、同一オリジンのメッセージだけを受け取る。
+        if (!stepupFrame || ev.origin !== location.origin
+            || ev.source !== stepupFrame.contentWindow) return;
+        const m = ev.data;
+        if (!m || typeof m !== 'object') return;
+        if (m.t === 'st' && typeof m.ticket === 'string'
+            && STEPUP_TICKET_RE.test(m.ticket)) {
+          closeStepup();
+          doLogin(m.ticket);
+        } else if (m.t === 'st-locked') {
+          closeStepup();
+          restoreFields();
+          document.getElementById('e').textContent = i18nT(
+            'login.stepup.locked', 'しばらくお待ちください。時間をおいて、もう一度お試しください。');
+        }
+      });
+      document.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape' && stepupBox) cancelStepup();
+      });
+      // ログイン成功後に「戻る」でこのページがbfcacheから復元されると、JSの状態(送信中・欄の無効化)が
+      // 残ったままになるので戻す(2026-10-21 照査3回目N-1)。パスワードの写しは復元しない。
+      window.addEventListener('pageshow', (ev) => {
+        if (!ev.persisted) return;
+        closeStepup();
+        held = null;
+        restoreFields();
+        setBusy(false);
+      });
+
+      async function doLogin(ticket) {
+        const e = document.getElementById('e');
+        e.textContent = '';
+        // 再送(ticket付き)は、確認の前に写した値から行う(欄は空・無効化されている)。
+        const creds = ticket ? held : { username: fU.value, password: fP.value };
+        if (!creds) {
+          restoreFields();
+          e.textContent = i18nT('login.failed', 'ログインに失敗しました。');
+          return;
+        }
+        let leaving = false;
+        setBusy(true);
+        try {
+          const body = { username: creds.username, password: creds.password };
+          if (ticket) body.ticket = ticket;
+          const r = await nativeFetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: toJson(body),
+          });
+          const d = await r.json();
+          if (d.ok) { leaving = true; held = null; location.href = safeNextUrl(); return; }
+          if (!ticket && d.stepup && typeof d.stepup.src === 'string'
+              && STEPUP_SRC_RE.test(d.stepup.src)) {
+            held = { username: creds.username, password: creds.password };
+            lockFields();
+            openStepup(d.stepup.src);
+            return;
+          }
+          restoreFields();
+          e.textContent = d.error || i18nT('login.failed', 'ログインに失敗しました。');
+        } catch (_) {
+          restoreFields();
+          e.textContent = i18nT('login.networkError', '通信エラーが発生しました。');
+        } finally {
+          if (!leaving) setBusy(false);   // 成功して画面を移る間は二重送信させない
+        }
+      }
+      fLogin.addEventListener('submit', (ev) => {
+        ev.preventDefault();
+        if (busy || stepupBox) return;
+        doLogin('');
+      });
+    })();
 
     // 離脱・滞在時間の計測(2026-09-30オーナー指示「登録ボタンを押したのに完了
     // しない人」の調査): 従来は「フォームを開いて3秒で戻った」のか「開いたまま

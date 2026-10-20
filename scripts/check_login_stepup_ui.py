@@ -1,0 +1,306 @@
+"""ver1.5.19 ログインの追加確認(step-up)の画面側(static/login.html)の実ブラウザ検査。
+
+**隔離サーバー専用・本番には絶対に向けない**。アプリを一時データ領域でuvicornとして起動し、確認サービスは
+scripts/stepup_stub_gate.py の偽物をこのプロセス内で動かす。iframeの中身(確認サービスの画面)は
+Playwrightのrouteで「合否にかかわらず終了したらpostMessageを送るだけの偽の画面」に差し替える。
+Googleタグ入りのページを動かすため、アプリ(127.0.0.1)以外への通信は**全て止める**(本番のGoogle広告アカウントへは何も届かない)。
+
+使い方: リポジトリ直下で `.venv/bin/python scripts/check_login_stepup_ui.py [--browsers chromium,webkit]`
+確かめること:
+  1. 一般ユーザー: 従来どおり(iframeは出ない)
+  2. 管理者: iframeが開く→終了のpostMessage→同じ入力で再送→成功(セッション+確認サービスのCookie)
+  3. 管理者(誤パスワード)・おとり名: iframeが同じように開き、最後に同じ失敗文言(正誤が画面に出ない)
+  4. キャンセル/Escで閉じる・閉じた後は再送しない
+  5. 待ち(st-locked)の表示・自分のiframe以外(ページ自身)からのメッセージは無視
+  6. 確認済みの端末(skip)はiframeなしで入れる
+  7. 相手が落ちていても画面は固まらず失敗文言を出す
+  8. 4言語の文言・スマホ幅でiframeの枠が画面に収まる
+  9. 確認中は親の入力欄にパスワードが残らない・二重送信しない・キャンセル/失敗で入力が復元される・隠れたフォームへ戻さない・bfcache復帰・親の関数の差し替えに強い(照査M-4・N-1・3回目N-1/N-2/L-2)
+"""
+import argparse, json, os, socket, subprocess, sys, tempfile, time, urllib.request
+from pathlib import Path
+from urllib.parse import parse_qs, urlparse
+
+ap = argparse.ArgumentParser()
+ap.add_argument("--browsers", default="chromium,webkit")
+args = ap.parse_args()
+
+tmp = tempfile.mkdtemp(prefix="eigo_stepup_ui_")
+REPO = os.environ.get("REPO") or str(Path(__file__).resolve().parents[1])
+sys.path.insert(0, REPO); sys.path.insert(0, str(Path(__file__).resolve().parent))
+os.environ.update({"DATA_DIR": tmp, "MULTIUSER": "1", "LOGIN_STEPUP_URL": "", "LOGIN_STEPUP_KEY": "",
+                   "LOGIN_STEPUP_DECOYS": "", "ALLOWED_HOSTS": "", "PUBLIC_BASE_URL": ""})
+from app.database import db, init_db
+from app.services import auth
+import stepup_stub_gate as stub
+
+init_db()
+PW = "Passw0rd!x1"
+with db() as conn:
+    for name, role in (("ui_admin", "admin"), ("ui_admin_chromium", "admin"), ("ui_admin_webkit", "admin"), ("ui_user", "user")):
+        auth.create_user(conn, name, PW, role=role)
+
+gate, gate_url, gate_srv = stub.serve()
+gate.cookie_secure = False     # WebKitがhttp://127.0.0.1でSecureのCookieを保存しない都合(アプリは相手の値をそのまま使う)
+s = socket.socket(); s.bind(("127.0.0.1", 0)); port = s.getsockname()[1]; s.close()
+BASE = f"http://127.0.0.1:{port}"
+env = dict(os.environ, ALLOW_FRESH_DB="1", SESSION_SECRET="preview", OPENAI_API_KEY="preview-not-used",
+           LOGIN_STEPUP_URL=gate_url, LOGIN_STEPUP_KEY=gate.key, LOGIN_STEPUP_DECOYS="ui_ghost")
+server = subprocess.Popen([sys.executable, "-m", "uvicorn", "app.main:app", "--port", str(port), "--log-level", "warning"],
+                          cwd=REPO, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+try:
+    for _ in range(60):
+        try:
+            if urllib.request.urlopen(BASE + "/api/health", timeout=1).status == 200: break
+        except Exception: time.sleep(0.5)
+    else:
+        raise SystemExit("サーバーが起動しない")
+
+    from playwright.sync_api import sync_playwright
+    ok = fail = 0
+    def check(label, cond, extra=""):
+        global ok, fail
+        if cond: ok += 1; print("OK  ", label)
+        else: fail += 1; print("FAIL", label, extra)
+
+    def run(pw, bname):
+        P = bname + ": "
+        ADM = "ui_admin_" + bname     # 失敗を重ねる検査があるので、ブラウザごとに別の管理者(ユーザー名単位のロック=8回/15分を避ける)
+        state = {"mode": "pass", "delay": 700}
+        blocked = []
+        def guard(route):
+            u = route.request.url
+            if u.startswith(BASE): return route.continue_()
+            blocked.append(u); return route.abort()
+        def gate_page(route):
+            c = parse_qs(urlparse(route.request.url).query).get("c", [""])[0]
+            mode = state["mode"]
+            if mode in ("pass", "fail") and c in gate.tickets:
+                gate.complete(c, mode == "pass")
+            msg = {"t": "st-locked"} if mode == "locked" else {"t": "st", "ticket": c}
+            html = ("<!doctype html><meta charset=utf-8><body>stub<script>setTimeout(function(){parent.postMessage("
+                    + json.dumps(msg) + ", location.origin)}, " + str(state["delay"]) + ")</script>")
+            route.fulfill(status=200, content_type="text/html", body=html,
+                          headers={"X-Frame-Options": "SAMEORIGIN", "Content-Security-Policy": "frame-ancestors 'self'"})
+        browser = getattr(pw, bname).launch()
+        ipn = iter(range(1, 250))
+        def new_page(lang=None, viewport=None, cookies=None):
+            ctx = browser.new_context(locale="ja-JP", viewport=viewport or {"width": 1100, "height": 800})
+            # 確認の開始はIP別に上限がある(5分間に一定回数)。検査は1台から多数ログインするので、文脈ごとに別のIPを名乗る
+            ctx.set_extra_http_headers({"X-Forwarded-For": f"198.51.{(len(bname) * 7) % 200}.{next(ipn)}"})
+            ctx.route("**/*", guard)
+            ctx.route("**/g-stub/e**", gate_page)
+            if lang: ctx.add_init_script(f"try {{ localStorage.setItem('lang', {json.dumps(lang)}); }} catch (e) {{}}")
+            if cookies: ctx.add_cookies(cookies)
+            page = ctx.new_page()
+            reqs = []
+            page.on("request", lambda r: reqs.append(r) if r.url.endswith("/api/auth/login") else None)
+            page.goto(BASE + "/login"); page.wait_for_selector("#u")
+            return ctx, page, reqs
+        def fill_submit(page, u, p):
+            page.fill("#u", u); page.fill("#p", p)
+            page.click("#f button[type=submit]")
+        def cookie_names(ctx): return {c["name"] for c in ctx.cookies()}
+
+        # 1. 一般ユーザー
+        state.update(mode="pass", delay=700); ctx, page, reqs = new_page()
+        fill_submit(page, "ui_user", PW)
+        page.wait_for_url(lambda u: "/login" not in u, timeout=15000)
+        check(P + "1 一般ユーザー: iframeなしで従来どおり入れる", auth.SESSION_COOKIE in cookie_names(ctx) and len(reqs) == 1)
+        ctx.close()
+
+        # 2. 管理者の成功
+        ctx, page, reqs = new_page()
+        fill_submit(page, ADM, PW)
+        page.wait_for_selector(".stepup-box iframe", timeout=5000)
+        src = page.get_attribute(".stepup-box iframe", "src")
+        check(P + "2a 管理者: 確認のiframeが開く(同一オリジンの相対パス)", src.startswith("/g-stub/e?c="), src)
+        check(P + "2b iframeにはno-referrerとtitleが付く", page.get_attribute(".stepup-box iframe", "referrerpolicy") == "no-referrer"
+              and bool(page.get_attribute(".stepup-box iframe", "title")))
+        check(P + "2c iframeが開いている間は再送していない(ログイン要求は1回だけ)", len(reqs) == 1)
+        page.wait_for_url(lambda u: "/login" not in u, timeout=15000)
+        names = cookie_names(ctx)
+        check(P + "2d 終了後に同じ入力で再送→成功(セッションCookie+確認サービスのCookie)", auth.SESSION_COOKIE in names and "gtest" in names, names)
+        check(P + "2e 再送にはticketが付く・パスワードも付く", len(reqs) == 2 and '"ticket"' in (reqs[1].post_data or "") and '"password"' in (reqs[1].post_data or ""))
+        ctx.close()
+
+        # 3. 失敗は正誤が画面に出ない
+        def failing(user, pw_, label):
+            state.update(mode="pass", delay=700); c2, pg, rq = new_page()
+            fill_submit(pg, user, pw_)
+            pg.wait_for_selector(".stepup-box iframe", timeout=5000)
+            pg.wait_for_function("() => !document.querySelector('.stepup-box')", timeout=8000)
+            pg.wait_for_function("() => document.getElementById('e').textContent.length > 0", timeout=8000)
+            msg = pg.inner_text("#e")
+            out = ("/login" in pg.url, msg, auth.SESSION_COOKIE in cookie_names(c2) or "gtest" in cookie_names(c2), len(rq))
+            c2.close(); return out
+        a = failing(ADM, "wrong-pass", "wrong")
+        b = failing("ui_ghost", PW, "decoy")
+        c_ = failing(ADM, "wrong-pass2", "wrong2")
+        check(P + "3a 管理者(誤パスワード): iframe→失敗文言・ログインされない", a[0] and a[1] != "" and not a[2] and a[3] == 2, a)
+        check(P + "3b おとり名・誤パスワードの管理者は、同じ流れ(iframe→2回送信)・同じ失敗文言(正誤が画面に出ない)", a == b == c_ or (a[1] == b[1] == c_[1] and a[3] == b[3] == c_[3]), (a, b, c_))
+
+        # 4. キャンセル・Esc
+        state.update(mode="pass", delay=3000); ctx, page, reqs = new_page()
+        fill_submit(page, ADM, PW)
+        page.wait_for_selector(".stepup-box iframe", timeout=5000)
+        page.click(".stepup-cancel")
+        check(P + "4a キャンセルでiframeが閉じる", page.query_selector(".stepup-box") is None)
+        time.sleep(3.6)
+        check(P + "4b 閉じた後は再送されない(ログイン要求は最初の1回だけ)", len(reqs) == 1 and "/login" in page.url)
+        fill_submit(page, ADM, PW)
+        page.wait_for_selector(".stepup-box iframe", timeout=5000)
+        page.keyboard.press("Escape")
+        check(P + "4c Escでも閉じる", page.query_selector(".stepup-box") is None)
+        ctx.close()
+
+        # 5. 待ち表示・自分のiframe以外からのメッセージは無視
+        state.update(mode="locked", delay=500); ctx, page, reqs = new_page()
+        fill_submit(page, ADM, PW)
+        page.wait_for_function("() => !document.querySelector('.stepup-box') && document.getElementById('e').textContent.length > 0", timeout=8000)
+        check(P + "5a st-locked: iframeを閉じて待ちの文言を出す・再送しない", len(reqs) == 1 and "しばらく" in page.inner_text("#e"), page.inner_text("#e"))
+        ctx.close()
+        state.update(mode="pass", delay=3000); ctx, page, reqs = new_page()
+        fill_submit(page, ADM, PW)
+        page.wait_for_selector(".stepup-box iframe", timeout=5000)
+        page.evaluate("window.postMessage({t:'st', ticket:'AAAAAAAAAAAAAAAAAAAA'}, location.origin)")
+        time.sleep(0.6)
+        check(P + "5b ページ自身(iframe以外)からのメッセージは無視する(再送されない)", len(reqs) == 1 and page.query_selector(".stepup-box") is not None)
+        page.keyboard.press("Escape"); ctx.close()
+
+        # 6. skip(確認済みの端末)
+        ctx, page, reqs = new_page(cookies=[{"name": "gatetest", "value": "OK", "url": BASE}])
+        fill_submit(page, ADM, PW)
+        page.wait_for_url(lambda u: "/login" not in u, timeout=15000)
+        check(P + "6 確認済みの端末: iframeなしで入れる(サーバーが確かめた結果)", auth.SESSION_COOKIE in cookie_names(ctx) and len(reqs) == 1)
+        ctx.close()
+
+        # 7b. 確認の画面は600px超になることがある: デスクトップ幅ではiframeを640px以上に取る
+        state.update(mode="pass", delay=3000); ctx, page, reqs = new_page()
+        fill_submit(page, ADM, PW)
+        page.wait_for_selector(".stepup-box iframe", timeout=5000)
+        fh = page.evaluate("() => document.querySelector('.stepup-box iframe').getBoundingClientRect().height")
+        check(P + f"7b デスクトップ(1100x800): iframeの高さが640px以上(確認の画面が600px超でも収まる): {fh:.0f}px", fh >= 640, fh)
+        page.keyboard.press("Escape"); ctx.close()
+        ctx, page, reqs = new_page(viewport={"width": 390, "height": 560})
+        fill_submit(page, ADM, PW)
+        page.wait_for_selector(".stepup-box iframe", timeout=5000)
+        g2 = page.evaluate("""() => { const p = document.querySelector('.stepup-panel').getBoundingClientRect();
+          const f = document.querySelector('.stepup-box iframe').getBoundingClientRect();
+          return {top: p.top, bottom: p.bottom, vh: window.innerHeight, fh: f.height}; }""")
+        check(P + "7c 低い画面(390x560): 枠が画面に収まる(収まらない中身はiframe内でスクロール)", g2["top"] >= 0 and g2["bottom"] <= g2["vh"] + 1 and g2["fh"] >= 320, g2)
+        page.keyboard.press("Escape"); ctx.close()
+
+        # 9. (独立照査2回目 M-4・N-1) 確認中は親の入力欄にパスワードが残らない・二重送信しない・キャンセル/失敗で復元
+        state.update(mode="pass", delay=4000); ctx, page, reqs = new_page()
+        page.fill("#u", ADM); page.fill("#p", PW)
+        page.dblclick("#f button[type=submit]")           # 二重送信
+        page.wait_for_selector(".stepup-box iframe", timeout=5000)
+        time.sleep(0.4)
+        check(P + "9a 二重にクリックしても、ログイン要求は1回だけ(二重送信しない)", len(reqs) == 1, len(reqs))
+        check(P + "9b 確認中は#pが空で、#u・#pが無効化されている(編集で食い違わない)",
+              page.input_value("#p") == "" and page.is_disabled("#p") and page.is_disabled("#u"))
+        fr = [f for f in page.frames if f != page.main_frame][0]
+        check(P + "9c iframeの中から親の#pの値を読んでも空(入力したパスワードはDOMに無い)",
+              fr.evaluate("() => parent.document.getElementById('p').value") == "")
+        scope = fr.evaluate("""() => { const r = {}; for (const n of ['held', 'stepupBox', 'stepupFrame', 'STEPUP_SRC_RE', 'doLogin']) {
+              try { r[n] = typeof parent.eval(n); } catch (e) { r[n] = e.name; } } return r; }""")
+        check(P + "9d 確認用の変数・関数は親のグローバルから辿れない(parent.evalで見えない)",
+              all(v in ("undefined", "ReferenceError") for v in scope.values()), scope)
+        page.click(".stepup-cancel")
+        check(P + "9e キャンセルすると入力が元どおり復元され、再び入力できる",
+              page.input_value("#p") == PW and page.input_value("#u") == ADM and not page.is_disabled("#p") and not page.is_disabled("#u")
+              and not page.is_disabled("#f button[type=submit]"))
+        ctx.close()
+        state.update(mode="pass", delay=700); ctx, page, reqs = new_page()
+        fill_submit(page, ADM, PW)
+        page.wait_for_url(lambda u: "/login" not in u, timeout=15000)
+        sent = json.loads(reqs[1].post_data or "{}")
+        check(P + "9f 再送は確認の前に写した値から行う(ユーザー名・パスワードが最初の入力のまま・ticket付き)",
+              sent.get("username") == ADM and sent.get("password") == PW and bool(sent.get("ticket")), {k: bool(v) for k, v in sent.items()})
+        ctx.close()
+        state.update(mode="pass", delay=700); ctx, page, reqs = new_page()
+        fill_submit(page, ADM, "wrong-pass-9")
+        page.wait_for_function("() => !document.querySelector('.stepup-box') && document.getElementById('e').textContent.length > 0", timeout=8000)
+        check(P + "9g 失敗後は入力が復元され(パスワードも)、送信ボタンも再び押せる",
+              page.input_value("#p") == "wrong-pass-9" and not page.is_disabled("#p") and not page.is_disabled("#u")
+              and not page.is_disabled("#f button[type=submit]"))
+        ctx.close()
+
+        # 9h/9i/9j (独立照査3回目 N-2・N-1・L-2)
+        state.update(mode="pass", delay=1500); ctx, page, reqs = new_page()
+        fill_submit(page, ADM, "wrong-pass-9h")
+        page.wait_for_selector(".stepup-box iframe", timeout=5000)
+        page.evaluate("() => document.getElementById('toSignup').click()")      # 確認中に「新規登録」へ切り替わる(戻る等でも同じ)
+        page.wait_for_function("() => !document.querySelector('.stepup-box') && document.getElementById('e').textContent.length > 0", timeout=8000)
+        check(P + "9h 確認中にログインフォームが隠れても、失敗後に非表示フォームのパスワード欄へ値を戻さない(空のまま・無効のまま)",
+              page.input_value("#p") == "" and page.is_disabled("#p") and page.input_value("#u") == ADM)
+        ctx.close()
+        state.update(mode="pass", delay=4000); ctx, page, reqs = new_page()
+        fill_submit(page, ADM, PW)
+        page.wait_for_selector(".stepup-box iframe", timeout=5000)
+        page.evaluate("() => window.dispatchEvent(new PageTransitionEvent('pageshow', {persisted: true}))")   # bfcache復帰の模擬
+        check(P + "9i bfcacheから復元(pageshow persisted)されたら、確認の枠を閉じて欄と送信ボタンを使える状態に戻す(パスワードの写しは復元しない)",
+              page.query_selector(".stepup-box") is None and not page.is_disabled("#u") and not page.is_disabled("#p")
+              and not page.is_disabled("#f button[type=submit]") and page.input_value("#p") == "")
+        ctx.close()
+        state.update(mode="pass", delay=2500); ctx, page, reqs = new_page()
+        fill_submit(page, ADM, "wrong-pass-9j")
+        page.wait_for_selector(".stepup-box iframe", timeout=5000)
+        fr = [f for f in page.frames if f != page.main_frame][0]
+        fr.evaluate("""() => { const f = parent.fetch; parent.__f = [];
+              parent.fetch = function (u, ...r) { parent.__f.push(String(u)); return f.call(parent, u, ...r); };
+              const j = parent.JSON.stringify; parent.__j = 0;
+              parent.JSON.stringify = function (...a) { parent.__j += 1; return j.apply(this, a); }; }""")
+        page.wait_for_function("() => !document.querySelector('.stepup-box') && document.getElementById('e').textContent.length > 0", timeout=8000)
+        seen = page.evaluate("() => ({ f: window.__f, j: window.__j })")
+        check(P + "9j 確認中に同一オリジンの画面が親のfetch/JSON.stringifyを差し替えても、再送はそれらを経由しない(束縛済みの関数を使う・再送自体は行われる)",
+              len(reqs) == 2 and "/api/auth/login" not in "".join(seen["f"]) and seen["j"] == 0, (len(reqs), seen))
+        ctx.close()
+
+        # 8. 4言語・スマホ幅
+        for lang, cancel, locked in (("ja", "キャンセル", "しばらく"), ("en", "Cancel", "Please wait"),
+                                     ("zh-CN", "取消", "请稍候"), ("zh-TW", "取消", "請稍候")):
+            state.update(mode="pass", delay=3000)
+            ctx, page, reqs = new_page(lang=lang, viewport={"width": 360, "height": 640})
+            fill_submit(page, ADM, PW)
+            page.wait_for_selector(".stepup-box iframe", timeout=5000)
+            txt = page.inner_text(".stepup-cancel")
+            geo = page.evaluate("""() => { const p = document.querySelector('.stepup-panel').getBoundingClientRect();
+              const f = document.querySelector('.stepup-box iframe').getBoundingClientRect();
+              return {pl: p.left, pr: p.right, fw: f.width, vw: window.innerWidth, ph: p.bottom,
+                      vh: window.innerHeight, sw: document.scrollingElement.scrollWidth, cw: document.scrollingElement.clientWidth}; }""")
+            check(P + f"8 {lang}: キャンセルの文言・360px幅で枠が画面に収まり横スクロールなし",
+                  txt == cancel and geo["pl"] >= 0 and geo["pr"] <= geo["vw"] and geo["ph"] <= geo["vh"] + 1 and geo["sw"] <= geo["cw"], (txt, geo))
+            page.keyboard.press("Escape")
+            state.update(mode="locked", delay=300)
+            fill_submit(page, ADM, PW)
+            page.wait_for_function("() => !document.querySelector('.stepup-box') && document.getElementById('e').textContent.length > 0", timeout=8000)
+            check(P + f"8 {lang}: 待ちの文言", locked in page.inner_text("#e"), page.inner_text("#e"))
+            ctx.close()
+
+        print(f"INFO {P}アプリ以外への通信を遮断した件数: {len(blocked)}(Googleタグ等・全て中断済み=外へは出ていない)")
+        browser.close()
+
+    with sync_playwright() as pw:
+        for b in [x.strip() for x in args.browsers.split(",") if x.strip()]:
+            print(f"== {b}")
+            run(pw, b)
+
+    # 7. 相手が落ちている(最後に1回だけ・chromiumで)
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch()
+        ctx = browser.new_context(); ctx.route("**/*", lambda r: r.continue_() if r.request.url.startswith(BASE) else r.abort())
+        gate_srv.shutdown(); gate_srv.server_close()
+        page = ctx.new_page(); page.goto(BASE + "/login"); page.wait_for_selector("#u")
+        page.fill("#u", "ui_admin"); page.fill("#p", PW); page.click("#f button[type=submit]")
+        page.wait_for_function("() => document.getElementById('e').textContent.length > 0", timeout=10000)
+        check("7 相手が落ちている: 画面は固まらず失敗文言を出す・iframeは出ない・ログインされない",
+              page.query_selector(".stepup-box") is None and "/login" in page.url and auth.SESSION_COOKIE not in {c["name"] for c in ctx.cookies()})
+        browser.close()
+    print(f"\n== 結果: OK {ok} / FAIL {fail}")
+    sys.exit(0 if fail == 0 else 1)
+finally:
+    server.terminate()
+    try: server.wait(timeout=5)
+    except Exception: server.kill()

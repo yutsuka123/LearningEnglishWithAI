@@ -767,11 +767,20 @@ def login_locked(username: str, ip: str) -> bool:
                        _LOGIN_LOCK)) >= _LOGIN_MAX
 
 
-def record_login_failure(username: str, ip: str) -> None:
+def record_login_failure(
+    username: str, ip: str, count_username: bool = True,
+) -> None:
+    """count_username=False: ユーザー名単位(複数IPの合算)には数えない。追加確認の名簿(管理者・
+    おとり名)のログイン失敗のうち、確認を通っていないもの(でたらめなチケット・確認の開始に失敗等)に使う
+    =パスワードの当たり外れが応答から分からない失敗を合算に入れると、第三者が答えを知らないまま
+    失敗を積んで管理者本人を15分締め出せてしまうため。確認を通ったあとの誤パスワードなど、正誤が
+    応答から分かる失敗は従来どおり数える(2026-10-21 独立照査2回目M-1)。user×IP・IP単位のロックは
+    どちらも従来どおり数える。"""
     now = _time.monotonic()
     _LOGIN_FAILS.setdefault(_login_key(username, ip), []).append(now)
     _IP_FAILS.setdefault(ip or "?", []).append(now)
-    _USERNAME_FAILS.setdefault(_username_key(username), []).append(now)
+    if count_username:
+        _USERNAME_FAILS.setdefault(_username_key(username), []).append(now)
 
 
 def record_login_event(
