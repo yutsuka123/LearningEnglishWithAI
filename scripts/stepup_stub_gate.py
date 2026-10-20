@@ -103,6 +103,8 @@ class _Handler(BaseHTTPRequestHandler):
             bind["value"] = "bad;value"
         elif o == "reserved_bind_cookie":
             bind["name"] = "ela_session"
+        elif o == "quoted_bind_cookie":
+            bind["value"] = "AbC/dEf+gh=="
         return self._send(200, {"mode": "ask", "src": src, "bind_cookie": bind})
 
     def _redeem(self, gate: Gate, body: dict) -> None:
@@ -121,6 +123,8 @@ class _Handler(BaseHTTPRequestHandler):
                   "samesite": "lax", "secure": gate.cookie_secure}
         if gate.override == "bad_cookie_value":
             cookie["value"] = "va;lue"
+        elif gate.override == "quoted_cookie_value":
+            cookie["value"] = "AbC/dEf+gh=="      # RFC上は合法だがSimpleCookieが"..."で囲んでしまう値
         elif gate.override == "bad_cookie_missing":
             del cookie["samesite"]
         elif gate.override == "bad_cookie_name":

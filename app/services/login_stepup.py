@@ -31,8 +31,11 @@ _MAX_BODY = 65536
 _SRC_RE = re.compile(r"^/(?!/)[A-Za-z0-9_\-./~%=&?]{1,500}$")
 _TICKET_RE = re.compile(r"^[A-Za-z0-9_\-]{8,200}$")
 _COOKIE_NAME_RE = re.compile(r"^[A-Za-z0-9_\-]{1,64}$")
-# RFC 6265 の cookie-octet(空白・ダブルクォート・カンマ・セミコロン・バックスラッシュを除く)
-_COOKIE_VALUE_RE = re.compile(r"^[\x21\x23-\x2B\x2D-\x3A\x3C-\x5B\x5D-\x7E]{1,2048}$")
+# Cookie値は「引用符で囲まれずにそのまま出る文字」だけ(英数字と _ - . : ~)。RFC 6265のcookie-octetは
+# `/` `=` `(` 等も許すが、PythonのSimpleCookie(StarletteのSet-Cookie)は、それらを含む値を"..."で囲んで出し、
+# ブラウザはそのクォートごと保存して送り返すため、相手がその値を自分のCookieと認識できず無言で壊れる
+# (2026-10-20 独立照査M-1)。相手の値はbase64url(英数字と _ -)なので、この範囲で足りる。
+_COOKIE_VALUE_RE = re.compile(r"^[A-Za-z0-9_\-.:~]{1,2048}$")
 _COOKIE_PATH_RE = re.compile(r"^/[A-Za-z0-9_\-./]{0,100}$")
 _MAX_COOKIE_AGE = 60 * 60 * 24 * 400
 # 相手に渡すCookieヘッダは、広告タグ等のノイズを除いてから上限で切る(あふれて確認が毎回失敗するのを避ける)

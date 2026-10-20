@@ -157,6 +157,9 @@ if b:
     check("C7 cookie=広告タグ・このアプリ自身のCookieを除いた残り", body["cookie"] == "gx=abc", body["cookie"])
 check("C8 cookie_for_gate: 4KBを超えても通す(相手の上限は12KB)・12KBを超えたら空(あふれて毎回失敗するより安全側)",
       login_stepup.cookie_for_gate("a=" + "x" * 4000) == "a=" + "x" * 4000 and login_stepup.cookie_for_gate("a=" + "x" * 13000) == "")
+check("C8b 相手のCookie値の許可文字: 英数字と _ - . : ~ は通る・/ = + ( ) 空白 ; \" は通らない(引用符で壊れない範囲だけ)",
+      all(login_stepup._valid_cookie({"name": "g1", "value": v, "max_age": 60, "path": "/", "samesite": "lax", "httponly": True, "secure": True}) for v in ("AbC_-.def", "a.b", "x:y~z"))
+      and not any(login_stepup._valid_cookie({"name": "g1", "value": v, "max_age": 60, "path": "/", "samesite": "lax", "httponly": True, "secure": True}) for v in ("a/b", "a=b", "a+b", "a(b)", "a b", "a;b", 'a"b')))
 check("C9 bind_for: 前後の空白は除く・大文字小文字は区別(get_user_by_nameに合わせる)",
       login_stepup.bind_for(" Admin ") == hashlib.sha256(b"Admin").hexdigest() != login_stepup.bind_for("admin"))
 
@@ -270,13 +273,15 @@ for ov, label in (("bad_src_slashes", "F1 srcが//で始まる(別サイトへ�
                   ("bad_src_backslash", "F3 srcにバックスラッシュ"), ("no_mode", "F4 modeが無い応答"),
                   ("bad_ticket_chars", "F5 skipのticketが不正な文字"), ("http500", "F6 相手が500"),
                   ("no_bind_cookie", "F6b askに束縛Cookieが無い"), ("bad_bind_cookie", "F6c 束縛Cookieの値が不正(;を含む)"),
-                  ("reserved_bind_cookie", "F6d 束縛Cookieの名前がこのアプリのセッションCookieと同じ(上書きさせない)")):
+                  ("reserved_bind_cookie", "F6d 束縛Cookieの名前がこのアプリのセッションCookieと同じ(上書きさせない)"),
+                  ("quoted_bind_cookie", "F6e 束縛Cookieの値に/や=を含む(SimpleCookieが\"で囲み、相手が自分のCookieと認識できず画面が固まるのを防ぐ)")):
     reset_locks(); gate.override = ov
     expect_fail(label + " → 2001(ブラウザに中継しない)")
     gate.override = None
 for ov, label in (("bad_cookie_value", "F7 redeemのCookie値に;を含む"), ("bad_cookie_missing", "F8 redeemのCookieに属性が欠ける"),
                   ("bad_cookie_name", "F9 redeemのCookie名が不正"), ("bad_cookie_age", "F10 redeemのCookieのmax_ageが不正"),
-                  ("reserved_cookie_name", "F10b redeemのCookie名がこのアプリのセッションCookieと同じ(上書きさせない)")):
+                  ("reserved_cookie_name", "F10b redeemのCookie名がこのアプリのセッションCookieと同じ(上書きさせない)"),
+                  ("quoted_cookie_value", "F10c redeemのCookie値に/や=を含む(引用符で囲まれて壊れる)")):
     reset_locks(); gate.override = None
     ip, t, _ = ask(); gate.complete(t, True); gate.override = ov
     expect_fail(label + " → 2001(不正な値をブラウザに渡さない・セッションも発行しない)", ticket=t, ip=ip)
