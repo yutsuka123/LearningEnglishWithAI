@@ -65,6 +65,7 @@ _n = iter(range(1, 250))
 def new_ip(): return f"203.0.113.{next(_n)}"
 def reset_locks():
     auth._LOGIN_FAILS.clear(); auth._IP_FAILS.clear(); auth._USERNAME_FAILS.clear()
+    login_stepup._ask_hits.clear()
 def set_env(enabled=True, decoys="ghostadmin,decoyuser"):
     os.environ["LOGIN_STEPUP_URL"] = url if enabled else ""
     os.environ["LOGIN_STEPUP_KEY"] = gate.key
@@ -201,8 +202,8 @@ plain = login("usr_su", "wrong-pass")
 check("D7 通過+誤ったパスワード=一般の誤パスワードと同じ2001/401(本文も同じ)", r.status_code == 401 and err_code(r) == "2001" and r.json() == plain.json(), r.text)
 check("D8 そのときCookieは何も付かない(確認サービスのCookieも付けない)", not authck(r))
 check("D9 redeemにはaccepted=falseが渡る", gate.calls("/internal/redeem")[-1]["body"]["accepted"] is False)
-check("D10 失敗は従来どおり数える(user×IP・IP・username)",
-      len(auth._LOGIN_FAILS.get(auth._login_key("adm_su", ip), [])) == 1 and len(auth._IP_FAILS.get(ip, [])) == 1 and len(auth._USERNAME_FAILS.get("adm_su", [])) == 1)
+check("D10 失敗は従来どおり数える(user×IP・IP)。名簿の名前だけはユーザー名単位(複数IPの合算)には数えない(第三者が管理者を締め出せないように)",
+      len(auth._LOGIN_FAILS.get(auth._login_key("adm_su", ip), [])) == 1 and len(auth._IP_FAILS.get(ip, [])) == 1 and len(auth._USERNAME_FAILS.get("adm_su", [])) == 0)
 ev = None
 with db() as conn:
     ev = conn.execute("SELECT success FROM login_log WHERE username='adm_su' ORDER BY id DESC LIMIT 1").fetchone()
@@ -311,6 +312,62 @@ import inspect
 check("G3 signupはroleを受け取らない・渡さない(管理者を作れない)",
       "role" not in auth_routes.SignupIn.model_fields and "role=" not in inspect.getsource(auth_routes.signup))
 check("G4 create_userの既定はrole=user", inspect.signature(auth.create_user).parameters["role"].default == "user")
+
+# ---------------- J. 独立照査(M-2・URL誤設定)で見つかった点 ----------------
+print("== J. 確認の開始の上限・同時呼び出しの上限・URL誤設定・締め出し")
+import threading
+reset_locks(); set_env()
+# J1 URLの誤設定は500でなく失敗(2001)。フック無効にもならない(管理者は入れない)
+for bad in ("svc-host", "svc-host:8080/x", "http//svc-host:8080", "ftp://127.0.0.1/x", "file:///etc/hosts"):
+    os.environ["LOGIN_STEPUP_URL"] = bad
+    try:
+        r = login("adm_su", PW)
+        good = r.status_code == 401 and err_code(r) == "2001" and not authck(r)
+    except Exception as e:      # 500(未処理の例外)
+        good = False; r = e
+    check(f"J1 URLの誤設定 '{bad}' → 500にならず失敗(2001)・フック無効にもならない(管理者は入れない)", good, r)
+    reset_locks()
+os.environ["LOGIN_STEPUP_URL"] = ""
+check("J1b URLが空ならフック無効(従来どおり)・一般ユーザーは常に無影響", login("adm_su").json().get("ok") is True)
+set_env()
+check("J1c 誤設定のときも一般ユーザーは無影響", (lambda: (os.environ.__setitem__("LOGIN_STEPUP_URL", "svc-host"), login("usr_su").json().get("ok") is True)[1])())
+set_env()
+# J2 確認の開始のIP別の上限(失敗としては数えない・超えたら2002)
+reset_locks(); gate.log.clear()
+ip_a, ip_b = new_ip(), new_ip()
+codes = [login("adm_su", PW, ip=ip_a).status_code for _ in range(login_stepup._ASK_MAX)]
+check(f"J2a 確認の開始は同じIPから{login_stepup._ASK_MAX}回まで通る(ロック対象外・失敗に数えない)", codes == [200] * login_stepup._ASK_MAX and no_fail_counts(), codes)
+r = login("adm_su", PW, ip=ip_a)
+check("J2b 上限を超えると通常のロックと同じ2002/429・相手サービスにも触れない", r.status_code == 429 and err_code(r) == "2002" and len(gate.calls("/internal/begin")) == login_stepup._ASK_MAX)
+check("J2c 別のIPは影響なし", login("adm_su", PW, ip=ip_b).status_code == 200)
+login_stepup._ask_hits[ip_a] = [t - login_stepup._ASK_WINDOW_SEC - 1 for t in login_stepup._ask_hits[ip_a]]
+check("J2d 時間が過ぎれば(窓の外)また通る", login("adm_su", PW, ip=ip_a).status_code == 200)
+check("J2e 確認の開始は記録に残る(IP・ユーザー名のみ・秘密は出さない)", any("step-up start" in x for x in cap.msgs) and any("step-up start rate-limited" in x for x in cap.msgs))
+# J3 同時呼び出しの上限(相手が遅いとき、多数の同時ログインでスレッドを占有し続けない)
+reset_locks(); gate.override = "slow"
+results = []
+def worker(i): results.append(login("adm_su", PW, ip=f"198.51.100.{i}"))
+ths = [threading.Thread(target=worker, args=(i,)) for i in range(1, 21)]
+t0 = time.monotonic()
+for t in ths: t.start()
+for t in ths: t.join()
+dt = time.monotonic() - t0
+check("J3a 相手が遅い(3秒)状態で20件の同時ログイン: 全て失敗(401/2001)・500なし", len(results) == 20 and all(x.status_code in (401, 429) for x in results), [x.status_code for x in results])
+check("J3b 全て数秒以内に返る(枠が空かないものは待たずに失敗にする・最悪でも2秒+1秒+余裕)", dt < 6.0, f"{dt:.1f}s")
+time.sleep(1.2)
+check("J3c 終わったら枠は全て返っている(リークなし)", login_stepup._gate_slots._value == 8, login_stepup._gate_slots._value)
+gate.override = None
+# J4 締め出し: 答えを知らない第三者が、管理者名で失敗を積んでも本人を締め出せない
+reset_locks()
+codes = [login("adm_su", PW, ticket="AAAAAAAAAAAAAAAA", ip=f"198.51.100.{100+i}").status_code for i in range(12)]
+check("J4a 管理者名にでたらめなチケットを12個の別IPから送っても、ユーザー名単位のロックにならない(全て401)", codes == [401] * 12, codes)
+r = login("adm_su", PW, ip=new_ip())
+check("J4b そのあとの本物の管理者(新しいIP)は、確認へ進める(締め出されない)", r.status_code == 200 and "stepup" in r.json(), r.text)
+check("J4c ただしuser×IPのロックは従来どおり(同じIPから3回失敗でロック)", (lambda ipx: [login("adm_su", PW, ticket="AAAAAAAAAAAAAAAA", ip=ipx) for _ in range(3)] and login("adm_su", PW, ip=ipx).status_code == 429)(new_ip()))
+reset_locks()
+codes = [login("usr_su", "wrong", ip=f"198.51.100.{150+i}").status_code for i in range(12)]
+check("J4d 名簿外(一般ユーザー)の従来のユーザー名単位ロックは変えていない(分散した失敗で429になる)", 429 in codes, codes)
+reset_locks()
 
 # ---------------- 最後に落ちている相手 ----------------
 print("== F'. 相手が落ちている")

@@ -19,6 +19,8 @@ import json
 import os
 import re
 import secrets
+import threading
+import time
 import urllib.request
 from typing import Optional
 
@@ -118,15 +120,31 @@ def cookie_for_gate(header: str) -> str:
 _opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
+# 相手への同時呼び出しの上限。相手が遅い/落ちていると1回ごとに最大2秒スレッドを占有するので、
+# 多数の同時ログインでアプリ全体の処理枠(同期エンドポイントのスレッド)を使い切らせない。
+# 枠が空かなければ待たずに(最大1秒)失敗(2001)にする(2026-10-20 独立照査M-2)。
+_gate_slots = threading.BoundedSemaphore(8)
+_SLOT_WAIT_SEC = 1.0
+
+
 def _post(path: str, payload: dict) -> Optional[dict]:
     base, key = _url(), _key()
     if not base:
         return None
-    req = urllib.request.Request(
-        base + path, data=json.dumps(payload).encode("utf-8"), method="POST",
-        headers={"Content-Type": "application/json",
-                 "Authorization": "Bearer " + key})
+    if not _gate_slots.acquire(timeout=_SLOT_WAIT_SEC):
+        log.warning("login_stepup: 確認サービスの同時呼び出しが上限(枠が空かない)")
+        return None
     try:
+        # URLの誤設定(スキーム無し・http/https以外)も失敗にする。例外を外へ出さない(500にしない)・
+        # ファイル等へ読みに行かせない。有効/無効の判定(enabled)はURLが空かどうかだけなので、
+        # 誤設定は「フック無効」ではなく「全て失敗=管理者は入れない」(fail-closed)になる。
+        if not base.startswith(("http://", "https://")):
+            log.warning("login_stepup: 確認サービスのURLの形が不正(http/httpsで始まらない)")
+            return None
+        req = urllib.request.Request(
+            base + path, data=json.dumps(payload).encode("utf-8"), method="POST",
+            headers={"Content-Type": "application/json",
+                     "Authorization": "Bearer " + key})
         with _opener.open(req, timeout=_TIMEOUT_SEC) as r:
             if r.status != 200:
                 return None
@@ -134,7 +152,34 @@ def _post(path: str, payload: dict) -> Optional[dict]:
     except Exception as e:   # 失敗の理由(キー・チケットを含みうる)は書かず、種類だけ残す
         log.warning("login_stepup: 確認サービスの呼び出しに失敗(%s)", type(e).__name__)
         return None
+    finally:
+        _gate_slots.release()
     return data if isinstance(data, dict) else None
+
+
+# 確認の開始(ticketなしのログイン)のIP別の上限。ここは失敗として数えない(正規の利用者が確認画面を
+# 開いただけで締め出されないように)が、無制限だと相手サービスと同期スレッドを消費させ放題になる
+# ので、別の上限で止める(超えたら通常のロックと同じ2002)。記録も残す(2026-10-20 独立照査M-2)。
+_ASK_MAX = 20
+_ASK_WINDOW_SEC = 300.0
+_ask_hits: dict[str, list[float]] = {}
+_ask_lock = threading.Lock()
+
+
+def ask_allowed(ip: str) -> bool:
+    """このIPが確認を始めてよいか(許されるなら1回ぶん数える)。"""
+    now = time.monotonic()
+    with _ask_lock:
+        hits = [t for t in _ask_hits.get(ip or "?", []) if now - t < _ASK_WINDOW_SEC]
+        if len(hits) >= _ASK_MAX:
+            _ask_hits[ip or "?"] = hits
+            return False
+        hits.append(now)
+        _ask_hits[ip or "?"] = hits
+        if len(_ask_hits) > 5000:        # 溜まりすぎたら古いIPから捨てる(メモリの上限)
+            for k in [k for k, v in _ask_hits.items() if not v or now - v[-1] >= _ASK_WINDOW_SEC][:2500]:
+                _ask_hits.pop(k, None)
+        return True
 
 
 def begin(ip: str, host: str, bind: str, cookie_header: str) -> Optional[dict]:

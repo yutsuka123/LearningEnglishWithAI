@@ -81,8 +81,11 @@ try:
             route.fulfill(status=200, content_type="text/html", body=html,
                           headers={"X-Frame-Options": "SAMEORIGIN", "Content-Security-Policy": "frame-ancestors 'self'"})
         browser = getattr(pw, bname).launch()
+        ipn = iter(range(1, 250))
         def new_page(lang=None, viewport=None, cookies=None):
             ctx = browser.new_context(locale="ja-JP", viewport=viewport or {"width": 1100, "height": 800})
+            # 確認の開始はIP別に上限がある(5分間に一定回数)。検査は1台から多数ログインするので、文脈ごとに別のIPを名乗る
+            ctx.set_extra_http_headers({"X-Forwarded-For": f"198.51.{(len(bname) * 7) % 200}.{next(ipn)}"})
             ctx.route("**/*", guard)
             ctx.route("**/g-stub/e**", gate_page)
             if lang: ctx.add_init_script(f"try {{ localStorage.setItem('lang', {json.dumps(lang)}); }} catch (e) {{}}")

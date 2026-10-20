@@ -230,9 +230,11 @@ def login(
         return error_response("2002")
     stepup_resp = None
     gate_cookie = None
+    in_roster = False
     with db() as conn:
-        if login_stepup.enabled() and login_stepup.in_roster(
-                conn, payload.username):
+        in_roster = login_stepup.enabled() and login_stepup.in_roster(
+            conn, payload.username)
+        if in_roster:
             # 追加確認の名簿(管理者・おとり名)。パスワードの正誤を見る前に必ず確認へ進める。
             u, stepup_resp, gate_cookie = _stepup_login(
                 conn, payload, request, ip)
@@ -245,7 +247,8 @@ def login(
         if stepup_resp is not None:
             return stepup_resp
         if not u:
-            auth.record_login_failure(payload.username, ip)
+            auth.record_login_failure(
+                payload.username, ip, count_username=not in_roster)
             log_id = auth.record_login_event(
                 conn, payload.username, ip, False)
             background_tasks.add_task(auth.update_login_hostname, log_id, ip)
@@ -305,6 +308,10 @@ def _stepup_login(conn, payload: LoginIn, request: Request, ip: str):
     ticket = (payload.ticket or "").strip()
     if not ticket:
         # ブラウザの「確認は要らない」という申告は信用せず、毎回ここで相手に確かめる。
+        if not login_stepup.ask_allowed(ip):
+            log.warning("login: step-up start rate-limited ip=%s", ip)
+            return None, error_response("2002"), None
+        log.info("login: step-up start ip=%s username=%s", ip, payload.username)
         b = login_stepup.begin(
             ip, host, bind, request.headers.get("cookie", ""))
         if b is None:
