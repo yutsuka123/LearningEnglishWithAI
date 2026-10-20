@@ -37,7 +37,7 @@ _COOKIE_PATH_RE = re.compile(r"^/[A-Za-z0-9_\-./]{0,100}$")
 _MAX_COOKIE_AGE = 60 * 60 * 24 * 400
 # 相手に渡すCookieヘッダは、広告タグ等のノイズを除いてから上限で切る(あふれて確認が毎回失敗するのを避ける)
 _COOKIE_NOISE_PREFIXES = ("_ga", "_gid", "_gcl", "__utm", "_fbp", "_clck", "_clsk")
-_COOKIE_HEADER_MAX = 3500
+_COOKIE_HEADER_MAX = 12000   # 相手のボディ上限は16KB(Cookie項目は12KB)
 _dummy_hash: Optional[str] = None
 
 
@@ -143,9 +143,11 @@ def begin(ip: str, host: str, bind: str, cookie_header: str) -> Optional[dict]:
         return None
     mode = d.get("mode")
     if mode == "ask":
-        src = d.get("src")
-        if isinstance(src, str) and _SRC_RE.match(src):
-            return {"mode": "ask", "src": src}
+        # askには、ブラウザをこの確認に束縛する短命のCookie(bind_cookie)が付く。これが無い/不正だと
+        # 相手の画面は開けないので、失敗(2001)にする。
+        src, bind_cookie = d.get("src"), _valid_cookie(d.get("bind_cookie"))
+        if isinstance(src, str) and _SRC_RE.match(src) and bind_cookie is not None:
+            return {"mode": "ask", "src": src, "bind_cookie": bind_cookie}
     elif mode == "skip":
         ticket = d.get("ticket")
         if isinstance(ticket, str) and _TICKET_RE.match(ticket):
@@ -162,6 +164,9 @@ def _valid_cookie(c) -> Optional[dict]:
     samesite = str(c.get("samesite", "")).lower()
     if not (isinstance(name, str) and _COOKIE_NAME_RE.match(name)):
         return None
+    # このアプリ自身のCookie(セッション等)を相手の応答で上書きさせない
+    if name in {auth.SESSION_COOKIE, auth.GUEST_SID_COOKIE, auth.INTERNAL_COOKIE}:
+        return None
     if not (isinstance(value, str) and _COOKIE_VALUE_RE.match(value)):
         return None
     if not (isinstance(max_age, int) and not isinstance(max_age, bool)
@@ -177,7 +182,7 @@ def _valid_cookie(c) -> Optional[dict]:
             "samesite": samesite, "httponly": c["httponly"], "secure": c["secure"]}
 
 
-def redeem(ticket: str, ip: str, host: str, bind: str, proto: str,
+def redeem(ticket: str, ip: str, host: str, bind: str,
            accepted: bool) -> Optional[dict]:
     """チケットを引き換えて結果を得る(合否はここで初めて分かる)。
     戻り値: {"ok":bool,"cookie":検査済みの辞書|None} / None(失敗)。okなのにCookieが不正なら
@@ -186,7 +191,7 @@ def redeem(ticket: str, ip: str, host: str, bind: str, proto: str,
         return None
     d = _post("/internal/redeem", {
         "ticket": ticket, "ip": ip, "host": host, "bind": bind,
-        "proto": proto, "accepted": bool(accepted)})
+        "accepted": bool(accepted)})
     if not d or not isinstance(d.get("ok"), bool):
         return None
     if d["ok"] is not True:

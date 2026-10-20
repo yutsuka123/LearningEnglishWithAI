@@ -115,8 +115,12 @@ reset_locks(); set_env()
 check("B0 enabled()はURL設定でTrue", login_stepup.enabled() is True)
 r_ok = login("adm_su", PW)
 check("B1 管理者+正しいパスワード(ticketなし)=確認へ進む(200・ok:false・stepup.src・Cookieなし)",
-      r_ok.status_code == 200 and r_ok.json().get("ok") is False and shape(r_ok)[5] and shape(r_ok)[6] == 0
+      r_ok.status_code == 200 and r_ok.json().get("ok") is False and shape(r_ok)[5] and shape(r_ok)[6] == 1
       and not has_cookie(r_ok, auth.SESSION_COOKIE), r_ok.text)
+bc = [x for x in setcookies(r_ok) if x.startswith("gbstub=")]
+check("B1b ask応答に、ブラウザを確認に束縛するCookieが付く(相手が決めた値・属性のまま: Max-Age=300・Path=/g-stub・HttpOnly・SameSite=lax・Secure・Domainなし)",
+      len(bc) == 1 and "Max-Age=300" in bc[0] and "Path=/g-stub" in bc[0] and "HttpOnly" in bc[0] and "SameSite=lax" in bc[0]
+      and "Secure" in bc[0] and "Domain" not in bc[0] and len(bc[0].split(";")[0].split("=", 1)[1]) >= 16, bc)
 base = shape(r_ok)
 check("B2 管理者+誤ったパスワード=正しいパスワードと同じ形・同じ応答", shape(login("adm_su", "wrong-pass")) == base)
 check("B3 おとり名(実在しない)=同じ形", shape(login("ghostadmin", PW)) == base)
@@ -151,7 +155,8 @@ if b:
     check("C5 host=Hostヘッダ(小文字・ポート無し)", body["host"] == "study.nyangailab.com")
     check("C6 bind=ユーザー名のSHA-256", body["bind"] == hashlib.sha256(b"adm_su").hexdigest())
     check("C7 cookie=広告タグ・このアプリ自身のCookieを除いた残り", body["cookie"] == "gx=abc", body["cookie"])
-check("C8 cookie_for_gate: 上限を超えたら空(あふれて毎回失敗するより安全側)", login_stepup.cookie_for_gate("a=" + "x" * 4000) == "")
+check("C8 cookie_for_gate: 4KBを超えても通す(相手の上限は12KB)・12KBを超えたら空(あふれて毎回失敗するより安全側)",
+      login_stepup.cookie_for_gate("a=" + "x" * 4000) == "a=" + "x" * 4000 and login_stepup.cookie_for_gate("a=" + "x" * 13000) == "")
 check("C9 bind_for: 前後の空白は除く・大文字小文字は区別(get_user_by_nameに合わせる)",
       login_stepup.bind_for(" Admin ") == hashlib.sha256(b"Admin").hexdigest() != login_stepup.bind_for("admin"))
 
@@ -173,17 +178,17 @@ check("D3 確認サービスのCookieが付く(値も属性もそのまま: Max-
       len(gc) == 1 and "Max-Age=2592000" in gc[0] and "Path=/" in gc[0] and "HttpOnly" in gc[0]
       and "SameSite=lax" in gc[0] and "Secure" in gc[0] and "Domain" not in gc[0] and gc[0].split("=", 1)[1].startswith("signed"), gc)
 rd = gate.calls("/internal/redeem")[-1]["body"]
-check("D4 redeem: ticket/ip/host/proto/accepted=true・bindはbeginと同じ",
-      rd["ticket"] == t and rd["ip"] == ip and rd["host"] == "study.nyangailab.com" and rd["proto"] == "https" and rd["accepted"] is True
+check("D4 redeem: ticket/ip/host/accepted=true・bindはbeginと同じ・protoは送らない",
+      rd["ticket"] == t and rd["ip"] == ip and rd["host"] == "study.nyangailab.com" and "proto" not in rd and rd["accepted"] is True
       and rd["bind"] == gate.calls("/internal/begin")[-1]["body"]["bind"])
 r2 = login("adm_su", PW, ticket=t, ip=ip)
 check("D5 同じチケットの使い回しは失敗(2001・Cookieなし)", r2.status_code == 401 and err_code(r2) == "2001" and not has_cookie(r2, auth.SESSION_COOKIE) and not has_cookie(r2, "gtest"))
 
-# http(Secure無し)
+# 属性は相手が決めた値のまま(アプリ側がhttp/httpsで変えない)
 ip, t, _ = ask(https=False); gate.complete(t, True)
 r = login("adm_su", PW, ticket=t, ip=ip)
 gc = [x for x in setcookies(r) if x.startswith("gtest=")]
-check("D6 httpのときはSecureが付かない(確認サービスが決めた属性どおり)", len(gc) == 1 and "Secure" not in gc[0], gc)
+check("D6 httpで来ても、Secure等の属性は相手が決めたとおり(アプリ側で変えない)", len(gc) == 1 and "Secure" in gc[0], gc)
 
 # 通過+パスワード誤り
 reset_locks()
@@ -243,7 +248,7 @@ ip = new_ip()
 r = login("adm_su", PW, ip=ip, cookie=gate.valid_cookie)
 check("E1 確認済みCookie+正しいパスワード=ticketなしでも成功(サーバーがbeginでskipと確認→引き換え)",
       r.status_code == 200 and r.json().get("ok") is True and has_cookie(r, auth.SESSION_COOKIE), r.text)
-check("E2 skipのときは確認サービスのCookieを付け直さない(cookie=null)", not has_cookie(r, "gtest"))
+check("E2 skipのときは確認サービスのCookieを付け直さない(cookie=null)・束縛Cookieも付かない", not has_cookie(r, "gtest") and not has_cookie(r, "gbstub"))
 check("E3 begin→redeemの順に1回ずつ呼ばれる", len(gate.calls("/internal/begin")) == 1 and len(gate.calls("/internal/redeem")) == 1)
 r = login("adm_su", "wrong-pass", ip=new_ip(), cookie=gate.valid_cookie)
 check("E4 確認済みでも誤ったパスワードは2001", r.status_code == 401 and err_code(r) == "2001" and not authck(r))
@@ -263,12 +268,15 @@ def expect_fail(label, **kw):
     return time.monotonic() - t0
 for ov, label in (("bad_src_slashes", "F1 srcが//で始まる(別サイトへ誘導)"), ("bad_src_absolute", "F2 srcが絶対URL"),
                   ("bad_src_backslash", "F3 srcにバックスラッシュ"), ("no_mode", "F4 modeが無い応答"),
-                  ("bad_ticket_chars", "F5 skipのticketが不正な文字"), ("http500", "F6 相手が500")):
+                  ("bad_ticket_chars", "F5 skipのticketが不正な文字"), ("http500", "F6 相手が500"),
+                  ("no_bind_cookie", "F6b askに束縛Cookieが無い"), ("bad_bind_cookie", "F6c 束縛Cookieの値が不正(;を含む)"),
+                  ("reserved_bind_cookie", "F6d 束縛Cookieの名前がこのアプリのセッションCookieと同じ(上書きさせない)")):
     reset_locks(); gate.override = ov
     expect_fail(label + " → 2001(ブラウザに中継しない)")
     gate.override = None
 for ov, label in (("bad_cookie_value", "F7 redeemのCookie値に;を含む"), ("bad_cookie_missing", "F8 redeemのCookieに属性が欠ける"),
-                  ("bad_cookie_name", "F9 redeemのCookie名が不正"), ("bad_cookie_age", "F10 redeemのCookieのmax_ageが不正")):
+                  ("bad_cookie_name", "F9 redeemのCookie名が不正"), ("bad_cookie_age", "F10 redeemのCookieのmax_ageが不正"),
+                  ("reserved_cookie_name", "F10b redeemのCookie名がこのアプリのセッションCookieと同じ(上書きさせない)")):
     reset_locks(); gate.override = None
     ip, t, _ = ask(); gate.complete(t, True); gate.override = ov
     expect_fail(label + " → 2001(不正な値をブラウザに渡さない・セッションも発行しない)", ticket=t, ip=ip)

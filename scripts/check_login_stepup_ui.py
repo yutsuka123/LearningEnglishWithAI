@@ -40,6 +40,7 @@ with db() as conn:
         auth.create_user(conn, name, PW, role=role)
 
 gate, gate_url, gate_srv = stub.serve()
+gate.cookie_secure = False     # WebKitがhttp://127.0.0.1でSecureのCookieを保存しない都合(アプリは相手の値をそのまま使う)
 s = socket.socket(); s.bind(("127.0.0.1", 0)); port = s.getsockname()[1]; s.close()
 BASE = f"http://127.0.0.1:{port}"
 env = dict(os.environ, ALLOW_FRESH_DB="1", SESSION_SECRET="preview", OPENAI_API_KEY="preview-not-used",

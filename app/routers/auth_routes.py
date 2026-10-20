@@ -279,13 +279,15 @@ def login(
         )
     if gate_cookie:
         # 確認サービスが決めた「いつもの端末」Cookie。値も属性もそのまま使う(Domainなし)。
-        resp.set_cookie(
-            gate_cookie["name"], gate_cookie["value"],
-            max_age=gate_cookie["max_age"], path=gate_cookie["path"],
-            httponly=gate_cookie["httponly"], samesite=gate_cookie["samesite"],
-            secure=gate_cookie["secure"],
-        )
+        _set_stepup_cookie(resp, gate_cookie)
     return resp
+
+
+def _set_stepup_cookie(resp, ck: dict) -> None:
+    """確認サービスが決めたCookie(検査済み)を、値も属性もそのままSet-Cookieする(Domainなし)。"""
+    resp.set_cookie(
+        ck["name"], ck["value"], max_age=ck["max_age"], path=ck["path"],
+        httponly=ck["httponly"], samesite=ck["samesite"], secure=ck["secure"])
 
 
 def _stepup_login(conn, payload: LoginIn, request: Request, ip: str):
@@ -311,10 +313,11 @@ def _stepup_login(conn, payload: LoginIn, request: Request, ip: str):
             resp = JSONResponse(
                 {"ok": False, "stepup": {"src": b["src"]}},
                 headers={"Cache-Control": "no-store"})
+            # このブラウザを確認に束縛するCookie(相手が決めた値・属性のまま)
+            _set_stepup_cookie(resp, b["bind_cookie"])
             return None, resp, None
         ticket = b["ticket"]     # 確認済みの端末(相手が確かめた結果)
-    g = login_stepup.redeem(
-        ticket, ip, host, bind, auth.external_scheme(request), pw_ok)
+    g = login_stepup.redeem(ticket, ip, host, bind, pw_ok)
     if g and g["ok"] and pw_ok:
         return user, None, g["cookie"]
     return None, None, None

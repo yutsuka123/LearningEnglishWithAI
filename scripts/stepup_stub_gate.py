@@ -24,6 +24,9 @@ class Gate:
         self.override: str | None = None   # 相手の誤動作を真似る(下の各値)
         self.valid_cookie = "gatetest=OK"  # このCookieがあるとbeginはskipを返す
         self.last_accepted: bool | None = None
+        # 本物は常にSecure。ブラウザ検査(http://127.0.0.1)でWebKitがSecureのCookieを保存しない都合で、
+        # その検査だけFalseにする(アプリは相手の値をそのまま使うので、検査の意味は変わらない)。
+        self.cookie_secure = True
 
     # --- 検査側の操作 ---
     def ticket_from_src(self, src: str) -> str:
@@ -92,7 +95,15 @@ class _Handler(BaseHTTPRequestHandler):
                "bad_src_absolute": "https://evil.example/x",
                "bad_src_backslash": "/ok\\evil",
                }.get(o or "", f"/g-stub/e?c={t}")
-        return self._send(200, {"mode": "ask", "src": src})
+        bind = {"name": "gbstub", "value": secrets.token_urlsafe(16), "max_age": 300, "path": "/g-stub",
+                "httponly": True, "samesite": "lax", "secure": gate.cookie_secure}
+        if o == "no_bind_cookie":
+            return self._send(200, {"mode": "ask", "src": src})
+        if o == "bad_bind_cookie":
+            bind["value"] = "bad;value"
+        elif o == "reserved_bind_cookie":
+            bind["name"] = "ela_session"
+        return self._send(200, {"mode": "ask", "src": src, "bind_cookie": bind})
 
     def _redeem(self, gate: Gate, body: dict) -> None:
         t = gate.tickets.pop(body.get("ticket"), None)    # 成否にかかわらず1回で消える
@@ -107,7 +118,7 @@ class _Handler(BaseHTTPRequestHandler):
             return self._send(200, {"ok": True, "cookie": None})
         cookie = {"name": "gtest", "value": "signed" + secrets.token_hex(8),
                   "max_age": 2592000, "path": "/", "httponly": True,
-                  "samesite": "lax", "secure": body.get("proto") == "https"}
+                  "samesite": "lax", "secure": gate.cookie_secure}
         if gate.override == "bad_cookie_value":
             cookie["value"] = "va;lue"
         elif gate.override == "bad_cookie_missing":
@@ -116,6 +127,8 @@ class _Handler(BaseHTTPRequestHandler):
             cookie["name"] = "bad name"
         elif gate.override == "bad_cookie_age":
             cookie["max_age"] = -1
+        elif gate.override == "reserved_cookie_name":
+            cookie["name"] = "ela_session"
         return self._send(200, {"ok": True, "cookie": cookie})
 
 
