@@ -44,7 +44,7 @@
     "許可Host制限(env ALLOWED_HOSTS): 設定したときだけ有効(本番は未設定=デプロイ直後は挙動不変)。設定後は許可Host以外を400で拒否(127.0.0.1/localhostは常に許可=Dockerのヘルスチェック)。設定ミスだとヘルスチェックは通ったまま実アクセスが全て400になるため、反映後は curl -H 'Host: study.nyangailab.com' http://127.0.0.1:8001/api/health が200・-H 'Host: evil.example' が400を確認すること。",
     "公開URLの組み立てを一本化(auth.public_base_url): パスワード再発行リンクと決済(PayPay)の戻りURL。env PUBLIC_BASE_URL(本番は未設定)が正しい形ならそれ、無い/不正ならHostが既知(本番ドメイン・localhost)のときだけ従い、それ以外は本番ドメイン固定。本番ドメインへの通常アクセスでは従来と同じURL。",
     "検査: check_admin_guard.py 64項目・check_hardening.py 32項目・check_password_reset.py・check_message_i18n.pyすべて合格(一時データ領域・本番や開発DBには触れていない)。独立照査(Fable・10/19)でBLOCKER/HIGHなし・MEDIUM2・LOW3を反映済み。DB変更なし・コード同期後に再ビルド+再起動(約20〜30秒)。",
-    "デプロイ: 2026-10-20(火)03:00〜03:30の臨時枠で自動デプロイを予約(オーナー指示10/19)。本番の事前確認(10/19・読み取り): CaddyはHostをそのまま上流へ渡す・ポート付きHost(:443/:80)はTrustedHostでも通る・PUBLIC_BASE_URL/ALLOWED_HOSTSとも未設定。ALLOWED_HOSTSの有効化は別途(オーナー許可の上.env.studyに追記+コンテナ再作成)。"
+    "デプロイ: 2026-10-20(火)03:00〜03:30の臨時枠で自動デプロイを予約(オーナー指示10/19)。本番の事前確認(10/19・読み取り): CaddyはHostをそのまま上流へ渡す・ポート付きHost(:443/:80)はTrustedHostでも通る・PUBLIC_BASE_URL/ALLOWED_HOSTSとも未設定。ALLOWED_HOSTSの有効化は別途(オーナー許可の上.env.studyに追記+コンテナ再作成)。→2026-10-21(水)03:00の臨時枠(自動デプロイ)で有効化済み: 本物のHost=200・偽Host=400・公開サイト200・利用者への影響なし(Caddy経由の400は0件)。"
    ]
   },
   {
