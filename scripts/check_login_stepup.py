@@ -202,8 +202,8 @@ plain = login("usr_su", "wrong-pass")
 check("D7 通過+誤ったパスワード=一般の誤パスワードと同じ2001/401(本文も同じ)", r.status_code == 401 and err_code(r) == "2001" and r.json() == plain.json(), r.text)
 check("D8 そのときCookieは何も付かない(確認サービスのCookieも付けない)", not authck(r))
 check("D9 redeemにはaccepted=falseが渡る", gate.calls("/internal/redeem")[-1]["body"]["accepted"] is False)
-check("D10 失敗は従来どおり数える(user×IP・IP)。名簿の名前だけはユーザー名単位(複数IPの合算)には数えない(第三者が管理者を締め出せないように)",
-      len(auth._LOGIN_FAILS.get(auth._login_key("adm_su", ip), [])) == 1 and len(auth._IP_FAILS.get(ip, [])) == 1 and len(auth._USERNAME_FAILS.get("adm_su", [])) == 0)
+check("D10 失敗は従来どおり数える(user×IP・IP)。確認を通ったあとの誤パスワード(=正誤が応答から分かる失敗)はユーザー名単位(複数IPの合算)にも数える(分散した当て推量を止める・照査M-1)",
+      len(auth._LOGIN_FAILS.get(auth._login_key("adm_su", ip), [])) == 1 and len(auth._IP_FAILS.get(ip, [])) == 1 and len(auth._USERNAME_FAILS.get("adm_su", [])) == 1)
 ev = None
 with db() as conn:
     ev = conn.execute("SELECT success FROM login_log WHERE username='adm_su' ORDER BY id DESC LIMIT 1").fetchone()
@@ -367,6 +367,122 @@ check("J4c ただしuser×IPのロックは従来どおり(同じIPから3回失
 reset_locks()
 codes = [login("usr_su", "wrong", ip=f"198.51.100.{150+i}").status_code for i in range(12)]
 check("J4d 名簿外(一般ユーザー)の従来のユーザー名単位ロックは変えていない(分散した失敗で429になる)", 429 in codes, codes)
+reset_locks()
+
+# ---------------- K. 独立照査2回目(2026-10-21)の反映 ----------------
+print("== K. 独立照査2回目の反映(M-1/M-2/M-3/L-1/L-2/L-3/L-6/N-6)")
+import http.server
+reset_locks(); set_env(); gate.log.clear()
+# K1 (M-1) 確認済みの端末(skip)+誤パスワードを別々のIPから: ユーザー名単位(8回/15分)で止まる
+codes = [login("adm_su", "wrong-pass", ip=f"192.0.2.{10+i}", cookie=gate.valid_cookie).status_code for i in range(9)]
+check("K1a 確認済み端末(skip)+誤パスワードを9個の別IPから: 8回目まで401・9回目は429(分散した当て推量がユーザー名単位で止まる)", codes[:8] == [401] * 8 and codes[8] == 429, codes)
+check("K1b skip経路の失敗はユーザー名単位に数えられている(8件)", len(auth._USERNAME_FAILS.get("adm_su", [])) == 8, auth._USERNAME_FAILS.get("adm_su"))
+reset_locks()
+codes = [login("adm_su", PW, ticket="AAAAAAAAAAAAAAAA", ip=f"192.0.2.{40+i}").status_code for i in range(12)]
+check("K1c でたらめなチケット(確認を通っていない失敗)は引き続きユーザー名単位に数えない(12個の別IPでも全て401・本物の管理者は締め出されない)",
+      codes == [401] * 12 and len(auth._USERNAME_FAILS.get("adm_su", [])) == 0, codes)
+reset_locks()
+gate.override = "http500"
+for i in range(4): login("adm_su", PW, ip=f"192.0.2.{60+i}")
+check("K1d 相手が落ちて確認が始められない失敗もユーザー名単位には数えない", len(auth._USERNAME_FAILS.get("adm_su", [])) == 0)
+gate.override = None
+reset_locks()
+
+# K2 (M-2) 確認の開始の上限は、重いパスワード検証(pbkdf2)より前に判定する
+calls = []
+orig_cp = login_stepup.check_password
+login_stepup.check_password = lambda user, pw: (calls.append(1), orig_cp(user, pw))[1]
+ipk = new_ip()
+codes = [login("adm_su", PW, ip=ipk).status_code for _ in range(login_stepup._ASK_MAX + 5)]
+check("K2a 確認の開始(ticketなし)はパスワード検証(pbkdf2)を走らせない(上限の内外とも0回)", len(calls) == 0, len(calls))
+check("K2b 上限を超えた分は429(2002)", codes[login_stepup._ASK_MAX:] == [429] * 5, codes)
+ip2, t2, _ = ask(); gate.complete(t2, True)
+login("adm_su", PW, ticket=t2, ip=ip2)
+check("K2c チケット付きの最終判定ではパスワード検証が1回走る(時間を揃える仕様どおり)", len(calls) == 1, len(calls))
+login_stepup.check_password = orig_cp
+reset_locks()
+
+# K3 (M-3) 上限のキーはIPv6を/64でまとめる(同じ/64内でアドレスを変えても回避できない)
+rk = login_stepup._rate_key
+check("K3a _rate_key: 同じ/64は同じキー・別の/64は別・IPv4はそのまま・IPv4射影は4に寄せる・解釈できない文字列はそのまま",
+      rk("2001:db8:1:2::1") == rk("2001:db8:1:2:ffff:eeee:dddd:cccc") != rk("2001:db8:1:3::1")
+      and rk("203.0.113.5") == "203.0.113.5" and rk("::ffff:203.0.113.5") == "203.0.113.5" and rk("not-an-ip") == "not-an-ip"
+      and rk("fe80::1%eth0") == rk("fe80::2"), (rk("2001:db8:1:2::1"), rk("::ffff:203.0.113.5")))
+reset_locks(); gate.log.clear()
+codes = [login("adm_su", PW, ip=f"2001:db8:1:2::{i:x}").status_code for i in range(1, 31)]
+check(f"K3b 同じ/64の30アドレスから確認を始めても、{login_stepup._ASK_MAX}回で止まる(21回目以降は429)",
+      codes[:login_stepup._ASK_MAX] == [200] * login_stepup._ASK_MAX and set(codes[login_stepup._ASK_MAX:]) == {429}, codes)
+check("K3c 相手サービスへ送るipは生の文字列のまま(丸めない)", all(x["body"]["ip"].startswith("2001:db8:1:2::") for x in gate.calls("/internal/begin")))
+check("K3d 別の/64は影響を受けない", login("adm_su", PW, ip="2001:db8:1:9::1").status_code == 200)
+reset_locks()
+
+# K4 (L-1) 相手が3xxを返しても追従しない(共有キーを転送先へ送らない・転送先の答えを受け入れない)
+class _Sink(http.server.BaseHTTPRequestHandler):
+    seen = []
+    def log_message(self, *a): pass
+    def _any(self):
+        _Sink.seen.append((self.command, self.path, self.headers.get("Authorization")))
+        raw = b'{"mode":"skip","ticket":"' + b"B" * 30 + b'"}'
+        self.send_response(200); self.send_header("Content-Type", "application/json"); self.send_header("Content-Length", str(len(raw))); self.end_headers(); self.wfile.write(raw)
+    do_GET = do_POST = _any
+sink = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _Sink); sink.daemon_threads = True
+threading.Thread(target=sink.serve_forever, daemon=True).start()
+gate.redirect_to = f"http://127.0.0.1:{sink.server_address[1]}/internal/begin"
+gate.override = "redirect"
+r = login("adm_su", PW)
+check("K4a 相手が302を返す → 2001(転送先の答えをログインに使わない)", r.status_code == 401 and err_code(r) == "2001" and not authck(r), r.text)
+check("K4b 転送先には一切届かない(共有キーも付かない)", _Sink.seen == [], _Sink.seen)
+gate.override = None; sink.shutdown(); sink.server_close()
+reset_locks()
+
+# K5 (L-2) 1バイトずつ細切れに返す相手でも総時間で打ち切る
+reset_locks(); gate.override = "drip"
+t0 = time.monotonic()
+r = login("adm_su", PW)
+dt = time.monotonic() - t0
+check("K5a 細切れに返す相手(約5秒かけて返す)→ 2001(素通しにならない)", r.status_code == 401 and err_code(r) == "2001" and not authck(r), r.text)
+check("K5b 総時間(2.5秒)で打ち切る(4秒未満)", dt < 4.0, f"{dt:.2f}s")
+time.sleep(0.5)
+gate.override = None
+check("K5c 枠は返っている(リークなし)", login_stepup._gate_slots._value == 8, login_stepup._gate_slots._value)
+reset_locks()
+
+# K6 (L-3) 値が空でない誤設定は黙ってフック無効にしない・起動ログ用の状態表示
+for bad in ("/", "///", "  /  "):
+    os.environ["LOGIN_STEPUP_URL"] = bad
+    check(f"K6a URL='{bad.strip()}' でもenabled()=True(黙って無効にしない)", login_stepup.enabled() is True)
+    r = login("adm_su", PW); check(f"K6b URL='{bad.strip()}' → 管理者は2001(フック無効=パスワードだけで入れる状態にならない)", r.status_code == 401 and err_code(r) == "2001")
+    reset_locks()
+os.environ["LOGIN_STEPUP_URL"] = url.replace("http://", "HTTP://")
+r = login("adm_su", PW)
+check("K6c スキームが大文字(HTTP://)でも動く(小文字化して判定)", r.status_code == 200 and "stepup" in r.json(), r.text)
+reset_locks(); set_env()
+d = login_stepup.describe()
+check("K6d describe(): 有効・宛先ホスト名のみ・キーの値は出ない", "127.0.0.1" in d and gate.key not in d and "有効" in d, d)
+os.environ["LOGIN_STEPUP_URL"] = "svc-host:8080"
+check("K6e describe(): URLの形が不正なことが分かる", "不正" in login_stepup.describe())
+os.environ["LOGIN_STEPUP_URL"] = ""
+check("K6f describe(): 未設定は無効", "無効" in login_stepup.describe())
+set_env()
+os.environ["LOGIN_STEPUP_KEY"] = ""
+check("K6g describe(): キー未設定が分かる", "なし" in login_stepup.describe())
+os.environ["LOGIN_STEPUP_KEY"] = gate.key
+
+# K7 (N-6) samesite=none でsecure=falseのCookieは拒否
+base_ck = {"name": "g1", "value": "abc", "max_age": 60, "path": "/", "httponly": True}
+check("K7 samesite=none+secure=falseは拒否・secure=trueなら通る・lax+secure=falseは通る(検査用スタブの都合)",
+      login_stepup._valid_cookie({**base_ck, "samesite": "none", "secure": False}) is None
+      and login_stepup._valid_cookie({**base_ck, "samesite": "none", "secure": True}) is not None
+      and login_stepup._valid_cookie({**base_ck, "samesite": "lax", "secure": False}) is not None)
+
+# K8 (L-6) 上限を数えるIPの数に硬い上限(窓内に生きているIPが際限なく増えない)
+login_stepup._ask_hits.clear()
+nowt = time.monotonic()
+for i in range(login_stepup._ASK_KEYS_HARD + 1000):
+    login_stepup._ask_hits[f"k{i}"] = [nowt - (i % 100) * 0.001]
+login_stepup.ask_allowed("198.51.100.77")
+check("K8 窓内に生きたIPが硬い上限を超えていても、次の呼び出しで上限以下に刈られる(新しいキーは残る)",
+      len(login_stepup._ask_hits) <= login_stepup._ASK_KEYS_HARD and "198.51.100.77" in login_stepup._ask_hits, len(login_stepup._ask_hits))
 reset_locks()
 
 # ---------------- 最後に落ちている相手 ----------------

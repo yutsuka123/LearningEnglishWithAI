@@ -1013,88 +1013,133 @@
     // 追加確認(2026-10-20・ver1.5.19): サーバーが {stepup:{src}} を返したときだけ、その相対パスを
     // 同一オリジンのiframeで開く(中身はサーバー側が出す)。終わると iframe から postMessage で
     // 不透明な値(ticket)だけ届くので、同じ入力に付けて再送する。合否はここでは分からない。
-    const STEPUP_SRC_RE = /^\/(?!\/)[A-Za-z0-9_\-.\/~%=&?]{1,500}$/;
-    const STEPUP_TICKET_RE = /^[A-Za-z0-9_\-]{8,200}$/;
-    let stepupBox = null;
-    let stepupFrame = null;
-    function closeStepup() {
-      if (stepupBox) { stepupBox.remove(); }
-      stepupBox = null;
-      stepupFrame = null;
-    }
-    function openStepup(src) {
-      closeStepup();
-      const box = document.createElement('div');
-      box.className = 'stepup-box';
-      box.setAttribute('role', 'dialog');
-      box.setAttribute('aria-modal', 'true');
-      const panel = document.createElement('div');
-      panel.className = 'stepup-panel';
-      const frame = document.createElement('iframe');
-      frame.setAttribute('title', i18nT('login.stepup.title', '追加の確認'));
-      frame.setAttribute('referrerpolicy', 'no-referrer');
-      frame.src = src;
-      const cancel = document.createElement('button');
-      cancel.type = 'button';
-      cancel.className = 'btn-secondary stepup-cancel';
-      cancel.textContent = i18nT('login.stepup.cancel', 'キャンセル');
-      cancel.addEventListener('click', closeStepup);
-      panel.appendChild(frame);
-      panel.appendChild(cancel);
-      box.appendChild(panel);
-      document.body.appendChild(box);
-      stepupBox = box;
-      stepupFrame = frame;
-    }
-    window.addEventListener('message', (ev) => {
-      // 自分が開いたiframeからの、同一オリジンのメッセージだけを受け取る。
-      if (!stepupFrame || ev.origin !== location.origin
-          || ev.source !== stepupFrame.contentWindow) return;
-      const m = ev.data;
-      if (!m || typeof m !== 'object') return;
-      if (m.t === 'st' && typeof m.ticket === 'string'
-          && STEPUP_TICKET_RE.test(m.ticket)) {
-        closeStepup();
-        doLogin(m.ticket);
-      } else if (m.t === 'st-locked') {
-        closeStepup();
-        document.getElementById('e').textContent = i18nT(
-          'login.stepup.locked', 'しばらくお待ちください。時間をおいて、もう一度お試しください。');
+    // 2026-10-21(独立照査2回目M-4・N-1): iframeは同一オリジンなので、親の入力欄をDOM経由で読めてしまう
+    // (仕様「ブラウザ経由でもパスワードを受け取らない」)。確認中は、入力した値を関数の中(閉じた変数)に
+    // 写して欄のパスワードを空にし、欄を無効化する。再送はその写しから行う(確認中の編集で食い違わない)。
+    // 全体を関数で包むのは、トップレベルのlet/constだと別のスクリプトから名前で辿れるため。
+    (function () {
+      const STEPUP_SRC_RE = /^\/(?!\/)[A-Za-z0-9_\-.\/~%=&?]{1,500}$/;
+      const STEPUP_TICKET_RE = /^[A-Za-z0-9_\-]{8,200}$/;
+      const fU = document.getElementById('u');
+      const fP = document.getElementById('p');
+      const submitBtn = fLogin.querySelector('button[type="submit"]');
+      let stepupBox = null;
+      let stepupFrame = null;
+      let held = null;      // 確認中の {username, password} の写し(この関数の外からは辿れない)
+      let busy = false;
+      function setBusy(b) {
+        busy = b;
+        if (submitBtn) submitBtn.disabled = b;
       }
-    });
-    document.addEventListener('keydown', (ev) => {
-      if (ev.key === 'Escape' && stepupBox) closeStepup();
-    });
+      function lockFields() {
+        fP.value = '';
+        fU.disabled = true;
+        fP.disabled = true;
+      }
+      function restoreFields() {
+        if (held) { fU.value = held.username; fP.value = held.password; }
+        held = null;
+        fU.disabled = false;
+        fP.disabled = false;
+      }
+      function closeStepup() {
+        if (stepupBox) { stepupBox.remove(); }
+        stepupBox = null;
+        stepupFrame = null;
+      }
+      function cancelStepup() {
+        closeStepup();
+        restoreFields();
+      }
+      function openStepup(src) {
+        closeStepup();
+        const box = document.createElement('div');
+        box.className = 'stepup-box';
+        box.setAttribute('role', 'dialog');
+        box.setAttribute('aria-modal', 'true');
+        const panel = document.createElement('div');
+        panel.className = 'stepup-panel';
+        const frame = document.createElement('iframe');
+        frame.setAttribute('title', i18nT('login.stepup.title', '追加の確認'));
+        frame.setAttribute('referrerpolicy', 'no-referrer');
+        frame.src = src;
+        const cancel = document.createElement('button');
+        cancel.type = 'button';
+        cancel.className = 'btn-secondary stepup-cancel';
+        cancel.textContent = i18nT('login.stepup.cancel', 'キャンセル');
+        cancel.addEventListener('click', cancelStepup);
+        panel.appendChild(frame);
+        panel.appendChild(cancel);
+        box.appendChild(panel);
+        document.body.appendChild(box);
+        stepupBox = box;
+        stepupFrame = frame;
+      }
+      window.addEventListener('message', (ev) => {
+        // 自分が開いたiframeからの、同一オリジンのメッセージだけを受け取る。
+        if (!stepupFrame || ev.origin !== location.origin
+            || ev.source !== stepupFrame.contentWindow) return;
+        const m = ev.data;
+        if (!m || typeof m !== 'object') return;
+        if (m.t === 'st' && typeof m.ticket === 'string'
+            && STEPUP_TICKET_RE.test(m.ticket)) {
+          closeStepup();
+          doLogin(m.ticket);
+        } else if (m.t === 'st-locked') {
+          closeStepup();
+          restoreFields();
+          document.getElementById('e').textContent = i18nT(
+            'login.stepup.locked', 'しばらくお待ちください。時間をおいて、もう一度お試しください。');
+        }
+      });
+      document.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape' && stepupBox) cancelStepup();
+      });
 
-    async function doLogin(ticket) {
-      const e = document.getElementById('e');
-      e.textContent = '';
-      try {
-        const body = {
-          username: document.getElementById('u').value,
-          password: document.getElementById('p').value,
-        };
-        if (ticket) body.ticket = ticket;
-        const r = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-        const d = await r.json();
-        if (d.ok) { location.href = safeNextUrl(); return; }
-        if (!ticket && d.stepup && typeof d.stepup.src === 'string'
-            && STEPUP_SRC_RE.test(d.stepup.src)) {
-          openStepup(d.stepup.src);
+      async function doLogin(ticket) {
+        const e = document.getElementById('e');
+        e.textContent = '';
+        // 再送(ticket付き)は、確認の前に写した値から行う(欄は空・無効化されている)。
+        const creds = ticket ? held : { username: fU.value, password: fP.value };
+        if (!creds) {
+          restoreFields();
+          e.textContent = i18nT('login.failed', 'ログインに失敗しました。');
           return;
         }
-        e.textContent = d.error || i18nT('login.failed', 'ログインに失敗しました。');
-      } catch (_) { e.textContent = i18nT('login.networkError', '通信エラーが発生しました。'); }
-    }
-    fLogin.addEventListener('submit', (ev) => {
-      ev.preventDefault();
-      if (stepupBox) return;
-      doLogin('');
-    });
+        let leaving = false;
+        setBusy(true);
+        try {
+          const body = { username: creds.username, password: creds.password };
+          if (ticket) body.ticket = ticket;
+          const r = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          const d = await r.json();
+          if (d.ok) { leaving = true; held = null; location.href = safeNextUrl(); return; }
+          if (!ticket && d.stepup && typeof d.stepup.src === 'string'
+              && STEPUP_SRC_RE.test(d.stepup.src)) {
+            held = { username: creds.username, password: creds.password };
+            lockFields();
+            openStepup(d.stepup.src);
+            return;
+          }
+          restoreFields();
+          e.textContent = d.error || i18nT('login.failed', 'ログインに失敗しました。');
+        } catch (_) {
+          restoreFields();
+          e.textContent = i18nT('login.networkError', '通信エラーが発生しました。');
+        } finally {
+          if (!leaving) setBusy(false);   // 成功して画面を移る間は二重送信させない
+        }
+      }
+      fLogin.addEventListener('submit', (ev) => {
+        ev.preventDefault();
+        if (busy || stepupBox) return;
+        doLogin('');
+      });
+    })();
 
     // 離脱・滞在時間の計測(2026-09-30オーナー指示「登録ボタンを押したのに完了
     // しない人」の調査): 従来は「フォームを開いて3秒で戻った」のか「開いたまま

@@ -15,12 +15,14 @@
 from __future__ import annotations
 
 import hashlib
+import ipaddress
 import json
 import os
 import re
 import secrets
 import threading
 import time
+import urllib.parse
 import urllib.request
 from typing import Optional
 
@@ -46,8 +48,12 @@ _COOKIE_HEADER_MAX = 12000   # 相手のボディ上限は16KB(Cookie項目は12
 _dummy_hash: Optional[str] = None
 
 
+def _raw_url() -> str:
+    return os.getenv("LOGIN_STEPUP_URL", "").strip()
+
+
 def _url() -> str:
-    return os.getenv("LOGIN_STEPUP_URL", "").strip().rstrip("/")
+    return _raw_url().rstrip("/")
 
 
 def _key() -> str:
@@ -55,9 +61,25 @@ def _key() -> str:
 
 
 def enabled() -> bool:
-    """未設定ならフック無効(従来どおり)。URLだけあってキーが無い場合は有効のまま
-    (呼び出しが全て失敗して、管理者は通れない=安全側)。"""
-    return bool(_url())
+    """未設定(空)ならフック無効(従来どおり)。値が空でないときは有効のまま扱う:
+    キーが無い・URLが`/`だけ・スキームが不正などの誤設定は、呼び出しが全て失敗して管理者は
+    通れない(=安全側)。黙ってフック無効(パスワードだけで入れる状態)にはしない
+    (2026-10-21 独立照査2回目L-3)。"""
+    return bool(_raw_url())
+
+
+def describe() -> str:
+    """起動ログ用の1行(キーは出さない。ホスト名だけ)。誤設定に気づけるようにする。"""
+    if not enabled():
+        return "無効(従来どおりのログイン)"
+    base = _url()
+    if not base.lower().startswith(("http://", "https://")):
+        return "有効だがURLの形が不正(管理者は入れません・設定を確認してください)"
+    try:
+        host = urllib.parse.urlparse(base).hostname or "?"
+    except ValueError:
+        host = "?"
+    return "有効(宛先ホスト=%s・キー%s)" % (host, "あり" if _key() else "なし=管理者は入れません")
 
 
 def _decoys() -> set[str]:
@@ -116,8 +138,19 @@ def cookie_for_gate(header: str) -> str:
     return out if len(out) <= _COOKIE_HEADER_MAX else ""
 
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """3xxに追従しない(追従するとurllibは共有キーを転送先へそのまま送り、転送先の応答を相手の答えとして
+    受け入れてしまう。2026-10-21 独立照査2回目L-1)。追従しない=HTTPErrorになり、呼び出し側が失敗にする。"""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):   # noqa: D401
+        return None
+
+
 # 環境の http(s)_proxy を通さない(内部網の宛先なので)
-_opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+_opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), _NoRedirect)
+# 1回の呼び出しの総時間の上限。_TIMEOUT_SECはソケット操作ごとの待ちなので、1バイトずつ細切れに返す相手は
+# それだけでは打ち切れず枠(下の8)を長く占有できる(2026-10-21 独立照査2回目L-2)。本文の読み込みに総時間の上限を設ける。
+_TOTAL_SEC = 2.5
 
 
 # 相手への同時呼び出しの上限。相手が遅い/落ちていると1回ごとに最大2秒スレッドを占有するので、
@@ -138,17 +171,31 @@ def _post(path: str, payload: dict) -> Optional[dict]:
         # URLの誤設定(スキーム無し・http/https以外)も失敗にする。例外を外へ出さない(500にしない)・
         # ファイル等へ読みに行かせない。有効/無効の判定(enabled)はURLが空かどうかだけなので、
         # 誤設定は「フック無効」ではなく「全て失敗=管理者は入れない」(fail-closed)になる。
-        if not base.startswith(("http://", "https://")):
+        if not base.lower().startswith(("http://", "https://")):
             log.warning("login_stepup: 確認サービスのURLの形が不正(http/httpsで始まらない)")
             return None
         req = urllib.request.Request(
             base + path, data=json.dumps(payload).encode("utf-8"), method="POST",
             headers={"Content-Type": "application/json",
                      "Authorization": "Bearer " + key})
+        deadline = time.monotonic() + _TOTAL_SEC
         with _opener.open(req, timeout=_TIMEOUT_SEC) as r:
             if r.status != 200:
                 return None
-            data = json.loads(r.read(_MAX_BODY).decode("utf-8"))
+            chunks, size = [], 0
+            while True:
+                if time.monotonic() > deadline:
+                    raise TimeoutError("total time exceeded")
+                # read1: 届いた分だけで返る(read(n)はn byteたまるまで戻らず、細切れに返す相手だと
+                # 総時間の判定が遅れる)
+                chunk = r.read1(4096)
+                if not chunk:
+                    break
+                size += len(chunk)
+                if size > _MAX_BODY:
+                    raise ValueError("body too large")
+                chunks.append(chunk)
+            data = json.loads(b"".join(chunks).decode("utf-8"))
     except Exception as e:   # 失敗の理由(キー・チケットを含みうる)は書かず、種類だけ残す
         log.warning("login_stepup: 確認サービスの呼び出しに失敗(%s)", type(e).__name__)
         return None
@@ -162,23 +209,47 @@ def _post(path: str, payload: dict) -> Optional[dict]:
 # ので、別の上限で止める(超えたら通常のロックと同じ2002)。記録も残す(2026-10-20 独立照査M-2)。
 _ASK_MAX = 20
 _ASK_WINDOW_SEC = 300.0
+_ASK_KEYS_SOFT = 5000        # これを超えたら期限切れのIPを捨てる
+_ASK_KEYS_HARD = 20000       # 期限切れを捨てても超えるなら、最終ヒットが古い順に捨てる(メモリの硬い上限)
 _ask_hits: dict[str, list[float]] = {}
 _ask_lock = threading.Lock()
+
+
+def _rate_key(ip: str) -> str:
+    """上限を数えるときのキー。IPv6は/64(1つの回線に配られる単位)でまとめる(同じ/64内でアドレスを
+    変えても上限を回避できないように。仕様§5・2026-10-21 独立照査2回目M-3)。IPv4はそのまま。
+    解釈できない文字列もそのまま。相手サービスへ送るipは生の文字列のまま(ここは数えるキーだけ)。"""
+    s = (ip or "?").strip()
+    try:
+        a = ipaddress.ip_address(s.split("%", 1)[0])
+    except ValueError:
+        return s
+    if a.version == 6:
+        if a.ipv4_mapped is not None:
+            return str(a.ipv4_mapped)
+        return "v6/" + a.packed[:8].hex()
+    return str(a)
 
 
 def ask_allowed(ip: str) -> bool:
     """このIPが確認を始めてよいか(許されるなら1回ぶん数える)。"""
     now = time.monotonic()
+    key = _rate_key(ip)
     with _ask_lock:
-        hits = [t for t in _ask_hits.get(ip or "?", []) if now - t < _ASK_WINDOW_SEC]
+        hits = [t for t in _ask_hits.get(key, []) if now - t < _ASK_WINDOW_SEC]
         if len(hits) >= _ASK_MAX:
-            _ask_hits[ip or "?"] = hits
+            _ask_hits[key] = hits
             return False
         hits.append(now)
-        _ask_hits[ip or "?"] = hits
-        if len(_ask_hits) > 5000:        # 溜まりすぎたら古いIPから捨てる(メモリの上限)
+        _ask_hits[key] = hits
+        if len(_ask_hits) > _ASK_KEYS_SOFT:      # 溜まりすぎたら古いIPから捨てる(メモリの上限)
             for k in [k for k, v in _ask_hits.items() if not v or now - v[-1] >= _ASK_WINDOW_SEC][:2500]:
                 _ask_hits.pop(k, None)
+            if len(_ask_hits) > _ASK_KEYS_HARD:
+                oldest = sorted(_ask_hits, key=lambda k: _ask_hits[k][-1] if _ask_hits[k] else 0.0)
+                for k in oldest[:len(_ask_hits) - _ASK_KEYS_HARD + 2500]:
+                    if k != key:
+                        _ask_hits.pop(k, None)
         return True
 
 
@@ -225,6 +296,8 @@ def _valid_cookie(c) -> Optional[dict]:
     if samesite not in ("lax", "strict", "none"):
         return None
     if not (isinstance(c.get("httponly"), bool) and isinstance(c.get("secure"), bool)):
+        return None
+    if samesite == "none" and not c["secure"]:      # ブラウザは保存しない組み合わせ(相手の値を疑う)
         return None
     return {"name": name, "value": value, "max_age": max_age, "path": path,
             "samesite": samesite, "httponly": c["httponly"], "secure": c["secure"]}

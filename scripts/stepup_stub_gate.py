@@ -27,6 +27,7 @@ class Gate:
         # 本物は常にSecure。ブラウザ検査(http://127.0.0.1)でWebKitがSecureのCookieを保存しない都合で、
         # その検査だけFalseにする(アプリは相手の値をそのまま使うので、検査の意味は変わらない)。
         self.cookie_secure = True
+        self.redirect_to: str = ""         # override="redirect"のとき、302でここへ飛ばす
 
     # --- 検査側の操作 ---
     def ticket_from_src(self, src: str) -> str:
@@ -69,6 +70,26 @@ class _Handler(BaseHTTPRequestHandler):
             return self._send(500, {"error": "boom"})
         if gate.override == "slow":
             time.sleep(3.0)
+        if gate.override == "redirect":      # 3xxに追従すると共有キーが転送先へ漏れる(照査L-1)
+            self.send_response(302)
+            self.send_header("Location", gate.redirect_to)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        if gate.override == "drip":          # 1バイトずつ細切れに返す(照査L-2)。ソケットのタイムアウトには掛からない
+            raw = json.dumps({"mode": "skip", "ticket": "A" * 30}).encode()
+            try:
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(raw)))
+                self.end_headers()
+                for i in range(len(raw)):
+                    self.wfile.write(raw[i:i + 1])
+                    self.wfile.flush()
+                    time.sleep(0.12)
+            except OSError:                  # クライアントが先に切った
+                pass
+            return
         if self.path == "/internal/begin":
             return self._begin(gate, body)
         if self.path == "/internal/redeem":

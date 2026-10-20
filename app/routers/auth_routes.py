@@ -231,12 +231,13 @@ def login(
     stepup_resp = None
     gate_cookie = None
     in_roster = False
+    judged = False
     with db() as conn:
         in_roster = login_stepup.enabled() and login_stepup.in_roster(
             conn, payload.username)
         if in_roster:
             # 追加確認の名簿(管理者・おとり名)。パスワードの正誤を見る前に必ず確認へ進める。
-            u, stepup_resp, gate_cookie = _stepup_login(
+            u, stepup_resp, gate_cookie, judged = _stepup_login(
                 conn, payload, request, ip)
         else:
             u = auth.authenticate(conn, payload.username, payload.password)
@@ -247,8 +248,13 @@ def login(
         if stepup_resp is not None:
             return stepup_resp
         if not u:
+            # 名簿の名前でも、確認サービスが「確認OK」と答えた(=パスワードの正誤がこの応答から分かる)失敗は
+            # ユーザー名単位(複数IPの合算)にも数える。確認を通っていない失敗(でたらめなチケット等)だけ
+            # 数えない=第三者が答えを知らないまま管理者本人を締め出せないようにする趣旨は保つ
+            # (2026-10-21 独立照査2回目M-1)。
             auth.record_login_failure(
-                payload.username, ip, count_username=not in_roster)
+                payload.username, ip,
+                count_username=(not in_roster) or judged)
             log_id = auth.record_login_event(
                 conn, payload.username, ip, False)
             background_tasks.add_task(auth.update_login_hostname, log_id, ip)
@@ -295,39 +301,44 @@ def _set_stepup_cookie(resp, ck: dict) -> None:
 
 def _stepup_login(conn, payload: LoginIn, request: Request, ip: str):
     """追加確認の名簿にある名前のログイン。戻り値=(ユーザー or None, 確認画面を返す応答 or None,
-    確認サービスのCookie or None)。ユーザーが返るのは「確認を通った かつ パスワードが合って
-    かつ 実在する有効な管理者」の全てが揃ったときだけ。それ以外は全て(None, None, None)で、
-    呼び出し側が通常のログイン失敗(2001)と同じに扱う。"""
+    確認サービスのCookie or None, judged)。ユーザーが返るのは「確認を通った かつ パスワードが合って
+    かつ 実在する有効な管理者」の全てが揃ったときだけ。それ以外は全て(None, None, None, ..)で、
+    呼び出し側が通常のログイン失敗(2001)と同じに扱う。judged=確認サービスが「確認OK」と答えた
+    (パスワードの正誤が応答から分かる状態になった)かどうか。"""
     user = auth.get_user_by_name(conn, payload.username)
     real_admin = bool(
         user and user.get("role") == "admin" and user.get("is_active"))
-    # パスワードの正誤は確認の出し分けには使わない。時間を揃えるため必ず1回検証する。
-    pw_ok = login_stepup.check_password(user, payload.password) and real_admin
     host = login_stepup.request_host(request)
     bind = login_stepup.bind_for(payload.username)
     ticket = (payload.ticket or "").strip()
     if not ticket:
         # ブラウザの「確認は要らない」という申告は信用せず、毎回ここで相手に確かめる。
+        # 開始の上限は、重いパスワード検証(pbkdf2)より前に判定する(上限を超えた要求に
+        # CPUを使わせない。判定はIPだけで決まり、ユーザー名・パスワードに依存しない。2026-10-21 照査M-2)。
         if not login_stepup.ask_allowed(ip):
             log.warning("login: step-up start rate-limited ip=%s", ip)
-            return None, error_response("2002"), None
+            return None, error_response("2002"), None, False
         log.info("login: step-up start ip=%s username=%s", ip, payload.username)
         b = login_stepup.begin(
             ip, host, bind, request.headers.get("cookie", ""))
         if b is None:
-            return None, None, None
+            return None, None, None, False
         if b["mode"] == "ask":
+            # 確認画面を返す応答ではパスワードの正誤は使わない(管理者名でもおとり名でも同じ形・同じ時間)
             resp = JSONResponse(
                 {"ok": False, "stepup": {"src": b["src"]}},
                 headers={"Cache-Control": "no-store"})
             # このブラウザを確認に束縛するCookie(相手が決めた値・属性のまま)
             _set_stepup_cookie(resp, b["bind_cookie"])
-            return None, resp, None
+            return None, resp, None, False
         ticket = b["ticket"]     # 確認済みの端末(相手が確かめた結果)
+    # パスワードの正誤は確認の出し分けには使わない。時間を揃えるため必ず1回検証する(redeemのacceptedに渡す)。
+    pw_ok = login_stepup.check_password(user, payload.password) and real_admin
     g = login_stepup.redeem(ticket, ip, host, bind, pw_ok)
-    if g and g["ok"] and pw_ok:
-        return user, None, g["cookie"]
-    return None, None, None
+    judged = bool(g and g["ok"])
+    if judged and pw_ok:
+        return user, None, g["cookie"], True
+    return None, None, None, judged
 
 
 @router.post("/logout")

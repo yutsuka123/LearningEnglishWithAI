@@ -15,6 +15,7 @@ Googleタグ入りのページを動かすため、アプリ(127.0.0.1)以外へ
   6. 確認済みの端末(skip)はiframeなしで入れる
   7. 相手が落ちていても画面は固まらず失敗文言を出す
   8. 4言語の文言・スマホ幅でiframeの枠が画面に収まる
+  9. 確認中は親の入力欄にパスワードが残らない・二重送信しない・キャンセル/失敗で入力が復元される(照査M-4・N-1)
 """
 import argparse, json, os, socket, subprocess, sys, tempfile, time, urllib.request
 from pathlib import Path
@@ -188,6 +189,42 @@ try:
           return {top: p.top, bottom: p.bottom, vh: window.innerHeight, fh: f.height}; }""")
         check(P + "7c 低い画面(390x560): 枠が画面に収まる(収まらない中身はiframe内でスクロール)", g2["top"] >= 0 and g2["bottom"] <= g2["vh"] + 1 and g2["fh"] >= 320, g2)
         page.keyboard.press("Escape"); ctx.close()
+
+        # 9. (独立照査2回目 M-4・N-1) 確認中は親の入力欄にパスワードが残らない・二重送信しない・キャンセル/失敗で復元
+        state.update(mode="pass", delay=4000); ctx, page, reqs = new_page()
+        page.fill("#u", "ui_admin"); page.fill("#p", PW)
+        page.dblclick("#f button[type=submit]")           # 二重送信
+        page.wait_for_selector(".stepup-box iframe", timeout=5000)
+        time.sleep(0.4)
+        check(P + "9a 二重にクリックしても、ログイン要求は1回だけ(二重送信しない)", len(reqs) == 1, len(reqs))
+        check(P + "9b 確認中は#pが空で、#u・#pが無効化されている(編集で食い違わない)",
+              page.input_value("#p") == "" and page.is_disabled("#p") and page.is_disabled("#u"))
+        fr = [f for f in page.frames if f != page.main_frame][0]
+        check(P + "9c iframeの中から親の#pの値を読んでも空(入力したパスワードはDOMに無い)",
+              fr.evaluate("() => parent.document.getElementById('p').value") == "")
+        scope = fr.evaluate("""() => { const r = {}; for (const n of ['held', 'stepupBox', 'stepupFrame', 'STEPUP_SRC_RE', 'doLogin']) {
+              try { r[n] = typeof parent.eval(n); } catch (e) { r[n] = e.name; } } return r; }""")
+        check(P + "9d 確認用の変数・関数は親のグローバルから辿れない(parent.evalで見えない)",
+              all(v in ("undefined", "ReferenceError") for v in scope.values()), scope)
+        page.click(".stepup-cancel")
+        check(P + "9e キャンセルすると入力が元どおり復元され、再び入力できる",
+              page.input_value("#p") == PW and page.input_value("#u") == "ui_admin" and not page.is_disabled("#p") and not page.is_disabled("#u")
+              and not page.is_disabled("#f button[type=submit]"))
+        ctx.close()
+        state.update(mode="pass", delay=700); ctx, page, reqs = new_page()
+        fill_submit(page, "ui_admin", PW)
+        page.wait_for_url(lambda u: "/login" not in u, timeout=15000)
+        sent = json.loads(reqs[1].post_data or "{}")
+        check(P + "9f 再送は確認の前に写した値から行う(ユーザー名・パスワードが最初の入力のまま・ticket付き)",
+              sent.get("username") == "ui_admin" and sent.get("password") == PW and bool(sent.get("ticket")), {k: bool(v) for k, v in sent.items()})
+        ctx.close()
+        state.update(mode="pass", delay=700); ctx, page, reqs = new_page()
+        fill_submit(page, "ui_admin", "wrong-pass-9")
+        page.wait_for_function("() => !document.querySelector('.stepup-box') && document.getElementById('e').textContent.length > 0", timeout=8000)
+        check(P + "9g 失敗後は入力が復元され(パスワードも)、送信ボタンも再び押せる",
+              page.input_value("#p") == "wrong-pass-9" and not page.is_disabled("#p") and not page.is_disabled("#u")
+              and not page.is_disabled("#f button[type=submit]"))
+        ctx.close()
 
         # 8. 4言語・スマホ幅
         for lang, cancel, locked in (("ja", "キャンセル", "しばらく"), ("en", "Cancel", "Please wait"),
