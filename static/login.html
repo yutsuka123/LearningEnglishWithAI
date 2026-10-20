@@ -1023,6 +1023,12 @@
       const fU = document.getElementById('u');
       const fP = document.getElementById('p');
       const submitBtn = fLogin.querySelector('button[type="submit"]');
+      // 再送で使う関数は、ページ読み込み時(確認の画面を開く前)に束縛しておく。あとから同一オリジンの
+      // 画面が window.fetch / JSON.stringify を差し替えても、再送の本文は経由しない(2026-10-21 照査3回目L-2・
+      // 部分的な対策)。同一オリジンの枠は信頼境界にならない(悪意ある画面はDOMも書き換えられる)ので、
+      // 守りの前提は「枠の中身は自分たちのゲートが出す画面だけ」であること(別オリジン化は仕様変更)。
+      const nativeFetch = window.fetch.bind(window);
+      const toJson = JSON.stringify.bind(JSON);
       let stepupBox = null;
       let stepupFrame = null;
       let held = null;      // 確認中の {username, password} の写し(この関数の外からは辿れない)
@@ -1037,10 +1043,13 @@
         fP.disabled = true;
       }
       function restoreFields() {
-        if (held) { fU.value = held.username; fP.value = held.password; }
+        // 確認中に「戻る」等でログインフォームが隠れていたら、非表示側のパスワード欄は空・無効のままにする
+        // (2026-09-01の規則。パスワード管理ソフトの誤爆の防止。2026-10-21 照査3回目N-2)。
+        const visible = currentForm === 'login';
+        if (held) { fU.value = held.username; if (visible) fP.value = held.password; }
         held = null;
         fU.disabled = false;
-        fP.disabled = false;
+        fP.disabled = !visible;
       }
       function closeStepup() {
         if (stepupBox) { stepupBox.remove(); }
@@ -1095,6 +1104,15 @@
       document.addEventListener('keydown', (ev) => {
         if (ev.key === 'Escape' && stepupBox) cancelStepup();
       });
+      // ログイン成功後に「戻る」でこのページがbfcacheから復元されると、JSの状態(送信中・欄の無効化)が
+      // 残ったままになるので戻す(2026-10-21 照査3回目N-1)。パスワードの写しは復元しない。
+      window.addEventListener('pageshow', (ev) => {
+        if (!ev.persisted) return;
+        closeStepup();
+        held = null;
+        restoreFields();
+        setBusy(false);
+      });
 
       async function doLogin(ticket) {
         const e = document.getElementById('e');
@@ -1111,10 +1129,10 @@
         try {
           const body = { username: creds.username, password: creds.password };
           if (ticket) body.ticket = ticket;
-          const r = await fetch('/api/auth/login', {
+          const r = await nativeFetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
+            body: toJson(body),
           });
           const d = await r.json();
           if (d.ok) { leaving = true; held = null; location.href = safeNextUrl(); return; }

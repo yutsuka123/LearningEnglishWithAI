@@ -394,11 +394,13 @@ orig_cp = login_stepup.check_password
 login_stepup.check_password = lambda user, pw: (calls.append(1), orig_cp(user, pw))[1]
 ipk = new_ip()
 codes = [login("adm_su", PW, ip=ipk).status_code for _ in range(login_stepup._ASK_MAX + 5)]
-check("K2a 確認の開始(ticketなし)はパスワード検証(pbkdf2)を走らせない(上限の内外とも0回)", len(calls) == 0, len(calls))
+check("K2a 上限を超えた要求(5件)はパスワード検証(pbkdf2)を走らせない(上限内の要求だけ検証する=仕様§5どおり名簿の名前では常に実行)", len(calls) == login_stepup._ASK_MAX, len(calls))
 check("K2b 上限を超えた分は429(2002)", codes[login_stepup._ASK_MAX:] == [429] * 5, codes)
+n0 = len(calls)
 ip2, t2, _ = ask(); gate.complete(t2, True)
+n1 = len(calls)
 login("adm_su", PW, ticket=t2, ip=ip2)
-check("K2c チケット付きの最終判定ではパスワード検証が1回走る(時間を揃える仕様どおり)", len(calls) == 1, len(calls))
+check("K2c 開始(ticketなし)でも最終判定(ticket付き)でも、パスワード検証は1回ずつ走る(時間を揃える仕様どおり)", n1 - n0 == 1 and len(calls) - n1 == 1, (n1 - n0, len(calls) - n1))
 login_stepup.check_password = orig_cp
 reset_locks()
 
@@ -474,6 +476,18 @@ check("K7 samesite=none+secure=falseは拒否・secure=trueなら通る・lax+se
       login_stepup._valid_cookie({**base_ck, "samesite": "none", "secure": False}) is None
       and login_stepup._valid_cookie({**base_ck, "samesite": "none", "secure": True}) is not None
       and login_stepup._valid_cookie({**base_ck, "samesite": "lax", "secure": False}) is not None)
+
+# K9 (N-3) 確認済みの端末(skip)は確認の開始の上限を消費しない
+reset_locks(); gate.log.clear()
+ipr = new_ip()
+codes = [login("adm_su", PW, ip=ipr, cookie=gate.valid_cookie).status_code for _ in range(login_stepup._ASK_MAX + 5)]
+check(f"K9a 確認済みの端末で同じIPから{login_stepup._ASK_MAX + 5}回続けてログインしても全て成功(skipは開始の上限を消費しない)", codes == [200] * (login_stepup._ASK_MAX + 5), codes)
+codes = [login("adm_su", PW, ip=ipr).status_code for _ in range(login_stepup._ASK_MAX + 2)]
+check("K9b そのあとの確認の開始(ask)は従来どおり上限まで通り、超えると429", codes[:login_stepup._ASK_MAX] == [200] * login_stepup._ASK_MAX and codes[login_stepup._ASK_MAX:] == [429] * 2, codes)
+reset_locks()
+
+# K10 (N-9) 解釈できない文字列のキーは64文字に切る
+check("K10 _rate_key: 解釈できない長大な文字列は64文字に切る", len(login_stepup._rate_key("x" * 5000)) == 64)
 
 # K8 (L-6) 上限を数えるIPの数に硬い上限(窓内に生きているIPが際限なく増えない)
 login_stepup._ask_hits.clear()

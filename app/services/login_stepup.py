@@ -223,7 +223,7 @@ def _rate_key(ip: str) -> str:
     try:
         a = ipaddress.ip_address(s.split("%", 1)[0])
     except ValueError:
-        return s
+        return s[:64]        # 解釈できない文字列は(長大でも)短く切ってキーにする
     if a.version == 6:
         if a.ipv4_mapped is not None:
             return str(a.ipv4_mapped)
@@ -251,6 +251,16 @@ def ask_allowed(ip: str) -> bool:
                     if k != key:
                         _ask_hits.pop(k, None)
         return True
+
+
+def ask_refund(ip: str) -> None:
+    """確認の開始として数えた1回を取り消す。相手が「確認済みの端末(skip)」と答えたときに呼ぶ=
+    本人のいつもの端末の連続ログインや、同じNAT・同じ/64の第三者の開始が、本人の上限を消費しないように
+    (2026-10-21 独立照査3回目N-3)。"""
+    with _ask_lock:
+        hits = _ask_hits.get(_rate_key(ip))
+        if hits:
+            hits.pop()
 
 
 def begin(ip: str, host: str, bind: str, cookie_header: str) -> Optional[dict]:

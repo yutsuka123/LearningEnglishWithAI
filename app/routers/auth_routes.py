@@ -311,29 +311,31 @@ def _stepup_login(conn, payload: LoginIn, request: Request, ip: str):
     host = login_stepup.request_host(request)
     bind = login_stepup.bind_for(payload.username)
     ticket = (payload.ticket or "").strip()
+    # 確認の開始(ticketなし)のIP別の上限は、重いパスワード検証(pbkdf2)より前に判定する(上限を超えた要求に
+    # CPUを使わせない。判定はIPだけで決まり、ユーザー名・パスワードに依存しない。2026-10-21 照査M-2)。
+    if not ticket and not login_stepup.ask_allowed(ip):
+        log.warning("login: step-up start rate-limited ip=%s", ip)
+        return None, error_response("2002"), None, False
+    # 仕様§5: パスワードの正誤は確認の出し分けには使わない。時間を揃えるため、名簿の名前では必ず1回検証する
+    # (結果はredeemのacceptedと最終判定にだけ使う)。
+    pw_ok = login_stepup.check_password(user, payload.password) and real_admin
     if not ticket:
         # ブラウザの「確認は要らない」という申告は信用せず、毎回ここで相手に確かめる。
-        # 開始の上限は、重いパスワード検証(pbkdf2)より前に判定する(上限を超えた要求に
-        # CPUを使わせない。判定はIPだけで決まり、ユーザー名・パスワードに依存しない。2026-10-21 照査M-2)。
-        if not login_stepup.ask_allowed(ip):
-            log.warning("login: step-up start rate-limited ip=%s", ip)
-            return None, error_response("2002"), None, False
         log.info("login: step-up start ip=%s username=%s", ip, payload.username)
         b = login_stepup.begin(
             ip, host, bind, request.headers.get("cookie", ""))
         if b is None:
             return None, None, None, False
         if b["mode"] == "ask":
-            # 確認画面を返す応答ではパスワードの正誤は使わない(管理者名でもおとり名でも同じ形・同じ時間)
             resp = JSONResponse(
                 {"ok": False, "stepup": {"src": b["src"]}},
                 headers={"Cache-Control": "no-store"})
             # このブラウザを確認に束縛するCookie(相手が決めた値・属性のまま)
             _set_stepup_cookie(resp, b["bind_cookie"])
             return None, resp, None, False
-        ticket = b["ticket"]     # 確認済みの端末(相手が確かめた結果)
-    # パスワードの正誤は確認の出し分けには使わない。時間を揃えるため必ず1回検証する(redeemのacceptedに渡す)。
-    pw_ok = login_stepup.check_password(user, payload.password) and real_admin
+        # 確認済みの端末(相手が確かめた結果)。確認画面を開かないので、開始の上限は消費しない(照査N-3)。
+        login_stepup.ask_refund(ip)
+        ticket = b["ticket"]
     g = login_stepup.redeem(ticket, ip, host, bind, pw_ok)
     judged = bool(g and g["ok"])
     if judged and pw_ok:
