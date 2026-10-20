@@ -12,11 +12,11 @@ import time
 
 from fastapi import APIRouter, BackgroundTasks, Request, Response
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ..config import log
 from ..database import db
-from ..services import auth, geoip, messages, visitor_kind
+from ..services import auth, geoip, login_stepup, messages, visitor_kind
 from ..services.errors import error_response
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -71,6 +71,8 @@ def _record_signup_attempt(
 class LoginIn(BaseModel):
     username: str
     password: str
+    # 追加確認(login_stepup)を通した後の再送でだけ付く不透明な値(通常のログインでは空)。
+    ticket: str = Field(default="", max_length=300)
 
 
 class SignupIn(BaseModel):
@@ -226,8 +228,22 @@ def login(
         log.warning(
             "login: rate-limited ip=%s username=%s", ip, payload.username)
         return error_response("2002")
+    stepup_resp = None
+    gate_cookie = None
     with db() as conn:
-        u = auth.authenticate(conn, payload.username, payload.password)
+        if login_stepup.enabled() and login_stepup.in_roster(
+                conn, payload.username):
+            # 追加確認の名簿(管理者・おとり名)。パスワードの正誤を見る前に必ず確認へ進める。
+            u, stepup_resp, gate_cookie = _stepup_login(
+                conn, payload, request, ip)
+        else:
+            u = auth.authenticate(conn, payload.username, payload.password)
+            if u and u.get("role") == "admin" and login_stepup.enabled():
+                # 名簿の取りこぼし対策(多層防御): 確認を通らずに管理者を通さない。
+                log.warning("login: admin without step-up refused ip=%s", ip)
+                u = None
+        if stepup_resp is not None:
+            return stepup_resp
         if not u:
             auth.record_login_failure(payload.username, ip)
             log_id = auth.record_login_event(
@@ -261,7 +277,47 @@ def login(
             httponly=True, samesite="lax", path="/",
             secure=auth.cookie_secure(request),
         )
+    if gate_cookie:
+        # 確認サービスが決めた「いつもの端末」Cookie。値も属性もそのまま使う(Domainなし)。
+        resp.set_cookie(
+            gate_cookie["name"], gate_cookie["value"],
+            max_age=gate_cookie["max_age"], path=gate_cookie["path"],
+            httponly=gate_cookie["httponly"], samesite=gate_cookie["samesite"],
+            secure=gate_cookie["secure"],
+        )
     return resp
+
+
+def _stepup_login(conn, payload: LoginIn, request: Request, ip: str):
+    """追加確認の名簿にある名前のログイン。戻り値=(ユーザー or None, 確認画面を返す応答 or None,
+    確認サービスのCookie or None)。ユーザーが返るのは「確認を通った かつ パスワードが合って
+    かつ 実在する有効な管理者」の全てが揃ったときだけ。それ以外は全て(None, None, None)で、
+    呼び出し側が通常のログイン失敗(2001)と同じに扱う。"""
+    user = auth.get_user_by_name(conn, payload.username)
+    real_admin = bool(
+        user and user.get("role") == "admin" and user.get("is_active"))
+    # パスワードの正誤は確認の出し分けには使わない。時間を揃えるため必ず1回検証する。
+    pw_ok = login_stepup.check_password(user, payload.password) and real_admin
+    host = login_stepup.request_host(request)
+    bind = login_stepup.bind_for(payload.username)
+    ticket = (payload.ticket or "").strip()
+    if not ticket:
+        # ブラウザの「確認は要らない」という申告は信用せず、毎回ここで相手に確かめる。
+        b = login_stepup.begin(
+            ip, host, bind, request.headers.get("cookie", ""))
+        if b is None:
+            return None, None, None
+        if b["mode"] == "ask":
+            resp = JSONResponse(
+                {"ok": False, "stepup": {"src": b["src"]}},
+                headers={"Cache-Control": "no-store"})
+            return None, resp, None
+        ticket = b["ticket"]     # 確認済みの端末(相手が確かめた結果)
+    g = login_stepup.redeem(
+        ticket, ip, host, bind, auth.external_scheme(request), pw_ok)
+    if g and g["ok"] and pw_ok:
+        return user, None, g["cookie"]
+    return None, None, None
 
 
 @router.post("/logout")

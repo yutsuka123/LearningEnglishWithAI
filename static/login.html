@@ -150,6 +150,19 @@
     .foot { text-align: center; margin-top: 14px; }
     .foot a { font-size: 12px; color: var(--sub); text-decoration: none; }
     .foot a:hover { text-decoration: underline; }
+    /* 追加確認の画面(2026-10-20・ver1.5.19): サーバーが求めたときだけ、同一オリジンの
+       iframeで開く。中身はサーバー側が出す。 */
+    .stepup-box { position: fixed; inset: 0; z-index: 50; display: flex;
+      align-items: center; justify-content: center; padding: 12px;
+      background: rgba(0,0,0,.55); }
+    .stepup-panel { display: flex; flex-direction: column;
+      width: min(100%, 460px); max-height: 100%; overflow: hidden;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; box-shadow: 0 8px 30px var(--shadow); }
+    .stepup-panel iframe { display: block; width: 100%; height: min(70vh, 560px);
+      border: 0; background: var(--card); }
+    .stepup-panel .stepup-cancel { width: auto; align-self: flex-end;
+      margin: 8px 12px; padding: 6px 14px; font-size: 14px; }
   </style>
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17457232912"></script>
@@ -994,23 +1007,90 @@
       });
     });
 
-    fLogin.addEventListener('submit', async (ev) => {
-      ev.preventDefault();
+    // 追加確認(2026-10-20・ver1.5.19): サーバーが {stepup:{src}} を返したときだけ、その相対パスを
+    // 同一オリジンのiframeで開く(中身はサーバー側が出す)。終わると iframe から postMessage で
+    // 不透明な値(ticket)だけ届くので、同じ入力に付けて再送する。合否はここでは分からない。
+    const STEPUP_SRC_RE = /^\/(?!\/)[A-Za-z0-9_\-.\/~%=&?]{1,500}$/;
+    const STEPUP_TICKET_RE = /^[A-Za-z0-9_\-]{8,200}$/;
+    let stepupBox = null;
+    let stepupFrame = null;
+    function closeStepup() {
+      if (stepupBox) { stepupBox.remove(); }
+      stepupBox = null;
+      stepupFrame = null;
+    }
+    function openStepup(src) {
+      closeStepup();
+      const box = document.createElement('div');
+      box.className = 'stepup-box';
+      box.setAttribute('role', 'dialog');
+      box.setAttribute('aria-modal', 'true');
+      const panel = document.createElement('div');
+      panel.className = 'stepup-panel';
+      const frame = document.createElement('iframe');
+      frame.setAttribute('title', i18nT('login.stepup.title', '追加の確認'));
+      frame.setAttribute('referrerpolicy', 'no-referrer');
+      frame.src = src;
+      const cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.className = 'btn-secondary stepup-cancel';
+      cancel.textContent = i18nT('login.stepup.cancel', 'キャンセル');
+      cancel.addEventListener('click', closeStepup);
+      panel.appendChild(frame);
+      panel.appendChild(cancel);
+      box.appendChild(panel);
+      document.body.appendChild(box);
+      stepupBox = box;
+      stepupFrame = frame;
+    }
+    window.addEventListener('message', (ev) => {
+      // 自分が開いたiframeからの、同一オリジンのメッセージだけを受け取る。
+      if (!stepupFrame || ev.origin !== location.origin
+          || ev.source !== stepupFrame.contentWindow) return;
+      const m = ev.data;
+      if (!m || typeof m !== 'object') return;
+      if (m.t === 'st' && typeof m.ticket === 'string'
+          && STEPUP_TICKET_RE.test(m.ticket)) {
+        closeStepup();
+        doLogin(m.ticket);
+      } else if (m.t === 'st-locked') {
+        closeStepup();
+        document.getElementById('e').textContent = i18nT(
+          'login.stepup.locked', 'しばらくお待ちください。時間をおいて、もう一度お試しください。');
+      }
+    });
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Escape' && stepupBox) closeStepup();
+    });
+
+    async function doLogin(ticket) {
       const e = document.getElementById('e');
       e.textContent = '';
       try {
+        const body = {
+          username: document.getElementById('u').value,
+          password: document.getElementById('p').value,
+        };
+        if (ticket) body.ticket = ticket;
         const r = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username: document.getElementById('u').value,
-            password: document.getElementById('p').value,
-          }),
+          body: JSON.stringify(body),
         });
         const d = await r.json();
-        if (d.ok) { location.href = safeNextUrl(); }
-        else { e.textContent = d.error || i18nT('login.failed', 'ログインに失敗しました。'); }
+        if (d.ok) { location.href = safeNextUrl(); return; }
+        if (!ticket && d.stepup && typeof d.stepup.src === 'string'
+            && STEPUP_SRC_RE.test(d.stepup.src)) {
+          openStepup(d.stepup.src);
+          return;
+        }
+        e.textContent = d.error || i18nT('login.failed', 'ログインに失敗しました。');
       } catch (_) { e.textContent = i18nT('login.networkError', '通信エラーが発生しました。'); }
+    }
+    fLogin.addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      if (stepupBox) return;
+      doLogin('');
     });
 
     // 離脱・滞在時間の計測(2026-09-30オーナー指示「登録ボタンを押したのに完了
