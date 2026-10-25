@@ -788,6 +788,11 @@ table.rtable tbody tr.featured-row td:first-child {
 /* 見出しは行の長さを揃えて折り返す(1語だけの行を避ける)。日本語の文節での
    折り返し(auto-phrase)は対応ブラウザのみ有効で、非対応なら通常どおり。 */
 .welcome-card h1 { text-wrap: balance; word-break: auto-phrase; }
+/* トップの最初のHTMLに入れた、クローラー向けの見出しと本文(JSが描画し直すまで・JSなしの時だけ見える・
+   ver1.5.20)。見出しの折り返しはようこそ画面と同じにする。 */
+.seo-static h1 { font-size: 20px; line-height: 1.4; text-wrap: balance; word-break: auto-phrase; }
+.seo-static h2 { font-size: 16px; margin: 18px 0 4px; }
+.seo-static p, .seo-static li { word-break: auto-phrase; }
 .welcome-lead, .welcome-price { word-break: auto-phrase; }
 .welcome-lead { max-width: 480px; margin: 0 auto 16px; text-wrap: pretty; }
 .welcome-cta-row { justify-content: center; gap: 12px; }
