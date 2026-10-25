@@ -52,7 +52,9 @@ class Outline(HTMLParser):
         self.skip = 0
         self.stack = []          # 開いている要素の(タグ, 属性)
         self.h = []              # (タグ, 文字, 属性)
-        self.links = []
+        self.links = []          # 文書全体のリンク
+        self.seo_links = []      # #seoStatic(クローラー向けブロック)の中のリンクだけ
+        self._in_seo = 0
         self.text = []
         self._cur = None
 
@@ -62,10 +64,16 @@ class Outline(HTMLParser):
             self.skip += 1
         if tag in ("h1", "h2", "h3"):
             self._cur = [tag, "", a]
+        if tag == "article" and a.get("id") == "seoStatic":
+            self._in_seo = 1
         if tag == "a" and a.get("href"):
             self.links.append(a["href"])
+            if self._in_seo:
+                self.seo_links.append(a["href"])
 
     def handle_endtag(self, tag):
+        if tag == "article":
+            self._in_seo = 0
         if tag in ("script", "style", "noscript") and self.skip:
             self.skip -= 1
         if tag in ("h1", "h2", "h3") and self._cur:
@@ -107,7 +115,7 @@ check("A1 h1に『サブスクなし』『前払い』『nyangailab』を含む"
 check("A2 h2が5つ以上", len(h2) >= 5, str(len(h2)))
 check("A2 質問形の見出し(？)を3つ以上含む", sum("？" in h[1] for h in h2) >= 3)
 for href in ("/glossary", "/phrasebook", "/crossword", "/static/about.html"):
-    check(f"A2 通常リンク {href}", href in o.links)
+    check(f"A2 案内ブロック内の通常リンク {href}", href in o.seo_links)
 check("A2 本文は800字以上(JSなしで読める量)", len(body_text) >= 800, str(len(body_text)))
 
 # 数字の整合(アプリ本体の定数・画面の文言と一致させる)
@@ -198,6 +206,17 @@ try:
         check(P + "B7 JSあり: 隠しh1(.sr-only)は無い", pg.locator("h1.sr-only").count() == 0)
         ctx.close()
 
+        # 8-a. app.jsを遮断しても、?tab=付きなら案内ブロックはインラインJSだけで最初から消える(速いAPIでの置き換えと競合しない厳密な検証)
+        ctx, pg = page_for(True, {"width": 390, "height": 800})
+        ctx.route("**/static/js/app.js*", lambda route: route.abort())
+        pg.goto(BASE + "/?tab=vocab", wait_until="load")
+        check(P + "B8a app.js遮断+/?tab=vocab: インラインJSだけで案内ブロックが消える", pg.locator("#seoStatic").count() == 0)
+        pg.goto(BASE + "/?utm_source=x&gclid=1&tab=vocab", wait_until="load")
+        check(P + "B8a app.js遮断+他のパラメータ付き: 同じく消える", pg.locator("#seoStatic").count() == 0)
+        pg.goto(BASE + "/", wait_until="load")
+        check(P + "B8a app.js遮断+/(tabなし): 案内ブロックは残る(クローラーと同じ見え方)", pg.locator("#seoStatic").count() == 1)
+        ctx.close()
+
         # 8. 広告の着地 /?tab=vocab
         ctx, pg = page_for(True, {"width": 390, "height": 800})
         pg.goto(BASE + "/?tab=vocab", wait_until="domcontentloaded")
@@ -211,7 +230,9 @@ try:
         check(P + "B8 /?tab=vocab: h1は1つ", pg.locator("h1").count() == 1, str(pg.locator("h1").count()))
         ctx.close()
         browser.close()
-        check(P + "アプリ以外への通信は全て止めた(本番へ何も届かない)", True, str(blocked[:3]))
+        check(P + "アプリ以外への通信は全て止めた(止めた宛先はGoogleタグ系のみ・アプリ宛は止めていない)",
+              all(not u.startswith(BASE) for u in blocked) and all(("google" in u or "gstatic" in u or "doubleclick" in u) for u in blocked),
+              str(blocked[:5]))
 
     with sync_playwright() as pw:
         for b in [x.strip() for x in args.browsers.split(",") if x.strip()]:
