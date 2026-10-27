@@ -15,6 +15,19 @@
  ],
  "versions": [
   {
+   "version": "ver1.5.21",
+   "date": "2026-10-28",
+   "title": "内部の安定性・安全性の向上",
+   "public": [
+    "サービスの安定した運用のための内部の改善を行いました。通常のご利用への影響はありません。"
+   ],
+   "admin": [
+    "管理画面の概要バナーに「要注意」を追加(新着登録・エラーログと同じ確認式)。fail2banの記録から、前回確認以降の①遮断していない候補(loginflood/loginfail)=手動BANの検討対象 ②信頼IPの探索の記録=心当たりの確認対象 ③自動で遮断済み、をIPの種類数で表示する。『詳細確認』で「アクセス制限」欄を開く。手動banip(failures=0)・解除・確認より前は数えない。確認時刻はapp_state(admin_alert_ack_security_at)・BAN/解除の仕組みは変更なし。",
+    "visitor_kind: UAに『iPhone OS 13_2_3』を含むアクセスを※4(その他bot)に追加。9/9から421行・256IP・毎週水曜に約10分おきでSEOページを巡回・zh-CN・JS非実行の収集系。人間の訪問から外れる。",
+    "検査: scripts/check_ver1521.py 22項目・check_admin_guard 64・check_hardening・check_f2b_trusted_probe・check_message_i18n合格。DB変更なし。"
+   ]
+  },
+  {
    "version": "ver1.5.20",
    "date": "2026-10-25",
    "title": "トップページの案内を、検索やAIにも読める形に",

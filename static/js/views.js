@@ -8708,11 +8708,35 @@ export async function admin(root) {
           data-kind="errors" style="padding:2px 10px">確認</button>
       </div>`);
     }
+    // 要注意(2026-10-28): fail2banの記録。候補(未遮断)・信頼IPの探索は赤で「手動BANを
+    // 検討/心当たりを確認」、自動遮断だけ(すでに止まっている)ならオレンジで「確認だけ」。
+    const sec = alerts.security;
+    if (sec && sec.count > 0) {
+      const danger = (sec.candidates || 0) + (sec.trusted || 0) > 0;
+      const parts = [];
+      if (sec.trusted > 0) parts.push(`信頼IPの探索の記録 <b>${sec.trusted}件</b>（心当たりを確認）`);
+      if (sec.candidates > 0) parts.push(`遮断していない候補 <b>${sec.candidates}件</b>（手動BANを検討）`);
+      if (sec.ban > 0) parts.push(`自動で遮断済み <b>${sec.ban}件</b>`);
+      const bg = danger ? "rgba(226,80,59,.18)" : "rgba(240,160,40,.18)";
+      const bd = danger ? "rgba(226,80,59,.6)" : "rgba(240,160,40,.55)";
+      rows.push(`<div class="alert-banner-row" data-kind="security"
+        style="display:flex; align-items:center; gap:10px; padding:8px 12px;
+        border-radius:8px; margin-bottom:8px; font-size:14px; flex-wrap:wrap;
+        background:${bg}; border:1px solid ${bd}">
+        <span>${danger ? "🚨" : "🚧"} 要注意（前回確認以降・IP数）: ${parts.join(" / ")}</span>
+        <button type="button" class="btn ghost alert-detail-btn"
+          data-kind="security" style="padding:2px 10px">詳細確認</button>
+        <button type="button" class="btn alert-ack-btn"
+          data-kind="security" style="padding:2px 10px">確認</button>
+      </div>`);
+    }
     wrap.innerHTML = rows.join("");
     wrap.querySelectorAll(".alert-detail-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        jumpToLogSection(btn.dataset.kind === "registrants"
-          ? "#logRegistrantsDetails" : "#logErrorDetails");
+        jumpToLogSection({
+          registrants: "#logRegistrantsDetails",
+          security: "#logSecurityEventsDetails",
+        }[btn.dataset.kind] || "#logErrorDetails");
       });
     });
     wrap.querySelectorAll(".alert-ack-btn").forEach((btn) => {

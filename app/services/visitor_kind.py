@@ -93,6 +93,10 @@ _OTHER_BOTS = (
     "node-fetch", "axios", "guzzle", "postmanruntime", "insomnia",
     # ヘッドレスブラウザ（自動化）
     "headlesschrome", "phantomjs", "puppeteer", "playwright", "selenium",
+    # 偽装UA(2026-10-28): 2019年のiOS 13.2.3のiPhoneを名乗り、毎回別IP(世界中のプロキシ)・
+    # Accept-Languageがzh-CN・JSを動かさず、毎週水曜に約10分おきでSEOページを巡回する収集系。
+    # 9/9から421行・256IP。本物の端末が2026年にこのOSで大量の別IPから来ることはない。
+    "iphone os 13_2_3",
     # スキャナ・調査系
     "masscan", "zgrab", "nmap", "censysinspect", "censys", "l9scan",
     "leakix", "netcraft", "paloaltonetworks", "expanse", "cortex",

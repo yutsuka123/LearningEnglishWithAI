@@ -2749,6 +2749,7 @@ def admin_error_log(lines: int = 200, level: str = "ERROR"):
 _ALERT_ACK_KEYS = {
     "registrants": "admin_alert_ack_registrants_at",
     "errors": "admin_alert_ack_errors_at",
+    "security": "admin_alert_ack_security_at",
 }
 
 
@@ -2769,6 +2770,41 @@ def _get_alert_ack(conn, kind: str) -> str:
     return now
 
 
+def _compute_security_alert(conn, since: str) -> dict:
+    """管理概要バナーの「要注意」(2026-10-28・オーナー要望「危険なら管理画面で警告、
+    BANは手動で検討」)。fail2banの記録(security_events)のうち、確認時刻より後の
+    ものを**IPの種類数**で数える(同じIPが何行出ても1と数える)。
+      ban        = 自動で実際に遮断した(eigo-probe/eigo-ratelimited)。すでに止まっているので確認だけ
+      candidates = 遮断はしていない候補(eigo-loginflood/eigo-loginfail=dryrun)。手動BANを検討する対象
+      trusted    = 信頼IP/許可リストのIPが探索した記録(eigo-probe-trusted)。心当たりを確認する対象
+    failures=0は運営者の手動banip(自己テスト・確認手順)なので数えない(自分の操作で警告を出さない)。
+    集計に失敗しても概要画面全体を落とさない(警告は補助=0扱いで返す)。"""
+    out = {"count": 0, "since": since, "ban": 0, "candidates": 0, "trusted": 0,
+           "latest_at": None}
+    try:
+        rows = conn.execute(
+            "SELECT jail, mode, COUNT(DISTINCT ip) AS n, MAX(created_at) AS latest "
+            "FROM security_events "
+            "WHERE action = 'ban' AND failures > 0 AND created_at > ? "
+            "GROUP BY jail, mode", (since,),
+        ).fetchall()
+    except Exception:  # noqa: BLE001
+        log.warning("要注意バナーの集計に失敗(0件として返す)", exc_info=True)
+        return out
+    for r in rows:
+        n = int(r["n"] or 0)
+        if r["jail"] == "eigo-probe-trusted":
+            out["trusted"] += n
+        elif r["mode"] == "ban":
+            out["ban"] += n
+        else:
+            out["candidates"] += n
+        if r["latest"] and (out["latest_at"] is None or r["latest"] > out["latest_at"]):
+            out["latest_at"] = r["latest"]
+    out["count"] = out["ban"] + out["candidates"] + out["trusted"]
+    return out
+
+
 def _compute_alerts() -> dict:
     with db() as conn:
         reg_ack = _get_alert_ack(conn, "registrants")
@@ -2780,6 +2816,8 @@ def _compute_alerts() -> dict:
             (reg_ack,),
         ).fetchone()
         err_ack = _get_alert_ack(conn, "errors")
+        sec_ack = _get_alert_ack(conn, "security")
+        security = _compute_security_alert(conn, sec_ack)
 
     err_count = 0
     err_latest: list[str] = []
@@ -2805,6 +2843,7 @@ def _compute_alerts() -> dict:
             "count": err_count, "since": err_ack,
             "latest_lines": err_latest[-5:],
         },
+        "security": security,
     }
 
 
@@ -2816,7 +2855,7 @@ def admin_alerts():
 
 
 class AlertAckIn(BaseModel):
-    kind: Literal["registrants", "errors"]
+    kind: Literal["registrants", "errors", "security"]
 
 
 @router.post("/admin/alerts/ack")
