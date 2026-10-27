@@ -8711,12 +8711,22 @@ export async function admin(root) {
     // 要注意(2026-10-28): fail2banの記録。候補(未遮断)・信頼IPの探索は赤で「手動BANを
     // 検討/心当たりを確認」、自動遮断だけ(すでに止まっている)ならオレンジで「確認だけ」。
     const sec = alerts.security;
+    if (sec && sec.error) {
+      rows.push(`<div class="alert-banner-row" data-kind="security-error"
+        style="padding:8px 12px; border-radius:8px; margin-bottom:8px; font-size:14px;
+        background:rgba(226,80,59,.18); border:1px solid rgba(226,80,59,.6)">
+        ⚠️ 「要注意」の集計に失敗しています（fail2banの記録を読めません）。
+        「アクセス制限」欄とサーバーのログを確認してください。</div>`);
+    }
     if (sec && sec.count > 0) {
-      const danger = (sec.candidates || 0) + (sec.trusted || 0) > 0;
+      const nTrusted = Number(sec.trusted) || 0;
+      const nCand = Number(sec.candidates) || 0;
+      const nBan = Number(sec.ban) || 0;
+      const danger = nCand + nTrusted > 0;
       const parts = [];
-      if (sec.trusted > 0) parts.push(`信頼IPの探索の記録 <b>${sec.trusted}件</b>（心当たりを確認）`);
-      if (sec.candidates > 0) parts.push(`遮断していない候補 <b>${sec.candidates}件</b>（手動BANを検討）`);
-      if (sec.ban > 0) parts.push(`自動で遮断済み <b>${sec.ban}件</b>`);
+      if (nTrusted > 0) parts.push(`信頼IPの探索の記録 <b>${nTrusted}件</b>（心当たりを確認）`);
+      if (nCand > 0) parts.push(`遮断していない候補 <b>${nCand}件</b>（手動BANを検討）`);
+      if (nBan > 0) parts.push(`自動で遮断済み <b>${nBan}件</b>`);
       const bg = danger ? "rgba(226,80,59,.18)" : "rgba(240,160,40,.18)";
       const bd = danger ? "rgba(226,80,59,.6)" : "rgba(240,160,40,.55)";
       rows.push(`<div class="alert-banner-row" data-kind="security"
@@ -8733,6 +8743,14 @@ export async function admin(root) {
     wrap.innerHTML = rows.join("");
     wrap.querySelectorAll(".alert-detail-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
+        if (btn.dataset.kind === "security") {
+          // バナーは確認時刻以降を数えるので、一覧の既定(7日)だと件数と合わなくなることがある
+          const sel = root.querySelector("#secEvDays");
+          if (sel && sel.value !== "30") {
+            sel.value = "30";
+            sel.dispatchEvent(new Event("change"));
+          }
+        }
         jumpToLogSection({
           registrants: "#logRegistrantsDetails",
           security: "#logSecurityEventsDetails",

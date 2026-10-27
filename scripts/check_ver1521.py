@@ -68,6 +68,8 @@ add_event("203.0.113.3", "eigo-probe-trusted", "dryrun", 3, "-20 minutes")  # �
 add_event("203.0.113.4", "eigo-probe", "ban", 0, "-10 minutes")        # 手動banip(failures=0)=数えない
 add_event("203.0.113.5", "eigo-probe", "ban", 5, "-3 days")            # 確認より前=数えない
 add_event("203.0.113.1", "eigo-probe", "unban", 0, "-5 minutes", action="unban")  # 解除行=数えない
+add_event("203.0.113.1", "eigo-ratelimited", "ban", 4, "-40 minutes")  # 同じIPが別jailでも遮断=遮断区分では1のまま
+add_event("203.0.113.2", "eigo-loginfail", "dryrun", 6, "-25 minutes")  # 同じIPが別jailの候補=候補区分では1のまま
 
 with TestClient(m.app, follow_redirects=False) as c:
     r = c.get("/api/system/admin/alerts")
@@ -84,6 +86,13 @@ with TestClient(m.app, follow_redirects=False) as c:
     check("信頼IPの探索=1", sec.get("trusted") == 1, sec)
     check("合計=3", sec.get("count") == 3, sec)
     check("既存の registrants/errors も従来どおり返る", "registrants" in r.json() and "errors" in r.json())
+    check("集計成功時は error=False", sec.get("error") is False, sec)
+    # 集計が壊れても error=True で返し、例外にならない(概要の他のバナーを巻き込まない)
+    from app.routers import system as _sys
+    class _Boom:
+        def execute(self, *a, **k): raise RuntimeError("schema drift")
+    bad = _sys._compute_security_alert(_Boom(), "2000-01-01 00:00:00")
+    check("集計失敗は error=True・件数0で返る(例外にしない)", bad.get("error") is True and bad.get("count") == 0, bad)
     # 確認(ack)で0に戻る。ほかの種類の確認時刻は触らない
     with db() as conn:
         before = conn.execute("SELECT value FROM app_state WHERE key = 'admin_alert_ack_errors_at'").fetchone()
@@ -110,6 +119,9 @@ with TestClient(m.app, follow_redirects=False) as c:
 js = (Path(__file__).resolve().parents[1] / "static/js/views.js").read_text(encoding="utf-8")
 check("バナーに要注意の行がある", 'data-kind="security"' in js and "要注意" in js)
 check("詳細確認の飛び先が #logSecurityEventsDetails", "#logSecurityEventsDetails" in js and 'id="logSecurityEventsDetails"' in js)
+check("集計失敗の表示がある", 'data-kind="security-error"' in js and "集計に失敗" in js)
+check("詳細確認で一覧の期間を30日に合わせる", 'sel.value = "30"' in js and "#secEvDays" in js)
+check("件数はNumber()で数値化してから描画", "Number(sec.trusted)" in js and "Number(sec.candidates)" in js and "Number(sec.ban)" in js)
 check("既存の registrants/errors の行が残っている", 'data-kind="registrants"' in js and 'data-kind="errors"' in js)
 
 print(f"\n{ok} OK / {fail} FAIL")

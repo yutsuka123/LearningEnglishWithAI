@@ -22,7 +22,8 @@ prune cron(03:45)でusage_events 0件削除+growth_daily 41日分保存を確認
 
 - 管理画面の概要バナー(新着登録・エラーログと同じ「確認ボタンを押すまで出続ける」方式)に**「要注意」**を追加。fail2banの記録(security_events)のうち、前回確認以降のものを**IPの種類数**で表示する: ①遮断していない候補(eigo-loginflood/eigo-loginfail)=赤・「手動BANを検討」 ②信頼IP/許可リストのIPによる探索の記録(eigo-probe-trusted)=赤・「心当たりを確認」 ③自動で遮断済み(eigo-probe/eigo-ratelimited)=オレンジ・確認だけ。「詳細確認」で「アクセス制限」欄を開く。運営者の手動banip(failures=0)・解除行・確認より前の記録は数えない。確認時刻はapp_state(`admin_alert_ack_security_at`)に保存し、他の2種の確認時刻には触れない(初回は「今より前は既読」)。**BAN/解除の仕組みは変更なし**(BANは従来どおりfail2ban/ホスト側で、手動BANの判断材料を出すだけ)。集計に失敗しても概要画面は落とさず0件で返す。
 - UAに`iPhone OS 13_2_3`を含むアクセスを「その他bot(※4)」に追加(`visitor_kind._OTHER_BOTS`)。9/9から421行・256IP・毎週水曜に約10分おきでSEOページを巡回・Accept-Languageがzh-CN・JSを動かさない収集系。人間の訪問に数えなくなる(管理画面の一覧も最新の名簿で判定)。
-- 検査: `scripts/check_ver1521.py`(22項目: 偽装UA判定と本物の端末を巻き込まない・集計と重複排除・手動/解除/過去の除外・ack・権限・画面の静的確認)＋既存のcheck_admin_guard(64)・check_hardening・check_f2b_trusted_probe・check_message_i18n合格。DB変更なし(新テーブル・新列なし)。
+- **独立照査(Fable・読み取りのみ)**: BLOCKER/HIGHなし。MEDIUM1(集計が壊れても黙って0件になり続ける)→`error`旗を返して画面に「集計に失敗」を出すよう反映、LOW(IP数が複数jailで重複して数えられる→区分ごとのDISTINCTに修正・「詳細確認」で一覧の期間が足りない→30日に合わせる)・NIT(件数をNumber化)も反映。承知して残したもの: 初回の確認時刻がデプロイ後の最初の概要表示時点になる(既存の2種と同じ挙動)・過去のUAの再判定でgrowth_dailyの保存済みスナップショットとは差が出うる。
+- 検査: `scripts/check_ver1521.py`(27項目: 偽装UA判定と本物の端末を巻き込まない・集計と重複排除・手動/解除/過去の除外・ack・権限・画面の静的確認)＋既存のcheck_admin_guard(64)・check_hardening・check_f2b_trusted_probe・check_message_i18n合格。DB変更なし(新テーブル・新列なし)。
 
 ## ver1.5.20 (2026-10-25作成・**2026-10-26 03:00にデプロイ済み**・コミット4ad3524・ブランチ`ver1.5.20`(worktree=`.claude/worktrees/ver1.5.20`・mainのver1.5.19=de58748から分岐)・オーナー指示10/25「トップの見える H1 と、クローラーが読める本文→クローラー対応お願いします」)
 

@@ -2773,34 +2773,34 @@ def _get_alert_ack(conn, kind: str) -> str:
 def _compute_security_alert(conn, since: str) -> dict:
     """管理概要バナーの「要注意」(2026-10-28・オーナー要望「危険なら管理画面で警告、
     BANは手動で検討」)。fail2banの記録(security_events)のうち、確認時刻より後の
-    ものを**IPの種類数**で数える(同じIPが何行出ても1と数える)。
+    ものを**IPの種類数**で数える(同じIPが何行・どのjailに出ても、その区分では1と数える)。
       ban        = 自動で実際に遮断した(eigo-probe/eigo-ratelimited)。すでに止まっているので確認だけ
       candidates = 遮断はしていない候補(eigo-loginflood/eigo-loginfail=dryrun)。手動BANを検討する対象
       trusted    = 信頼IP/許可リストのIPが探索した記録(eigo-probe-trusted)。心当たりを確認する対象
+    1つのIPが複数の区分に当たることはある(区分ごとに数えるため合計=count は延べ)。
     failures=0は運営者の手動banip(自己テスト・確認手順)なので数えない(自分の操作で警告を出さない)。
-    集計に失敗しても概要画面全体を落とさない(警告は補助=0扱いで返す)。"""
+    集計に失敗しても概要画面全体は落とさず、`error: True`で返す(画面に「集計に失敗」を出す=
+    スキーマ変更等で黙って0件になり続けるのを防ぐ・独立照査M1)。"""
     out = {"count": 0, "since": since, "ban": 0, "candidates": 0, "trusted": 0,
-           "latest_at": None}
+           "latest_at": None, "error": False}
     try:
-        rows = conn.execute(
-            "SELECT jail, mode, COUNT(DISTINCT ip) AS n, MAX(created_at) AS latest "
+        r = conn.execute(
+            "SELECT "
+            "COUNT(DISTINCT CASE WHEN jail = 'eigo-probe-trusted' THEN ip END) AS trusted, "
+            "COUNT(DISTINCT CASE WHEN jail != 'eigo-probe-trusted' AND mode = 'ban' THEN ip END) AS ban, "
+            "COUNT(DISTINCT CASE WHEN jail != 'eigo-probe-trusted' AND mode != 'ban' THEN ip END) AS candidates, "
+            "MAX(created_at) AS latest "
             "FROM security_events "
-            "WHERE action = 'ban' AND failures > 0 AND created_at > ? "
-            "GROUP BY jail, mode", (since,),
-        ).fetchall()
+            "WHERE action = 'ban' AND failures > 0 AND created_at > ?", (since,),
+        ).fetchone()
     except Exception:  # noqa: BLE001
-        log.warning("要注意バナーの集計に失敗(0件として返す)", exc_info=True)
+        log.warning("要注意バナーの集計に失敗(画面に「集計に失敗」を出す)", exc_info=True)
+        out["error"] = True
         return out
-    for r in rows:
-        n = int(r["n"] or 0)
-        if r["jail"] == "eigo-probe-trusted":
-            out["trusted"] += n
-        elif r["mode"] == "ban":
-            out["ban"] += n
-        else:
-            out["candidates"] += n
-        if r["latest"] and (out["latest_at"] is None or r["latest"] > out["latest_at"]):
-            out["latest_at"] = r["latest"]
+    out["trusted"] = int(r["trusted"] or 0)
+    out["ban"] = int(r["ban"] or 0)
+    out["candidates"] = int(r["candidates"] or 0)
+    out["latest_at"] = r["latest"]
     out["count"] = out["ban"] + out["candidates"] + out["trusted"]
     return out
 
