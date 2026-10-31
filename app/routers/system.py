@@ -21,7 +21,7 @@ from ..config import ROOT_DIR, load_admin_known_ips, load_settings, log, paths
 from ..database import ACCENTS, NEWS_FIELDS, db
 from ..schemas import MemoryUpdateIn, SettingsIn
 from ..services import (
-    ai, auth, geo_consistency, geo_names, growth_metrics, persistence, traffic_source,
+    ai, auth, geo_consistency, geo_names, growth_metrics, ip_blocks, persistence, traffic_source,
     tracking, ua_parse, visitor_kind,
 )
 
@@ -3262,6 +3262,304 @@ def admin_request_unban(event_id: int):
         )
         conn.commit()
     return {"ok": True}
+
+
+# ---------------------------------------------------------------------------
+# 怪しいアクセスの一覧と手動ブロック(2026-10-31・ver1.5.22・オーナー要望「ログ表示に怪しい
+# アクセスの一覧と動作内容を出し、ブロック/期間限定/永久を選べるように」)。ロジックと
+# 安全装置の理由は app/services/ip_blocks.py の先頭コメント参照。
+# ホスト側(トークン認証)のエンドポイントは /security-events/ 配下に置く: main.pyの
+# セッション認証の素通し判定が"/api/system/security-events"の前方一致のため、新しい
+# 前置きを足さずに済む(足し忘れると本番でだけ401になる=ver1.5.6の教訓)。
+# ---------------------------------------------------------------------------
+
+class SuspectPathIn(BaseModel):
+    m: str = Field(default="", max_length=10)
+    p: str = Field(default="", max_length=120)
+    s: int = Field(default=0, ge=0, le=999)
+    n: int = Field(default=0, ge=0, le=10_000_000)
+
+
+class SuspectIn(BaseModel):
+    ip: str = Field(max_length=64)
+    first_seen: float = 0
+    last_seen: float = 0
+    total: int = Field(default=0, ge=0, le=100_000_000)
+    probe: int = Field(default=0, ge=0, le=100_000_000)
+    authfail: int = Field(default=0, ge=0, le=100_000_000)
+    ratelimited: int = Field(default=0, ge=0, le=100_000_000)
+    errors4xx: int = Field(default=0, ge=0, le=100_000_000)
+    paths: list[SuspectPathIn] = Field(default_factory=list, max_length=8)
+    ua: str = Field(default="", max_length=300)
+    exempt: bool = False
+
+
+class SuspectsIn(BaseModel):
+    items: list[SuspectIn] = Field(default_factory=list, max_length=300)
+
+
+def _set_state(conn, key: str) -> None:
+    conn.execute(
+        "INSERT OR REPLACE INTO app_state (key, value) VALUES (?, datetime('now'))",
+        (key,))
+
+
+@router.post("/security-events/suspects", dependencies=[_F2B_DEP])
+def ingest_suspects(payload: SuspectsIn):
+    """ホストのcron(eigo-f2b-suspects・5分毎)が、直近24時間の怪しいアクセスをIPごとに要約して送る。
+    IPごとに上書き(「問題なし」の印dismissed_atは残す)。空の送信も受け付けて最終集計時刻を更新する
+    (集計が止まっていることに管理画面で気づけるように)。"""
+    saved = skipped = 0
+    now = ip_blocks.utc_now()
+    with db() as conn:
+        for it in payload.items:
+            ip = ip_blocks.parse_ip(it.ip)
+            # 公開IPだけ(IPv6の表示は許可: ブロックは不可だが動作内容は見たい)。
+            if ip is None or not ip.is_global:
+                skipped += 1
+                continue
+            paths = [
+                {"m": ip_blocks.clean_text(x.m, 10), "p": ip_blocks.clean_text(x.p, 120),
+                 "s": x.s, "n": x.n}
+                for x in it.paths
+            ]
+            conn.execute(
+                "INSERT INTO suspicious_access "
+                "(ip, first_seen, last_seen, total, probe, authfail, ratelimited, errors4xx, "
+                " paths, ua, exempt, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now')) "
+                "ON CONFLICT(ip) DO UPDATE SET first_seen = excluded.first_seen, "
+                "last_seen = excluded.last_seen, total = excluded.total, probe = excluded.probe, "
+                "authfail = excluded.authfail, ratelimited = excluded.ratelimited, "
+                "errors4xx = excluded.errors4xx, paths = excluded.paths, ua = excluded.ua, "
+                "exempt = excluded.exempt, updated_at = datetime('now')",
+                (str(ip), ip_blocks.epoch_to_utc(it.first_seen, now),
+                 ip_blocks.epoch_to_utc(it.last_seen, now), it.total, it.probe, it.authfail,
+                 it.ratelimited, it.errors4xx, json.dumps(paths, ensure_ascii=False),
+                 ip_blocks.clean_text(it.ua, 300), 1 if it.exempt else 0))
+            saved += 1
+        # 30日より古い要約・解除/期限切れから360日を過ぎたブロック記録を捨てる(IP保持期限360日以内)。
+        conn.execute("DELETE FROM suspicious_access WHERE last_seen < datetime('now', '-30 days')")
+        conn.execute(
+            "DELETE FROM manual_blocks WHERE COALESCE(released_at, expires_at) < datetime('now', '-360 days')")
+        _set_state(conn, "suspects_last_at")
+        conn.commit()
+    return {"ok": True, "saved": saved, "skipped": skipped}
+
+
+@router.get("/security-events/manual-blocks/desired", dependencies=[_F2B_DEP])
+def manual_blocks_desired():
+    """ホストのcron(eigo-f2b-manual-sync・1分毎)が取りに来る『いま遮断しておくべきIPの全件』。
+    ここから消えたIP(解除・期限切れ)は、ホスト側がjailから外す。全件を返す前提(上限
+    MAX_ACTIVEで作成時に制限済み=途中で切れて外されることはない)。"""
+    with db() as conn:
+        rows = conn.execute(
+            f"SELECT id, ip, duration, expires_at FROM manual_blocks WHERE {ip_blocks.active_where()} "
+            "ORDER BY id LIMIT 1000").fetchall()
+    blocks = []
+    for r in rows:
+        ip = ip_blocks.canonical_public_ipv4(r["ip"])
+        if not ip or r["duration"] not in ip_blocks.DURATIONS:
+            continue  # ハッシュ化済み等の不正値はホストへ渡さない
+        exp = None
+        if r["expires_at"]:
+            exp = int(datetime.strptime(r["expires_at"], "%Y-%m-%d %H:%M:%S")
+                      .replace(tzinfo=timezone.utc).timestamp())
+        blocks.append({"id": r["id"], "ip": ip, "jail": ip_blocks.DURATIONS[r["duration"]][1],
+                       "expires_epoch": exp})
+    return {"ok": True, "blocks": blocks}
+
+
+class ManualRefusedIn(BaseModel):
+    id: int
+    reason: str = Field(default="", max_length=120)
+
+
+class ManualReportIn(BaseModel):
+    applied: list[int] = Field(default_factory=list, max_length=1000)
+    refused: list[ManualRefusedIn] = Field(default_factory=list, max_length=1000)
+
+
+@router.post("/security-events/manual-blocks/report", dependencies=[_F2B_DEP])
+def manual_blocks_report(payload: ManualReportIn):
+    """ホストが反映の結果を報告する(毎回送る=最終同期時刻の更新も兼ねる)。applied=fail2banへ
+    反映できた。refused=ホスト側の安全装置(許可リスト/信頼IP)で拒否した→その行は解除扱いにして
+    管理画面に理由を残す(『遮断中』と表示したまま実際は止まっていない状態を作らない)。"""
+    with db() as conn:
+        for bid in payload.applied:
+            conn.execute(
+                "UPDATE manual_blocks SET applied_at = datetime('now') "
+                "WHERE id = ? AND applied_at IS NULL AND released_at IS NULL", (bid,))
+        for r in payload.refused:
+            conn.execute(
+                "UPDATE manual_blocks SET released_at = datetime('now'), released_by = 'host-refused', "
+                "applied_note = ? WHERE id = ? AND released_at IS NULL",
+                (ip_blocks.clean_text(r.reason, 120), r.id))
+        _set_state(conn, "manual_sync_last_at")
+        conn.commit()
+    return {"ok": True}
+
+
+def _suspect_rows(conn, hours: int, include_dismissed: bool, limit: int):
+    sql = ("SELECT * FROM suspicious_access WHERE last_seen >= datetime('now', ?)")
+    if not include_dismissed:
+        sql += " AND (dismissed_at IS NULL OR last_seen > dismissed_at)"
+    sql += " ORDER BY last_seen DESC LIMIT ?"
+    return conn.execute(sql, (f"-{hours} hours", limit)).fetchall()
+
+
+def _in_clause(values: list[str]) -> str:
+    return ",".join("?" for _ in values)
+
+
+@router.get("/admin/suspicious-access")
+def admin_suspicious_access(hours: int = 24, include_dismissed: bool = False, limit: int = 200):
+    """管理画面の「怪しいアクセス」一覧。各IPの動作内容(探索/ログイン失敗/429/4xx・試したパス)と、
+    いまの状態(手動ブロック中・fail2banで自動遮断中・信頼IP・問題なし済み)、共有IPの目安を返す。"""
+    _require_admin()
+    hours = max(1, min(hours, 720))
+    limit = max(1, min(limit, 500))
+    with db() as conn:
+        rows = _suspect_rows(conn, hours, include_dismissed, limit)
+        ips = [r["ip"] for r in rows]
+        blocks, f2b, humans, trusted = {}, {}, {}, set()
+        if ips:
+            q = _in_clause(ips)
+            for b in conn.execute(
+                    f"SELECT id, ip, duration, expires_at, applied_at, created_at FROM manual_blocks "
+                    f"WHERE {ip_blocks.active_where()} AND ip IN ({q})", ips):
+                blocks[b["ip"]] = dict(b)
+            for e in conn.execute(
+                    f"SELECT ip, jail, MAX(created_at) AS at FROM security_events "
+                    f"WHERE action = 'ban' AND mode = 'ban' AND created_at >= datetime('now', '-2 days') "
+                    f"AND ip IN ({q}) GROUP BY ip, jail", ips):
+                still = conn.execute(
+                    "SELECT NOT EXISTS (SELECT 1 FROM security_events u WHERE u.ip = ? AND u.jail = ? "
+                    "AND u.action = 'unban' AND u.created_at >= ?) AS still", (e["ip"], e["jail"], e["at"]),
+                ).fetchone()["still"]
+                f2b[e["ip"]] = {"jail": e["jail"], "at": e["at"], "still_banned": bool(still)}
+            for h in conn.execute(
+                    f"SELECT ip, COUNT(*) AS n FROM landing_visits WHERE ip IN ({q}) "
+                    f"AND created_at >= datetime('now', ?) AND COALESCE(bot_mark, 0) = 0 GROUP BY ip",
+                    [*ips, f"-{ip_blocks.HUMAN_VISIT_DAYS} days"]):
+                humans[h["ip"]] = int(h["n"])
+            for t in conn.execute(
+                    f"SELECT DISTINCT l.ip FROM login_log l JOIN users u ON u.username = l.username "
+                    f"WHERE l.success = 1 AND l.ip IN ({q}) AND l.created_at >= datetime('now', '-30 days') "
+                    f"AND u.created_at <= datetime(l.created_at, '-2 days')", ips):
+                trusted.add(t["ip"])
+        state = {r["key"]: r["value"] for r in conn.execute(
+            "SELECT key, value FROM app_state WHERE key IN ('suspects_last_at', 'manual_sync_last_at')")}
+    items = []
+    for r in rows:
+        try:
+            paths = json.loads(r["paths"] or "[]")
+        except ValueError:
+            paths = []
+        pip = ip_blocks.parse_ip(r["ip"])
+        items.append({
+            "ip": r["ip"], "level": ip_blocks.suspect_level(r),
+            "first_seen": r["first_seen"], "last_seen": r["last_seen"], "total": r["total"],
+            "probe": r["probe"], "authfail": r["authfail"], "ratelimited": r["ratelimited"],
+            "errors4xx": r["errors4xx"], "paths": paths, "ua": r["ua"],
+            "exempt": bool(r["exempt"]) or r["ip"] in trusted,
+            "ipv6": bool(pip and pip.version == 6),
+            "human_visits_30d": humans.get(r["ip"], 0),
+            "dismissed": bool(r["dismissed_at"]) and r["last_seen"] <= r["dismissed_at"],
+            "block": blocks.get(r["ip"]), "f2b": f2b.get(r["ip"]),
+        })
+    order = {"high": 0, "mid": 1, "low": 2}
+    # 危険度順(高→低)・同じ危険度では新しい順(後ろのsortが優先・安定ソート)
+    items.sort(key=lambda x: x["last_seen"], reverse=True)
+    items.sort(key=lambda x: order[x["level"]])
+    return {"hours": hours, "items": items,
+            "collected_at": state.get("suspects_last_at"), "synced_at": state.get("manual_sync_last_at")}
+
+
+class SuspectDismissIn(BaseModel):
+    ip: str = Field(max_length=64)
+
+
+@router.post("/admin/suspicious-access/dismiss")
+def admin_dismiss_suspect(payload: SuspectDismissIn):
+    """「問題なし」にする。その後に新しいアクセスが来れば(last_seen更新)再び一覧に出る。"""
+    _require_admin()
+    with db() as conn:
+        cur = conn.execute(
+            "UPDATE suspicious_access SET dismissed_at = datetime('now') WHERE ip = ?",
+            (payload.ip.strip(),))
+        if cur.rowcount == 0:
+            raise errors.http_error("7001")
+        conn.commit()
+    return {"ok": True}
+
+
+class ManualBlockIn(BaseModel):
+    ip: str = Field(max_length=64)
+    duration: Literal["1h", "24h", "7d", "30d", "permanent"] = ip_blocks.DEFAULT_DURATION
+    note: str = Field(default="", max_length=200)
+    confirm_shared: bool = False
+
+
+@router.post("/admin/manual-blocks")
+def admin_create_manual_block(payload: ManualBlockIn, request: Request):
+    """IPを手動ブロックする(記録だけ。VPSのfail2banへの反映はホストcronが1分以内に行う)。"""
+    with db() as conn:
+        admin_name = ip_blocks.require_admin_name(conn)
+        res = ip_blocks.create_block(
+            conn, ip=payload.ip, duration=payload.duration, note=payload.note,
+            admin_name=admin_name, requester_ip=auth.real_client_ip(request),
+            admin_known_ips=load_admin_known_ips(), confirm_shared=payload.confirm_shared)
+        conn.commit()
+    # IPはアプリのログに出さない(DBにだけ記録)。
+    log.info("手動ブロックを記録 id=%s duration=%s", res["id"], res["duration"])
+    return {"ok": True, **res}
+
+
+@router.post("/admin/manual-blocks/{block_id}/release")
+def admin_release_manual_block(block_id: int):
+    """手動ブロックの解除(1分以内にホストがjailから外す)。"""
+    with db() as conn:
+        name = ip_blocks.require_admin_name(conn)
+        row = conn.execute("SELECT id FROM manual_blocks WHERE id = ?", (block_id,)).fetchone()
+        if not row:
+            raise errors.http_error("7001")
+        conn.execute(
+            "UPDATE manual_blocks SET released_at = datetime('now'), released_by = ? "
+            "WHERE id = ? AND released_at IS NULL", (ip_blocks.clean_text(name, 60), block_id))
+        conn.commit()
+    return {"ok": True}
+
+
+@router.get("/admin/manual-blocks")
+def admin_manual_blocks(days: int = 30, limit: int = 200):
+    """手動ブロックの一覧(有効なもの+直近の履歴)。state: pending=反映待ち / active=遮断中 /
+    expired=期限切れ / released=解除 / refused=ホストが安全装置で拒否。"""
+    _require_admin()
+    days = max(1, min(days, 360))
+    limit = max(1, min(limit, 500))
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT id, ip, duration, expires_at, note, created_at, created_by, released_at, "
+            "released_by, applied_at, applied_note, "
+            f"({ip_blocks.active_where()}) AS is_active FROM manual_blocks "
+            "WHERE created_at >= datetime('now', ?) OR (" + ip_blocks.active_where() + ") "
+            "ORDER BY is_active DESC, id DESC LIMIT ?", (f"-{days} days", limit)).fetchall()
+        state = {r["key"]: r["value"] for r in conn.execute(
+            "SELECT key, value FROM app_state WHERE key = 'manual_sync_last_at'")}
+    out = []
+    for r in rows:
+        d = dict(r)
+        if d["is_active"]:
+            d["state"] = "active" if d["applied_at"] else "pending"
+        elif d["released_by"] == "host-refused":
+            d["state"] = "refused"
+        elif d["released_at"]:
+            d["state"] = "released"
+        else:
+            d["state"] = "expired"
+        out.append(d)
+    return {"blocks": out, "synced_at": state.get("manual_sync_last_at")}
 
 
 @router.get("/admin/client-error-log")

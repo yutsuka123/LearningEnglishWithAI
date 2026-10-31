@@ -1,0 +1,169 @@
+#!/usr/bin/env python3
+"""管理画面の「手動ブロック」を、ホストのfail2ban(eigo-manual-*のjail)へ反映する(cronで1分ごと・
+2026-10-31・ver1.5.22)。
+
+アプリは「このIPをこの期間ブロック」と記録するだけで、ホストのコマンドを直接実行する経路は持たない
+(既存の解除ボタン=eigo-f2b-unban-pollerと同じ非同期の方式)。このスクリプトが毎分:
+  1. アプリから『いま遮断しておくべきIPの全件』を取得する(GET .../manual-blocks/desired)
+  2. fail2banの各eigo-manual-*のjailの現状(Banned IP list)と突き合わせる
+       ・一覧にあるのにjailに無い → banip(安全装置で拒否するものを除く)
+       ・jailにあるのに一覧に無い(解除・期限切れ) → unbanip
+       ・期間を変えて置き換えた(別のjailに入っている) → 旧jailからunbanip
+  3. 結果を報告する(POST .../manual-blocks/report=反映済み・拒否・最終同期時刻)
+
+期間とjail: 1h/24h/7d/30d/permanent → eigo-manual-1h/-24h/-7d/-30d/-perm。jailごとにfail2banが
+bantimeを自分でも守る(このcronが止まっても一時ブロックが永久に残らない=安全側)。
+安全側の原則:
+  ・アプリから一覧を取得できなかった/形式が違う → **何もしない**(一覧が空と誤解して全員を解除しない)。
+  ・許可リスト/信頼IP(eigo-f2b-ignoreと同じ判定)に当たるIPはbanせず、拒否として報告する
+    (アプリ側の確認をすり抜けても、運営者・実ユーザーを止めない二重の安全弁)。
+  ・触るのは eigo-manual-* の5つのjailだけ(相乗りの他プロジェクトのjail・sshdには触れない)。
+  ・fail2ban-clientの`unban`(全jail対象)は使わず、必ず`set <jail> unbanip`で1つのjailに限る。
+使い方: eigo-f2b-manual-sync (引数なし・/etc/cron.d/eigo-f2bから呼ばれる。flock -nで多重起動なし)
+"""
+import ipaddress
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+import urllib.error
+import urllib.request
+
+CONF = os.environ.get("EIGO_F2B_CONF", "/etc/eigo-f2b.conf")  # 環境変数はテスト用
+AUDIT = os.environ.get("EIGO_F2B_AUDIT", "/var/log/eigo-f2b-audit.log")
+CLIENT = os.environ.get("EIGO_F2B_CLIENT", "fail2ban-client")
+IGNORE_CMD = os.environ.get("EIGO_F2B_IGNORE", "/usr/local/sbin/eigo-f2b-ignore")
+MANUAL_JAILS = ("eigo-manual-1h", "eigo-manual-24h", "eigo-manual-7d", "eigo-manual-30d", "eigo-manual-perm")
+
+
+def conf_value(key):
+    try:
+        with open(CONF, encoding="utf-8") as f:
+            for line in f:
+                if line.startswith(key + "="):
+                    return line.split("=", 1)[1].strip()
+    except OSError:
+        pass
+    return ""
+
+
+def audit(msg):
+    try:
+        with open(AUDIT, "a", encoding="utf-8") as fh:
+            fh.write("%s %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), msg))
+    except OSError:
+        pass
+
+
+def public_ipv4(ip):
+    try:
+        a = ipaddress.ip_address(ip)
+    except ValueError:
+        return False
+    return a.version == 4 and a.is_global
+
+
+def api(method, path, token, url, body=None):
+    data = json.dumps(body).encode("utf-8") if body is not None else None
+    headers = {"X-F2B-Token": token}
+    if data is not None:
+        headers["Content-Type"] = "application/json"
+    req = urllib.request.Request(url.rstrip("/") + path, data=data, headers=headers, method=method)
+    return urllib.request.urlopen(req, timeout=8).read()
+
+
+def f2b(*args):
+    """fail2ban-clientを1回実行。(成功か, 標準出力)。"""
+    try:
+        r = subprocess.run([CLIENT, *args], capture_output=True, text=True, timeout=15)
+    except (OSError, subprocess.SubprocessError) as e:
+        return False, str(e)[:200]
+    return r.returncode == 0, r.stdout
+
+
+def banned_in(jail):
+    """そのjailで今BAN中のIPの集合。jailが無い/fail2banが応答しないときは None(=触らない)。"""
+    ok, out = f2b("status", jail)
+    if not ok:
+        return None
+    m = re.search(r"Banned IP list:[ \t]*(.*)", out)
+    return {x for x in (m.group(1).split() if m else []) if public_ipv4(x)}
+
+
+def is_exempt(ip):
+    """許可リスト/信頼IPか(eigo-f2b-ignoreの終了コード0)。呼べないときは『免除でない』扱い
+    =アプリ側の確認を信頼してbanする(アプリ側にも同じ確認がある)。"""
+    try:
+        return subprocess.run([IGNORE_CMD, ip], capture_output=True, timeout=10).returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
+def parse_desired(raw):
+    """アプリの応答から有効な項目だけを取り出す。形式が違えば None(=何もしない)。"""
+    data = json.loads(raw)
+    if not isinstance(data, dict) or data.get("ok") is not True or not isinstance(data.get("blocks"), list):
+        return None
+    out = []
+    for b in data["blocks"]:
+        if (isinstance(b, dict) and isinstance(b.get("id"), int) and not isinstance(b.get("id"), bool)
+                and b.get("jail") in MANUAL_JAILS and public_ipv4(str(b.get("ip", "")))):
+            out.append({"id": b["id"], "ip": b["ip"], "jail": b["jail"]})
+        else:
+            audit("MANUAL-SYNC-SKIP invalid item id=%r" % (b.get("id") if isinstance(b, dict) else None))
+    return out
+
+
+def main():
+    token, url = conf_value("NOTIFY_TOKEN"), conf_value("APP_URL")
+    if not token or not url:
+        return 0  # 未設定(この機能は無効)
+    try:
+        desired = parse_desired(api("GET", "/api/system/security-events/manual-blocks/desired", token, url))
+    except (urllib.error.URLError, ValueError, OSError) as e:
+        audit("MANUAL-SYNC-FAILED fetch err=%s" % str(e)[:120])
+        return 1
+    if desired is None:
+        audit("MANUAL-SYNC-FAILED unexpected response (jailは変更しない)")
+        return 1
+    current = {j: banned_in(j) for j in MANUAL_JAILS}
+    want = {j: {} for j in MANUAL_JAILS}  # jail -> {ip: id}
+    for b in desired:
+        want[b["jail"]].setdefault(b["ip"], b["id"])
+    applied, refused = [], []
+    for jail in MANUAL_JAILS:
+        if current[jail] is None:
+            audit("MANUAL-SYNC-SKIP jail=%s (状態を取得できない)" % jail)
+            continue
+        # 解除/期限切れ/別jailへの置き換え: 一覧に無いIPをこのjailから外す。
+        for ip in sorted(current[jail] - set(want[jail])):
+            ok, out = f2b("set", jail, "unbanip", ip)
+            audit("MANUAL-UNBAN ip=%s jail=%s ok=%s" % (ip, jail, ok))
+        for ip, bid in want[jail].items():
+            if ip in current[jail]:
+                applied.append(bid)
+                continue
+            if is_exempt(ip):
+                audit("MANUAL-REFUSED id=%s ip=%s jail=%s (許可リスト/信頼IP)" % (bid, ip, jail))
+                refused.append({"id": bid, "reason": "ホストの許可リスト/信頼IPに当たるため遮断しない"})
+                continue
+            ok, out = f2b("set", jail, "banip", ip)
+            audit("MANUAL-BAN id=%s ip=%s jail=%s ok=%s" % (bid, ip, jail, ok))
+            if ok:
+                applied.append(bid)
+    try:
+        api("POST", "/api/system/security-events/manual-blocks/report", token, url,
+            {"applied": applied[:1000], "refused": refused[:1000]})
+    except (urllib.error.URLError, OSError) as e:
+        audit("MANUAL-SYNC-FAILED report err=%s" % str(e)[:120])  # 次の分に再試行(banipは冪等)
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except Exception as e:  # noqa: BLE001 想定外でもcronを静かに落とさない
+        audit("MANUAL-SYNC-CRASHED err=%s" % str(e)[:120])
+        sys.exit(1)

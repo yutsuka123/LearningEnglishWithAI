@@ -31,9 +31,8 @@ cleanup() {
 trap cleanup EXIT
 LOGDIR="$(docker inspect "$CADDY_CONTAINER" --format '{{range .Mounts}}{{if eq .Destination "/var/log/caddy"}}{{.Source}}{{end}}{{end}}' 2>/dev/null || true)"
 [ -n "$LOGDIR" ] && [ -f "$LOGDIR/study.log" ] || { echo "Caddyのstudy.logが見つかりません(container=$CADDY_CONTAINER)" >&2; exit 1; }
-if [ "$MODE" = ban ]; then
-  iptables -S DOCKER-USER >/dev/null 2>&1 || { echo "DOCKER-USERチェーンがありません。Dockerが動いているか確認してください" >&2; exit 1; }
-fi
+# 2026-10-31: 手動ブロック(eigo-manual-*)はMODEに関わらず実遮断するので、DOCKER-USERチェーンは常に必要
+iptables -S DOCKER-USER >/dev/null 2>&1 || { echo "DOCKER-USERチェーンがありません。Dockerが動いているか確認してください" >&2; exit 1; }
 echo "  fail2ban $(fail2ban-client --version | head -1) / study.log を確認 / 既存jail: $(fail2ban-client status 2>/dev/null | sed -n 's/.*Jail list:[[:space:]]*//p')"
 
 echo "== 1/7 既存のeigo用ファイルをバックアップ"
@@ -49,6 +48,8 @@ install -m 644 "$SRC"/filter.d/*.conf "$F2B"/filter.d/
 install -m 644 "$SRC"/action.d/eigo-audit.conf "$F2B"/action.d/
 install -m 755 "$SRC"/bin/eigo-f2b-* /usr/local/sbin/
 install -d -m 755 /var/lib/eigo-f2b
+# 2026-10-31: 手動ブロック用jail(eigo-manual-*)のlogpath。中身は常に空(フィルターは何にもマッチしない)
+: > /var/lib/eigo-f2b/manual.log; chmod 644 /var/lib/eigo-f2b/manual.log
 # 2026-09-29: アプリへの通知(POST /api/system/security-events)用トークンをコンテナのenvから複製する
 # (docker inspectで取得=.env.studyの生ファイルは読まない)。未設定なら通知は無効(監査ログのみ継続)。
 # ⚠️ .env.studyへトークンを追記しただけでは反映されない: `docker restart`はenv_fileを再読込しない。
@@ -96,12 +97,15 @@ def actions_for(m):
 
 actions_enforce = actions_for(mode)     # eigo-probe/eigo-ratelimited: install.shの引数どおり
 actions_candidate = actions_for("dryrun")  # eigo-loginflood/eigo-loginfail: 常にdryrun(様子見・2026-09-29)
+# eigo-manual-*(管理画面の手動ブロック・2026-10-31): 常に実遮断(iptablesのみ・auditの通知なし)
+actions_manual = "iptables-multiport[name=%(__name__)s, port=\"http,https\", protocol=tcp, chain=DOCKER-USER]"
 lines = []
 for line in open(tmpl, encoding="utf-8").read().splitlines():
     if not line.lstrip().startswith("#"):  # コメント行は置換しない(複数行の値が混ざって設定が壊れるのを防ぐ)
         line = (line.replace("__LOGPATH__", logpath)
                 .replace("__ACTIONS_ENFORCE__", actions_enforce)
-                .replace("__ACTIONS_CANDIDATE__", actions_candidate))
+                .replace("__ACTIONS_CANDIDATE__", actions_candidate)
+                .replace("__ACTIONS_MANUAL__", actions_manual))
     lines.append(line)
 open(out, "w", encoding="utf-8").write("\n".join(lines) + "\n")
 PY
@@ -143,7 +147,8 @@ sleep 2
 systemctl is-active --quiet fail2ban || { echo "fail2banサービスの再起動に失敗しました" >&2; exit 1; }
 INSTALL_OK=1   # 再起動まで通った(以降の自己テストの失敗ではjailを外さない)
 sleep 4
-for j in eigo-probe eigo-probe-trusted eigo-loginflood eigo-loginfail eigo-ratelimited; do
+for j in eigo-probe eigo-probe-trusted eigo-loginflood eigo-loginfail eigo-ratelimited \
+         eigo-manual-1h eigo-manual-24h eigo-manual-7d eigo-manual-30d eigo-manual-perm; do
   printf '  %-19s ' "$j"; { fail2ban-client status "$j" 2>&1 | grep -E 'Currently (failed|banned)' | tr -s ' \t\n' ' '; } || true; echo
 done
 
@@ -195,6 +200,22 @@ done
 RULES2="$(iptables -S 2>/dev/null || true)"   # here-stringで判定(grep -qとのパイプはpipefail+SIGPIPEで誤判定しうる・独立照査L1)
 if grep -q -- "-s $TESTIP2/" <<<"$RULES2"; then echo "  ❌ 記録専用なのにファイアウォールにルールが入った(要調査)" >&2; else echo "  ✅ ファイアウォールにルールは入っていない(実BANしない)"; fi
 fail2ban-client set eigo-probe-trusted unbanip "$TESTIP2" >/dev/null || true
+
+# 2026-10-31: 手動ブロック(eigo-manual-*)の自己テスト。TEST-NET-1の仮IPを1hのjailに入れ、DOCKER-USERにルールが
+# 入ること→解除で消えることを確認する(管理画面のブロックが実際に効くことの確認。実在のIPには影響しない)。
+echo "== 手動ブロック(eigo-manual-1h)の自己テスト(TEST-NET-1の仮IPを仮ブロック→DOCKER-USERを確認→解除)"
+TESTIP3="192.0.2.$((RANDOM % 254 + 1))"
+fail2ban-client set eigo-manual-1h banip "$TESTIP3" >/dev/null || echo "  ❌ eigo-manual-1hへのbanipに失敗(jailが動いていない?・要調査)" >&2
+FOUND3=0
+for _ in $(seq 1 15); do
+  if grep -q -- "-s $TESTIP3/" <<<"$(iptables -S 2>/dev/null || true)"; then FOUND3=1; break; fi
+  sleep 1
+done
+[ "$FOUND3" = 1 ] && echo "  ✅ ファイアウォールにブロックのルールが入った" || echo "  ❌ ブロックのルールが見つからない(要調査)" >&2
+fail2ban-client set eigo-manual-1h unbanip "$TESTIP3" >/dev/null || true
+sleep 1
+if grep -q -- "-s $TESTIP3/" <<<"$(iptables -S 2>/dev/null || true)"; then echo "  ❌ 解除後もルールが残っている(要調査)" >&2; else echo "  ✅ 解除でルールが消えた"; fi
+echo "  手動ブロックの反映cron: eigo-f2b-manual-sync(1分毎)・怪しいアクセスの集計cron: eigo-f2b-suspects(5分毎)"
 
 echo
 echo "完了(mode=$MODE)。監査ログ: /var/log/eigo-f2b-audit.log / 判定の確認: sudo bash $SRC/review.sh"

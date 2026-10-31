@@ -91,3 +91,72 @@ ignoreip = 127.0.0.0/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
 ignorecommand = /usr/local/sbin/eigo-f2b-ignore <ip>
 ignorecache = key="<ip>", max-count=100, max-time=5m
 action = __ACTIONS_ENFORCE__
+
+# ===== 管理画面の手動ブロック(2026-10-31・ver1.5.22) =====
+# 管理画面の「怪しいアクセス」で押した「ブロック(1時間/24時間/7日/30日/永久)」を反映するjail群。
+# ホスト側のeigo-f2b-manual-sync(cron・1分毎)が、アプリの『有効なブロック一覧』に合わせて
+# banip/unbanipする(アプリからホストのコマンドを直接実行する経路は無い)。
+# ・フィルターは何にもマッチしない(eigo-manual)=自動BANはしない。期間はjailのbantimeで、fail2ban自身も
+#   守る(cronが止まっても一時ブロックが永久に残らない)。永久=bantime -1(fail2banの台帳に残り再起動後も復元)。
+# ・アクションはiptablesの遮断だけ(__ACTIONS_MANUAL__)。install.shの引数(dryrun/ban)に関わらず常に実遮断
+#   (運営者が明示的に押した操作だから)。eigo-auditの通知は付けない(記録はアプリのmanual_blocksが正)。
+# ・信頼IP/許可リストはアプリとeigo-f2b-manual-syncが入れる前に弾く(ignorecommandは付けない)。
+[eigo-manual-1h]
+enabled = true
+filter = eigo-manual
+logpath = /var/lib/eigo-f2b/manual.log
+backend = auto
+maxretry = 1
+findtime = 1m
+bantime = 1h
+port = http,https
+ignoreip = 127.0.0.0/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+action = __ACTIONS_MANUAL__
+
+[eigo-manual-24h]
+enabled = true
+filter = eigo-manual
+logpath = /var/lib/eigo-f2b/manual.log
+backend = auto
+maxretry = 1
+findtime = 1m
+bantime = 24h
+port = http,https
+ignoreip = 127.0.0.0/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+action = __ACTIONS_MANUAL__
+
+[eigo-manual-7d]
+enabled = true
+filter = eigo-manual
+logpath = /var/lib/eigo-f2b/manual.log
+backend = auto
+maxretry = 1
+findtime = 1m
+bantime = 7d
+port = http,https
+ignoreip = 127.0.0.0/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+action = __ACTIONS_MANUAL__
+
+[eigo-manual-30d]
+enabled = true
+filter = eigo-manual
+logpath = /var/lib/eigo-f2b/manual.log
+backend = auto
+maxretry = 1
+findtime = 1m
+bantime = 30d
+port = http,https
+ignoreip = 127.0.0.0/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+action = __ACTIONS_MANUAL__
+
+[eigo-manual-perm]
+enabled = true
+filter = eigo-manual
+logpath = /var/lib/eigo-f2b/manual.log
+backend = auto
+maxretry = 1
+findtime = 1m
+bantime = -1
+port = http,https
+ignoreip = 127.0.0.0/8 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+action = __ACTIONS_MANUAL__

@@ -4,3 +4,8 @@
 # 遅い場合に多重起動しないよう flock -n で1個までに制限する(2026-09-29
 # Fable指摘M2)。
 * * * * * root flock -n /run/eigo-f2b-unban.lock /usr/local/sbin/eigo-f2b-unban-poller >/dev/null 2>&1
+# 管理画面の手動ブロックをfail2banのeigo-manual-*へ反映する(2026-10-31・ver1.5.22)。アプリから一覧を
+# 取得できなかった場合は何もしない(全員を解除しない)。flock -nで多重起動を避ける。
+* * * * * root flock -n /run/eigo-f2b-manual.lock /usr/local/sbin/eigo-f2b-manual-sync >/dev/null 2>&1
+# 怪しいアクセス(Caddyログの要約)を管理画面へ送る(2026-10-31・ver1.5.22)。BANはしない・要約を送るだけ。
+*/5 * * * * root flock -n /run/eigo-f2b-suspects.lock /usr/local/sbin/eigo-f2b-suspects >/dev/null 2>&1

@@ -98,7 +98,8 @@ for line in tmpl.splitlines():
     elif cur and "=" in line:
         k, v = line.split("=", 1)
         sections[cur][k.strip()] = v.strip()
-check("jailは5種", set(sections) == {"eigo-probe", "eigo-probe-trusted", "eigo-loginflood", "eigo-loginfail", "eigo-ratelimited"}, str(sorted(sections)))
+# 2026-10-31: 手動ブロック用のeigo-manual-*(5つ・scripts/check_ver1522.pyで検査)は別枠。自動検知のjailは従来どおり5種。
+check("自動検知のjailは5種", {k for k in sections if not k.startswith("eigo-manual-")} == {"eigo-probe", "eigo-probe-trusted", "eigo-loginflood", "eigo-loginfail", "eigo-ratelimited"}, str(sorted(sections)))
 p, t = sections["eigo-probe"], sections["eigo-probe-trusted"]
 check("eigo-probe: 信頼IPも免除(通常モード・--allow-onlyではない)", p["ignorecommand"].endswith("eigo-f2b-ignore <ip>"), p["ignorecommand"])
 check("eigo-probe: 実BANの種別(ENFORCE)のまま", p["action"] == "__ACTIONS_ENFORCE__")
