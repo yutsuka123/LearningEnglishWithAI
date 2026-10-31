@@ -76,7 +76,7 @@ def item(ip, **kw):
 # --- 1) ip_blocks の純粋な部分
 check("公開IPv4は通る", ip_blocks.canonical_public_ipv4(IP_A) == IP_A)
 for bad in ["10.0.0.1", "192.168.1.1", "127.0.0.1", "169.254.1.1", "100.64.0.1", "0.0.0.0", "224.0.0.1",
-            "2001:db8::1", "::1", "abc", "", "1.2.3", "1.2.3.4/24", "203.0.113.5"]:
+            "2001:db8::1", "::1", "abc", "", "1.2.3", "1.2.3.4/24", "203.0.113.5", "192.0.0.9", "192.88.99.1", "240.0.0.1"]:
     check(f"ブロック不可のIP: {bad!r}", ip_blocks.canonical_public_ipv4(bad) is None)
 check("制御文字を除く", ip_blocks.clean_text("a\x00b\nc\x7f", 10) == "abc")
 check("期間の定義", set(ip_blocks.DURATIONS) == {"1h", "24h", "7d", "30d", "permanent"}
@@ -236,6 +236,12 @@ with TestClient(m.app, follow_redirects=False) as c:
         conn.commit()
     des = c.get("/api/system/security-events/manual-blocks/desired", headers=H).json()["blocks"]
     check("desired: ハッシュ化済みIPなどの不正値は渡さない", all(ip_blocks.canonical_public_ipv4(b["ip"]) for b in des))
+    with db() as conn:
+        conn.execute("INSERT INTO manual_blocks (ip, duration, expires_at) VALUES ('8.8.8.8', '24h', 'garbage')")
+        conn.commit()
+    r = c.get("/api/system/security-events/manual-blocks/desired", headers=H)
+    check("desired: 期限の形式が壊れた1行があっても全体は200で、その行だけ渡さない(他のブロックの反映が止まらない)",
+          r.status_code == 200 and "8.8.8.8" not in {b["ip"] for b in r.json()["blocks"]} and len(r.json()["blocks"]) >= 1, r.status_code)
 
     # --- 7) 報告・解除・一覧の状態
     with db() as conn:
@@ -321,7 +327,11 @@ with TestClient(m.app, follow_redirects=False) as c:
     rows += [line(S4, "/static/x.js", 404)] * 30                      # 静的ファイルの404は数えない
     rows += [line(S5, "/wp-login.php", 404, ua="Mozilla/5.0 (compatible; Googlebot/2.1)")]  # クローラーUAは数えない
     rows += [line("10.9.9.9", "/.env", 404)]                          # プライベートは数えない
-    rows += [line(S6, "/api/words", 429)] * 70 + [line(S6, "/api/other", 429)] * 3
+    rows += [line(S6, "/api/words", 429)] * 70 + [line(S6, "/api/other", 429)] * 12
+    S7, S8, S9 = "44.1.1.8", "44.1.1.9", "44.1.1.10"
+    rows += [line(S7, "/api/tts", 429)] * 5                           # 429が少数(正規の連続再生でも出る)は載せない
+    rows += [line(S8, "/api/tts", 402)] * 20                          # 残高なし(402)は通常動作=数えない
+    rows += [line(S9, "/x.php", 410)]                                 # 探索のstatusはfilterと同じ(307/400-409)=410は探索でない
     rows += [line("44.1.1.7", "/.env", 404, ts=now - 3 * 86400)]      # 24時間より前は数えない
     rows += ["not json", "{}", json.dumps({"ts": now, "status": "x"})]  # 壊れた行で落ちない
     (logdir / "study.log").write_text("\n".join(rows) + "\n")
@@ -332,12 +342,14 @@ with TestClient(m.app, follow_redirects=False) as c:
     check("集計: 4xxは15回・静的ファイルの404は数えない", ips[S4]["errors4xx"] == 15, ips[S4])
     check("集計: クローラーUAは数えない", S5 not in ips)
     check("集計: プライベートIPは数えない", "10.9.9.9" not in ips)
-    check("集計: 429は/api/wordsを除いて数える(3回)", ips[S6]["ratelimited"] == 3, ips[S6])
+    check("集計: 429は/api/wordsを除いて数える(12回)", ips[S6]["ratelimited"] == 12, ips[S6])
+    check("集計: 402は数えない", ips[S8]["errors4xx"] == 0 and ips[S8]["ratelimited"] == 0, ips[S8])
+    check("集計: 探索のstatusは307/400-409(410は探索でない)", ips[S9]["probe"] == 0, ips[S9])
     check("集計: 24時間より前は数えない", "44.1.1.7" not in ips)
     sus_mod.is_exempt = lambda ip: ip == S2
     items2 = sus_mod.build_items(ips)
     got = {x["ip"]: x for x in items2}
-    check("一覧の条件: 探索1以上/ログイン失敗3以上/429が3以上/4xxが15以上",
+    check("一覧の条件: 探索1以上/ログイン失敗3以上/429が10以上/4xxが15以上(429が5回・402・410だけは載せない)",
           set(got) == {S1, S2, S4, S6}, set(got))
     check("exemptの判定を送る", got[S2]["exempt"] is True and got[S1]["exempt"] is False)
     check("パスは回数順・クエリなし", got[S1]["paths"][0]["p"] in ("/.env", "/wp-login.php") and "?" not in json.dumps(got[S1]["paths"]), got[S1]["paths"])
@@ -500,6 +512,8 @@ check("画面: 怪しいアクセスの欄が遅延読み込みに登録", '["#l
 check("画面: 期間の選択肢(1時間/24時間/7日/30日/永久)",
       all(x in views for x in ['["1h", "1時間"]', '["24h", "24時間"]', '["7d", "7日"]', '["30d", "30日"]', '["permanent", "永久"]']))
 check("画面: 既定は24時間", 'durOptions("24h")' in views)
+check("画面: ブロックの範囲(同居する他サイトも止まる)を説明・確認ダイアログにも出す",
+      views.count("同居") >= 2 and "Home Assistant" in views)
 seg = views[views.index("const BLOCK_DURATIONS"):views.index("async function loadAccessLog")]
 raw_interp = re.findall(r"\$\{([^}]+)\}", seg)
 risky = [x for x in raw_interp if re.search(r"\b(it|b|x)\.(ip|ua|p|m|created_by|applied_note|note)\b", x) and "escapeHtml" not in x]

@@ -11,8 +11,9 @@ eigo-f2b-auditと同じく、ホスト側が読んでトークン付きの内部
   probe       存在しないはずのURL(.env・wp-・.git・phpmyadmin等)を叩いた(307/4xx)。eigo-probeと同じ判定
   authfail    POST /api/auth/login が401/403
   ratelimited 429(/api/words・/api/phrasesは除く=eigo-ratelimitedと同じ)
-  errors4xx   その他の4xx(401は未ログインの通常動作なので数えない。静的ファイル/favicon/robotsも除く)
-一覧に載せる条件: probe>=1 / authfail>=3 / ratelimited>=3 / errors4xx>=15 のどれか。上位200IPまで。
+  errors4xx   その他の4xx(401=未ログインの通常動作・402=残高なしの通常動作は数えない。静的ファイル/favicon/robotsも除く)
+一覧に載せる条件: probe>=1 / authfail>=3 / ratelimited>=10 / errors4xx>=15 のどれか。上位200IPまで
+(429は正規の利用者がAI音声を連続再生しても出るので、少数では載せない)。
 信頼IP・許可リストのIPは exempt=true で送る(管理画面でブロック不可の印。ホスト側のeigo-f2b-ignoreと同じ判定)。
 
 使い方: eigo-f2b-suspects (引数なし・/etc/cron.d/eigo-f2bから呼ばれる)
@@ -93,13 +94,13 @@ def read_lines(path, now):
 
 def classify(method, path, status):
     """('probe'|'authfail'|'ratelimited'|'errors4xx'|None)。"""
-    if PROBE.search(path) and (status == 307 or 400 <= status <= 499):
+    if PROBE.search(path) and (status == 307 or 400 <= status <= 409):  # eigo-probe.confのstatus条件と同じ
         return "probe"
     if method == "POST" and path == "/api/auth/login" and status in (401, 403):
         return "authfail"
     if status == 429:
         return None if path.startswith(("/api/words", "/api/phrases")) else "ratelimited"
-    if 400 <= status <= 499 and status != 401 and not BENIGN_4XX.search(path):
+    if 400 <= status <= 499 and status not in (401, 402) and not BENIGN_4XX.search(path):
         return "errors4xx"
     return None
 
@@ -144,7 +145,7 @@ def is_exempt(ip):
 
 def build_items(ips):
     keep = [(ip, e) for ip, e in ips.items()
-            if e["probe"] >= 1 or e["authfail"] >= 3 or e["ratelimited"] >= 3 or e["errors4xx"] >= 15]
+            if e["probe"] >= 1 or e["authfail"] >= 3 or e["ratelimited"] >= 10 or e["errors4xx"] >= 15]
     keep.sort(key=lambda kv: -(kv[1]["probe"] * 5 + kv[1]["authfail"] * 2
                                + kv[1]["ratelimited"] + kv[1]["errors4xx"] * 0.2))
     items = []

@@ -3363,8 +3363,12 @@ def manual_blocks_desired():
             continue  # ハッシュ化済み等の不正値はホストへ渡さない
         exp = None
         if r["expires_at"]:
-            exp = int(datetime.strptime(r["expires_at"], "%Y-%m-%d %H:%M:%S")
-                      .replace(tzinfo=timezone.utc).timestamp())
+            try:
+                exp = int(datetime.strptime(r["expires_at"], "%Y-%m-%d %H:%M:%S")
+                          .replace(tzinfo=timezone.utc).timestamp())
+            except ValueError:
+                log.warning("手動ブロックの期限の形式が不正(この行は渡さない) id=%s", r["id"])
+                continue  # 1行の不正で、他の全ブロックの反映が止まらないように(独立照査NIT)
         blocks.append({"id": r["id"], "ip": ip, "jail": ip_blocks.DURATIONS[r["duration"]][1],
                        "expires_epoch": exp})
     return {"ok": True, "blocks": blocks}

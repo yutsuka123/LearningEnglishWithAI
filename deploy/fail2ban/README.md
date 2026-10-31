@@ -38,8 +38,13 @@ cron `eigo-f2b-unban-poller` が1分以内に反映)。
   アプリ側の安全装置(自分のIP・ADMIN_KNOWN_IPS・信頼IP・非公開IP/IPv6・共有IPの確認・上限)は`app/services/ip_blocks.py`の先頭コメント参照。
 - **確認**: `sudo fail2ban-client status eigo-manual-24h`(他の期間も同様)・`sudo grep MANUAL- /var/log/eigo-f2b-audit.log`。
   管理画面に「集計が止まっている」「反映が止まっている」の警告が出たら`/var/log/eigo-f2b-audit.log`の`SUSPECTS-*-FAILED`/`MANUAL-SYNC-FAILED`を見る。
-- **手動での解除(画面が使えないとき)**: `sudo fail2ban-client set eigo-manual-<期間> unbanip <IP>`(ただしアプリの記録が有効のままだと次の1分で再度banされる。
-  管理画面の「解除」が正)。
+- **⚠️ ブロックの範囲**: iptablesのDOCKER-USERチェーンで80/443を止めるので、**このVPSで80/443を公開する全コンテナ(同居のHome Assistant・n8n・サイエンスラボ等)**に
+  繋がらなくなる(studyだけではない)。アプリ側の安全装置はstudyのデータ(自分のIP・ログイン実績等)しか知らない。**有効化前に、VPS自身の公開IPと運営者の固定IPを
+  `/etc/fail2ban/eigo-allowlist.txt`に書いておく**こと(ホスト側の再確認で拒否される)。
+- **手動での操作と、アプリの記録との向き**: `eigo-manual-*`へ手で`banip`しても、`eigo-f2b-manual-sync`が1分以内に「アプリの記録に無いIP」として外す
+  (手動でbanしたいときは`eigo-probe`など別のjailに入れる)。逆に、手で`unbanip`してもアプリの記録が有効なら次の1分で再度banされる(解除は管理画面が正)。
+  許可リストにIPを足しても、**すでにbanされているものは自動では外れない**(確認は入れる前だけ)ので、画面の「解除」も行うこと。
+  なお`eigo-f2b-ignore`が想定外のエラーで終了コード0を返すと「許可リスト扱い」で拒否され、その行は解除済み(拒否)になる=その場合は画面から作り直す。
 
 ## 誤 BAN を防ぐ仕組み
 1. **dryrun 運用**: 最初は BAN せず、「BAN したはず」の判定とその根拠(時刻・メソッド・URI・status・UA)だけを `/var/log/eigo-f2b-audit.log` に残す。

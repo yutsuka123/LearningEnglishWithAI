@@ -38,6 +38,8 @@ MANUAL_JAILS = {jail for _, jail in DURATIONS.values()}
 MAX_ACTIVE = 500
 MAX_PERMANENT = 200
 HUMAN_VISIT_DAYS = 30
+# is_globalがTrueを返す特殊用途の範囲(実クライアントではない・2026-10-31独立照査)
+_NON_ROUTABLE = (ipaddress.ip_network("192.0.0.0/24"), ipaddress.ip_network("192.88.99.0/24"))
 
 _FMT = "%Y-%m-%d %H:%M:%S"
 _CTRL = re.compile(r"[\x00-\x1f\x7f]")
@@ -83,6 +85,8 @@ def parse_ip(value: str):
 def canonical_public_ipv4(value: str) -> str | None:
     """ブロックの対象にできる(公開IPv4)なら正規化した文字列、そうでなければ None。"""
     ip = parse_ip(value)
+    if ip is not None and ip.version == 4 and any(ip in n for n in _NON_ROUTABLE):
+        return None
     # is_globalだけではマルチキャスト(224.0.0.0/4)を弾けない(Pythonではis_global=True)ため明示的に除く。
     if (ip is None or ip.version != 4 or not ip.is_global or ip.is_multicast
             or ip.is_reserved or ip.is_unspecified or ip.is_loopback or ip.is_link_local):
@@ -151,7 +155,8 @@ def create_block(conn, *, ip: str, duration: str, note: str, admin_name: str,
     if is_trusted_login_ip(conn, canon):
         raise errors.http_error(
             "7002", "登録ユーザーのログイン実績があるIPのためブロックできません"
-            "(実ユーザーを巻き込みます)。本当に必要ならVPSで手動実行してください。")
+            "(実ユーザーを巻き込みます)。本当に必要ならVPSで、eigo-manual-*以外のjail(例: eigo-probe)に手動でbanしてください"
+            "(eigo-manual-*へ手で入れても、1分以内にアプリの記録に合わせて外されます)。")
     exempt = conn.execute(
         "SELECT exempt FROM suspicious_access WHERE ip = ?", (canon,)).fetchone()
     if exempt and exempt["exempt"]:
