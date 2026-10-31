@@ -22,6 +22,30 @@ cron `eigo-f2b-unban-poller` が1分以内に反映)。
 
 **採用しなかったもの**: 404 の連発(404 の 95% は `/favicon.ico` で、正規ユーザーも踏むため)・全リクエスト数(ページ表示だけで1分に数十件になり、実ユーザーと区別できない)。
 
+## 管理画面の「怪しいアクセス」と手動ブロック(2026-10-31・ver1.5.22・オーナー要望)
+自動検知(上の5つのjail)とは別に、**管理者が画面から手動でブロックする**仕組み。自動検知の挙動は変えていない。
+- **一覧(動作内容)**: cron `eigo-f2b-suspects`(5分毎)がCaddyの`study.log`の直近24時間をIPごとに要約し、アプリの内部API
+  (`POST /api/system/security-events/suspects`・`X-F2B-Token`認証)へ送る。探索/ログイン失敗/429/その他4xxの回数・試したパス→結果・UAを
+  管理画面(設定→ログ→「怪しいアクセス」)に出す。クローラーUA・ゲストの通常の401・静的ファイルの404は数えない。クエリ文字列は送らない。
+- **ブロック**: 画面で1時間/24時間/7日/30日/永久を選ぶ(「ブロック」だけなら24時間)。アプリは`manual_blocks`に記録するだけで、
+  cron `eigo-f2b-manual-sync`(1分毎)が「有効なブロックの全件」(`GET .../manual-blocks/desired`)を取得し、`eigo-manual-1h/-24h/-7d/-30d/-perm`の
+  jailへ`banip`/`unbanip`して突き合わせる。**アプリからホストのコマンドを直接実行する経路は無い**(`eigo-f2b-unban-poller`と同じ非同期方式)。
+- **jailは「期間ごとに1つ」**: fail2banはIPごとにBAN時間を変えられないため、期間別のjail(`filter=eigo-manual`は何にもマッチしない・logpathは空の
+  `/var/lib/eigo-f2b/manual.log`)にした。期限はfail2ban自身も守るので、cronが止まっても一時ブロックが永久に残らない(永久は`bantime=-1`)。
+  アクションはiptablesの遮断のみ(`install.sh`の引数に関わらず常に実遮断=運営者が明示的に押した操作)。
+- **安全側の原則**: アプリから一覧を取得できない/形式が違うときは**何もしない**(全員を解除しない)。許可リスト/信頼IPはホスト側でも再確認して拒否を報告する
+  (`eigo-f2b-ignore`と同じ判定)。触るのは`eigo-manual-*`の5つだけ(`fail2ban-client unban`(全jail)は使わない・sshd/相乗りのjailに触れない)。
+  アプリ側の安全装置(自分のIP・ADMIN_KNOWN_IPS・信頼IP・非公開IP/IPv6・共有IPの確認・上限)は`app/services/ip_blocks.py`の先頭コメント参照。
+- **確認**: `sudo fail2ban-client status eigo-manual-24h`(他の期間も同様)・`sudo grep MANUAL- /var/log/eigo-f2b-audit.log`。
+  管理画面に「集計が止まっている」「反映が止まっている」の警告が出たら`/var/log/eigo-f2b-audit.log`の`SUSPECTS-*-FAILED`/`MANUAL-SYNC-FAILED`を見る。
+- **⚠️ ブロックの範囲**: iptablesのDOCKER-USERチェーンで80/443を止めるので、**このVPSで80/443を公開する全コンテナ(同居のHome Assistant・n8n・サイエンスラボ等)**に
+  繋がらなくなる(studyだけではない)。アプリ側の安全装置はstudyのデータ(自分のIP・ログイン実績等)しか知らない。**有効化前に、VPS自身の公開IPと運営者の固定IPを
+  `/etc/fail2ban/eigo-allowlist.txt`に書いておく**こと(ホスト側の再確認で拒否される)。
+- **手動での操作と、アプリの記録との向き**: `eigo-manual-*`へ手で`banip`しても、`eigo-f2b-manual-sync`が1分以内に「アプリの記録に無いIP」として外す
+  (手動でbanしたいときは`eigo-probe`など別のjailに入れる)。逆に、手で`unbanip`してもアプリの記録が有効なら次の1分で再度banされる(解除は管理画面が正)。
+  許可リストにIPを足しても、**すでにbanされているものは自動では外れない**(確認は入れる前だけ)ので、画面の「解除」も行うこと。
+  なお`eigo-f2b-ignore`が想定外のエラーで終了コード0を返すと「許可リスト扱い」で拒否され、その行は解除済み(拒否)になる=その場合は画面から作り直す。
+
 ## 誤 BAN を防ぐ仕組み
 1. **dryrun 運用**: 最初は BAN せず、「BAN したはず」の判定とその根拠(時刻・メソッド・URI・status・UA)だけを `/var/log/eigo-f2b-audit.log` に残す。
 2. **信頼 IP**: 「**アカウント作成から2日以上経ったユーザー**が直近30日にログインに成功した IP」は無視する(アプリの DB を読み取り専用で参照・10分ごとに更新・`/var/lib/eigo-f2b/trusted.txt`・root専用)。

@@ -760,6 +760,60 @@ CREATE INDEX IF NOT EXISTS logs.idx_security_events_created
     ON security_events(created_at);
 CREATE INDEX IF NOT EXISTS logs.idx_security_events_ip ON security_events(ip);
 
+-- 怪しいアクセスの要約(2026-10-31・ver1.5.22)。Caddyのアクセスログは別コンテナにありアプリから
+-- 読めないため、ホスト側のcron(eigo-f2b-suspects・5分毎)が直近24時間をIPごとに集計して
+-- POST /api/system/security-suspects に送り、IPごとに上書きする(管理画面「怪しいアクセス」)。
+--   probe       = 存在しないはずのURL(.env・wp-・.git等)を叩いた回数(eigo-probeと同じ判定)
+--   authfail    = ログイン失敗(401/403)の回数
+--   ratelimited = 429(回数制限)の回数
+--   errors4xx   = その他の4xx(ログイン前の通常の401は数えない)
+--   paths       = [{"m":メソッド,"p":パス(クエリなし),"s":ステータス,"n":回数}] 最大8件のJSON
+--   exempt      = ホスト側で信頼IP/許可リストに当たった(ブロック不可)
+--   dismissed_at = 「問題なし」にした時刻。これより後に新しいアクセス(last_seen)があれば再び出る。
+-- 30日より古い行は取り込みのたびに削除する(IP保持期限360日より短い)。
+CREATE TABLE IF NOT EXISTS logs.suspicious_access (
+    ip           TEXT PRIMARY KEY,
+    first_seen   TEXT NOT NULL,
+    last_seen    TEXT NOT NULL,
+    total        INTEGER NOT NULL DEFAULT 0,
+    probe        INTEGER NOT NULL DEFAULT 0,
+    authfail     INTEGER NOT NULL DEFAULT 0,
+    ratelimited  INTEGER NOT NULL DEFAULT 0,
+    errors4xx    INTEGER NOT NULL DEFAULT 0,
+    paths        TEXT    NOT NULL DEFAULT '[]',
+    ua           TEXT    NOT NULL DEFAULT '',
+    exempt       INTEGER NOT NULL DEFAULT 0,
+    updated_at   TEXT    NOT NULL DEFAULT (datetime('now')),
+    dismissed_at TEXT
+);
+CREATE INDEX IF NOT EXISTS logs.idx_suspicious_access_last
+    ON suspicious_access(last_seen);
+
+-- 管理画面から手動で行うブロック(2026-10-31・ver1.5.22)。アプリは「このIPを・この期間」と
+-- 記録するだけで、ホストのfail2ban(eigo-manual-*のjail)への反映はホスト側cron
+-- (eigo-f2b-manual-sync・1分毎)が行う(アプリからホストのコマンドを直接実行する経路は作らない)。
+--   duration   = '1h' | '24h' | '7d' | '30d' | 'permanent'
+--   expires_at = UTC。永久はNULL
+--   released_at = 解除(手動・置き換え・ホストが拒否)した時刻。NULLかつ期限内=有効
+--   applied_at  = ホストがfail2banへ反映した時刻(NULLの間は「反映待ち」)
+-- 有効な行のIPは生のまま保持する(ip_retentionの対象に入れない=ハッシュ化すると
+-- ホスト側の突き合わせで解除扱いになりブロックが黙って外れるため)。解除/期限切れから
+-- 360日を過ぎた行は取り込み時に削除する。
+CREATE TABLE IF NOT EXISTS logs.manual_blocks (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    ip           TEXT NOT NULL,
+    duration     TEXT NOT NULL,
+    expires_at   TEXT,
+    note         TEXT NOT NULL DEFAULT '',
+    created_at   TEXT NOT NULL DEFAULT (datetime('now')),
+    created_by   TEXT NOT NULL DEFAULT '',
+    released_at  TEXT,
+    released_by  TEXT NOT NULL DEFAULT '',
+    applied_at   TEXT,
+    applied_note TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS logs.idx_manual_blocks_ip ON manual_blocks(ip);
+
 -- 広告費の実額(2026-09-19・計測設計フェーズ1 3-C)。管理画面「実収支」
 -- から手入力する(Ads APIは使わない)。日付はJST暦日(YYYY-MM-DD)。実額が
 -- ある日は実額、無い日は予算スケジュール(app/routers/system.pyの

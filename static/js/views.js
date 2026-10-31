@@ -5762,6 +5762,39 @@ export async function admin(root) {
         <div id="clientErrorLogWrap" class="mt"><p class="muted">未読み込み</p></div>
       </details>
 
+      <details class="log-group" id="logSuspectsDetails">
+        <summary>🕵️ 怪しいアクセス（動作内容とブロック・2026-10-31）</summary>
+        <p class="muted mt">本番VPSがCaddyのアクセスログを5分ごとにIPごとに要約したもの（直近24時間分）。
+          <b>探索</b>=存在しないはずのURL(.env・wp-・.git等)を叩いた回数／<b>ログイン失敗</b>=401・403／
+          <b>429</b>=回数制限に当たった回数／<b>4xx</b>=その他のエラー。「試した内容」は実際に叩いたパスと結果です。
+          ブロックは<b>この画面で押すだけ</b>で、1分以内にVPSのファイアウォール(80/443)へ反映されます
+          （SSHは止まりません）。<b>⚠️ このVPSの80/443を使う同居の他サイト（Home Assistant・n8n・サイエンスラボ等）にも繋がらなくなります</b>。「ブロック」だけを押すと<b>24時間</b>。期間を選べば1時間／7日／30日／永久も選べます。
+          <b>自分のIP・登録ユーザーのログイン実績があるIP・許可リストのIP</b>はブロックできません。
+          携帯回線や学校・会社など<b>共有IP</b>かもしれないものは、確認が出ます。クローラー(Googlebot等)は数えません。
+          自動で遮断しているもの（eigo-probe等）は下の「アクセス制限」に出ます。</p>
+        <div class="row">
+          <label>直近:
+            <select id="susHours">
+              <option value="24" selected>24時間</option>
+              <option value="168">7日</option>
+              <option value="720">30日</option>
+            </select></label>
+          <label><input type="checkbox" id="susShowDismissed"> 「問題なし」にしたものも表示</label>
+          <button class="btn ghost" id="susReload"
+            style="padding:3px 10px">再読み込み</button>
+        </div>
+        <div id="suspectsStatus" class="muted mt"></div>
+        <div id="suspectsWrap" class="mt"><p class="muted">未読み込み</p></div>
+        <h3 class="mt">🚫 手動ブロック（有効なものと直近30日の履歴）</h3>
+        <div class="row">
+          <input type="text" id="susManualIp" placeholder="IPアドレスを直接指定(例 203.0.113.5)"
+            autocomplete="off" style="min-width:16em">
+          <select id="susManualDur"></select>
+          <button class="btn" id="susManualBtn" style="padding:3px 12px">ブロック</button>
+        </div>
+        <div id="manualBlocksWrap" class="mt"><p class="muted">未読み込み</p></div>
+      </details>
+
       <details class="log-group" id="logSecurityEventsDetails">
         <summary>🚧 アクセス制限（fail2ban・2026-09-29）</summary>
         <p class="muted mt">本番VPSのfail2banが検知した不審アクセス。「実際に遮断」は
@@ -7391,6 +7424,198 @@ export async function admin(root) {
   root.querySelector("#secEvReload").addEventListener("click", loadSecurityEvents);
   root.querySelector("#secEvDays").addEventListener("change", loadSecurityEvents);
 
+  // --- 怪しいアクセスの一覧と手動ブロック(2026-10-31・ver1.5.22) ---
+  // 一覧の文字列(パス・UA)は攻撃者が決められるので、必ずescapeHtmlを通す。
+  const BLOCK_DURATIONS = [["1h", "1時間"], ["24h", "24時間"], ["7d", "7日"],
+    ["30d", "30日"], ["permanent", "永久"]];
+  const durLabel = Object.fromEntries(BLOCK_DURATIONS);
+  const levelLabel = { high: "🔴 高", mid: "🟠 中", low: "⚪ 低" };
+  const durOptions = (sel) => BLOCK_DURATIONS.map(([v, t]) =>
+    `<option value="${v}"${v === sel ? " selected" : ""}>${t}</option>`).join("");
+  root.querySelector("#susManualDur").innerHTML = durOptions("24h");
+
+  function agoText(s) {
+    if (!s) return "なし";
+    const d = new Date(String(s).replace(" ", "T") + "Z");
+    if (Number.isNaN(d.getTime())) return String(s);
+    const min = Math.max(0, Math.round((Date.now() - d.getTime()) / 60000));
+    return min < 1 ? "1分未満前" : min < 90 ? `${min}分前` : `${Math.round(min / 60)}時間前`;
+  }
+  function minutesSince(s) {
+    if (!s) return Infinity;
+    const d = new Date(String(s).replace(" ", "T") + "Z");
+    return Number.isNaN(d.getTime()) ? Infinity : (Date.now() - d.getTime()) / 60000;
+  }
+  function pathsHtml(paths) {
+    if (!paths || !paths.length) return `<span class="muted">—</span>`;
+    const line = (x) => `${escapeHtml(x.m)} ${escapeHtml(x.p)} → ${x.s}${x.n > 1 ? ` ×${x.n}` : ""}`;
+    const head = paths.slice(0, 3).map((x) => `<div>${line(x)}</div>`).join("");
+    if (paths.length <= 3) return head;
+    return `${head}<details><summary class="muted">ほか${paths.length - 3}件</summary>${
+      paths.slice(3).map((x) => `<div>${line(x)}</div>`).join("")}</details>`;
+  }
+  function suspectState(it) {
+    if (it.block) {
+      const until = it.block.expires_at ? `〜${fmtDate(it.block.expires_at)}` : "（解除するまで）";
+      return it.block.applied_at
+        ? `🚫 手動ブロック中（${durLabel[it.block.duration] || ""}${until}）`
+        : `⏳ ブロック反映待ち（1分以内・${durLabel[it.block.duration] || ""}）`;
+    }
+    if (it.f2b && it.f2b.still_banned) return `🚫 自動遮断中（${escapeHtml(it.f2b.jail)}）`;
+    if (it.exempt) return "🛡️ 信頼IP/許可リスト（ブロック不可）";
+    if (it.dismissed) return "✅ 問題なし（確認済み）";
+    return "未対応";
+  }
+  function suspectOps(it) {
+    const ip = escapeHtml(it.ip);
+    if (it.block) {
+      return `<button class="btn ghost sus-release" data-id="${it.block.id}"
+        style="padding:2px 8px">解除</button>`;
+    }
+    if (it.exempt) return `<span class="muted">—</span>`;
+    if (it.ipv6) return `<span class="muted">IPv6は未対応</span>`;
+    return `<select class="sus-dur">${durOptions("24h")}</select>
+      <button class="btn sus-block" data-ip="${ip}" data-humans="${it.human_visits_30d || 0}"
+        style="padding:2px 10px">ブロック</button>
+      <button class="btn ghost sus-dismiss" data-ip="${ip}" style="padding:2px 8px">問題なし</button>`;
+  }
+  async function postBlock(ip, duration, confirmShared) {
+    try {
+      const res = await api.post("/api/system/admin/manual-blocks",
+        { ip, duration, confirm_shared: confirmShared });
+      toast(`ブロックしました（${durLabel[duration]}・1分以内に反映）`);
+      return res;
+    } catch (e) {
+      if (!confirmShared && /共有IPの可能性/.test(e.message)) {
+        if (confirm(`${e.message}\n\nそれでもブロックしますか？`)) {
+          return postBlock(ip, duration, true);
+        }
+        return null;
+      }
+      toast("失敗: " + e.message);
+      return null;
+    }
+  }
+  function confirmText(ip, duration, humans) {
+    return `${ip} を${durLabel[duration]}ブロックします。\n\n`
+      + "このIPからは、このVPSの80/443(このサイトに加え、同居する他のサイト＝Home Assistant・n8n・サイエンスラボ等も)に繋がらなくなります（SSHは止まりません）。"
+      + (duration === "permanent" ? "\n永久ブロックは解除するまで続きます。" : "")
+      + (humans > 0 ? `\n\n⚠️ このIPから過去30日に人間らしい訪問が${humans}件あります（共有IPの可能性）。` : "")
+      + "\n\nよろしいですか？";
+  }
+
+  async function loadSuspects() {
+    const wrap = root.querySelector("#suspectsWrap");
+    const mwrap = root.querySelector("#manualBlocksWrap");
+    const status = root.querySelector("#suspectsStatus");
+    wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
+    const hours = root.querySelector("#susHours").value;
+    const dis = root.querySelector("#susShowDismissed").checked ? "true" : "false";
+    try {
+      const [res, mres] = await Promise.all([
+        api.get(`/api/system/admin/suspicious-access?hours=${hours}&include_dismissed=${dis}`),
+        api.get("/api/system/admin/manual-blocks?days=30"),
+      ]);
+      const stale = minutesSince(res.collected_at) > 20;
+      const hasBlocks = mres.blocks.some((b) => b.state === "active" || b.state === "pending");
+      const syncStale = hasBlocks && minutesSince(mres.synced_at) > 5;
+      status.innerHTML = `一覧の最終集計: ${escapeHtml(agoText(res.collected_at))}`
+        + (stale ? ` <b>⚠️ 集計が止まっている可能性（VPSのeigo-f2b-suspects）</b>` : "")
+        + ` ／ VPSへの反映の最終確認: ${escapeHtml(agoText(mres.synced_at))}`
+        + (syncStale ? ` <b>⚠️ 反映が止まっている可能性（VPSのeigo-f2b-manual-sync）</b>` : "");
+      if (!res.items.length) {
+        wrap.innerHTML = `<p class="muted">この期間に怪しいアクセスはありません。</p>`;
+      } else {
+        const rows = res.items.map((it) => `<tr>
+          <td>${levelLabel[it.level] || ""}</td>
+          <td class="muted">${fmtDate(it.last_seen)}<br>初回 ${fmtDate(it.first_seen)}</td>
+          <td>${escapeHtml(it.ip)}</td>
+          <td class="muted">${[["探索", it.probe], ["ログイン失敗", it.authfail], ["429", it.ratelimited],
+              ["4xx", it.errors4xx]].filter((x) => x[1] > 0).map(([l, n]) =>
+              `<div>${l} <b>${n}</b></div>`).join("")}
+            <div>全リクエスト ${it.total}</div>${
+              it.human_visits_30d ? `<div>人間らしい訪問(30日) ${it.human_visits_30d}件</div>` : ""}</td>
+          <td>${pathsHtml(it.paths)}</td>
+          <td class="muted" style="white-space:normal;min-width:12em;max-width:16em;word-break:break-all">${escapeHtml(it.ua || "")}</td>
+          <td>${suspectState(it)}</td>
+          <td>${suspectOps(it)}</td>
+        </tr>`).join("");
+        wrap.innerHTML = `<table style="white-space:nowrap"><thead><tr>
+          <th>危険度</th><th>最終</th><th>IP</th><th>回数</th><th>試した内容（パス → 結果）</th>
+          <th>UA</th><th>状態</th><th>操作</th>
+        </tr></thead><tbody>${rows}</tbody></table>`;
+      }
+      const mrows = mres.blocks.map((b) => {
+        const st = { active: "🚫 遮断中", pending: "⏳ 反映待ち", expired: "期限切れ",
+          released: "解除済み", refused: "⚠️ 拒否" }[b.state] || b.state;
+        const op = (b.state === "active" || b.state === "pending")
+          ? `<button class="btn ghost sus-release" data-id="${b.id}" style="padding:2px 8px">解除</button>`
+          : `<span class="muted">—</span>`;
+        return `<tr>
+          <td>${st}</td><td>${escapeHtml(b.ip)}</td>
+          <td>${escapeHtml(durLabel[b.duration] || b.duration)}</td>
+          <td class="muted">${b.expires_at ? fmtDate(b.expires_at) : "—"}</td>
+          <td class="muted">${fmtDate(b.created_at)}<br>${escapeHtml(b.created_by || "")}</td>
+          <td class="muted">${escapeHtml(b.applied_note || "")}</td>
+          <td>${op}</td></tr>`;
+      }).join("");
+      mwrap.innerHTML = mres.blocks.length
+        ? `<table style="white-space:nowrap"><thead><tr><th>状態</th><th>IP</th><th>期間</th><th>期限</th><th>実行</th><th>備考</th><th></th>
+          </tr></thead><tbody>${mrows}</tbody></table>`
+        : `<p class="muted">手動ブロックはまだありません。</p>`;
+      root.querySelectorAll("#logSuspectsDetails .sus-block").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const dur = btn.parentElement.querySelector(".sus-dur").value;
+          const humans = Number(btn.dataset.humans) || 0;
+          if (!confirm(confirmText(btn.dataset.ip, dur, humans))) return;
+          btn.disabled = true;
+          const r = await postBlock(btn.dataset.ip, dur, humans > 0);
+          if (r) loadSuspects(); else btn.disabled = false;
+        });
+      });
+      root.querySelectorAll("#logSuspectsDetails .sus-dismiss").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          btn.disabled = true;
+          try {
+            await api.post("/api/system/admin/suspicious-access/dismiss", { ip: btn.dataset.ip });
+            loadSuspects();
+          } catch (e) {
+            toast("失敗: " + e.message);
+            btn.disabled = false;
+          }
+        });
+      });
+      root.querySelectorAll("#logSuspectsDetails .sus-release").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          if (!confirm("このIPのブロックを解除します（1分以内に反映）。よろしいですか？")) return;
+          btn.disabled = true;
+          try {
+            await api.post(`/api/system/admin/manual-blocks/${btn.dataset.id}/release`, {});
+            toast("解除しました（1分以内に反映）");
+            loadSuspects();
+          } catch (e) {
+            toast("失敗: " + e.message);
+            btn.disabled = false;
+          }
+        });
+      });
+    } catch (e) {
+      wrap.innerHTML = `<p class="muted">取得失敗: ${escapeHtml(e.message)}</p>`;
+    }
+  }
+  root.querySelector("#susReload").addEventListener("click", loadSuspects);
+  root.querySelector("#susHours").addEventListener("change", loadSuspects);
+  root.querySelector("#susShowDismissed").addEventListener("change", loadSuspects);
+  root.querySelector("#susManualBtn").addEventListener("click", async () => {
+    const ip = root.querySelector("#susManualIp").value.trim();
+    const dur = root.querySelector("#susManualDur").value;
+    if (!ip) { toast("IPアドレスを入力してください"); return; }
+    // 直接指定は『人間らしい訪問』の件数をこの時点で知らないので、サーバーの確認(共有IPの警告)に任せる。
+    if (!confirm(confirmText(ip, dur, 0))) return;
+    const r = await postBlock(ip, dur, false);
+    if (r) { root.querySelector("#susManualIp").value = ""; loadSuspects(); }
+  });
+
   async function loadAccessLog() {
     const wrap = root.querySelector("#accessLogWrap");
     wrap.innerHTML = `<p class="muted">読み込み中…</p>`;
@@ -8651,6 +8876,7 @@ export async function admin(root) {
     ["#logWithdrawalDetails", loadWithdrawalLog],
     ["#logErrorDetails", loadErrorLog],
     ["#logClientErrorDetails", loadClientErrorLog],
+    ["#logSuspectsDetails", loadSuspects],
     ["#logSecurityEventsDetails", loadSecurityEvents],
     ["#logAccessDetails", loadAccessLog],
     ["#logUsageAnalyticsDetails", loadUsageAnalytics],

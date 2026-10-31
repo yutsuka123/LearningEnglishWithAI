@@ -15,6 +15,19 @@
  ],
  "versions": [
   {
+   "version": "ver1.5.22",
+   "date": "2026-10-31",
+   "title": "内部の安定性・安全性の向上",
+   "public": [
+    "サービスの安定した運用のための内部の改善を行いました。通常のご利用への影響はありません。"
+   ],
+   "admin": [
+    "管理画面ログに「🕵️ 怪しいアクセス」を追加。VPSのcron(eigo-f2b-suspects・5分毎)がCaddyログの直近24時間をIPごとに要約(探索/ログイン失敗/429/4xxの回数・試したパス→結果・UA)して表示。危険度つき・「問題なし」で非表示(新しいアクセスで再表示)・クローラーとゲストの通常の401は数えない。",
+    "手動ブロック: 各行で1時間/24時間/7日/30日/永久を選んでブロック(『ブロック』だけなら24時間)・解除・IP直接指定・履歴一覧。アプリはmanual_blocksに記録するだけで、VPSのcron(eigo-f2b-manual-sync・1分毎)がfail2banのeigo-manual-*(5jail・期間別bantime)へ反映(アプリからホストのコマンドを直接実行する経路は無い)。自分のIP・ADMIN_KNOWN_IPS・ログイン実績のある信頼IP・許可リスト・非公開/IPv6は不可、共有IPかもしれないものは確認つき。既存の自動遮断(eigo-probe/eigo-ratelimited)は変更なし。",
+    "DB: logs.suspicious_access・manual_blocksを新設(追加のみ)。★デプロイ後にVPSで deploy/fail2ban/install.sh ban の再実行が必要(しないと一覧は空・ブロックは反映されない)。★ブロックはVPSの80/443を止めるので、同居する他サイト(Home Assistant・n8n・サイエンスラボ等)にも繋がらなくなる(画面にも明記)=有効化前にVPS自身の公開IPと運営者の固定IPを/etc/fail2ban/eigo-allowlist.txtへ。独立照査(Fable)済み(BLOCKER/HIGHなし・指摘は反映)。検査: scripts/check_ver1522.py 175項目。"
+   ]
+  },
+  {
    "version": "ver1.5.21",
    "date": "2026-10-28",
    "title": "内部の安定性・安全性の向上",

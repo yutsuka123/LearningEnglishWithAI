@@ -9,7 +9,8 @@ RAW=0; [ "${1:-}" = "--raw" ] && RAW=1
 AUDIT=/var/log/eigo-f2b-audit.log
 [ -f "$AUDIT" ] || { echo "監査ログがありません(導入前?)"; exit 1; }
 echo "== 現在のjail状態"
-for j in eigo-probe eigo-probe-trusted eigo-loginflood eigo-loginfail eigo-ratelimited; do
+for j in eigo-probe eigo-probe-trusted eigo-loginflood eigo-loginfail eigo-ratelimited \
+         eigo-manual-1h eigo-manual-24h eigo-manual-7d eigo-manual-30d eigo-manual-perm; do
   printf '  %-19s ' "$j"; { fail2ban-client status "$j" 2>&1 | grep -E 'Currently (failed|banned)|Total (failed|banned)' | tr -s ' \t\n' ' '; } || true; echo
 done
 echo "== 信頼IP/許可リスト"

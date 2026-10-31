@@ -1,0 +1,191 @@
+#!/usr/bin/env python3
+"""Caddyのアクセスログ(study.log)から「怪しいアクセス」をIPごとに要約し、アプリの管理画面へ送る
+(cronで5分ごと・2026-10-31・ver1.5.22・オーナー要望「怪しいアクセスの一覧と動作内容を表示したい」)。
+
+なぜホスト側か: Caddyのログは別コンテナ(aipoc-web)にありアプリ(eigo-app)から読めない。fail2banの
+eigo-f2b-auditと同じく、ホスト側が読んでトークン付きの内部API(POST /api/system/security-events/suspects)へ
+送る。BANはしない(遮断は管理画面からの手動ブロック→eigo-f2b-manual-sync)。送るのは要約だけ:
+パスはクエリ文字列を落とし(gclid等を残さない)、ヘッダー全体・Cookieは送らない。UAは200字まで。
+
+「怪しい」の数え方(直近24時間・IPごと。検索/広告/SNSのクローラーはUAを名乗る限り数えない=fail2banと同じ):
+  probe       存在しないはずのURL(.env・wp-・.git・phpmyadmin等)を叩いた(307/4xx)。eigo-probeと同じ判定
+  authfail    POST /api/auth/login が401/403
+  ratelimited 429(/api/words・/api/phrasesは除く=eigo-ratelimitedと同じ)
+  errors4xx   その他の4xx(401=未ログインの通常動作・402=残高なしの通常動作は数えない。静的ファイル/favicon/robotsも除く)
+一覧に載せる条件: probe>=1 / authfail>=3 / ratelimited>=10 / errors4xx>=15 のどれか。上位200IPまで
+(429は正規の利用者がAI音声を連続再生しても出るので、少数では載せない)。
+信頼IP・許可リストのIPは exempt=true で送る(管理画面でブロック不可の印。ホスト側のeigo-f2b-ignoreと同じ判定)。
+
+使い方: eigo-f2b-suspects (引数なし・/etc/cron.d/eigo-f2bから呼ばれる)
+通知はbest-effort(アプリが落ちていても何も壊さない)。失敗は監査ログに1行残す。
+"""
+import ipaddress
+import json
+import os
+import re
+import subprocess
+import sys
+import time
+import urllib.error
+import urllib.request
+from collections import Counter
+
+CONF = os.environ.get("EIGO_F2B_CONF", "/etc/eigo-f2b.conf")  # 環境変数はテスト用
+AUDIT = os.environ.get("EIGO_F2B_AUDIT", "/var/log/eigo-f2b-audit.log")
+IGNORE_CMD = os.environ.get("EIGO_F2B_IGNORE", "/usr/local/sbin/eigo-f2b-ignore")
+WINDOW_SECONDS = 24 * 3600
+TAIL_BYTES = 24 * 1024 * 1024
+MAX_IPS = 200
+MAX_PATHS = 8
+
+# eigo-probe.confのfailregexと同じ語(クエリ文字列は見ない=パス部分だけに当てる)。
+PROBE = re.compile(
+    r"(?:wp-login|wp-admin|wp-content|wp-includes|xmlrpc|/\.env|/\.git/|phpmyadmin|phpinfo|cgi-bin|"
+    r"/vendor/|actuator|/etc/passwd|boaform|HNAP1|manager/html|\.php|\.asp|\.jsp)")
+# eigo-common.confの_bot_uaと同じ(本物のクローラーを数えない)。
+BOT_UA = re.compile(
+    r"(?:Googlebot|AdsBot|Mediapartners|GoogleOther|Google-|Storebot|bingbot|Applebot|DuckDuckBot|"
+    r"YandexBot|Baiduspider|facebookexternalhit|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|Yahoo)")
+BENIGN_4XX = re.compile(r"^(?:/static/|/favicon\.ico|/robots\.txt|/apple-touch-icon)|\.map$")
+CTRL = re.compile(r"[\x00-\x1f\x7f]")
+
+
+def conf_value(key):
+    try:
+        with open(CONF, encoding="utf-8") as f:
+            for line in f:
+                if line.startswith(key + "="):
+                    return line.split("=", 1)[1].strip()
+    except OSError:
+        pass
+    return ""
+
+
+def audit(msg):
+    try:
+        with open(AUDIT, "a", encoding="utf-8") as fh:
+            fh.write("%s %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), msg))
+    except OSError:
+        pass
+
+
+def is_global(ip):
+    try:
+        return ipaddress.ip_address(ip).is_global
+    except ValueError:
+        return False
+
+
+def read_lines(path, now):
+    """study.logの末尾(最大24MB)をJSONとして読む。壊れた行・窓の外の行は飛ばす。"""
+    size = os.path.getsize(path)
+    with open(path, "rb") as fh:
+        fh.seek(max(0, size - TAIL_BYTES))
+        data = fh.read().decode("utf-8", errors="replace")
+    for line in data.splitlines():
+        try:
+            r = json.loads(line)
+        except ValueError:
+            continue
+        if not isinstance(r, dict) or now - float(r.get("ts") or 0) > WINDOW_SECONDS:
+            continue
+        yield r
+
+
+def classify(method, path, status):
+    """('probe'|'authfail'|'ratelimited'|'errors4xx'|None)。"""
+    if PROBE.search(path) and (status == 307 or 400 <= status <= 409):  # eigo-probe.confのstatus条件と同じ
+        return "probe"
+    if method == "POST" and path == "/api/auth/login" and status in (401, 403):
+        return "authfail"
+    if status == 429:
+        return None if path.startswith(("/api/words", "/api/phrases")) else "ratelimited"
+    if 400 <= status <= 499 and status not in (401, 402) and not BENIGN_4XX.search(path):
+        return "errors4xx"
+    return None
+
+
+def summarize(records, now):
+    ips = {}
+    for r in records:
+        q = r.get("request") or {}
+        ip = q.get("remote_ip") or ""
+        if not is_global(ip):
+            continue
+        ua = ((q.get("headers") or {}).get("User-Agent") or [""])[0]
+        if BOT_UA.search(ua):
+            continue
+        status = int(r.get("status") or 0)
+        method = str(q.get("method") or "")[:10]
+        path = CTRL.sub("", str(q.get("uri") or "").split("?")[0])[:120]
+        ts = float(r.get("ts") or 0)
+        e = ips.setdefault(ip, {
+            "total": 0, "probe": 0, "authfail": 0, "ratelimited": 0, "errors4xx": 0,
+            "first": 0.0, "last": 0.0, "paths": Counter(), "ua": Counter()})
+        e["total"] += 1
+        e["ua"][CTRL.sub("", ua)[:200]] += 1
+        kind = classify(method, path, status)
+        if not kind:
+            continue
+        e[kind] += 1
+        e["first"] = ts if not e["first"] else min(e["first"], ts)
+        e["last"] = max(e["last"], ts)
+        e["paths"][(method, path, status)] += 1
+    return ips
+
+
+def is_exempt(ip):
+    """eigo-f2b-ignoreと同じ判定(終了コード0=許可リスト/信頼IP)。呼べないときは『免除でない』扱い
+    (表示だけの印。ブロックの可否はアプリ側とeigo-f2b-manual-sync側で別に再確認する)。"""
+    try:
+        return subprocess.run([IGNORE_CMD, ip], capture_output=True, timeout=10).returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
+def build_items(ips):
+    keep = [(ip, e) for ip, e in ips.items()
+            if e["probe"] >= 1 or e["authfail"] >= 3 or e["ratelimited"] >= 10 or e["errors4xx"] >= 15]
+    keep.sort(key=lambda kv: -(kv[1]["probe"] * 5 + kv[1]["authfail"] * 2
+                               + kv[1]["ratelimited"] + kv[1]["errors4xx"] * 0.2))
+    items = []
+    for ip, e in keep[:MAX_IPS]:
+        top = e["paths"].most_common(MAX_PATHS)
+        items.append({
+            "ip": ip, "first_seen": e["first"], "last_seen": e["last"], "total": e["total"],
+            "probe": e["probe"], "authfail": e["authfail"], "ratelimited": e["ratelimited"],
+            "errors4xx": e["errors4xx"],
+            "paths": [{"m": m, "p": p, "s": s, "n": n} for (m, p, s), n in top],
+            "ua": (e["ua"].most_common(1) or [("", 0)])[0][0],
+            "exempt": is_exempt(ip),
+        })
+    return items
+
+
+def post(items, token, url):
+    body = json.dumps({"items": items}).encode("utf-8")
+    req = urllib.request.Request(
+        url.rstrip("/") + "/api/system/security-events/suspects", data=body,
+        headers={"Content-Type": "application/json", "X-F2B-Token": token}, method="POST")
+    urllib.request.urlopen(req, timeout=10).read()
+
+
+def main():
+    token, url, logdir = conf_value("NOTIFY_TOKEN"), conf_value("APP_URL"), conf_value("CADDY_LOG_DIR")
+    if not token or not url or not logdir:
+        return 0  # 未設定=この機能は無効(監査ログ・BANには影響しない)
+    now = time.time()
+    try:
+        items = build_items(summarize(read_lines(os.path.join(logdir, "study.log"), now), now))
+    except Exception as e:  # noqa: BLE001 ログを読めない/想定外の行でも、他のcronを止めない
+        audit("SUSPECTS-READ-FAILED err=%s" % str(e)[:120])
+        return 0
+    try:
+        post(items, token, url)
+    except (urllib.error.URLError, OSError) as e:
+        audit("SUSPECTS-POST-FAILED err=%s" % str(e)[:120])
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
