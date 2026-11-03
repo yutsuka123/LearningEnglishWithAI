@@ -16,7 +16,17 @@
 **→ 2026-09-21 03:00:25 JSTに自動デプロイ成功**(ver1.4.12稼働・主要テーブル件数不変・app.log/docker logsのWARNING以上0件・
 prune cron(03:45)でusage_events 0件削除+growth_daily 41日分保存を確認)。
 
-## ver1.5.22 (2026-10-31作成・**未デプロイ**・ブランチ`ver1.5.22`(worktree=`.claude/worktrees/ver1.5.22`・mainのver1.5.21=48e130fから分岐)・オーナー指示10/31「ログ表示に怪しいアクセスの一覧と動作内容を表示し、ブロック・永久ブロック・期間限定ブロックを選べるように」→「ブロックの種類=1時間/24時間/7日/30日/永久・『ブロック』だけなら24時間・自動遮断はそのまま(eigo-probe/eigo-ratelimited)で新機能は手動のみ=OK」)
+## ver1.5.23 (2026-11-03作成・**2026-11-04(水)03:00〜03:30の自動デプロイ予約**(オーナー指示11/3「明日のメンテを設定し自動デプロイ。夜中3時から」・曜日はpythonで確認済み=水曜の臨時枠)・mainのver1.5.22(98607b0)から)
+
+**概要ページ(about.html)の文言を実際の上限に合わせて直し、ver1.5.22の手動ブロックが本番で起動できなかった不具合(fail2banフィルター)を直す**
+
+- **文言修正(オーナー決定C2・11/1)**: 概要ページの「クロスワードはサンプル全部が使えます」(無料登録)を「サンプルがもっと遊べます」に変更(`static/about.html`2か所+`static/js/i18n_dict_about.js`の`about.sec.tiers.14`/`.30`を日英中簡繁の4言語とも)。実際の上限は`app/routers/games.py`の`CW_SAMPLE_PLAY_LIMIT_FREE = 20`(ゲストは5)で、公開サンプルが20件を超えると「全部」は嘘になるため。課金ユーザー向けの`games.statusCharged`(プレイ数無制限)は事実なので変更なし。
+- **手動ブロックのfail2banフィルターの修正(不具合)**: 11/2 03:02の`install.sh ban`が失敗した。原因=`deploy/fail2ban/filter.d/eigo-manual.conf`の`failregex`に`<HOST>`が無く、fail2ban 1.0.2が`No failure-id group`でjailごと起動を拒否(`fail2ban-client -t`の設定テストは通ってしまう)。`failregex = ^eigo-manual-never-matches-<HOST>$`に修正(何にもマッチしない性質は同じ)。導入スクリプトの自動ロールバックは正しく働き、既存の8 jailは無傷で稼働していた(実害なし。ただし管理画面の手動ブロックは遮断されない状態だった・manual_blocksの記録は0件)。失敗した導入の残り物として`eigo-f2b-manual-sync`のcronが毎分「jailの状態を取得できない」をSKIP記録していた(監査ログに約9,800行・害なし)→再導入で解消。
+- **再発防止**: `deploy/fail2ban/tools/docker_loadtest.sh`(新規)=使い捨てのDockerコンテナ(Ubuntu 24.04=本番と同じfail2ban 1.0.2)でjail10本を**実際に起動**し、手動ブロック5本でbanip→DOCKER-USERにルール→unbanipで消える・bantime(永久=-1)まで確認する。修正前の設定では本番と同じエラーで起動に失敗することを対照実験で確認済み(`--expect-fail`)。`scripts/check_ver1522.py`の検査も文字列の有無だけでなく`<HOST>`必須に強化。
+- **アプリ本体のコード変更なし**(Python/DB/APIは1.5.22と同じ。変更は静的ファイル(about.html・辞書)・バージョン表記・deploy/fail2ban/・検査スクリプトのみ)。
+- 検査: `scripts/check_ver1523.py`(静的検査・文言の4言語/HTMLとの一致/上限の数字/フィルター/バージョン表記)＋`docker_loadtest.sh`(実起動・全項目合格)。
+
+## ver1.5.22 (2026-10-31作成・**2026-11-02(月)03:00:02に自動デプロイ成功**(deploy_log success 03:00:42・稼働ver1.5.22・healthy・再起動0・WARNING以上0・5xx0・主要テーブル件数の減少なし)。**ただしfail2ban側(手動ブロックのjail)は11/2の導入に失敗し未有効→ver1.5.23で修正**・ブランチ`ver1.5.22`(worktree=`.claude/worktrees/ver1.5.22`・mainのver1.5.21=48e130fから分岐)・オーナー指示10/31「ログ表示に怪しいアクセスの一覧と動作内容を表示し、ブロック・永久ブロック・期間限定ブロックを選べるように」→「ブロックの種類=1時間/24時間/7日/30日/永久・『ブロック』だけなら24時間・自動遮断はそのまま(eigo-probe/eigo-ratelimited)で新機能は手動のみ=OK」)
 
 **管理画面のログに「🕵️ 怪しいアクセス」を追加し、動作内容の確認とブロック(期間を選べる)を画面から行えるようにする**
 

@@ -15,6 +15,20 @@
  ],
  "versions": [
   {
+   "version": "ver1.5.23",
+   "date": "2026-11-03",
+   "title": "ご案内ページの表現の修正と内部の安定性の向上",
+   "public": [
+    "ご案内ページ(概要)の一部の表現を、実際の内容に合わせて分かりやすく修正しました。",
+    "サービスの安定した運用のための内部の改善を行いました。通常のご利用への影響はありません。"
+   ],
+   "admin": [
+    "概要ページ(about.html)の「クロスワードはサンプル全部が使えます」(無料登録)を「サンプルがもっと遊べます」に修正(日英中簡繁の4言語・about.sec.tiers.14/.30)。実際の上限はログイン済み無料20個・ゲスト5個(games.pyの定数)で、公開サンプルが20件を超えると「全部」は嘘になるため(オーナー決定C2)。",
+    "ver1.5.22の手動ブロック(eigo-manual-*)が11/2の導入で起動できなかった不具合を修正: deploy/fail2ban/filter.d/eigo-manual.confのfailregexに<HOST>が無く、fail2ban 1.0.2が起動を拒否していた(設定テスト-tは通る)。既存の8 jailは無傷・実害なし。再導入(install.sh ban)は11/4 03:02の単発cronで自動実行。",
+    "再発防止: deploy/fail2ban/tools/docker_loadtest.sh(使い捨てコンテナで実際にjail10本を起動→手動ブロック5本のBAN/解除/bantime(永久=-1)まで確認)を追加。scripts/check_ver1522.pyの検査を<HOST>必須に強化。scripts/check_ver1523.py(静的検査)を追加。アプリ本体(Python/DB/API)の変更なし。"
+   ]
+  },
+  {
    "version": "ver1.5.22",
    "date": "2026-10-31",
    "title": "内部の安定性・安全性の向上",

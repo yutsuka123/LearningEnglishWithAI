@@ -490,7 +490,11 @@ for j, bt in want_bt.items():
 check("jail: DURATIONSのjail名とテンプレートが一致", {j for _, j in ip_blocks.DURATIONS.values()} == set(sections))
 for f in re.findall(r"^filter = (\S+)$", tmpl, re.M):
     check(f"filterファイルが存在: {f}", (fdir / "filter.d" / f"{f}.conf").exists())
-check("フィルターは何にもマッチしない正規表現", "never-matches" in (fdir / "filter.d" / "eigo-manual.conf").read_text())
+_fm = (fdir / "filter.d" / "eigo-manual.conf").read_text()
+check("フィルターは何にもマッチしない正規表現", "never-matches" in _fm)
+# 2026-11-03追加: 11/2の本番導入は、この failregex に <HOST> が無く fail2ban 1.0.2 が "No failure-id group" で起動に失敗した
+# (`fail2ban-client -t` は通ってしまう)。文字列の有無だけでなく<HOST>を必須にする。実際の起動確認は deploy/fail2ban/tools/docker_loadtest.sh。
+check("フィルターのfailregexに<HOST>がある(無いとfail2ban 1.0.2はjailごと起動に失敗する)", re.search(r"^failregex\s*=.*<HOST>", _fm, re.M) is not None)
 inst = (fdir / "install.sh").read_text(encoding="utf-8")
 check("install.sh: __ACTIONS_MANUAL__を置換・manual.logを作成・自己テスト", "__ACTIONS_MANUAL__" in inst and "manual.log" in inst and "eigo-manual-1h banip" in inst)
 check("install.sh: 手動ブロック自己テストはTEST-NET-1の仮IP", "TESTIP3=\"192.0.2." in inst)
