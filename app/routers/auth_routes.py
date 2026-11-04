@@ -391,7 +391,17 @@ _WITHDRAW_PERSONAL_TABLES = (
     "word_attempts", "phrase_attempts", "study_sessions",
     "conversation_log", "deck_progress", "crossword_sessions",
     "crossword_sample_plays", "word_plus_unlocks",
-    "password_reset_tokens",
+    "outrange_free_plays", "password_reset_tokens",
+)
+
+
+# 退会時に空にする usersテーブルの個人情報の列(氏名・フリガナ・登録時の任意アンケート)。
+_WITHDRAW_PERSONAL_USER_COLUMNS = (
+    "full_name", "furigana", "display_name_furigana",
+    "survey_occupation", "survey_occupation_category",
+    "survey_occupation_detail", "survey_age_group", "survey_gender",
+    "survey_purpose", "survey_referral", "survey_free_text",
+    "survey_interest_areas",
 )
 
 
@@ -432,11 +442,15 @@ def withdraw(payload: WithdrawIn):
             return error_response(
                 "7002", "管理者アカウントはこの画面から退会できません。"
                 "お問い合わせからご連絡ください。")
+        # 匿名化後の名前を先に決め、退会理由の記録にも**元のメールアドレスは残さない**(2026-11-04・ver1.5.24の独立照査HIGH-1:
+        # 従来は元のメールアドレス(=username)をそのまま保存しており、管理画面の説明「匿名化後」と食い違っていた)。
+        original_username = u["username"]
+        anon_username = f"withdrawn_{uid}_{secrets.token_hex(4)}"
         conn.execute(
             "INSERT INTO account_withdrawals "
             "(user_id, username_at_withdrawal, reasons, detail) "
             "VALUES (?, ?, ?, ?)",
-            (uid, u["username"], ",".join(reasons), detail),
+            (uid, anon_username, ",".join(reasons), detail),
         )
         for tbl in _WITHDRAW_PERSONAL_TABLES:
             conn.execute(f"DELETE FROM {tbl} WHERE user_id = ?", (uid,))
@@ -448,12 +462,24 @@ def withdraw(payload: WithdrawIn):
         # ことがあるため削除せず、作成者としての紐付けだけ外す。
         conn.execute(
             "UPDATE materials SET user_id = NULL WHERE user_id = ?", (uid,))
-        anon_username = f"withdrawn_{uid}_{secrets.token_hex(4)}"
         conn.execute(
             "UPDATE users SET username = ?, display_name = '', "
             " email = '', password_hash = '', is_active = 0 WHERE id = ?",
             (anon_username, uid),
         )
+        # 登録時の任意アンケート・氏名(本名)・フリガナも消す(個人を特定できる列。従来は残っていた=独立照査HIGH-1)。
+        # 列はinit_dbの_add_colで後から足したものを含むので、実在する列だけを対象にする。
+        have = {r[1] for r in conn.execute("PRAGMA table_info(users)")}
+        wipe = [c for c in _WITHDRAW_PERSONAL_USER_COLUMNS if c in have]
+        if wipe:
+            conn.execute(
+                "UPDATE users SET " + ", ".join(f"{c} = ''" for c in wipe)
+                + " WHERE id = ?", (uid,))
+        # ログイン履歴(logs.login_log)に残る元のメールアドレスも、この人の分だけ匿名化する(IPなどの記録は
+        # プライバシーポリシー§9の保存期間どおり。ここで消すのは「誰か」を指す名前だけ)。
+        conn.execute(
+            "UPDATE login_log SET username = ? WHERE username = ?",
+            (anon_username, original_username))
         auth.bump_session_epoch(conn, uid)
     resp = JSONResponse({"ok": True})
     resp.delete_cookie(auth.SESSION_COOKIE, path="/")

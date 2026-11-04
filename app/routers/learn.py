@@ -1213,14 +1213,18 @@ def tts_item(
                     content="読み上げる本文がありません（例文なし等）。",
                     status_code=422, media_type="text/plain",
                 )
+            # 保存済みの音声があるか(=新規合成が要らないか)を課金判定より先に調べる(ver1.5.24)。
+            # 無料範囲外の語でも、保存済みの音声なら「1日の無料再生枠」(ログイン済みのみ)で聴けるため。
+            # 未保存の声・速度(新規合成が要る)は枠の対象外=従来どおり課金/拒否になり、合成費は増えない。
+            cached = audio_store.get(conn, item_type, item_id, skind, voice, text)
             charge_error = ai.charge_playback_if_needed(
-                item_type, item_id, base, text, receipt=receipt)
+                item_type, item_id, base, text, receipt=receipt,
+                precreated=cached is not None)
             if charge_error:
                 tracking.log_event(
                     "play_error", item_type, f"no_charge:{base}:{text[:60]}")
                 return Response(content=charge_error, status_code=402,
                                 media_type="text/plain")
-            cached = audio_store.get(conn, item_type, item_id, skind, voice, text)
             if cached is not None:
                 # labelは分析用に「word/example/phraseの別:実際に再生した
                 # テキスト」を記録する(2026-09-17・ゲストIP別深掘り分析用。

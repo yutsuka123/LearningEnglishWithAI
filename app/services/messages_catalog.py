@@ -186,10 +186,20 @@ _m("ai.tts_voice_login",   # 2026-10-16: ゲストが事前作成のない声を
    "登录后即可选择此声音（免费注册即可使用）。",
    "登入後即可選擇此聲音（免費註冊即可使用）。")
 _m("ai.tts_outside_free",
-   "この単語・フレーズの音声は無料の範囲外です。ログイン（無料の会員登録）だけでは聴けず、少額のチャージが必要になります。",
-   "The audio for this word/phrase is outside the free range. Logging in (free registration) alone is not enough; a small top-up is needed.",
-   "此单词/短语的语音不在免费范围内。仅登录（免费注册）无法收听，需要充值少量金额。",
-   "此單字/短語的語音不在免費範圍內。僅登入（免費註冊）無法收聽，需要儲值少量金額。")
+   "この単語・フレーズの音声は無料の範囲外です。無料の会員登録（1分・カード不要）をすると、範囲外の語・フレーズも1日{limit}件まで聴けます。",
+   "The audio for this word/phrase is outside the free range. Free registration (1 minute, no card needed) lets you listen to up to {limit} words/phrases a day outside the range.",
+   "此单词/短语的语音不在免费范围内。免费注册（1分钟・无需信用卡）后，范围外的单词/短语每天可收听{limit}个。",
+   "此單字/短語的語音不在免費範圍內。免費註冊（1分鐘・無需信用卡）後，範圍外的單字/短語每天可聆聽{limit}個。")
+_m("ai.tts_allowance_used",   # 2026-11-04(ver1.5.24): ログイン済みが今日の無料枠を使い切り、残高も足りないとき
+   "今日の無料枠（{limit}件）を使い切りました。日本時間の0時にリセットされ、明日また聴けます。続けて聴きたいときは、設定画面からチャージすると少額で再生できます。",
+   "You’ve used today’s free plays ({limit}). They reset at midnight Japan time, so you can listen again tomorrow. To keep listening now, top up from the Settings screen to play for a small amount.",
+   "今天的免费播放次数（{limit}个）已用完。将在日本时间0点重置，明天可继续收听。想继续收听，可在设置页面充值，消耗少量余额即可播放。",
+   "今天的免費播放次數（{limit}個）已用完。將於日本時間0點重置，明天可繼續收聽。想繼續收聽，可在設定頁面儲值，消耗少量餘額即可播放。")
+_m("ai.tts_not_precreated",   # 2026-11-04(ver1.5.24): ログイン済みで、保存されていない声・速度の音声(=無料枠の対象外)を頼んだとき
+   "この声・速度の音声は事前に用意されていないため、無料枠の対象外です。標準の男声・女声に切り替えるか、設定画面からチャージしてください（必要額: 約¥{need}・残高: ¥{balance}）。",
+   "The audio for this voice/speed has not been prepared in advance, so it is not covered by the free plays. Switch to the standard male/female voice, or top up from the Settings screen (required: about ¥{need}, balance: ¥{balance}).",
+   "此声音/语速的语音没有事先准备，不在免费次数的范围内。请切换为标准男声/女声，或在设置页面充值（所需金额: 约¥{need}・余额: ¥{balance}）。",
+   "此聲音/語速的語音沒有事先準備，不在免費次數的範圍內。請切換為標準男聲/女聲，或在設定頁面儲值（所需金額: 約¥{need}・餘額: ¥{balance}）。")
 _m("ai.tts_need_credit",
    "この単語・フレーズの再生には少額のチャージ消費が必要です（必要額: 約¥{need}・残高: ¥{balance}）。設定画面からチャージしてください。",
    "Playing this word/phrase uses a small amount of your top-up balance (required: about ¥{need}, balance: ¥{balance}). Please top up from the Settings screen.",

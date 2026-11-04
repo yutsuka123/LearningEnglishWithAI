@@ -261,3 +261,76 @@ def is_free_range(
     if row["rn"] <= limit:
         return True
     return item_id in _showcase_ids_for(conn, item_type)
+
+
+# ============================================================
+# 無料登録ユーザーの「無料範囲外の語・フレーズ」1日の無料再生枠(2026-11-04・ver1.5.24・オーナー決定: 10件)
+# ============================================================
+# 目的: 訪問者の多くは「ある語・ある言い方を調べに来た人」で、その語は無料範囲(レベル昇順の上位)の外にあることが
+# 多い。無料登録しても聴けないと登録の理由が無いため、**登録(ログイン)した人**に限り、範囲外の語・フレーズを
+# 1日OUTRANGE_FREE_DAILY_LIMIT件まで無料で聴けるようにする。
+#  - 対象は「事前に作成済み(キャッシュ済み)の音声」だけ。未作成の声・速度で新規合成が要る再生は枠の対象外
+#    (=合成費は発生させない。従来どおり課金対象/拒否)。判定は呼び出し側(learn.py)がキャッシュの有無で行う。
+#  - 数えるのは「語・フレーズの数」: (item_type, item_id)が一意。同じ語を同じ日に何度聴いても(単語音声・例文音声・
+#    学習/ネイティブ速度・声が違っても)1件。同日の聴き直しは消費しない。
+#  - 1日は日本時間。0時にリセット(翌日の行は別の日として数えるだけ。掃除は自分の古い行を消費時に消す)。
+#  - ゲスト(未ログイン)は対象外(残高も記録先も無い)。管理者は元々課金対象外。課金ユーザーにも同じ枠を付ける
+#    (公平性: 枠を使い切った後の分だけ従来どおり少額を課金)。
+OUTRANGE_FREE_DAILY_LIMIT = 10
+
+
+def _jst_today(conn: sqlite3.Connection) -> str:
+    return conn.execute("SELECT date('now', '+9 hours')").fetchone()[0]
+
+
+def outrange_free_status(
+    conn: sqlite3.Connection, uid: int,
+) -> tuple[int, list[str]]:
+    """(今日あと何件使えるか, 今日すでに枠を使った項目の一覧["word:12","phrase:3"…])を返す。"""
+    day = _jst_today(conn)
+    rows = conn.execute(
+        "SELECT item_type, item_id FROM outrange_free_plays "
+        "WHERE user_id = ? AND day = ? ORDER BY id", (uid, day),
+    ).fetchall()
+    used = [f"{r['item_type']}:{r['item_id']}" for r in rows]
+    return max(0, OUTRANGE_FREE_DAILY_LIMIT - len(used)), used
+
+
+def try_use_outrange_free_play(
+    conn: sqlite3.Connection, uid: int, item_type: str, item_id: int,
+) -> bool:
+    """今日の無料再生枠を1件使えたらTrue。同じ語を今日すでに聴いていれば消費せずTrue。
+    枠が尽きていればFalse(何も残さない)。呼び出し側のトランザクション内で実行する
+    (INSERTで書き込みロックを取ってからCOUNTするので、同時リクエストでも上限を超えない)。"""
+    item_type = "phrase" if item_type == "phrase" else "word"
+    day = _jst_today(conn)
+    # まず読むだけで判定できるケースは書き込まない(枠を使い切った人が拒否されるたびに書き込みトランザクション+
+    # fsyncが走る負荷増幅を避ける=ver1.5.24の独立照査LOW-1)。競合時の正本は下のINSERT→COUNT→DELETE。
+    if conn.execute(
+        "SELECT 1 FROM outrange_free_plays WHERE user_id = ? AND day = ? "
+        "AND item_type = ? AND item_id = ?", (uid, day, item_type, int(item_id)),
+    ).fetchone():
+        return True
+    if conn.execute(
+        "SELECT COUNT(*) FROM outrange_free_plays WHERE user_id = ? AND day = ?",
+        (uid, day),
+    ).fetchone()[0] >= OUTRANGE_FREE_DAILY_LIMIT:
+        return False
+    cur = conn.execute(
+        "INSERT OR IGNORE INTO outrange_free_plays (user_id, day, item_type, item_id) "
+        "VALUES (?, ?, ?, ?)", (uid, day, item_type, int(item_id)))
+    if cur.rowcount == 0:
+        return True   # 今日すでにこの語を聴いている(聴き直しは消費しない)
+    n = conn.execute(
+        "SELECT COUNT(*) FROM outrange_free_plays WHERE user_id = ? AND day = ?",
+        (uid, day)).fetchone()[0]
+    if n > OUTRANGE_FREE_DAILY_LIMIT:
+        conn.execute("DELETE FROM outrange_free_plays WHERE id = ?", (cur.lastrowid,))
+        return False
+    # 数えるのは今日の分だけだが、行は90日間残す(効果測定=登録→枠の利用→チャージの流れを後から見るため。
+    # プライバシーポリシー§9の操作の記録の保存期間(約90日)に合わせる)。それより古い自分の行は消す。
+    # 日付は文字列比較でよい(YYYY-MM-DD)。退会時は _WITHDRAW_PERSONAL_TABLES で全件消える。
+    conn.execute(
+        "DELETE FROM outrange_free_plays WHERE user_id = ? AND day < date(?, '-90 days')",
+        (uid, day))
+    return True

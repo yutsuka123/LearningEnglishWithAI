@@ -1115,10 +1115,27 @@ function opsBreak() {
 
 function voiceButtonsItem(itemType, id, kind, fallback, getMode, isFreeRange,
   labelled = false) {
-  const locked = isFreeRange === false && !state.hasAiBalance;
+  // ログイン済みは、無料範囲外でも「1日の無料再生枠」が残っている(または今日すでに聴いた語)なら再生できる(ver1.5.24)。
+  // 枠の判定・消費はサーバー(charge_playback_if_needed)が正本で、ここは表示(🔒/🔊と説明)を合わせるだけ。
+  const usedToday = !state.isGuest && !!state.outrangeFreeUsed
+    && state.outrangeFreeUsed.has(`${itemType}:${id}`);
+  const hasAllowance = !state.isGuest
+    && ((state.outrangeFreeLeft || 0) > 0 || usedToday);
+  const locked = isFreeRange === false && !state.hasAiBalance && !hasAllowance;
   const free = isFreeRange === true;
   const icon = locked ? "🔒" : (free ? "🆓" : "🔊");
-  const lockNote = locked ? "・" + tx("voice.lockedNote") : "";
+  const limit = state.outrangeFreeLimit || 0;
+  let lockNote = "";
+  if (locked) {
+    // ゲスト=「登録すると1日N件まで」・ログイン済み=「今日の枠は使い切った(明日0時にリセット/チャージでも可)」
+    lockNote = "・" + (state.isGuest
+      ? tx("voice.lockedNote", { limit })
+      : tx("voice.lockedNoteUsed", { limit }));
+  } else if (isFreeRange === false && !state.hasAiBalance) {
+    lockNote = "・" + (usedToday
+      ? tx("voice.allowanceReplayNote")
+      : tx("voice.allowanceNote", { left: state.outrangeFreeLeft || 0 }));
+  }
   const freeNote = free ? "・" + tx("voice.freeNote") : "";
   const iconHtml = free
     ? `<span class="free-icon-glyph">${icon}</span>` : icon;

@@ -1374,7 +1374,7 @@ def refund_playback(receipt: dict | None) -> float:
 
 def charge_playback_if_needed(
     item_type: str, item_id: int, kind: str, text: str,
-    receipt: dict | None = None,
+    receipt: dict | None = None, precreated: bool = False,
 ) -> str | None:
     """単語/フレーズ音声「再生」の課金ガード（2026-08-09〜）。
 
@@ -1391,6 +1391,12 @@ def charge_playback_if_needed(
     誤連打・確認のための聞き直し等では再課金しない（ユーザー指示）。
     `kind`は"word"/"example"/"phrase"のいずれか(同じitem_idでも単語音声と
     例文音声は別コンテンツなのでキーに含める)。
+
+    2026-11-04〜(ver1.5.24・オーナー決定): **ログイン済み(無料登録を含む)の人は、無料範囲外でも
+    「事前作成済み(キャッシュ済み)の音声」なら1日`access_tiers.OUTRANGE_FREE_DAILY_LIMIT`件(語・フレーズ
+    単位)まで無料**で再生できる(登録する理由を作るため・追加の合成費は無い)。`precreated`は呼び出し側が
+    「要求された声・速度の音声が既に保存済みか」を渡す。未保存(=新規合成が要る)ときは枠を使わず、従来どおり
+    課金/拒否になる。課金ユーザーにも同じ枠を付け(公平性)、枠を使い切った後の分だけ少額を控除する。
 
     戻り値: 課金不要/成功なら None、拒否する場合はユーザー向けエラー文言。
     `receipt`を渡すと、実際に課金したときだけ{uid, amount, key, note}を埋める。呼び出し側は、音声を届けられな
@@ -1414,13 +1420,23 @@ def charge_playback_if_needed(
             # 苦情の原因になるため区別する(2026-08-11ユーザー指摘)。
             if access_tiers.is_free_range(conn, item_type, item_id):
                 return messages.tr("ai.tts_login")
-            return messages.tr("ai.tts_outside_free")
+            # ゲストが無料範囲外を押した: 「登録すると1日{limit}件まで聴ける」と、登録の理由をそのまま伝える(ver1.5.24)。
+            return messages.tr(
+                "ai.tts_outside_free",
+                limit=access_tiers.OUTRANGE_FREE_DAILY_LIMIT)
         u = get_user(conn, uid)
         if u and u.get("role") == "admin":
             return None
         recent_key = f"{item_type}:{item_id}:{kind}"
         if _recent_charge_hit(uid, recent_key):
             return None
+        # 無料再生枠(ver1.5.24): 事前作成済みの音声に限り、枠が残っていれば(または今日すでに聴いた語なら)無料。
+        allowance_used_up = False
+        if precreated:
+            if access_tiers.try_use_outrange_free_play(
+                    conn, uid, item_type, item_id):
+                return None
+            allowance_used_up = True
         settings = load_settings()
         gen_cost_usd = len(text) / 1000 * _TTS_USD_PER_1K_CHARS
         charge_jpy = max(
@@ -1430,6 +1446,17 @@ def charge_playback_if_needed(
         )
         balance = float((u or {}).get("balance_jpy") or 0)
         if balance < charge_jpy:
+            if allowance_used_up:
+                # 今日の無料枠を使い切り、残高も足りない: 「チャージが要る」だけでなく枠の存在とリセットを伝える。
+                return messages.tr(
+                    "ai.tts_allowance_used",
+                    limit=access_tiers.OUTRANGE_FREE_DAILY_LIMIT)
+            if not precreated:
+                # この声・速度の音声は保存されていない(新規合成が要る)ため無料枠の対象外。「チャージが要る」だけだと、
+                # 同じ行の🔊が「枠で聴ける」と出ているのに断られる理由が分からない(独立照査MEDIUM-1)。
+                return messages.tr(
+                    "ai.tts_not_precreated",
+                    need=f"{charge_jpy:.1f}", balance=f"{balance:.1f}")
             return messages.tr(
                 "ai.tts_need_credit",
                 need=f"{charge_jpy:.1f}", balance=f"{balance:.1f}")

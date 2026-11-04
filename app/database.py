@@ -963,6 +963,21 @@ CREATE INDEX IF NOT EXISTS idx_crossword_sample_plays_user
     ON crossword_sample_plays(user_id, sample_id);
 CREATE INDEX IF NOT EXISTS idx_crossword_sample_plays_guest
     ON crossword_sample_plays(guest_sid, sample_id);
+
+-- 無料登録ユーザーの「無料範囲外の語・フレーズ(事前作成済み音声)」1日の無料再生枠の消費記録
+-- (2026-11-04・ver1.5.24)。1日=日本時間。(user_id, day, item_type, item_id)が一意=同じ語を同じ日に
+-- 何度聴いても1件(音声の種別・声・速度は問わない)。件数の上限はaccess_tiers.OUTRANGE_FREE_DAILY_LIMIT。
+-- 行は90日保持(効果測定用・§9の操作の記録の期間に合わせる)。消費時に自分の90日超の行を掃除する。退会時は auth_routes の _WITHDRAW_PERSONAL_TABLES で削除。
+-- item_idはcontent DB(words/phrases)のIDなのでREFERENCESは付けない(ATTACH間はFKを張れない)。
+CREATE TABLE IF NOT EXISTS outrange_free_plays (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL,
+    day         TEXT    NOT NULL,
+    item_type   TEXT    NOT NULL,
+    item_id     INTEGER NOT NULL,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (user_id, day, item_type, item_id)
+);
 """
 
 

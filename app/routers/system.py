@@ -526,7 +526,7 @@ def my_usage():
         uses_free_first_list_sort)
 
     from ..config import APP_VERSION
-    from ..services import paypay, word_plus
+    from ..services import access_tiers, paypay, word_plus
     from ..services.auth import multiuser_enabled
     uid = current_user_id()
     s = load_settings()
@@ -552,6 +552,13 @@ def my_usage():
         # 対象か(2026-09-20)。判定はサーバー側に一本化し、フロントは
         # この値に従うだけにする(auth.uses_free_first_list_sort参照)。
         free_first_sort = uses_free_first_list_sort(conn, uid)
+        # 無料範囲外の語・フレーズの「1日の無料再生枠」(ver1.5.24・ログイン済みのみ。ゲストは枠なし=残り0)。
+        # 上限の数字はサーバー側の定数が唯一の正本で、画面の案内文もここの値を埋め込む(食い違い防止)。
+        if is_guest:
+            outrange_left, outrange_used = 0, []
+        else:
+            outrange_left, outrange_used = access_tiers.outrange_free_status(
+                conn, uid)
     rate = s.usd_jpy_rate
     # 実効上限(USD)：_user_guardと同じロジック(個別設定→既定=旧ユーザーの
     # みEmail未設定なら¥150/日、それ以外0円)を使う。以前はここだけ別計算
@@ -579,6 +586,9 @@ def my_usage():
                         if balance_jpy is not None else None),
         "remaining_jpy": remaining_jpy,
         "is_charged_or_admin": is_charged,
+        "outrange_free_limit": access_tiers.OUTRANGE_FREE_DAILY_LIMIT,
+        "outrange_free_left": outrange_left,
+        "outrange_free_used": outrange_used,
         "role": u.get("role", "user"),
         "username": u.get("username", ""),
         "model": s.openai_model,

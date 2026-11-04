@@ -745,6 +745,18 @@ export async function refreshCost() {
     // 近似する）。
     state.hasAiBalance =
       isAdmin || (!state.isGuest && (u.remaining_jpy || 0) > 0);
+    // 無料範囲外の語・フレーズの「1日の無料再生枠」(ver1.5.24)。上限はサーバーの定数が正本で、案内文にもこの値を埋め込む。
+    // ゲストには枠が無い(残り0・案内は「登録すると1日N件まで」)。usedは今日すでに枠で聴いた項目("word:12")=聴き直しは消費しない。
+    state.outrangeFreeLimit = Number(u.outrange_free_limit || 0);
+    const prevOutrangeLeft = state.outrangeFreeLeft;   // 前回の残り(初回はundefined)
+    state.outrangeFreeLeft = state.isGuest ? 0 : Number(u.outrange_free_left || 0);
+    // 枠で再生した直後は、残りの件数を短く知らせる(ホバー説明が見えないスマホでも分かるように)。
+    if (!state.isGuest && typeof prevOutrangeLeft === "number"
+        && state.outrangeFreeLeft < prevOutrangeLeft) {
+      toast(tx("voice.allowanceUsedToast", { left: state.outrangeFreeLeft }));
+    }
+    state.outrangeFreeUsed = new Set(
+      !state.isGuest && Array.isArray(u.outrange_free_used) ? u.outrange_free_used : []);
     // クロスワード「自分で作る」等、課金ユーザー限定機能の表示ゲート用
     // (2026-09-06・app/routers/system.pyのis_charged_or_adminと同一判定。
     // hasAiBalanceは「今使える残高があるか」の近似値で、チャージ済みだが
