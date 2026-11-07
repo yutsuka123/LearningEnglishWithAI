@@ -5788,7 +5788,10 @@ export async function admin(root) {
           （SSHは止まりません）。<b>⚠️ このVPSの80/443を使う同居の他サイト（Home Assistant・n8n・サイエンスラボ等）にも繋がらなくなります</b>。「ブロック」だけを押すと<b>24時間</b>。期間を選べば1時間／7日／30日／永久も選べます。
           <b>自分のIP・登録ユーザーのログイン実績があるIP・許可リストのIP</b>はブロックできません。
           携帯回線や学校・会社など<b>共有IP</b>かもしれないものは、確認が出ます。クローラー(Googlebot等)は数えません。
-          自動で遮断しているもの（eigo-probe等）は下の「アクセス制限」に出ます。</p>
+          自動で遮断しているもの（eigo-probe等）は下の「アクセス制限」に出ます。<br>
+          <b>国・地域</b>はIPから外部の位置情報サービスで推定した目安です（VPNやクラウド経由だと実際の場所と違います）。
+          <b>🔁 再来</b>は、今回より前の日にも同じIPが怪しい動き（この一覧に載った・自動遮断された・手動ブロックした）をしていたものです。
+          「🆕 初めて」は<b>記録上は</b>初めてという意味で、記録が始まる前の動きは分かりません（下の注記参照）。</p>
         <div class="row">
           <label>直近:
             <select id="susHours">
@@ -5797,11 +5800,12 @@ export async function admin(root) {
               <option value="720">30日</option>
             </select></label>
           <label><input type="checkbox" id="susShowDismissed"> 「問題なし」にしたものも表示</label>
+          <label><input type="checkbox" id="susRepeatOnly"> 🔁 再来（過去にも怪しい動き）だけ表示</label>
           <button class="btn ghost" id="susReload"
             style="padding:3px 10px">再読み込み</button>
         </div>
         <div id="suspectsStatus" class="muted mt"></div>
-        <div id="suspectsWrap" class="mt"><p class="muted">未読み込み</p></div>
+        <div id="suspectsWrap" class="mt" style="overflow-x:auto"><p class="muted">未読み込み</p></div>
         <h3 class="mt">🚫 手動ブロック（有効なものと直近30日の履歴）</h3>
         <div class="row">
           <input type="text" id="susManualIp" placeholder="IPアドレスを直接指定(例 203.0.113.5)"
@@ -7471,6 +7475,54 @@ export async function admin(root) {
     return `${head}<details><summary class="muted">ほか${paths.length - 3}件</summary>${
       paths.slice(3).map((x) => `<div>${line(x)}</div>`).join("")}</details>`;
   }
+  // 日(日本時間のYYYY-MM-DD)を「11/04」に。今年でなければ年も付ける。
+  function dayShort(d) {
+    if (!d) return "";
+    const md = `${d.slice(5, 7)}/${d.slice(8, 10)}`;
+    return d.slice(0, 4) === String(new Date().getFullYear()) ? md : `${d.slice(0, 4)}/${md}`;
+  }
+  // 国・地域(ver1.5.25)。取得できていない理由を区別して出す。文字列は外部サービス由来なのでescapeHtmlを通す。
+  function geoHtml(it) {
+    const g = it.geo || {};
+    if (g.state === "ok") {
+      const place = [g.region_label, g.city_label].filter(Boolean).map(escapeHtml).join(" / ");
+      return `<div><b>${escapeHtml(g.country_label || g.country)}</b></div>`
+        + (place ? `<div class="muted">${place}</div>` : "")
+        + (g.org ? `<div class="muted">${escapeHtml(g.org)}</div>` : "");
+    }
+    return `<span class="muted">${g.state === "pending" ? "取得中（次の集計で表示）" : "不明"}</span>`;
+  }
+  // 過去の履歴(ver1.5.25)。『再来』=今回より前の日にも怪しい動きの記録があるIP。
+  function historyHtml(it) {
+    const h = it.history || {};
+    const rows = [];
+    if (h.repeat) {
+      rows.push(`<div><b style="color:#c0392b">🔁 再来</b> 過去<b>${h.prior_days}</b>日`
+        + `（直近 ${escapeHtml(dayShort(h.last_prior_day))}・初回 ${escapeHtml(dayShort(h.first_day))}）</div>`);
+    } else {
+      rows.push(`<div class="muted">🆕 初めて（記録上）</div>`);
+    }
+    if (h.bans && h.bans.count) {
+      rows.push(`<div>自動遮断 <b>${h.bans.count}</b>回（${(h.bans.jails || []).map(escapeHtml).join("・")}`
+        + `・${escapeHtml(dayShort(h.bans.first))}${h.bans.last !== h.bans.first ? `〜${escapeHtml(dayShort(h.bans.last))}` : ""}）</div>`);
+    }
+    if (h.manual_blocks) rows.push(`<div>手動ブロック <b>${h.manual_blocks}</b>回</div>`);
+    if (h.login && h.login.fail) rows.push(`<div>ログイン失敗 <b>${h.login.fail}</b>回</div>`);
+    if (h.visits) {
+      rows.push(`<div class="muted">訪問記録 ${h.visits.count}件（${escapeHtml(dayShort(h.visits.first))}`
+        + `${h.visits.last !== h.visits.first ? `〜${escapeHtml(dayShort(h.visits.last))}` : ""}`
+        + `${h.visits.bots ? `・bot印${h.visits.bots}` : ""}）</div>`);
+    }
+    if ((h.recent_days || []).length > 1) {
+      const lines = h.recent_days.map((d) => {
+        const detail = [["探索", d.probe], ["ログイン失敗", d.authfail], ["429", d.ratelimited], ["4xx", d.errors4xx]]
+          .filter((x) => x[1] > 0).map(([l, n]) => `${l}${n}`).join("・");
+        return `<div>${escapeHtml(dayShort(d.day))} ${levelLabel[d.level] || ""} ${escapeHtml(detail || "（動き始めの印）")}</div>`;
+      }).join("");
+      rows.push(`<details><summary class="muted">日ごとの記録（${h.flagged_days}日）</summary>${lines}</details>`);
+    }
+    return rows.join("");
+  }
   function suspectState(it) {
     if (it.block) {
       const until = it.block.expires_at ? `〜${fmtDate(it.block.expires_at)}` : "（解除するまで）";
@@ -7540,13 +7592,20 @@ export async function admin(root) {
         + (stale ? ` <b>⚠️ 集計が止まっている可能性（VPSのeigo-f2b-suspects）</b>` : "")
         + ` ／ VPSへの反映の最終確認: ${escapeHtml(agoText(mres.synced_at))}`
         + (syncStale ? ` <b>⚠️ 反映が止まっている可能性（VPSのeigo-f2b-manual-sync）</b>` : "");
-      if (!res.items.length) {
-        wrap.innerHTML = `<p class="muted">この期間に怪しいアクセスはありません。</p>`;
+      const repeatOnly = root.querySelector("#susRepeatOnly").checked;
+      const shown = repeatOnly ? res.items.filter((it) => it.history && it.history.repeat) : res.items;
+      if (!shown.length) {
+        wrap.innerHTML = `<p class="muted">${repeatOnly && res.items.length
+          ? "この期間に「再来」のIPはありません（チェックを外すと全件が見えます）。"
+          : "この期間に怪しいアクセスはありません。"}</p>`;
       } else {
-        const rows = res.items.map((it) => `<tr>
+        const hs = res.history_since || {};
+        const rows = shown.map((it) => `<tr>
           <td>${levelLabel[it.level] || ""}</td>
           <td class="muted">${fmtDate(it.last_seen)}<br>初回 ${fmtDate(it.first_seen)}</td>
           <td>${escapeHtml(it.ip)}</td>
+          <td style="white-space:normal;min-width:9em;max-width:14em">${geoHtml(it)}</td>
+          <td style="white-space:normal;min-width:11em;max-width:16em">${historyHtml(it)}</td>
           <td class="muted">${[["探索", it.probe], ["ログイン失敗", it.authfail], ["429", it.ratelimited],
               ["4xx", it.errors4xx]].filter((x) => x[1] > 0).map(([l, n]) =>
               `<div>${l} <b>${n}</b></div>`).join("")}
@@ -7558,9 +7617,12 @@ export async function admin(root) {
           <td>${suspectOps(it)}</td>
         </tr>`).join("");
         wrap.innerHTML = `<table style="white-space:nowrap"><thead><tr>
-          <th>危険度</th><th>最終</th><th>IP</th><th>回数</th><th>試した内容（パス → 結果）</th>
+          <th>危険度</th><th>最終</th><th>IP</th><th>国・地域</th><th>過去の履歴</th><th>回数</th><th>試した内容（パス → 結果）</th>
           <th>UA</th><th>状態</th><th>操作</th>
-        </tr></thead><tbody>${rows}</tbody></table>`;
+        </tr></thead><tbody>${rows}</tbody></table>
+        <p class="muted mt">※ 履歴の記録の始まり: 怪しいアクセスの一覧=${escapeHtml(hs.flagged ? dayShort(hs.flagged) : "—")}／
+          自動遮断(fail2ban)=${escapeHtml(hs.ban ? dayShort(hs.ban) : "—")}。これより前の動きは「🆕 初めて」と出ても、実際には過去にもあった可能性があります。
+          同じ会社・同じ国の別IPが続く場合(例: 同じクラウド事業者)は、IPが違うので「再来」にはなりません。</p>`;
       }
       const mrows = mres.blocks.map((b) => {
         const st = { active: "🚫 遮断中", pending: "⏳ 反映待ち", expired: "期限切れ",
@@ -7623,6 +7685,7 @@ export async function admin(root) {
   root.querySelector("#susReload").addEventListener("click", loadSuspects);
   root.querySelector("#susHours").addEventListener("change", loadSuspects);
   root.querySelector("#susShowDismissed").addEventListener("change", loadSuspects);
+  root.querySelector("#susRepeatOnly").addEventListener("change", loadSuspects);
   root.querySelector("#susManualBtn").addEventListener("click", async () => {
     const ip = root.querySelector("#susManualIp").value.trim();
     const dur = root.querySelector("#susManualDur").value;

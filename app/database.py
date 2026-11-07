@@ -789,6 +789,33 @@ CREATE TABLE IF NOT EXISTS logs.suspicious_access (
 CREATE INDEX IF NOT EXISTS logs.idx_suspicious_access_last
     ON suspicious_access(last_seen);
 
+-- 怪しいアクセスの「日ごとの履歴」(2026-11-08・ver1.5.25・オーナー要望「過去にも同じIPで不審な動きが
+-- あったか確認したい・表示がほしい」)。suspicious_accessは直近24時間の要約をIPごとに**上書き**する
+-- ため、翌日以降は前日の動きが残らない。そこで取り込みのたびに「そのIPがどの日(日本時間の暦日)に
+-- 怪しい動きをしたか」をここに積み、管理画面で『過去にも出ていたIP(再来)』が分かるようにする。
+--   day          = 日本時間の暦日(YYYY-MM-DD)。24時間の窓がまたぐ2日のうち、最後に動いた日に件数を、
+--                  最初に動いた日には印(件数0)を入れる。同じ日の再取り込みは各件数の最大値で更新。
+--   probe 等     = suspicious_accessと同じ意味(その日の窓での件数)
+-- 30日で消えるsuspicious_accessと違い360日保持(IPの保持期限360日以内)。取り込み時に古い行を削除する。
+-- 起動時に、いまあるsuspicious_accessの行も一度だけ取り込む(INSERT OR IGNORE=何度走っても同じ)。
+CREATE TABLE IF NOT EXISTS logs.suspicious_access_days (
+    ip          TEXT NOT NULL,
+    day         TEXT NOT NULL,
+    total       INTEGER NOT NULL DEFAULT 0,
+    probe       INTEGER NOT NULL DEFAULT 0,
+    authfail    INTEGER NOT NULL DEFAULT 0,
+    ratelimited INTEGER NOT NULL DEFAULT 0,
+    errors4xx   INTEGER NOT NULL DEFAULT 0,
+    updated_at  TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (ip, day)
+);
+CREATE INDEX IF NOT EXISTS logs.idx_suspicious_access_days_day
+    ON suspicious_access_days(day);
+INSERT OR IGNORE INTO logs.suspicious_access_days
+    (ip, day, total, probe, authfail, ratelimited, errors4xx)
+    SELECT ip, date(last_seen, '+9 hours'), total, probe, authfail, ratelimited, errors4xx
+    FROM logs.suspicious_access;
+
 -- 管理画面から手動で行うブロック(2026-10-31・ver1.5.22)。アプリは「このIPを・この期間」と
 -- 記録するだけで、ホストのfail2ban(eigo-manual-*のjail)への反映はホスト側cron
 -- (eigo-f2b-manual-sync・1分毎)が行う(アプリからホストのコマンドを直接実行する経路は作らない)。

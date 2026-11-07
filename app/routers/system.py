@@ -11,7 +11,7 @@ import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Request
 from starlette.concurrency import run_in_threadpool
 
 from ..services import errors
@@ -21,7 +21,7 @@ from ..config import ROOT_DIR, load_admin_known_ips, load_settings, log, paths
 from ..database import ACCENTS, NEWS_FIELDS, db
 from ..schemas import MemoryUpdateIn, SettingsIn
 from ..services import (
-    ai, auth, geo_consistency, geo_names, growth_metrics, ip_blocks, persistence, traffic_source,
+    ai, auth, geo_consistency, geo_names, geoip, growth_metrics, ip_blocks, persistence, traffic_source,
     tracking, ua_parse, visitor_kind,
 )
 
@@ -3314,13 +3314,21 @@ def _set_state(conn, key: str) -> None:
         (key,))
 
 
+# 取り込み1回あたりに、国・地域の取得を頼むIPの上限(外部の位置情報サービスの無料枠・応答待ちを守る)。
+# 5分ごとの取り込みで少しずつ埋まる。取得は応答を返した後のバックグラウンドで行う。
+GEO_ENRICH_PER_INGEST = 10
+
+
 @router.post("/security-events/suspects", dependencies=[_F2B_DEP])
-def ingest_suspects(payload: SuspectsIn):
+def ingest_suspects(payload: SuspectsIn, background_tasks: BackgroundTasks):
     """ホストのcron(eigo-f2b-suspects・5分毎)が、直近24時間の怪しいアクセスをIPごとに要約して送る。
     IPごとに上書き(「問題なし」の印dismissed_atは残す)。空の送信も受け付けて最終集計時刻を更新する
-    (集計が止まっていることに管理画面で気づけるように)。"""
+    (集計が止まっていることに管理画面で気づけるように)。
+    ver1.5.25: ①日ごとの履歴(suspicious_access_days)にも積む(上書きされる要約から、過去の動きが消えないように)
+    ②国・地域が未取得のIPは、応答後にバックグラウンドで取得を頼む(ブラウザ訪問が無いIPは今まで国が空だった)。"""
     saved = skipped = 0
     now = ip_blocks.utc_now()
+    need_geo: list[str] = []
     with db() as conn:
         for it in payload.items:
             ip = ip_blocks.parse_ip(it.ip)
@@ -3348,13 +3356,51 @@ def ingest_suspects(payload: SuspectsIn):
                  it.ratelimited, it.errors4xx, json.dumps(paths, ensure_ascii=False),
                  ip_blocks.clean_text(it.ua, 300), 1 if it.exempt else 0))
             saved += 1
+            _record_suspect_days(conn, str(ip), ip_blocks.epoch_to_utc(it.first_seen, now),
+                                 ip_blocks.epoch_to_utc(it.last_seen, now), it)
+            if len(need_geo) < GEO_ENRICH_PER_INGEST:
+                g = conn.execute(
+                    "SELECT country, fetched_at < datetime('now', '-1 day') AS stale "
+                    "FROM ip_geo_cache WHERE ip = ?", (str(ip),)).fetchone()
+                if g is None:
+                    need_geo.append(str(ip))
+                elif not g["country"] and g["stale"]:
+                    # 以前の問い合わせが失敗していた(国が空)IPは、1日以上たっていれば取り直す
+                    # (一時的な429で、ずっと『不明』のままにならないように)。enrich_ipは行があると
+                    # 何もしないので、空の行だけ消してから依頼する。
+                    conn.execute("DELETE FROM ip_geo_cache WHERE ip = ? AND country = ''", (str(ip),))
+                    need_geo.append(str(ip))
         # 30日より古い要約・解除/期限切れから360日を過ぎたブロック記録を捨てる(IP保持期限360日以内)。
+        # 日ごとの履歴も360日を過ぎた行を捨てる(プライバシーポリシー§9のIP保持期限)。
+        conn.execute("DELETE FROM suspicious_access_days WHERE day < date('now', '+9 hours', '-360 days')")
         conn.execute("DELETE FROM suspicious_access WHERE last_seen < datetime('now', '-30 days')")
         conn.execute(
             "DELETE FROM manual_blocks WHERE COALESCE(released_at, expires_at) < datetime('now', '-360 days')")
         _set_state(conn, "suspects_last_at")
         conn.commit()
-    return {"ok": True, "saved": saved, "skipped": skipped}
+    for ip in need_geo:
+        background_tasks.add_task(geoip.enrich_ip, ip)
+    return {"ok": True, "saved": saved, "skipped": skipped, "geo_queued": len(need_geo)}
+
+
+def _record_suspect_days(conn, ip: str, first_utc: str, last_utc: str, it) -> None:
+    """要約1件を『日ごとの履歴』に積む。件数は最後に動いた日(日本時間)へ・同じ日の再取り込みは最大値で更新。
+    窓が2日にまたがるとき、最初に動いた日には印(件数0)だけ入れる(その日にも動いたことが分かればよい)。"""
+    last_day, first_day = ip_blocks.jst_day(last_utc), ip_blocks.jst_day(first_utc)
+    if not last_day:
+        return
+    conn.execute(
+        "INSERT INTO suspicious_access_days (ip, day, total, probe, authfail, ratelimited, errors4xx, updated_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now')) "
+        "ON CONFLICT(ip, day) DO UPDATE SET total = MAX(total, excluded.total), "
+        "probe = MAX(probe, excluded.probe), authfail = MAX(authfail, excluded.authfail), "
+        "ratelimited = MAX(ratelimited, excluded.ratelimited), errors4xx = MAX(errors4xx, excluded.errors4xx), "
+        "updated_at = datetime('now')",
+        (ip, last_day, it.total, it.probe, it.authfail, it.ratelimited, it.errors4xx))
+    if first_day and first_day != last_day:
+        conn.execute(
+            "INSERT OR IGNORE INTO suspicious_access_days (ip, day, updated_at) VALUES (?, ?, datetime('now'))",
+            (ip, first_day))
 
 
 @router.get("/security-events/manual-blocks/desired", dependencies=[_F2B_DEP])
@@ -3437,6 +3483,7 @@ def admin_suspicious_access(hours: int = 24, include_dismissed: bool = False, li
         rows = _suspect_rows(conn, hours, include_dismissed, limit)
         ips = [r["ip"] for r in rows]
         blocks, f2b, humans, trusted = {}, {}, {}, set()
+        geos, days_by_ip, bans_by_ip, blocks_by_ip, visits, logins = {}, {}, {}, {}, {}, {}
         if ips:
             q = _in_clause(ips)
             for b in conn.execute(
@@ -3462,6 +3509,35 @@ def admin_suspicious_access(hours: int = 24, include_dismissed: bool = False, li
                     f"WHERE l.success = 1 AND l.ip IN ({q}) AND l.created_at >= datetime('now', '-30 days') "
                     f"AND u.created_at <= datetime(l.created_at, '-2 days')", ips):
                 trusted.add(t["ip"])
+            # ver1.5.25: 国・地域(ip_geo_cache)と、過去の履歴(日ごとの記録・遮断・手動ブロック・訪問・ログイン)
+            for g in conn.execute(
+                    f"SELECT ip, country, region, city, org FROM ip_geo_cache WHERE ip IN ({q})", ips):
+                geos[g["ip"]] = dict(g)
+            for d in conn.execute(
+                    f"SELECT ip, day, total, probe, authfail, ratelimited, errors4xx "
+                    f"FROM suspicious_access_days WHERE ip IN ({q}) ORDER BY day", ips):
+                days_by_ip.setdefault(d["ip"], []).append(dict(d))
+            for b in conn.execute(
+                    f"SELECT ip, jail, action, mode, created_at FROM security_events "
+                    f"WHERE action = 'ban' AND ip IN ({q})", ips):
+                bans_by_ip.setdefault(b["ip"], []).append(dict(b))
+            for m in conn.execute(
+                    f"SELECT ip, created_at FROM manual_blocks WHERE ip IN ({q})", ips):
+                blocks_by_ip.setdefault(m["ip"], []).append(dict(m))
+            for v in conn.execute(
+                    f"SELECT ip, COUNT(*) AS n, MIN(created_at) AS a, MAX(created_at) AS b, "
+                    f"SUM(CASE WHEN COALESCE(bot_mark, 0) > 0 THEN 1 ELSE 0 END) AS bots "
+                    f"FROM landing_visits WHERE ip IN ({q}) GROUP BY ip", ips):
+                visits[v["ip"]] = dict(v)
+            for lg in conn.execute(
+                    f"SELECT ip, SUM(CASE WHEN success = 0 THEN 1 ELSE 0 END) AS fail, "
+                    f"SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) AS ok "
+                    f"FROM login_log WHERE ip IN ({q}) GROUP BY ip", ips):
+                logins[lg["ip"]] = dict(lg)
+        # 履歴の記録がいつから存在するか(『過去の記録なし』を『過去に何も無かった』と読み違えないための注記用)
+        since_days = conn.execute("SELECT MIN(day) AS d FROM suspicious_access_days").fetchone()["d"]
+        since_ban = conn.execute(
+            "SELECT MIN(created_at) AS d FROM security_events WHERE action = 'ban' AND mode = 'ban'").fetchone()["d"]
         state = {r["key"]: r["value"] for r in conn.execute(
             "SELECT key, value FROM app_state WHERE key IN ('suspects_last_at', 'manual_sync_last_at')")}
     items = []
@@ -3481,13 +3557,33 @@ def admin_suspicious_access(hours: int = 24, include_dismissed: bool = False, li
             "human_visits_30d": humans.get(r["ip"], 0),
             "dismissed": bool(r["dismissed_at"]) and r["last_seen"] <= r["dismissed_at"],
             "block": blocks.get(r["ip"]), "f2b": f2b.get(r["ip"]),
+            "geo": _suspect_geo(geos.get(r["ip"])),
+            "history": ip_blocks.build_history(
+                r["first_seen"], days_by_ip.get(r["ip"], []), bans_by_ip.get(r["ip"], []),
+                blocks_by_ip.get(r["ip"], []), visits.get(r["ip"]), logins.get(r["ip"])),
         })
     order = {"high": 0, "mid": 1, "low": 2}
     # 危険度順(高→低)・同じ危険度では新しい順(後ろのsortが優先・安定ソート)
     items.sort(key=lambda x: x["last_seen"], reverse=True)
     items.sort(key=lambda x: order[x["level"]])
     return {"hours": hours, "items": items,
-            "collected_at": state.get("suspects_last_at"), "synced_at": state.get("manual_sync_last_at")}
+            "collected_at": state.get("suspects_last_at"), "synced_at": state.get("manual_sync_last_at"),
+            "history_since": {"flagged": since_days, "ban": ip_blocks.jst_day(since_ban) or None}}
+
+
+def _suspect_geo(row: dict | None) -> dict:
+    """ip_geo_cacheの1行を、一覧に出す形に。state: ok=国あり / unknown=問い合わせたが取れなかった /
+    pending=まだ問い合わせていない(取り込み時にバックグラウンドで取得するので、少し後に埋まる)。"""
+    if row is None:
+        return {"state": "pending"}
+    if not row.get("country"):
+        return {"state": "unknown"}
+    c, r, t = row["country"], row.get("region") or "", row.get("city") or ""
+    return {"state": "ok", "country": geo_names.canonical_country(c),
+            "country_label": geo_names.country_label(c),
+            "region_label": geo_names.region_label(c, r),
+            "city_label": geo_names.city_label(c, r, t),
+            "org": row.get("org") or ""}
 
 
 class SuspectDismissIn(BaseModel):

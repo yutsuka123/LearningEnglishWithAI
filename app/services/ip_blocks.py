@@ -105,6 +105,72 @@ def suspect_level(row) -> str:
     return "low"
 
 
+def jst_day(utc_text: str | None) -> str:
+    """UTC文字列('YYYY-MM-DD HH:MM:SS')を日本時間の暦日('YYYY-MM-DD')に。読めなければ空文字。"""
+    try:
+        return (datetime.strptime((utc_text or "")[:19], _FMT) + timedelta(hours=9)).strftime("%Y-%m-%d")
+    except ValueError:
+        return ""
+
+
+# 履歴の根拠(日ごとの記録)に数える遮断の種類。fail2banの『実際に遮断した』ban(mode='ban')だけ。
+# 試験運転(mode='dryrun')は遮断していないので『過去に不審だった』証拠には数えない。
+_LEVEL_ORDER = {"low": 0, "mid": 1, "high": 2}
+
+
+def build_history(cur_first_seen: str, days: list[dict], bans: list[dict], blocks: list[dict],
+                  visit: dict | None, login: dict | None) -> dict:
+    """1つのIPの『過去にも不審な動きがあったか』を組み立てる(2026-11-08・ver1.5.25)。
+    cur_first_seen = いま一覧に出ている窓(直近24時間の要約)の最初の動き(UTC)。
+    『再来(repeat)』= それより**前の日(日本時間)**にも、次のどれかの記録があること:
+      ① suspicious_access_days(怪しいアクセス一覧に載った日) ② fail2banが実際に遮断(ban)した日
+      ③ 手動ブロックした日。同じ日の動きは『今回』の続きなので数えない。
+    ブラウザ訪問(landing_visits)・ログイン失敗は『不審の証拠』にはせず、参考情報(visits/login)として返す
+    (クローラーや正規の利用者の共有IPの訪問を『過去に不審』と誤って断定しないため)。"""
+    cur_day = jst_day(cur_first_seen)
+    evidence: dict[str, set[str]] = {}
+
+    def add(day: str, src: str) -> None:
+        if day:
+            evidence.setdefault(day, set()).add(src)
+
+    day_rows = []
+    best = "low"
+    for d in days:
+        add(d["day"], "flag")
+        lv = suspect_level(d)
+        if _LEVEL_ORDER[lv] > _LEVEL_ORDER[best]:
+            best = lv
+        day_rows.append({"day": d["day"], "level": lv, "probe": d["probe"], "authfail": d["authfail"],
+                         "ratelimited": d["ratelimited"], "errors4xx": d["errors4xx"]})
+    real_bans = [b for b in bans if b.get("action") == "ban" and b.get("mode") == "ban"]
+    for b in real_bans:
+        add(jst_day(b["created_at"]), "ban")
+    for m in blocks:
+        add(jst_day(m["created_at"]), "manual")
+    prior = sorted(d for d in evidence if cur_day and d < cur_day)
+    day_rows.sort(key=lambda x: x["day"], reverse=True)
+    ban_times = sorted(b["created_at"] for b in real_bans)
+    return {
+        "repeat": bool(prior),
+        "prior_days": len(prior),
+        "first_day": min(evidence) if evidence else None,
+        "last_prior_day": prior[-1] if prior else None,
+        "flagged_days": len(days),
+        "max_level": best if days else None,
+        "recent_days": day_rows[:10],
+        "bans": {"count": len(real_bans),
+                 "jails": sorted({b["jail"] for b in real_bans}),
+                 "first": jst_day(ban_times[0]) if ban_times else None,
+                 "last": jst_day(ban_times[-1]) if ban_times else None},
+        "manual_blocks": len(blocks),
+        "visits": ({"count": int(visit["n"] or 0), "first": jst_day(visit["a"]), "last": jst_day(visit["b"]),
+                    "bots": int(visit["bots"] or 0)} if visit and visit.get("n") else None),
+        "login": ({"fail": int(login["fail"] or 0), "ok": int(login["ok"] or 0)}
+                  if login and (login.get("fail") or login.get("ok")) else None),
+    }
+
+
 def active_where(alias: str = "") -> str:
     """有効なブロック(解除されておらず期限内)のWHERE条件。"""
     a = f"{alias}." if alias else ""
