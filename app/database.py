@@ -814,7 +814,7 @@ CREATE INDEX IF NOT EXISTS logs.idx_suspicious_access_days_day
 INSERT OR IGNORE INTO logs.suspicious_access_days
     (ip, day, total, probe, authfail, ratelimited, errors4xx)
     SELECT ip, date(last_seen, '+9 hours'), total, probe, authfail, ratelimited, errors4xx
-    FROM logs.suspicious_access;
+    FROM logs.suspicious_access WHERE exempt = 0;
 
 -- 管理画面から手動で行うブロック(2026-10-31・ver1.5.22)。アプリは「このIPを・この期間」と
 -- 記録するだけで、ホストのfail2ban(eigo-manual-*のjail)への反映はホスト側cron

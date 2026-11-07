@@ -8,6 +8,7 @@ import ipaddress
 import json
 import os
 import re
+import threading
 from datetime import datetime, timedelta, timezone
 from typing import Any, Literal
 
@@ -3317,6 +3318,18 @@ def _set_state(conn, key: str) -> None:
 # 取り込み1回あたりに、国・地域の取得を頼むIPの上限(外部の位置情報サービスの無料枠・応答待ちを守る)。
 # 5分ごとの取り込みで少しずつ埋まる。取得は応答を返した後のバックグラウンドで行う。
 GEO_ENRICH_PER_INGEST = 10
+# 取得を依頼して、まだ終わっていないIP。5分後の次の取り込みで、終わっていない同じIPをまた依頼して
+# 外部サービスを二重に叩かないための印(応答後のバックグラウンド処理は最悪1〜2分かかる)。再起動で空になる。
+_GEO_INFLIGHT: set[str] = set()
+_GEO_LOCK = threading.Lock()
+
+
+def _geo_job(ip: str) -> None:
+    try:
+        geoip.enrich_ip(ip)
+    finally:
+        with _GEO_LOCK:
+            _GEO_INFLIGHT.discard(ip)
 
 
 @router.post("/security-events/suspects", dependencies=[_F2B_DEP])
@@ -3356,11 +3369,16 @@ def ingest_suspects(payload: SuspectsIn, background_tasks: BackgroundTasks):
                  it.ratelimited, it.errors4xx, json.dumps(paths, ensure_ascii=False),
                  ip_blocks.clean_text(it.ua, 300), 1 if it.exempt else 0))
             saved += 1
-            _record_suspect_days(conn, str(ip), ip_blocks.epoch_to_utc(it.first_seen, now),
-                                 ip_blocks.epoch_to_utc(it.last_seen, now), it)
-            if len(need_geo) < GEO_ENRICH_PER_INGEST:
+            # 信頼IP/許可リスト(運営者・登録ユーザーのログイン元)は『過去の履歴』に積まない
+            # (360日保持になるため。一覧の要約は従来どおり30日で消える・独立照査Fable指摘)。
+            if not it.exempt:
+                _record_suspect_days(conn, str(ip), ip_blocks.epoch_to_utc(it.first_seen, now),
+                                     ip_blocks.epoch_to_utc(it.last_seen, now), it)
+            with _GEO_LOCK:
+                busy = str(ip) in _GEO_INFLIGHT
+            if len(need_geo) < GEO_ENRICH_PER_INGEST and not busy:
                 g = conn.execute(
-                    "SELECT country, fetched_at < datetime('now', '-1 day') AS stale "
+                    "SELECT COALESCE(country, '') AS country, fetched_at < datetime('now', '-1 day') AS stale "
                     "FROM ip_geo_cache WHERE ip = ?", (str(ip),)).fetchone()
                 if g is None:
                     need_geo.append(str(ip))
@@ -3368,7 +3386,7 @@ def ingest_suspects(payload: SuspectsIn, background_tasks: BackgroundTasks):
                     # 以前の問い合わせが失敗していた(国が空)IPは、1日以上たっていれば取り直す
                     # (一時的な429で、ずっと『不明』のままにならないように)。enrich_ipは行があると
                     # 何もしないので、空の行だけ消してから依頼する。
-                    conn.execute("DELETE FROM ip_geo_cache WHERE ip = ? AND country = ''", (str(ip),))
+                    conn.execute("DELETE FROM ip_geo_cache WHERE ip = ? AND COALESCE(country, '') = ''", (str(ip),))
                     need_geo.append(str(ip))
         # 30日より古い要約・解除/期限切れから360日を過ぎたブロック記録を捨てる(IP保持期限360日以内)。
         # 日ごとの履歴も360日を過ぎた行を捨てる(プライバシーポリシー§9のIP保持期限)。
@@ -3379,7 +3397,9 @@ def ingest_suspects(payload: SuspectsIn, background_tasks: BackgroundTasks):
         _set_state(conn, "suspects_last_at")
         conn.commit()
     for ip in need_geo:
-        background_tasks.add_task(geoip.enrich_ip, ip)
+        with _GEO_LOCK:
+            _GEO_INFLIGHT.add(ip)
+        background_tasks.add_task(_geo_job, ip)
     return {"ok": True, "saved": saved, "skipped": skipped, "geo_queued": len(need_geo)}
 
 

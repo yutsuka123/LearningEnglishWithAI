@@ -98,43 +98,57 @@ def _counts(conn) -> dict[str, int]:
 
 
 def load(rows: list[dict], apply: bool, db_path: str = DB_PATH) -> int:
-    conn = sqlite3.connect(db_path, timeout=30)
+    """--applyが無ければ読むだけ。--applyは、①先にバックアップ ②**1つの書き込みトランザクション**(BEGIN IMMEDIATE)の中で
+    読み取り・挿入・件数の確認を行い、件数が想定と違えばROLLBACK(動いているアプリの取り込みと競合して件数が
+    ずれても、誤って確定しない/誤って失敗扱いにならない・独立照査Fableの指摘)。"""
+    conn = sqlite3.connect(db_path, timeout=30, isolation_level=None)   # 手動でトランザクションを管理
     try:
         has = conn.execute(
             "SELECT 1 FROM sqlite_master WHERE type='table' AND name='suspicious_access_days'").fetchone()
         if not has:
             print("suspicious_access_days がまだ無い(ver1.5.25を起動してから実行する)。何もしない。")
             return 2
-        before_n = conn.execute("SELECT COUNT(*) FROM suspicious_access_days").fetchone()[0]
-        existing = {(r[0], r[1]) for r in conn.execute("SELECT ip, day FROM suspicious_access_days")}
-        new = [r for r in rows if (r["ip"], r["day"]) not in existing]
-        ips = {r["ip"] for r in new}
-        print(f"入力 {len(rows)}行 / 既にある {len(rows) - len(new)}行(変更しない) / 新規 {len(new)}行 "
-              f"({len(ips)} IP) / 履歴表の現在 {before_n}行")
-        if not apply:
-            print("ドライラン: 何も書いていない(--apply を付けると実行)。")
-            return 0
-        guard_before = _counts(conn)
-        stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d_%H%M%S")
-        bk_path = os.path.join(os.path.dirname(db_path) or ".", f"backup_logs_manual_{stamp}_before_suspect_days.db")
-        dst = sqlite3.connect(bk_path)
+        if apply:
+            stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%d_%H%M%S")
+            bk_path = os.path.join(os.path.dirname(db_path) or ".", f"backup_logs_manual_{stamp}_before_suspect_days.db")
+            dst = sqlite3.connect(bk_path)
+            try:
+                conn.backup(dst)
+            finally:
+                dst.close()
+            print("バックアップ:", os.path.basename(bk_path))
+            conn.execute("BEGIN IMMEDIATE")   # ここから確定までの間、他の書き込みは待たされる(数秒)
         try:
-            conn.backup(dst)
-        finally:
-            dst.close()
-        print("バックアップ:", os.path.basename(bk_path))
-        with conn:
+            before_n = conn.execute("SELECT COUNT(*) FROM suspicious_access_days").fetchone()[0]
+            existing = {(r[0], r[1]) for r in conn.execute("SELECT ip, day FROM suspicious_access_days")}
+            new = [r for r in rows if (r["ip"], r["day"]) not in existing]
+            ips = {r["ip"] for r in new}
+            print(f"入力 {len(rows)}行 / 既にある {len(rows) - len(new)}行(変更しない) / 新規 {len(new)}行 "
+                  f"({len(ips)} IP) / 履歴表の現在 {before_n}行")
+            if not apply:
+                print("ドライラン: 何も書いていない(--apply を付けると実行)。")
+                return 0
+            guard_before = _counts(conn)
             conn.executemany(
                 "INSERT OR IGNORE INTO suspicious_access_days "
                 "(ip, day, total, probe, authfail, ratelimited, errors4xx) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 [(r["ip"], r["day"], r["total"], r["probe"], r["authfail"], r["ratelimited"], r["errors4xx"])
                  for r in new])
-        after_n = conn.execute("SELECT COUNT(*) FROM suspicious_access_days").fetchone()[0]
-        guard_after = _counts(conn)
-        bad = {t: (guard_before[t], guard_after[t]) for t in GUARD_TABLES if guard_after[t] < guard_before[t]}
-        print(f"履歴表 {before_n} → {after_n}行(期待 +{len(new)})")
-        print("主要テーブルの件数: " + ("減少なし ✅" if not bad else f"⚠️ 減少 {bad}"))
-        return 0 if not bad and after_n == before_n + len(new) else 1
+            after_n = conn.execute("SELECT COUNT(*) FROM suspicious_access_days").fetchone()[0]
+            guard_after = _counts(conn)
+            bad = {t: (guard_before[t], guard_after[t]) for t in GUARD_TABLES if guard_after[t] < guard_before[t]}
+            print(f"履歴表 {before_n} → {after_n}行(期待 +{len(new)})")
+            print("主要テーブルの件数: " + ("減少なし ✅" if not bad else f"⚠️ 減少 {bad}"))
+            if bad or after_n != before_n + len(new):
+                conn.execute("ROLLBACK")
+                print("⚠️ 想定と違うため取り消した(ROLLBACK)。何も変更していない。バックアップは残してある。")
+                return 1
+            conn.execute("COMMIT")
+            return 0
+        except BaseException:
+            if conn.in_transaction:
+                conn.execute("ROLLBACK")
+            raise
     finally:
         conn.close()
 

@@ -7622,7 +7622,8 @@ export async function admin(root) {
         </tr></thead><tbody>${rows}</tbody></table>
         <p class="muted mt">※ 履歴の記録の始まり: 怪しいアクセスの一覧=${escapeHtml(hs.flagged ? dayShort(hs.flagged) : "—")}／
           自動遮断(fail2ban)=${escapeHtml(hs.ban ? dayShort(hs.ban) : "—")}。これより前の動きは「🆕 初めて」と出ても、実際には過去にもあった可能性があります。
-          同じ会社・同じ国の別IPが続く場合(例: 同じクラウド事業者)は、IPが違うので「再来」にはなりません。</p>`;
+          同じ会社・同じ国の別IPが続く場合(例: 同じクラウド事業者)は、IPが違うので「再来」にはなりません。
+          逆に、日付(日本時間)をまたいで続いた1回の動き（23時台〜翌0時台など）は、翌日以降に「再来」と出ることがあります（日ごとの記録の時刻で見分けてください）。</p>`;
       }
       const mrows = mres.blocks.map((b) => {
         const st = { active: "🚫 遮断中", pending: "⏳ 反映待ち", expired: "期限切れ",

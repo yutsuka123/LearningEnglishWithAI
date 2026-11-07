@@ -125,4 +125,18 @@ def anonymize_old_ips(
     else:
         out[gtable] = conn.execute(
             f"DELETE FROM {gtable} WHERE {gcol} < ?", (cutoff,)).rowcount
+    # 怪しいアクセスの日ごとの履歴(ver1.5.25・生のIPを持つ・dayは日本時間の暦日)。変換せず期限切れを削除する。
+    # 取り込み(5分毎)のたびにも消すが、ホストのcronが止まっていても保持期限(360日)が守られるようここでも消す。
+    # 表が無い古い環境(この機能の前のDB)では何もしない。
+    try:
+        if dry_run:
+            out["suspicious_access_days"] = conn.execute(
+                "SELECT COUNT(*) FROM suspicious_access_days WHERE day < date(?, '+9 hours')",
+                (cutoff,)).fetchone()[0]
+        else:
+            out["suspicious_access_days"] = conn.execute(
+                "DELETE FROM suspicious_access_days WHERE day < date(?, '+9 hours')",
+                (cutoff,)).rowcount
+    except sqlite3.OperationalError:
+        pass
     return out

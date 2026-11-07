@@ -143,7 +143,10 @@ def enrich_ip(ip: str) -> None:
         errors.append(str(e))
     error = " / ".join(errors)
     if error:
-        log.warning("geoip: lookup failed ip=%s reason=%s", ip, error)
+        # 429=無料枠の一時的な制限(1日後に取り直す)。WARNINGにすると朝チェックの「WARNING以上0件」を
+        # 毎回崩すためINFO。それ以外(接続失敗・想定外の応答)は従来どおりWARNING。
+        (log.info if errors and all("HTTP 429" in e for e in errors) else log.warning)(
+            "geoip: lookup failed ip=%s reason=%s", ip, error)
     lat, lon = _to_float(geo.get("latitude")), _to_float(geo.get("longitude"))
     with db() as conn:
         conn.execute(

@@ -20,6 +20,7 @@ os.environ["DATA_DIR"] = tmp
 os.environ["MULTIUSER"] = "1"
 TOKEN = "tok-" + "x" * 30
 os.environ["FAIL2BAN_NOTIFY_TOKEN"] = TOKEN
+os.environ["SESSION_SECRET"] = "test-secret-ver1525"   # ip_retention(毎日のprune)が鍵を要る。Cookieの署名も同じ鍵になる
 sys.path.insert(0, str(ROOT))
 
 from fastapi.testclient import TestClient
@@ -30,6 +31,7 @@ from app.services import auth, geoip, ip_blocks
 
 init_db()
 ok = fail = 0
+REAL_ENRICH = geoip.enrich_ip
 
 
 def check(label, cond, extra=""):
@@ -120,6 +122,14 @@ with db() as conn:
     seeded = [dict(r) for r in conn.execute("SELECT * FROM suspicious_access_days WHERE ip = ?", (IP_D,))]
 check("起動時: 既存のsuspicious_accessが日(日本時間)つきで履歴表に入る・何度走っても1行", len(seeded) == 1 and seeded[0]["day"] == "2026-11-08" and seeded[0]["probe"] == 14, seeded)
 with db() as conn:
+    conn.execute("INSERT INTO suspicious_access (ip, first_seen, last_seen, total, probe, authfail, ratelimited, errors4xx, paths, ua, exempt) "
+                 "VALUES (?, '2026-11-07 10:00:00', '2026-11-07 15:01:05', 30, 14, 0, 0, 0, '[]', '', 1)", (IP_C,))
+    conn.commit()
+init_db()
+with db() as conn:
+    ex = conn.execute("SELECT COUNT(*) AS n FROM suspicious_access_days WHERE ip = ?", (IP_C,)).fetchone()["n"]
+check("起動時: 信頼IP/許可リスト(exempt=1)は履歴(360日保持)に取り込まない", ex == 0, ex)
+with db() as conn:
     conn.execute("DELETE FROM suspicious_access"); conn.execute("DELETE FROM suspicious_access_days"); conn.commit()
 
 # ---------------------------------------------------------------- 3) 取り込み: 日ごとの履歴と、国・地域の取得依頼
@@ -169,6 +179,27 @@ with db() as conn:
 check("ingest: 国が空の失敗から1日以上たったIPは取り直す(空の行を消して依頼)", r.json()["geo_queued"] == 1 and enrich_calls == [IP_C] and left == 0, (r.json(), enrich_calls, left))
 with db() as conn:   # 後の検査のために元の状態(直近の失敗)へ戻す
     conn.execute("INSERT OR REPLACE INTO ip_geo_cache (ip, country, region, city, org, error) VALUES (?, '', '', '', '', 'ipapi.co HTTP 429')", (IP_C,)); conn.commit()
+with db() as conn:   # 国がNULL(空文字でなく)の失敗行も、1日以上たてば取り直す(NULLでは永久に再依頼されるバグの防止)
+    conn.execute("INSERT OR REPLACE INTO ip_geo_cache (ip, country, fetched_at) VALUES ('20.88.30.40', NULL, datetime('now', '-2 days'))"); conn.commit()
+enrich_calls.clear()
+r = c.post("/api/system/security-events/suspects", json={"items": [item("20.88.30.40", probe=1)]}, headers=H)
+with db() as conn:
+    nl = conn.execute("SELECT COUNT(*) AS n FROM ip_geo_cache WHERE ip = '20.88.30.40'").fetchone()["n"]
+check("ingest: 国がNULLの古い失敗行も取り直す(行を消して依頼・NULLで永久に再依頼しない)", r.json()["geo_queued"] == 1 and nl == 0, (r.json(), nl))
+check("ingest: 取得の依頼が終わると『取得中』の印(_GEO_INFLIGHT)は空に戻る", system._GEO_INFLIGHT == set(), system._GEO_INFLIGHT)
+system._GEO_INFLIGHT.add("20.77.30.40")
+enrich_calls.clear()
+r = c.post("/api/system/security-events/suspects", json={"items": [item("20.77.30.40", probe=1)]}, headers=H)
+check("ingest: 取得中(依頼済みで未完了)のIPは二重に依頼しない", r.json()["geo_queued"] == 0 and enrich_calls == [], (r.json(), enrich_calls))
+system._GEO_INFLIGHT.discard("20.77.30.40")
+enrich_calls.clear()
+r = c.post("/api/system/security-events/suspects", json={"items": [item("20.77.30.40", probe=1)]}, headers=H)
+check("ingest: 印が消えれば(完了後)また依頼できる", r.json()["geo_queued"] == 1 and enrich_calls == ["20.77.30.40"], (r.json(), enrich_calls))
+r = c.post("/api/system/security-events/suspects", json={"items": [item("20.66.30.40", probe=4, exempt=True)]}, headers=H)
+with db() as conn:
+    sa = conn.execute("SELECT COUNT(*) AS n FROM suspicious_access WHERE ip = '20.66.30.40'").fetchone()["n"]
+    dy = conn.execute("SELECT COUNT(*) AS n FROM suspicious_access_days WHERE ip = '20.66.30.40'").fetchone()["n"]
+check("ingest: 信頼IP(exempt)は一覧の要約には載るが、360日保持の履歴には積まない", sa == 1 and dy == 0, (sa, dy))
 many = [f"20.{i}.30.40" for i in range(1, 16)]
 enrich_calls.clear()
 r = c.post("/api/system/security-events/suspects", json={"items": [item(ip, probe=1) for ip in many]}, headers=H)
@@ -195,6 +226,20 @@ with db() as conn:
     old = conn.execute("SELECT COUNT(*) AS n FROM suspicious_access_days WHERE day = ?", (ip_blocks.jst_day(utc(days_ago=361)),)).fetchone()["n"]
     keep = conn.execute("SELECT COUNT(*) AS n FROM suspicious_access_days WHERE day = ?", (ip_blocks.jst_day(utc(days_ago=359)),)).fetchone()["n"]
 check("保持期限: 361日前の履歴は取り込み時に削除・359日前は残る(IP保持期限360日以内)", old == 0 and keep == 1, (old, keep))
+
+from app.services import ip_retention
+with db() as conn:
+    conn.execute("INSERT OR REPLACE INTO suspicious_access_days (ip, day, probe) VALUES (?, ?, 1)", (IP_B, ip_blocks.jst_day(utc(days_ago=400))))
+    conn.execute("INSERT OR REPLACE INTO suspicious_access_days (ip, day, probe) VALUES (?, ?, 1)", (IP_B, ip_blocks.jst_day(utc(days_ago=10))))
+    conn.commit()
+    dry = ip_retention.anonymize_old_ips(conn, now=ip_blocks.utc_now(), dry_run=True)
+    left_dry = conn.execute("SELECT COUNT(*) AS n FROM suspicious_access_days WHERE ip = ?", (IP_B,)).fetchone()["n"]
+    real = ip_retention.anonymize_old_ips(conn, now=ip_blocks.utc_now())
+    conn.commit()
+    left = [r["day"] for r in conn.execute("SELECT day FROM suspicious_access_days WHERE ip = ?", (IP_B,))]
+check("保持期限: 毎日のprune(ip_retention)でも、360日超の履歴を削除する(dry-runは数えるだけ)",
+      dry.get("suspicious_access_days") == 1 and left_dry == 3 and real.get("suspicious_access_days") == 1
+      and ip_blocks.jst_day(utc(days_ago=400)) not in left and ip_blocks.jst_day(utc(days_ago=10)) in left, (dry, real, left))
 
 # ---------------------------------------------------------------- 4) 管理画面API
 c.cookies.clear()
@@ -250,6 +295,29 @@ c.post("/api/system/admin/suspicious-access/dismiss", json={"ip": IP_A})
 r2 = c.get("/api/system/admin/suspicious-access?hours=720&include_dismissed=true")
 check("問題なしにしても履歴は消えない", {x["ip"]: x for x in r2.json()["items"]}[IP_A]["history"]["repeat"] is True)
 
+import logging
+from app.config import log as applog
+class _Cap(logging.Handler):
+    def __init__(self): super().__init__(); self.recs = []
+    def emit(self, rec): self.recs.append((rec.levelno, rec.getMessage()))
+_cap = _Cap(); _old_level = applog.level
+applog.addHandler(_cap); applog.setLevel(logging.DEBUG)
+_orig_prov, _orig_rdns = geoip._PROVIDERS, geoip.reverse_dns
+geoip.reverse_dns = lambda ip: ""
+try:
+    geoip._PROVIDERS = (("a", lambda cl, ip: ({}, "a HTTP 429")), ("b", lambda cl, ip: ({}, "b HTTP 429")))
+    REAL_ENRICH("20.55.66.77")
+    recs429 = [r for r in _cap.recs if "lookup failed" in r[1]]
+    _cap.recs.clear()
+    geoip._PROVIDERS = (("a", lambda cl, ip: ({}, "a HTTP 500")), ("b", lambda cl, ip: ({}, "b HTTP 429")))
+    REAL_ENRICH("20.55.66.78")
+    recs500 = [r for r in _cap.recs if "lookup failed" in r[1]]
+finally:
+    geoip._PROVIDERS, geoip.reverse_dns = _orig_prov, _orig_rdns
+    applog.removeHandler(_cap); applog.setLevel(_old_level)
+check("位置情報: 無料枠の制限(429のみ)はINFO・それ以外の失敗が混じればWARNING(朝チェックのWARNING0件を崩さない)",
+      recs429 and all(r[0] == logging.INFO for r in recs429) and recs500 and all(r[0] == logging.WARNING for r in recs500), (recs429, recs500))
+
 # ---------------------------------------------------------------- 5) 補完スクリプト(summarize / load)
 spec = importlib.util.spec_from_file_location("sdb", ROOT / "scripts" / "suspect_days_backfill.py")
 sdb = importlib.util.module_from_spec(spec); spec.loader.exec_module(sdb)
@@ -300,6 +368,18 @@ check("補完/load --apply: 入れた件数が期待どおり(既存1行を除�
 rc = sdb.load(out, apply=True, db_path=dbp)
 n_again = sqlite3.connect(dbp).execute("SELECT COUNT(*) FROM suspicious_access_days").fetchone()[0]
 check("補完/load: 2回流しても増えない(冪等)", rc == 0 and n_again == n_after, (rc, n_after, n_again))
+_orig_counts, _calls = sdb._counts, {"n": 0}
+def _fake_counts(conn):
+    _calls["n"] += 1
+    r = _orig_counts(conn)
+    return {k: v - 1 for k, v in r.items()} if _calls["n"] == 2 else r   # 2回目(挿入後)だけ件数が減ったように見せる
+sdb._counts = _fake_counts
+row_new = {"ip": "20.1.1.1", "day": "2026-10-01", "total": 3, "probe": 1, "authfail": 0, "ratelimited": 0, "errors4xx": 0}
+n_pre = sqlite3.connect(dbp).execute("SELECT COUNT(*) FROM suspicious_access_days").fetchone()[0]
+rc = sdb.load([row_new], apply=True, db_path=dbp)
+n_post = sqlite3.connect(dbp).execute("SELECT COUNT(*) FROM suspicious_access_days").fetchone()[0]
+sdb._counts = _orig_counts
+check("補完/load --apply: 件数が想定と違えばROLLBACKして何も変えない(終了コード1)", rc == 1 and n_post == n_pre, (rc, n_pre, n_post))
 empty = os.path.join(tmp, "empty.db"); sqlite3.connect(empty).execute("CREATE TABLE x(a)").connection.commit()
 check("補完/load: 履歴表が無い(ver1.5.25の起動前)なら何もしないで終了コード2", sdb.load(out, apply=True, db_path=empty) == 2)
 # 履歴の表を足した後でも、旧ファイルの他の表を壊していない
@@ -317,6 +397,7 @@ risky = [x for x in interp if re.search(r"\b(g|h|d)\.(country_label|country|regi
 check("画面: 外部サービス由来の地名・組織名・jail名は全てescapeHtmlを通す(数値だけは素通し)", not risky, risky)
 check("画面: 記録の始まり・共有IP/同じ事業者の別IPは再来にならない旨・位置は推定の旨を画面に書く",
       "記録の始まり" in views and "推定した目安" in views and "再来" in views and "別IP" in views)
+check("画面: 日付をまたぐ1回の動きが翌日『再来』と出うる旨を注記", "日付(日本時間)をまたいで続いた1回の動き" in views)
 if subprocess.run(["which", "node"], capture_output=True).returncode == 0:
     check("画面: node --check", subprocess.run(["node", "--check", str(ROOT / "static" / "js" / "views.js")]).returncode == 0)
 
